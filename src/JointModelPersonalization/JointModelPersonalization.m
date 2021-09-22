@@ -1,7 +1,10 @@
-function [outputArg1,outputArg2] = JointModelPersonalization(inputArg1,inputArg2)
-%JOINTMODELPERSONALIZATION Summary of this function goes here
-%   Detailed explanation goes here
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
-end
+% Joint Model Personalization uses motion tracking data to personalize the
+% joint centers of the model.
 
+% Copyright RCNL *change to actual license in future*
+
+% (struct, struct) -> struct
+% Runs the Joint Model Personalization algorithm
+function outputs = JointModelPersonalization(inputs, params)
+    
+end
