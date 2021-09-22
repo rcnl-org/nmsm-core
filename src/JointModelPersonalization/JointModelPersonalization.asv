@@ -1,0 +1,11 @@
+% Joint Model Personalization uses motion tracking data to personalize the
+% joint centers of the model.
+
+
+
+% (struct, struct) -> struct
+% Runs the 
+function outputs = JointModelPersonalization(inputs, parameters)
+    
+end
+
