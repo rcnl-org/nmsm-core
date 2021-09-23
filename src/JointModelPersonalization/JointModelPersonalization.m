@@ -18,3 +18,9 @@ for i=1:length(optimizations) %iterate optimizations
         markerPlateArray, optimizerParams);
 end
 end
+
+% (struct, struct) -> (Array)
+% make array of optimizations to complete from inputs and params
+function optimizations = prepareOptimization(inputs, params)
+
+end
