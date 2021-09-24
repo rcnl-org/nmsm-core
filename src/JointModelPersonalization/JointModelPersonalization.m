@@ -7,20 +7,14 @@
 % Runs the Joint Model Personalization algorithm
 function outputModel = JointModelPersonalization(inputs, params)
 %prepare optimizations
-optimizations = prepareOptimizations(inputs, params);
+optimizations = prepareJointModelOptimizations(inputs, params);
 
 outputModel = cloneModel(inputs.Model); %copy model
 for i=1:length(optimizations) %iterate optimizations
     % retreive optimization values for this specific optimization
     [jointArray, markerPlateArray, optimizerParams] = ...
         findOptimizationValues(optimizations(i), inputs, params);
-    outputModel = KinematicCalibration(outputModel, jointArray, ...
+    outputModel = computeKinematicCalibration(outputModel, jointArray, ...
         markerPlateArray, optimizerParams);
 end
-end
-
-% (struct, struct) -> (Array)
-% make array of optimizations to complete from inputs and params
-function optimizations = prepareOptimization(inputs, params)
-
 end
