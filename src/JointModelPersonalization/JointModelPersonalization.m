@@ -13,7 +13,7 @@ outputModel = cloneModel(inputs.Model); %copy model
 for i=1:length(optimizations) %iterate optimizations
     % retreive optimization values for this specific optimization
     [jointArray, markerPlateArray, optimizerParams] = ...
-        findOptimizationValues(optimizations(i), inputs, params);
+        findJointModelOptimizationValues(optimizations(i), inputs, params);
     outputModel = computeKinematicCalibration(outputModel, jointArray, ...
         markerPlateArray, optimizerParams);
 end
