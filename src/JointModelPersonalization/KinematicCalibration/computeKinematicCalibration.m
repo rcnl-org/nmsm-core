@@ -4,15 +4,15 @@
 
 % (Model, Array, Array, struct) -> (Model)
 % Creates calibrated model from joint structure and marker plate structure
-function outputModel = KinematicCalibration(inputModel, jointArray, ...
+function outputModel = computeKinematicCalibration(inputModel, jointArray, ...
     markerPlateArray, params)
-optimizerOptions = prepareOptimizerOptions(params) % Prepare optimizer
-initialValues = prepareInitialValues(jointArray, markerPlateArray, params)
+optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
+initialValues = prepareInitialValues(jointArray, markerPlateArray, params);
 [lowerBounds, upperBounds] = prepareBounds(jointArray, markerPlateArray,...
-    params)
+    params);
 optimizerOutput = findOptimizer(params)...
     (@computeInnerOptimizationHeuristic, initialValues, lowerBounds, ...
     upperBounds, optimizerOptions);
 outputModel = adjustModelFromOptimizerOutput(inputModel,...
-    optimizerOutput, params)
+    optimizerOutput, params);
 end
