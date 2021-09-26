@@ -10,9 +10,10 @@ optimizations = prepareJointModelOptimizations(inputs, params);
 outputModel = cloneModel(inputs.Model); %copy model
 for i=1:length(optimizations) %iterate optimizations
     % retreive optimization values for this specific optimization
-    [jointArray, markerPlateArray] = ...
-        findJointModelArrays(optimizations(i), inputs, params);
-    outputModel = computeKinematicCalibration(outputModel, jointArray, ...
-        markerPlateArray, optimizations(i));
+    joints = findJointsForJointModel(optimizations(i), inputs, params);
+    markerPlates = findMarkerPlatesForJointModel(optimizations(i), ...
+        inputs, params);
+    outputModel = computeKinematicCalibration(outputModel, joints, ...
+        markerPlates, optimizations(i));
 end
 end
