@@ -4,7 +4,7 @@
 
 % Copyright RCNL *to be changed*
 
-% (struct, struct) -> (Array)
+% (struct, struct) -> (Array of structs)
 % make array of optimizations to complete from inputs and params
 function optimizations = prepareJointModelOptimizations(inputs, params)
 
