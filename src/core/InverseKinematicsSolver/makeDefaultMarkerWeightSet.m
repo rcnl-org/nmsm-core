@@ -13,4 +13,3 @@ for i=0:model.getMarkerSet().getSize()-1
     markerWeightSet.set(i, MarkerWeight(model.getMarkerSet.get(i), 1.0));
 end
 end
-
