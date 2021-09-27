@@ -20,19 +20,17 @@ tasks = string(fieldnames(params));
 for i=1:length(tasks)
    value = model.getCoordinateSet().get(tasks(i)).getDefaultValue();
    coordinateReference = CoordinateReference(tasks(i), Constant(value));
-   coordinateReference = modifyWeight( ...
-       coordinateReference, params.(tasks(i)));
+   modifyWeight(coordinateReference, params.(tasks(i)));
    coordinateReferences.push_back(coordinateReference)
 end
 end
 
 % (CoordinateReference, struct) -> (CoordinateReference)
 % Mutates the CoordinateReference with the weight from the params, if valid
-function output = modifyWeight(coordRef, params)
+function modifyWeight(coordRef, params)
 if(isfield(params, 'weight'))
     if(isnumeric(params.weight))
        coordRef.setWeight(params.weight)
-       output = coordRef;
     end    
 end
 end
