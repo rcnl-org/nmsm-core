@@ -8,8 +8,9 @@
 % Makes a default SetMarkerWeight with all markers in model with weight 1.
 function markerWeightSet = makeDefaultMarkerWeightSet(model)
 import org.opensim.modeling.*
-markerWeightSet = SetMarkerWeight();
+markerWeightSet = SetMarkerWeights();
 for i=0:model.getMarkerSet().getSize()-1
-    markerWeightSet.set(i, MarkerWeight(model.getMarkerSet.get(i), 1.0));
+    markerWeightSet.set(i, MarkerWeight( ...
+        model.getMarkerSet.get(i).getName(), 1.0));
 end
 end
