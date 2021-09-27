@@ -1,0 +1,24 @@
+[2021-09-26 22:42:52.127] [info] Updating Model file from 20303 to latest format...
+[2021-09-26 22:42:52.197] [info] Loaded model subject01 from file D:\RCNL\Repositories\nmsm-core\tests\core\InverseKinematicsSolver\subject01_gait2392_scaled.osim
+[2021-09-26 22:42:52.198] [warning] Couldn't find file 'treadmill.vtp'.
+[2021-09-26 22:42:52.199] [warning] Couldn't find file 'sacrum.vtp'.
+[2021-09-26 22:42:52.199] [warning] Couldn't find file 'pelvis.vtp'.
+[2021-09-26 22:42:52.199] [warning] Couldn't find file 'l_pelvis.vtp'.
+[2021-09-26 22:42:52.199] [warning] Couldn't find file 'femur.vtp'.
+[2021-09-26 22:42:52.199] [warning] Couldn't find file 'tibia.vtp'.
+[2021-09-26 22:42:52.199] [warning] Couldn't find file 'fibula.vtp'.
+[2021-09-26 22:42:52.200] [warning] Couldn't find file 'talus.vtp'.
+[2021-09-26 22:42:52.200] [warning] Couldn't find file 'foot.vtp'.
+[2021-09-26 22:42:52.200] [warning] Couldn't find file 'bofoot.vtp'.
+[2021-09-26 22:42:52.200] [warning] Couldn't find file 'l_femur.vtp'.
+[2021-09-26 22:42:52.200] [warning] Couldn't find file 'l_tibia.vtp'.
+[2021-09-26 22:42:52.200] [warning] Couldn't find file 'l_fibula.vtp'.
+[2021-09-26 22:42:52.200] [warning] Couldn't find file 'l_talus.vtp'.
+[2021-09-26 22:42:52.200] [warning] Couldn't find file 'l_foot.vtp'.
+[2021-09-26 22:42:52.201] [warning] Couldn't find file 'l_bofoot.vtp'.
+[2021-09-26 22:42:52.201] [warning] Couldn't find file 'hat_spine.vtp'.
+[2021-09-26 22:42:52.201] [warning] Couldn't find file 'hat_jaw.vtp'.
+[2021-09-26 22:42:52.201] [warning] Couldn't find file 'hat_skull.vtp'.
+[2021-09-26 22:42:52.201] [warning] Couldn't find file 'hat_ribs.vtp'.
+[2021-09-26 22:42:52.202] [info] ControllerSet 'Controllers' was renamed and is being reset to 'controllerset'.
+[2021-09-26 22:42:52.204] [info] MarkerSet 'gait2392_Scale' was renamed and is being reset to 'markerset'.
