@@ -1,9 +1,13 @@
+
+
+% (Model, struct) -> (InverseKinematicsSolver)
+
 function ikSolver = makeInverseKinematicsSolver(model, params)
 import org.opensim.modeling.*
 markerReferences = makeMarkersReference(model, ...
-    params.markersReference);
+    valueOrEmptyStruct(params, 'markersReference'));
 coordinateReferences = makeCoordinateReferences(model, ...
-    params.coordinateReferences);
+    valueOrEmptyStruct(params, 'coordinateReferences'));
 ikSolver = InverseKinematicsSolver(model, markerReferences, ...
     coordinateReferences);
 ikSolver = applyParametersToIKSolver(ikSolver, params);
