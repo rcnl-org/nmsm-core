@@ -9,7 +9,7 @@ function outputModel = JointModelPersonalization(inputs, params)
 optimizations = prepareJointModelOptimizations(inputs, params);
 outputModel = cloneModel(inputs.Model); %copy model
 for i=1:length(optimizations) %iterate optimizations
-    % retreive optimization values for this specific optimization
+    % retrieve optimization values for this specific optimization
     joints = findJointsForJointModel(optimizations(i), inputs, params);
     markerPlates = findMarkerPlatesForJointModel(optimizations(i), ...
         inputs, params);
