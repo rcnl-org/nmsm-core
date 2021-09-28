@@ -19,8 +19,8 @@ example arguments:
 IKSolver = makeInverseKinematicsSolver(Model(modelfilename), markerfilename, params)
 	
 example params:
-	params.excludedMarkers = ["marker1", "marker4"]
-	params.markerWeights = struct("marker3", 10.0, "marker2", 0.1)
-	params.coordinateTasks = struct("coordinate1", struct("weight", 1000.0), ...
-									"coordinate2", struct("weight", 100.0))
+	params.excludedMarkers = ["Sternum", "Top.Head"]
+	params.markerWeights = struct("R.Acromium", 10.0, "L.Acromium", 0.1)
+	params.coordinateTasks = struct("mtp_angle_r", struct("weight", 1000.0), ...
+									"mtp_angle_l", struct("weight", 100.0))
 	params.accuracy = 1.0
