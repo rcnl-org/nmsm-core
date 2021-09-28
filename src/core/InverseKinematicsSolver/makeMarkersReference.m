@@ -13,7 +13,8 @@
 
 % (Model, struct) -> (MarkersReference)
 % Makes a MarkersReference from a given model and parameters
-function markersReference = makeMarkersReference(model, params)
+function markersReference = makeMarkersReference(model, markerFileName, ...
+    params)
 import org.opensim.modeling.*
 markerWeightSet = makeDefaultMarkerWeightSet(model);
 if(isfield(params, 'excludedMarkers'))
@@ -24,7 +25,6 @@ if(isfield(params, 'markerWeights'))
     markerWeightSet = adjustMarkerWeights(markerWeightSet, ...
         params.markerWeights);
 end
-markersReference = MarkersReference( ...
-    valueOrEmptyString(params, 'markerFileName'), markerWeightSet);
+markersReference = MarkersReference(markerFileName, markerWeightSet);
 end
 

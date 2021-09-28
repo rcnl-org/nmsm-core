@@ -1,6 +1,6 @@
 % preconditions
 import org.opensim.modeling.*
-model1 = Model("Rajagopal_v1.osim");
+model1 = Model("./tests/core/Rajagopal_v1.osim");
 
 %% Test if models are separate
 model2 = cloneModel(model1);
