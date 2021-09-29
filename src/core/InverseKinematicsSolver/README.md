@@ -24,3 +24,4 @@ example params:
 	params.coordinateTasks = struct("mtp_angle_r", struct("weight", 1000.0), ...
 									"mtp_angle_l", struct("weight", 100.0))
 	params.accuracy = 1.1
+	params.startTime = 3.2
