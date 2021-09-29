@@ -25,6 +25,7 @@ if(isfield(params, 'markerWeights'))
     markerWeightSet = adjustMarkerWeights(markerWeightSet, ...
         params.markerWeights);
 end
-markersReference = MarkersReference(markerFileName, markerWeightSet);
+markersReference = MarkersReference(markerFileName);
+markersReference.setMarkerWeightSet(markerWeightSet);
 end
 
