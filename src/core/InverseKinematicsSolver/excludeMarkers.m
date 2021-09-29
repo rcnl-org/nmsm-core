@@ -11,7 +11,7 @@ function newMarkerWeightSet = excludeMarkers(markerWeightSet, ...
 newMarkerWeightSet = markerWeightSet.clone();
 for i=1:length(excludedMarkers)
     for j=0:newMarkerWeightSet.getSize()-1
-        if(excludedMarkers(i) == newMarkerWeightSet.get(j).getName())
+        if(excludedMarkers(i) == char(newMarkerWeightSet.get(j).getName()))
             newMarkerWeightSet.remove(j);
             break
         end

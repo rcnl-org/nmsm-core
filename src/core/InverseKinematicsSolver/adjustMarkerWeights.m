@@ -14,7 +14,8 @@ newMarkerWeightSet = markerWeightSet.clone();
 namesMarkersToAdjust = string(fieldnames(markersToAdjust));
 for i=1:length(namesMarkersToAdjust)
     for j=0:newMarkerWeightSet.getSize()-1
-        if(namesMarkersToAdjust(i) == newMarkerWeightSet.get(j).getName())
+        if(namesMarkersToAdjust(i) == ...
+            char(newMarkerWeightSet.get(j).getName()))
             newWeight = markersToAdjust.(namesMarkersToAdjust(i));
             if isnumeric(newWeight)
                 newMarkerWeightSet.get(j).setWeight(newWeight);
