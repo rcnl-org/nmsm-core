@@ -8,3 +8,5 @@
 
 # Compiled MEX binaries (all platforms)
 *.mex*
+
+*.log
