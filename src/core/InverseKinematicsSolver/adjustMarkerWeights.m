@@ -12,8 +12,8 @@ function newMarkerWeightSet = adjustMarkerWeights(markerWeightSet, ...
 import org.opensim.modeling.*
 newMarkerWeightSet = markerWeightSet.clone();
 namesMarkersToAdjust = string(fieldnames(markersToAdjust));
-for i=1:length(namesMarkersToAdjust)
-    for j=0:newMarkerWeightSet.getSize()-1
+for i = 1:length(namesMarkersToAdjust)
+    for j = 0:newMarkerWeightSet.getSize()-1
         if(namesMarkersToAdjust(i) == ...
             char(newMarkerWeightSet.get(j).getName()))
             newWeight = markersToAdjust.(namesMarkersToAdjust(i));
