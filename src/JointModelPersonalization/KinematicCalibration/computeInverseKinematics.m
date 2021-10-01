@@ -2,6 +2,8 @@
 % OpenSim methodology. This wrapper allows for easy calling of IK based on
 % simple parameter arguments.
 
+% 
+
 % Copyright RCNL *change later*
 
 % (Model, params) -> (struct)
