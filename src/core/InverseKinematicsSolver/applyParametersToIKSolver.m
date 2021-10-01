@@ -5,16 +5,15 @@
 
 % (InverseKinematicSolver, struct) -> (InverseKinematicSolver)
 % Applies parameters to the Inverse Kinematic Solver
-function newIKSolver = applyParametersToIKSolver(IKSolver, params)
+function applyParametersToIKSolver(IKSolver, params)
 import org.opensim.modeling.*
-newIKSolver = IKSolver.clone();
-modifyAccuracy(newIKSolver, params)
+modifyAccuracy(IKSolver, params);
 end
 
 function modifyAccuracy(IKSolver, params)
 if(isfield(params, 'accuracy'))
     if(isnumeric(params.accuracy))
-        IKSolver.setAccuracy(params.accuracy)
+        IKSolver.setAccuracy(params.accuracy);
     end
 end
 end
