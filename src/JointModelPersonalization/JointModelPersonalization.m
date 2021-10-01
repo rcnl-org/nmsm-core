@@ -6,8 +6,9 @@
 % (struct, struct) -> struct
 % Runs the Joint Model Personalization algorithm
 function outputModel = JointModelPersonalization(inputs, params)
+import org.opensim.modeling.*
 optimizations = prepareJointModelOptimizations(inputs, params);
-outputModel = cloneModel(inputs.model); %copy model
+outputModel = Model(inputs.model); %copy model
 for i=1:length(optimizations) %iterate optimizations
     % retrieve optimization values for this specific optimization
     joints = findJointsForJointModel(optimizations(i), inputs, params);

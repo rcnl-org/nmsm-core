@@ -8,7 +8,8 @@
 % Returns a marker weight set with the named markers removed
 function newMarkerWeightSet = excludeMarkers(markerWeightSet, ...
     excludedMarkers)
-newMarkerWeightSet = markerWeightSet.clone();
+import org.opensim.modeling.*
+newMarkerWeightSet = SetMarkerWeights(markerWeightSet);
 for i=1:length(excludedMarkers)
     for j=0:newMarkerWeightSet.getSize()-1
         if(excludedMarkers(i) == char(newMarkerWeightSet.get(j).getName()))
