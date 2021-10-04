@@ -9,7 +9,7 @@
 % iterate through markers and sum the error
 function error = calculateFrameSquaredError(ikSolver)
 error = 0;
-for i=0:ikSolver.getNumMarkersInUse()-1
+for i = 0:ikSolver.getNumMarkersInUse() - 1
     error = error + ikSolver.computeCurrentSquaredMarkerError(i);
 end
 end
