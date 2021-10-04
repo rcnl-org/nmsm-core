@@ -14,12 +14,8 @@
 function ikSolver = makeInverseKinematicsSolver(model, markerFileName, ...
     params)
 import org.opensim.modeling.*
-markerReferences = makeMarkersReference(model, markerFileName, params);
-ikSolver = InverseKinematicsSolver(model, markerReferences, ...
-    SimTKArrayCoordinateReference());
-applyParametersToIKSolver(ikSolver, params);
-state = model.initSystem();
-state.setTime(valueOrZero(params, 'startTime'));
-ikSolver.assemble(state);
+markersReference = makeMarkersReference(model, markerFileName, params);
+ikSolver = makeIKSolverFromMarkersReference(model, markersReference, ...
+    params);
 end
 
