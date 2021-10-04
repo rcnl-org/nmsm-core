@@ -5,7 +5,7 @@
 
 % (struct, string, Any) -> (Any)
 
-function output = valueOrAlternative(inputStruct, fieldName, alternative)
+function output = valueOrAlternate(inputStruct, fieldName, alternative)
 if(isfield(inputStruct, fieldName))
     output = inputStruct.(fieldName);
 else
