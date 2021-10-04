@@ -11,7 +11,7 @@ import org.opensim.modeling.*
 [state, numFrames, frequency] = prepareFrameIterations(model, ikSolver, ...
     markersReference, params);
 error = 0;
-for i=1:numFrames
+for i=1:numFrames %start time is set so start with recording error
     ikSolver.track(state);
     error = error + calculateFrameSquaredError(ikSolver);
     state.setTime(state.getTime() + 1/frequency)
