@@ -5,7 +5,7 @@
 
 % (struct, string) -> (Any)
 % Returns the value of the field or an empty struct
-function output = valueOrEmptyStruct(inputStruct,fieldName)
+function output = valueOrEmptyStruct(inputStruct, fieldName)
 if(isfield(inputStruct, fieldName))
     output = inputStruct.(fieldName);
 else
