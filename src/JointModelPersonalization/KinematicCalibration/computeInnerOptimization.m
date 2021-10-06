@@ -8,9 +8,9 @@
 % Returns new model with inverse kinematic optimized marker positions
 function error = computeInnerOptimization(values, functions, ...
     model, markersReference, params)
-model.initSystem()
+model.initSystem();
 for i = 1:length(values)
-    functions{i}(values(i), model)
+    functions{i}(values(i), model);
 end
 error = computeInnerOptimizationHeuristic(model, markersReference, params);
 end
