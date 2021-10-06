@@ -1,7 +1,7 @@
 % preconditions 
 import org.opensim.modeling.*
-model = Model(strcat(pwd, '\tests\core\InverseKinematicsSolver\subject01_gait2392_scaled.osim'));
-markerfilename=strcat(pwd, '\tests\core\InverseKinematicsSolver\walk_free_01.trc');
+model = Model(strcat(pwd, '\subject01_gait2392_scaled.osim'));
+markerfilename=strcat(pwd, '\walk_free_01.trc');
 params = struct();
 markersReference = makeMarkersReference(model, markerfilename, params);
 
