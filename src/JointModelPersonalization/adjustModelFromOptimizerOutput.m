@@ -3,10 +3,14 @@
 
 % Copyright RNCL *change later*
 
-% (Model, struct, struct) -> (Model)
+% (Model, cellArray, array, struct) -> (Model)
 % Adjust the model based on the output of the optimizer
-function [outputArg1,outputArg2] = adjustModelFromOptimizerOutput( ...
-    inputModel, optimizerOutput, params)
-
+function outputModel = adjustModelFromOptimizerOutput(model, functions, ...
+    values, params)
+import org.opensim.modeling.*
+outputModel = Model(model);
+outputModel.initSystem();
+for i = 1:length(values)
+    functions{i}(values(i), outputModel);
 end
-
+end
