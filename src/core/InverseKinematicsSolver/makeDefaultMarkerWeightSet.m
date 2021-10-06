@@ -10,7 +10,7 @@ function markerWeightSet = makeDefaultMarkerWeightSet(model)
 import org.opensim.modeling.*
 markerWeightSet = SetMarkerWeights();
 for i=0:model.getMarkerSet().getSize()-1
-    markerWeightSet.set(i, MarkerWeight( ...
+    markerWeightSet.cloneAndAppend(MarkerWeight( ...
         model.getMarkerSet.get(i).getName(), 1.0));
 end
 end
