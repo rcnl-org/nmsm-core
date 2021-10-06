@@ -6,6 +6,6 @@
 % (struct) -> (struct)
 % Prepare params for outer optimizer for Kinematic Calibration
 function output = prepareOptimizerOptions(params)
-
+output.OptimalityTolerance = 1e-8;
 end
 
