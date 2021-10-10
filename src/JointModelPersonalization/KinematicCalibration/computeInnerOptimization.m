@@ -12,6 +12,7 @@ model.initSystem();
 for i = 1:length(values)
     functions{i}(values(i), model);
 end
-error = computeInnerOptimizationHeuristic(model, markersReference, params);
+heuristic = computeInnerOptimizationHeuristic(model, markersReference, params);
+error = zeros(1, length(values)) + heuristic;
 end
 
