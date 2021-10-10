@@ -6,6 +6,8 @@
 % (struct) -> (struct)
 % Prepare params for outer optimizer for Kinematic Calibration
 function output = prepareOptimizerOptions(params)
-output.OptimalityTolerance = 1e-8;
+output = optimoptions('lsqnonlin');
+output.DiffMinChange = 1e-3;
+output.OptimalityTolerance = 1e-5;
 end
 
