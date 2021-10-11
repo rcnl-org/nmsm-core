@@ -7,14 +7,11 @@
 % Runs the Joint Model Personalization algorithm
 function outputModel = JointModelPersonalization(inputs, params)
 import org.opensim.modeling.*
-optimizations = prepareJointModelOptimizations(inputs, params);
+optimization = prepareJointModelOptimizations(inputs, params);
 outputModel = Model(inputs.model); %copy model
-for i=1:length(optimizations) %iterate optimizations
-    % retrieve optimization values for this specific optimization
-    joints = findJointsForJointModel(optimizations(i), inputs, params);
-    markerPlates = findMarkerPlatesForJointModel(optimizations(i), ...
-        inputs, params);
-    outputModel = computeKinematicCalibration(outputModel, joints, ...
-        markerPlates, optimizations(i));
-end
+joints = findJointsForJointModel(optimization, inputs, params);
+markerPlates = findMarkerPlatesForJointModel(optimization, ...
+    inputs, params);
+outputModel = computeKinematicCalibration(outputModel, joints, ...
+    markerPlates, optimization);
 end
