@@ -7,7 +7,9 @@
 % Prepare params for outer optimizer for Kinematic Calibration
 function output = prepareOptimizerOptions(params)
 output = optimoptions('lsqnonlin');
-output.DiffMinChange = 1e-3;
-output.OptimalityTolerance = 1e-5;
+output.DiffMinChange = 1e-5;
+output.OptimalityTolerance = 1e-12;
+output.FunctionTolerance = 1e-12;
+output.StepTolerance = 1e-12;
 end
 
