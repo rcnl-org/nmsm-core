@@ -6,7 +6,7 @@
 % (Model, cellArray, array, struct) -> (Model)
 % Adjust the model based on the output of the optimizer
 function outputModel = adjustModelFromOptimizerOutput(model, functions, ...
-    values, params)
+    values)
 import org.opensim.modeling.*
 outputModel = Model(model);
 outputModel.initSystem();
