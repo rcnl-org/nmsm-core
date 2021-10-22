@@ -13,3 +13,6 @@
 
 # Exclude MatLab figures
 *.fig
+
+#ignore geometry files
+*.vtp
