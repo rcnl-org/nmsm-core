@@ -9,7 +9,7 @@
 % Gets field by name or throws error
 function output = getFieldByNameOrError(deepStruct, field)
 output = getFieldByName(deepStruct, field);
-if(~output)
+if(~isstruct(output) && ~output)
     throw MException(strcat(field, " is not in the struct"))
 end
 end
