@@ -13,11 +13,13 @@ try
     return
 catch
 end
-fields = fieldnames(deepStruct);
-for i=1:length(fields)
-    output = getFieldByName(deepStruct.(fields{i}),field);
-    if(isstruct(output))
-        return
+if(isstruct(deepStruct))
+    fields = fieldnames(deepStruct);
+    for i=1:length(fields)
+        output = getFieldByName(deepStruct.(fields{i}),field);
+        if(isstruct(output))
+            return
+        end
     end
 end
 end
