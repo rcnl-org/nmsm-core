@@ -4,9 +4,9 @@
 		<!--Directory used for writing results.-->
 		<results_directory>./</results_directory>
 		<!--Directory for input files-->
-		<input_directory />
+		<input_directory>D:\RCNL\Repositories\nmsm-core\tests\core</input_directory>
 		<!--Name of the input model file (.osim) to use-->
-		<input_model_file>Patient3.osim</input_model_file>
+		<input_model_file>test.osim</input_model_file>
 		<!--Name of the output model file (.osim) to create.-->
 		<output_model_file>/Patient3Calibrated.osim</output_model_file>
 		<!--The set of <Task> to be completed by the tool, each Task is a separate optimization-->
@@ -14,7 +14,7 @@
 			<!--The Task to be completed, includes the marker file and Joints to optimize-->
 			<Task name="ankle_calibration">
 				<!--The markers file to use for the task-->
-				<marker_file_name>r_ankle_markers.trc</marker_file_name>
+				<marker_file_name>walk_free_01.trc</marker_file_name>
 				<!--A joint that will be optimized in the task-->
 				<Joint name="subtalar_r">
 					<parent_frame>
@@ -65,7 +65,7 @@
 			<!--The Task to be completed, includes the marker file and Joints to optimize-->
 			<Task name="knee_calibration">
 				<!--The markers file to use for the task-->
-				<marker_file_name>r_knee_markers.trc</marker_file_name>
+				<marker_file_name>walk_free_01.trc</marker_file_name>
 				<!--A joint that will be optimized in the task-->
 				<Joint name="knee_r">
 					<parent_frame>
@@ -93,7 +93,7 @@
 			<!--The Task to be completed, includes the marker file and Joints to optimize-->
 			<Task name="hip_calibration">
 				<!--The markers file to use for the task-->
-				<marker_file_name>gait_markers.trc</marker_file_name>
+				<marker_file_name>walk_free_01.trc</marker_file_name>
 				<!--A joint that will be optimized in the task-->
 				<Joint name="hip_r">
 					<parent_frame>
