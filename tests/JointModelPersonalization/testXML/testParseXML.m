@@ -1,4 +1,2 @@
-% test = xml2struct('tests\core\JointModelPersonalizationSettingsBJF.xml')
-
-JointModelPersonalizationTool( ...
-    'tests\JointModelPersonalization\JointModelPersonalizationSettingsBJF.xml');
+JointModelPersonalizationTool(strcat(pwd, ...
+    '\tests\JointModelPersonalization\testXML\JMPSettings.xml'));
