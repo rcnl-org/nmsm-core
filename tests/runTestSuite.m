@@ -8,6 +8,19 @@
 % Copyright RCNL *change later*
 
 matlab.project.loadProject("../");
+pwd
 testResults = runtests('tests', 'IncludeSubfolders', true);
 
 testResults.assertSuccess()
+
+% import matlab.unittest.TestSuite
+% import matlab.unittest.TestRunner
+% import matlab.unittest.plugins.CodeCoveragePlugin
+% 
+% coverage = matlab.unittest.plugins.CodeCoveragePlugin.forFolder(strcat(pwd, '\src'),'IncludingSubfolders',true);
+% suite = TestSuite.fromFolder(strcat(pwd, '\tests'),'IncludingSubfolders',true);
+% runner = TestRunner.withTextOutput;
+% runner.addPlugin(coverage)
+% 
+% result = run(runner,suite);
+% result.assertSuccess();
