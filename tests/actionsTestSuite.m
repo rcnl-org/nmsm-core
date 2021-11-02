@@ -8,7 +8,6 @@
 % Copyright RCNL *change later*
 
 matlab.project.loadProject("../");
-pwd
 testResults = runtests('tests', 'IncludeSubfolders', true);
 
 testResults.assertSuccess()
