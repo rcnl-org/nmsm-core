@@ -9,6 +9,7 @@
 
 matlab.project.loadProject("../");
 pwd
+pwd = strcat(pwd, '\..')
 testResults = runtests('tests', 'IncludeSubfolders', true);
 
 testResults.assertSuccess()
