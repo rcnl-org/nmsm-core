@@ -23,7 +23,7 @@ end
 function output = prepareKinematicCalibrationInitialValues(functions, ...
     params)
 output = valueOrAlternate(params, 'initialValues', ...
-    zeros(max(size(functions)),1)); %MSS: what is the size of function?
+    zeros(max(size(functions)),1));
 end
 
 % (cell array, array, struct) -> (array, array)
@@ -31,7 +31,7 @@ end
 function [lowerBounds, upperBounds] = prepareKinematicCalibrationBounds(...
     initialValues, params)
 lowerBounds = valueOrAlternate(params, 'lowerBounds', ...
-    initialValues - 0.1); % MSS: do we want to distinguish between position and orientation for default values? 0.05 for position and 0.1 for orientation?
+    initialValues - 0.1); 
 upperBounds = valueOrAlternate(params, 'upperBounds', ...
     initialValues + 0.1);
 end
