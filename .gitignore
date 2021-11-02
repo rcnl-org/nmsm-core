@@ -8,3 +8,11 @@
 
 # Compiled MEX binaries (all platforms)
 *.mex*
+
+*.log
+
+# Exclude MatLab figures
+*.fig
+
+#ignore geometry files
+*.vtp
