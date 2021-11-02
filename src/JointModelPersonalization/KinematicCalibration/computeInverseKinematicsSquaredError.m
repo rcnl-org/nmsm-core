@@ -14,7 +14,7 @@ error = 0;
 for i=1:numFrames %start time is set so start with recording error
     ikSolver.track(state);
     error = error + calculateFrameSquaredError(ikSolver);
-    state.setTime(state.getTime() + 1/frequency)
+    state.setTime(state.getTime() + 1/frequency); %MSS: This is dangerous if the frequency is not a round number like 100. We'd better extract time data from the markersReference.getMarkerTable() that is already called in computeInnerOptimizationHeuristic.
 end
 end
 
