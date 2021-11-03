@@ -5,9 +5,8 @@
 
 % (Model, double, string, integer, boolean, boolean) -> (None)
 % Modifies the model with the given coordinate value
-function applyFrameParameterValue(model, ...
-    newValue, jointName, coordNum, ...
-    isParent, isTranslation)
+function applyFrameParameterValue(model, newValue, jointName, isParent, ...
+    isTranslation, coordNum)
 import org.opensim.modeling.*
 model.initSystem();
 if(isParent)
