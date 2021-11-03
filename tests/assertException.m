@@ -11,6 +11,6 @@ catch
     assert(true);
     return
 end
-    assert(false);
+assert(false);
 end
 
