@@ -1,6 +1,6 @@
 % preconditions
 import org.opensim.modeling.*
-model = Model(strcat(pwd, '\tests\core\model\arm26.osim'));
+model = Model('arm26.osim');
 
 %% Check applying frame parameter update (parent, translation)
 newCoord = 10;
