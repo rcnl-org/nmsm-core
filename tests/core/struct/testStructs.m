@@ -25,9 +25,9 @@ output = valueOrEmptyStruct(struct1, 'Test3');
 
 assert(strcmp(valueOrEmptyStruct(struct1, 'Test1'), 'Arg1'));
 assert(isstruct(output));
-assert(fieldnames(output) == 0);
+assert(isempty(fieldnames(output)));
 
 %% Test valueOrZero
 
 assert(strcmp(valueOrZero(struct1, 'Test1'), 'Arg1'));
-assert(strcmp(valueOrZero(struct1, 'Test3'), 0));
+assert(valueOrZero(struct1, 'Test3') == 0);
