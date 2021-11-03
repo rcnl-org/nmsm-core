@@ -10,4 +10,4 @@ jobs:
       - name: Run tests
         uses: matlab-actions/run-command@v1
         with:
-          command: run("tests/runTestSuite.m")
+          command: run("tests/actionsTestSuite.m")
