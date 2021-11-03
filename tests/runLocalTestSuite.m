@@ -1,29 +1,22 @@
-% This function acts as the hook for running tests for the project. In this
-% function, the project is loaded and all tests are run from the folder and
-% any sub-folders of tests. At the end, assertSuccess() returns information
-% regarding if the tests passed. This script was designed to work with
-% GitHub Actions for CI/CD needs, it should not be modified without good
-% reason.
+% This script runs the test suite in the local environment and returns and
+% error if any of the scripts do not work as intended. It also includes a
+% code coverage report. This script should be used to ensure tests are
+% passing before pushing the code to the GitHub repository.
 
 % Copyright RCNL *change later*
 
-% matlab.project.loadProject("../");
-% pwd
-% testResults = runtests('tests', 'IncludeSubfolders', true);
-
-% testResults.assertSuccess()
-
-import matlab.unittest.TestSuite
 import matlab.unittest.TestRunner
 import matlab.unittest.plugins.CodeCoveragePlugin
 
-coverage = matlab.unittest.plugins.CodeCoveragePlugin.forFolder(strcat(pwd, '\src'),'IncludingSubfolders',true);
-suite = TestSuite.fromFolder(strcat(pwd, '\tests'),'IncludingSubfolders',true, 'BaseFolder');
+coverage = matlab.unittest.plugins.CodeCoveragePlugin.forFolder( ...
+    strcat(pwd, '\src'),'IncludingSubfolders',true);
 runner = TestRunner.withTextOutput;
 runner.addPlugin(coverage)
 
-result = run(runner,suite);
+[parseResults, suites] = matlab.unittest.internal.runtestsParser( ...
+    @testsuite,'tests','IncludeSubfolders',true);
 
-pwd
+results = run(runner, suites);
+testResults.assertSuccess()
 
-result.assertSuccess();
+
