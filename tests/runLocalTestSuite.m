@@ -17,6 +17,6 @@ runner.addPlugin(coverage)
     @testsuite,'tests','IncludeSubfolders',true);
 
 results = run(runner, suites);
-testResults.assertSuccess()
+results.assertSuccess()
 
 
