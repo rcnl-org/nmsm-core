@@ -1,0 +1,1 @@
+This folder is for scripts and testing that should not be included in the GitHub repository.
