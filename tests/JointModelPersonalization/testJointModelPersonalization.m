@@ -1,6 +1,6 @@
 import org.opensim.modeling.*
 % model file path assumes nmsm-core project is open
-inputs.model = Model(strcat(pwd, '\tests\JointModelPersonalization\subject01_gait2392_scaled.osim'));
+inputs.model = Model('subject01_gait2392_scaled.osim');
 
 % Joint parameters to optimize
 task1.parameters = {
@@ -10,8 +10,7 @@ task1.parameters = {
     {'hip_r', 1, 1, 2}, ... %Translation of z in the parent frame
 };
 % Associated marker file for task 1
-task1.markerFile = strcat(pwd, ...
-    '\tests\JointModelPersonalization\walk_free_01.trc');
+task1.markerFile = 'walk_free_01.trc';
 % Add task to cell array of tasks as part of the input struct
 inputs.tasks{1} = task1;
 
@@ -24,5 +23,5 @@ params.maxFunctionEvaluations = 3e2;
 params.display = 'iter';
 
 newModel = JointModelPersonalization(inputs, params);
-newModel.print(strcat(pwd, ...
-    '\tests\JointModelPersonalization\output.osim'));
+
+assert(isa(newModel, 'org.opensim.modeling.Model'))
