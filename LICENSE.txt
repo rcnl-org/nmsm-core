@@ -1,12 +1,12 @@
 % ----------------------------------------------------------------------- %
-% The *TOOLKIT_NAME* is a toolkit for model personalization and treatment %
+% The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
-% *WEBSITE_URL* and the NOTICE file for more information. *TOOLKIT_NAME*  %
-% is developed at Rice University and supported by the US National        %
-% Institutes of Health (R01 EB030520).                                    %
+% nmsm.rice.edu and the NOTICE file for more information. The             %
+% NMSM Pipeline is developed at Rice University and supported by the US   %
+% National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors:                     %
-% *AUTHOR_1*, *AUTHOR_2*                                                  %
+%                                                                         %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
