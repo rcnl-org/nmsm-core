@@ -1,7 +1,9 @@
 % preconditions 
 import org.opensim.modeling.*
+% model = Model(strcat(pwd, '\tests\JointModelPersonalization\subject01_gait2392_scaled.osim'));
 model = Model('subject01_gait2392_scaled.osim');
-markerfilename= 'walk_free_01.trc';
+% markerfilename = strcat(pwd, '\tests\JointModelPersonalization\walk_free_01.trc');
+markerfilename = 'walk_free_01.trc';
 params = struct();
 markersReference = makeMarkersReference(model, markerfilename, params);
 
