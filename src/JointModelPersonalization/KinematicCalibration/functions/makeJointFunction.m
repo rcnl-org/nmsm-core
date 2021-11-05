@@ -1,11 +1,12 @@
 % This function returns the joint function representing the function
 % parameters for use as a function to be passed in the Joint Model
 % Personalization and Kinematic Calibration modules.
+% 
+% (string, boolean, boolean, integer) -> (function)
+% Returns the appropriate function for given input parameters
 
 % Copyright RCNL *change later*
 
-% (string, boolean, boolean, integer) -> (function)
-% Returns the appropriate function for given input parameters
 function fn = makeJointFunction(jointName, isParent, isTranslation, ...
     coordinateNumber)
 if(isParent && isTranslation)
@@ -21,7 +22,7 @@ if(~isParent && isTranslation)
         coordinateNumber, value);
 end
 if(~isParent && ~isTranslation)
-    fn=@(value, model) adjustChildOrientation(model, jointName, ...
+    fn = @(value, model) adjustChildOrientation(model, jointName, ...
         coordinateNumber, value);
 end
 end
