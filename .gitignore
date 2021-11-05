@@ -16,3 +16,7 @@
 
 #ignore geometry files
 *.vtp
+
+#ignore contents of nonTrackedScripts
+nonTrackedScripts/*
+!nonTrackedScripts/README.md
