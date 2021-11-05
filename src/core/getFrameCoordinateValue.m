@@ -14,8 +14,8 @@
 
 % (Model, string, integer, boolean, boolean) -> (number)
 
-function value = getFrameCoordinateValue(model, jointName,  ...
-    isParent, isTranslation, coordNum)
+function value = getFrameCoordinateValue(model, jointName, coordNum, ...
+    isParent, isTranslation)
 import org.opensim.modeling.*
 newModel = Model(model);
 newModel.initSystem();
