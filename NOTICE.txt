@@ -1,0 +1,8 @@
+NMSM Pipeline
+Copyright (c) 2021 Rice University and the Authors
+
+This product bundles xml2struct, which is available under a custom license.
+The source code for these libraries is available from MathWorks File
+Exchange. The license text is located in the folder 
+third_party_license_texts.
+
