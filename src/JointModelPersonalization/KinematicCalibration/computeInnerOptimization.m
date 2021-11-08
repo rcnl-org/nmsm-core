@@ -12,6 +12,6 @@ for i = 1:length(values)
     inputs.functions{i}(values(i), inputs.model);
 end
 heuristic = computeInnerOptimizationHeuristic(inputs.model, ...
-    inputs.markersReference, params);
+    inputs.markersReference, inputs.coordinateReference, params);
 error = zeros(1, length(values)) + heuristic;
 end
