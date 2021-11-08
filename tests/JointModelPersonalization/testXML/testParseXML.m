@@ -1,2 +1,4 @@
-JointModelPersonalizationTool(strcat(pwd, ...
-    '\tests\JointModelPersonalization\testXML\JMPSettings.xml'));
+%% Test JointModelPersonalizationTool
+
+JointModelPersonalizationTool('JMPSettings.xml')
+% assertNoException(@()JointModelPersonalizationTool('JMPSettings.xml'));
