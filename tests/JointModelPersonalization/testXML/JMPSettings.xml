@@ -19,6 +19,8 @@
 				<is_enabled>true</is_enabled>
 				<!--The markers file to use for the task-->
 				<marker_file_name>r_knee_markers.trc</marker_file_name>
+				<!--Time range of the marker file to use-->
+				<time_range>1.36 1.45</time_range>
 				<!--A joint that will be optimized in the task-->
 				<Joint name="ankle_r">
 					<parent_frame_transformation>
