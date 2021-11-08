@@ -10,11 +10,14 @@ function error = computeInverseKinematicsSquaredError(model, ikSolver, ...
 import org.opensim.modeling.*
 [state, numFrames, frequency, finishTime] = prepareFrameIterations(model, ikSolver, ...
     markersReference, params);
+markerTable = markersReference.getMarkerTable();
+times = markerTable.getIndependentColumn();
 error = 0;
-for i=1:numFrames %start time is set so start with recording error
+for i=1:numFrames - 1 %start time is set so start with recording error
     ikSolver.track(state);
     error = error + calculateFrameSquaredError(ikSolver);
-    state.setTime(state.getTime() + 1/frequency)
+    state.setTime(times.get(markerTable.getNearestRowIndexForTime( ...
+        state.getTime() + 1/frequency)))
     if(finishTime);if(state.getTime() > finishTime);break;end;end
 end
 end
