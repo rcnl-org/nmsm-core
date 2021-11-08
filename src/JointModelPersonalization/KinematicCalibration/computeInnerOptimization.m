@@ -6,13 +6,12 @@
 
 % (Model, struct) -> (Model)
 % Returns new model with inverse kinematic optimized marker positions
-function error = computeInnerOptimization(values, functions, ...
-    model, markersReference, params)
-model.initSystem();
+function error = computeInnerOptimization(values, inputs, params)
+inputs.model.initSystem();
 for i = 1:length(values)
-    functions{i}(values(i), model);
+    inputs.functions{i}(values(i), inputs.model);
 end
-heuristic = computeInnerOptimizationHeuristic(model, markersReference, params);
+heuristic = computeInnerOptimizationHeuristic(inputs.model, ...
+    inputs.markersReference, inputs.coordinateReference, params);
 error = zeros(1, length(values)) + heuristic;
 end
-
