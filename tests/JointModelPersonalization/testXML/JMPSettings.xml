@@ -9,8 +9,6 @@
 		<input_model_file>Patient3_Orig.osim</input_model_file>
 		<!--Name of the output model file (.osim) to create.-->
 		<output_model_file>test_output_file.osim</output_model_file>
-		<!--Name of the IK Settings File for the internal Inverse Kinematics Solver-->
-		<ik_settings_file>IK.xml</ik_settings_file>
 		<!--The set of <Task> to be completed by the tool, each Task is a separate optimization-->
 		<JointPersonalizationTaskList>
 			<!--The Task to be completed, includes the marker file and Joints to optimize-->
@@ -21,6 +19,8 @@
 				<marker_file_name>r_knee_markers.trc</marker_file_name>
 				<!--Time range of the marker file to use-->
 				<time_range>1.36 1.45</time_range>
+				<!--Name of the IK Settings File for the internal Inverse Kinematics Solver-->
+				<ik_settings_file>IK.xml</ik_settings_file>
 				<!--A joint that will be optimized in the task-->
 				<Joint name="ankle_r">
 					<parent_frame_transformation>
