@@ -130,7 +130,7 @@ end
 function output = getInitialValues(model, parameters)
 for i=1:length(parameters)
     temp = parameters{i};
-    output(i) = getFrameCoordinateValue(model, temp{1}, ...
+    output(i) = getFrameParameterValue(model, temp{1}, ...
         temp{2}, temp{3}, temp{4});
 end
 end
@@ -148,7 +148,23 @@ for i=1:length(parameters)
 end
 end
 
+function output = applyIKSettingsParams(tree)
+import org.opensim.modeling.*
+output = struct(); %incase no ik_settings_file
+ikSettingsFile = getFieldByName(tree, 'ik_settings_file');
+if(isstruct(ikSettingsFile))
+    ikTool = InverseKinematicsTool(ikSettingsFile.Text);
+    markersRef = MarkersReference();
+    coordRef = SimTKArrayCoordinateReference();
+    ikTool.populateReferences(markersRef, coordRef)
+    output.markersReference = markersRef;
+    output.coordinateReference = coordRef;
+end
+end
+
 function output = getParams(tree)
+import org.opensim.modeling.*
+output = applyIKSettingsParams(tree);
 paramArgs = ["accuracy", "diff_min_change", "optimality_tolerance", ...
     "function_tolerance", "step_tolerance", "max_function_evaluations"];
 for i=1:length(paramArgs)
