@@ -58,6 +58,7 @@ function output = getTasks(model, tree, inputDirectory)
 end
 
 function output = getTask(model, tree, inputDirectory)
+    output = applyIKSettingsParams(tree);
     output.markerFile = strcat(inputDirectory, '\', ...
         tree.marker_file_name.Text);
     timeRange = getFieldByName(tree, 'time_range');
@@ -170,7 +171,6 @@ end
 
 function output = getParams(tree)
 import org.opensim.modeling.*
-output = applyIKSettingsParams(tree);
 paramArgs = ["accuracy", "diff_min_change", "optimality_tolerance", ...
     "function_tolerance", "step_tolerance", "max_function_evaluations"];
 for i=1:length(paramArgs)
