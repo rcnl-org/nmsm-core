@@ -60,6 +60,12 @@ end
 function output = getTask(model, tree, inputDirectory)
     output.markerFile = strcat(inputDirectory, '\', ...
         tree.marker_file_name.Text);
+    timeRange = getFieldByName(tree, 'time_range');
+    if(isstruct(timeRange))
+        timeRange = strsplit(timeRange.Text, ' ');
+        output.startTime = str2double(timeRange{1});
+        output.finishTime = str2double(timeRange{2});
+    end
     output.parameters = getJointParameters(tree.Joint);%includes all joints
     translationBounds = getFieldByName(tree, 'translation_bounds');
     if(isstruct(translationBounds))
