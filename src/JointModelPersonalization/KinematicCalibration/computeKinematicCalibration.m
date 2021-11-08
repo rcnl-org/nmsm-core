@@ -27,7 +27,8 @@ inputs.model = model;
 inputs.markersReference = valueOrAlternate(params, 'markersReference', ...
     makeMarkersReference(model, markerFileName, params));
 inputs.coordinateReference = valueOrAlternate(params, ...
-    'coordinateReference', org.opensim.modeling.CoordinateReference());
+    'coordinateReference', ...
+    org.opensim.modeling.SimTKArrayCoordinateReference());
 end
 
 % (cellArray, struct) -> (array)
