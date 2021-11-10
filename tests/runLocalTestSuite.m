@@ -9,7 +9,7 @@ import matlab.unittest.TestRunner
 import matlab.unittest.plugins.CodeCoveragePlugin
 
 coverage = matlab.unittest.plugins.CodeCoveragePlugin.forFolder( ...
-    strcat(pwd, '\src'),'IncludingSubfolders',true);
+    fullfile(pwd, 'src'),'IncludingSubfolders',true);
 runner = TestRunner.withTextOutput;
 runner.addPlugin(coverage)
 
