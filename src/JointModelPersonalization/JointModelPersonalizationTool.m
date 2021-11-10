@@ -21,9 +21,9 @@ function outputFile = getOutputFile(tree)
 outputFile = getFieldByNameOrError(tree, 'output_model_file').Text;
 resultsDir = getFieldByNameOrError(tree, 'results_directory').Text;
 if(resultsDir)
-    outputFile = strcat(resultsDir, '\', outputFile);
+    outputFile = fullfile(resultsDir, outputFile);
 else
-    outputFile = strcat(pwd, '\', outputFile);
+    outputFile = fullfile(pwd, outputFile);
 end
 end
 
@@ -31,9 +31,9 @@ function output = getInputs(tree)
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(inputDirectory)
-    output.model = strcat(inputDirectory, '\', modelFile);
+    output.model = fullfile(inputDirectory, modelFile);
 else
-    output.model = strcat(pwd, '\', modelFile);
+    output.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
 model = org.opensim.modeling.Model(output.model);
@@ -59,7 +59,7 @@ end
 
 function output = getTask(model, tree, inputDirectory)
     output = applyIKSettingsParams(tree);
-    output.markerFile = strcat(inputDirectory, '\', ...
+    output.markerFile = fullfile(inputDirectory, ...
         tree.marker_file_name.Text);
     timeRange = getFieldByName(tree, 'time_range');
     if(isstruct(timeRange))
