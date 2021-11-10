@@ -1,0 +1,13 @@
+name: MATLAB Tests (Self-Hosted, Mac)
+on: [push]
+jobs:
+  my-job:
+    name: Run MATLAB Tests
+    runs-on: [self-hosted, macOS, m1]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Run tests
+        uses: matlab-actions/run-command@v1
+        with:
+          command: run("tests/actionsTestSuite.m")
