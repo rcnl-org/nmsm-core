@@ -20,3 +20,6 @@
 #ignore contents of nonTrackedScripts
 nonTrackedScripts/*
 !nonTrackedScripts/README.md
+
+# ignore DS_Store
+*.DS_Store
