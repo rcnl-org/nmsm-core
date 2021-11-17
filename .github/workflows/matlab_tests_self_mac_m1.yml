@@ -1,9 +1,9 @@
-name: MATLAB Tests (Self-Hosted, Mac)
+name: MATLAB Tests (Self-Hosted, Mac, M1)
 on: [push]
 jobs:
   my-job:
     name: Run MATLAB Tests
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted, macOS, m1]
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
