@@ -6,12 +6,31 @@
 
 % (Model, struct) -> (Model)
 % Returns new model with inverse kinematic optimized marker positions
-function error = computeInnerOptimization(values, inputs, params)
-inputs.model.initSystem();
+function error = computeInnerOptimization(values, functions, model, ...
+    markerFileName, params)
+import org.opensim.modeling.*
+inputs = makeInnerOptimizationInputs(functions, model, markerFileName, ...
+    params);
+model = Model(model);
+model.initSystem();
 for i = 1:length(values)
-    inputs.functions{i}(values(i), inputs.model);
+    inputs.functions{i}(values(i), model);
 end
-heuristic = computeInnerOptimizationHeuristic(inputs.model, ...
+heuristic = computeInnerOptimizationHeuristic(model, ...
     inputs.markersReference, inputs.coordinateReference, params);
 error = zeros(1, length(values)) + heuristic;
+end
+
+% (cellArray, Model, struct) -> (struct)
+% Adds functions, model and params to input struct
+function inputs = makeInnerOptimizationInputs(functions, model, ...
+    markerFileName, params)
+import org.opensim.modeling.*
+inputs.functions = functions;
+inputs.model = Model(model);
+inputs.markersReference = valueOrAlternate(params, 'markersReference', ...
+    makeMarkersReference(inputs.model, markerFileName, params));
+inputs.coordinateReference = valueOrAlternate(params, ...
+    'coordinateReference', ...
+    org.opensim.modeling.SimTKArrayCoordinateReference());
 end
