@@ -20,6 +20,7 @@ for i=1:numFrames - 1 %start time is set so start with recording error
         state.getTime() + 1/frequency)))
     if(finishTime);if(state.getTime() > finishTime);break;end;end
 end
+error = error/markerTable.getNumRows()/markerTable.getNumColumns()*1000;
 end
 
 % (Model, InverseKinematicsSolver, MarkersReference, struct) =>
