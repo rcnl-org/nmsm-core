@@ -28,7 +28,7 @@ function inputs = makeInnerOptimizationInputs(functions, model, ...
 import org.opensim.modeling.*
 inputs.functions = functions;
 inputs.model = Model(model);
-if(params.ikSettingsFile)
+if(valueOrAlternate(params, 'ikSettingsFile', false))
     ikTool = InverseKinematicsTool(params.ikSettingsFile);
     markersRef = MarkersReference();
     coordRef = SimTKArrayCoordinateReference();
@@ -36,8 +36,9 @@ if(params.ikSettingsFile)
     inputs.markersReference = markersRef;
     inputs.coordinateReference = coordRef;
 else
-    inputs.markersReference = valueOrAlternate(params, 'markersReference', ...
-        makeMarkersReference(inputs.model, markerFileName, params));
+    inputs.markersReference = valueOrAlternate(params, ...
+        'markersReference', makeMarkersReference(inputs.model, ...
+        markerFileName, params));
     inputs.coordinateReference = valueOrAlternate(params, ...
         'coordinateReference', ...
         org.opensim.modeling.SimTKArrayCoordinateReference());
