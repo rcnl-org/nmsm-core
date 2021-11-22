@@ -1,6 +1,6 @@
 import org.opensim.modeling.*
 % model file path assumes nmsm-core project is open
-inputs.model = Model('subject01_gait2392_scaled.osim');
+inputs.model = 'subject01_gait2392_scaled.osim';
 
 % Joint parameters to optimize
 task1.parameters = {

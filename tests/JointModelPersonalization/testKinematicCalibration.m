@@ -1,7 +1,7 @@
 
 %% Kinematic Calibration Simple
 import org.opensim.modeling.*
-model = Model('subject01_gait2392_scaled.osim');
+model = 'subject01_gait2392_scaled.osim';
 markerfilename='walk_free_01.trc';
 params = struct();
 functions = {@(value,model)adjustChildTranslation(model, 'hip_r', 0, value), ...
