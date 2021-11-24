@@ -58,7 +58,7 @@ function output = getTasks(model, tree, inputDirectory)
 end
 
 function output = getTask(model, tree, inputDirectory)
-    output = applyIKSettingsParams(tree);
+    output = applyIKSettingsParams(tree, inputDirectory);
     output.markerFile = fullfile(inputDirectory, ...
         tree.marker_file_name.Text);
     timeRange = getFieldByName(tree, 'time_range');
@@ -155,17 +155,12 @@ for i=1:length(parameters)
 end
 end
 
-function output = applyIKSettingsParams(tree)
+function output = applyIKSettingsParams(tree, inputDirectory)
 import org.opensim.modeling.*
 output = struct(); %incase no ik_settings_file
 ikSettingsFile = getFieldByName(tree, 'ik_settings_file');
 if(isstruct(ikSettingsFile))
-    ikTool = InverseKinematicsTool(ikSettingsFile.Text);
-    markersRef = MarkersReference();
-    coordRef = SimTKArrayCoordinateReference();
-    ikTool.populateReferences(markersRef, coordRef)
-    output.markersReference = markersRef;
-    output.coordinateReference = coordRef;
+    output.ikSettingsFile = fullfile(inputDirectory, ikSettingsFile.Text);
 end
 end
 
