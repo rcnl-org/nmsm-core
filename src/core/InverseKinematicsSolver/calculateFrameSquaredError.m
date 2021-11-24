@@ -8,9 +8,12 @@
 % (InverseKinematicsSolver) -> (number)
 % iterate through markers and sum the error
 function error = calculateFrameSquaredError(ikSolver)
+import org.opensim.modeling.*
+errorArray = SimTKArrayDouble();
+ikSolver.computeCurrentSquaredMarkerErrors(errorArray);
 error = 0;
-for i = 0:ikSolver.getNumMarkersInUse() - 1
-    error = error + ikSolver.computeCurrentSquaredMarkerError(i);
+for i=0:errorArray.size()-1
+    error = error + errorArray.at(i);
 end
 end
 
