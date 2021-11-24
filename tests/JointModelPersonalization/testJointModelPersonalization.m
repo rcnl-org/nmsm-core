@@ -14,12 +14,10 @@ task1.markerFile = 'walk_free_01.trc';
 % Add task to cell array of tasks as part of the input struct
 inputs.tasks{1} = task1;
 
+% Add desired error
+inputs.desiredError = 0.005;
+
 params.accuracy = 1e-6; % accuracy of the Inverse Kinematics Solver
-params.diffMinChange = 1e-4; % lsqnonlin minimum step (0.1 mm)
-params.optimalityTolerance = 1e-10;
-params.functionTolerance = 1e-12;
-params.stepTolerance = 1e-5;
-params.maxFunctionEvaluations = 3e2;
 params.display = 'iter';
 
 newModel = JointModelPersonalization(inputs, params);
