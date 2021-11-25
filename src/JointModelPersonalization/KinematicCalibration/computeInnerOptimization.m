@@ -18,7 +18,7 @@ for i = 1:length(values)
 end
 heuristic = computeInnerOptimizationHeuristic(model, ...
     inputs.markersReference, inputs.coordinateReference, params);
-error = zeros(1, length(values)) + heuristic;
+error = heuristic;
 end
 
 % (cellArray, Model, struct) -> (struct)
