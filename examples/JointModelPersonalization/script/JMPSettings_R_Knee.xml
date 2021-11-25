@@ -10,7 +10,7 @@
 		<!--Name of the output model file (.osim) to create.-->
 		<output_model_file>Patient3_Knee.osim</output_model_file>
         <!--The desired error-->
-        <desired_error>0.2</desired_error>
+        <desired_error>0.02</desired_error>
 		<!--The set of <Task> to be completed by the tool, each Task is a separate optimization-->
 		<JointPersonalizationTaskList>
 			<JointPersonalizationTask name="Right Knee">
