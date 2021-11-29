@@ -38,8 +38,6 @@ else
 end
 model = org.opensim.modeling.Model(output.model);
 output.tasks = getTasks(model, tree, inputDirectory);
-output.desiredError = ...
-    str2num(getFieldByNameOrError(tree, 'desired_error').Text);
 end
 
 function output = getTasks(model, tree, inputDirectory)
