@@ -9,38 +9,24 @@
 function error = computeInnerOptimization(values, functions, model, ...
     markerFileName, params)
 import org.opensim.modeling.*
-inputs = makeInnerOptimizationInputs(functions, model, markerFileName, ...
-    params);
 model = Model(model);
 model.initSystem();
 for i = 1:length(values)
-    inputs.functions{i}(values(i), model);
+    functions{i}(values(i), model);
 end
-heuristic = computeInnerOptimizationHeuristic(model, ...
-    inputs.markersReference, inputs.coordinateReference, params);
-error = zeros(1, length(values)) + heuristic;
+markersReference = makeOptMarkerRef(model, markerFileName, params);
+error = computeInnerOptimizationHeuristic(model, ...
+    markersReference, params);
 end
 
-% (cellArray, Model, struct) -> (struct)
-% Adds functions, model and params to input struct
-function inputs = makeInnerOptimizationInputs(functions, model, ...
-    markerFileName, params)
+function markersReference = makeOptMarkerRef(model, markerFileName, params)
 import org.opensim.modeling.*
-inputs.functions = functions;
-inputs.model = Model(model);
-if(valueOrAlternate(params, 'ikSettingsFile', false))
-    ikTool = InverseKinematicsTool(params.ikSettingsFile);
-    markersRef = MarkersReference();
-    coordRef = SimTKArrayCoordinateReference();
-    ikTool.populateReferences(markersRef, coordRef)
-    inputs.markersReference = markersRef;
-    inputs.coordinateReference = coordRef;
+if(isfield(params, 'markerNames'))
+    markersReference = MarkersReference(markerFileName);
+    markersReference.setMarkerWeightSet(makeMarkerWeightSet( ...
+        params.markerNames, ones(1, length(params.markerNames))));
 else
-    inputs.markersReference = valueOrAlternate(params, ...
-        'markersReference', makeMarkersReference(inputs.model, ...
-        markerFileName, params));
-    inputs.coordinateReference = valueOrAlternate(params, ...
-        'coordinateReference', ...
-        org.opensim.modeling.SimTKArrayCoordinateReference());
+    markersReference = makeMarkersReference(model, markerFileName, params);
 end
+
 end
