@@ -13,7 +13,6 @@ trialIKSolver = InverseKinematicsSolver(model, ...
 applyParametersToIKSolver(trialIKSolver, params);
 error = computeInverseKinematicsSquaredError(model, trialIKSolver, ...
     markersReference, params);
-error = error / params.desiredError
-sum(error.^2)
+error = error / params.desiredError;
 end
 
