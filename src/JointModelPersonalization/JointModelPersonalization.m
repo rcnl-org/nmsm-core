@@ -10,8 +10,11 @@ import org.opensim.modeling.*
 verifyInputs(inputs);
 verifyParams(params);
 outputModel = Model(inputs.model); %copy model
+outputModel.initSystem();
 for i=1:length(inputs.tasks)
     functions = makeFunctions(inputs.tasks{i}.parameters);
+    params.markerNames = getMarkersOnJoints(outputModel, ...
+        inputs.tasks{i}.parameters);
     taskParams = mergeStructs(inputs.tasks{i}, params);
     optimizedValues = computeKinematicCalibration(inputs.model, ...
         inputs.tasks{i}.markerFile, functions, inputs.desiredError, ...
@@ -77,5 +80,26 @@ functions = {};
 for i=1:length(parameters)
     p = parameters{i};
     functions{i} = makeJointFunction(p{1}, p{2}, p{3}, p{4});
+end
+end
+
+function markerNames = getMarkersOnJoints(model, parameters)
+import org.opensim.modeling.*
+markerNames = {};
+jointNames = {};
+for i=1:length(parameters)
+    if ~any(strcmp(jointNames,parameters{i}{1}))
+        jointNames{length(jointNames)+1} = parameters{i}{1};
+    end
+end
+for k=1:length(jointNames)
+    [parentName, childName] = getJointBodyNames(model, jointNames{k});
+    for j=0:model.getMarkerSet().getSize()-1
+        markerName = model.getMarkerSet().get(j).getName().toCharArray';
+        markerParentName = getMarkerBodyName(model, markerName);
+        if(strcmp(markerParentName, parentName) || strcmp(markerParentName, childName))
+            markerNames{length(markerNames)+1} = markerName;
+        end
+    end
 end
 end
