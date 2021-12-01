@@ -11,5 +11,5 @@ coordinateReference = SimTKArrayCoordinateReference();
 %% Test computeInnerOptimizationHeuristic
 
 error = computeInnerOptimizationHeuristic(model, markersReference, ...
-    coordinateReference, params);
+    params);
 assert(isnumeric(error))
