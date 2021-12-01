@@ -13,12 +13,13 @@ import org.opensim.modeling.*
 markerTable = markersReference.getMarkerTable();
 times = markerTable.getIndependentColumn();
 error = [];
+frameCounter = 0;
 for i=1:numFrames - 1 %start time is set so start with recording error
     ikSolver.track(state);
-    error = [error calculateFrameSquaredError(ikSolver)];
+    error = [error calculateFrameSquaredError(ikSolver, markersReference)];
     frameCounter = frameCounter + 1;
     state.setTime(times.get(markerTable.getNearestRowIndexForTime( ...
-        state.getTime() + 1/frequency) - 0.000001))
+        state.getTime() + 1/frequency) - 0.000001));
     if(finishTime);if(state.getTime() > finishTime);break;end;end
 end
 error = error / sqrt(frameCounter);
