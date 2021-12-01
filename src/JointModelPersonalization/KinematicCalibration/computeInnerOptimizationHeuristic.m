@@ -6,12 +6,14 @@
 % (Model, MarkersReference, struct) -> (number)
 % Computes the heuristic value of the output of the inner optimization
 function error = computeInnerOptimizationHeuristic(model, ...
-    markersReference, coordinateReference, params)
+    markersReference, params)
 import org.opensim.modeling.*
 trialIKSolver = InverseKinematicsSolver(model, ...
-    markersReference, coordinateReference);
-applyParametersToIKSolver(trialIKSolver, params)
+    markersReference, SimTKArrayCoordinateReference());
+applyParametersToIKSolver(trialIKSolver, params);
 error = computeInverseKinematicsSquaredError(model, trialIKSolver, ...
     markersReference, params);
+error = error / params.desiredError
+sum(error.^2)
 end
 
