@@ -30,7 +30,7 @@ end
 % Parses params for the IKSolver
 function [state, numFrames, frequency, finishTime] = ...
         prepareFrameIterations(model, ikSolver, markersReference, params)
-state = model.initSystem();
+state = initModelSystem(model);
 state.setTime(valueOrAlternate(params, 'startTime', ...
     markersReference.getValidTimeRange().get(0)));
 ikSolver.assemble(state);

@@ -8,15 +8,14 @@
 % Returns new model with inverse kinematic optimized marker positions
 function error = computeInnerOptimization(values, functions, model, ...
     markerFileName, params)
-import org.opensim.modeling.*
 model = Model(model);
-model.initSystem();
 for i = 1:length(values)
     functions{i}(values(i), model);
 end
 markersReference = makeOptMarkerRef(model, markerFileName, params);
 error = computeInnerOptimizationHeuristic(model, ...
     markersReference, params);
+sum(error.^2)
 end
 
 function markersReference = makeOptMarkerRef(model, markerFileName, params)

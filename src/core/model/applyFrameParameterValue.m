@@ -7,11 +7,10 @@
 % Modifies the model with the given coordinate value
 function applyFrameParameterValue(model, newValue, jointName, isParent, ...
     isTranslation, coordNum)
-import org.opensim.modeling.*
-model.initSystem();
 if(isParent)
     frame = model.getJointSet().get(jointName).getParentFrame();
-    offsetFrame = PhysicalOffsetFrame.safeDownCast(frame);
+    offsetFrame = org.opensim.modeling.PhysicalOffsetFrame ...
+        .safeDownCast(frame);
     if(isTranslation)
         coord = offsetFrame.get_translation();
         coord.set(coordNum, newValue);
@@ -23,7 +22,8 @@ if(isParent)
     end
 else
     frame = model.getJointSet().get(jointName).getChildFrame();
-    offsetFrame = PhysicalOffsetFrame.safeDownCast(frame);
+    offsetFrame = org.opensim.modeling.PhysicalOffsetFrame ...
+        .safeDownCast(frame);
     if(isTranslation)
         coord = offsetFrame.get_translation();
         coord.set(coordNum, newValue);
