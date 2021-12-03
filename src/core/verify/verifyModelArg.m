@@ -11,7 +11,6 @@
 % (Any) -> (None)
 % Throws an exception if the input cannot make a model.
 function verifyModelArg(input)
-import org.opensim.modeling.*
 try
     Model(input);
 catch

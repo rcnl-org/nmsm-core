@@ -12,7 +12,6 @@
 % (Any) -> (None)
 % Throws an exception if the input cannot make a cell array of functions.
 function verifyJointModelPersonalizationFunctionsArgs(model, input)
-import org.opensim.modeling.*
 model = Model(model); %don't modify original model, or instantiate filename
 for i=1:length(input)
     try model.getJointSet().get(input{i}{1});

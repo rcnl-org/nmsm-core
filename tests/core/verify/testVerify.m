@@ -1,5 +1,4 @@
 % Preconditions
-import org.opensim.modeling.*
 model = Model('arm26.osim');
 
 %% Test verifyChar

@@ -6,11 +6,9 @@
 % (struct, struct) -> struct
 % Runs the Joint Model Personalization algorithm
 function outputModel = JointModelPersonalization(inputs, params)
-import org.opensim.modeling.*
 verifyInputs(inputs);
 verifyParams(params);
-outputModel = Model(inputs.model); %copy model
-outputModel.initSystem();
+outputModel = Model(inputs.model);
 for i=1:length(inputs.tasks)
     functions = makeFunctions(inputs.tasks{i}.parameters);
     params.markerNames = getMarkersOnJoints(outputModel, ...
