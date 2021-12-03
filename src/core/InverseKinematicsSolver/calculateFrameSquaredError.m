@@ -17,6 +17,6 @@ for i=0:markersReference.get_marker_weights().getSize()-1
     catch
     end
 end
-error = error / length(error);
+error = error / sqrt(length(error));
 end
 
