@@ -15,7 +15,6 @@ end
 markersReference = makeOptMarkerRef(model, markerFileName, params);
 error = computeInnerOptimizationHeuristic(model, ...
     markersReference, params);
-currentError = sum(error.^2)
 end
 
 function markersReference = makeOptMarkerRef(model, markerFileName, params)
