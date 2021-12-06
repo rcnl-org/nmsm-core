@@ -15,8 +15,7 @@ for i=1:length(inputs.tasks)
         inputs.tasks{i}.parameters);
     taskParams = mergeStructs(inputs.tasks{i}, params);
     optimizedValues = computeKinematicCalibration(inputs.model, ...
-        inputs.tasks{i}.markerFile, functions, inputs.desiredError, ...
-        taskParams);
+        inputs.tasks{i}.markerFile, functions, taskParams);
     outputModel = adjustModelFromOptimizerOutput(outputModel, ...
         functions, optimizedValues);
 end
@@ -27,8 +26,7 @@ end
 function verifyInputs(inputs)
 try verifyModelArg(inputs.model); %check model args
 catch; throw(MException('','inputs.model cannot instantiate a model'));end
-try verifyNumeric(inputs.desiredError);
-catch; throw(MException('','inputs.desiredError is not a number'));end
+
 for i=1:length(inputs.tasks)
     % check marker files
     try verifyMarkersReferenceArg(inputs.tasks{i}.markerFile); 
