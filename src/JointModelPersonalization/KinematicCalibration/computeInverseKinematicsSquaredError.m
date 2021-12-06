@@ -8,19 +8,21 @@
 function error = computeInverseKinematicsSquaredError(model, ikSolver, ...
     markersReference, params)
 import org.opensim.modeling.*
-[state, numFrames, frequency, finishTime] = prepareFrameIterations(model, ikSolver, ...
-    markersReference, params);
+[state, numFrames, frequency, finishTime] = prepareFrameIterations(...
+    model, ikSolver, markersReference, params);
 markerTable = markersReference.getMarkerTable();
 times = markerTable.getIndependentColumn();
-error = 0;
+error = [];
+frameCounter = 0;
 for i=1:numFrames - 1 %start time is set so start with recording error
     ikSolver.track(state);
-    error = error + calculateFrameSquaredError(ikSolver);
+    error = [error calculateFrameSquaredError(ikSolver, markersReference)];
+    frameCounter = frameCounter + 1;
     state.setTime(times.get(markerTable.getNearestRowIndexForTime( ...
-        state.getTime() + 1/frequency) - 0.000001))
+        state.getTime() + 1/frequency) - 0.000001));
     if(finishTime);if(state.getTime() > finishTime);break;end;end
 end
-error = error/markerTable.getNumRows()/markerTable.getNumColumns()*1000;
+error = error / sqrt(frameCounter);
 end
 
 % (Model, InverseKinematicsSolver, MarkersReference, struct) =>
@@ -28,7 +30,7 @@ end
 % Parses params for the IKSolver
 function [state, numFrames, frequency, finishTime] = ...
         prepareFrameIterations(model, ikSolver, markersReference, params)
-state = model.initSystem();
+state = initModelSystem(model);
 state.setTime(valueOrAlternate(params, 'startTime', ...
     markersReference.getValidTimeRange().get(0)));
 ikSolver.assemble(state);
