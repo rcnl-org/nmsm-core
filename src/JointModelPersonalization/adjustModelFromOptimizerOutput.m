@@ -7,9 +7,7 @@
 % Adjust the model based on the output of the optimizer
 function outputModel = adjustModelFromOptimizerOutput(model, functions, ...
     values)
-import org.opensim.modeling.*
 outputModel = Model(model);
-outputModel.initSystem();
 for i = 1:length(values)
     functions{i}(values(i), outputModel);
 end

@@ -17,10 +17,8 @@
 function value = getFrameParameterValue(model, jointName, isParent, ...
     isTranslation, coordNum)
 import org.opensim.modeling.*
-newModel = Model(model);
-newModel.initSystem();
 if(isParent)
-    frame = newModel.getJointSet().get(jointName).getParentFrame();
+    frame = model.getJointSet().get(jointName).getParentFrame();
     offsetFrame = PhysicalOffsetFrame.safeDownCast(frame);
     if(isTranslation)
         value = offsetFrame.get_translation();
@@ -28,7 +26,7 @@ if(isParent)
         value = offsetFrame.get_orientation();
     end
 else
-    frame = newModel.getJointSet().get(jointName).getChildFrame();
+    frame = model.getJointSet().get(jointName).getChildFrame();
     offsetFrame = PhysicalOffsetFrame.safeDownCast(frame);
     if(isTranslation)
         value = offsetFrame.get_translation();
