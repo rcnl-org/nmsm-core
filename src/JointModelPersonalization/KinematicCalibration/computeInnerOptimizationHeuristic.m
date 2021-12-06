@@ -14,6 +14,5 @@ applyParametersToIKSolver(trialIKSolver, params);
 error = computeInverseKinematicsSquaredError(model, trialIKSolver, ...
     markersReference, params);
 error = error / params.desiredError;
-
 end
 
