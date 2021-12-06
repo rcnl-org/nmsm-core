@@ -2,10 +2,11 @@
 
 % Copyright RCNL *change*
 
-% (Model, Array, Array, struct) -> (Model)
+% (Model, Array, Array, number, struct) -> (Model)
 % Creates calibrated model from joint structure and marker plate structure
 function optimizedValues = computeKinematicCalibration(model, ...
-    markerFileName, functions, params)
+    markerFileName, functions, desiredError, params)
+params.desiredError = desiredError; %required arg, but passed in params
 optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
 initialValues = prepareKinematicCalibrationInitialValues(functions, ...
     params);
@@ -47,7 +48,7 @@ output.FunctionTolerance = valueOrAlternate(params, ...
 output.StepTolerance = valueOrAlternate(params, ...
     'stepTolerance', 1e-6);
 output.MaxFunctionEvaluations = valueOrAlternate(params, ...
-    'maxFunctionEvaluations', 3e2);
+    'maxFunctionEvaluations', 3e3);
 output.Display = valueOrAlternate(params, ...
     'display','iter');
 end
