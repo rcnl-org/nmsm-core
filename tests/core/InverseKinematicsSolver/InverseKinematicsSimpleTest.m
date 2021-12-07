@@ -1,5 +1,4 @@
 % preconditions
-import org.opensim.modeling.*
 model = Model('subject01_gait2392_scaled.osim');
 markerfilename='walk_free_01.trc';
 params.excludedMarkers = ["Sternum", "TopHead"];
