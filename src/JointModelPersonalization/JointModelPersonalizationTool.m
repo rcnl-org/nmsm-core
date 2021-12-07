@@ -170,10 +170,13 @@ function output = getParams(tree)
 import org.opensim.modeling.*
 paramArgs = ["accuracy", "diff_min_change", "optimality_tolerance", ...
     "function_tolerance", "step_tolerance", "max_function_evaluations"];
+% name in matlab is different, use for output struct arg name
+paramName = ["accuracy", "diffMinChange", "optimalityTolerance", ...
+    "functionTolerance", "stepTolerance", "maxFunctionEvaluations"];
 for i=1:length(paramArgs)
     value = getFieldByName(tree, paramArgs(i));
     if(isstruct(value))
-        output.(paramArgs(i)) = str2double(value.Text);
+        output.(paramName(i)) = str2double(value.Text);
     end
 end
 end
