@@ -12,8 +12,10 @@ params.accuracy = accuracy;
 for i=1:length(jointNames)
     newMarkerNames = getMarkersFromJoint(model, jointNames{i});
     for j=1:length(newMarkerNames)
-        params.markerNames{length(params.markerNames)+1} = ...
-            newMarkerNames{j};
+        if(~markerIncluded(params.markerNames, newMarkerNames{j}))
+            params.markerNames{length(params.markerNames)+1} = ...
+                newMarkerNames{j};
+        end
     end
 end
 error = computeInnerOptimization([], {}, model, markerFileName, params);
