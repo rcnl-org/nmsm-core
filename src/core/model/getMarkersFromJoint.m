@@ -14,10 +14,21 @@ markerNames = {};
 for j=0:model.getMarkerSet().getSize()-1
     markerName = model.getMarkerSet().get(j).getName().toCharArray';
     markerParentName = getMarkerBodyName(model, markerName);
-    if(strcmp(markerParentName, parentName) || ...
-            strcmp(markerParentName, childName))
-        markerNames{length(markerNames)+1} = markerName;
+    if(strcmp(markerParentName, parentName) || strcmp(markerParentName, childName))
+        if(~markerIncluded(markerNames, markerName))
+            markerNames{length(markerNames)+1} = markerName;
+        end
     end
 end
 end
 
+% returns true if the marker is in the list of marker names
+function output = markerIncluded(markerNames, marker)
+for i=1:length(markerNames)
+    if(strcmp(markerNames{i}, marker))
+        output=true;
+        return
+    end
+end
+output=false;
+end
