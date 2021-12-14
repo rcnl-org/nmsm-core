@@ -93,8 +93,9 @@ end
 for k=1:length(jointNames)
     newMarkerNames = getMarkersFromJoint(model, jointNames{k});
     for j=1:length(newMarkerNames)
-        markerNames{length(markerNames)+1} = ...
-            newMarkerNames{j};
+        if(~markerIncluded(markerNames, markerName))
+            markerNames{length(markerNames)+1} = markerName;
+        end
     end
 end
 end
