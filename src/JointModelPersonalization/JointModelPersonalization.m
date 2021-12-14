@@ -91,13 +91,12 @@ for i=1:length(parameters)
     end
 end
 for k=1:length(jointNames)
-    [parentName, childName] = getJointBodyNames(model, jointNames{k});
-    for j=0:model.getMarkerSet().getSize()-1
-        markerName = model.getMarkerSet().get(j).getName().toCharArray';
-        markerParentName = getMarkerBodyName(model, markerName);
-        if(strcmp(markerParentName, parentName) || strcmp(markerParentName, childName))
-            markerNames{length(markerNames)+1} = markerName;
-        end
+    newMarkerNames = getMarkersFromJoint(model, jointNames{k});
+    for j=1:length(newMarkerNames)
+        markerNames{length(markerNames)+1} = ...
+            newMarkerNames{j};
     end
 end
 end
+
+
