@@ -1,14 +1,14 @@
 
 %% Kinematic Calibration Simple
 import org.opensim.modeling.*
-model = 'subject01_gait2392_scaled.osim';
-markerfilename='walk_free_01.trc';
-desiredError=0.005;
-params = struct();
-functions = {@(value,model)adjustChildTranslation(model, 'hip_r', 0, value), ...
-    @(value,model)adjustChildTranslation(model, 'hip_r', 1, value), ...
-    @(value,model)adjustChildTranslation(model, 'hip_r', 2, value)};
+model = fullfile('..','simple_arm_oriented_away.osim');
+markerFile = fullfile('..','simple_arm.trc');
+desiredError=0.01;
+params.initialValues=[0.5];
+functions = {
+    @(value,model)adjustParentOrientation(model, 'r_elbow', 0, value)
+    };
 
-optimizedValues = computeKinematicCalibration(model, markerfilename, functions, desiredError, params);
+optimizedValues = computeKinematicCalibration(model, markerFile, functions, desiredError, params);
 
 assert(isvector(optimizedValues))
