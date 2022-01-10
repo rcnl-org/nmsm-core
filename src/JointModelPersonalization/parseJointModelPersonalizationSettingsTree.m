@@ -28,7 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputFile, inputs, params] = parseSettingsTree(settingsTree)
+function [outputFile, inputs, params] = ...
+    parseJointModelPersonalizationSettingsTree(settingsTree)
 % check arguments in advance to quit before computation if incorrect
 outputFile = getOutputFile(settingsTree);
 inputs = getInputs(settingsTree);

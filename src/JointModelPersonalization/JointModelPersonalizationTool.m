@@ -31,7 +31,7 @@
 
 function JointModelPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
-[outputFile, inputs, params] = parseSettingsTree(settingsTree);
+[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
 newModel = JointModelPersonalization(inputs, params);
 newModel.print(outputFile);
 end
