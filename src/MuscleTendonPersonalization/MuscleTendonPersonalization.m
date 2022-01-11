@@ -29,6 +29,13 @@
 % ----------------------------------------------------------------------- %
 
 function results = MuscleTendonPersonalization(inputs, params)
-
+verifyInputs(inputs); % (struct) -> (None)
+verifyParams(params); % (struct) -> (None)
+values = prepareInitialValues(inputs, params);%(struct, struct) -> (struct)
+for i=1:length(inputs.tasks)
+    taskParams = makeTaskParams()
+    optimizedValues = computeParameterOptimization(taskParams)
+    updateDesignVariables
+end
 end
 
