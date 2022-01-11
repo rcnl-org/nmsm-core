@@ -31,7 +31,7 @@
 % ----------------------------------------------------------------------- %
 
 function saveMuscleTendonPersonalizationResults(model, results, ...
-    osimxFileName, muscleMomentFileName, muscleActivationFileName)
+    muscleModelFileName, muscleMomentFileName, muscleActivationFileName)
 
 end
 
