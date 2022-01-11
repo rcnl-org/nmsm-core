@@ -31,11 +31,37 @@
 function results = MuscleTendonPersonalization(inputs, params)
 verifyInputs(inputs); % (struct) -> (None)
 verifyParams(params); % (struct) -> (None)
-values = prepareInitialValues(inputs, params);%(struct, struct) -> (struct)
+values = prepareInitialValues(inputs, params);
+optimizerOptions = makeOptimizerOptions(params);
 for i=1:length(inputs.tasks)
-    taskParams = makeTaskParams()
-    optimizedValues = computeParameterOptimization(taskParams)
-    updateDesignVariables
+    taskValues = makeTaskValues(inputs.tasks{i}, params);
+    taskParams = makeTaskParams(inputs.tasks{i}, params);
+    optimizedValues = computeParameterOptimization(taskValues, ...
+        taskParams, optimizerOptions);
+    updateDesignVariables()
 end
 end
 
+% (struct, struct) -> (struct)
+% extract initial version of optimized values from inputs/params
+function values = prepareInitialValues(inputs, params)
+
+end
+
+% (struct) -> (struct)
+% setup optimizer options struct to pass to fmincon
+function optimizerOptions = makeOptimizerOptions(params)
+
+end
+
+% (struct, struct) -> (Array of number)
+% prepare values to be optimized for the given task
+function taskValues = makeTaskValues(taskInputs, params)
+
+end
+
+% (struct, struct) -> (struct)
+% prepare optimizer parameters for the given task
+function taskParams = makeTaskParams(taskInputs, params)
+
+end
