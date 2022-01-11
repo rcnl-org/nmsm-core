@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Muscle Tendon Personalization uses movement and EMG data to personalize
-% the muscle characteristics of the patient.
+% This function runs fmincon for MuscleTendonPersonalization with settings
+% controlled by the input params.
 %
-% (struct, struct) -> struct
-% Runs the Muscle Tendon Personalization algorithm
+% (Array of number, struct, struct) -> (Array of number)
+% returns the optimized values from Muscle Tendon optimization round
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,41 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function primaryValues = MuscleTendonPersonalization(inputs, params)
-verifyInputs(inputs); % (struct) -> (None)
-verifyParams(params); % (struct) -> (None)
-primaryValues = prepareInitialValues(inputs, params);
-optimizerOptions = makeOptimizerOptions(params);
-for i=1:length(inputs.tasks)
-    taskValues = makeTaskValues(inputs.tasks{i}, params);
-    taskParams = makeTaskParams(inputs.tasks{i}, params);
-    optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-        taskParams, optimizerOptions);
-    primaryValues = updateDesignVariables(primaryValues, ...
-        optimizedValues, taskParams);
-end
-end
-
-% (struct, struct) -> (struct)
-% extract initial version of optimized values from inputs/params
-function values = prepareInitialValues(inputs, params)
+function optimizedValues = computeMuscleTendonRoundOptimization(values, ...
+    params, optimizerOptions)
 
 end
 
-% (struct) -> (struct)
-% setup optimizer options struct to pass to fmincon
-function optimizerOptions = makeOptimizerOptions(params)
-
-end
-
-% (struct, struct) -> (Array of number)
-% prepare values to be optimized for the given task
-function taskValues = makeTaskValues(taskInputs, params)
-
-end
-
-% (struct, struct) -> (struct)
-% prepare optimizer parameters for the given task
-function taskParams = makeTaskParams(taskInputs, params)
-
-end
