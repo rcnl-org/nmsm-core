@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Muscle Tendon Personalization uses movement and EMG data to personalize
-% the muscle characteristics of the patient.
+% This function reduces the EMG data to the number of points from the
+% second argument. I.E. if the s
 %
-% (struct, struct) -> (struct)
+% (2D Array of number, number) -> (2D Array of number)
 % Runs the Muscle Tendon Personalization algorithm
 
 % ----------------------------------------------------------------------- %
@@ -28,41 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function primaryValues = MuscleTendonPersonalization(inputs, params)
-verifyInputs(inputs); % (struct) -> (None)
-verifyParams(params); % (struct) -> (None)
-primaryValues = prepareInitialValues(inputs, params);
-optimizerOptions = makeOptimizerOptions(params);
-for i=1:length(inputs.tasks)
-    taskValues = makeTaskValues(inputs.tasks{i}, params);
-    taskParams = makeTaskParams(inputs.tasks{i}, params);
-    optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-        taskParams, optimizerOptions);
-    primaryValues = updateDesignVariables(primaryValues, ...
-        optimizedValues, taskParams);
-end
-end
-
-% (struct, struct) -> (struct)
-% extract initial version of optimized values from inputs/params
-function values = prepareInitialValues(inputs, params)
+function newEmgData = changeNumEmgPoints(emgData, newNumPoints)
 
 end
 
-% (struct) -> (struct)
-% setup optimizer options struct to pass to fmincon
-function optimizerOptions = makeOptimizerOptions(params)
-
-end
-
-% (struct, struct) -> (Array of number)
-% prepare values to be optimized for the given task
-function taskValues = makeTaskValues(taskInputs, params)
-
-end
-
-% (struct, struct) -> (struct)
-% prepare optimizer parameters for the given task
-function taskParams = makeTaskParams(taskInputs, params)
-
-end
