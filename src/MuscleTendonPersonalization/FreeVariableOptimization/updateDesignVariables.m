@@ -1,11 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the JointModelPersonalization function
-% such that an xml or osimx filename can be passed and the resulting
-% computation can be completed according to the instructions of that file.
+% This function takes the primary values (values maintained between
+% optimization rounds) and updates them based on the secondary values from
+% an individual round of optimization. The params included dictate which
+% primary values are updated.
 %
-% (string) -> (None)
-% Run JointModelPersonalization from settings file
+% (Array of number, Array of number, struct) -> (struct)
+% Updates the primary values from the optimized round secondary values
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,10 +30,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function JointModelPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
-newModel = JointModelPersonalization(inputs, params);
-newModel.print(outputFile);
+function newPrimaryValues = updateDesignVariables(primaryValues, ...
+    secondaryValues, params)
+
 end
 

@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the JointModelPersonalization function
-% such that an xml or osimx filename can be passed and the resulting
-% computation can be completed according to the instructions of that file.
+% This function takes a properly formatted XML file and runs the
+% MuscleTendonPersonalization module and saves the results correctly for
+% use in the OpenSim GUI.
 %
 % (string) -> (None)
-% Run JointModelPersonalization from settings file
+% Run MuscleTendonPersonalization from settings file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,10 +29,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function JointModelPersonalizationTool(settingsFileName)
+function MuscleTendonPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
-[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
-newModel = JointModelPersonalization(inputs, params);
-newModel.print(outputFile);
+[inputs, params] = ...
+    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
+inputs.Emg = changeNumEmgPoints(emgData, 101); % downsample to 101 points
+results = MuscleTendonPersonalization(inputs, params);
+reportMuscleTendonPersonalization(inputs.model, results)
+[muscleModelFileName, muscleMomentFileName, muscleActivationFileName] = ...
+    makeOutputFileNames(params);
+saveMuscleTendonPersonalization(inputs.model, results, ...
+    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+end
+
+function [muscleModelFileName, muscleMomentFileName, ...
+    muscleActivationFileName] = makeOutputFileNames(params)
+
 end
 
