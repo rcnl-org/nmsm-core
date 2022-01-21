@@ -15,6 +15,8 @@ end
 markersReference = makeOptMarkerRef(model, markerFileName, params);
 error = computeInnerOptimizationHeuristic(model, ...
     markersReference, params);
+markersReference = libpointer;
+java.lang.System.gc();
 end
 
 function markersReference = makeOptMarkerRef(model, markerFileName, params)
