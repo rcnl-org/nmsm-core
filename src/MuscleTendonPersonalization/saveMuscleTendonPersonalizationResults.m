@@ -1,11 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the JointModelPersonalization function
-% such that an xml or osimx filename can be passed and the resulting
-% computation can be completed according to the instructions of that file.
+% This function takes the result struct and writes the values to the
+% appropriate .osimx muscle model, .mot muscle moment, and .sto muscle
+% activation files. The model is included in instances where the results
+% are relative to the original model, which is used for reference.
 %
-% (string) -> (None)
-% Run JointModelPersonalization from settings file
+% (Model, struct, string, string, string) -> (None) 
+% Saves results in the struct to the given filenames
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,10 +30,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function JointModelPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
-newModel = JointModelPersonalization(inputs, params);
-newModel.print(outputFile);
+function saveMuscleTendonPersonalizationResults(model, results, ...
+    muscleModelFileName, muscleMomentFileName, muscleActivationFileName)
+
 end
 

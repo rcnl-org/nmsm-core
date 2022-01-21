@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the JointModelPersonalization function
-% such that an xml or osimx filename can be passed and the resulting
-% computation can be completed according to the instructions of that file.
+% Muscle Tendon Personalization uses movement and EMG data to personalize
+% the muscle characteristics of the patient.
 %
-% (string) -> (None)
-% Run JointModelPersonalization from settings file
+% (struct, struct) -> (struct)
+% Runs the Muscle Tendon Personalization algorithm
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,10 +28,41 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function JointModelPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
-newModel = JointModelPersonalization(inputs, params);
-newModel.print(outputFile);
+function primaryValues = MuscleTendonPersonalization(inputs, params)
+verifyInputs(inputs); % (struct) -> (None)
+verifyParams(params); % (struct) -> (None)
+primaryValues = prepareInitialValues(inputs, params);
+optimizerOptions = makeOptimizerOptions(params);
+for i=1:length(inputs.tasks)
+    taskValues = makeTaskValues(inputs.tasks{i}, params);
+    taskParams = makeTaskParams(inputs.tasks{i}, params);
+    optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
+        taskParams, optimizerOptions);
+    primaryValues = updateDesignVariables(primaryValues, ...
+        optimizedValues, taskParams);
+end
 end
 
+% (struct, struct) -> (struct)
+% extract initial version of optimized values from inputs/params
+function values = prepareInitialValues(inputs, params)
+
+end
+
+% (struct) -> (struct)
+% setup optimizer options struct to pass to fmincon
+function optimizerOptions = makeOptimizerOptions(params)
+
+end
+
+% (struct, struct) -> (Array of number)
+% prepare values to be optimized for the given task
+function taskValues = makeTaskValues(taskInputs, params)
+
+end
+
+% (struct, struct) -> (struct)
+% prepare optimizer parameters for the given task
+function taskParams = makeTaskParams(taskInputs, params)
+
+end

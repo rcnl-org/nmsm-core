@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the JointModelPersonalization function
-% such that an xml or osimx filename can be passed and the resulting
-% computation can be completed according to the instructions of that file.
+% This function parses the settings tree resulting from xml2struct of the
+% Joint Model Personalization Settings XML file.
 %
-% (string) -> (None)
-% Run JointModelPersonalization from settings file
+% (struct) -> (string, struct, struct)
+% returns the input values for Joint Model Personalization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,10 +28,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function JointModelPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
-newModel = JointModelPersonalization(inputs, params);
-newModel.print(outputFile);
+function [inputs, params] = ...
+    parseMuscleTendonPersonalizationSettingsTree(settingsTree)
+inputs = getInputs(settingsTree);
+params = getParams(settingsTree);
+end
+
+function inputs = getInputs(settingsTree)
+
+end
+
+function params = getParams(settingsTree)
+
 end
 
