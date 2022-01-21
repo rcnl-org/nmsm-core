@@ -7,7 +7,6 @@
 %
 % (InverseKinematicsSolver) -> (number)
 % iterate through markers and sum the error
-
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
@@ -31,14 +30,9 @@
 % ----------------------------------------------------------------------- %
 
 function error = calculateFrameSquaredError(ikSolver, markersReference)
-import org.opensim.modeling.*
 error = [];
-for i=0:markersReference.get_marker_weights().getSize()-1
-    marker = markersReference.get_marker_weights().get(i).getName();
-    try
-    error(length(error)+1) = ikSolver.computeCurrentMarkerError(marker);
-    catch
-    end
+for i=0:ikSolver.getNumMarkersInUse()-1
+    error(length(error)+1) = ikSolver.computeCurrentMarkerError(i);
 end
 error = error / sqrt(length(error));
 end
