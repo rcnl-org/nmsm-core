@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the JointModelPersonalization function
-% such that an xml or osimx filename can be passed and the resulting
-% computation can be completed according to the instructions of that file.
+% This function runs fmincon for MuscleTendonPersonalization with settings
+% controlled by the input params.
 %
-% (string) -> (None)
-% Run JointModelPersonalization from settings file
+% (Array of number, struct, struct) -> (Array of number)
+% returns the optimized values from Muscle Tendon optimization round
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,10 +28,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function JointModelPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
-newModel = JointModelPersonalization(inputs, params);
-newModel.print(outputFile);
+function optimizedValues = computeMuscleTendonRoundOptimization( ...
+    initialValues, params, optimizerOptions)
+
+A = makeA(initialValues, params);
+b = makeb(initialvalues, params);
+lowerBounds = makeLowerBounds(initialValues, params);
+upperBounds = makeUpperBounds(initialValues, params);
+
+optimizedValues = fmincon(@(values)computeMuscleTendonCostFunction( ...
+    values, params), initialValues, A, b, [], [], lowerBounds, ...
+    upperBounds, @(values)nonlcon(values, params), optimizerOptions-);
+
 end
 
+function A = makeA(values, params)
+
+end
+
+function b = makeB(values, params)
+
+end
+
+function lowerBounds = makeLowerBounds(values, params)
+
+end
+
+function upperBounds = makeUpperBounds(values, params)
+
+end
