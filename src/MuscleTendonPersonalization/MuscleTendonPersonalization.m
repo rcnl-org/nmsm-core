@@ -62,8 +62,14 @@ end
 
 % (struct) -> (struct)
 % setup optimizer options struct to pass to fmincon
-function optimizerOptions = makeOptimizerOptions(params)
-
+function output = makeOptimizerOptions(params)
+output = optimoptions('fmincon', 'UseParallel', true);
+output.MaxIterations = valueOrAlternate(params, 'maxIterations', 2000);
+output.MaxFunctionEvaluations = valueOrAlternate(params, ...
+    'maxFunctionEvaluations', 3e3);
+output.Algorithm = valueOrAlternate(params, 'algorithm', 'sqp');
+output.ScaleProblem = valueOrAlternate(params, 'scaleProblem', ...
+    'obj-and-constr');
 end
 
 % (struct, struct) -> (Array of number)
