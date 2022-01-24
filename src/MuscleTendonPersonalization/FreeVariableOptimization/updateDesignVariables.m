@@ -5,7 +5,7 @@
 % an individual round of optimization. The params included dictate which
 % primary values are updated.
 %
-% (Array of number, Array of number, struct) -> (struct)
+% (Array of number, Array of number, Array of boolean) -> (struct)
 % Updates the primary values from the optimized round secondary values
 
 % ----------------------------------------------------------------------- %
@@ -31,7 +31,14 @@
 % ----------------------------------------------------------------------- %
 
 function newPrimaryValues = updateDesignVariables(primaryValues, ...
-    secondaryValues, params)
-
+    secondaryValues, isIncluded)
+newPrimaryValues = [];
+for i=1:length(isIncluded)
+    if(isIncluded(i))
+        newPrimaryValues(i, :) = secondaryValues(i, :);
+    else
+        newPrimaryValues(i, :) = primaryValues(i, :);
+    end
+end
 end
 
