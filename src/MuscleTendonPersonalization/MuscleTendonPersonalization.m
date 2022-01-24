@@ -66,7 +66,7 @@ function output = makeOptimizerOptions(params)
 output = optimoptions('fmincon', 'UseParallel', true);
 output.MaxIterations = valueOrAlternate(params, 'maxIterations', 2000);
 output.MaxFunctionEvaluations = valueOrAlternate(params, ...
-    'maxFunctionEvaluations', 3e3);
+    'maxFunctionEvaluations', 100000000);
 output.Algorithm = valueOrAlternate(params, 'algorithm', 'sqp');
 output.ScaleProblem = valueOrAlternate(params, 'scaleProblem', ...
     'obj-and-constr');
