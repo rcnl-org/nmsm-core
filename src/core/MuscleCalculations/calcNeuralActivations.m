@@ -1,12 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
+% This function calculates the neural activations given the
+% EMG signals using backward finite difference approximation
 %
-% inputs
-%
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% (struct,Array of number) -> (Array of number)
+% returns the neural activations
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega                                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,21 +28,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(values,params)
+function [NeuralActivations] = calcNeuralActivations(params,EMG)
 
-% Write calcMuscleActivations and corresponding functions
+deactivationTimeConst = 4*params.activationTimeConstant;
 
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
+c2(1,1,:) = 1./deactivationTimeConst;
+c1(1,1,:) = 1./params.activationTimeConstant-c2;
+c3 = c1(ones(params.nptsLong,1), ones(params.numTrials,1),:).*EMG+...
+    c2(ones(params.nptsLong,1), ones(params.numTrials,1),:);
+dt(1,:,1) = mean(diff(params.Time));
+c4 = 2*dt(ones(params.nptsLong,1),:,ones(params.numMuscles,1)).*c3;
 
-% Write calcMuscleMomentAndLength, minimize number of output variables
+EMG = c4.*EMG;
 
-[modelJointMoments, lmtilda, vmtilda, ...
-    modelMomentArms, muscleMoments, Lmt, ...
-    muscleForces, VmT, Fmax] = calcMuscleMomentAndLength(params);
-
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+NeuralActivations = zeros(size(EMG));
+for j = 3:params.nptsLong
+    NeuralActivations(j,:,:) = (EMG(j,:,:)+4.*NeuralActivations(j-1,:,:)-...
+        NeuralActivations(j-2,:,:))./(c4(j,:,:)+3);
 end
 
+end
