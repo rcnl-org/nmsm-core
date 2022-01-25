@@ -30,7 +30,48 @@
 
 function [muscleActivations, muscleExcitations] = calcMuscleActivations(params)
 
-[EMG] = evaluatingEMGsplines(SplineParams)
+SplineParams = 
 
+[EMG] = evaluatingEMGsplines(SplineParams);
 
+EMG = permute(EMG,[1 3 2]);
+
+EMGscales = ones(params.numTrials,1)*params.EMGScale;
+EMGscales = permute(EMGscales, [3 1 2]);
+
+EMG = EMG.*EMGscales(ones(params.numFrames,1),:,:);
+muscleExcitations = EMG(params.nPad+1:params.SampleStep:params.nFrames-...
+    params.nPad,:,:);
+
+deactivationTimeConst = 4*params.activationTimeConstant;
+
+c2(1,1,:) = 1./deactivationTimeConst;
+c1(1,1,:) = 1./params.activationTimeConstant-c2;
+c3 = c1(ones(params.nptsLong,1), ones(params.numTrials,1),:).*EMG+...
+    c2(ones(params.nptsLong,1), ones(params.numTrials,1),:);
+dt(1,:,1) = mean(diff(params.Time));
+c4 = 2*dt(ones(params.nptsLong,1),:,ones(params.numMuscles,1)).*c3;
+
+EMG = c4.*EMG;
+
+muscleActivations = zeros(size(EMG));
+for j = 3:params.nptsLong
+    muscleActivations(j,:,:) = (EMG(j,:,:)+4.*muscleActivations(j-1,:,:)-...
+        muscleActivations(j-2,:,:))./(c4(j,:,:)+3);
+end
+
+muscleActivations = muscleActivations(params.nPad+1:params.SampleStep:...
+    params.numFrames-params.nPad,:,:);
+muscleActivations = reshape(muscleActivations, params.nptsShort*params.numTrials, ...
+    params.numMuscles);
+muscleActivations(muscleActivations<0) = 0;
+
+% From optimization FindNonlinearityLogFunc.m
+nonlincoefs = [29.280183270562596 4.107869238218326 1.000004740962477...
+    -7.623282868703527 17.227022969058535 0.884220539986325];
+
+muscleActivations = (1-params.Anonlin(onesCol,:)).*muscleActivations+...
+    (params.Anonlin(onesCol,:)).*(nonlincoefs(4)./(nonlincoefs(1)*...
+    (muscleActivations+nonlincoefs(6)).^nonlincoefs(5)+...
+    nonlincoefs(2))+nonlincoefs(3));
 end
