@@ -28,25 +28,25 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [EMG] = evaluatingEMGsplines(SplineParams)
+function [EMG] = evaluatingEMGsplines(params)
 
-    EMG = zeros(SplineParams.numFrames,SplineParams.numMuscles,...
-        SplineParams.numTrials);
+EMG = zeros(params.numFrames,params.numMuscles,...
+    params.numTrials);
 
-    if SplineParams.numTimeDelays == 1
-        for j = 1:SplineParams.numTrials
-            EMG(:,:,j) = ppval((SplineParams.Time(end,j)-SplineParams.Time(1,j))...
-                *SplineParams.TimeInterp+SplineParams.Time(1,j)-...
-                SplineParams.TimeDelay(1),SplineParams.EMGsplines{j})';
-        end
-    elseif SplineParams.numTimeDelays == SplineParams.numMuscles
-        for i = 1:SplineParams.numMuscles
-            for j = 1:SplineParams.numTrials
-                EMG(:,i,j) = ppval((SplineParams.Time(end,j)-SplineParams.Time(1,j))...
-                    *SplineParams.TimeInterp+SplineParams.Time(1,j)-...
-                    SplineParams.TimeDelay(1,i),SplineParams.EMGsplines{j,i})';
-            end
+if params.numTimeDelays == 1
+    for j = 1:params.numTrials
+        EMG(:,:,j) = ppval((params.Time(end,j)-params.Time(1,j))...
+            *params.TimeInterp+params.Time(1,j)-...
+            params.TimeDelay(1),params.EMGsplines{j})';
+    end
+elseif params.numTimeDelays == params.numMuscles
+    for i = 1:params.numMuscles
+        for j = 1:params.numTrials
+            EMG(:,i,j) = ppval((params.Time(end,j)-params.Time(1,j))...
+                *params.TimeInterp+params.Time(1,j)-...
+                params.TimeDelay(1,i),params.EMGsplines{j,i})';
         end
     end
+end
 
 end
