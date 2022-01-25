@@ -2,7 +2,7 @@
 %
 % This function evaluates the EMG signal from a Spline with the electromechanical time
 % delay included
-
+%
 % (struct) -> (Array of number)
 % returns the EMG signal 
 
@@ -48,5 +48,5 @@ function [EMG] = evaluatingEMGsplines(SplineParams)
             end
         end
     end
-    
+
 end
