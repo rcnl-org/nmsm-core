@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
+% This function calculates the muscle excitations given the
+% EMG signals
 %
-% inputs
-%
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% (struct) -> (Array of number,Array of number)
+% returns the muscle excitations with time padding (EMG) and without padding 
+% (muscle excitations) 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega                                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,21 +29,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(values,params)
+function [muscleExcitations,EMG] = calcMuscleExcitations(params)        
 
-% Write calcMuscleActivations and corresponding functions
+[EMG] = evaluatingEMGsplines(params);
 
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
+EMG = permute(EMG,[1 3 2]);
 
-% Write calcMuscleMomentAndLength, minimize number of output variables
+EMGscales = ones(params.numTrials,1)*params.EMGScale;
+EMGscales = permute(EMGscales, [3 1 2]);
 
-[modelJointMoments, lmtilda, vmtilda, ...
-    modelMomentArms, muscleMoments, Lmt, ...
-    muscleForces, VmT, Fmax] = calcMuscleMomentAndLength(params);
+EMG = EMG.*EMGscales(ones(params.numFrames,1),:,:);
+muscleExcitations = EMG(params.nPad+1:params.SampleStep:params.nFrames-...
+    params.nPad,:,:);
 
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
 end
-
