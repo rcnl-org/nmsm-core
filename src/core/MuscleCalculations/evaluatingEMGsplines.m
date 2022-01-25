@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the muscle activations and excitations given the
-% EMG signals and activation dynamic parameters
-%
-% (struct) -> (Array of number, Array of number)
-% returns the muscle activations and excitations
+% This function evaluates the EMG signal from a Spline with the electromechanical time
+% delay included
+
+% (struct) -> (Array of number)
+% returns the EMG signal 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                          %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,9 +28,25 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [muscleActivations, muscleExcitations] = calcMuscleActivations(params)
+function [EMG] = evaluatingEMGsplines(SplineParams)
 
-[EMG] = evaluatingEMGsplines(SplineParams)
+    EMG = zeros(SplineParams.numFrames,SplineParams.numMuscles,...
+        SplineParams.numTrials);
 
-
+    if SplineParams.numTimeDelays == 1
+        for j = 1:SplineParams.numTrials
+            EMG(:,:,j) = ppval((SplineParams.Time(end,j)-SplineParams.Time(1,j))...
+                *SplineParams.TimeInterp+SplineParams.Time(1,j)-...
+                SplineParams.TimeDelay(1),SplineParams.EMGsplines{j})';
+        end
+    elseif SplineParams.numTimeDelays == SplineParams.numMuscles
+        for i = 1:SplineParams.numMuscles
+            for j = 1:SplineParams.numTrials
+                EMG(:,i,j) = ppval((SplineParams.Time(end,j)-SplineParams.Time(1,j))...
+                    *SplineParams.TimeInterp+SplineParams.Time(1,j)-...
+                    SplineParams.TimeDelay(1,i),SplineParams.EMGsplines{j,i})';
+            end
+        end
+    end
+    
 end
