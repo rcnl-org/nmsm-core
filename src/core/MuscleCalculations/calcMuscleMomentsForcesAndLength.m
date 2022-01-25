@@ -1,12 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
+% This function calculates the model Joint moments, muscle moments, passive
+% and active muscle forces, normalized muscle lengths, normalized muscle
+% velocity, muscle tendon length, muscle tendon velocity, and max isometric
+% force.
 %
-% inputs
-%
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% (Array of number,Array of number,Struct,Struct) -> (Struct,Array of number)
+% returns muscle moments, forces, and lengths 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega                                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,18 +30,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(values,params)
-
-% Write calcMuscleActivations and corresponding functions
-
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
-
-% Write calcMuscleMomentAndLength and corresponding functions
-
-[muscleMoments,modelMoments,muscleForces,hillTypeTendonParams] = ...
-    calcMuscleMomentAndLength(params,muscleActivations);
+function [muscleMoments,modelMoments,muscleForces,hillTypeTendonParams] = ...
+    calcMuscleMomentsForcesAndLength(params,muscleActivations)
 
 end
-
