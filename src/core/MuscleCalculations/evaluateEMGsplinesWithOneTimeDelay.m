@@ -1,12 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
+% This function evaluates the EMG signal from a Spline when there is only 
+% one electromechanical time delay
 %
-% inputs
+% EMG - 3D matrix of (numFrames, numMuscle, numTrials)
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% (Array of number, cell, number) -> (3D matrix)
+% returns the EMG signal 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,21 +30,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(values,params)
+function EMG = evaluatingEMGsplinesWithOneTimeDelay(time,EMGsplines,...
+    timeDelay)
 
-% Write calcMuscleActivations and corresponding functions
-
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
-
-% Write calcMuscleMomentAndLength, minimize number of output variables
-
-[modelJointMoments, lmtilda, vmtilda, ...
-    modelMomentArms, muscleMoments, Lmt, ...
-    muscleForces, VmT, Fmax] = calcMuscleMomentAndLength(params);
-
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+timeIntervalInterp = linspace(0,1,size(time,1))'; 
+EMG = zeros(size(time,1),size(EMGsplines,2),size(EMGsplines,1)); % Memory
+for j = 1:size(EMGsplines,1)
+    interpTime = (time(end,j) - time(1,j)) * timeIntervalInterp + time(1,j);
+    EMG(:,:,j) = ppval(interpTime - timeDelay, EMGsplines{j})'; % Interpolation
 end
 
+end

@@ -1,9 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function evaluates the EMG signal from a Spline with the electromechanical time
-% delay included
+% This function evaluates the EMG signal from a Spline when there is only 
+% one electromechanical time delay
 %
-% (struct) -> (Array of number)
+% EMG - 3D matrix of (numFrames, numMuscle, numTrials)
+%
+% (Array of number, cell, array of number) -> (3D matrix)
 % returns the EMG signal 
 
 % ----------------------------------------------------------------------- %
@@ -28,24 +30,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [EMG] = evaluatingEMGsplines(params)
-
-EMG = zeros(params.numFrames,params.numMuscles,...
-    params.numTrials);
-
-if params.numTimeDelays == 1
-    for j = 1:params.numTrials
-        EMG(:,:,j) = ppval((params.Time(end,j)-params.Time(1,j))...
-            *params.TimeInterp+params.Time(1,j)-...
-            params.TimeDelay(1),params.EMGsplines{j})';
-    end
-elseif params.numTimeDelays == params.numMuscles
-    for i = 1:params.numMuscles
-        for j = 1:params.numTrials
-            EMG(:,i,j) = ppval((params.Time(end,j)-params.Time(1,j))...
-                *params.TimeInterp+params.Time(1,j)-...
-                params.TimeDelay(1,i),params.EMGsplines{j,i})';
-        end
+function EMG = evaluatingEMGsplinesWithMuscleSpecificTimeDelay(time, ...
+    EMGsplines,timeDelay)
+    
+timeIntervalInterp = linspace(0,1,size(time,1))'; 
+EMG = zeros(size(time,1),size(EMGsplines,2),size(EMGsplines,1)); % Memory
+for i = 1:size(EMGsplines,2)
+    for j = 1:size(EMGsplines,1)
+        interpTime = (time(end,j) - time(1,j)) * timeIntervalInterp + time(1,j);
+        EMG(:,i,j) = ppval(interpTime - timeDelay(1,i), ...
+            EMGsplines{j,i})'; % Interpolation
     end
 end
 
