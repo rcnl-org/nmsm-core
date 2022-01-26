@@ -30,7 +30,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function EMG = evaluatingEMGsplinesWithOneTimeDelay(time,EMGsplines,...
+function EMG = evaluateEMGsplinesWithOneTimeDelay(time,EMGsplines,...
     timeDelay)
 
 timeIntervalInterp = linspace(0,1,size(time,1))'; 
