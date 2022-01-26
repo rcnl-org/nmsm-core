@@ -30,7 +30,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function EMG = evaluatingEMGsplinesWithMuscleSpecificTimeDelay(time, ...
+function EMG = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
     EMGsplines,timeDelay)
     
 timeIntervalInterp = linspace(0,1,size(time,1))'; 
