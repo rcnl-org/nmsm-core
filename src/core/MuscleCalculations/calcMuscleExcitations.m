@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the muscle excitations given the
-% EMG signals
+% This function calculates the scaled muscle excitations given the
+% processed EMG signals
 %
-% (struct) -> (Array of number,Array of number)
-% returns the muscle excitations with time padding (EMG) and without padding 
-% (muscle excitations) 
+% (Array of numbers, 2D cell, Array of numbers, Array of numbers) -> 
+% (Array of number)
+% returns the muscle excitations with time padding
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
