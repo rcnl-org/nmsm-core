@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function evaluates the EMG signal from a Spline when there is only 
-% one electromechanical time delay
+% This function evaluates the EMG signal from a Spline when the 
+% electromechanical time delay is muscle specific
 %
 % EMG - 3D matrix of (numFrames, numMuscle, numTrials)
 %

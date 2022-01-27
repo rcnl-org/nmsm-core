@@ -29,17 +29,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [muscleExcitations,EMG] = calcMuscleExcitations(params)        
+function [muscleExcitations] = calcMuscleExcitations(time, EMGsplines, ...
+    timeDelay, EMGScalingFactor)        
 
-[EMG] = evaluatingEMGsplines(params);
-
-EMG = permute(EMG,[1 3 2]);
-
-EMGscales = ones(params.numTrials,1)*params.EMGScale;
-EMGscales = permute(EMGscales, [3 1 2]);
-
-EMG = EMG.*EMGscales(ones(params.numFrames,1),:,:);
-muscleExcitations = EMG(params.nPad+1:params.SampleStep:params.nFrames-...
-    params.nPad,:,:);
+if size(timeDelay,2) == 1
+    EMG = evaluateEMGsplinesWithOneTimeDelay(time, EMGsplines, timeDelay);
+else
+    EMG = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
+        EMGsplines, timeDelay); 
+end % EMG formatted as (numFrames, numMusc, numTrials)
+EMG = permute(EMG,[1 3 2]); % reformatted as (numFrames, numTrials, numMusc)
+EMGScalingFactor = permute(EMGScalingFactor(ones(size(EMGsplines, ...
+    1), 1), :), [3 1 2]); % formatted as (1, numTrials, numMusc)
+muscleExcitations = EMG .* EMGScalingFactor(ones(size(time, 1), 1), ...
+    :, :); % processed EMG signals are scaled 
 
 end
