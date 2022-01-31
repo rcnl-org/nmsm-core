@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function runs fmincon for MuscleTendonPersonalization with settings
-% controlled by the input params.
+% This function extracts the data of the OpenSim Storage object to a MATLAB
+% array of strings. The array does not include 'time', only dependent
+% column names.
 %
-% (Array of number, struct, struct) -> (Array of number)
-% returns the optimized values from Muscle Tendon optimization round
+% (Storage) -> (Array of string) 
+% Extracts column names as string
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,23 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function optimizedValues = computeMuscleTendonRoundOptimization( ...
-    initialValues, params, optimizerOptions)
-
-lowerBounds = makeLowerBounds(initialValues, params);
-upperBounds = makeUpperBounds(initialValues, params);
-
-optimizedValues = fmincon(@(values)computeMuscleTendonCostFunction( ...
-    values, params), initialValues, [], [], [], [], lowerBounds, ...
-    upperBounds, @(values)nonlcon(values, params), optimizerOptions);
-
+function output = getStorageColumnNames(storage)
+strings = {};
+columnNames = storage.getColumnLabels();
+for i=1:columnNames.getSize()-1
+    strings{end+1} = columnNames.getitem(i);
+end
+output = string(strings);
 end
 
-
-function lowerBounds = makeLowerBounds(values, params)
-
-end
-
-function upperBounds = makeUpperBounds(values, params)
-
-end
