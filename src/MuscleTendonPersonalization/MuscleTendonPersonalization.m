@@ -3,6 +3,9 @@
 % Muscle Tendon Personalization uses movement and EMG data to personalize
 % the muscle characteristics of the patient.
 %
+% inputs:
+%   - model (Model)
+%
 % (struct, struct) -> (struct)
 % Runs the Muscle Tendon Personalization algorithm
 
@@ -43,16 +46,30 @@ for i=1:length(inputs.tasks)
 end
 end
 
-% (struct, struct) -> (struct)
+% (struct, struct) -> (6 x numEnabledMuscles matrix of number)
 % extract initial version of optimized values from inputs/params
+% returns an 6 x numEnabledMuscles matrix
 function values = prepareInitialValues(inputs, params)
-
+numMuscles = getNumEnabledMuscles(inputs.model);
+values = zeros(6, numMuscles);
+values(1,:) = 0.5; % electromechanical delay
+values(2,:) = 1.5; % activation time
+values(3,:) = 0.05; % activation nonlinearity
+values(4,:) = 0.5; % EMG scale factors
+values(5,:) = 1; % lmo scale factor
+values(6,:) = 1; % lts scale factor
 end
 
 % (struct) -> (struct)
 % setup optimizer options struct to pass to fmincon
-function optimizerOptions = makeOptimizerOptions(params)
-
+function output = makeOptimizerOptions(params)
+output = optimoptions('fmincon', 'UseParallel', true);
+output.MaxIterations = valueOrAlternate(params, 'maxIterations', 2000);
+output.MaxFunctionEvaluations = valueOrAlternate(params, ...
+    'maxFunctionEvaluations', 100000000);
+output.Algorithm = valueOrAlternate(params, 'algorithm', 'sqp');
+output.ScaleProblem = valueOrAlternate(params, 'scaleProblem', ...
+    'obj-and-constr');
 end
 
 % (struct, struct) -> (Array of number)

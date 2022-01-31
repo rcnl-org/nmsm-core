@@ -1,12 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function computes the sum of the squared error for all the markers
-% in the argument InverseKinematicsSolver's current frame. The frame can be
-% set by initialization an InverseKinematicsSolver, initializing the Model
-% system, assembling the InverseKinematicsSolver for a given time.
+% This function extracts the data of the OpenSim Storage object to a MATLAB
+% array of strings. The array does not include 'time', only dependent
+% column names.
 %
-% (InverseKinematicsSolver) -> (number)
-% iterate through markers and sum the error
+% (Storage) -> (Array of string) 
+% Extracts column names as string
+
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
@@ -29,11 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calculateFrameSquaredError(ikSolver)
-error = zeros(1, ikSolver.getNumMarkersInUse());
-for i=0:ikSolver.getNumMarkersInUse()-1
-    error(i+1) = ikSolver.computeCurrentMarkerError(i);
+function output = getStorageColumnNames(storage)
+strings = {};
+columnNames = storage.getColumnLabels();
+for i=1:columnNames.getSize()-1
+    strings{end+1} = columnNames.getitem(i);
 end
-error = error / sqrt(length(error));
+output = string(strings);
 end
 
