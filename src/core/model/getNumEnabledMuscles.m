@@ -1,12 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function computes the sum of the squared error for all the markers
-% in the argument InverseKinematicsSolver's current frame. The frame can be
-% set by initialization an InverseKinematicsSolver, initializing the Model
-% system, assembling the InverseKinematicsSolver for a given time.
+% This function takes a loaded OpenSim Model and iterates through the force
+% set to identify all muscles. If they are enabled, count them and return
+% the final count.
 %
-% (InverseKinematicsSolver) -> (number)
-% iterate through markers and sum the error
+% (Model) -> (number)
+% Counts the number of enabled muscles in a model
+
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
@@ -29,11 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calculateFrameSquaredError(ikSolver)
-error = zeros(1, ikSolver.getNumMarkersInUse());
-for i=0:ikSolver.getNumMarkersInUse()-1
-    error(i+1) = ikSolver.computeCurrentMarkerError(i);
+function count = getNumEnabledMuscles(model)
+count = 0;
+for i =0:model.getForceSet().getMuscles().getSize()-1
+    if(model.getForceSet().getMuscles().get(i).get_appliesForce())
+        count = count + 1;
+    end
 end
-error = error / sqrt(length(error));
 end
 
