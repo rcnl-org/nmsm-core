@@ -29,10 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function optimizedValues = computeMuscleTendonRoundOptimization( ...
-    initialValues, params, optimizerOptions)
-
-lowerBounds = makeLowerBounds(initialValues, params);
-upperBounds = makeUpperBounds(initialValues, params);
+    initialValues, lowerBounds, upperBounds, params, optimizerOptions)
 
 optimizedValues = fmincon(@(values)computeMuscleTendonCostFunction( ...
     values, params), initialValues, [], [], [], [], lowerBounds, ...
@@ -41,10 +38,3 @@ optimizedValues = fmincon(@(values)computeMuscleTendonCostFunction( ...
 end
 
 
-function lowerBounds = makeLowerBounds(values, params)
-
-end
-
-function upperBounds = makeUpperBounds(values, params)
-
-end
