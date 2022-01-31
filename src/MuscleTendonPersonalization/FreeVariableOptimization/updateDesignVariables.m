@@ -5,7 +5,7 @@
 % an individual round of optimization. The params included dictate which
 % primary values are updated.
 %
-% (Array of number, Array of number, Array of boolean) -> (struct)
+% (2D Array of number, Array of number, Array of boolean) -> (struct)
 % Updates the primary values from the optimized round secondary values
 
 % ----------------------------------------------------------------------- %
@@ -32,13 +32,28 @@
 
 function newPrimaryValues = updateDesignVariables(primaryValues, ...
     secondaryValues, isIncluded)
-newPrimaryValues = [];
+newPrimaryValues = zeros(size(primaryValues));
 for i=1:length(isIncluded)
     if(isIncluded(i))
-        newPrimaryValues(i, :) = secondaryValues(i, :);
+        [startIndex, endIndex] = findStartAndEndIndex(primaryValues, ...
+            isIncluded, i);
+        newPrimaryValues(i, :) = secondaryValues(startIndex:endIndex);
     else
         newPrimaryValues(i, :) = primaryValues(i, :);
     end
 end
 end
 
+% (2D Array of number, Array of boolean, integer) -> (integer)
+% finds the start index in secondary values depending on isIncluded array
+function [startIndex, endIndex] = findStartAndEndIndex(primaryValues, ...
+    isIncluded, index)
+startIndex = 1;
+for i=1:index-1
+    if(isIncluded(i))
+        length(primaryValues(i, :))
+        startIndex = startIndex + length(primaryValues(i, :))
+    end
+end
+endIndex = startIndex + length(primaryValues(index, :)) - 1;
+end
