@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function runs fmincon for MuscleTendonPersonalization with settings
-% controlled by the input params.
+% This function takes a loaded OpenSim Model and iterates through the force
+% set to identify all muscles. If they are enabled, count them and return
+% the final count.
 %
-% (Array of number, struct, struct) -> (Array of number)
-% returns the optimized values from Muscle Tendon optimization round
+% (Model) -> (number)
+% Counts the number of enabled muscles in a model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,23 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function optimizedValues = computeMuscleTendonRoundOptimization( ...
-    initialValues, params, optimizerOptions)
-
-lowerBounds = makeLowerBounds(initialValues, params);
-upperBounds = makeUpperBounds(initialValues, params);
-
-optimizedValues = fmincon(@(values)computeMuscleTendonCostFunction( ...
-    values, params), initialValues, [], [], [], [], lowerBounds, ...
-    upperBounds, @(values)nonlcon(values, params), optimizerOptions);
-
+function count = getNumEnabledMuscles(model)
+count = 0;
+for i =0:model.getForceSet().getMuscles().getSize()-1
+    if(model.getForceSet().getMuscles().get(i).get_appliesForce())
+        count = count + 1;
+    end
+end
 end
 
-
-function lowerBounds = makeLowerBounds(values, params)
-
-end
-
-function upperBounds = makeUpperBounds(values, params)
-
-end
