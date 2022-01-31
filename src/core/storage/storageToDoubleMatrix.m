@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function runs fmincon for MuscleTendonPersonalization with settings
-% controlled by the input params.
+% This function extracts the data of the OpenSim Storage object to a 2D
+% MATLAB array. The organization is column major. I.E. output(0,:) is the
+% first column of the Storage (not including the time column)
 %
-% (Array of number, struct, struct) -> (Array of number)
-% returns the optimized values from Muscle Tendon optimization round
+% (Storage) -> (2D Array of double) 
+% Extracts 2D double Array from Storage object
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,23 +29,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function optimizedValues = computeMuscleTendonRoundOptimization( ...
-    initialValues, params, optimizerOptions)
+function output = storageToDoubleMatrix(storage)
+import org.opensim.modeling.ArrayDouble
 
-lowerBounds = makeLowerBounds(initialValues, params);
-upperBounds = makeUpperBounds(initialValues, params);
+nCol = storage.getColumnLabels().size()-1;
+nRow = storage.getSize();
 
-optimizedValues = fmincon(@(values)computeMuscleTendonCostFunction( ...
-    values, params), initialValues, [], [], [], [], lowerBounds, ...
-    upperBounds, @(values)nonlcon(values, params), optimizerOptions);
-
+output = zeros(nCol, nRow);
+col = ArrayDouble();
+for i=1:nCol
+    storage.getDataColumn(i-1, col);
+    for j=1:col.getSize()
+        output(i, j) = col.getitem(j-1);
+    end
+end
 end
 
-
-function lowerBounds = makeLowerBounds(values, params)
-
-end
-
-function upperBounds = makeUpperBounds(values, params)
-
-end
