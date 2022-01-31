@@ -30,14 +30,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function EMG = evaluateEMGsplinesWithOneTimeDelay(time,EMGsplines,...
+function Emg = evaluateEMGsplinesWithOneTimeDelay(time, EmgSplines, ...
     timeDelay)
-
-timeIntervalInterp = linspace(0,1,size(time,1))'; 
-EMG = zeros(size(time,1),size(EMGsplines,2),size(EMGsplines,1)); % Memory
-for j = 1:size(EMGsplines,1)
-    interpTime = (time(end,j) - time(1,j)) * timeIntervalInterp + time(1,j);
-    EMG(:,:,j) = ppval(interpTime - timeDelay, EMGsplines{j})'; % Interpolation
+timeIntervalInterp = linspace(0, 1, size(time, 1))'; 
+% preallocate memory
+Emg = zeros(size(time, 1),size(EmgSplines, 2),size(EmgSplines, 1)); 
+for j = 1:size(EmgSplines, 1)
+    interpTime = (time(end, j) - time(1, j)) * timeIntervalInterp + ...
+        time(1, j);
+    % Interpolation
+    Emg(:,:,j) = ppval(interpTime - timeDelay, EmgSplines{j})';
 end
-
 end
