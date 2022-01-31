@@ -35,7 +35,7 @@ for i=1:length(jointNames)
     newMarkerNames = getMarkersFromJoint(model, jointNames{i});
     for j=1:length(newMarkerNames)
         if(~markerIncluded(params.markerNames, newMarkerNames{j}))
-            params.markerNames{length(params.markerNames)+1} = ...
+            params.markerNames{end+1} = ...
                 newMarkerNames{j};
         end
     end
