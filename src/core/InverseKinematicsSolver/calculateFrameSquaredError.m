@@ -29,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calculateFrameSquaredError(ikSolver, markersReference)
+function error = calculateFrameSquaredError(ikSolver)
 error = [];
 for i=0:ikSolver.getNumMarkersInUse()-1
     error(length(error)+1) = ikSolver.computeCurrentMarkerError(i);
