@@ -52,7 +52,7 @@ startIndex = 1;
 for i=1:index-1
     if(isIncluded(i))
         length(primaryValues(i, :))
-        startIndex = startIndex + length(primaryValues(i, :))
+        startIndex = startIndex + length(primaryValues(i, :));
     end
 end
 endIndex = startIndex + length(primaryValues(index, :)) - 1;
