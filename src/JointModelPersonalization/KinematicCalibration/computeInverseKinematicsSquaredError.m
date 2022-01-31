@@ -43,8 +43,10 @@ for i=1:numFrames - 1 %start time is set so start with recording error
     error = [error calculateFrameSquaredError(ikSolver)];
     frameCounter = frameCounter + 1;
     state.setTime(times.get(markerTable.getNearestRowIndexForTime( ...
-        state.getTime() + 1/frequency) - 0.000001));
-    if(finishTime);if(state.getTime() > finishTime);break;end;end
+        state.getTime() + 1/frequency)));
+    if(finishTime)
+        if(state.getTime() + 1/frequency > finishTime);break;end
+    end
 end
 error = error / sqrt(frameCounter);
 end
