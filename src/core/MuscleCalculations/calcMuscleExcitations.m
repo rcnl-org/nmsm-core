@@ -29,19 +29,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [muscleExcitations] = calcMuscleExcitations(time, EMGsplines, ...
-    timeDelay, EMGScalingFactor)        
+function [muscleExcitations] = calcMuscleExcitations(time, EmgSplines, ...
+    timeDelay, EmgScalingFactor)      
 
-if size(timeDelay,2) == 1
-    EMG = evaluateEMGsplinesWithOneTimeDelay(time, EMGsplines, timeDelay);
+% Interpolated Emg is formatted as (numFrames, numMusc, numTrials)
+if size(timeDelay, 2) == 1
+    Emg = evaluateEMGsplinesWithOneTimeDelay(time, EmgSplines, timeDelay);
 else
-    EMG = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
-        EMGsplines, timeDelay); 
-end % EMG formatted as (numFrames, numMusc, numTrials)
-EMG = permute(EMG,[1 3 2]); % reformatted as (numFrames, numTrials, numMusc)
-EMGScalingFactor = permute(EMGScalingFactor(ones(size(EMGsplines, ...
-    1), 1), :), [3 1 2]); % formatted as (1, numTrials, numMusc)
-muscleExcitations = EMG .* EMGScalingFactor(ones(size(time, 1), 1), ...
-    :, :); % processed EMG signals are scaled 
-
+    Emg = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
+        EmgSplines, timeDelay); 
+end 
+% Emg is reformatted as (numFrames, numTrials, numMusc)
+Emg = permute(Emg, [1 3 2]); 
+% EmgScalingFactor is formatted as (1, numTrials, numMusc)
+EmgScalingFactor = permute(EmgScalingFactor(ones(size(EmgSplines, ...
+    1), 1), :), [3 1 2]); 
+% muscleExcitations are scaled processed Emg signals
+muscleExcitations = Emg .* EmgScalingFactor(ones(size(time, 1), 1), ...
+    :, :); 
 end
