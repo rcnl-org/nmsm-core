@@ -35,19 +35,12 @@ model = Model(model);
 for i = 1:length(values)
     functions{i}(values(i), model);
 end
-markersReference = makeOptMarkerRef(model, markerFileName, params);
+markersReference = makeJmpMarkerRef(model, markerFileName, params);
 error = computeInnerOptimizationHeuristic(model, ...
     markersReference, params);
+markersReference = libpointer;
+java.lang.System.gc();
 end
 
-function markersReference = makeOptMarkerRef(model, markerFileName, params)
-import org.opensim.modeling.*
-if(isfield(params, 'markerNames'))
-    markersReference = MarkersReference(markerFileName);
-    markersReference.setMarkerWeightSet(makeMarkerWeightSet( ...
-        params.markerNames, ones(1, length(params.markerNames))));
-else
-    markersReference = makeMarkersReference(model, markerFileName, params);
-end
 
-end
+
