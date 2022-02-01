@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (string or Model, number, cellArray of string, string) -> (number)
-% Returns the calculated cost function error for the given inputs
+% This function takes a loaded OpenSim Model and iterates through the force
+% set to identify all muscles. If they are enabled, count them and return
+% the final count.
+%
+% (Model) -> (number)
+% Counts the number of enabled muscles in a model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,21 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calculateJointError(model, desiredError, jointNames, ...
-    markerFileName, accuracy)
-model = Model(model);
-params.markerNames = {};
-params.desiredError = desiredError;
-params.accuracy = accuracy;
-for i=1:length(jointNames)
-    newMarkerNames = getMarkersFromJoint(model, jointNames{i});
-    for j=1:length(newMarkerNames)
-        if(~markerIncluded(params.markerNames, newMarkerNames{j}))
-            params.markerNames{end+1} = ...
-                newMarkerNames{j};
-        end
+function count = getNumEnabledMuscles(model)
+count = 0;
+for i =0:model.getForceSet().getMuscles().getSize()-1
+    if(model.getForceSet().getMuscles().get(i).get_appliesForce())
+        count = count + 1;
     end
 end
-error = computeInnerOptimization([], {}, model, markerFileName, params);
-error = sum(error.^2);
 end
+
