@@ -37,7 +37,7 @@ verifyParams(params); % (struct) -> (None)
 primaryValues = prepareInitialValues(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
 for i=1:length(inputs.tasks)
-    taskValues = makeTaskValues(inputs.tasks{i}, params);
+    taskValues = makeTaskValues(primaryValues, inputs.tasks{i}, params);
     taskParams = makeTaskParams(inputs.tasks{i}, params);
     optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
         taskParams, optimizerOptions);
@@ -74,8 +74,13 @@ end
 
 % (struct, struct) -> (Array of number)
 % prepare values to be optimized for the given task
-function taskValues = makeTaskValues(taskInputs, params)
-
+function taskValues = makeTaskValues(primaryValues, taskInputs, params)
+taskValues = [];
+for i=1:length(taskInputs.isIncluded)
+   if(taskInputs.isIncluded(i))
+       taskValues = [taskValues primaryValues(i,:)];
+   end
+end
 end
 
 % (struct, struct) -> (struct)
