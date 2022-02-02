@@ -3,7 +3,8 @@
 % This function calculates the neural activations given the
 % muscleExcitation signals using backward finite difference approximation
 %
-% (struct,Array of number) -> (Array of number)
+% (3D matrix of numbers, 3D matrix of numbers, 2D array of numbers) -> 
+% (3D matrix of numbers)
 % returns the neural activations
 
 % ----------------------------------------------------------------------- %
@@ -32,47 +33,23 @@ function neuralActivations = calcNeuralActivations(muscleExcitation, ...
     activationTimeConstant, time)
 
 deactivationTimeConst = 4 * activationTimeConstant;
-c2(1, 1, :) = 1 ./ deactivationTimeConst; % equation 6 from Meyer 2017
-c1(1, 1, :) = 1 ./ activationTimeConstant - c2; % eq 5 from Meyer 2017
-dt(1,:,1) = mean(diff(time)); % delta time
-% partialEquation is a part of equation 7, Meyer 2017
-partialEquation = 2 * dt(ones(size(muscleExcitation, 1), 1), :, ...
-    ones(size(muscleExcitation, 3), 1)) .* (c1(ones(size(muscleExcitation, ...
-    1), 1), ones(size(muscleExcitation, 2), 1), :) .* muscleExcitation + ...
-    c2(ones(size(muscleExcitation, 1), 1), ones(size(muscleExcitation, 2), ...
-    1), :));
+% equation 6 from Meyer 2017
+c2 = 1 ./ (ones(size(muscleExcitation, 1), size(muscleExcitation, 2), ...
+    size(muscleExcitation, 3)) .* deactivationTimeConst); 
+% equation 5 from Meyer 2017
+c1 = 1 ./ (ones(size(muscleExcitation, 1), size(muscleExcitation, 2), ...
+    size(muscleExcitation, 3)) .* activationTimeConstant) - c2; 
+% delta time
+dt = repmat(ones(size(muscleExcitation, 1), 1) .* mean(diff(time)), ...
+    [1 1 size(muscleExcitation, 3)]); 
 % preallocate memory
 neuralActivations = zeros(size(muscleExcitation));
 % equation 7 from Meyer 2017
 for j = 3:size(muscleExcitation, 1)
-    neuralActivations(j, :, :) = (partialEquation(j, :, :) .* ...
+    neuralActivations(j, :, :) = (2 * dt(j, :, :) .* (c1(j, :, :) .* ...
+        muscleExcitation(j, :, :) + c2(j, :, :)) .* ...
         muscleExcitation(j, :, :) + 4 .* neuralActivations(j-1, :, :) - ...
-        neuralActivations(j-2, :, :)) ./ (partialEquation(j ,: ,:) + 3); 
+        neuralActivations(j-2, :, :)) ./ (2 * dt(j, :, :) .* ...
+        (c1(j, :, :) .* muscleExcitation(j, :, :) + c2(j, :, :)) + 3); 
 end
 end
-
-
-% function neuralActivations = calcNeuralActivations(muscleExcitation, ...
-%     activationTimeConstant, time)
-% 
-% deactivationTimeConst = 4 * activationTimeConstant;
-% c2(1, 1, :) = 1 ./ deactivationTimeConst; % equation 6 from Meyer 2017
-% c1(1, 1, :) = 1 ./ activationTimeConstant - c2; % eq 5 from Meyer 2017
-% % c3 = (c1*e + c2) from eq 7, Meyer 2017
-% c3 = c1(ones(size(muscleExcitation, 1), 1), ones(size(muscleExcitation, ...
-%     2), 1), :) .* muscleExcitation + c2(ones(size(muscleExcitation, 1), ...
-%     1), ones(size(muscleExcitation, 2), 1), :); 
-% dt(1,:,1) = mean(diff(time)); % delta time
-% % c4 is the denominator from eq 7, Meyer 2017
-% c4 = 2 * dt(ones(size(muscleExcitation, 1), 1), :, ...
-%     ones(size(muscleExcitation, 3), 1)) .* c3;
-% muscleExcitation = c4 .* muscleExcitation;
-% % preallocate memory
-% neuralActivations = zeros(size(muscleExcitation));
-% for j = 3:size(muscleExcitation, 1)
-%     neuralActivations(j, :, :) = (muscleExcitation(j,:,:) + 4 .* ...
-%         neuralActivations(j-1,:,:) - neuralActivations(j-2, :, :)) ./ ...
-%         (c4(j ,: ,:) + 3); % complete equation 7 from Meyer 2017
-% end
-% 
-% end
