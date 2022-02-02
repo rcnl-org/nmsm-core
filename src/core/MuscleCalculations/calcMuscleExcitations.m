@@ -4,7 +4,7 @@
 % processed EMG signals
 %
 % (Array of numbers, 2D cell, Array of numbers, Array of numbers) -> 
-% (Array of number)
+% (3D matrix of numbers)
 % returns the muscle excitations with time padding
 
 % ----------------------------------------------------------------------- %
