@@ -53,12 +53,12 @@ end
 function values = prepareInitialValues(inputs, params)
 numMuscles = getNumEnabledMuscles(inputs.model);
 values = zeros(6, numMuscles);
-values(1,:) = 0.5; % electromechanical delay
-values(2,:) = 1.5; % activation time
-values(3,:) = 0.05; % activation nonlinearity
-values(4,:) = 0.5; % EMG scale factors
-values(5,:) = 1; % lmo scale factor
-values(6,:) = 1; % lts scale factor
+values(1, :) = 0.5; % electromechanical delay
+values(2, :) = 1.5; % activation time
+values(3, :) = 0.05; % activation nonlinearity
+values(4, :) = 0.5; % EMG scale factors
+values(5, :) = 1; % lmo scale factor
+values(6, :) = 1; % lts scale factor
 end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
@@ -68,12 +68,12 @@ if isfield(params, 'lowerBounds')
 else
     numMuscles = getNumEnabledMuscles(inputs.model);
     lowerBounds = zeros(6, numMuscles);
-    lowerBounds(1,:) = 0.0; % electromechanical delay
-    lowerBounds(2,:) = 0.75; % activation time
-    lowerBounds(3,:) = 0.0; % activation nonlinearity
-    lowerBounds(4,:) = 0.05; % EMG scale factors
-    lowerBounds(5,:) = 0.6; % lmo scale factor
-    lowerBounds(6,:) = 0.6; % lts scale factor
+    lowerBounds(1, :) = 0.0; % electromechanical delay
+    lowerBounds(2, :) = 0.75; % activation time
+    lowerBounds(3, :) = 0.0; % activation nonlinearity
+    lowerBounds(4, :) = 0.05; % EMG scale factors
+    lowerBounds(5, :) = 0.6; % lmo scale factor
+    lowerBounds(6, :) = 0.6; % lts scale factor
 end
 end
 
@@ -109,9 +109,9 @@ end
 % prepare values to be optimized for the given task
 function taskValues = makeTaskValues(primaryValues, taskInputs, params)
 taskValues = [];
-for i=1:length(taskInputs.isIncluded)
+for i = 1:length(taskInputs.isIncluded)
    if(taskInputs.isIncluded(i))
-       taskValues = [taskValues primaryValues(i,:)];
+       taskValues = [taskValues primaryValues(i, :)];
    end
 end
 end
