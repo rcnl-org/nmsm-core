@@ -20,6 +20,8 @@ if(onePlot)
             yArray = ArrayDouble();
             storages{j}.getDataColumn(i-1,yArray);
             y = columnToArray(yArray);
+            xlabel('time')
+            ylabel('error')
             plot(time, y)
             legendList{end+1} = strcat(storages{j}. ...
                 getColumnLabels.get(i).toCharArray', num2str(j));
@@ -37,6 +39,8 @@ else
             storages{j}.getDataColumn(i-1,yArray);
             y = columnToArray(yArray);
             hold on
+            xlabel('time (s)')
+            ylabel('error (units of marker file)')
             plot(time, y);
             legendList{end+1} = strcat(storages{j}. ...
                 getColumnLabels.get(i).toCharArray', num2str(j));
