@@ -13,6 +13,7 @@ markersReference = makeJmpMarkerRef(model, markerFileName, ...
     params);
 ikSolver = InverseKinematicsSolver(model, ...
     markersReference, SimTKArrayCoordinateReference());
+ikSolver.setAccuracy(1e-6);
 state = initModelSystem(model);
 state.setTime(markersReference.getValidTimeRange().get(0));
 ikSolver.assemble(state);
