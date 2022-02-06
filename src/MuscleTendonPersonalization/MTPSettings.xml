@@ -17,7 +17,7 @@
 		<muscle_moment_arm_directory>muscle_moment_arms</muscle_moment_arm_directory>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains EMG data files-->
 		<emg_data_directory>emg_datas</emg_data_directory>
-		<!--The acceptable amount of error for the optimzation-->
+		<!--The acceptable amount of error for the optimization-->
         <desired_error>0.01</desired_error>
 		<!--The set of <MuscleTendonPersonalizationTask> to be completed by the tool, each Task is a separate optimization-->
 		<MuscleTendonPersonalizationTaskList>
