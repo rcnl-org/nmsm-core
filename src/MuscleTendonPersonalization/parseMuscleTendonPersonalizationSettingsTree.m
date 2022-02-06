@@ -28,17 +28,35 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params] = ...
+function [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
+resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 end
 
-function inputs = getInputs(settingsTree)
-
+function inputs = getInputs(tree)
+inputDirectory = getFieldByName(tree, 'input_directory').Text;
+modelFile = getFieldByName(tree, 'input_model_file').Text;
+if(inputDirectory)
+    output.model = fullfile(inputDirectory, modelFile);
+else
+    output.model = fullfile(pwd, modelFile);
+    inputDirectory = pwd;
+end
+directories.jointMoment = getFieldByName(tree, ...
+    'joint_moment_directory').Text;
+directories.muscleLength = getFieldByName(tree, ...
+    'muscle_length_directory').Text;
+directories.muscleVelocity = getFieldByName(tree, ...
+    'muscle_velocity_directory').Text;
+directories.muscleMomentArm = getFieldByName(tree, ...
+    'muscle_moment_arm_directory').Text;
+directories.emgData = getFieldByName(tree, 'emg_data_directory').Text;
+inputs.tasks = getTasks(tree, inputDirectory, directories);
 end
 
-function params = getParams(settingsTree)
+function params = getParams(tree)
 
 end
 
