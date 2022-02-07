@@ -37,23 +37,47 @@ end
 
 function inputs = getInputs(tree)
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
-modelFile = getFieldByName(tree, 'input_model_file').Text;
+modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(inputDirectory)
-    output.model = fullfile(inputDirectory, modelFile);
+    inputs.model = fullfile(inputDirectory, modelFile);
 else
-    output.model = fullfile(pwd, modelFile);
+    inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-directories.jointMoment = getFieldByName(tree, ...
+directories.jointMoment = getFieldByNameOrError(tree, ...
     'joint_moment_directory').Text;
-directories.muscleLength = getFieldByName(tree, ...
+directories.muscleLength = getFieldByNameOrError(tree, ...
     'muscle_length_directory').Text;
-directories.muscleVelocity = getFieldByName(tree, ...
+directories.muscleVelocity = getFieldByNameOrError(tree, ...
     'muscle_velocity_directory').Text;
-directories.muscleMomentArm = getFieldByName(tree, ...
+directories.muscleMomentArm = getFieldByNameOrError(tree, ...
     'muscle_moment_arm_directory').Text;
-directories.emgData = getFieldByName(tree, 'emg_data_directory').Text;
+directories.emgData = getFieldByNameOrError(tree, ...
+    'emg_data_directory').Text;
 inputs.tasks = getTasks(tree, inputDirectory, directories);
+end
+
+% (struct, string, struct) -> (struct)
+function output = getTasks(tree, inputDirectory, childDirectories)
+tasks = getFieldByNameOrError(tree, 'MuscleTendonPersonalizationTaskList');
+counter = 1;
+for i=1:length(tasks.MuscleTendonPersonalizationTask)
+    if(length(tasks.MuscleTendonPersonalizationTask) == 1)
+        task = tasks.MuscleTendonPersonalizationTask;
+    else
+        task = tasks.MuscleTendonPersonalizationTask{i};
+    end
+    if(task.is_enabled.Text == 'true')
+        output{counter} = getTask(counter, task, inputDirectory, ...
+            childDirectories);
+        counter = counter + 1;
+    end
+end
+end
+
+% (integer, struct, string, struct) -> (struct)
+function output = getTask(taskNum, tree, inputDirectory, childDirectories)
+
 end
 
 function params = getParams(tree)
