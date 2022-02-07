@@ -71,17 +71,14 @@ for i=1:length(tasks.JointPersonalizationTask)
         task = tasks.JointPersonalizationTask{i};
     end
     if(task.is_enabled.Text == 'true')
-        output{counter} = getTask(model, ...
-            task, inputDirectory);
+        output{counter} = getTask(model, task, inputDirectory);
         counter = counter + 1;
     end
 end
 end
 
 function output = getTask(model, tree, inputDirectory)
-output = applyIKSettingsParams(tree, inputDirectory);
-output.markerFile = fullfile(inputDirectory, ...
-    tree.marker_file_name.Text);
+output.markerFile = fullfile(inputDirectory, tree.marker_file_name.Text);
 timeRange = getFieldByName(tree, 'time_range');
 if(isstruct(timeRange))
     timeRange = strsplit(timeRange.Text, ' ');
@@ -173,15 +170,6 @@ for i=1:length(parameters)
         lowerBounds(i) = initialValues(i) - orientationBounds;
         upperBounds(i) = initialValues(i) + orientationBounds;
     end
-end
-end
-
-function output = applyIKSettingsParams(tree, inputDirectory)
-import org.opensim.modeling.*
-output = struct(); %incase no ik_settings_file
-ikSettingsFile = getFieldByName(tree, 'ik_settings_file');
-if(isstruct(ikSettingsFile))
-    output.ikSettingsFile = fullfile(inputDirectory, ikSettingsFile.Text);
 end
 end
 
