@@ -1,12 +1,26 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the model Joint moments, muscle moments, passive
-% and active muscle forces, normalized muscle lengths, normalized muscle
-% velocity, muscle tendon length, muscle tendon velocity, and max isometric
-% force.
+% This function calculates the model normalized muscle fiber lengths and
+% velocities
 %
-% (Array of number,Array of number,Struct,Struct) -> (Struct,Array of number)
-% returns muscle moments, forces, and lengths 
+% Inputs:
+% momentArms - cell structure of (1, numJoints), each cell is made up 
+% of (numFrames, numTrials, numMuscles) 
+% hillTypeParams.lMt - 3D matrix of (numFrames, numTrials, numMuscles)
+% hillTypeParams.vMT - 3D matric of (numFrames, numTrials, numMuscles)
+% hillTypeParams.vMaxFactor - number
+% hillTypeParams.lTs - 3D matrix of (1, 1, numMuscles)
+% hillTypeParams.lMo - 3D matrix of (1, 1, numMuscles)
+% hillTypeParams.pennationAngle - 3D matrix of (1, 1, numMuscles)
+% hillTypeParams.fMax - 3D matrix of (1, 1, numMuscles)
+% muscleActivations - 3D matrix of (numFrames, numTrials, numMuscles)
+%
+% Outputs:
+% lMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
+% vMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
+%
+% (Struct) -> (Array of number,Array of number)
+% returns muscle fiber lengths and velocities
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +30,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                          %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,7 +44,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [muscleMoments,modelMoments,muscleForces,hillTypeTendonParams] = ...
-    calcMuscleMomentsForcesAndLength(params,muscleActivations)
+function [lMtilda, vMtilda] = ...
+    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams)
 
+onesCol = ones(size(hillTypeParams.lMt, 1), size(hillTypeParams.lMt, 2));
+% Normalized muscle fiber length, equation 2 from Meyer 2017
+lMtilda = (hillTypeParams.lMt - onesCol .* hillTypeParams.lTs) ./ ...
+    (onesCol .* (hillTypeParams.lMo .* cos(hillTypeParams.pennationAngle)));
+% Normalized muscle fiber velocity, equation 3 from Meyer 2017
+vMtilda = hillTypeParams.vMt ./ (hillTypeParams.vMaxFactor * onesCol .* ...
+    (hillTypeParams.lMo .* cos(hillTypeParams.pennationAngle)));
 end
