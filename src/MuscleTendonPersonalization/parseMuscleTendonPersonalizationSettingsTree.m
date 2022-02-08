@@ -44,21 +44,21 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-directories.jointMoment = getFieldByNameOrError(tree, ...
-    'joint_moment_directory').Text;
-directories.muscleLength = getFieldByNameOrError(tree, ...
-    'muscle_length_directory').Text;
-directories.muscleVelocity = getFieldByNameOrError(tree, ...
-    'muscle_velocity_directory').Text;
-directories.muscleMomentArm = getFieldByNameOrError(tree, ...
-    'muscle_moment_arm_directory').Text;
-directories.emgData = getFieldByNameOrError(tree, ...
-    'emg_data_directory').Text;
+inputs.jointMoment = parseJointMoments(fullfile(inputDirectory, ...
+    getFieldByNameOrError(tree, 'joint_moment_directory').Text));
+inputs.muscleTendonLength = parseMtpStandard(fullfile(inputDirectory, ...
+    getFieldByNameOrError(tree, 'muscle_length_directory').Text));
+inputs.muscleTendonVelocity = parseMtpStandard(fullfile(inputDirectory, ...
+    getFieldByNameOrError(tree, 'muscle_velocity_directory').Text));
+inputs.muscleTendonMomentArm = parseMomentArms(fullfile(inputDirectory, ...
+    getFieldByNameOrError(tree, 'muscle_moment_arm_directory').Text));
+inputs.emgData = parseMtpStandard(fullfile(inputDirectory, ...
+    getFieldByNameOrError(tree, 'emg_data_directory').Text));
 inputs.tasks = getTasks(tree, inputDirectory, directories);
 end
 
 % (struct, string, struct) -> (struct)
-function output = getTasks(tree, inputDirectory, childDirectories)
+function output = getTasks(tree)
 tasks = getFieldByNameOrError(tree, 'MuscleTendonPersonalizationTaskList');
 counter = 1;
 for i=1:length(tasks.MuscleTendonPersonalizationTask)
@@ -68,19 +68,35 @@ for i=1:length(tasks.MuscleTendonPersonalizationTask)
         task = tasks.MuscleTendonPersonalizationTask{i};
     end
     if(task.is_enabled.Text == 'true')
-        output{counter} = getTask(counter, task, inputDirectory, ...
-            childDirectories);
+        output{counter} = getTask(task);
         counter = counter + 1;
     end
 end
 end
 
 % (integer, struct, string, struct) -> (struct)
-function output = getTask(taskNum, tree, inputDirectory, childDirectories)
-
+function output = getTask(tree)
+items = ["optimize_electromechanical_delays", ...
+    "optimize_activation_time_constants", ...
+    "optimize_activation_nonlinearity_constants", ...
+    "optimize_emg_scale_factors", "optimize_optimal_muscle_lengths", ...
+    "optimize_tendon_slack_length"];
+output = zeros(1,length(items));
+for i=1:length(items)
+    output(i) = tree.(items(i)).Text == 'true';
+end
 end
 
+% (struct) -> (struct)
 function params = getParams(tree)
-
+params = struct();
+maxIterations = getFieldByName(tree, 'max_iterations');
+if(isstruct(maxIterations))
+    params.maxIterations = maxIterations.Text;
+end
+maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
+if(isstruct(maxFunctionEvaluations))
+    params.maxFunctionEvaluations = maxFunctionEvaluations.Text;
+end
 end
 
