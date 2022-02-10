@@ -1,7 +1,7 @@
 
 % (Model, string, cell array) -> (None)
 function reportDistanceErrorByMarker(model, markerFileName, ...
-    markerNames)
+    markerNames, outputSto)
 import org.opensim.modeling.InverseKinematicsSolver
 import org.opensim.modeling.SimTKArrayCoordinateReference
 import org.opensim.modeling.Storage
@@ -13,6 +13,7 @@ markersReference = makeJmpMarkerRef(model, markerFileName, ...
     params);
 ikSolver = InverseKinematicsSolver(model, ...
     markersReference, SimTKArrayCoordinateReference());
+ikSolver.setAccuracy(1e-6);
 state = initModelSystem(model);
 state.setTime(markersReference.getValidTimeRange().get(0));
 ikSolver.assemble(state);
@@ -36,13 +37,11 @@ for i=1:markersReference.getNumFrames() - 1 %start time is set so start with rec
         error(length(error)+1) = ikSolver.computeCurrentMarkerError(j);
     end
     addToRowToStorage(state, storage, error)
-    %     ikSolver.getNumMarkersInUse()
     frameCounter = frameCounter + 1;
     state.setTime(times.get(markerTable.getNearestRowIndexForTime( ...
         state.getTime() + 1/frequency)) - 0.000001);
-%     if(finishTime);if(state.getTime() > finishTime);break;end;end
 end
-storage.print('test.sto');
+storage.print(outputSto);
 end
 
 function addToRowToStorage(state, storage, array)
