@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the primary values (values maintained between
-% optimization rounds) and updates them based on the secondary values from
-% an individual round of optimization. The params included dictate which
-% primary values are updated.
+% 
 %
-% (2D Array of number, Array of number, Array of boolean) -> (struct)
-% Updates the primary values from the optimized round secondary values
+% (2D Array of number, Array of boolean, integer) -> (integer)
+% finds the start index in secondary values depending on isIncluded array
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,16 +27,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newPrimaryValues = updateDesignVariables(primaryValues, ...
-    secondaryValues, isIncluded)
-newPrimaryValues = zeros(size(primaryValues));
-for i=1:length(isIncluded)
+function [startIndex, endIndex] = findIsIncludedStartAndEndIndex( ...
+    primaryValues, isIncluded, index)
+startIndex = 1;
+for i=1:index-1
     if(isIncluded(i))
-        [startIndex, endIndex] = findStartAndEndIndex(primaryValues, ...
-            isIncluded, i);
-        newPrimaryValues(i, :) = secondaryValues(startIndex:endIndex);
-    else
-        newPrimaryValues(i, :) = primaryValues(i, :);
+        length(primaryValues(i, :))
+        startIndex = startIndex + length(primaryValues(i, :));
     end
 end
+endIndex = startIndex + length(primaryValues(index, :)) - 1;
 end
