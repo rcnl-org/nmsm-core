@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
 %
-% inputs
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% (struct, struct, array of number, array of number) -> (number)
+% calculates the cost of penalizing paired muscle separation
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,40 +27,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, IsIncluded, params)
-
-% Update these functions to call findCorrectValues
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
-
-% Update these functions to call findCorrectValues
-[passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations);
-[lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams);
-
-% valuesStruct needs to be created to contain (primaryValues, ...
-% secondaryValues, IsIncluded)
-costs = calcAllTrackingCosts(valuesStruct, params, ...
-    modelMoments, lMtilda);
-costs = calcAllDeviationPenaltyCosts(valuesStruct, params, ...
-    passiveForce);
-costs = calcLmTildaCurveChangesCost(lMtilda, lMtildaExprimental, ...
-    lmtildaPairs, params);
-costs = calcPairedMusclePenalties(valuesStruct, ActivationPairs, ...
-    params);
-
-% Combine all costs into single vector
-outputCost = combineCostsIntoVector(params.costWeight, costs);
-Cost(isnan(Cost))=0;
+function cost = calcAllTrackingCosts(valuesStruct, params, ...
+    modelMoments, lMtilda)
+% Minimize joint moment tracking errors
+cost.momentMatching = calcTrackingCostTerm(modelMoments, ...
+    params.experimentalMoments, params.errorCenters(1), ...
+    params.maxAllowableErrors(1));
+% Penalize difference of lMo values from pre-calibrated values
+cost.lMoPenalty = calcTrackingCostTerm(findCorrectValues(5, ...
+    valuesStruct), params.lMoNominal, params.errorCenters(4), ...
+    params.maxAllowableErrors(4));
+% Penalize difference of lTs values from pre-calibrated values
+cost.lTsPenalty = calcTrackingCostTerm(findCorrectValues(6, ...
+    valuesStruct), params.lTsNominal, params.errorCenters(5), ...
+    params.maxAllowableErrors(5));
+% Penalize change of lMtilda from pre-calibrated values
+costlMtildaMeanPenalty = calcTrackingCostTerm(permute(mean(lMtilda, 2), ...
+    [1 3 2]), permute(mean(params.lMtildaExprimental,2),[1 3 2]), ...
+    params.errorCenters(7), params.maxAllowableErrors(7));
+costlMtildaShapePenalty = calcTrackingCostTerm( ...
+    calcMeanDifference1D(compress3dMatrixTo2d(lMtilda)), ...
+    calcMeanDifference1D(compress3dMatrixTo2d( ...
+    params.lMtildaExprimental)), params.errorCenters(7), ...
+    params.maxAllowableErrors(7));
+cost.lMtildaPenalty = [costlMtildaMeanPenalty; costlMtildaShapePenalty];
 end
-
-
-
-
-
-
 
