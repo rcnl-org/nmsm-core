@@ -33,10 +33,20 @@
 
 function output = parseMtpStandard(inputDirectory)
 import org.opensim.modeling.Storage
-numTrials = findNumberFiles(inputDirectory);
-cells = zeros([numTrials size(storageToDoubleMatrix(Storage(fullfile(inputDirectory, strcat(num2str(1),'.sto')))))]);
-for i=1:numTrials
-    cells(i, :, :) = storageToDoubleMatrix(Storage(fullfile(inputDirectory, strcat(num2str(i),'.sto'))));
+files = findDirectoryFileNames(inputDirectory);
+cells = zeros([length(files) size(storageToDoubleMatrix(Storage(files(1))))]);
+for i=1:length(files)
+    cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
 end
+output = permute(cells, [3, 1, 2]);
 end
 
+function names = findDirectoryFileNames(directory)
+files = dir(directory);
+names = string([]);
+for i=1:length(files)
+    if(~files(i).isdir)
+        names(end+1) = fullfile(directory, files(i).name);
+    end
+end
+end
