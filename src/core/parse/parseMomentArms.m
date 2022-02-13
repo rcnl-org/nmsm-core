@@ -34,9 +34,14 @@
 function output = parseMomentArms(inputDirectory, model)
 import org.opensim.modeling.Storage
 trialDirs = findMuscleAnalysisDirectories(inputDirectory);
-for i=1:length(trialDirs)
-    parseMuscleAnalysisCoordinates(trialDirs(i), model);
+firstTrial = parseMuscleAnalysisCoordinates(trialDirs(1), model);
+cells = zeros([length(trialDirs) size(firstTrial)]);
+cells(1, :, :, :) = firstTrial;
+for i=2:length(trialDirs)
+    cells(i, :, :, :) = parseMuscleAnalysisCoordinates(trialDirs(i), ...
+        model);
 end
+output = permute(cells, [4 1 3 2]);
 end
 
 function dirs = findMuscleAnalysisDirectories(inputDirectory)
@@ -67,7 +72,9 @@ files = dir(directory);
 names = string([]);
 for i=0:model.getCoordinateSet().getSize()-1
     for j=1:length(files)
-        if(contains(files(j).name, strcat("MomentArm_", model.getCoordinateSet().get(i).getName().toCharArray', ".sto")))
+        if(contains(files(j).name, strcat("MomentArm_", ...
+                model.getCoordinateSet().get(i).getName().toCharArray', ...
+                ".sto")))
             names(end+1) = fullfile(directory, files(j).name);
         end
     end
