@@ -31,7 +31,45 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = parseMomentArms(inputDirectory)
-
+function output = parseMomentArms(inputDirectory, model)
+import org.opensim.modeling.Storage
+trialDirs = findMuscleAnalysisDirectories(inputDirectory);
+for i=1:length(trialDirs)
+    parseMuscleAnalysisCoordinates(trialDirs(i), model);
+end
 end
 
+function dirs = findMuscleAnalysisDirectories(inputDirectory)
+listings = dir(inputDirectory);
+dirs = string([]);
+for i=1:length(listings)
+    if(listings(i).isdir && ~strcmp(listings(i).name, ".") && ...
+            ~strcmp(listings(i).name, ".."))
+        dirs(end+1) = fullfile(inputDirectory, listings(i).name);
+    end
+end
+dirs = string(dirs);
+end
+
+function cells = parseMuscleAnalysisCoordinates(inputDirectory, model)
+import org.opensim.modeling.Storage
+coordFileNames = findMuscleAnalysisCoordinateFiles(inputDirectory, model);
+firstFile = storageToDoubleMatrix(Storage(coordFileNames(1)));
+cells = zeros([length(coordFileNames) size(firstFile)]);
+cells(1, :, :) = firstFile;
+for i=2:length(coordFileNames)
+    cells(2, :, :) = storageToDoubleMatrix(Storage(coordFileNames(i)));
+end
+end
+
+function names = findMuscleAnalysisCoordinateFiles(directory, model)
+files = dir(directory);
+names = string([]);
+for i=0:model.getCoordinateSet().getSize()-1
+    for j=1:length(files)
+        if(contains(files(j).name, strcat("MomentArm_", model.getCoordinateSet().get(i).getName().toCharArray', ".sto")))
+            names(end+1) = fullfile(directory, files(j).name);
+        end
+    end
+end
+end
