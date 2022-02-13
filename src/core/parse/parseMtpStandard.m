@@ -35,7 +35,6 @@ function output = parseMtpStandard(inputDirectory)
 import org.opensim.modeling.Storage
 numTrials = findNumberFiles(inputDirectory);
 cells = zeros([numTrials size(storageToDoubleMatrix(Storage(fullfile(inputDirectory, strcat(num2str(1),'.sto')))))]);
-size(cells)
 for i=1:numTrials
     cells(i, :, :) = storageToDoubleMatrix(Storage(fullfile(inputDirectory, strcat(num2str(i),'.sto'))));
 end
