@@ -43,17 +43,3 @@ for i=1:length(isIncluded)
     end
 end
 end
-
-% (2D Array of number, Array of boolean, integer) -> (integer)
-% finds the start index in secondary values depending on isIncluded array
-function [startIndex, endIndex] = findStartAndEndIndex(primaryValues, ...
-    isIncluded, index)
-startIndex = 1;
-for i=1:index-1
-    if(isIncluded(i))
-        length(primaryValues(i, :))
-        startIndex = startIndex + length(primaryValues(i, :));
-    end
-end
-endIndex = startIndex + length(primaryValues(index, :)) - 1;
-end

@@ -1,12 +1,26 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
+% This function calculates the model normalized muscle fiber lengths and
+% velocities
 %
-% inputs
+% Inputs:
+% momentArms - cell structure of (1, numJoints), each cell is made up 
+% of (numFrames, numTrials, numMuscles) 
+% hillTypeParams.lMt - 3D matrix of (numFrames, numTrials, numMuscles)
+% hillTypeParams.vMT - 3D matric of (numFrames, numTrials, numMuscles)
+% hillTypeParams.vMaxFactor - number
+% hillTypeParams.lTs - 3D matrix of (1, 1, numMuscles)
+% hillTypeParams.lMo - 3D matrix of (1, 1, numMuscles)
+% hillTypeParams.pennationAngle - 3D matrix of (1, 1, numMuscles)
+% hillTypeParams.fMax - 3D matrix of (1, 1, numMuscles)
+% muscleActivations - 3D matrix of (numFrames, numTrials, numMuscles)
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% Outputs:
+% lMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
+% vMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
+%
+% (Struct) -> (Array of number,Array of number)
+% returns muscle fiber lengths and velocities
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,40 +44,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, IsIncluded, params)
+function [lMtilda, vMtilda] = ...
+    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams)
 
-% Update these functions to call findCorrectValues
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
-
-% Update these functions to call findCorrectValues
-[passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations);
-[lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams);
-
-% valuesStruct needs to be created to contain (primaryValues, ...
-% secondaryValues, IsIncluded)
-costs = calcAllTrackingCosts(valuesStruct, params, ...
-    modelMoments, lMtilda);
-costs = calcAllDeviationPenaltyCosts(valuesStruct, params, ...
-    passiveForce);
-costs = calcLmTildaCurveChangesCost(lMtilda, lMtildaExprimental, ...
-    lmtildaPairs, params);
-costs = calcPairedMusclePenalties(valuesStruct, ActivationPairs, ...
-    params);
-
-% Combine all costs into single vector
-outputCost = combineCostsIntoVector(params.costWeight, costs);
-Cost(isnan(Cost))=0;
+onesCol = ones(size(hillTypeParams.lMt, 1), size(hillTypeParams.lMt, 2));
+% Normalized muscle fiber length, equation 2 from Meyer 2017
+lMtilda = (hillTypeParams.lMt - onesCol .* hillTypeParams.lTs) ./ ...
+    (onesCol .* (hillTypeParams.lMo .* cos(hillTypeParams.pennationAngle)));
+% Normalized muscle fiber velocity, equation 3 from Meyer 2017
+vMtilda = hillTypeParams.vMt ./ (hillTypeParams.vMaxFactor * onesCol .* ...
+    (hillTypeParams.lMo .* cos(hillTypeParams.pennationAngle)));
 end
-
-
-
-
-
-
-

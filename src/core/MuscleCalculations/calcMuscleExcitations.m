@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
+% This function calculates the scaled muscle excitations given the
+% processed EMG signals
 %
-% inputs
-%
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% (Array of numbers, 2D cell, Array of numbers, Array of numbers) -> 
+% (3D matrix of numbers)
+% returns the muscle excitations with time padding
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,40 +29,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, IsIncluded, params)
+function [muscleExcitations] = calcMuscleExcitations(time, EmgSplines, ...
+    timeDelay, EmgScalingFactor)      
 
-% Update these functions to call findCorrectValues
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
-
-% Update these functions to call findCorrectValues
-[passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations);
-[lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams);
-
-% valuesStruct needs to be created to contain (primaryValues, ...
-% secondaryValues, IsIncluded)
-costs = calcAllTrackingCosts(valuesStruct, params, ...
-    modelMoments, lMtilda);
-costs = calcAllDeviationPenaltyCosts(valuesStruct, params, ...
-    passiveForce);
-costs = calcLmTildaCurveChangesCost(lMtilda, lMtildaExprimental, ...
-    lmtildaPairs, params);
-costs = calcPairedMusclePenalties(valuesStruct, ActivationPairs, ...
-    params);
-
-% Combine all costs into single vector
-outputCost = combineCostsIntoVector(params.costWeight, costs);
-Cost(isnan(Cost))=0;
+% Interpolated Emg is formatted as (numFrames, numMusc, numTrials)
+if size(timeDelay, 2) == 1
+    Emg = evaluateEMGsplinesWithOneTimeDelay(time, EmgSplines, timeDelay);
+else
+    Emg = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
+        EmgSplines, timeDelay); 
+end 
+% Emg is reformatted as (numFrames, numTrials, numMusc)
+Emg = permute(Emg, [1 3 2]); 
+% EmgScalingFactor is formatted as (1, numTrials, numMusc)
+EmgScalingFactor = permute(EmgScalingFactor(ones(size(EmgSplines, ...
+    1), 1), :), [3 1 2]); 
+% muscleExcitations are scaled processed Emg signals
+muscleExcitations = Emg .* EmgScalingFactor(ones(size(time, 1), 1), ...
+    :, :); 
 end
-
-
-
-
-
-
-
