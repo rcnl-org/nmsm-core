@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
+% This function calculates the neural activations given the
+% muscleExcitation signals using backward finite difference approximation
 %
-% inputs
-%
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% (3D matrix of numbers, 3D matrix of numbers, 2D array of numbers) -> 
+% (3D matrix of numbers)
+% returns the neural activations
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,40 +29,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, IsIncluded, params)
+function neuralActivations = calcNeuralActivations(muscleExcitation, ...
+    activationTimeConstant, time)
 
-% Update these functions to call findCorrectValues
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
-
-% Update these functions to call findCorrectValues
-[passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations);
-[lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams);
-
-% valuesStruct needs to be created to contain (primaryValues, ...
-% secondaryValues, IsIncluded)
-costs = calcAllTrackingCosts(valuesStruct, params, ...
-    modelMoments, lMtilda);
-costs = calcAllDeviationPenaltyCosts(valuesStruct, params, ...
-    passiveForce);
-costs = calcLmTildaCurveChangesCost(lMtilda, lMtildaExprimental, ...
-    lmtildaPairs, params);
-costs = calcPairedMusclePenalties(valuesStruct, ActivationPairs, ...
-    params);
-
-% Combine all costs into single vector
-outputCost = combineCostsIntoVector(params.costWeight, costs);
-Cost(isnan(Cost))=0;
+deactivationTimeConst = 4 * activationTimeConstant;
+% equation 6 from Meyer 2017
+c2 = 1 ./ (ones(size(muscleExcitation, 1), size(muscleExcitation, 2), ...
+    size(muscleExcitation, 3)) .* deactivationTimeConst); 
+% equation 5 from Meyer 2017
+c1 = 1 ./ (ones(size(muscleExcitation, 1), size(muscleExcitation, 2), ...
+    size(muscleExcitation, 3)) .* activationTimeConstant) - c2; 
+% delta time
+dt = repmat(ones(size(muscleExcitation, 1), 1) .* mean(diff(time)), ...
+    [1 1 size(muscleExcitation, 3)]); 
+% preallocate memory
+neuralActivations = zeros(size(muscleExcitation));
+% equation 7 from Meyer 2017
+for j = 3:size(muscleExcitation, 1)
+    neuralActivations(j, :, :) = (2 * dt(j, :, :) .* (c1(j, :, :) .* ...
+        muscleExcitation(j, :, :) + c2(j, :, :)) .* ...
+        muscleExcitation(j, :, :) + 4 .* neuralActivations(j-1, :, :) - ...
+        neuralActivations(j-2, :, :)) ./ (2 * dt(j, :, :) .* ...
+        (c1(j, :, :) .* muscleExcitation(j, :, :) + c2(j, :, :)) + 3); 
 end
-
-
-
-
-
-
-
+end
