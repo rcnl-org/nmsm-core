@@ -4,21 +4,21 @@
 		<!--Directory used for writing results.-->
 		<results_directory/>
 		<!--Directory for input files-->
-		<input_directory/>
+        <input_directory>D:/RCNL/muscle-tendon-personalization/DataFilesForAnalysis</input_directory>
 		<!--Name of the input model file (.osim) to use-->
-		<input_model_file>Rajagopal_4.0_RCNL_markers_scaled.osim</input_model_file>
+		<input_model_file>optModel.osim</input_model_file>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains joint moment files-->
-		<joint_moment_directory>joint_moments</joint_moment_directory>
+		<joint_moment_directory>JointAngles</joint_moment_directory>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains muscle length files-->
-		<muscle_length_directory>muscle_lengths</muscle_length_directory>
+		<muscle_length_directory>MuscleAnalysis</muscle_length_directory>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains muscle velocity files-->
-		<muscle_velocity_directory>muscle_velocities</muscle_velocity_directory>
+		<muscle_velocity_directory>ID moments</muscle_velocity_directory>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains muscle moment arm files-->
-		<muscle_moment_arm_directory>muscle_moment_arms</muscle_moment_arm_directory>
+		<muscle_moment_arm_directory>MuscleAnalysis</muscle_moment_arm_directory>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains EMG data files-->
-		<emg_data_directory>emg_datas</emg_data_directory>
-		<!--The acceptable amount of error for the optimization-->
-        <desired_error>0.01</desired_error>
+		<emg_data_directory>JointAngles</emg_data_directory>
+        <!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
+		<muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
 		<!--The set of <MuscleTendonPersonalizationTask> to be completed by the tool, each Task is a separate optimization-->
 		<MuscleTendonPersonalizationTaskList>
 			<MuscleTendonPersonalizationTask>
@@ -26,8 +26,6 @@
 				<is_enabled>true</is_enabled>
 				<!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
 				<optimize_electromechanical_delays>true</optimize_electromechanical_delays>
-				<!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
-				<muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
 				<!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
 				<optimize_activation_time_constants>true</optimize_activation_time_constants>
 				<!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
