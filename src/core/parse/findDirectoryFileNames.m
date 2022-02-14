@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the number of files from the directory given as
-% the input starting with 1.sto, 2.sto and continuing to n.sto and stops
-% when the file cannot be found in the directory. 
+% This function returns the name of files from the directory given as
+% the input
 %
-% (string) -> (number)
-% returns the number of sequential files that exist starting at 1.sto
+% (string) -> (Array of string)
+% returns the name of all files in the directory
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,12 +28,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function counter = findNumberFiles(inputDirectoryPath)
-counter = 0;
-inputDir = dir(inputDirectoryPath);
-for i=1:length(inputDir)
-    if(strcmp(inputDir(i).name, strcat(num2str(counter+1),'.sto')))
-        counter = counter + 1;
+function names = findDirectoryFileNames(directory)
+files = dir(directory);
+names = string([]);
+for i=1:length(files)
+    if(~files(i).isdir)
+        names(end+1) = fullfile(directory, files(i).name);
     end
 end
 end
