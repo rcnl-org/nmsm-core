@@ -39,22 +39,24 @@ function inputs = getInputs(tree)
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(inputDirectory)
-    inputs.model = fullfile(inputDirectory, modelFile);
+    inputs.model = Model(fullfile(inputDirectory, modelFile));
 else
-    inputs.model = fullfile(pwd, modelFile);
+    inputs.model = Model(fullfile(pwd, modelFile));
     inputDirectory = pwd;
 end
-inputs.jointMoment = parseJointMoments(fullfile(inputDirectory, ...
+inputs.jointMoment = parseMtpStandard(fullfile(inputDirectory, ...
     getFieldByNameOrError(tree, 'joint_moment_directory').Text));
-inputs.muscleTendonLength = parseMtpStandard(fullfile(inputDirectory, ...
+inputs.muscleTendonLength = ...
+    parseMuscleTendonLengths(fullfile(inputDirectory, ...
     getFieldByNameOrError(tree, 'muscle_length_directory').Text));
 inputs.muscleTendonVelocity = parseMtpStandard(fullfile(inputDirectory, ...
     getFieldByNameOrError(tree, 'muscle_velocity_directory').Text));
 inputs.muscleTendonMomentArm = parseMomentArms(fullfile(inputDirectory, ...
-    getFieldByNameOrError(tree, 'muscle_moment_arm_directory').Text));
+    getFieldByNameOrError(tree, 'muscle_moment_arm_directory').Text), ...
+    inputs.model);
 inputs.emgData = parseMtpStandard(fullfile(inputDirectory, ...
     getFieldByNameOrError(tree, 'emg_data_directory').Text));
-inputs.tasks = getTasks(tree, inputDirectory, directories);
+inputs.tasks = getTasks(tree);
 end
 
 % (struct, string, struct) -> (struct)
@@ -80,10 +82,11 @@ items = ["optimize_electromechanical_delays", ...
     "optimize_activation_time_constants", ...
     "optimize_activation_nonlinearity_constants", ...
     "optimize_emg_scale_factors", "optimize_optimal_muscle_lengths", ...
-    "optimize_tendon_slack_length"];
+    "optimize_tendon_slack_lengths"];
 output = zeros(1,length(items));
 for i=1:length(items)
-    output(i) = tree.(items(i)).Text == 'true';
+    tree.(items(i)).Text
+    output(i) = strcmp(tree.(items(i)).Text, 'true');
 end
 end
 
