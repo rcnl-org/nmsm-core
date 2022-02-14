@@ -1,10 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function pulls the files from the directory given as the input
-% starting with 1.sto, 2.sto and continuing to n.sto and stops when the
-% file cannot be found in the directory. These files are then organized
-% into a 4D matrix with dimensions matching: (numFrames, numTrials,
-% numMuscles, numJoints)
+% This function makes a list of subdirectories and finds the coordinates in
+% the subdirectories to organize the files into a 4D data matrix with
+% dimensions matching: (numFrames, numTrials, numMuscles, numJoints)
 %
 % (string) -> (4D matrix of number)
 % returns a 4D matrix of the loaded moment arm trials
@@ -33,7 +31,7 @@
 
 function output = parseMomentArms(inputDirectory, model)
 import org.opensim.modeling.Storage
-trialDirs = findMuscleAnalysisDirectories(inputDirectory);
+trialDirs = findFirstLevelSubDirectories(inputDirectory);
 firstTrial = parseMuscleAnalysisCoordinates(trialDirs(1), model);
 cells = zeros([length(trialDirs) size(firstTrial)]);
 cells(1, :, :, :) = firstTrial;
@@ -44,17 +42,6 @@ end
 output = permute(cells, [4 1 3 2]);
 end
 
-function dirs = findMuscleAnalysisDirectories(inputDirectory)
-listings = dir(inputDirectory);
-dirs = string([]);
-for i=1:length(listings)
-    if(listings(i).isdir && ~strcmp(listings(i).name, ".") && ...
-            ~strcmp(listings(i).name, ".."))
-        dirs(end+1) = fullfile(inputDirectory, listings(i).name);
-    end
-end
-dirs = string(dirs);
-end
 
 function cells = parseMuscleAnalysisCoordinates(inputDirectory, model)
 import org.opensim.modeling.Storage
