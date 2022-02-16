@@ -33,7 +33,6 @@ function MuscleTendonPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-inputs.Emg = changeNumEmgPoints(emgData, 101); % downsample to 101 points
 results = MuscleTendonPersonalization(inputs, params);
 reportMuscleTendonPersonalization(inputs.model, results)
 saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory);
