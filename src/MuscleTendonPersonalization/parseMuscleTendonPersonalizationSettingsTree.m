@@ -33,12 +33,15 @@ function [inputs, params, resultsDirectory] = ...
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+if(isempty(resultsDirectory))
+    resultsDirectory = pwd;
+end
 end
 
 function inputs = getInputs(tree)
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
-if(inputDirectory)
+if(~isempty(inputDirectory))
     inputs.model = Model(fullfile(inputDirectory, modelFile));
 else
     inputs.model = Model(fullfile(pwd, modelFile));
@@ -83,10 +86,9 @@ items = ["optimize_electromechanical_delays", ...
     "optimize_activation_nonlinearity_constants", ...
     "optimize_emg_scale_factors", "optimize_optimal_muscle_lengths", ...
     "optimize_tendon_slack_lengths"];
-output = zeros(1,length(items));
+output.isIncluded = zeros(1,length(items));
 for i=1:length(items)
-    tree.(items(i)).Text
-    output(i) = strcmp(tree.(items(i)).Text, 'true');
+    output.isIncluded(i) = strcmp(tree.(items(i)).Text, 'true');
 end
 end
 
