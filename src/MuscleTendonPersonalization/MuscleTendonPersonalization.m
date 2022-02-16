@@ -5,6 +5,11 @@
 %
 % inputs:
 %   - model (Model)
+%   - jointMoment (3D array)
+%   - muscleTendonLength (3D array)
+%   - muscleTendonVelocity (3D array)
+%   - muscleTendonMomentArm (4D array)
+%   - emgData (3D array)
 %
 % (struct, struct) -> (struct)
 % Runs the Muscle Tendon Personalization algorithm
@@ -46,6 +51,30 @@ for i=1:length(inputs.tasks)
     primaryValues = updateDesignVariables(primaryValues, ...
         optimizedValues, taskParams);
 end
+end
+
+% (struct) -> (None)
+% throws an error if any of the inputs are invalid
+function verifyInputs(inputs)
+try verifyModelArg(inputs.model); %check model args
+catch; throw(MException('','inputs.model cannot instantiate a model')); end
+try verifyMuscleTendonPersonalizationData(inputs);
+catch; throw(MException('','data is not of matching sizes')); end
+for i=1:length(input.tasks)
+    try verifyNumeric(input.tasks{i}.isIncluded);
+    catch; throw(MException('',strcat('invalid isIncluded boolean', ...
+        'array for task ', num2str(i))));
+    end
+end
+end
+
+% (struct) -> (None)
+% throws an error if the parameter is included but is not of valid type
+function verifyParams(params)
+verifyParam(params, 'maxIterations', @verifyNumeric, ...
+    'param maxFunctionEvaluations is not a number');
+verifyParam(params, 'maxFunctionEvaluations', @verifyNumeric, ...
+    'param maxFunctionEvaluations is not a number');
 end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
