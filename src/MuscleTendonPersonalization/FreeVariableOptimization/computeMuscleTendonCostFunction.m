@@ -11,6 +11,8 @@
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
+
+
 % nmsm.rice.edu and the NOTICE file for more information. The             %
 % NMSM Pipeline is developed at Rice University and supported by the US   %
 % National Institutes of Health (R01 EB030520).                           %
