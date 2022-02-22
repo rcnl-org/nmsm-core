@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% Penalize differences in EMGScales and electromechanical time delay 
+% differences between paired muscles
 %
 % (struct, array of string, struct) -> (number)
-% calculates the cost of penalizing paired muscle separation
+% calculates the cost of differences between paired muscles
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,13 +31,13 @@
 function cost = calcPairedMusclePenalties(valuesStruct, ...
     ActivationPairs, params)
 % Penalize violation of EMGScales similarity between paired muscles
-DVs_EMGScale = calcDifferencesInEMGPairs(findCorrectValues(4, ...
+DVs_EMGScale = calcDifferencesInEMGPairs(findCorrectMtpValues(4, ...
     valuesStruct), ActivationPairs);
 cost.emgScalePairedSimilarity = calcPenalizeDifferencesCostTerm( ...
     DVs_EMGScale, params.errorCenters(9), params.maxAllowableErrors(9));
 % Penalize violation of tdelay similarity between paired muscles
-if size(findCorrectValues(1, valuesStruct),2)>2
-    DVs_tdelay = calcDifferencesInEMGPairs(findCorrectValues(1, ...
+if size(findCorrectMtpValues(1, valuesStruct), 2)>2
+    DVs_tdelay = calcDifferencesInEMGPairs(findCorrectMtpValues(1, ...
         valuesStruct), ActivationPairs);
     cost.tdelayPairedSimilarity = calcPenalizeDifferencesCostTerm( ...
         DVs_tdelay, params.errorCenters(10), ...
