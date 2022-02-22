@@ -1,6 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% A cost is calculcated to discourage differences between the emgScaling
+% factors for paired muscles
 %
 % (array of number, array of string) -> (array of number)
 % calculates the cost of differences in EMG pairs
