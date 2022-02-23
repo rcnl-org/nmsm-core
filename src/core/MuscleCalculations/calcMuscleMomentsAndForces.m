@@ -51,10 +51,11 @@
 
 function [passiveForce, muscleForce, muscleMoments, modelMoments] = ...
     calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations)
+    muscleActivations, valuesStruct)
 
 [lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams);
+    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams, ...
+    valuesStruct);
 % Preallocation of Memory
 muscleMoments = zeros([size(hillTypeParams.lMt), size(momentArms, 2)]); 
 onesCol = ones(size(hillTypeParams.lMt, 1), size(hillTypeParams.lMt, 2));
