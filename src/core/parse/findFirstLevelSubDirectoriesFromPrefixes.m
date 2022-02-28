@@ -28,13 +28,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function dirs = findFirstLevelSubDirectories(inputDirectory)
+function dirs = findFirstLevelSubDirectoriesFromPrefixes( ...
+    inputDirectory, prefixes)
 listings = dir(inputDirectory);
 dirs = string([]);
-for i=1:length(listings)
-    if(listings(i).isdir && ~strcmp(listings(i).name, ".") && ...
-            ~strcmp(listings(i).name, ".."))
-        dirs(end+1) = fullfile(inputDirectory, listings(i).name);
+for i=1:length(prefixes)
+    for j=1:length(listings)
+        index = strfind(listings(j).name, prefixes(i));
+        if(length(index)==1)
+            dirs(end+1) = fullfile(inputDirectory, listings(j).name);
+        end
     end
 end
 dirs = string(dirs);
