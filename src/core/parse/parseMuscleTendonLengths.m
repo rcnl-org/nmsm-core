@@ -29,25 +29,30 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = parseMuscleTendonLengths(inputDirectory)
+function output = parseMuscleTendonLengths(directories)
 import org.opensim.modeling.Storage
-trialDirs = findFirstLevelSubDirectories(inputDirectory);
-firstTrial = parseMuscleAnalysisLength(trialDirs(1));
-cells = zeros([length(trialDirs) size(firstTrial)]);
+firstTrial = parseMuscleAnalysisLength(directories(1));
+cells = zeros([length(directories) size(firstTrial)]);
 cells(1, :, :) = firstTrial;
-for i=2:length(trialDirs)
-    cells(i, :, :) = parseMuscleAnalysisLength(trialDirs(i));
+for i=2:length(directories)
+    cells(i, :, :) = parseMuscleAnalysisLength(directories(i));
 end
 output = permute(cells, [3, 1, 2]);
 end
 
 function data = parseMuscleAnalysisLength(inputDirectory)
 import org.opensim.modeling.Storage
+data = '';
 files = findDirectoryFileNames(inputDirectory);
 for i=1:length(files)
     if(contains(files(i), "Length.sto"))
         data = storageToDoubleMatrix(Storage(files(i)));
         break;
     end
+end
+if(strcmp(data, ''))
+    throw(MException('',"Unable to find Length.sto data file in " + ...
+    "directory " + strrep(inputDirectory, '\', '\\') + ...
+    " with prefix matching the input directory"))
 end
 end
