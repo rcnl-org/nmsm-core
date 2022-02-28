@@ -60,8 +60,8 @@ try verifyModelArg(inputs.model); %check model args
 catch; throw(MException('','inputs.model cannot instantiate a model')); end
 try verifyMuscleTendonPersonalizationData(inputs);
 catch; throw(MException('','data is not of matching sizes')); end
-for i=1:length(input.tasks)
-    try verifyNumeric(input.tasks{i}.isIncluded);
+for i=1:length(inputs.tasks)
+    try verifyNumeric(inputs.tasks{i}.isIncluded);
     catch; throw(MException('',strcat('invalid isIncluded boolean', ...
         'array for task ', num2str(i))));
     end
@@ -71,10 +71,14 @@ end
 % (struct) -> (None)
 % throws an error if the parameter is included but is not of valid type
 function verifyParams(params)
-verifyParam(params, 'maxIterations', @verifyNumeric, ...
-    'param maxFunctionEvaluations is not a number');
-verifyParam(params, 'maxFunctionEvaluations', @verifyNumeric, ...
-    'param maxFunctionEvaluations is not a number');
+if(isfield(params, 'maxIterations'))
+    verifyParam(params, 'maxIterations', @verifyNumeric, ...
+        'param maxFunctionEvaluations is not a number');
+end
+if(isfield(params, 'maxFunctionEvaluations'))
+    verifyParam(params, 'maxFunctionEvaluations', @verifyNumeric, ...
+        'param maxFunctionEvaluations is not a number');
+end
 end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
@@ -148,5 +152,10 @@ end
 % (struct, struct) -> (struct)
 % prepare optimizer parameters for the given task
 function taskParams = makeTaskParams(taskInputs, params)
-
+if(~isfield(params, 'maxIterations'))
+    taskParams.maxIterations = 2e3;
+end
+if(isfield(params, 'maxFunctionEvaluations'))
+    taskParams.maxFunctionEvaluations = 1e8;
+end
 end
