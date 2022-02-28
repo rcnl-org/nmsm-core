@@ -34,7 +34,12 @@
 function files = findFileListFromPrefixList(directory, prefixes)
 files = string([]);
 for i=1:length(prefixes)
-    files(end+1) = findFullFileFromPrefix(directory, prefixes(i));
+    temp = findFullFileFromPrefix(directory, prefixes(i));
+    if(strcmp(temp, ''))
+        throw(MException('', "unable to find file with prefix " + ...
+            prefixes(i) + " in directory " + strrep(directory, '\','\\')))
+    end
+    files(end+1) = temp;
 end
 end
 
