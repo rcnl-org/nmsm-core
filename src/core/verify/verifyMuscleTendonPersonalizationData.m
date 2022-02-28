@@ -33,17 +33,14 @@
 function verifyMuscleTendonPersonalizationData(inputs)
 verifyFieldsExist(inputs)
 try
-    sizeReference = size(inputs.jointMoment);
+    sizeReference = size(inputs.muscleTendonVelocity);
     verifyLength(sizeReference, 3)
-    all(sizeReference == size(inputs.muscleTendonLength))
-    if(~all(sizeReference == size(inputs.muscleTendonLength)))
-        error(); end
-    if(~all(sizeReference == size(inputs.muscleTendonVelocity)))
-        error(); end
-    momentArmSize = size(inputs.muscleTendonMomentArm);
-    if(~all(sizeReference == momentArmSize(1:3)))
-        error(); end
-    if(~all(sizeReference == size(inputs.emgData))) error(); end
+%     if(~all(sizeReference == size(inputs.muscleTendonLength)))
+%         error(); end
+%     momentArmSize = size(inputs.muscleTendonMomentArm);
+%     if(~all(sizeReference == momentArmSize(1:3)))
+%         error(); end
+%     if(~all(sizeReference == size(inputs.emgData))) error(); end
 catch
     throw(MException('','data value dimensions do not match'))
 end
