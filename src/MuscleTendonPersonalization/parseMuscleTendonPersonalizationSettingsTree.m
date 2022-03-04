@@ -47,9 +47,7 @@ else
     inputs.model = Model(fullfile(pwd, modelFile));
     inputDirectory = pwd;
 end
-prefixes = findDirectoryPrefixesFromSuffix(fullfile(inputDirectory, ...
-    getFieldByNameOrError(tree, 'joint_moment_directory').Text), ...
-    "_ik");
+prefixes = getPrefixes(tree, inputDirectory);
 inputs.jointMoment = parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(inputDirectory, getFieldByNameOrError(tree, ...
     'joint_moment_directory').Text), prefixes));
@@ -66,6 +64,18 @@ directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
 inputs.muscleTendonLength = parseMuscleTendonLengths(directories);
 inputs.muscleTendonMomentArm = parseMomentArms(directories, inputs.model);
 inputs.tasks = getTasks(tree);
+end
+
+% (struct) -> (Array of string)
+function prefixes = getPrefixes(tree, inputDirectory)
+prefixField = getFieldByName(tree, 'trial_prefixes');
+if(length(prefixField.Text) > 0)
+    prefixes = strsplit(prefixField.Text, ' ');
+else
+    prefixes = findDirectoryPrefixesFromSuffix(fullfile(inputDirectory, ...
+    getFieldByNameOrError(tree, 'joint_moment_directory').Text), ...
+    "_ik");
+end
 end
 
 % (struct, string, struct) -> (struct)
