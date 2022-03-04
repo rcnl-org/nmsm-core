@@ -4,17 +4,15 @@
 		<!--Directory used for writing results.-->
 		<results_directory/>
 		<!--Directory for input files-->
-        <input_directory>D:/RCNL/muscle-tendon-personalization/DataFilesForAnalysis</input_directory>
+        <input_directory/>
 		<!--Name of the input model file (.osim) to use-->
 		<input_model_file>optModel.osim</input_model_file>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains joint moment files-->
 		<joint_moment_directory>JointAngles</joint_moment_directory>
-		<!--The directory relative to <input_directory> (input_directory/*value*) that contains muscle length files-->
-		<muscle_length_directory>MuscleAnalysis</muscle_length_directory>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains muscle velocity files-->
 		<muscle_velocity_directory>ID moments</muscle_velocity_directory>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains muscle moment arm files-->
-		<muscle_moment_arm_directory>MuscleAnalysis</muscle_moment_arm_directory>
+		<muscle_analysis_directory>MuscleAnalysis</muscle_analysis_directory>
 		<!--The directory relative to <input_directory> (input_directory/*value*) that contains EMG data files-->
 		<emg_data_directory>JointAngles</emg_data_directory>
         <!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
@@ -42,5 +40,7 @@
 		<max_iterations>2e3</max_iterations>
 		<!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
 		<max_function_evaluations>1e8</max_function_evaluations>
+		<!--*Optional* space-separated list of prefixes to use for data files, if left blank, use all prefixes fron IK folder-->
+		<trial_prefixes></trial_prefixes>
 	</MuscleTendonPersonalizationTool>
 </OpenSimDocument>
