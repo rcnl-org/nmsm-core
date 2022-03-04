@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function retreived getFieldByName's result, but if the result is
-% that the element doesn't exist, it returns an error. This can be used to
-% find the field name of required elements and throw a standard error when
-% they are not available.
+% This function makes a list of subdirectories and finds the coordinates in
+% the subdirectories to organize the files into a 4D data matrix with
+% dimensions matching: (numFrames, numTrials, numMuscles, numJoints)
 %
-% (struct, string) -> (struct)
-% Gets field by name or throws error
+% (string) -> (4D matrix of number)
+% returns a 4D matrix of the loaded moment arm trials
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,10 +29,40 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByNameOrError(deepStruct, field)
-output = getFieldByName(deepStruct, field);
-if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+function output = parseMomentArms(directories, model)
+import org.opensim.modeling.Storage
+firstTrial = parseMuscleAnalysisCoordinates(directories(1), model);
+cells = zeros([length(directories) size(firstTrial)]);
+cells(1, :, :, :) = firstTrial;
+for i=2:length(directories)
+    cells(i, :, :, :) = parseMuscleAnalysisCoordinates(directories(i), ...
+        model);
+end
+output = permute(cells, [4 1 3 2]);
+end
+
+
+function cells = parseMuscleAnalysisCoordinates(inputDirectory, model)
+import org.opensim.modeling.Storage
+coordFileNames = findMuscleAnalysisCoordinateFiles(inputDirectory, model);
+firstFile = storageToDoubleMatrix(Storage(coordFileNames(1)));
+cells = zeros([length(coordFileNames) size(firstFile)]);
+cells(1, :, :) = firstFile;
+for i=2:length(coordFileNames)
+    cells(2, :, :) = storageToDoubleMatrix(Storage(coordFileNames(i)));
 end
 end
 
+function names = findMuscleAnalysisCoordinateFiles(directory, model)
+files = dir(directory);
+names = string([]);
+for i=0:model.getCoordinateSet().getSize()-1
+    for j=1:length(files)
+        if(contains(files(j).name, strcat("MomentArm_", ...
+                model.getCoordinateSet().get(i).getName().toCharArray', ...
+                ".sto")))
+            names(end+1) = fullfile(directory, files(j).name);
+        end
+    end
+end
+end

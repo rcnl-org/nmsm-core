@@ -1,12 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function retreived getFieldByName's result, but if the result is
-% that the element doesn't exist, it returns an error. This can be used to
-% find the field name of required elements and throw a standard error when
-% they are not available.
+% This function checks if the field exists within the struct, if it doesn't
+% it throws an error
 %
-% (struct, string) -> (struct)
-% Gets field by name or throws error
+% (struct, field) -> (None)
+% Throws error if field doesn't exist
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,10 +28,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByNameOrError(deepStruct, field)
-output = getFieldByName(deepStruct, field);
-if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+function verifyField(inputs, field)
+if(~isfield(inputs, field))
+    throw(MException('',strcat('field "', field, '" does not exist')))
 end
 end
 

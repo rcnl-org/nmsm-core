@@ -1,12 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function retreived getFieldByName's result, but if the result is
-% that the element doesn't exist, it returns an error. This can be used to
-% find the field name of required elements and throw a standard error when
-% they are not available.
+% This function looks in the given directory for all subdirectories and
+% returns their names as a string array
 %
-% (struct, string) -> (struct)
-% Gets field by name or throws error
+% (string) -> (Array of string)
+% returns a 3D matrix of the loaded muscle tendon length data
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,10 +28,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByNameOrError(deepStruct, field)
-output = getFieldByName(deepStruct, field);
-if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+function dirs = findFirstLevelSubDirectoriesFromPrefixes( ...
+    inputDirectory, prefixes)
+listings = dir(inputDirectory);
+dirs = string([]);
+for i=1:length(prefixes)
+    for j=1:length(listings)
+        index = strfind(listings(j).name, prefixes(i));
+        if(length(index)==1)
+            dirs(end+1) = fullfile(inputDirectory, listings(j).name);
+        end
+    end
 end
+dirs = string(dirs);
 end
-

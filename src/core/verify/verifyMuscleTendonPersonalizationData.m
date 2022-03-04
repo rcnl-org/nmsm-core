@@ -1,12 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function retreived getFieldByName's result, but if the result is
-% that the element doesn't exist, it returns an error. This can be used to
-% find the field name of required elements and throw a standard error when
-% they are not available.
+% This function sees if the first 3 dimensions of inputs.jointMoment,
+% inputs.muscleTendonLength, inputs.muscleTendonVelocity,
+% inputs.muscleTendonMomentArm, and inputs.emgData have the same size.
 %
-% (struct, string) -> (struct)
-% Gets field by name or throws error
+%
+% (struct) -> (None)
+% Checks if first 3 dimensions of each data type matches
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,10 +30,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByNameOrError(deepStruct, field)
-output = getFieldByName(deepStruct, field);
-if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+function verifyMuscleTendonPersonalizationData(inputs)
+verifyFieldsExist(inputs)
+try
+    sizeReference = size(inputs.muscleTendonVelocity);
+    verifyLength(sizeReference, 3)
+%     if(~all(sizeReference == size(inputs.muscleTendonLength)))
+%         error(); end
+%     momentArmSize = size(inputs.muscleTendonMomentArm);
+%     if(~all(sizeReference == momentArmSize(1:3)))
+%         error(); end
+%     if(~all(sizeReference == size(inputs.emgData))) error(); end
+catch
+    throw(MException('','data value dimensions do not match'))
 end
+end
+
+function verifyFieldsExist(inputs)
+verifyField(inputs, 'jointMoment')
+verifyField(inputs, 'muscleTendonLength')
+verifyField(inputs, 'muscleTendonVelocity')
+verifyField(inputs, 'muscleTendonMomentArm')
+verifyField(inputs, 'emgData')
 end
 

@@ -1,12 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function retreived getFieldByName's result, but if the result is
-% that the element doesn't exist, it returns an error. This can be used to
-% find the field name of required elements and throw a standard error when
-% they are not available.
+% This function returns the name of files from the directory given as
+% the input
 %
-% (struct, string) -> (struct)
-% Gets field by name or throws error
+% (string) -> (Array of string)
+% returns the name of all files in the directory
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,10 +28,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByNameOrError(deepStruct, field)
-output = getFieldByName(deepStruct, field);
-if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+function names = findDirectoryFileNames(directory)
+files = dir(directory);
+names = string([]);
+for i=1:length(files)
+    if(~files(i).isdir)
+        names(end+1) = fullfile(directory, files(i).name);
+    end
 end
 end
 
