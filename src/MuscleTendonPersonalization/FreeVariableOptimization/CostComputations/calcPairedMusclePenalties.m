@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
 %
-% inputs
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% (struct, array of string, struct) -> (number)
+% calculates the cost of penalizing paired muscle separation
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,40 +27,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, IsIncluded, params)
-
-% Update these functions to call findCorrectValues
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
-
-% Update these functions to call findCorrectValues
-[passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations);
-[lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams);
-
-% valuesStruct needs to be created to contain (primaryValues, ...
-% secondaryValues, IsIncluded)
-costs = calcAllTrackingCosts(valuesStruct, params, ...
-    modelMoments, lMtilda);
-costs = calcAllDeviationPenaltyCosts(valuesStruct, params, ...
-    passiveForce);
-costs = calcLmTildaCurveChangesCost(lMtilda, lMtildaExprimental, ...
-    lmtildaPairs, params);
-costs = calcPairedMusclePenalties(valuesStruct, ActivationPairs, ...
-    params);
-
-% Combine all costs into single vector
-outputCost = combineCostsIntoVector(params.costWeight, costs);
-Cost(isnan(Cost))=0;
+function cost = calcPairedMusclePenalties(valuesStruct, ...
+    ActivationPairs, params)
+% Penalize violation of EMGScales similarity between paired muscles
+DVs_EMGScale = calcDifferencesInEMGPairs(findCorrectValues(4, ...
+    valuesStruct), ActivationPairs);
+cost.emgScalePairedSimilarity = calcPenalizeDifferencesCostTerm( ...
+    DVs_EMGScale, params.errorCenters(9), params.maxAllowableErrors(9));
+% Penalize violation of tdelay similarity between paired muscles
+if size(findCorrectValues(1, valuesStruct),2)>2
+    DVs_tdelay = calcDifferencesInEMGPairs(findCorrectValues(1, ...
+        valuesStruct), ActivationPairs);
+    cost.tdelayPairedSimilarity = calcPenalizeDifferencesCostTerm( ...
+        DVs_tdelay, params.errorCenters(10), ...
+        params.maxAllowableErrors(10));
+else
+    cost.tdelayPairedSimilarity = 0;
 end
-
-
-
-
-
-
-
+end
