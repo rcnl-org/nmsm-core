@@ -28,17 +28,96 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params] = ...
+function [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
+resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+if(isempty(resultsDirectory))
+    resultsDirectory = pwd;
+end
 end
 
-function inputs = getInputs(settingsTree)
-
+function inputs = getInputs(tree)
+inputDirectory = getFieldByName(tree, 'input_directory').Text;
+modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
+if(~isempty(inputDirectory))
+    inputs.model = Model(fullfile(inputDirectory, modelFile));
+else
+    inputs.model = Model(fullfile(pwd, modelFile));
+    inputDirectory = pwd;
+end
+prefixes = getPrefixes(tree, inputDirectory);
+inputs.jointMoment = parseMtpStandard(findFileListFromPrefixList( ...
+    fullfile(inputDirectory, getFieldByNameOrError(tree, ...
+    'joint_moment_directory').Text), prefixes));
+inputs.muscleTendonVelocity = parseMtpStandard( ...
+    findFileListFromPrefixList(fullfile(inputDirectory, ...
+    getFieldByNameOrError(tree, 'muscle_velocity_directory').Text), ...
+    prefixes));
+inputs.emgData = parseMtpStandard(findFileListFromPrefixList( ...
+    fullfile(inputDirectory, getFieldByNameOrError(tree, ...
+    'emg_data_directory').Text), prefixes));
+directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
+    inputDirectory, getFieldByNameOrError(tree, ...
+    'muscle_analysis_directory').Text), prefixes);
+inputs.muscleTendonLength = parseMuscleTendonLengths(directories);
+inputs.muscleTendonMomentArm = parseMomentArms(directories, inputs.model);
+inputs.tasks = getTasks(tree);
 end
 
-function params = getParams(settingsTree)
+% (struct) -> (Array of string)
+function prefixes = getPrefixes(tree, inputDirectory)
+prefixField = getFieldByName(tree, 'trial_prefixes');
+if(length(prefixField.Text) > 0)
+    prefixes = strsplit(prefixField.Text, ' ');
+else
+    prefixes = findDirectoryPrefixesFromSuffix(fullfile(inputDirectory, ...
+    getFieldByNameOrError(tree, 'joint_moment_directory').Text), ...
+    "_ik");
+end
+end
 
+% (struct, string, struct) -> (struct)
+function output = getTasks(tree)
+tasks = getFieldByNameOrError(tree, 'MuscleTendonPersonalizationTaskList');
+counter = 1;
+for i=1:length(tasks.MuscleTendonPersonalizationTask)
+    if(length(tasks.MuscleTendonPersonalizationTask) == 1)
+        task = tasks.MuscleTendonPersonalizationTask;
+    else
+        task = tasks.MuscleTendonPersonalizationTask{i};
+    end
+    if(task.is_enabled.Text == 'true')
+        output{counter} = getTask(task);
+        counter = counter + 1;
+    end
+end
+end
+
+% (integer, struct, string, struct) -> (struct)
+function output = getTask(tree)
+items = ["optimize_electromechanical_delays", ...
+    "optimize_activation_time_constants", ...
+    "optimize_activation_nonlinearity_constants", ...
+    "optimize_emg_scale_factors", "optimize_optimal_muscle_lengths", ...
+    "optimize_tendon_slack_lengths"];
+output.isIncluded = zeros(1,length(items));
+for i=1:length(items)
+    output.isIncluded(i) = strcmp(tree.(items(i)).Text, 'true');
+end
+end
+
+% (struct) -> (struct)
+function params = getParams(tree)
+params = struct();
+maxIterations = getFieldByName(tree, 'max_iterations');
+if(isstruct(maxIterations))
+    params.maxIterations = str2double(maxIterations.Text);
+end
+maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
+if(isstruct(maxFunctionEvaluations))
+    params.maxFunctionEvaluations = str2double(maxFunctionEvaluations.Text);
+end
 end
 

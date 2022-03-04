@@ -1,12 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function retreived getFieldByName's result, but if the result is
-% that the element doesn't exist, it returns an error. This can be used to
-% find the field name of required elements and throw a standard error when
-% they are not available.
+% This function pulls the files from the directory given as the input
+% starting with 1.sto, 2.sto and continuing to n.sto and stops when the
+% file cannot be found in the directory. These files are then organized
+% into a 3D matrix with dimensions matching: (numFrames, numTrials,
+% numMuscles)
 %
-% (struct, string) -> (struct)
-% Gets field by name or throws error
+% (Array of string) -> (3D matrix of number)
+% returns a 3D matrix of the loaded data trials
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,10 +31,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByNameOrError(deepStruct, field)
-output = getFieldByName(deepStruct, field);
-if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+function output = parseMtpStandard(files)
+import org.opensim.modeling.Storage
+dataFromFileOne = storageToDoubleMatrix(Storage(files(1)));
+cells = zeros([length(files) ...
+    size(dataFromFileOne)]);
+cells(1, :, :) = dataFromFileOne;
+for i=2:length(files)
+    cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
 end
+output = permute(cells, [3, 1, 2]);
 end
-
