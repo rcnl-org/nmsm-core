@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost associated to joint moment matching   %
-% while penalizing muscle parameter differences and violations.           %
+% This function calculates the cost for tracking values 
 %
-% inputs
-%
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% (Array of number, Array of number, number, number) -> (Array of number)
+% returns tracking cost
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,40 +27,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, IsIncluded, params)
+function cost = calcTrackingCostTerm(modelValue, experimentalValue, ...
+    errorCenter, maxAllowableError)
 
-% Update these functions to call findCorrectValues
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
+errorMatching = modelValue - experimentalValue;
+cost = ((errorMatching - errorCenter) ./ maxAllowableError) ./ ...
+    sqrt(size(errorMatching(:), 1));
 
-% Update these functions to call findCorrectValues
-[passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations);
-[lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams);
-
-% valuesStruct needs to be created to contain (primaryValues, ...
-% secondaryValues, IsIncluded)
-costs = calcAllTrackingCosts(valuesStruct, params, ...
-    modelMoments, lMtilda);
-costs = calcAllDeviationPenaltyCosts(valuesStruct, params, ...
-    passiveForce);
-costs = calcLmTildaCurveChangesCost(lMtilda, lMtildaExprimental, ...
-    lmtildaPairs, params);
-costs = calcPairedMusclePenalties(valuesStruct, ActivationPairs, ...
-    params);
-
-% Combine all costs into single vector
-outputCost = combineCostsIntoVector(params.costWeight, costs);
-Cost(isnan(Cost))=0;
 end
-
-
-
-
-
-
-

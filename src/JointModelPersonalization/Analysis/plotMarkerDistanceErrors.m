@@ -14,6 +14,8 @@ storages{1}.getTimeColumn(time);
 time = columnToArray(time);
 legendList = {};
 
+plots = [];
+
 if(onePlot)
     for i=1:storages{1}.getColumnLabels.getSize()-1
         for j=1:length(storages)
@@ -33,7 +35,7 @@ else
     plotSize = ceil(sqrt(storages{1}.getColumnLabels.getSize()-1));
     tiledlayout(plotSize, plotSize);
     for i=1:storages{1}.getColumnLabels().getSize()-1
-        nexttile
+        plots(end+1) = nexttile;
         for j=1:length(storages)
             yArray = ArrayDouble();
             storages{j}.getDataColumn(i-1,yArray);
@@ -48,6 +50,7 @@ else
         legend(legendList)
         legendList = {};
     end
+    linkaxes(plots, 'xy')
 end
 end
 
