@@ -62,47 +62,44 @@ output.desiredError = ...
 end
 
 function output = getTasks(model, tree, inputDirectory)
-    tasks = getFieldByNameOrError(tree, 'JointPersonalizationTaskList');
-    counter = 1;
-    for i=1:length(tasks.JointPersonalizationTask)
-        if(length(tasks.JointPersonalizationTask) == 1)
-            task = tasks.JointPersonalizationTask;
-        else
-            task = tasks.JointPersonalizationTask{i};
-        end
-        if(task.is_enabled.Text == 'true')
-            output{counter} = getTask(model, ...
-                task, inputDirectory);
-            counter = counter + 1;
-        end
+tasks = getFieldByNameOrError(tree, 'JointPersonalizationTaskList');
+counter = 1;
+for i=1:length(tasks.JointPersonalizationTask)
+    if(length(tasks.JointPersonalizationTask) == 1)
+        task = tasks.JointPersonalizationTask;
+    else
+        task = tasks.JointPersonalizationTask{i};
     end
+    if(task.is_enabled.Text == 'true')
+        output{counter} = getTask(model, task, inputDirectory);
+        counter = counter + 1;
+    end
+end
 end
 
 function output = getTask(model, tree, inputDirectory)
-    output = applyIKSettingsParams(tree, inputDirectory);
-    output.markerFile = fullfile(inputDirectory, ...
-        tree.marker_file_name.Text);
-    timeRange = getFieldByName(tree, 'time_range');
-    if(isstruct(timeRange))
-        timeRange = strsplit(timeRange.Text, ' ');
-        output.startTime = str2double(timeRange{1});
-        output.finishTime = str2double(timeRange{2});
-    end
-    output.parameters = getJointParameters(tree.Joint);%includes all joints
-    translationBounds = getFieldByName(tree, 'translation_bounds');
-    if(isstruct(translationBounds))
-        translationBounds = str2double(translationBounds.Text);
-    end
-    orientationBounds = getFieldByName(tree, 'orientation_bounds');
-    if(isstruct(orientationBounds))
-        orientationBounds = str2double(orientationBounds.Text);
-    end
-    output.initialValues = getInitialValues(model, output.parameters);
-    if(translationBounds || orientationBounds)
-        [output.lowerBounds, output.upperBounds] = getBounds(...
-            output.parameters, output.initialValues, ...
-            translationBounds, orientationBounds);
-    end
+output.markerFile = fullfile(inputDirectory, tree.marker_file_name.Text);
+timeRange = getFieldByName(tree, 'time_range');
+if(isstruct(timeRange))
+    timeRange = strsplit(timeRange.Text, ' ');
+    output.startTime = str2double(timeRange{1});
+    output.finishTime = str2double(timeRange{2});
+end
+output.parameters = getJointParameters(tree.Joint);%includes all joints
+translationBounds = getFieldByName(tree, 'translation_bounds');
+if(isstruct(translationBounds))
+    translationBounds = str2double(translationBounds.Text);
+end
+orientationBounds = getFieldByName(tree, 'orientation_bounds');
+if(isstruct(orientationBounds))
+    orientationBounds = str2double(orientationBounds.Text);
+end
+output.initialValues = getInitialValues(model, output.parameters);
+if(translationBounds || orientationBounds)
+    [output.lowerBounds, output.upperBounds] = getBounds(...
+        output.parameters, output.initialValues, ...
+        translationBounds, orientationBounds);
+end
 end
 
 % this function is long and ugly but is a rote and imperative way to
@@ -173,15 +170,6 @@ for i=1:length(parameters)
         lowerBounds(i) = initialValues(i) - orientationBounds;
         upperBounds(i) = initialValues(i) + orientationBounds;
     end
-end
-end
-
-function output = applyIKSettingsParams(tree, inputDirectory)
-import org.opensim.modeling.*
-output = struct(); %incase no ik_settings_file
-ikSettingsFile = getFieldByName(tree, 'ik_settings_file');
-if(isstruct(ikSettingsFile))
-    output.ikSettingsFile = fullfile(inputDirectory, ikSettingsFile.Text);
 end
 end
 

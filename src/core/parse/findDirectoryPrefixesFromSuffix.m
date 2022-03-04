@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function retreived getFieldByName's result, but if the result is
-% that the element doesn't exist, it returns an error. This can be used to
-% find the field name of required elements and throw a standard error when
-% they are not available.
+% This function returns an array of strings of the prefixes of the files
+% for a given suffix. If a file is named 'Patient4_Left_01_id.sto' then an
+% input of '_id.sto' will return 'Patient4_Left_01'.
 %
-% (struct, string) -> (struct)
-% Gets field by name or throws error
+% (string, string) -> (Array of string)
+% returns the name of all files in the directory
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,10 +29,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByNameOrError(deepStruct, field)
-output = getFieldByName(deepStruct, field);
-if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+function names = findDirectoryPrefixesFromSuffix(directory, suffix)
+files = dir(directory);
+names = string([]);
+for i=1:length(files)
+    index = strfind(files(i).name, suffix);
+    if(length(index)==1)
+        names(end+1) = files(i).name(1:index(1)-1);
+    end
 end
 end
 

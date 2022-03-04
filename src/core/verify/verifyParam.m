@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function retreived getFieldByName's result, but if the result is
-% that the element doesn't exist, it returns an error. This can be used to
-% find the field name of required elements and throw a standard error when
-% they are not available.
+% verifyParam takes a struct and checks that the field exists and passes
+% the value to the fn to verify the field's type. If it can't verify these
+% steps, throw and exception with the string given
 %
-% (struct, string) -> (struct)
-% Gets field by name or throws error
+% (struct, string, function, string) -> (None)
+% Runs the Muscle Tendon Personalization algorithm
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,10 +29,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByNameOrError(deepStruct, field)
-output = getFieldByName(deepStruct, field);
-if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+function verifyParam(structure, field, evalFunction, errorMessage)
+if(~isfield(structure, field))
+    throw(MException('', errorMessage))
+end
+try
+    evalFunction(structure.(field))
+catch
+    throw(MException('', errorMessage))
 end
 end
 

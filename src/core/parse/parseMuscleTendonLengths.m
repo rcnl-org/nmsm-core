@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function retreived getFieldByName's result, but if the result is
-% that the element doesn't exist, it returns an error. This can be used to
-% find the field name of required elements and throw a standard error when
-% they are not available.
+% This function looks in the given directory for all subdirectories and
+% finds a file that ends in Length.sto to load into the 3D number matrix
+% matching (numFrames, numTrials, numMuscles)
 %
-% (struct, string) -> (struct)
-% Gets field by name or throws error
+% (string) -> (3D matrix of number)
+% returns a 3D matrix of the loaded muscle tendon length data
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,10 +29,30 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByNameOrError(deepStruct, field)
-output = getFieldByName(deepStruct, field);
-if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+function output = parseMuscleTendonLengths(directories)
+import org.opensim.modeling.Storage
+firstTrial = parseMuscleAnalysisLength(directories(1));
+cells = zeros([length(directories) size(firstTrial)]);
+cells(1, :, :) = firstTrial;
+for i=2:length(directories)
+    cells(i, :, :) = parseMuscleAnalysisLength(directories(i));
 end
+output = permute(cells, [3, 1, 2]);
 end
 
+function data = parseMuscleAnalysisLength(inputDirectory)
+import org.opensim.modeling.Storage
+data = '';
+files = findDirectoryFileNames(inputDirectory);
+for i=1:length(files)
+    if(contains(files(i), "Length.sto"))
+        data = storageToDoubleMatrix(Storage(files(i)));
+        break;
+    end
+end
+if(strcmp(data, ''))
+    throw(MException('',"Unable to find Length.sto data file in " + ...
+    "directory " + strrep(inputDirectory, '\', '\\') + ...
+    " with prefix matching the input directory"))
+end
+end
