@@ -28,7 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, newNumPoints)
-
+function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
+    newNumPoints)
+oldTime = linspace(startTime, endTime, size(emgData, 2));
+newTime = linspace(startTime, endTime, newNumPoints);
+newEmgData = interp1(oldTime, emgData, newTime);
 end
 
