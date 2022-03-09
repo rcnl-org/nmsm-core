@@ -86,7 +86,8 @@ expandedData.shiftTime(emgData.getFirstTime()-expandedData.getFirstTime());
 expandedColumnNames = getStorageColumnNames(expandedData);
 for j=1:length(expandedColumnNames)
     arrayDouble = ArrayDouble();
-    emgData.getDataColumn(nameToGroup.(expandedColumnNames(j)), arrayDouble);
+    emgData.getDataColumn(nameToGroup.(expandedColumnNames(j)), ...
+        arrayDouble);
     temp = changeNumEmgPoints(arrayDoubleToDoubleArray(arrayDouble), ...
         emgData.getFirstTime(), emgData.getLastTime(), ...
         expandedData.getSize());
