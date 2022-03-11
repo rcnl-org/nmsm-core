@@ -33,18 +33,18 @@
 % ----------------------------------------------------------------------- %
 
 function expandEmgDatas(modelFileName, inputDirectory, outputDirectory, ...
-    expandedFileName)
+    expandedFileName, params)
 import org.opensim.modeling.Storage
 emgFileNames = findDirectoryFileNames(inputDirectory);
-expandedData = Storage(expandedFileName); % load ref columns
+expandedData = Storage(expandedFileName);
 emgData = Storage(emgFileNames(1)); % first emg data for making nameToGroup
 model = Model(modelFileName);
-nameToGroup = getMuscleNameToGroupStruct(model, ...
-    getStorageColumnNames(emgData), getStorageColumnNames(expandedData));
+groupToName = getMuscleNameByGroupStruct(model, ...
+    getStorageColumnNames(emgData));
 %iterate through and save output to directory
 i = 1; % while loop because first file was already loaded
 while i <= length(emgFileNames)
-    expandEmgData(expandedData, emgData, nameToGroup)
+    expandEmgData(expandedData, emgData, groupToName, params)
     [~, name, ext] = fileparts(emgFileNames(i));
     expandedData.print(fullfile(outputDirectory, ...
         name + "_expanded" + ext));
@@ -55,8 +55,7 @@ end
 
 % (Model, Array of string) -> (struct)
 % Get name to group relationship struct from model and group names
-function nameToGroup = getMuscleNameToGroupStruct(model, emgDataNames, ...
-    muscleAnalysisNames)
+function groupToName = getMuscleNameByGroupStruct(model, emgDataNames)
 for i=1:length(emgDataNames) % struct group names with muscle names inside
     groupSize = model.getForceSet().getGroup(emgDataNames(i)) ...
         .getMembers().size();
@@ -67,30 +66,23 @@ for i=1:length(emgDataNames) % struct group names with muscle names inside
             .toCharArray';
     end
 end
-for i=1:length(muscleAnalysisNames) % reverse direction - muscle names to
-    for j=1:length(emgDataNames)    % group name
-        if(~isempty(find(strcmp(muscleAnalysisNames(i), groupToName ...
-                .(emgDataNames(j))), 1)))
-            nameToGroup.(muscleAnalysisNames(i)) = emgDataNames(j);
-        end
-    end
-end
 end
 
-function expandEmgData(expandedData, emgData, nameToGroup)
-import org.opensim.modeling.ArrayDouble
+function expandEmgData(expandedData, emgData, namesByGroup, params)
 expandedData.scaleTime((emgData.getLastTime() - ... %scale time
     emgData.getFirstTime()) / (expandedData.getLastTime() - ...
     expandedData.getFirstTime())); %shift time
 expandedData.shiftTime(emgData.getFirstTime()-expandedData.getFirstTime());
+emgColumnNames = getStorageColumnNames(emgData);
 expandedColumnNames = getStorageColumnNames(expandedData);
-for j=1:length(expandedColumnNames)
-    arrayDouble = ArrayDouble();
-    emgData.getDataColumn(nameToGroup.(expandedColumnNames(j)), ...
-        arrayDouble);
-    temp = changeNumEmgPoints(arrayDoubleToDoubleArray(arrayDouble), ...
-        emgData.getFirstTime(), emgData.getLastTime(), ...
-        expandedData.getSize());
-    expandedData.setDataColumn(j-1, numberArrayToArrayDouble(temp));
+
+for i=1:length(emgColumnNames)
+    temp = processEmg(findStorageColumn(emgData, emgColumnNames(i)), ...
+        findTimeColumn(emgData), findTimeColumn(expandedData), params);
+    musclesInGroup = namesByGroup.(emgColumnNames(i));
+    for j=1:length(musclesInGroup)
+        expandedData.setDataColumn(find(strcmp(expandedColumnNames, ...
+            musclesInGroup(j))), numberArrayToArrayDouble(temp));
+    end
 end
 end
