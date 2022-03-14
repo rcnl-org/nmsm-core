@@ -29,6 +29,6 @@
 % ----------------------------------------------------------------------- %
 
 function assertWithinRange(experimental, expected, range)
-assert(abs(experimental-expected)<range)
+assert(all(abs(experimental-expected)<range,[1 2 3 4]))
 end
 
