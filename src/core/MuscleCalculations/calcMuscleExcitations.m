@@ -34,10 +34,11 @@ function [muscleExcitations] = calcMuscleExcitations(time, EmgSplines, ...
 
 % Interpolated Emg is formatted as (numFrames, numMusc, numTrials)
 if size(timeDelay, 2) == 1
-    Emg = evaluateEMGsplinesWithOneTimeDelay(time, EmgSplines, timeDelay);
+    Emg = evaluateEMGsplinesWithOneTimeDelay(time, EmgSplines, ...
+        timeDelay / 10);
 else
     Emg = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
-        EmgSplines, timeDelay); 
+        EmgSplines, timeDelay / 10); 
 end 
 % Emg is reformatted as (numFrames, numTrials, numMusc)
 Emg = permute(Emg, [1 3 2]); 
@@ -45,6 +46,5 @@ Emg = permute(Emg, [1 3 2]);
 EmgScalingFactor = permute(EmgScalingFactor(ones(size(EmgSplines, ...
     1), 1), :), [3 1 2]); 
 % muscleExcitations are scaled processed Emg signals
-muscleExcitations = Emg .* EmgScalingFactor(ones(size(time, 1), 1), ...
-    :, :); 
+muscleExcitations = Emg.* EmgScalingFactor(ones(size(time, 1), 1), :, :); 
 end
