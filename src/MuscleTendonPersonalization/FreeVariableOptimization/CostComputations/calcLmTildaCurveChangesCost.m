@@ -3,7 +3,8 @@
 % A cost is calculated to discourage differences between paired lmtilda
 % curves. 
 %
-% (struct, array of string, struct) -> (number)
+% (3D matrix, 3D matrix, cell array, array of number, array of number, 
+% struct) -> (struct)
 % calculates the cost of differences between paired lmtilda curves 
 
 % ----------------------------------------------------------------------- %
@@ -29,18 +30,18 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcLmTildaCurveChangesCost(lMtilda, lMtildaExprimental, ...
-    lmtildaPairs, params)
+    lmtildaPairs, errorCenters, maxAllowableErrors, cost)
 
 % Penalize violation of lMtilda similarity between paired muscles
 [lmtildaMeanSimilarityError, lmtildaShapeSimilarityError] = ...
     calcChangesInNormalizedMuscleFiberLengthCurves(lMtilda, ...
     lMtildaExprimental, lmtildaPairs);
 lmtildaMeanSimilarityPenalty = calcPenalizeDifferencesCostTerm( ...
-    lmtildaMeanSimilarityError, params.errorCenters(8), ...
-    params.maxAllowableErrors(8));
+    lmtildaMeanSimilarityError, errorCenters(8), ...
+    maxAllowableErrors(8));
 lmtildaShapeSimilarityPenalty = calcPenalizeDifferencesCostTerm( ...
-    lmtildaShapeSimilarityError, params.errorCenters(8), ...
-    params.maxAllowableErrors(8));
+    lmtildaShapeSimilarityError, errorCenters(8), ...
+    maxAllowableErrors(8));
 cost.lmtildaPairedSimilarity = [lmtildaMeanSimilarityPenalty; ...
     lmtildaShapeSimilarityPenalty];
 end
