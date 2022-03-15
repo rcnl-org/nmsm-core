@@ -3,7 +3,7 @@
 % Penalize differences in EMGScales and electromechanical time delay 
 % differences between paired muscles
 %
-% (struct, array of string, struct) -> (number)
+% (struct, cell array, array of number, array of number, struct) -> (struct)
 % calculates the cost of differences between paired muscles
 
 % ----------------------------------------------------------------------- %
@@ -29,19 +29,19 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcPairedMusclePenalties(valuesStruct, ...
-    activationPairs, params)
+    activationPairs, errorCenters, maxAllowableErrors, cost)
+
 % Penalize violation of EMGScales similarity between paired muscles
 deviationsEMGScale = calcDifferencesInEMGPairs(findCorrectMtpValues(4, ...
     valuesStruct), activationPairs);
 cost.emgScalePairedSimilarity = calcPenalizeDifferencesCostTerm( ...
-    deviationsEMGScale, params.errorCenters(9), params.maxAllowableErrors(9));
+    deviationsEMGScale, errorCenters(9), maxAllowableErrors(9));
 % Penalize violation of tdelay similarity between paired muscles
 if size(findCorrectMtpValues(1, valuesStruct), 2)>2
     deviationsTdelay = calcDifferencesInEMGPairs(findCorrectMtpValues(1, ...
         valuesStruct), activationPairs);
     cost.tdelayPairedSimilarity = calcPenalizeDifferencesCostTerm( ...
-        deviationsTdelay, params.errorCenters(10), ...
-        params.maxAllowableErrors(10));
+        deviationsTdelay, errorCenters(10), maxAllowableErrors(10));
 else
     cost.tdelayPairedSimilarity = 0;
 end
