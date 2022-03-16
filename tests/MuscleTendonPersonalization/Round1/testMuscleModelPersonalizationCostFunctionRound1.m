@@ -14,8 +14,8 @@ valuesStruct.primaryValues(1, :) = 0.5; % electromechanical delay
 valuesStruct.primaryValues(2, :) = 1.5; % activation time
 valuesStruct.primaryValues(3, :) = 0.05; % activation nonlinearity
 valuesStruct.primaryValues(4, :) = 0.5; % EMG scale factors
-valuesStruct.primaryValues(5, :) = 1; % lmo scale factor
-valuesStruct.primaryValues(6, :) = 1; % lts scale factor
+valuesStruct.primaryValues(5, :) = guess.Round1(1,1:numMuscles); % lmo scale factor
+valuesStruct.primaryValues(6, :) = guess.Round1(1,numMuscles+1:end); % lts scale factor
 
 valuesStruct.secondaryValues = [];
 for i = 1:length(valuesStruct.isIncluded)
@@ -27,7 +27,7 @@ end
 % Muscle Excitation Calculation
 
 muscleExcitations = calcMuscleExcitations(params.timeEMG, ...
-    params.EmgSplines, findCorrectMtpValues(1, valuesStruct), ...
+    params.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
     findCorrectMtpValues(4, valuesStruct));
 
 load('muscleExcitationsExpected.mat')
@@ -87,8 +87,8 @@ valuesStruct.primaryValues(1, :) = 0.5; % electromechanical delay
 valuesStruct.primaryValues(2, :) = 1.5; % activation time
 valuesStruct.primaryValues(3, :) = 0.05; % activation nonlinearity
 valuesStruct.primaryValues(4, :) = 0.5; % EMG scale factors
-valuesStruct.primaryValues(5, :) = 1; % lmo scale factor
-valuesStruct.primaryValues(6, :) = 1; % lts scale factor
+valuesStruct.primaryValues(5, :) = guess.Round1(1,1:numMuscles); % lmo scale factor
+valuesStruct.primaryValues(6, :) = guess.Round1(1,numMuscles+1:end); % lts scale factor
 
 valuesStruct.secondaryValues = [];
 for i = 1:length(valuesStruct.isIncluded)
