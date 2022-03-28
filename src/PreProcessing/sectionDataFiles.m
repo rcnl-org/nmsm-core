@@ -1,0 +1,53 @@
+% This function is part of the NMSM Pipeline, see file for full license.
+%
+% This function cuts the data files into the sections outlined with the
+% number of frames indicated
+%
+% Inputs -
+%   prefix - string name of trial
+%   fileName - string path of file
+%   timePairs - 2D array of size N x 2
+%
+% (string, string, string, string) -> (None)
+% Makes new EMG data files with columns matching the file given
+
+% ----------------------------------------------------------------------- %
+% The NMSM Pipeline is a toolkit for model personalization and treatment  %
+% optimization of neuromusculoskeletal models through OpenSim. See        %
+% nmsm.rice.edu and the NOTICE file for more information. The             %
+% NMSM Pipeline is developed at Rice University and supported by the US   %
+% National Institutes of Health (R01 EB030520).                           %
+%                                                                         %
+% Copyright (c) 2021 Rice University and the Authors                      %
+% Author(s): Claire V. Hammond                                            %
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         %
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
+
+function sectionDataFiles(fileNames, timePairs, numRows)
+import org.opensim.modeling.Storage
+for i=1:length(fileNames)
+    storage = Storage(fileNames(i));
+    for j=1:length(timePairs)
+        [filepath, name, ext] = fileparts(fileNames(i));
+        cutData(storage, timePairs(j,1), timePairs(j,2), numRows) ...
+            .print(fullfile(filepath, name + "_" + num2str(j) + ext));
+    end
+end
+end
+
+function newStorage = cutData(storage, startTime, endTime, numRows)
+import org.opensim.modeling.Storage
+newStorage = Storage(storage);
+newStorage.crop(startTime, endTime);
+newStorage.resampleLinear((endTime-startTime)/(numRows-1));
+end
