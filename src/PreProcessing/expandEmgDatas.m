@@ -3,7 +3,7 @@
 % This function expands the given EMG .sto files to match the names and
 % number of columns of a given muscle analysis file for use in the
 % MuscleTendonPersonalizationTool.
-% 
+%
 % expandedFileName is the name of the file to match column names and muscle
 % groups from. It is generally a Muscle Analysis file.
 %
@@ -32,25 +32,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function expandEmgDatas(modelFileName, inputDirectory, outputDirectory, ...
-    expandedFileName, params)
+function expandEmgDatas(modelFileName, emgFileName, outputDirectory, ...
+    expandedFileName, prefix, params)
 import org.opensim.modeling.Storage
-emgFileNames = findDirectoryFileNames(inputDirectory);
 expandedData = Storage(expandedFileName);
-emgData = Storage(emgFileNames(1)); % first emg data for making nameToGroup
+emgData = Storage(emgFileName); % first emg data for making nameToGroup
 model = Model(modelFileName);
 groupToName = getMuscleNameByGroupStruct(model, ...
     getStorageColumnNames(emgData));
 %iterate through and save output to directory
-i = 1; % while loop because first file was already loaded
-while i <= length(emgFileNames)
-    expandEmgData(expandedData, emgData, groupToName, params)
-    [~, name, ext] = fileparts(emgFileNames(i));
-    expandedData.print(fullfile(outputDirectory, ...
-        name + "_expanded" + ext));
-    i = i + 1;
-    if(i<=length(emgFileNames)); emgData = Storage(emgFileNames(i)); end
-end 
+expandEmgData(expandedData, emgData, groupToName, params)
+[~, ~, ext] = fileparts(emgFileName);
+expandedData.print(fullfile(outputDirectory, ...
+    prefix + ext));
 end
 
 % (Model, Array of string) -> (struct)
