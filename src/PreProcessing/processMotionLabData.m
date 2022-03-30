@@ -53,7 +53,8 @@ filesToSection = [ ...
     fullfile(inputs.resultsDir, idResultsDir, inputs.prefix + ".sto"), ...
     fullfile(inputs.resultsDir, emgResultsDir, inputs.prefix + ".mot"), ...
     fullfile(inputs.resultsDir, maResultsDir, inputs.prefix + ...
-    "_Length.sto")];
+    "_Length.sto")
+    ];
 for i=1:length(inputs.coordinates)
     filesToSection(end+1) = fullfile(inputs.resultsDir, maResultsDir, ...
         inputs.prefix + "_MomentArm_" + inputs.coordinates(i) + ".sto");
@@ -62,10 +63,12 @@ numBufferRows = calcNumPaddingFrames(inputs.timePairs, params);
 paddedTimePairs = addBufferToTimePairs(inputs.timePairs, numBufferRows, ...
     params);
 sectionDataFiles(filesToSection, paddedTimePairs, ...
-    2 * numBufferRows + valueOrAlternate(params, 'rowsPerTrial', 101));
+    2 * numBufferRows + valueOrAlternate(params, 'rowsPerTrial', 101), ...
+    inputs.prefix);
 for i=1:length(filesToSection)
     delete(filesToSection(i));
 end
+moveMAFilesToSeparateDirectories(inputs, maResultsDir, paddedTimePairs)
 end
 
 
@@ -137,8 +140,27 @@ function newTimePairs = addBufferToTimePairs(timePairs, numBufferRows, ...
 rowsPerTrial = valueOrAlternate(params, 'rowsPerTrial', 101);
 for i=1:length(timePairs)
     trialTime = timePairs(i,2) - timePairs(i,1);
-    timePairs(i,1) = timePairs(i,1) - (numBufferRows / rowsPerTrial * trialTime);
-    timePairs(i,2) = timePairs(i,2) + (numBufferRows / rowsPerTrial * trialTime);
+    timePairs(i,1) = timePairs(i,1) - (numBufferRows / rowsPerTrial * ...
+        trialTime);
+    timePairs(i,2) = timePairs(i,2) + (numBufferRows / rowsPerTrial * ...
+        trialTime);
 end
 newTimePairs = timePairs;
+end
+
+function moveMAFilesToSeparateDirectories(inputs, maResultsDir, ...
+    paddedTimePairs)
+for i=1:length(paddedTimePairs)
+    mkdir(fullfile(inputs.resultsDir, maResultsDir, inputs.prefix + "_" ...
+        + i));
+    files = dir(fullfile(inputs.resultsDir, maResultsDir));
+    for j=1:length(files)
+        if(~files(j).isdir && contains(files(j).name, inputs.prefix + ...
+                "_" + num2str(i)))
+            movefile(fullfile(inputs.resultsDir, maResultsDir, ...
+                files(j).name), fullfile(inputs.resultsDir, ...
+                maResultsDir, inputs.prefix + "_" + i));
+        end
+    end
+end
 end
