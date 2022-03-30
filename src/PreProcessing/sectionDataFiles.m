@@ -33,14 +33,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function sectionDataFiles(fileNames, timePairs, numRows)
+function sectionDataFiles(fileNames, timePairs, numRows, prefix)
 import org.opensim.modeling.Storage
 for i=1:length(fileNames)
     storage = Storage(fileNames(i));
     for j=1:length(timePairs)
         [filepath, name, ext] = fileparts(fileNames(i));
-        cutData(storage, timePairs(j,1), timePairs(j,2), numRows) ...
-            .print(fullfile(filepath, name + "_" + num2str(j) + ext));
+        newStorage = cutData(storage, timePairs(j,1), timePairs(j,2), ...
+            numRows);
+        newFileName = insertAfter(name, prefix, "_" + num2str(j));
+        newStorage.print(fullfile(filepath, newFileName + ext));
     end
 end
 end
