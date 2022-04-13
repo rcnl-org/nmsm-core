@@ -10,12 +10,18 @@ valuesStruct.isIncluded(6) = 1;
 
 numMuscles = params.nMusc;
 valuesStruct.primaryValues = zeros(6, numMuscles);
-valuesStruct.primaryValues(1, :) = 0.5; % electromechanical delay
-valuesStruct.primaryValues(2, :) = 1.5; % activation time
-valuesStruct.primaryValues(3, :) = 0.05; % activation nonlinearity
-valuesStruct.primaryValues(4, :) = 0.5; % EMG scale factors
-valuesStruct.primaryValues(5, :) = 1; % lmo scale factor
-valuesStruct.primaryValues(6, :) = 1; % lts scale factor
+valuesStruct.primaryValues(1, :) = guess.Round3(1, ...
+    1:numMuscles); % electromechanical delay
+valuesStruct.primaryValues(2, :) = guess.Round3(1, ...
+    numMuscles + 1:numMuscles * 2); % activation time
+valuesStruct.primaryValues(3, :) = guess.Round3(1, ...
+    numMuscles * 2 + 1:numMuscles * 3); % activation nonlinearity
+valuesStruct.primaryValues(4, :) = guess.Round3(1, ...
+    numMuscles * 3 + 1:numMuscles * 4); % EMG scale factors
+valuesStruct.primaryValues(5, :) = guess.Round3(1, ...
+    numMuscles * 4 + 1:numMuscles * 5); % lmo scale factor
+valuesStruct.primaryValues(6, :) = guess.Round3(1, ...
+    numMuscles * 5 + 1:end); % lts scale factor
 
 valuesStruct.secondaryValues = [];
 for i = 1:length(valuesStruct.isIncluded)
@@ -81,14 +87,19 @@ valuesStruct.isIncluded(4) = 1;
 valuesStruct.isIncluded(5) = 0;
 valuesStruct.isIncluded(6) = 0;
 
-numMuscles = params.nMusc;
 valuesStruct.primaryValues = zeros(6, numMuscles);
-valuesStruct.primaryValues(1, :) = 0.5; % electromechanical delay
-valuesStruct.primaryValues(2, :) = 1.5; % activation time
-valuesStruct.primaryValues(3, :) = 0.05; % activation nonlinearity
-valuesStruct.primaryValues(4, :) = 0.5; % EMG scale factors
-valuesStruct.primaryValues(5, :) = 1; % lmo scale factor
-valuesStruct.primaryValues(6, :) = 1; % lts scale factor
+valuesStruct.primaryValues(1, :) = guess.Round3(1, ...
+    1:numMuscles); % electromechanical delay
+valuesStruct.primaryValues(2, :) = guess.Round3(1, ...
+    numMuscles + 1:numMuscles * 2); % activation time
+valuesStruct.primaryValues(3, :) = guess.Round3(1, ...
+    numMuscles * 2 + 1:numMuscles * 3); % activation nonlinearity
+valuesStruct.primaryValues(4, :) = guess.Round3(1, ...
+    numMuscles * 3 + 1:numMuscles * 4); % EMG scale factors
+valuesStruct.primaryValues(5, :) = guess.Round3(1, ...
+    numMuscles * 4 + 1:numMuscles * 5); % lmo scale factor
+valuesStruct.primaryValues(6, :) = guess.Round3(1, ...
+    numMuscles * 5 + 1:end); % lts scale factor
 
 valuesStruct.secondaryValues = [];
 for i = 1:length(valuesStruct.isIncluded)
