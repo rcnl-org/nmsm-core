@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% Combines all tracking and penalization costs into a large vector
 %
 % (array of number, struct) -> (column vector of number)
-% calculates the cost of differences in EMG pairs
+% calculates the combined cost for the muscle tendon personalization module
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

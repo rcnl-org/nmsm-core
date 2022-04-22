@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
+% 
+% This function asserts if the experimental value is within a certain range
+% of the expected value.
 %
-% A cost is calculcated to discourage differences between the emgScaling
-% factors for paired muscles
-%
-% (array of number, array of string) -> (array of number)
-% calculates the cost of differences in EMG pairs
+% (number, number, number) -> (None)
+% Asserts true if values are close enough together
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,13 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function deviationsEMGScale = calcDifferencesInEMGPairs( ...
-    emgScale, activationPairs)
+function assertWithinRange(experimental, expected, range)
+assert(all(abs(experimental-expected)<range,[1 2 3 4]))
+end
 
-Ind = 1;
-for i = 1:length(activationPairs)
-    deviationsEMGScale(:, Ind:Ind + size(activationPairs{i}, 2) - 1) = ...
-        calcMeanDifference2D(emgScale(activationPairs{i}));
-    Ind = Ind + size(activationPairs{i}, 2);
-end
-end

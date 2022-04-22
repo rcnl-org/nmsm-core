@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% The mean and shape of paired lmtilda curves are calculated. 
 %
-%
-% (array of number, array of string) -> (array of number)
-% calculates the cost of differences in EMG pairs
+% (struct, array of string, struct) -> (number)
+% calculates differences between paired lmtilda curve shapes and means. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -37,7 +37,7 @@ for i = 1:length(lmtildaPairs)
     % original distance of mean value of each lMtilda from the mean of all
     % lMtilda curves
     distMeanlmtildaOrigSimilarity = calcMeanDifference2D(mean( ...
-        compress3dMatrixTo2d(lMtildaExprimental(:, :, lmtildaPairs{i})),1));
+        compress3dMatrixTo2d(lMtildaExprimental(:, :, lmtildaPairs{i})), 1));
     % Distance of mean value of each lMtilda from the mean of all original
     % lMtilda curves
     distMeanlmtildaSimilarity = mean(compress3dMatrixTo2d(lMtilda(:, :, ...

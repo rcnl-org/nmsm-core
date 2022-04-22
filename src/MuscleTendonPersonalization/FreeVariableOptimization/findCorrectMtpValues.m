@@ -20,7 +20,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -34,14 +34,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = findCorrectMtpValues(index, primaryValues, ...
-    secondaryValues, isIncluded)
-if(isIncluded(index))
+function output = findCorrectMtpValues(index, valuesStruct)
+
+if (valuesStruct.isIncluded(index))
     [startIndex, endIndex] = findIsIncludedStartAndEndIndex( ...
-        primaryValues, isIncluded, index);
-    output = secondaryValues(startIndex:endIndex);
+        valuesStruct.primaryValues, valuesStruct.isIncluded, index);
+    output = valuesStruct.secondaryValues(startIndex:endIndex);
 else
-    output = primaryValues(index, :);
+    output = valuesStruct.primaryValues(index, :);
 end
 end
 
