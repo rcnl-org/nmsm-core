@@ -1,6 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% A cost is calculcated to discourage differences between the emgScaling
+% factors for paired muscles
 %
 % (array of number, array of string) -> (array of number)
 % calculates the cost of differences in EMG pairs
@@ -27,13 +28,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function DVs_EMGScale = calcDifferencesInEMGPairs( ...
-    EMGScale, ActivationPairs)
+function deviationsEMGScale = calcDifferencesInEMGPairs( ...
+    emgScale, activationPairs)
 
 Ind = 1;
-for i = 1:length(ActivationPairs)
-    DVs_EMGScale(:, Ind:Ind + size(ActivationPairs{i}, 2) - 1) = ...
-        calcMeanDifference2D(EMGScale(ActivationPairs{i}));
-    Ind = Ind + size(ActivationPairs{i}, 2);
+for i = 1:length(activationPairs)
+    deviationsEMGScale(:, Ind:Ind + size(activationPairs{i}, 2) - 1) = ...
+        calcMeanDifference2D(emgScale(activationPairs{i}));
+    Ind = Ind + size(activationPairs{i}, 2);
 end
 end

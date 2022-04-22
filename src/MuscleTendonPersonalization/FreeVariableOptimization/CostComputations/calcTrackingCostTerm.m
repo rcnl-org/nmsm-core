@@ -2,7 +2,7 @@
 %
 % This function calculates the cost for tracking values 
 %
-% (Array of number, Array of number, number, number) -> (Array of number)
+% (Array of number, Array of number, number, number) -> (struct)
 % returns tracking cost
 
 % ----------------------------------------------------------------------- %

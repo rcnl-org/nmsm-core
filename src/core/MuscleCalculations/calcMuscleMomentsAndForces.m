@@ -11,10 +11,10 @@
 % hillTypeParams.lMt - 3D matrix of (numFrames, numTrials, numMuscles)
 % hillTypeParams.vMT - 3D matric of (numFrames, numTrials, numMuscles)
 % hillTypeParams.vMaxFactor - number
-% hillTypeParams.lTs - 3D matrix of (1, 1, numMuscles)
-% hillTypeParams.lMo - 3D matrix of (1, 1, numMuscles)
 % hillTypeParams.pennationAngle - 3D matrix of (1, 1, numMuscles)
 % hillTypeParams.fMax - 3D matrix of (1, 1, numMuscles)
+% hillTypeParams.lMo - 3D matrix of (1, 1, numMuscles)
+% hillTypeParams.lTs - 3D matrix of (1, 1, numMuscles)
 % muscleActivations - 3D matrix of (numFrames, numTrials, numMuscles)
 %
 % Outputs:
@@ -51,20 +51,22 @@
 
 function [passiveForce, muscleForce, muscleMoments, modelMoments] = ...
     calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations)
+    muscleActivations, valuesStruct)
 
 [lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams);
+    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams, ...
+    valuesStruct);
 % Preallocation of Memory
 muscleMoments = zeros([size(hillTypeParams.lMt), size(momentArms, 2)]); 
 onesCol = ones(size(hillTypeParams.lMt, 1), size(hillTypeParams.lMt, 2));
-passiveForce = onesCol .* (hillTypeParams.fMax .* ...
-    cos(hillTypeParams.pennationAngle)) .* passiveForceLengthCurve(lMtilda);
+passiveForce = onesCol .* (permute(hillTypeParams.fMax, [1 3 2])  .* ...
+    permute(cos(hillTypeParams.pennationAngle), [1 3 2]) ) .* ...
+    passiveForceLengthCurve(lMtilda);
 % equation 1 from Meyer 2017
-muscleForce = onesCol .* (hillTypeParams.fMax .* ...
-    cos(hillTypeParams.pennationAngle)) .* muscleActivations .* ...
-    activeForceLengthCurve(lMtilda) .* forceVelocityCurve(vMtilda) + ...
-    passiveForce;
+muscleForce = onesCol .* (permute(hillTypeParams.fMax, [1 3 2]) .* ...
+    permute(cos(hillTypeParams.pennationAngle), [1 3 2])) .* ...
+    muscleActivations .* activeForceLengthCurve(lMtilda) .* ...
+    forceVelocityCurve(vMtilda) + passiveForce;
 for i=1:size(momentArms, 2)
     muscleMoments(:, :, :, i) = momentArms{i} .* muscleForce;
 end

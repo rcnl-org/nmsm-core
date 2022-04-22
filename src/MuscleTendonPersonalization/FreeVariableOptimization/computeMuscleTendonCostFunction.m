@@ -11,6 +11,8 @@
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
+
+
 % nmsm.rice.edu and the NOTICE file for more information. The             %
 % NMSM Pipeline is developed at Rice University and supported by the US   %
 % National Institutes of Health (R01 EB030520).                           %
@@ -30,35 +32,48 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, IsIncluded, params)
+function [outputCost] = computeMuscleTendonCostFunction(valuesStruct, params)
+
+hillTypeParams = createHillTypeParams(params);
 
 % Update these functions to call findCorrectValues
-[~,EMG] = calcMuscleExcitations(params);
-[NeuralActivations] = calcNeuralActivations(params,EMG);
-[muscleActivations] = calcMuscleActivations(params,NeuralActivations);
-
-% Update these functions to call findCorrectValues
+muscleExcitations = calcMuscleExcitations(params.timeEMG, ...
+    params.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
+    findCorrectMtpValues(4, valuesStruct));
+neuralActivations = calcNeuralActivations(muscleExcitations, ...
+    findCorrectMtpValues(2, valuesStruct), params.timeEMG, params.nPad);
+muscleActivations = calcMuscleActivations(findCorrectMtpValues(3, ...   
+    valuesStruct), neuralActivations);
 [passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations);
+    calcMuscleMomentsAndForces(params.momentArms, hillTypeParams, ...
+    muscleActivations, valuesStruct);
 [lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams);
+    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams, ...
+    valuesStruct);
 
-% valuesStruct needs to be created to contain (primaryValues, ...
-% secondaryValues, IsIncluded)
-costs = calcAllTrackingCosts(valuesStruct, params, ...
-    modelMoments, lMtilda);
-costs = calcAllDeviationPenaltyCosts(valuesStruct, params, ...
-    passiveForce);
-costs = calcLmTildaCurveChangesCost(lMtilda, lMtildaExprimental, ...
-    lmtildaPairs, params);
-costs = calcPairedMusclePenalties(valuesStruct, ActivationPairs, ...
-    params);
+costs = calcAllTrackingCosts(params, modelMoments, lMtilda);
+costs = calcAllDeviationPenaltyCosts(valuesStruct, params,  ...
+    hillTypeParams, passiveForce, costs);
+costs = calcLmTildaCurveChangesCost(lMtilda, params.lMtildaExperimental, ...
+    params.lmtildaPairs, params.errorCenters, params.maxAllowableErrors, ...
+    costs);
+costs = calcPairedMusclePenalties(valuesStruct, params.activationPairs, ...
+    params.errorCenters, params.maxAllowableErrors, costs);
 
 % Combine all costs into single vector
 outputCost = combineCostsIntoVector(params.costWeight, costs);
-Cost(isnan(Cost))=0;
+outputCost(isnan(outputCost))=0;
+end
+
+function hillTypeParams = createHillTypeParams(params)
+
+hillTypeParams.lMt = params.lMt;
+hillTypeParams.vMt = params.vMt;
+hillTypeParams.vMaxFactor = params.vMaxFactor;
+hillTypeParams.pennationAngle = params.pennationAngle;
+hillTypeParams.fMax = params.fMax;
+hillTypeParams.lMo = params.lMo;
+hillTypeParams.lTs = params.lTs;
 end
 
 
