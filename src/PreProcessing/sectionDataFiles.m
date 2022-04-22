@@ -37,19 +37,22 @@ function sectionDataFiles(fileNames, timePairs, numRows, prefix)
 import org.opensim.modeling.Storage
 for i=1:length(fileNames)
     storage = Storage(fileNames(i));
-    for j=1:length(timePairs)
+    data = storageToDoubleMatrix(storage);
+    time = findTimeColumn(storage);
+    columnNames = getStorageColumnNames(storage);
+    for j=1:size(timePairs, 1)
         [filepath, name, ext] = fileparts(fileNames(i));
-        newStorage = cutData(storage, timePairs(j,1), timePairs(j,2), ...
-            numRows);
+        [newData, newTime] = cutData(data, time, timePairs(j,1), ...
+            timePairs(j,2), numRows);
         newFileName = insertAfter(name, prefix, "_" + num2str(j));
-        newStorage.print(fullfile(filepath, newFileName + ext));
+        writeToSto(columnNames, newTime, newData', fullfile(filepath, ...
+            newFileName + ext));
     end
 end
 end
 
-function newStorage = cutData(storage, startTime, endTime, numRows)
-import org.opensim.modeling.Storage
-newStorage = Storage(storage);
-newStorage.crop(startTime, endTime);
-newStorage.resampleLinear((endTime-startTime)/(numRows-1));
+function [newData, newTime] = cutData(data, time, startTime, endTime, ...
+    numRows)
+newTime = linspace(startTime, endTime, numRows);
+newData = spline(time, data, newTime);
 end
