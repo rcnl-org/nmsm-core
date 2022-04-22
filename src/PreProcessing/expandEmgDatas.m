@@ -33,18 +33,19 @@
 % ----------------------------------------------------------------------- %
 
 function expandEmgDatas(modelFileName, emgFileName, outputDirectory, ...
-    expandedFileName, prefix, params)
-import org.opensim.modeling.Storage
-expandedData = Storage(expandedFileName);
-emgData = Storage(emgFileName); % first emg data for making nameToGroup
+    prefix, params)
+emgData = org.opensim.modeling.TimeSeriesTable(emgFileName);
 model = Model(modelFileName);
+columnNames = getMusclesInOrder(model);
 groupToName = getMuscleNameByGroupStruct(model, ...
-    getStorageColumnNames(emgData));
-%iterate through and save output to directory
-expandEmgData(expandedData, emgData, groupToName, params)
+    getTimeSeriesTableColumnNames(emgData));
+timeColumn = stdVectorDoubleToDoubleArray( ...
+    emgData.getIndependentColumn());
+newEmgData = expandEmgData(columnNames, emgData, timeColumn, ...
+    groupToName, params);
 [~, ~, ext] = fileparts(emgFileName);
-expandedData.print(fullfile(outputDirectory, ...
-    prefix + ext));
+writeToSto(columnNames, timeColumn, newEmgData, fullfile( ...
+    outputDirectory, prefix + ext) );
 end
 
 % (Model, Array of string) -> (struct)
@@ -62,21 +63,23 @@ for i=1:length(emgDataNames) % struct group names with muscle names inside
 end
 end
 
-function expandEmgData(expandedData, emgData, namesByGroup, params)
-expandedData.scaleTime((emgData.getLastTime() - ... %scale time
-    emgData.getFirstTime()) / (expandedData.getLastTime() - ...
-    expandedData.getFirstTime())); %shift time
-expandedData.shiftTime(emgData.getFirstTime()-expandedData.getFirstTime());
-emgColumnNames = getStorageColumnNames(emgData);
-expandedColumnNames = getStorageColumnNames(expandedData);
-
+function newEmgData = expandEmgData(expandedColumnNames, emgData, ...
+    timeColumn, namesByGroup, params)
+% expandedData.scaleTime((emgData.getLastTime() - ... %scale time
+%     emgData.getFirstTime()) / (expandedData.getLastTime() - ...
+%     expandedData.getFirstTime())); %shift time
+% expandedData.shiftTime(emgData.getFirstTime()-expandedData.getFirstTime());
+emgColumnNames = getTimeSeriesTableColumnNames(emgData);
+newEmgData = zeros(emgData.getNumRows(), length(expandedColumnNames));
 for i=1:length(emgColumnNames)
-    temp = processEmg(findStorageColumn(emgData, emgColumnNames(i)), ...
-        findTimeColumn(emgData), findTimeColumn(expandedData), params);
     musclesInGroup = namesByGroup.(emgColumnNames(i));
+    temp = stdVectorDoubleToDoubleArray( ...
+        emgData.getDependentColumn(emgColumnNames(i)));
     for j=1:length(musclesInGroup)
-        expandedData.setDataColumn(find(strcmp(expandedColumnNames, ...
-            musclesInGroup(j))), numberArrayToArrayDouble(temp));
+        newEmgData(:, find(strcmp(expandedColumnNames, ...
+            musclesInGroup(j)))) = temp;
     end
 end
+newEmgData = processEmg(newEmgData, ...
+    timeColumn, params);
 end
