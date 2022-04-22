@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% Penalize differences in EMGScales and electromechanical time delay 
+% differences between paired muscles
 %
-%
-% (struct, array of string, struct) -> (number)
-% calculates the cost of penalizing paired muscle separation
+% (struct, cell array, array of number, array of number, struct) -> (struct)
+% calculates the cost of differences between paired muscles
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,19 +29,19 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcPairedMusclePenalties(valuesStruct, ...
-    ActivationPairs, params)
+    activationPairs, errorCenters, maxAllowableErrors, cost)
+
 % Penalize violation of EMGScales similarity between paired muscles
-DVs_EMGScale = calcDifferencesInEMGPairs(findCorrectValues(4, ...
-    valuesStruct), ActivationPairs);
+deviationsEMGScale = calcDifferencesInEMGPairs(findCorrectMtpValues(4, ...
+    valuesStruct) , activationPairs);
 cost.emgScalePairedSimilarity = calcPenalizeDifferencesCostTerm( ...
-    DVs_EMGScale, params.errorCenters(9), params.maxAllowableErrors(9));
+    deviationsEMGScale, errorCenters(9), maxAllowableErrors(9));
 % Penalize violation of tdelay similarity between paired muscles
-if size(findCorrectValues(1, valuesStruct),2)>2
-    DVs_tdelay = calcDifferencesInEMGPairs(findCorrectValues(1, ...
-        valuesStruct), ActivationPairs);
+if size(findCorrectMtpValues(1, valuesStruct), 2)>2
+    deviationsTdelay = calcDifferencesInEMGPairs(findCorrectMtpValues(1, ...
+        valuesStruct) / 10, activationPairs);
     cost.tdelayPairedSimilarity = calcPenalizeDifferencesCostTerm( ...
-        DVs_tdelay, params.errorCenters(10), ...
-        params.maxAllowableErrors(10));
+        deviationsTdelay, errorCenters(10), maxAllowableErrors(10));
 else
     cost.tdelayPairedSimilarity = 0;
 end
