@@ -32,8 +32,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function processedEmgData = processEmg(emgData, emgTime, newTimePoints, ...
-    params)
+function processedEmgData = processEmg(emgData, emgTime, params)
 
 sampleRate = length(emgTime)/(emgTime(end)-emgTime(1));
 
@@ -49,7 +48,7 @@ emgData = emgData-ones(size(emgData,1),1)*mean(emgData);
 % Rectify
 emgData = abs(emgData);
 
-% Lowe pass filter
+% Low pass filter
 lowPassCutoff = valueOrAlternate(params, "lowPassCutoff", 10);
 [b,a] = butter(degree,2*lowPassCutoff/sampleRate);
 emgData = filtfilt(b,a,emgData);
@@ -57,7 +56,8 @@ emgData = filtfilt(b,a,emgData);
 % Remove any negative EMG values that may still exist
 emgData(emgData<0) = 0;
 
-processedEmgData = spline(emgTime, emgData, newTimePoints);
+% processedEmgData = spline(emgTime, emgData, newTimePoints);
+processedEmgData = emgData;
 
 end
 
