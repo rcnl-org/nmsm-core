@@ -1,10 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reduces the EMG data to the number of points from the
-% second argument. I.E. if the s
+% RCNL's protocol for turning a matrix of double of EMG data into processed
+% EMG data that is filtered, demeaned, rectified, and downsampled as
+% necessary. Default values are used if missing from params struct.
 %
-% (2D Array of number, number) -> (2D Array of number)
-% Runs the Muscle Tendon Personalization algorithm
+% params:
+%   - highPassFilterCutoff
+%
+% (2D Array of double, 1D Array of double, string, struct) -> (None)
+% Processes the input EMG data by RCNL's protocol
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +32,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
-    newNumPoints)
-oldTime = linspace(startTime, endTime, size(emgData, 2));
-newTime = linspace(startTime, endTime, newNumPoints);
-newEmgData = interp1(oldTime, emgData, newTime);
+function processedEmgData = processEmg(emgData, emgTime, params)
+
+sampleRate = length(emgTime)/(emgTime(end)-emgTime(1));
+
+% High pass filter the data
+degree = valueOrAlternate(params, "filterDegree", 4);
+highPassCutoff = valueOrAlternate(params, "highPassCutoff", 40);
+[b,a] = butter(degree, 2*highPassCutoff/sampleRate,'high');
+emgData = filtfilt(b,a,emgData);
+
+% Demean
+emgData = emgData-ones(size(emgData,1),1)*mean(emgData);
+
+% Rectify
+emgData = abs(emgData);
+
+% Low pass filter
+lowPassCutoff = valueOrAlternate(params, "lowPassCutoff", 10);
+[b,a] = butter(degree,2*lowPassCutoff/sampleRate);
+emgData = filtfilt(b,a,emgData);
+
+% Remove any negative EMG values that may still exist
+emgData(emgData<0) = 0;
+
+% processedEmgData = spline(emgTime, emgData, newTimePoints);
+processedEmgData = emgData;
+
 end
 

@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reduces the EMG data to the number of points from the
-% second argument. I.E. if the s
+% This function iterates through the given ArrayStr and adds each item to a
+% new MATLAB Array of type string and returns the MATLAB structure. Allows
+% easier manipulation of MATLAB string than OpenSim ArrayStr.
 %
-% (2D Array of number, number) -> (2D Array of number)
-% Runs the Muscle Tendon Personalization algorithm
+% (ArrayStr) -> (Array of string)
+% Rearranges the ArrayStr into a MATLAB string array
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +29,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
-    newNumPoints)
-oldTime = linspace(startTime, endTime, size(emgData, 2));
-newTime = linspace(startTime, endTime, newNumPoints);
-newEmgData = interp1(oldTime, emgData, newTime);
+function stringArray = arrayStrToStringArray(arrayStr)
+stringArray = string(zeros(1,arrayStr.size()));
+for i=0:arrayStr.size()-1
+    stringArray(i+1) = arrayStr.getitem(i).toCharArray';
+end
 end
 
