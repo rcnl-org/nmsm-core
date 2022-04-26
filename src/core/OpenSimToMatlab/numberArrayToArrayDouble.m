@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reduces the EMG data to the number of points from the
-% second argument. I.E. if the s
+% This function iterates through the given MATLAB Array of type double
+% and adds each item to a new ArrayDouble OpenSim/Simbody object and 
+% returns the ArrayDouble.
 %
-% (2D Array of number, number) -> (2D Array of number)
-% Runs the Muscle Tendon Personalization algorithm
+% (Array of double) -> (ArrayDouble)
+% Rearranges MATLAB double array into an ArrayDouble
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
-    newNumPoints)
-oldTime = linspace(startTime, endTime, size(emgData, 2));
-newTime = linspace(startTime, endTime, newNumPoints);
-newEmgData = interp1(oldTime, emgData, newTime);
+function arrayDouble = numberArrayToArrayDouble(numberArray)
+import org.opensim.modeling.ArrayDouble
+arrayDouble = ArrayDouble();
+arrayDouble.setSize(length(numberArray));
+for i=1:length(numberArray)
+    arrayDouble.set(i-1, numberArray(i));
+end
 end
 

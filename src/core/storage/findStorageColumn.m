@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reduces the EMG data to the number of points from the
-% second argument. I.E. if the s
+% Retrieves the column from an OpenSim Storage object and converts it to a
+% 1D array of double.
 %
-% (2D Array of number, number) -> (2D Array of number)
-% Runs the Muscle Tendon Personalization algorithm
+% (Storage, integer or string) -> (Array of double)
+% Returns storage column as array of double
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
-    newNumPoints)
-oldTime = linspace(startTime, endTime, size(emgData, 2));
-newTime = linspace(startTime, endTime, newNumPoints);
-newEmgData = interp1(oldTime, emgData, newTime);
+function columnData = findStorageColumn(storage, intOrString)
+import org.opensim.modeling.ArrayDouble
+arrayDouble = ArrayDouble();
+storage.getDataColumn(intOrString, arrayDouble);
+columnData = arrayDoubleToDoubleArray(arrayDouble);
 end
 
