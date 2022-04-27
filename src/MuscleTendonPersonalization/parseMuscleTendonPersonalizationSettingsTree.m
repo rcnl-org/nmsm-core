@@ -42,25 +42,27 @@ function inputs = getInputs(tree)
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(~isempty(inputDirectory))
-    inputs.model = Model(fullfile(inputDirectory, modelFile));
+    try
+        inputs.model = Model(fullfile(inputDirectory, modelFile));
+    catch
+        inputs.model = Model(fullfile(pwd, inputDirectory, modelFile));
+        inputDirectory = fullfile(pwd, inputDirectory);
+    end
 else
     inputs.model = Model(fullfile(pwd, modelFile));
     inputDirectory = pwd;
 end
 prefixes = getPrefixes(tree, inputDirectory);
 inputs.jointMoment = parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(inputDirectory, getFieldByNameOrError(tree, ...
-    'joint_moment_directory').Text), prefixes));
-inputs.muscleTendonVelocity = parseMtpStandard( ...
-    findFileListFromPrefixList(fullfile(inputDirectory, ...
-    getFieldByNameOrError(tree, 'muscle_velocity_directory').Text), ...
-    prefixes));
+    fullfile(inputDirectory, "IDData"), prefixes));
+% inputs.muscleTendonVelocity = parseMtpStandard( ...
+%     findFileListFromPrefixList(fullfile(inputDirectory, ...
+%     getFieldByNameOrError(tree, 'muscle_velocity_directory').Text), ...
+%     prefixes));
 inputs.emgData = parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(inputDirectory, getFieldByNameOrError(tree, ...
-    'emg_data_directory').Text), prefixes));
+    fullfile(inputDirectory, "EMGData"), prefixes));
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    inputDirectory, getFieldByNameOrError(tree, ...
-    'muscle_analysis_directory').Text), prefixes);
+    inputDirectory, "MAData"), prefixes);
 inputs.muscleTendonLength = parseMuscleTendonLengths(directories);
 inputs.muscleTendonMomentArm = parseMomentArms(directories, inputs.model);
 inputs.tasks = getTasks(tree);
@@ -72,9 +74,14 @@ prefixField = getFieldByName(tree, 'trial_prefixes');
 if(length(prefixField.Text) > 0)
     prefixes = strsplit(prefixField.Text, ' ');
 else
-    prefixes = findDirectoryPrefixesFromSuffix(fullfile(inputDirectory, ...
-    getFieldByNameOrError(tree, 'joint_moment_directory').Text), ...
-    "_ik");
+    files = dir(fullfile(inputDirectory, "IKData"));
+    prefixes = string([]);
+    for i=1:length(files)
+        if(~files(i).isdir)
+            prefixes(end+1) = files(i).name(1:end-4);
+        end
+    end
+    prefixes
 end
 end
 
