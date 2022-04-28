@@ -1,10 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reduces the EMG data to the number of points from the
-% second argument. I.E. if the s
+% This function takes an OpenSim Model, the file name of the .mot/.sto of
+% the IK results, the list of coordinates of interest, and the 'prefix' of
+% the trial (i.e. squat, gait, stair-step) and processes the data correctly
+% to be used by the MuscleTendonPersonalization.
 %
-% (2D Array of number, number) -> (2D Array of number)
-% Runs the Muscle Tendon Personalization algorithm
+% The muscle length and moments are calculated and placed in a folder
+% named 'prefix' in the current working directory.
+%
+% (Model, string, Array of string, string) -> (None)
+% processes MuscleAnalysis in preparation for MuscleTendonPersonalization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +33,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
-    newNumPoints)
-oldTime = linspace(startTime, endTime, size(emgData, 2));
-newTime = linspace(startTime, endTime, newNumPoints);
-newEmgData = interp1(oldTime, emgData, newTime);
+function processMuscleAnalysis(model, motionFileName, coordinates, prefix)
+import org.opensim.modeling.MuscleAnalysis
+import org.opensim.modeling.Storage
+state = model.initSystem();
+muscleAnalysis = MuscleAnalysis(model);
+muscleAnalysis.setStatesStore(Storage(motionFileName));
+muscleAnalysis.setCoordinates(stringArrayToArrayStr(coordinates));
+muscleAnalysis.setComputeMoments(true);
+muscleAnalysis.begin(state);
+mkdir(prefix);
+muscleAnalysis.printResults(prefix, fullfile(pwd, prefix));
+removeUnneededFiles(fullfile(pwd, prefix), prefix);
 end
 
+function removeUnneededFiles(directory, prefix)
+files = dir(directory);
+for i=1:length(files)
+    if(~files(i).isdir && contains(files(i).name, prefix))
+        if(~(contains(files(i).name, "_MomentArm") || ...
+                contains(files(i).name, "_Length")))
+            delete(fullfile(directory, files(i).name))
+        end
+    end
+end
+end

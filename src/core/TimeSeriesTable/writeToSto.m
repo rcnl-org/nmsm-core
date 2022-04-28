@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reduces the EMG data to the number of points from the
-% second argument. I.E. if the s
+% This function takes a string array of column names in order, a 1D array
+% of time points and a 2D array of data. The first dimension of the 1D and
+% 2D arrays must match.
 %
-% (2D Array of number, number) -> (2D Array of number)
-% Runs the Muscle Tendon Personalization algorithm
+% (Array of string, Array of double, matrix of double, string) -> (None)
+% Print results of optimization to console or file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +29,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
-    newNumPoints)
-oldTime = linspace(startTime, endTime, size(emgData, 2));
-newTime = linspace(startTime, endTime, newNumPoints);
-newEmgData = interp1(oldTime, emgData, newTime);
+function writeToSto(columnLabels, timePoints, data, outfile)
+import org.opensim.modeling.*
+table = TimeSeriesTable();
+table.setColumnLabels(stringArrayToStdVectorString(columnLabels));
+for i=1:length(timePoints)
+    table.appendRow(timePoints(i), doubleArrayToRowVector(data(i, :)))
+end
+STOFileAdapter.write(table, outfile)
 end
 
