@@ -36,7 +36,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function primaryValues = MuscleTendonPersonalization(inputs, params)
+function primaryValues = MuscleTendonPersonalization(inputs, inputData, ...
+    params)
 verifyInputs(inputs); % (struct) -> (None)
 verifyParams(params); % (struct) -> (None)
 primaryValues = prepareInitialValues(inputs, params);
@@ -47,7 +48,7 @@ for i=1:length(inputs.tasks)
     taskValues = makeTaskValues(primaryValues, inputs.tasks{i}, params);
     taskParams = makeTaskParams(inputs.tasks{i}, params);
     optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-        lowerBounds, upperBounds, taskParams, optimizerOptions);
+        lowerBounds, upperBounds, inputData, taskParams, optimizerOptions);
     primaryValues = updateDesignVariables(primaryValues, ...
         optimizedValues, taskParams);
 end
