@@ -33,7 +33,7 @@ function MuscleTendonPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-results = MuscleTendonPersonalization(inputs, params);
+results = MuscleTendonPersonalization(inputs, inputData, params);
 reportMuscleTendonPersonalization(inputs.model, results)
 saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory);
 end
