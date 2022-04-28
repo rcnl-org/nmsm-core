@@ -6,8 +6,7 @@
 % force.
 %
 % Inputs:
-% momentArms - cell structure of (1, numJoints), each cell is made up 
-% of (numFrames, numTrials, numMuscles) 
+% momentArms - 4D matrix of (numFrames, numTrials, numMuscles, numJoints) 
 % hillTypeParams.lMt - 3D matrix of (numFrames, numTrials, numMuscles)
 % hillTypeParams.vMT - 3D matric of (numFrames, numTrials, numMuscles)
 % hillTypeParams.vMaxFactor - number
@@ -50,22 +49,23 @@
 % ----------------------------------------------------------------------- %
 
 function [passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(momentArms, hillTypeParams, ...
-    muscleActivations, lMtilda, vMtilda)
+    calcMuscleMomentsAndForces(inputData, muscleActivations, lMtilda, ...
+    vMtilda)
 
 % Preallocation of Memory
-muscleMoments = zeros([size(hillTypeParams.lMt), size(momentArms, 2)]); 
-onesCol = ones(size(hillTypeParams.lMt, 1), size(hillTypeParams.lMt, 2));
-passiveForce = onesCol .* (permute(hillTypeParams.fMax, [1 3 2])  .* ...
-    permute(cos(hillTypeParams.pennationAngle), [1 3 2]) ) .* ...
+muscleMoments = zeros([size(inputData.lMt), size(inputData.momentArms, 4)]); 
+onesCol = ones(size(inputData.lMt, 1), size(inputData.lMt, 2));
+passiveForce = onesCol .* (permute(inputData.fMax, [1 3 2])  .* ...
+    permute(cos(inputData.pennationAngle), [1 3 2]) ) .* ...
     passiveForceLengthCurve(lMtilda);
 % equation 1 from Meyer 2017
-muscleForce = onesCol .* (permute(hillTypeParams.fMax, [1 3 2]) .* ...
-    permute(cos(hillTypeParams.pennationAngle), [1 3 2])) .* ...
+muscleForce = onesCol .* (permute(inputData.fMax, [1 3 2]) .* ...
+    permute(cos(inputData.pennationAngle), [1 3 2])) .* ...
     muscleActivations .* activeForceLengthCurve(lMtilda) .* ...
     forceVelocityCurve(vMtilda) + passiveForce;
-for i=1:size(momentArms, 2)
-    muscleMoments(:, :, :, i) = momentArms{i} .* muscleForce;
+for i=1:size(inputData.momentArms, 4)
+    muscleMoments(:, :, :, i) = inputData.momentArms(:, :, :, i) .* ...
+        muscleForce;
 end
 modelMoments = permute(sum(muscleMoments, 3), [1 2 4 3]);
 end

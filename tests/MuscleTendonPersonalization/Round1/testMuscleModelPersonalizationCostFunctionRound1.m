@@ -8,7 +8,7 @@ valuesStruct.isIncluded(4) = 0;
 valuesStruct.isIncluded(5) = 1;
 valuesStruct.isIncluded(6) = 1;
 
-numMuscles = params.nMusc;
+numMuscles = inputData.nMusc;
 valuesStruct.primaryValues = zeros(6, numMuscles);
 valuesStruct.primaryValues(1, :) = 0.5; % electromechanical delay
 valuesStruct.primaryValues(2, :) = 1.5; % activation time
@@ -20,14 +20,15 @@ valuesStruct.primaryValues(6, :) = guess.Round1(1,numMuscles+1:end); % lts scale
 valuesStruct.secondaryValues = [];
 for i = 1:length(valuesStruct.isIncluded)
    if(valuesStruct.isIncluded(i))
-       valuesStruct.secondaryValues = [valuesStruct.secondaryValues valuesStruct.primaryValues(i, :)];
+       valuesStruct.secondaryValues = [valuesStruct.secondaryValues ...
+           valuesStruct.primaryValues(i, :)];
    end
 end
 
 % Muscle Excitation Calculation
 
-muscleExcitations = calcMuscleExcitations(params.timeEMG, ...
-    params.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
+muscleExcitations = calcMuscleExcitations(inputData.timeEMG, ...
+    inputData.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
     findCorrectMtpValues(4, valuesStruct));
 
 load('muscleExcitationsExpected.mat')
@@ -36,7 +37,7 @@ assertWithinRange(muscleExcitations, muscleExcitationsExpected, 0.001)
 % Neural Activation Calculation
 
 neuralActivations = calcNeuralActivations(muscleExcitations, ...
-    findCorrectMtpValues(2, valuesStruct), params.timeEMG, params.nPad);
+    findCorrectMtpValues(2, valuesStruct), inputData.timeEMG, inputData.nPad);
 
 load('neuralActivationsExpected.mat')
 assertWithinRange(neuralActivations, neuralActivationsExpected, 0.001)
@@ -47,29 +48,29 @@ muscleActivations = calcMuscleActivations(findCorrectMtpValues(3, ...
     valuesStruct), neuralActivations);
 
 load('muscleActivationsExpected.mat')
-assertWithinRange(muscleActivations, muscleActivationsExpected,0.001)
+assertWithinRange(muscleActivations, muscleActivationsExpected, 0.001)
 
 % Normalized Muscle Fiber Lengths and Velocities Calculation
 
 [lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams, ...
+    calcNormalizedMusceFiberLengthsAndVelocities(inputData, ...
     valuesStruct);
 
 load('normalizedMuscleLengthandVelocitiesExpected.mat')
-assertWithinRange(lMtilda, lMtildaExpected,0.001)
-assertWithinRange(vMtilda, vMtildaExpected,0.001)
+assertWithinRange(lMtilda, lMtildaExpected, 0.001)
+assertWithinRange(vMtilda, vMtildaExpected, 0.001)
 
 % Muscle Moments and Forces
 
 [passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(params.momentArms, hillTypeParams, ...
-    muscleActivations, valuesStruct);
+    calcMuscleMomentsAndForces(inputData, muscleActivations, lMtilda, ...
+    vMtilda);
 
 load('muscleMomentsAndForcesExpected.mat')
-assertWithinRange(passiveForce, passiveForceExpected,0.001)
-assertWithinRange(muscleForce, muscleForceExpected,0.001)
-assertWithinRange(muscleMoments, muscleMomentsExpected,0.001)
-assertWithinRange(modelMoments, modelMomentsExpected,0.001)
+assertWithinRange(passiveForce, passiveForceExpected, 0.001)
+assertWithinRange(muscleForce, muscleForceExpected, 0.001)
+assertWithinRange(muscleMoments, muscleMomentsExpected, 0.001)
+assertWithinRange(modelMoments, modelMomentsExpected, 0.001)
 
 %% Mtp Cost Calculation
 load('costFunctionTestingRound1.mat')
@@ -81,7 +82,7 @@ valuesStruct.isIncluded(4) = 0;
 valuesStruct.isIncluded(5) = 1;
 valuesStruct.isIncluded(6) = 1;
 
-numMuscles = params.nMusc;
+numMuscles = inputData.nMusc;
 valuesStruct.primaryValues = zeros(6, numMuscles);
 valuesStruct.primaryValues(1, :) = 0.5; % electromechanical delay
 valuesStruct.primaryValues(2, :) = 1.5; % activation time
@@ -93,11 +94,12 @@ valuesStruct.primaryValues(6, :) = guess.Round1(1,numMuscles+1:end); % lts scale
 valuesStruct.secondaryValues = [];
 for i = 1:length(valuesStruct.isIncluded)
    if(valuesStruct.isIncluded(i))
-       valuesStruct.secondaryValues = [valuesStruct.secondaryValues valuesStruct.primaryValues(i, :)];
+       valuesStruct.secondaryValues = [valuesStruct.secondaryValues ...
+           valuesStruct.primaryValues(i, :)];
    end
 end
 
-[cost] = computeMuscleTendonCostFunction(valuesStruct, params);
+[cost] = computeMuscleTendonCostFunction(valuesStruct, inputData, params);
 
 load('costExpected.mat')
-assertWithinRange(cost, costExpected,0.001)
+assertWithinRange(cost, costExpected, 0.001)
