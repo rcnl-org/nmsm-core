@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reduces the EMG data to the number of points from the
-% second argument. I.E. if the s
+% Processes an array of string into a StdVectorString.
 %
-% (2D Array of number, number) -> (2D Array of number)
-% Runs the Muscle Tendon Personalization algorithm
+% (Array of string) -> (StdVectorString)
+% Print results of optimization to console or file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +27,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
-    newNumPoints)
-oldTime = linspace(startTime, endTime, size(emgData, 2));
-newTime = linspace(startTime, endTime, newNumPoints);
-newEmgData = interp1(oldTime, emgData, newTime);
+function output = stringArrayToStdVectorString(stringArray)
+import org.opensim.modeling.StdVectorString
+output = StdVectorString(length(stringArray));
+for i=1:length(stringArray)
+    output.set(i-1, stringArray(i))
+end
 end
 

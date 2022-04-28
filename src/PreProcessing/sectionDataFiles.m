@@ -1,10 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reduces the EMG data to the number of points from the
-% second argument. I.E. if the s
+% This function cuts the data files into the sections outlined with the
+% number of frames indicated
 %
-% (2D Array of number, number) -> (2D Array of number)
-% Runs the Muscle Tendon Personalization algorithm
+% Inputs -
+%   prefix - string name of trial
+%   fileName - string path of file
+%   timePairs - 2D array of size N x 2
+%
+% (string, string, string, string) -> (None)
+% Makes new EMG data files with columns matching the file given
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +33,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
-    newNumPoints)
-oldTime = linspace(startTime, endTime, size(emgData, 2));
-newTime = linspace(startTime, endTime, newNumPoints);
-newEmgData = interp1(oldTime, emgData, newTime);
+function sectionDataFiles(fileNames, timePairs, numRows, prefix)
+import org.opensim.modeling.Storage
+for i=1:length(fileNames)
+    storage = Storage(fileNames(i));
+    data = storageToDoubleMatrix(storage);
+    time = findTimeColumn(storage);
+    columnNames = getStorageColumnNames(storage);
+    for j=1:size(timePairs, 1)
+        [filepath, name, ext] = fileparts(fileNames(i));
+        [newData, newTime] = cutData(data, time, timePairs(j,1), ...
+            timePairs(j,2), numRows);
+        newFileName = insertAfter(name, prefix, "_" + num2str(j));
+        writeToSto(columnNames, newTime, newData', fullfile(filepath, ...
+            newFileName + ext));
+    end
+end
 end
 
+function [newData, newTime] = cutData(data, time, startTime, endTime, ...
+    numRows)
+newTime = linspace(startTime, endTime, numRows);
+newData = spline(time, data, newTime);
+end
