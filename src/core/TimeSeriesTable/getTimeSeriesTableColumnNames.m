@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reduces the EMG data to the number of points from the
-% second argument. I.E. if the s
+% This function extracts the data of the OpenSim Storage object to a MATLAB
+% array of strings. The array does not include 'time', only dependent
+% column names.
 %
-% (2D Array of number, number) -> (2D Array of number)
-% Runs the Muscle Tendon Personalization algorithm
+% (Storage) -> (Array of string) 
+% Extracts column names as string
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = changeNumEmgPoints(emgData, startTime, endTime, ...
-    newNumPoints)
-oldTime = linspace(startTime, endTime, size(emgData, 2));
-newTime = linspace(startTime, endTime, newNumPoints);
-newEmgData = interp1(oldTime, emgData, newTime);
+function output = getTimeSeriesTableColumnNames(timeSeriesTable)
+strings = {};
+columnNames = timeSeriesTable.getColumnLabels();
+for i=1:columnNames.size()-1
+    strings{end+1} = columnNames.get(i);
+end
+output = string(strings);
 end
 
