@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function calculates the resulting muscle moments following the 
+% completion of the muscle tendon personalization. 
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (struct, struct, Array of number) -> (Array of number)
+% Outputs final muscle moments
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,16 +28,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-results.params = MuscleTendonPersonalization(inputs, inputData, params);
-results.muscleActivations = calcFinalMuscleActivations(results.params, ...
-    inputData);
-results.modelMoments = calcFinalModelMoments(results.params, ...
-    muscleActivations);
-reportMuscleTendonPersonalization(inputs.model, results.params)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function modelMoments = calcFinalModelMoments(results, inputData, ...
+    muscleActivations)
+
+[lMtilda, vMtilda] = ...
+    calcNormalizedMusceFiberLengthsAndVelocities(inputData, results);
+[~, ~, ~, modelMoments] = calcMuscleMomentsAndForces(inputData, ...
+    muscleActivations, lMtilda, vMtilda);
 end
