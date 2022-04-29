@@ -53,8 +53,7 @@ assertWithinRange(muscleActivations, muscleActivationsExpected, 0.001)
 % Normalized Muscle Fiber Lengths and Velocities Calculation
 
 [lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(inputData, ...
-    valuesStruct);
+    calcNormalizedMusceFiberLengthsAndVelocities(inputData, valuesStruct);
 
 load('normalizedMuscleLengthandVelocitiesExpected.mat')
 assertWithinRange(lMtilda, lMtildaExpected, 0.001)
