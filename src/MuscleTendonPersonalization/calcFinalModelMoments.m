@@ -28,11 +28,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modelMoments = calcFinalModelMoments(results, inputData, ...
-    muscleActivations)
+function results = calcFinalModelMoments(results, inputData)
 
 [lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(inputData, results);
-[~, ~, ~, modelMoments] = calcMuscleMomentsAndForces(inputData, ...
-    muscleActivations, lMtilda, vMtilda);
+    calcNormalizedMusceFiberLengthsAndVelocities(inputData, ...
+    results.optimizedParams);
+[~, ~, ~, results.modelMoments] = calcMuscleMomentsAndForces(inputData, ...
+    results.muscleActivations, lMtilda, vMtilda);
 end
