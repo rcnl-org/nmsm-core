@@ -22,8 +22,6 @@
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
-
-
 % nmsm.rice.edu and the NOTICE file for more information. The             %
 % NMSM Pipeline is developed at Rice University and supported by the US   %
 % National Institutes of Health (R01 EB030520).                           %
@@ -43,9 +41,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(valuesStruct, ...
-    inputData, params)
-
+function [outputCost] = computeMuscleTendonCostFunction(values, ...
+    primaryValues, isIncluded, inputData, params)
+valuesStruct = makeValuesStruct(values, primaryValues, isIncluded);
 muscleExcitations = calcMuscleExcitations(inputData.emgTime, ...
     inputData.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
     findCorrectMtpValues(4, valuesStruct));
@@ -73,4 +71,10 @@ costs = calcPairedMusclePenalties(valuesStruct, ...
 % Combine all costs into single vector
 outputCost = combineCostsIntoVector(inputData.costWeight, costs);
 outputCost(isnan(outputCost))=0;
+end
+
+function valuesStruct = makeValuesStruct(values, primaryValues, isIncluded)
+valuesStruct.secondaryValues = values;
+valuesStruct.primaryValues = primaryValues;
+valuesStruct.isIncluded = isIncluded;
 end
