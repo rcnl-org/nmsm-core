@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function calculates the resulting muscle activations following the 
+% completion of the muscle tendon personalization. 
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (struct, struct) -> (Array of number)
+% Outputs final muscle activations
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,15 +28,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, inputData, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function results = calcFinalMuscleActivations(optimizedParams, inputData)
+
+muscleExcitations = calcMuscleExcitations(inputData.timeEMG, ...
+    inputData.emgSplines, findCorrectMtpValues(1, optimizedParams), ...
+    findCorrectMtpValues(4, optimizedParams));
+neuralActivations = calcNeuralActivations(muscleExcitations, ...
+    findCorrectMtpValues(2, optimizedParams), inputData.timeEMG, ...
+    inputData.nPad);
+results.muscleActivations = calcMuscleActivations(...
+    findCorrectMtpValues(3, optimizedParams), neuralActivations);
+results.time = inputData.timeEMG;
+results.optimizedParams = optimizedParams;
 end
