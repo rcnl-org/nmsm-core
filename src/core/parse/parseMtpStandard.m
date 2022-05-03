@@ -1,10 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function pulls the files from the directory given as the input
-% starting with 1.sto, 2.sto and continuing to n.sto and stops when the
-% file cannot be found in the directory. These files are then organized
-% into a 3D matrix with dimensions matching: (numFrames, numTrials,
-% numMuscles)
+% This function pulls the files from the directory given as the input. 
+% These files are then organized into a 3D matrix with dimensions matching:
+% (numFrames, numTrials, numMuscles)
 %
 % (Array of string) -> (3D matrix of number)
 % returns a 3D matrix of the loaded data trials
