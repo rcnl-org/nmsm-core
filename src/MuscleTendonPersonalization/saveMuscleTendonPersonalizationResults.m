@@ -16,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,8 +30,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveMuscleTendonPersonalizationResults(model, results, ...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName)
+function saveMuscleTendonPersonalizationResults(modelFileName, results, ...
+    resultsDirectory, muscleModelFileName, muscleMomentFileName, ...
+    muscleActivationFileName)
+
+model = Model(modelFileName);
+columnNames = getMusclesInOrder(model);
+for i = 1:size(results.muscleActivations, 2)
+    %% How to print out individuals file [names] for each trial
+writeToSto(columnNames, results.time(:, i, :), ...
+    results.muscleActivations(:, i, :), fullfile(resultsDirectory, ...
+    muscleActivationFileName) );
+end
 
 end
 
