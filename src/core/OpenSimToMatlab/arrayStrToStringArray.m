@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function iterates through the given ArrayStr and adds each item to a
+% new MATLAB Array of type string and returns the MATLAB structure. Allows
+% easier manipulation of MATLAB string than OpenSim ArrayStr.
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (ArrayStr) -> (Array of string)
+% Rearranges the ArrayStr into a MATLAB string array
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,15 +29,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, inputData, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function stringArray = arrayStrToStringArray(arrayStr)
+stringArray = string(zeros(1,arrayStr.size()));
+for i=0:arrayStr.size()-1
+    stringArray(i+1) = arrayStr.getitem(i).toCharArray';
 end
+end
+

@@ -4,22 +4,19 @@
 % velocities
 %
 % Inputs:
-% momentArms - cell structure of (1, numJoints), each cell is made up 
-% of (numFrames, numTrials, numMuscles) 
-% hillTypeParams.lMt - 3D matrix of (numFrames, numTrials, numMuscles)
-% hillTypeParams.vMT - 3D matric of (numFrames, numTrials, numMuscles)
-% hillTypeParams.vMaxFactor - number
-% hillTypeParams.pennationAngle - 3D matrix of (1, 1, numMuscles)
-% hillTypeParams.fMax - 3D matrix of (1, 1, numMuscles)
-% hillTypeParams.lMo - 3D matrix of (1, 1, numMuscles)
-% hillTypeParams.lTs - 3D matrix of (1, 1, numMuscles)
-% muscleActivations - 3D matrix of (numFrames, numTrials, numMuscles)
+% inputData.lMt - 3D matrix of (numFrames, numTrials, numMuscles)
+% inputData.vMT - 3D matric of (numFrames, numTrials, numMuscles)
+% inputData.vMaxFactor - number
+% inputData.pennationAngle - 3D matrix of (1, 1, numMuscles)
+% inputData.fMax - 3D matrix of (1, 1, numMuscles)
+% inputData.lMo - 3D matrix of (1, 1, numMuscles)
+% inputData.lTs - 3D matrix of (1, 1, numMuscles)
 %
 % Outputs:
 % lMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
 % vMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
 %
-% (Struct) -> (Array of number,Array of number)
+% (Struct, Struct) -> (Array of number,Array of number)
 % returns muscle fiber lengths and velocities
 
 % ----------------------------------------------------------------------- %
@@ -45,18 +42,18 @@
 % ----------------------------------------------------------------------- %
 
 function [lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams, ...
+    calcNormalizedMusceFiberLengthsAndVelocities(inputData, ...
     valuesStruct)
 
-lMo = permute(hillTypeParams.lMo .* findCorrectMtpValues(6, ...
+lMo = permute(inputData.lMo .* findCorrectMtpValues(6, ...
     valuesStruct), [1 3 2]);
-lTs = permute(hillTypeParams.lTs .* findCorrectMtpValues(5, ...
+lTs = permute(inputData.lTs .* findCorrectMtpValues(5, ...
     valuesStruct), [1 3 2]);
-onesCol = ones(size(hillTypeParams.lMt, 1), size(hillTypeParams.lMt, 2));
+onesCol = ones(size(inputData.lMt, 1), size(inputData.lMt, 2));
 % Normalized muscle fiber length, equation 2 from Meyer 2017
-lMtilda = (hillTypeParams.lMt - onesCol .* lTs) ./ (onesCol .* (lMo .* ...
-    permute(cos(hillTypeParams.pennationAngle), [1 3 2])));
+lMtilda = (inputData.lMt - onesCol .* lTs) ./ (onesCol .* (lMo .* ...
+    permute(cos(inputData.pennationAngle), [1 3 2])));
 % Normalized muscle fiber velocity, equation 3 from Meyer 2017
-vMtilda = hillTypeParams.vMt ./ (hillTypeParams.vMaxFactor * onesCol .* ...
-    (lMo .* permute(cos(hillTypeParams.pennationAngle), [1 3 2])));
+vMtilda = inputData.vMt ./ (inputData.vMaxFactor * onesCol .* ...
+    (lMo .* permute(cos(inputData.pennationAngle), [1 3 2])));
 end

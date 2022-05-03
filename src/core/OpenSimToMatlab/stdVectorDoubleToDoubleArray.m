@@ -1,11 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function iterates through the given StdVectorDouble and adds each
+% item to a new MATLAB Array of type double and returns the MATLAB
+% structure. Allows easier manipulation of MATLAB double than OpenSim
+% StdVectorDouble.
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (StdVectorDouble) -> (Array of double)
+% Rearranges the ArrayDouble into a MATLAB double array
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,15 +30,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, inputData, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function doubleArray = stdVectorDoubleToDoubleArray(stdVectorDouble)
+doubleArray = zeros(1, stdVectorDouble.size());
+for i=0:stdVectorDouble.size()-1
+    doubleArray(i+1) = stdVectorDouble.get(i);
 end
+end
+

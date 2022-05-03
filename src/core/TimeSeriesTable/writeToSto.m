@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function takes a string array of column names in order, a 1D array
+% of time points and a 2D array of data. The first dimension of the 1D and
+% 2D arrays must match.
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (Array of string, Array of double, matrix of double, string) -> (None)
+% Print results of optimization to console or file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,15 +29,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, inputData, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function writeToSto(columnLabels, timePoints, data, outfile)
+import org.opensim.modeling.*
+table = TimeSeriesTable();
+table.setColumnLabels(stringArrayToStdVectorString(columnLabels));
+for i=1:length(timePoints)
+    table.appendRow(timePoints(i), doubleArrayToRowVector(data(i, :)))
 end
+STOFileAdapter.write(table, outfile)
+end
+
