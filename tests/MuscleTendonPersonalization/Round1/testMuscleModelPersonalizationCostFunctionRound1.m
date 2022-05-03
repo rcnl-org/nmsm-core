@@ -26,8 +26,8 @@ end
 
 % Muscle Excitation Calculation
 
-muscleExcitations = calcMuscleExcitations(data.emgTime, ...
-    data.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
+muscleExcitations = calcMuscleExcitations(params.timeEMG, ...
+    params.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
     findCorrectMtpValues(4, valuesStruct));
 
 load('muscleExcitationsExpected.mat')
@@ -36,7 +36,7 @@ assertWithinRange(muscleExcitations, muscleExcitationsExpected, 0.001)
 % Neural Activation Calculation
 
 neuralActivations = calcNeuralActivations(muscleExcitations, ...
-    findCorrectMtpValues(2, valuesStruct), data.emgTime, data.numPaddingFrames);
+    findCorrectMtpValues(2, valuesStruct), params.timeEMG, params.nPad);
 
 load('neuralActivationsExpected.mat')
 assertWithinRange(neuralActivations, neuralActivationsExpected, 0.001)
@@ -52,7 +52,7 @@ assertWithinRange(muscleActivations, muscleActivationsExpected,0.001)
 % Normalized Muscle Fiber Lengths and Velocities Calculation
 
 [lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(data, ...
+    calcNormalizedMusceFiberLengthsAndVelocities(hillTypeParams, ...
     valuesStruct);
 
 load('normalizedMuscleLengthandVelocitiesExpected.mat')
@@ -62,7 +62,7 @@ assertWithinRange(vMtilda, vMtildaExpected,0.001)
 % Muscle Moments and Forces
 
 [passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(data, ...
+    calcMuscleMomentsAndForces(params.momentArms, hillTypeParams, ...
     muscleActivations, valuesStruct);
 
 load('muscleMomentsAndForcesExpected.mat')
@@ -97,7 +97,7 @@ for i = 1:length(valuesStruct.isIncluded)
    end
 end
 
-[cost] = computeMuscleTendonCostFunction(valuesStruct, data, params);
+[cost] = computeMuscleTendonCostFunction(valuesStruct, params);
 
 load('costExpected.mat')
 assertWithinRange(cost, costExpected,0.001)
