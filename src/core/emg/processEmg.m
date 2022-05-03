@@ -1,11 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% RCNL's protocol for turning a matrix of double of EMG data into processed
+% EMG data that is filtered, demeaned, rectified, and downsampled as
+% necessary. Default values are used if missing from params struct.
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% params:
+%   - highPassFilterCutoff
+%
+% (2D Array of double, 1D Array of double, string, struct) -> (None)
+% Processes the input EMG data by RCNL's protocol
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,15 +32,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, inputData, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function processedEmgData = processEmg(emgData, emgTime, params)
+
+sampleRate = length(emgTime)/(emgTime(end)-emgTime(1));
+
+% High pass filter the data
+degree = valueOrAlternate(params, "filterDegree", 4);
+highPassCutoff = valueOrAlternate(params, "highPassCutoff", 40);
+[b,a] = butter(degree, 2*highPassCutoff/sampleRate,'high');
+emgData = filtfilt(b,a,emgData);
+
+% Demean
+emgData = emgData-ones(size(emgData,1),1)*mean(emgData);
+
+% Rectify
+emgData = abs(emgData);
+
+% Low pass filter
+lowPassCutoff = valueOrAlternate(params, "lowPassCutoff", 10);
+[b,a] = butter(degree,2*lowPassCutoff/sampleRate);
+emgData = filtfilt(b,a,emgData);
+
+% Remove any negative EMG values that may still exist
+emgData(emgData<0) = 0;
+
+% processedEmgData = spline(emgTime, emgData, newTimePoints);
+processedEmgData = emgData;
+
 end
+

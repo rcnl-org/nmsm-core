@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% Retrieves the column from an OpenSim Storage object and converts it to a
+% 1D array of double.
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (Storage, integer or string) -> (Array of double)
+% Returns storage column as array of double
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,15 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, inputData, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function columnData = findStorageColumn(storage, intOrString)
+import org.opensim.modeling.ArrayDouble
+arrayDouble = ArrayDouble();
+storage.getDataColumn(intOrString, arrayDouble);
+columnData = arrayDoubleToDoubleArray(arrayDouble);
 end
+

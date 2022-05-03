@@ -1,11 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function takes an OpenSim Model, the file name of the .mot/.sto of
+% the IK results, the list of coordinates of interest, and the 'prefix' of
+% the trial (i.e. squat, gait, stair-step) and processes the data correctly
+% to be used by the MuscleTendonPersonalization.
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% The muscle length and moments are calculated and placed in a folder
+% named 'prefix' in the current working directory.
+%
+% (Model, string, Array of string, string) -> (None)
+% processes MuscleAnalysis in preparation for MuscleTendonPersonalization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,15 +33,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, inputData, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function processMuscleAnalysis(model, motionFileName, coordinates, prefix)
+import org.opensim.modeling.MuscleAnalysis
+import org.opensim.modeling.Storage
+state = model.initSystem();
+muscleAnalysis = MuscleAnalysis(model);
+muscleAnalysis.setStatesStore(Storage(motionFileName));
+muscleAnalysis.setCoordinates(stringArrayToArrayStr(coordinates));
+muscleAnalysis.setComputeMoments(true);
+muscleAnalysis.begin(state);
+mkdir(prefix);
+muscleAnalysis.printResults(prefix, fullfile(pwd, prefix));
+removeUnneededFiles(fullfile(pwd, prefix), prefix);
+end
+
+function removeUnneededFiles(directory, prefix)
+files = dir(directory);
+for i=1:length(files)
+    if(~files(i).isdir && contains(files(i).name, prefix))
+        if(~(contains(files(i).name, "_MomentArm") || ...
+                contains(files(i).name, "_Length")))
+            delete(fullfile(directory, files(i).name))
+        end
+    end
+end
 end

@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function extracts the data of the OpenSim Storage object to a MATLAB
+% array of strings. The array does not include 'time', only dependent
+% column names.
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (Storage) -> (Array of string) 
+% Extracts column names as string
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,15 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, inputData, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function output = getTimeSeriesTableColumnNames(timeSeriesTable)
+strings = {};
+columnNames = timeSeriesTable.getColumnLabels();
+for i=1:columnNames.size()-1
+    strings{end+1} = columnNames.get(i);
 end
+output = string(strings);
+end
+
