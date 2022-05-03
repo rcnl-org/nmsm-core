@@ -67,8 +67,8 @@ muscleForce = onesCol .* (permute(hillTypeParams.fMax, [1 3 2]) .* ...
     permute(cos(hillTypeParams.pennationAngle), [1 3 2])) .* ...
     muscleActivations .* activeForceLengthCurve(lMtilda) .* ...
     forceVelocityCurve(vMtilda) + passiveForce;
-for i=1:size(data.momentArms, 2)
-    muscleMoments(:, :, :, i) = data.momentArms{i} .* muscleForce;
+for i=1:size(momentArms, 2)
+    muscleMoments(:, :, :, i) = momentArms{i} .* muscleForce;
 end
 modelMoments = permute(sum(muscleMoments, 3), [1 2 4 3]);
 end
