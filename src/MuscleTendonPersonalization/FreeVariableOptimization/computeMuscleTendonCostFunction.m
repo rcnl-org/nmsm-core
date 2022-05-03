@@ -34,6 +34,8 @@
 
 function [outputCost] = computeMuscleTendonCostFunction(valuesStruct, params)
 
+hillTypeParams = createHillTypeParams(params);
+
 % Update these functions to call findCorrectValues
 muscleExcitations = calcMuscleExcitations(params.timeEMG, ...
     params.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
@@ -61,6 +63,17 @@ costs = calcPairedMusclePenalties(valuesStruct, params.activationPairs, ...
 % Combine all costs into single vector
 outputCost = combineCostsIntoVector(params.costWeight, costs);
 outputCost(isnan(outputCost))=0;
+end
+
+function hillTypeParams = createHillTypeParams(params)
+
+hillTypeParams.lMt = params.lMt;
+hillTypeParams.vMt = params.vMt;
+hillTypeParams.vMaxFactor = params.vMaxFactor;
+hillTypeParams.pennationAngle = params.pennationAngle;
+hillTypeParams.fMax = params.fMax;
+hillTypeParams.lMo = params.lMo;
+hillTypeParams.lTs = params.lTs;
 end
 
 
