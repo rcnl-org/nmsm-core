@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function returns a string array of the muscles in the model in the
+% order they are listed in the model
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (Model) -> (Array of string)
+% Returns the muscles in the model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,15 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, inputData, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+function muscles = getMusclesInOrder(model)
+muscles = string([]);
+for i=0:model.getForceSet().getMuscles().getSize()-1
+    muscles(end+1) = ...
+        model.getForceSet().getMuscles().get(i).getName().toCharArray';
 end
+
