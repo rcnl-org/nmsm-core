@@ -29,22 +29,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [muscleExcitations] = calcMuscleExcitations(time, EmgSplines, ...
-    timeDelay, EmgScalingFactor)      
+function [muscleExcitations] = calcMuscleExcitations(time, emgSplines, ...
+    timeDelay, emgScalingFactor)      
 
 % Interpolated Emg is formatted as (numFrames, numMusc, numTrials)
 if size(timeDelay, 2) == 1
-    Emg = evaluateEMGsplinesWithOneTimeDelay(time, EmgSplines, ...
+    Emg = evaluateEMGsplinesWithOneTimeDelay(time, emgSplines, ...
         timeDelay / 10);
 else
     Emg = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
-        EmgSplines, timeDelay / 10); 
+        emgSplines, timeDelay / 10); 
 end 
 % Emg is reformatted as (numFrames, numTrials, numMusc)
 Emg = permute(Emg, [1 3 2]); 
 % EmgScalingFactor is formatted as (1, numTrials, numMusc)
-EmgScalingFactor = permute(EmgScalingFactor(ones(size(EmgSplines, ...
+emgScalingFactor = permute(emgScalingFactor(ones(size(emgSplines, ...
     1), 1), :), [3 1 2]); 
 % muscleExcitations are scaled processed Emg signals
-muscleExcitations = Emg.* EmgScalingFactor(ones(size(time, 1), 1), :, :); 
+muscleExcitations = Emg.* emgScalingFactor(ones(size(time, 1), 1), :, :); 
 end
