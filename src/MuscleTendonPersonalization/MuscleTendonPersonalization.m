@@ -10,6 +10,7 @@
 %   - muscleTendonVelocity (3D array)
 %   - muscleTendonMomentArm (4D array)
 %   - emgData (3D array)
+%   - experimentalData (struct) - see costFunction
 %
 % (struct, struct) -> (struct)
 % Runs the Muscle Tendon Personalization algorithm
@@ -36,10 +37,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function primaryValues = MuscleTendonPersonalization(inputs, inputData, ...
+function primaryValues = MuscleTendonPersonalization(inputs, ...
     params)
-verifyInputs(inputs); % (struct) -> (None)
-verifyParams(params); % (struct) -> (None)
+%verifyInputs(inputs); % (struct) -> (None)
+%verifyParams(params); % (struct) -> (None)
 primaryValues = prepareInitialValues(inputs, params);
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
@@ -48,7 +49,8 @@ for i=1:length(inputs.tasks)
     taskValues = makeTaskValues(primaryValues, inputs.tasks{i}, params);
     taskParams = makeTaskParams(inputs.tasks{i}, params);
     optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-        lowerBounds, upperBounds, inputData, taskParams, optimizerOptions);
+        lowerBounds, upperBounds, inputs, ...
+        taskParams, optimizerOptions);
     primaryValues = updateDesignVariables(primaryValues, ...
         optimizedValues, taskParams);
 end
