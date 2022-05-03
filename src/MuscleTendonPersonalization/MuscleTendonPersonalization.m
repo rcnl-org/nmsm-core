@@ -41,6 +41,7 @@ function primaryValues = MuscleTendonPersonalization(inputs, ...
     params)
 %verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
+inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
 primaryValues = prepareInitialValues(inputs, params);
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
