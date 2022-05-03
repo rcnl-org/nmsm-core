@@ -33,7 +33,7 @@ function emgSplines = makeEmgSplines(emgTime, emgData)
 emgSplines = cell(size(emgData, 2), size(emgData, 3));
 for i=1:size(emgData, 2)
     for j=1:size(emgData,3)
-        emgSplines = spline(emgTime(:, i), emgData(:, i, j));
+        emgSplines{i,j} = spline(emgTime(:, i), emgData(:, i, j));
     end
 end
 end
