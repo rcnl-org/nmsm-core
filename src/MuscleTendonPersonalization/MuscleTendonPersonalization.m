@@ -47,11 +47,12 @@ lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
 for i=1:length(inputs.tasks)
-    taskValues = makeTaskValues(primaryValues, inputs.tasks{i}, params);
+    [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
+        primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
     taskParams = makeTaskParams(inputs.tasks{i}, params);
     optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-        primaryValues, inputs.tasks{i}.isIncluded, lowerBounds, ...
-        upperBounds, inputs, taskParams, optimizerOptions);
+        primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
+        taskUpperBounds, inputs, taskParams, optimizerOptions);
     primaryValues = updateDesignVariables(primaryValues, ...
         optimizedValues, taskParams);
 end
@@ -144,11 +145,16 @@ end
 
 % (struct, struct) -> (Array of number)
 % prepare values to be optimized for the given task
-function taskValues = makeTaskValues(primaryValues, taskInputs, params)
+function [taskValues, taskLowerBounds, taskUpperBounds] = ...
+    makeTaskValues(primaryValues, taskInputs, lowerBounds, upperBounds)
 taskValues = [];
+taskLowerBounds = [];
+taskUpperBounds = [];
 for i = 1:length(taskInputs.isIncluded)
    if(taskInputs.isIncluded(i))
        taskValues = [taskValues primaryValues(i, :)];
+       taskLowerBounds = [taskLowerBounds lowerBounds(i, :)];
+       taskUpperBounds = [taskUpperBounds upperBounds(i, :)];
    end
 end
 end
