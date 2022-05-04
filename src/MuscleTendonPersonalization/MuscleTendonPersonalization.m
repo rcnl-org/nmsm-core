@@ -4,6 +4,8 @@
 % the muscle characteristics of the patient.
 %
 % inputs:
+%   - tasks (cell array)
+%       - isIncluded (array of boolean)
 %   - model (Model)
 %   - jointMoment (3D array)
 %   - muscleTendonLength (3D array)
@@ -41,7 +43,9 @@ function primaryValues = MuscleTendonPersonalization(inputs, ...
     params)
 %verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
-inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
+if ~isfield(inputs, "emgSplines")
+    inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
+end
 primaryValues = prepareInitialValues(inputs, params);
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
