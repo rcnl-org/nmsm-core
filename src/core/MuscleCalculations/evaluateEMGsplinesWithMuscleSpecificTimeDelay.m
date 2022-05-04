@@ -35,8 +35,6 @@ function emg = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
 timeIntervalInterp = linspace(0, 1, size(time, 1))'; 
 % preallocate memory
 emg = zeros(size(time, 1), size(emgSplines, 2), size(emgSplines, 1)); 
-size(emgSplines,2)
-size(timeDelay)
 for i = 1:size(emgSplines, 2)
     for j = 1:size(emgSplines, 1)
         interpTime = (time(end, j) - time(1, j)) * timeIntervalInterp + ...
