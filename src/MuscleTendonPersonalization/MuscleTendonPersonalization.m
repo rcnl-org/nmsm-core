@@ -58,7 +58,7 @@ for i=1:length(inputs.tasks)
         primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
         taskUpperBounds, inputs, taskParams, optimizerOptions);
     primaryValues = updateDesignVariables(primaryValues, ...
-        optimizedValues, taskParams);
+        optimizedValues, inputs.tasks{i}.isIncluded);
 end
 end
 

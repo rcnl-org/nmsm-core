@@ -35,11 +35,24 @@ function newPrimaryValues = updateDesignVariables(primaryValues, ...
 newPrimaryValues = zeros(size(primaryValues));
 for i=1:length(isIncluded)
     if(isIncluded(i))
-        [startIndex, endIndex] = findStartAndEndIndex(primaryValues, ...
+        [startIndex, endIndex] = findStartAndEndIndex(secondaryValues, ...
             isIncluded, i);
         newPrimaryValues(i, :) = secondaryValues(startIndex:endIndex);
     else
         newPrimaryValues(i, :) = primaryValues(i, :);
+    end
+end
+end
+
+function [startIndex, endIndex] = findStartAndEndIndex(secondaryValues, ...
+    isIncluded, index)
+rows = length(secondaryValues) / sum(isIncluded);
+startIndex = 1;
+endIndex = rows;
+for i=1:index
+    if(isIncluded)
+        startIndex = startIndex + row;
+        endIndex = endIndex + row;
     end
 end
 end
