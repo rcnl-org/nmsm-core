@@ -41,7 +41,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computeMuscleTendonCostFunction(values, ...
+function sumSquaredOutputCost = computeMuscleTendonCostFunction(values, ...
     primaryValues, isIncluded, inputData, params)
 valuesStruct = makeValuesStruct(values, primaryValues, isIncluded);
 muscleExcitations = calcMuscleExcitations(inputData.emgTime, ...
@@ -71,7 +71,7 @@ costs = calcPairedMusclePenalties(valuesStruct, ...
 % Combine all costs into single vector
 outputCost = combineCostsIntoVector(inputData.costWeight, costs);
 outputCost(isnan(outputCost))=0;
-size(outputCost)
+sumSquaredOutputCost = sum(outputCost.^2);
 end
 
 function valuesStruct = makeValuesStruct(values, primaryValues, isIncluded)
