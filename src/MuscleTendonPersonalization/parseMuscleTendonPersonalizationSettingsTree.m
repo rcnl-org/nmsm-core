@@ -32,6 +32,7 @@ function [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
+inputs = getModelInputs(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -43,18 +44,19 @@ inputDirectory = getFieldByName(tree, 'input_directory').Text;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(~isempty(inputDirectory))
     try
-        inputs.model = Model(fullfile(inputDirectory, modelFile));
+        inputs.model = fullfile(inputDirectory, modelFile);
     catch
-        inputs.model = Model(fullfile(pwd, inputDirectory, modelFile));
+        inputs.model = fullfile(pwd, inputDirectory, modelFile);
         inputDirectory = fullfile(pwd, inputDirectory);
     end
 else
-    inputs.model = Model(fullfile(pwd, modelFile));
+    inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
 prefixes = getPrefixes(tree, inputDirectory);
-inputs.jointMoment = parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(inputDirectory, "IDData"), prefixes));
+inputs.experimentalMoments = parseMtpStandard( ...
+    findFileListFromPrefixList(fullfile(inputDirectory, "IDData"), ...
+    prefixes));
 % inputs.muscleTendonVelocity = parseMtpStandard( ...
 %     findFileListFromPrefixList(fullfile(inputDirectory, ...
 %     getFieldByNameOrError(tree, 'muscle_velocity_directory').Text), ...
@@ -65,9 +67,15 @@ inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
     fullfile(inputDirectory, "EMGData"), prefixes));
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
     inputDirectory, "MAData"), prefixes);
-inputs.muscleTendonLength = parseMuscleTendonLengths(directories);
-inputs.muscleTendonMomentArm = parseMomentArms(directories, inputs.model);
+inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
+    "Length.sto");
+% inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
+%     "Velocity.sto");
+inputs.momentArms = parseMomentArms(directories, inputs.model);
+inputs.numPaddingFrames = (size(inputs.experimentalMoments, 1) - 101) / 2;
 inputs.tasks = getTasks(tree);
+inputs.activationPairs = getPairs(getFieldByNameOrError(tree, 'PairedActivationTimeConstants'), inputs.model);
+inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, 'PairedNormalizedMuscleFiberLengths'), inputs.model);
 end
 
 % (struct) -> (Array of string)
@@ -83,7 +91,6 @@ else
             prefixes(end+1) = files(i).name(1:end-4);
         end
     end
-    prefixes
 end
 end
 
@@ -117,6 +124,43 @@ for i=1:length(items)
 end
 end
 
+function pairs = getPairs(tree, model)
+pairElements = getFieldByName(tree, 'musclepairs');
+activationGroupNames = string([]);
+if isstruct(pairElements)
+    activationGroupNames(end+1) = pairElements.Text;
+elseif iscell(pairElements)
+    for i=1:length(pairElements)
+        activationGroupNames(end+1) = pairElements{i}.Text;
+    end
+else
+    pairs = {};
+    return
+end
+pairs = groupNamesToPairs(activationGroupNames, model);
+end
+
+function pairs = groupNamesToPairs(groupNames, model)
+pairs = {};
+model = Model(model);
+for i=1:length(groupNames)
+    group = [];
+    for j=0:model.getForceSet().getGroup(groupNames(i)).getMembers().getSize()-1
+        count = 1;
+        for k=0:model.getForceSet().getMuscles().getSize()-1
+            if strcmp(model.getForceSet().getMuscles().get(k).getName().toCharArray', model.getForceSet().getGroup(groupNames(i)).getMembers().get(j))
+                break
+            end
+            if(model.getForceSet().getMuscles().get(k).get_appliesForce())
+                count = count + 1;
+            end
+        end
+        group(end+1) = count;
+    end
+    pairs{end + 1} = group;
+end
+end
+
 % (struct) -> (struct)
 function params = getParams(tree)
 params = struct();
@@ -128,5 +172,29 @@ maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
 if(isstruct(maxFunctionEvaluations))
     params.maxFunctionEvaluations = str2double(maxFunctionEvaluations.Text);
 end
+vMaxFactor = getFieldByName(tree, 'v_max_factor');
+if(isstruct(vMaxFactor))
+    params.vMaxFactor = str2double(vMaxFactor.Text);
+end
 end
 
+function inputs = getModelInputs(inputs)
+inputs.optimalFiberLength = [];
+inputs.tendonSlackLength = [];
+inputs.pennationAngle = [];
+inputs.maxIsometricForce = [];
+model = Model(inputs.model);
+for i = 0:model.getForceSet().getMuscles().getSize()-1
+    if model.getForceSet().getMuscles().get(i).get_appliesForce()
+        inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
+            getMuscles().get(i).getOptimalFiberLength()*100;
+        inputs.tendonSlackLength(end+1) = model.getForceSet(). ...
+            getMuscles().get(i).getTendonSlackLength()*100;
+        inputs.pennationAngle(end+1) = model.getForceSet(). ...
+            getMuscles().get(i). ...
+            getPennationAngleAtOptimalFiberLength()*(180/pi);
+        inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
+            getMuscles().get(i).getMaxIsometricForce();
+    end
+end
+end
