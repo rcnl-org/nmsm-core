@@ -31,6 +31,9 @@
 
 function output = parseMomentArms(directories, model)
 import org.opensim.modeling.Storage
+if ~isequal(class(model), 'org.opensim.modeling.Model')
+    model = Model(model);
+end
 firstTrial = parseMuscleAnalysisCoordinates(directories(1), model);
 cells = zeros([length(directories) size(firstTrial)]);
 cells(1, :, :, :) = firstTrial;
