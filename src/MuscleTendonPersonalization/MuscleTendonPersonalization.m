@@ -6,7 +6,7 @@
 % inputs:
 %   - tasks (cell array)
 %       - isIncluded (array of boolean)
-%   - model (Model)
+%   - model (string)
 %   - jointMoment (3D array)
 %   - muscleTendonLength (3D array)
 %   - muscleTendonVelocity (3D array)
