@@ -218,7 +218,7 @@ end
 end
 
 function inputs = addCostFunctionTerms(tree, inputs)
-enabled = getFieldByNameOrError(tree, "on").Text;
+enabled = getFieldByNameOrError(tree, "is_enabled").Text;
 if(enabled == "true"); inputs.costWeight(end+1) = 1;
 else; inputs.costWeight(end+1) = 0; end
 maxError = getFieldByNameOrError(tree, "max_allowable_error").Text;
