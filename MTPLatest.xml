@@ -7,6 +7,10 @@
         <input_directory>preprocessed</input_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>modelWithMuscleGroupsRightLegOnly.osim</input_model_file>
+		<!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
+		<muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
+		<!--Boolean (true, false) indicating if time activation constant values should be found individually for each muscle or all together-->
+        <muscle_specific_activation_time_constant>false</muscle_specific_activation_time_constant>
         <!--The set of <MuscleTendonPersonalizationTask> to be completed by the tool, each Task is a separate optimization-->
         <MuscleTendonPersonalizationTaskList>
             <MuscleTendonPersonalizationTask>
@@ -31,41 +35,39 @@
             <IndividualMuscles>
                 <InverseDynamicJointMoments>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                 </InverseDynamicJointMoments>
                 <ActivationTimeConstant>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                     <!--Reference value relative to which errors are calculated-->
                     <error_center>0</error_center>
-                    <!--Boolean (true, false) indicating if time activation constant values should be found individually for each muscle or all together-->
-                    <muscle_specific_activation_time_constant>false</muscle_specific_activation_time_constant>
                 </ActivationTimeConstant>
                 <ActivationNonlinearityConstant>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                 </ActivationNonlinearityConstant>
                 <OptimalMuscleFiberLength>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                 </OptimalMuscleFiberLength>
                 <TendonSlackLength>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                 </TendonSlackLength>
                 <EmgScalingFactors>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                     <!--Reference value relative to which errors are calculated-->
@@ -73,13 +75,13 @@
                 </EmgScalingFactors>
                 <NormalizedMuscleFiberLength>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                 </NormalizedMuscleFiberLength>
                 <PassiveMuscleForces>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                 </PassiveMuscleForces>
@@ -87,23 +89,21 @@
             <PairedMuscles>
                 <NormalizedMuscleFiberLength>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                 </NormalizedMuscleFiberLength>
                 <EmgScalingFactors>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
                 </EmgScalingFactors>
                 <ElectromechanicalDelay>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
-                    <on>true</on>
+                    <is_enabled>true</is_enabled>
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0</max_allowable_error>
-                    <!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
-                    <muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
                 </ElectromechanicalDelay>
             </PairedMuscles>    
         </MuscleTendonCostFunctionTerms>
