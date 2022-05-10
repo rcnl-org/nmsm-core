@@ -73,9 +73,11 @@ inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
 %     "Velocity.sto");
 inputs.momentArms = parseMomentArms(directories, inputs.model);
 inputs.numPaddingFrames = (size(inputs.experimentalMoments, 1) - 101) / 2;
+inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.tasks = getTasks(tree);
 inputs.activationPairs = getPairs(getFieldByNameOrError(tree, 'PairedActivationTimeConstants'), inputs.model);
 inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, 'PairedNormalizedMuscleFiberLengths'), inputs.model);
+inputs = getCostFunctionTerms(getFieldByNameOrError(tree, 'MuscleTendonCostFunctionTerms'), inputs)
 end
 
 % (struct) -> (Array of string)
@@ -197,4 +199,40 @@ for i = 0:model.getForceSet().getMuscles().getSize()-1
             getMuscles().get(i).getMaxIsometricForce();
     end
 end
+end
+
+function inputs = getCostFunctionTerms(tree, inputs)
+inputs.costWeight = [];
+inputs.errorCenters = [];
+inputs.maxAllowableErrors = [];
+individualMusclesTree = getFieldByNameOrError(tree, "IndividualMuscles");
+pairedMusclesTree = getFieldByNameOrError(tree, "PairedMuscles");
+individualMuscleTerms = ["InverseDynamicJointMoments", "ActivationTimeConstant", "ActivationNonlinearityConstant", "OptimalMuscleFiberLength", "TendonSlackLength", "EmgScalingFactors", "NormalizedMuscleFiberLength", "PassiveMuscleForces"];
+for i=1:length(individualMuscleTerms)
+    inputs = addCostFunctionTerms(getFieldByNameOrError(individualMusclesTree, individualMuscleTerms(i)), inputs);
+end
+pairedMuscleTerms = ["NormalizedMuscleFiberLength", "EmgScalingFactors", "ElectromechanicalDelay"];
+for i=1:length(pairedMuscleTerms)
+    inputs = addCostFunctionTerms(getFieldByNameOrError(pairedMusclesTree, pairedMuscleTerms(i)), inputs);
+end
+end
+
+function inputs = addCostFunctionTerms(tree, inputs)
+enabled = getFieldByNameOrError(tree, "on").Text;
+if(enabled == "true"); inputs.costWeight(end+1) = 1;
+else; inputs.costWeight(end+1) = 0; end
+maxError = getFieldByNameOrError(tree, "max_allowable_error").Text;
+inputs.maxAllowableErrors(end+1) = str2double(maxError);
+errorCenter = getFieldByName(tree, "error_center");
+if ~isstruct(errorCenter)
+    inputs.errorCenters(end+1) = 0;
+else
+inputs.errorCenters(end+1) = str2double(errorCenter.Text);
+end
+end
+
+function inputs = reduceDataSize(inputs, numPaddingFrames)
+inputs.experimentalMoments = inputs.experimentalMoments(numPaddingFrames + 1:end-numPaddingFrames, :, :);
+inputs.muscleTendonLength = inputs.muscleTendonLength(numPaddingFrames + 1:end-numPaddingFrames, :, :);
+% inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(numPaddingFrames + 1:end-numPaddingFrames, :, :);
 end
