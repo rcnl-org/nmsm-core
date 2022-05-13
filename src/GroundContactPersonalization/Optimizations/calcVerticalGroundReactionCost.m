@@ -2,7 +2,7 @@
 %
 % 
 %
-% (struct, struct) -> (struct)
+% (Array of double, struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -27,22 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
-initialValues = makeInitialValues(inputs, params);
-results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
-    inputs, params), initialValues);
-inputs = mergeResults(inputs, results);
-end
-
-% (struct, struct) -> (Array of double)
-% generate initial values to be optimized from inputs, params
-function initialValues = makeInitialValues(inputs, params)
-
-end
-
-% (struct, Array of double) -> (struct)
-% merge the results of the optimization back into the input values
-function inputs = mergeResults(inputs, results)
+function cost = calcVerticalGroundReactionCost(values, inputs, params)
 
 end
 
