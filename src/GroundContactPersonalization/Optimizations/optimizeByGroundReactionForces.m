@@ -29,8 +29,8 @@
 
 function inputs = optimizeByGroundReactionForces(inputs, params)
 initialValues = makeInitialValues(inputs, params);
-results = lsqnonlin(@(values) calcGroundReactionCost(values, params), ...
-    initialValues);
+results = lsqnonlin(@(values) calcGroundReactionCost(values, inputs, ...
+    params), initialValues);
 inputs = mergeResults(inputs, results);
 end
 
