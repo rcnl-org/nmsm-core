@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the GroundContactPersonalization function
-% such that an xml file can be passed and the resulting computation can be
-% completed according to the instructions of that file.
+% 
 %
-% (string) -> (None)
-% Run GroundContactPersonalization from settings file
+% (Array of double, struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,11 +27,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function GroundContactPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseGroundContactPersonalizationTool(settingsTree);
-results = GroundContactPersonalization(inputs, params);
-saveGroundContactPersonalizationResults(results, resultsDirectory);
+function [inputs, params, resultsDirectory] = ...
+    parseGroundContactPersonalizationSettingsTree(settingsTree)
+inputs = getInputs(settingsTree);
+params = getParams(settingsTree);
+resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+if(isempty(resultsDirectory))
+    resultsDirectory = pwd;
+end
 end
 
+function getInputs(tree)
+
+end
+
+function getParams(tree)
+
+end
