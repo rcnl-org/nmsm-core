@@ -27,31 +27,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function results = GroundContactPersonalization(inputs, params)
-verifyInputs(inputs); % (struct) -> (None)
-verifyParams(params); % (struct) -> (None)
-inputs = prepareInputs(inputs, params);
-inputs = optimizeByVerticalGroundReactionForce(inputs, params);
-inputs = optimizeByGroundReactionForces(inputs, params);
-results = optimizeByGroundReactionAndCenterOfPressureAndFreeMoment( ...
-    inputs, params);
+function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
+initialValues = makeInitialValues(inputs, params);
+results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
+    params), initialValues);
+inputs = mergeResults(inputs, results);
+end
+
+% (struct, struct) -> (Array of double)
+% generate initial values to be optimized from inputs, params
+function initialValues = makeInitialValues(inputs, params)
 
 end
 
-% (struct) -> (None)
-% throws an error if any of the inputs are invalid
-function verifyInputs(inputs)
+% (struct, Array of double) -> (struct)
+% merge the results of the optimization back into the input values
+function inputs = mergeResults(inputs, results)
 
 end
 
-% (struct) -> (None)
-% throws an error if the parameter is included but is not of valid type
-function verifyParams(params)
-
-end
-
-% (struct, struct) -> (struct)
-% prepares optimization values from inputs
-function prepareInputs(inputs, params)
-
-end
