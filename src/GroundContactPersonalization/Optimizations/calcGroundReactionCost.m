@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+%
 %
 % (Array of double, struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
@@ -28,6 +28,13 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcGroundReactionCost(values, inputs, params)
-
+cost = calcVerticalGroundReactionCost(values, inputs, params);
+for i=1:2
+    cost = cost + 5 * calcGrfCurveError %x dir
+    cost = cost + 5 * calcGrfCurveError %z dir
+    cost = cost + 1 / 3 * calcGrfCurveSlopeError %x dir
+    cost = cost + 2 * calcGrfCurveSlopeError % z dir
+    cost = cost + 
+end
 end
 
