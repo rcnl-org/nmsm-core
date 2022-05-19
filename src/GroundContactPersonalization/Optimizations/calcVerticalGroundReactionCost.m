@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+%
 %
 % (Array of double, struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
@@ -28,6 +28,46 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcVerticalGroundReactionCost(values, inputs, params)
+cost = 0;
+for i=1:2
+    % set values = right foot if i = 1, values = left foot if i = 2
+    cost = cost + 2 * calcFootMarkerPositionError
+    cost = cost + 1000 * calcFootMarkerPositionSlopeError
+    cost = cost + 1000 * calcKinematicCurveSlopeError
+    cost = cost + calcGrfCurveError
+    cost = cost + 1 / 5 * calcGrfCurveSlopeError
+    cost = cost + 1 / 100 * calcKValueFromMeanError
+    cost = cost + 100 * calcCValueFromMeanError
+    cost = cost + calcCPercentFromInitialValueError
+    cost = cost + calcKPercentFromInitialValueError
+    cost = cost + calcFootYPositionError    
+end
+cost = cost / 10;
+end
+
+function calcFootMarkerPositionError(modelCoordinates, ...
+    experimentalCoordinates, initial_marker_errors, tolerance)
 
 end
+
+function calcFootMarkerPositionSlopeError(modelCurves, experimentalCurves)
+
+end
+
+function calcKinematicCurveSlopeError()
+
+end
+
+function calcGrfCurveError()
+
+end
+
+function calcGrfCurveSlopeError()
+
+end
+
+function calcKValueFromMeanError()
+
+end
+
 
