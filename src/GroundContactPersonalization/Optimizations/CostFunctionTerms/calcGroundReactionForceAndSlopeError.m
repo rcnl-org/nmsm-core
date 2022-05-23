@@ -27,8 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcGroundReactionForceError(values, experimentalData, ...
-    params)
+function [valueError, slopeError] = ...
+    calcGroundReactionForceAndSlopeError(values, experimentalData, params)
 
 yPens = zeros(nframes,nvals);
 normvel = zeros(nframes,nvals);
@@ -48,6 +48,9 @@ end
 
 Fy = repmat(Kvals',nframes,1).*yPens.*(1+repmat(cvals',nframes,1).*normvel);
 Fyvals_Calculated = sum(Fy,2);
-error = abs(Fyvals - Fyvals_Calculated);
+valueError = abs(Fyvals - Fyvals_Calculated);
+y_real_diff = diff(Fyvals);
+y_calc_diff = diff(Fyvals_Calculated);
+slopeError = ((abs(abs(y_real_diff) - abs(y_calc_diff)))/5);
 end
 
