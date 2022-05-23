@@ -51,6 +51,6 @@ Fyvals_Calculated = sum(Fy,2);
 valueError = abs(Fyvals - Fyvals_Calculated);
 y_real_diff = diff(Fyvals);
 y_calc_diff = diff(Fyvals_Calculated);
-slopeError = ((abs(abs(y_real_diff) - abs(y_calc_diff)))/5);
+slopeError = abs(abs(y_real_diff) - abs(y_calc_diff));
 end
 
