@@ -27,9 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcFootYPositionError(values, ...
+function error = calcStaticToDynamicFrictionDeviationError(values, ...
     experimentalData, params)
 
-error = ((Yval - 0.006)/0.006).^10;
+error = (((mu_s - mu_d) - 0.06)/0.04).^10;
+
 end
 
