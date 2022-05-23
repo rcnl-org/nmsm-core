@@ -29,6 +29,34 @@
 
 function cost = calcGroundReactionAndCenterOfPressureAndFreeMomentCost( ...
     values, inputs, params)
+[footMarkerPositionError, footMarkerSlopeError] = ...
+    calcFootMarkerPositionAndSlopeError();
+cost = 2 * footMarkerPositionError;
+cost = [cost 1000 * footMarkerSlopeError];
+cost = [cost 10000 * calcKinematicCurveSlopeError()];
+[groundReactionForceValueError, groundReactionForceSlopeError] = ...
+    calcGroundReactionForceAndSlopeError();
+cost = [cost groundReactionForceValueError];
+cost = [cost 1 / 5 * groundReactionForceSlopeError];
+cost = [cost 1 / 10 * calcKValueFromMeanError()];
+cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
+cost = [cost 100 * calcCValueFromMeanError()];
+cost = [cost calcFootDistanceError()];
+cost = [cost calcCDeviationFromInitialValueError()];
+cost = [cost calcKDeviationFromInitialValueError()];
+cost = [cost calcStaticFrictionDeviationError()];
+cost = [cost calcDynamicFrictionDeviationError()];
+cost = [cost calcViscousFrictionDeviationError()];
+cost = [cost calcStaticToDynamicFrictionDeviationError()];
+[centerOfPressurePositionError, centerOfPressureSlopeError] = ...
+    calcCenterOfPressurePositionAndSlopeError();
+cost = [cost centerOfPressurePositionError];
+cost = [cost centerOfPressureSlopeError];
+[freeMomentValueError, freeMomentSlopeError] = ...
+    calcFreeMomentValueAndSlopeError();
+cost = [cost freeMomentValueError];
+cost = [cost freeMomentSlopeError];
 
+cost = cost / 250;
 end
 
