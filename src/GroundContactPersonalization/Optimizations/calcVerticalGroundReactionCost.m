@@ -38,8 +38,8 @@ for i=1:2
     cost = cost + 1 / 5 * calcGroundReactionForceAndSlopeError();
     cost = cost + 1 / 100 * calcKValueFromMeanError();
     cost = cost + 100 * calcCValueFromMeanError();
-    cost = cost + calcCPercentFromInitialValueError();
-    cost = cost + calcKPercentFromInitialValueError();
+    cost = cost + calcCDeviationFromInitialValueError();
+    cost = cost + calcKDeviationFromInitialValueError();
     cost = cost + calcFootYPositionError();
 end
 cost = cost / 10;

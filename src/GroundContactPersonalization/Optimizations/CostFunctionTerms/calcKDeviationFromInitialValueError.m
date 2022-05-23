@@ -1,4 +1,4 @@
-function [outputArg1,outputArg2] = calcKPercentFromInitialValueError(inputArg1,inputArg2)
+function [outputArg1,outputArg2] = calcKDeviationFromInitialValueError(inputArg1,inputArg2)
 %CALCKPERCENTFROMINITIALVALUEERROR Summary of this function goes here
 %   Detailed explanation goes here
 outputArg1 = inputArg1;
