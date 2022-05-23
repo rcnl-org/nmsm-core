@@ -3,5 +3,7 @@ function [outputArg1,outputArg2] = calcCPercentFromInitialValueError(inputArg1,i
 %   Detailed explanation goes here
 outputArg1 = inputArg1;
 outputArg2 = inputArg2;
+function error = calcCDeviationFromInitialValueError(values, ...
+    experimentalData, params)
 end
 
