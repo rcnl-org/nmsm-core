@@ -28,20 +28,20 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcVerticalGroundReactionCost(values, inputs, params)
-cost = 0;
-for i=1:2
-    % set values = right foot if i = 1, values = left foot if i = 2
-    cost = cost + 2 * calcFootMarkerPositionAndSlopeError();
-    cost = cost + 1000 * calcFootMarkerPositionAndSlopeError();
-    cost = cost + 1000 * calcKinematicCurveSlopeError();
-    cost = cost + calcGroundReactionForceAndSlopeError();
-    cost = cost + 1 / 5 * calcGroundReactionForceAndSlopeError();
-    cost = cost + 1 / 100 * calcKValueFromMeanError();
-    cost = cost + 100 * calcCValueFromMeanError();
-    cost = cost + calcCDeviationFromInitialValueError();
-    cost = cost + calcKDeviationFromInitialValueError();
-    cost = cost + calcFootYPositionError();
-end
+[footMarkerPositionError, footMarkerSlopeError] = ...
+    calcFootMarkerPositionAndSlopeError();
+cost = 2 * footMarkerPositionError;
+cost = [cost 1000 * footMarkerSlopeError];
+cost = [cost 1000 * calcKinematicCurveSlopeError()];
+[groundReactionForceValueError, groundReactionForceSlopeError] = ...
+    calcGroundReactionForceAndSlopeError();
+cost = [cost groundReactionForceValueError];
+cost = [cost 1 / 5 * groundReactionForceSlopeError];
+cost = [cost 1 / 100 * calcKValueFromMeanError()];
+cost = [cost 100 * calcCValueFromMeanError()];
+cost = [cost calcCDeviationFromInitialValueError()];
+cost = [cost calcKDeviationFromInitialValueError()];
+cost = [cost calcFootDistanceError()];
 cost = cost / 10;
 end
 
