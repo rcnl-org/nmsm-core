@@ -31,8 +31,8 @@ function cost = calcVerticalGroundReactionCost(values, inputs, params)
 cost = 0;
 for i=1:2
     % set values = right foot if i = 1, values = left foot if i = 2
-    cost = cost + 2 * calcFootMarkerPositionError();
-    cost = cost + 1000 * calcFootMarkerPositionSlopeError();
+    cost = cost + 2 * calcFootMarkerPositionAndSlopeError();
+    cost = cost + 1000 * calcFootMarkerPositionAndSlopeError();
     cost = cost + 1000 * calcKinematicCurveSlopeError();
     cost = cost + calcGroundReactionForceAndSlopeError();
     cost = cost + 1 / 5 * calcGroundReactionForceAndSlopeError();
