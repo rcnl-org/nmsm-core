@@ -28,13 +28,26 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcGroundReactionCost(values, inputs, params)
-cost = calcVerticalGroundReactionCost(values, inputs, params);
-for i=1:2
-    cost = cost + 5 * calcGrfCurveError %x dir
-    cost = cost + 5 * calcGrfCurveError %z dir
-    cost = cost + 1 / 3 * calcGrfCurveSlopeError %x dir
-    cost = cost + 2 * calcGrfCurveSlopeError % z dir
-    cost = cost + 
-end
+[footMarkerPositionError, footMarkerSlopeError] = ...
+    calcFootMarkerPositionAndSlopeError();
+cost = 2 * footMarkerPositionError;
+cost = [cost 1000 * footMarkerSlopeError];
+cost = [cost 10000 * calcKinematicCurveSlopeError()];
+[groundReactionForceValueError, groundReactionForceSlopeError] = ...
+    calcGroundReactionForceAndSlopeError();
+cost = [cost groundReactionForceValueError];
+cost = [cost 1 / 5 * groundReactionForceSlopeError];
+cost = [cost 1 / 10 * calcKValueFromMeanError()];
+cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
+cost = [cost 100 * calcCValueFromMeanError()];
+cost = [cost calcFootDistanceError()];
+cost = [cost calcCDeviationFromInitialValueError()];
+cost = [cost calcKDeviationFromInitialValueError()];
+cost = [cost calcStaticFrictionDeviationError()];
+cost = [cost calcDynamicFrictionDeviationError()];
+cost = [cost calcViscousFrictionDeviationError()];
+cost = [cost calcStaticToDynamicFrictionDeviationError()];
+
+cost = cost / 50;
 end
 
