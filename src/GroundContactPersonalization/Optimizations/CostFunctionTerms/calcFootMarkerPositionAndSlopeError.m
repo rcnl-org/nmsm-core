@@ -27,8 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcFootMarkerPositionError(values, experimentalData, ...
-    params)
+function [valueError, slopeError] = ...
+    calcFootMarkerPositionAndSlopeError(values, experimentalData, params)
 
 footError = zeros(size(experimentalData.position, 1), 12);
 for i = 1:size(experimentalData.position, 1)
@@ -40,10 +40,12 @@ nmm = 2;
 toenmm = 3;
 footTolerance = HFtol(1,1:9) + nmm;
 footTolerance(1,10:12) = Toetol(1,1:3) + toenmm;
-error = 1000*footError / (repmat( ...
+valueError = 1000*footError / (repmat( ...
     experimentalData.initialMarkerErrors + footTolerance, ...
     length(experimentalData.position), 1));
-
+m_real_diff = diff(ExpMarkersR);
+m_calc_diff = diff(Xguess_m);
+slopeError = abs(abs(m_real_diff) - abs(m_calc_diff));
 end
 
 function positions = calcModeledMarkerPositions(values, ...
