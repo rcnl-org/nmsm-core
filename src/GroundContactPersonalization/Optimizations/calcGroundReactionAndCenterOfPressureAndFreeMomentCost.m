@@ -47,7 +47,7 @@ cost = [cost calcKDeviationFromInitialValueError()];
 cost = [cost calcStaticFrictionDeviationError()];
 cost = [cost calcDynamicFrictionDeviationError()];
 cost = [cost calcViscousFrictionDeviationError()];
-cost = [cost calcStaticToDynamicFrictionDeviationError()];
+cost = [cost 1000 * calcStaticToDynamicFrictionDeviationError()];
 [centerOfPressurePositionError, centerOfPressureSlopeError] = ...
     calcCenterOfPressurePositionAndSlopeError();
 cost = [cost centerOfPressurePositionError];
