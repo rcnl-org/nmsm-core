@@ -37,12 +37,23 @@ end
 % (struct, struct) -> (Array of double)
 % generate initial values to be optimized from inputs, params
 function initialValues = makeInitialValues(inputs, params)
-
+initialValues = [];
+initialValues = [initialValues inputs.springConstants]; % Kvals
+initialValues = [initialValues inputs.dampingFactors]; % cvals
+initialValues = [initialValues reshape(inputs.rightKinematicCurveCoefficients([2, 5:7], :)', 1, [])]; % B spline coeff right
+initialValues = [initialValues reshape(inputs.leftKinematicCurveCoefficients([2, 5:7], :)', 1, [])]; % B spline coeff left
+initialValues = [initialValues inputs.rightFootVerticalPosition]; % YvalR 
+initialValues = [initialValues inputs.leftFootVerticalPosition]; % YvalL
 end
 
 % (struct, Array of double) -> (struct)
 % merge the results of the optimization back into the input values
 function inputs = mergeResults(inputs, results)
+index = 1;
+inputs.springConstants = results(index, index + length(inputs.springConstants));
+index = index + length(inputs.springConstants);
+inputs.dampingFactors = results(index, index + length(inputs.dampingFactors));
+index = index + length(inputs.dampingFactors);
 
 end
 
