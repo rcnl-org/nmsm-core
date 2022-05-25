@@ -52,6 +52,14 @@ end
 
 % (struct, struct) -> (struct)
 % prepares optimization values from inputs
-function prepareInputs(inputs, params)
-
+function inputs = prepareInputs(inputs, params)
+inputs.springConstants = []; % 38 vals
+inputs.dampingFactors = []; % 38 vals
+inputs.rightKinematicCurveCoefficients = []; % 25 x 7 matrix
+inputs.leftKinematicCurveCoefficients = []; % 25 x 7 matrix
+inputs.rightFootVerticalPosition = []; % 1 val
+inputs.leftFootVerticalPosition = []; % 1 val
+inputs.staticFrictionCoefficient = []; % 1 val
+inputs.dynamicFrictionCoefficient = []; % 1 val
+inputs.viscousFrictionCoefficient = []; % 1 val
 end
