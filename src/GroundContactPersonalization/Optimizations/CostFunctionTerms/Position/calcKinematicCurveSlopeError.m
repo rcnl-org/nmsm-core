@@ -27,28 +27,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [valueError, slopeError] = ...
-    calcFootMarkerPositionAndSlopeError(values, experimentalData, params)
+function error = calcKinematicCurveSlopeError(modeledJointKinematics, ...
+    inputs)
 
-footError = zeros(size(experimentalData.position, 1), 12);
-for i = 1:size(experimentalData.position, 1)
-    footError(i, :) = calcModeledMarkerPositions(values, ...
-        experimentalData, params);
+error = abs(abs(diff(inputs.jointKinematics)) - ...
+    abs(modeledJointKinematics));
+if(size(inputs.N, 2) == 5)
+    error = error(:, [2,4:7]);
+end
 end
 
-nmm = 2;
-toenmm = 3;
-footTolerance = HFtol(1,1:9) + nmm;
-footTolerance(1,10:12) = Toetol(1,1:3) + toenmm;
-valueError = 1000*footError / (repmat( ...
-    experimentalData.initialMarkerErrors + footTolerance, ...
-    length(experimentalData.position), 1));
-m_real_diff = diff(ExpMarkersR);
-m_calc_diff = diff(Xguess_m);
-slopeError = abs(abs(m_real_diff) - abs(m_calc_diff));
-end
-
-function positions = calcModeledMarkerPositions(values, ...
-    experimentalData, params)
-positions = footcontactmarkermotionlaw2()
-end
