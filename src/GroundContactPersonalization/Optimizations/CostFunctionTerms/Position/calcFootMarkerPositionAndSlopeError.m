@@ -27,11 +27,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcKinematicCurveSlopeError(values, experimentalData, ...
-    params)
+function [valueError, slopeError] = ...
+    calcFootMarkerPositionAndSlopeError(modeledJointKinematics, inputs)
 
-% position from Autolev model?
-
-error = abs(abs(experimentalData.velocity) - abs(Q_calc_diff))
+modeledMarkerPositions = zeros(size(inputs.jointKinematics, 1), 12);
+footError = zeros(size(inputs.jointKinematics, 1), 12);
+for i = 1:size(modeledJointKinematics, 1)
+    modeledMarkerPositions(i, :) = calcModeledMarkerPositions( ...
+        inputs.jointRotations, inputs.jointLocations, ...
+        inputs.markerLocations, modeledJointKinematics(i, :));
+    footError(i, :) = abs(inputs.markerPositions(i, :) - ...
+        modeledMarkerPositions(i, :));
 end
-
+valueError = 1000*footError ./ (repmat( ...
+    inputs.initialMarkerErrors + inputs.footTolerance, ...
+    size(inputs.jointKinematics, 1), 1));
+slopeError = abs(abs(diff(inputs.markerPositions)) - ...
+    abs(diff(modeledMarkerPositions)));
+end
