@@ -28,11 +28,12 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcVerticalGroundReactionCost(values, inputs, params)
+modeledJointKinematics = makeModeledJointKinematics(inputs.N, inputs.values(1:25));
 [footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError();
+    calcFootMarkerPositionAndSlopeError(modeledJointKinematics, inputs);
 cost = 2 * footMarkerPositionError;
 cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 1000 * calcKinematicCurveSlopeError()];
+cost = [cost 1000 * calcKinematicCurveSlopeError(modeledJointKinematics, inputs)];
 [groundReactionForceValueError, groundReactionForceSlopeError] = ...
     calcGroundReactionForceAndSlopeError();
 cost = [cost groundReactionForceValueError];
@@ -45,3 +46,15 @@ cost = [cost calcFootDistanceError()];
 cost = cost / 10;
 end
 
+function modeledJointKinematics = makeModeledJointKinematics(N, ...
+    bSplineCoefficients, experimentalJointKinematics)
+qs = N*bSplineCoefficients;
+modeledJointKinematics = experimentalJointKinematics;
+
+if(size(qs, 2) == 5)
+    modeledJointKinematics(:, 2) = modeledJointKinematics(:, 2) + qs(:, 1);
+    modeledJointKinematics(:, 4:7) = modeledJointKinematics(:, 4:7) + qs(:, 2:5);
+else
+    modeledJointKinematics = modeledJointKinematics + qs;
+end
+end
