@@ -28,22 +28,22 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
-initialValues = makeInitialValues(inputs, params);
+[initialValues, fieldNameOrder] = makeInitialValues(inputs, params);
 results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
-    inputs, params), initialValues);
+    fieldNameOrder, inputs, params), initialValues);
 inputs = mergeResults(inputs, results);
 end
 
 % (struct, struct) -> (Array of double)
 % generate initial values to be optimized from inputs, params
-function initialValues = makeInitialValues(inputs, params)
-initialValues = [];
-initialValues = [initialValues inputs.springConstants]; % Kvals
-initialValues = [initialValues inputs.dampingFactors]; % cvals
+function [initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
+    params)
+initialValues = [inputs.springConstants inputs.dampingFactors];
 initialValues = [initialValues reshape(inputs.rightKinematicCurveCoefficients([2, 5:7], :)', 1, [])]; % B spline coeff right
 initialValues = [initialValues reshape(inputs.leftKinematicCurveCoefficients([2, 5:7], :)', 1, [])]; % B spline coeff left
 initialValues = [initialValues inputs.rightFootVerticalPosition]; % YvalR 
 initialValues = [initialValues inputs.leftFootVerticalPosition]; % YvalL
+fieldNameOrder = ["springConstants", "dampingFactors", "kinematicCurve", "footVerticalPosition"];
 end
 
 % (struct, Array of double) -> (struct)
