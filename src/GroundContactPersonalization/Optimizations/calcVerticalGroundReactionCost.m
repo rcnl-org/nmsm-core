@@ -2,7 +2,7 @@
 %
 %
 %
-% (Array of double, struct, struct) -> (struct)
+% (Array of double, Array of string, struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -27,8 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcVerticalGroundReactionCost(values, inputs, params)
-modeledJointKinematics = makeModeledJointKinematics(inputs.N, inputs.values(1:25));
+function cost = calcVerticalGroundReactionCost(values, fieldNameOrder, inputs, params)
+modeledJointKinematics = makeModeledJointKinematics(inputs.N, findValuesByFieldName(values, inputs, "bSplineCoefficients", fieldNameOrder));
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(modeledJointKinematics, inputs);
 cost = 2 * footMarkerPositionError;
@@ -57,4 +57,14 @@ if(size(qs, 2) == 5)
 else
     modeledJointKinematics = modeledJointKinematics + qs;
 end
+end
+
+function newValues = findValuesByFieldName(values, inputs, fieldName, ...
+    fieldNameOrder)
+start = 1;
+for i = 1:find(strcmp(fieldName, fieldNameOrder))-1
+    start = start + numel(inputs.(fieldNameOrder(i)));
+end
+newValues = values(start:start + numel(inputs.(fieldName)) - 1)
+length(newValues)
 end
