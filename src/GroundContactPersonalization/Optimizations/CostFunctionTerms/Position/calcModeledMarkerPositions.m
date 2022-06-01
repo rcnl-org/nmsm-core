@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% markerPositions = [Heel, MidfootSup, MidfootLat, Toe]
 %
 % (Array of double, 2D Matrix of double, 2D Matrix of double, ...
 % Array of double) -> (2D Matrix of double)
@@ -40,16 +40,16 @@ ry3                             =  jointLocations(3, 2);
 rz1                             =  jointLocations(1, 3);
 rz3                             =  jointLocations(3, 3);
 sx1                             =  markerLocations(1, 1);
-sx2                             =  markerLocations(2, 2);
-sx3                             =  markerLocations(3, 3);
+sx2                             =  markerLocations(2, 1);
+sx3                             =  markerLocations(3, 1);
 sx4                             =  markerLocations(4, 1);
 sy1                             =  markerLocations(1, 2);
-sy2                             =  markerLocations(2, 3);
-sy3                             =  markerLocations(3, 1);
+sy2                             =  markerLocations(2, 2);
+sy3                             =  markerLocations(3, 2);
 sy4                             =  markerLocations(4, 2);
 sz1                             =  markerLocations(1, 3);
-sz2                             =  markerLocations(2, 1);
-sz3                             =  markerLocations(3, 2);
+sz2                             =  markerLocations(2, 3);
+sz3                             =  markerLocations(3, 3);
 sz4                             =  markerLocations(4, 3);
 q1                              =  jointCoordinates(1);
 q2                              =  jointCoordinates(2);
