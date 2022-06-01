@@ -27,10 +27,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcKValueFromMeanError(values, experimentalData, ...
-    params)
+function error = calcKValueFromMeanError(kValues)
 
-meanK = sum(Kvals)/length(Kvals);
-error = (Kvals - meanK);
+meanK = sum(kValues)/length(kValues);
+error = (kValues - meanK);
 end
 
