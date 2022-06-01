@@ -27,11 +27,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcStaticFrictionDeviationError(values, ...
-    experimentalData, params)
-
-error = ((mu_s - 0.2)/0.05).^10;
-
+function error = calcStaticFrictionDeviationError(staticFrictionCoefficient, params)
+errorCenter = valueOrAlternate(params, ...
+    "staticFrictionCoefficientErrorCenter", 2);
+maxAllowableError = valueOrAlternate(params, ...
+    "staticFrictionCoefficientMaxAllowableError", 1);
+error = calcWallError(staticFrictionCoefficient, errorCenter, ...
+    maxAllowableError, 10);
 end
 
 

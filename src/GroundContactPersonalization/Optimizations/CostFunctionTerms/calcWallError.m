@@ -27,9 +27,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcWallError(values, desiredValue, allowableDeviation, ...
+function error = calcWallError(values, errorCenter, maxAllowableError, ...
     power)
-error = ((values - desiredValue) / allowableDeviation) .^ power;
+error = ((values - errorCenter) / maxAllowableError) .^ power;
 end
 
 
