@@ -69,15 +69,16 @@ directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
     inputDirectory, "MAData"), prefixes);
 inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
     "Length.sto");
-% inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
-%     "Velocity.sto");
+inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
+    "Velocity.sto");
 inputs.momentArms = parseMomentArms(directories, inputs.model);
 inputs.numPaddingFrames = (size(inputs.experimentalMoments, 1) - 101) / 2;
 inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.tasks = getTasks(tree);
 inputs.activationPairs = getPairs(getFieldByNameOrError(tree, 'PairedActivationTimeConstants'), inputs.model);
 inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, 'PairedNormalizedMuscleFiberLengths'), inputs.model);
-inputs = getCostFunctionTerms(getFieldByNameOrError(tree, 'MuscleTendonCostFunctionTerms'), inputs)
+inputs = getCostFunctionTerms(getFieldByNameOrError(tree, 'MuscleTendonCostFunctionTerms'), inputs);
+inputs = getVMaxFactor(tree, inputs);
 end
 
 % (struct) -> (Array of string)
@@ -174,10 +175,6 @@ maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
 if(isstruct(maxFunctionEvaluations))
     params.maxFunctionEvaluations = str2double(maxFunctionEvaluations.Text);
 end
-vMaxFactor = getFieldByName(tree, 'v_max_factor');
-if(isstruct(vMaxFactor))
-    params.vMaxFactor = str2double(vMaxFactor.Text);
-end
 end
 
 function inputs = getModelInputs(inputs)
@@ -235,4 +232,13 @@ function inputs = reduceDataSize(inputs, numPaddingFrames)
 inputs.experimentalMoments = inputs.experimentalMoments(numPaddingFrames + 1:end-numPaddingFrames, :, :);
 inputs.muscleTendonLength = inputs.muscleTendonLength(numPaddingFrames + 1:end-numPaddingFrames, :, :);
 % inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(numPaddingFrames + 1:end-numPaddingFrames, :, :);
+end
+
+function inputs = getVMaxFactor(tree, inputs)
+vMaxFactor = getFieldByName(tree, 'v_max_factor');
+if(isstruct(vMaxFactor))
+    inputs.vMaxFactor = str2double(vMaxFactor.Text);
+else
+    inputs.vMaxFactor = 10;
+end
 end
