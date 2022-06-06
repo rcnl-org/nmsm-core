@@ -28,10 +28,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function muscles = getMusclesInOrder(model)
+function muscles = getEnabledMusclesInOrder(model)
 muscles = string([]);
 for i=0:model.getForceSet().getMuscles().getSize()-1
-    muscles(end+1) = ...
-        model.getForceSet().getMuscles().get(i).getName().toCharArray';
+    if model.getForceSet().getMuscles().get(i).get_appliesForce()
+        muscles(end+1) = ...
+            model.getForceSet().getMuscles().get(i).getName().toCharArray';
+    end
 end
 
