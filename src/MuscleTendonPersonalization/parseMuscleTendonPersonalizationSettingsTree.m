@@ -78,7 +78,7 @@ inputs.tasks = getTasks(tree);
 inputs.activationPairs = getPairs(getFieldByNameOrError(tree, 'PairedActivationTimeConstants'), inputs.model);
 inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, 'PairedNormalizedMuscleFiberLengths'), inputs.model);
 inputs = getCostFunctionTerms(getFieldByNameOrError(tree, 'MuscleTendonCostFunctionTerms'), inputs);
-inputs = getVMaxFactor(tree, inputs);
+inputs.vMaxFactor = getVMaxFactor(tree)
 end
 
 % (struct) -> (Array of string)
@@ -231,14 +231,14 @@ end
 function inputs = reduceDataSize(inputs, numPaddingFrames)
 inputs.experimentalMoments = inputs.experimentalMoments(numPaddingFrames + 1:end-numPaddingFrames, :, :);
 inputs.muscleTendonLength = inputs.muscleTendonLength(numPaddingFrames + 1:end-numPaddingFrames, :, :);
-% inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(numPaddingFrames + 1:end-numPaddingFrames, :, :);
+inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(numPaddingFrames + 1:end-numPaddingFrames, :, :);
 end
 
-function inputs = getVMaxFactor(tree, inputs)
+function vMaxFactor = getVMaxFactor(tree)
 vMaxFactor = getFieldByName(tree, 'v_max_factor');
 if(isstruct(vMaxFactor))
-    inputs.vMaxFactor = str2double(vMaxFactor.Text);
+    vMaxFactor = str2double(vMaxFactor.Text);
 else
-    inputs.vMaxFactor = 10;
+    vMaxFactor = 10;
 end
 end
