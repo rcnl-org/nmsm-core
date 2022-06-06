@@ -109,46 +109,48 @@
         </MuscleTendonCostFunctionTerms>
         <PairedMuscles>
             <PairedActivationTimeConstants>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>AdductorActivationGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>BicepsFemActivationGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>GastrocActivationGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>GluteusMaxActivationGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>GluteusMedActivationGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>GluteusMinActivationGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>IliopsoasActivationGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>HamstringActivationGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>QuadricepActivationGroupL</musclepairs>
             </PairedActivationTimeConstants>
             <PairedNormalizedMuscleFiberLengths>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>AdductorFiberLengthGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>GluteusMaxFiberLengthGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>GluteusMedFiberLengthGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>GluteusMinFiberLengthGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>QuadricepFiberLengthGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>HamstringFiberLengthGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>PeroneusFiberLengthGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>IliopsoasFiberLengthGroupL</musclepairs>
-                <!--Name of muscle group defined in the <group> element in thhe ForceSet of the .osim file-->
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclepairs>GastrocFiberLengthGroupL</musclepairs>
             </PairedNormalizedMuscleFiberLengths>
         </PairedMuscles>
+        <!--*Optional* The vMaxFactor to use-->
+        <v_max_factor>10</v_max_factor>
         <!--*Optional* The number of allowed iterations of the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
         <max_iterations>2e3</max_iterations>
         <!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
