@@ -47,6 +47,7 @@ if ~isfield(inputs, "emgSplines")
     inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
 end
 primaryValues = prepareInitialValues(inputs, params);
+[inputs.normalizedFiberLength, ~] = calcNormalizedMusceFiberLengthsAndVelocities(inputs, struct("isIncluded", ones(1,6), "primaryValues", primaryValues, "secondaryValues", zeros(size(primaryValues))));
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
