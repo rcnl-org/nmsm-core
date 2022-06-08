@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function evaluates the EMG signal from a Spline when the 
-% electromechanical time delay is muscle specific
+% This function looks in the given directory for all subdirectories and
+% finds a file that ends in Length.sto to load into the 3D number matrix
+% matching (numFrames, numTrials, numMuscles)
 %
-% EMG - 3D matrix of (numFrames, numMuscle, numTrials)
-%
-% (Array of number, cell, array of number) -> (3D matrix)
-% returns the EMG signal 
+% (string) -> (3D matrix of number)
+% returns a 3D matrix of the loaded muscle tendon length data
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,18 +29,30 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function emg = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
-    emgSplines, timeDelay)
-timeIntervalInterp = linspace(0, 1, size(time, 1))'; 
-% preallocate memory
-emg = zeros(size(time, 1), size(emgSplines, 2), size(emgSplines, 1)); 
-for i = 1:size(emgSplines, 2)
-    for j = 1:size(emgSplines, 1)
-        interpTime = (time(end, j) - time(1, j)) * timeIntervalInterp + ...
-            time(1, j);
-        % Interpolation
-        emg(:, i, j) = ppval(interpTime - timeDelay(1, i), ...
-            emgSplines{j, i})'; 
+function output = parseFileFromDirectories(directories, suffix)
+import org.opensim.modeling.Storage
+firstTrial = parseFileInDirectory(directories(1), suffix);
+cells = zeros([length(directories) size(firstTrial)]);
+cells(1, :, :) = firstTrial;
+for i=2:length(directories)
+    cells(i, :, :) = parseFileInDirectory(directories(i), suffix);
+end
+output = permute(cells, [3, 1, 2]);
+end
+
+function data = parseFileInDirectory(inputDirectory, suffix)
+import org.opensim.modeling.Storage
+data = '';
+files = findDirectoryFileNames(inputDirectory);
+for i=1:length(files)
+    if(contains(files(i), suffix))
+        data = storageToDoubleMatrix(Storage(files(i)));
+        break;
     end
+end
+if(strcmp(data, ''))
+    throw(MException('',"Unable to find " + suffix + " data file in " + ...
+    "directory " + strrep(inputDirectory, '\', '\\') + ...
+    " with prefix matching the input directory"))
 end
 end

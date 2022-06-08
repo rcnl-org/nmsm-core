@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function looks in the given directory for all subdirectories and
-% finds a file that ends in Length.sto to load into the 3D number matrix
-% matching (numFrames, numTrials, numMuscles)
+% This function returns a string array of the muscles in the model in the
+% order they are listed in the model
 %
-% (string) -> (3D matrix of number)
-% returns a 3D matrix of the loaded muscle tendon length data
+% (Model) -> (Array of string)
+% Returns the muscles in the model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,30 +28,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = parseMuscleTendonLengths(directories)
-import org.opensim.modeling.Storage
-firstTrial = parseMuscleAnalysisLength(directories(1));
-cells = zeros([length(directories) size(firstTrial)]);
-cells(1, :, :) = firstTrial;
-for i=2:length(directories)
-    cells(i, :, :) = parseMuscleAnalysisLength(directories(i));
-end
-output = permute(cells, [3, 1, 2]);
-end
-
-function data = parseMuscleAnalysisLength(inputDirectory)
-import org.opensim.modeling.Storage
-data = '';
-files = findDirectoryFileNames(inputDirectory);
-for i=1:length(files)
-    if(contains(files(i), "Length.sto"))
-        data = storageToDoubleMatrix(Storage(files(i)));
-        break;
+function muscles = getEnabledMusclesInOrder(model)
+muscles = string([]);
+for i=0:model.getForceSet().getMuscles().getSize()-1
+    if model.getForceSet().getMuscles().get(i).get_appliesForce()
+        muscles(end+1) = ...
+            model.getForceSet().getMuscles().get(i).getName().toCharArray';
     end
 end
-if(strcmp(data, ''))
-    throw(MException('',"Unable to find Length.sto data file in " + ...
-    "directory " + strrep(inputDirectory, '\', '\\') + ...
-    " with prefix matching the input directory"))
-end
-end
+
