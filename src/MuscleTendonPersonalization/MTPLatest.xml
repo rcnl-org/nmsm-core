@@ -7,6 +7,10 @@
         <input_directory>preprocessed</input_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>CPRIT_Patient3_MuscleGroups.osim</input_model_file>
+			<!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
+		<muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
+		<!--Boolean (true, false) indicating if time activation constant values should be found individually for each muscle or all together-->
+        <muscle_specific_activation_time_constant>false</muscle_specific_activation_time_constant>																				  
         <!--The set of <MuscleTendonPersonalizationTask> to be completed by the tool, each Task is a separate optimization-->
         <MuscleTendonPersonalizationTaskList>
             <MuscleTendonPersonalizationTask>
@@ -42,9 +46,7 @@
                     <max_allowable_error>0</max_allowable_error>
                     <!--Reference value relative to which errors are calculated-->
                     <error_center>0</error_center>
-                    <!--Boolean (true, false) indicating if time activation constant values should be found individually for each muscle or all together-->
-                    <muscle_specific_activation_time_constant>false</muscle_specific_activation_time_constant>
-                </ActivationTimeConstant>
+                    </ActivationTimeConstant>
                 <ActivationNonlinearityConstant>
                     <!--Flag indicating whether or not the term is enabled in the cost function.-->
                     <is_enabled>true</is_enabled>
