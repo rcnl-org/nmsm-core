@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns a string array of the muscles in the model in the
-% order they are listed in the model
+% This function pulls the files from the directory given as the input. 
+% These files time columns are then organized into a 2D matrix with
+% dimensions matching: (numFrames, numTrials)
 %
-% (Model) -> (Array of string)
-% Returns the muscles in the model
+% (Array of string) -> (2D matrix of number)
+% returns a 2D matrix of the trial time columns
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,10 +29,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function muscles = getMusclesInOrder(model)
-muscles = string([]);
-for i=0:model.getForceSet().getMuscles().getSize()-1
-    muscles(end+1) = ...
-        model.getForceSet().getMuscles().get(i).getName().toCharArray';
+function output = parseTimeColumn(files)
+import org.opensim.modeling.Storage
+dataFromFileOne = findTimeColumn(Storage(files(1)));
+cells = zeros(length(files), length(dataFromFileOne));
+cells(1, :) = dataFromFileOne;
+for i=2:length(files)
+    cells(i, :) = findTimeColumn(Storage(files(i)));
 end
-
+output = permute(cells, [2, 1]);
+end

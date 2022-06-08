@@ -33,7 +33,7 @@
 function verifyMuscleTendonPersonalizationData(inputs)
 verifyFieldsExist(inputs)
 try
-    sizeReference = size(inputs.muscleTendonVelocity);
+    sizeReference = size(inputs.muscleTendonLength);
     verifyLength(sizeReference, 3)
 %     if(~all(sizeReference == size(inputs.muscleTendonLength)))
 %         error(); end

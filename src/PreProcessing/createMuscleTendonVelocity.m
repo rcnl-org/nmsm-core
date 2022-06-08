@@ -1,12 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function evaluates the EMG signal from a Spline when the 
-% electromechanical time delay is muscle specific
+% This function runs fmincon for MuscleTendonPersonalization with settings
+% controlled by the input params.
 %
-% EMG - 3D matrix of (numFrames, numMuscle, numTrials)
-%
-% (Array of number, cell, array of number) -> (3D matrix)
-% returns the EMG signal 
+% (string) -> (None)
+% returns the optimized values from Muscle Tendon optimization round
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,18 +28,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function emg = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
-    emgSplines, timeDelay)
-timeIntervalInterp = linspace(0, 1, size(time, 1))'; 
-% preallocate memory
-emg = zeros(size(time, 1), size(emgSplines, 2), size(emgSplines, 1)); 
-for i = 1:size(emgSplines, 2)
-    for j = 1:size(emgSplines, 1)
-        interpTime = (time(end, j) - time(1, j)) * timeIntervalInterp + ...
-            time(1, j);
-        % Interpolation
-        emg(:, i, j) = ppval(interpTime - timeDelay(1, i), ...
-            emgSplines{j, i})'; 
-    end
+function createMuscleTendonVelocity(muscleTendonLengthFileName, ...
+    outputVelocityFileName)
+import org.opensim.modeling.*
+storage = Storage(muscleTendonLengthFileName);
+time = findTimeColumn(storage);
+newTime = linspace(time(1), time(end), length(time) + 1);
+
+lengthData = storageToDoubleMatrix(storage);
+newLengthData = spline(time, lengthData, newTime);
+velocityData = diff(newLengthData, 1, 2);
+writeToSto(getStorageColumnNames(storage), time, velocityData', ...
+    outputVelocityFileName)
+
 end
-end
+
