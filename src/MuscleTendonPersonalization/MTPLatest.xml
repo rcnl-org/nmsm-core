@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+    <MuscleTendonPersonalizationTool>
+        <!--Directory used for writing results.-->
+        <results_directory/>
+        <!--Directory for input files-->
+        <input_directory>preprocessed</input_directory>
+        <!--Name of the input model file (.osim) to use-->
+        <input_model_file>CPRIT_Patient3_MuscleGroups.osim</input_model_file>
+        <!--The set of <MuscleTendonPersonalizationTask> to be completed by the tool, each Task is a separate optimization-->
+        <MuscleTendonPersonalizationTaskList>
+            <MuscleTendonPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
+                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+                <optimize_activation_time_constants>true</optimize_activation_time_constants>
+                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+                <optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
+                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+                <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_optimal_muscle_lengths>false</optimize_optimal_muscle_lengths>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_tendon_slack_lengths>false</optimize_tendon_slack_lengths>
+            </MuscleTendonPersonalizationTask>
+        </MuscleTendonPersonalizationTaskList>
+        <MuscleTendonCostFunctionTerms>
+            <!--*Optional* Inverse dynamic joint moments -->
+            <IndividualMuscles>
+                <InverseDynamicJointMoments>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                </InverseDynamicJointMoments>
+                <ActivationTimeConstant>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                    <!--Reference value relative to which errors are calculated-->
+                    <error_center>0</error_center>
+                    <!--Boolean (true, false) indicating if time activation constant values should be found individually for each muscle or all together-->
+                    <muscle_specific_activation_time_constant>false</muscle_specific_activation_time_constant>
+                </ActivationTimeConstant>
+                <ActivationNonlinearityConstant>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                </ActivationNonlinearityConstant>
+                <OptimalMuscleFiberLength>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                </OptimalMuscleFiberLength>
+                <TendonSlackLength>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                </TendonSlackLength>
+                <EmgScalingFactors>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                    <!--Reference value relative to which errors are calculated-->
+                    <error_center>0</error_center>
+                </EmgScalingFactors>
+                <NormalizedMuscleFiberLength>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                </NormalizedMuscleFiberLength>
+                <PassiveMuscleForces>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                </PassiveMuscleForces>
+            </IndividualMuscles>
+            <PairedMuscles>
+                <NormalizedMuscleFiberLength>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                </NormalizedMuscleFiberLength>
+                <EmgScalingFactors>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                </EmgScalingFactors>
+                <ElectromechanicalDelay>
+                    <!--Flag indicating whether or not the term is enabled in the cost function.-->
+                    <is_enabled>true</is_enabled>
+                    <!--Max allowable error or deviation from indicated set point-->
+                    <max_allowable_error>0</max_allowable_error>
+                    <!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
+                    <muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
+                </ElectromechanicalDelay>
+            </PairedMuscles>    
+        </MuscleTendonCostFunctionTerms>
+        <PairedMuscles>
+            <PairedActivationTimeConstants>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>AdductorActivationGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>BicepsFemActivationGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>GastrocActivationGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>GluteusMaxActivationGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>GluteusMedActivationGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>GluteusMinActivationGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>IliopsoasActivationGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>HamstringActivationGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>QuadricepActivationGroupL</musclepairs>
+            </PairedActivationTimeConstants>
+            <PairedNormalizedMuscleFiberLengths>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>AdductorFiberLengthGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>GluteusMaxFiberLengthGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>GluteusMedFiberLengthGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>GluteusMinFiberLengthGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>QuadricepFiberLengthGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>HamstringFiberLengthGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>PeroneusFiberLengthGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>IliopsoasFiberLengthGroupL</musclepairs>
+                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
+                <musclepairs>GastrocFiberLengthGroupL</musclepairs>
+            </PairedNormalizedMuscleFiberLengths>
+        </PairedMuscles>
+        <!--*Optional* The vMaxFactor to use-->
+        <v_max_factor>10</v_max_factor>
+        <!--*Optional* The number of allowed iterations of the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
+        <max_iterations>2e3</max_iterations>
+        <!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
+        <max_function_evaluations>1e8</max_function_evaluations>
+        <!--*Optional* space-separated list of prefixes to use for data files, if left blank, use all prefixes fron IK folder-->
+        <trial_prefixes></trial_prefixes>
+    </MuscleTendonPersonalizationTool>
+</OpenSimDocument>

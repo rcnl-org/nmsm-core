@@ -31,6 +31,9 @@
 
 function count = getNumEnabledMuscles(model)
 count = 0;
+if ~isequal(model, 'org.opensim.modeling.Model')
+    model = Model(model);
+end
 for i =0:model.getForceSet().getMuscles().getSize()-1
     if(model.getForceSet().getMuscles().get(i).get_appliesForce())
         count = count + 1;
