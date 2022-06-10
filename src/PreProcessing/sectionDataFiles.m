@@ -45,10 +45,10 @@ for i=1:length(fileNames)
         [filepath, name, ext] = fileparts(fileNames(i));
         [newData, newTime] = cutData(data, time, timePairs(j,1), ...
             timePairs(j,2), numRows);
-        [newData, columnNames] = removeUnusedColumns(newData, columnNames, model, ...
+        [newData, newColumnNames] = removeUnusedColumns(newData, columnNames, model, ...
             coordinates);
         newFileName = insertAfter(name, prefix, "_" + num2str(j));
-        writeToSto(columnNames, newTime, newData', fullfile(filepath, ...
+        writeToSto(newColumnNames, newTime, newData', fullfile(filepath, ...
             newFileName + ext));
     end
 end
@@ -69,9 +69,8 @@ if isempty(find(strcmp(names, newNames(1)), 1))
 end
 newData = zeros(length(newNames), size(data, 2));
 for i = 1:length(newNames)
-    index = find(strcmp(names, newNames(i)))
+    index = find(strcmp(names, newNames(i)));
     column = data(index, :);
-    size(column)
     newData(i, :) = column;
 end
 end
