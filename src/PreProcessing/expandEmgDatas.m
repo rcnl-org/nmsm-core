@@ -45,7 +45,7 @@ newEmgData = expandEmgData(columnNames, emgData, timeColumn, ...
     groupToName, params);
 [~, ~, ext] = fileparts(emgFileName);
 writeToSto(columnNames, timeColumn, newEmgData, fullfile( ...
-    outputDirectory, prefix + ext) );
+    outputDirectory, strcat(prefix, ext)));
 end
 
 % (Model, Array of string) -> (struct)
