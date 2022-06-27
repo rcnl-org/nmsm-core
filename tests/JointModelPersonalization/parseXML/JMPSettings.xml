@@ -12,8 +12,8 @@
         <!--The desired error-->
         <desired_error>0.005</desired_error>
 		<!--The set of <Task> to be completed by the tool, each Task is a separate optimization-->
-		<JointPersonalizationTaskList>
-			<JointPersonalizationTask name="Left Hip">
+		<JMPTaskList>
+			<JMPTask name="Left Hip">
 				<!--Flag indicating whether or not the task is enabled.-->
 				<is_enabled>true</is_enabled>
 				<!--The markers file to use for the task-->
@@ -21,7 +21,7 @@
 				<!--Name of the IK Settings File for the internal Inverse Kinematics Solver-->
 				<ik_settings_file>IKSettings.xml</ik_settings_file>
 				<!--A joint that will be optimized in the task-->
-				<Joint name="hip_l">
+				<JMPJoint name="hip_l">
 					<parent_frame_transformation>
 						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
 						<translation>true true true</translation>
@@ -42,9 +42,9 @@
 						<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
 						<orientation_bounds>0.5</orientation_bounds>
 					</child_frame_transformation>
-				</Joint>
-			</JointPersonalizationTask>
-		</JointPersonalizationTaskList>
+				</JMPJoint>
+			</JMPTask>
+		</JMPTaskList>
 		<!--*Optional* The accuracy of the IKSolver solution in absolute terms. Default is 1e-5. It determines the number of significant digits to which the solution can be trusted.-->
 		<accuracy>1e-04</accuracy>
 		<!--*Optional* The minimum step of the least squares algorithm. Default is 1e-4 which means the solution will be optimized to 0.1 mm resolution-->
