@@ -6,49 +6,47 @@
 		<!--Directory for input files-->
 		<input_directory/>
 		<!--Name of the input model file (.osim) to use-->
-		<input_model_file>Patient3.osim</input_model_file>
+		<input_model_file>simple_arm_translated_away.osim</input_model_file>
 		<!--Name of the output model file (.osim) to create.-->
-		<output_model_file>Patient3_Knee.osim</output_model_file>
-        <!--The desired error-->
-        <desired_error>0.02</desired_error>
+		<output_model_file>translation_result_from_xml.osim</output_model_file>
+        <!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters)-->
+        <desired_error>0.01</desired_error>
 		<!--The set of <Task> to be completed by the tool, each Task is a separate optimization-->
-		<JointPersonalizationTaskList>
-			<JointPersonalizationTask name="Right Knee">
+		<JMPTaskList>
+			<JMPTask name="Right Elbow">
 				<!--Flag indicating whether or not the task is enabled.-->
 				<is_enabled>true</is_enabled>
 				<!--The markers file to use for the task-->
-				<marker_file_name>r_knee.trc</marker_file_name>
-				<!--Name of the IK Settings File for the internal Inverse Kinematics Solver-->
-				<ik_settings_file>IKSettings_r_knee.xml</ik_settings_file>
+				<marker_file_name>simple_arm.trc</marker_file_name>
 				<!--A joint that will be optimized in the task-->
-				<Joint name="walker_knee_r">
+				<JMPJoint name="r_elbow">
 					<parent_frame_transformation>
 						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
-						<translation>true true true</translation>
+						<translation>true false false</translation>
 						<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
-						<orientation>true true true</orientation>
+						<orientation>false false false</orientation>
 						<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
-						<translation_bounds>0.03</translation_bounds>
+						<translation_bounds>0.1</translation_bounds>
 						<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
-						<orientation_bounds>0.5</orientation_bounds>
+						<orientation_bounds>1.0</orientation_bounds>
 					</parent_frame_transformation>
 					<child_frame_transformation>
 						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
 						<translation>false false false</translation>
 						<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
-						<orientation>true true true</orientation>
+						<orientation>false false false</orientation>
 						<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
-						<translation_bounds>0.03</translation_bounds>
+						<translation_bounds>0.1</translation_bounds>
 						<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
-						<orientation_bounds>0.5</orientation_bounds>
+						<orientation_bounds>1.0</orientation_bounds>
 					</child_frame_transformation>
-				</Joint>
-			</JointPersonalizationTask>
-		</JointPersonalizationTaskList>
+				</JMPJoint>
+			</JMPTask>
+		</JMPTaskList>
 		<!--*Optional* The accuracy of the IKSolver solution in absolute terms. Default is 1e-5. It determines the number of significant digits to which the solution can be trusted.-->
-		<accuracy>1e-04</accuracy>
+		<accuracy>1e-06</accuracy>
 		<!--*Optional* The minimum step of the least squares algorithm. Default is 1e-4 which means the solution will be optimized to 0.1 mm resolution-->
-		<diff_min_change>1e-04</diff_min_change>
+		<diff_min_change>1e-4</diff_min_change>
 		<!--*Optional* The optimality tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy-->
 		<optimality_tolerance>1e-6</optimality_tolerance>
 		<!--*Optional* The function tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy-->
