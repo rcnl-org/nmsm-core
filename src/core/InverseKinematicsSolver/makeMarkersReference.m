@@ -38,7 +38,7 @@
 
 function markersReference = makeMarkersReference(model, markerFileName, ...
     params)
-import org.opensim.modeling.*
+import org.opensim.modeling.MarkersReference
 markerWeightSet = makeDefaultMarkerWeightSet(model);
 if(isfield(params, 'excludedMarkers'))
     markerWeightSet = excludeMarkers(markerWeightSet, ...
@@ -48,7 +48,6 @@ if(isfield(params, 'markerWeights'))
     markerWeightSet = adjustMarkerWeights(markerWeightSet, ...
         params.markerWeights);
 end
-markersReference = MarkersReference(markerFileName);
-markersReference.setMarkerWeightSet(markerWeightSet);
+markersReference = MarkersReference(markerFileName, markerWeightSet);
 end
 

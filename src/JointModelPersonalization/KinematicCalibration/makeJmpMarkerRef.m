@@ -1,5 +1,4 @@
 function markersReference = makeJmpMarkerRef(model, markerFileName, params)
-import org.opensim.modeling.*
 if(isfield(params, 'markerNames'))
     markersReference = MarkersReference(markerFileName);
     markersReference.setMarkerWeightSet(makeMarkerWeightSet( ...
