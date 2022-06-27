@@ -1,15 +1,9 @@
-% This function throws an error if the input value is not an argument to
-% instantiate a MarkersReference. It essentially tests if a 
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% MarkersReference can be made in a secure environment and allows for
-% catching the error and handling it appropriately. 
-% 
-% This function can be used as a simple line in a function or contained
-% within a try-catch to allow for a custom message/response.
 %
-% (Any) -> (None)
-% Throws an exception if the input cannot make a MarkersReference
+%
+% (string) -> (MarkersReference)
+% Makes a MarkersReference from a given model and parameters
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -33,11 +27,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function verifyMarkersReferenceArg(input)
-try
-    MarkersReference(input);
-catch
-    throw(MException('', 'input is not valid to make a MarkersReference'));
+function markersReference = MarkersReference(fileName)
+import org.opensim.modeling.TimeSeriesTableVec3
+import org.opensim.modeling.SetMarkerWeights
+import org.opensim.modeling.MarkerWeight
+import org.opensim.modeling.MarkersReference
+timeSeriesTable = TimeSeriesTableVec3(fileName);
+strings = {};
+columnNames = timeSeriesTable.getColumnLabels();
+for i=0:columnNames.size()-1
+    strings{end+1} = columnNames.get(i);
 end
+markerNames = string(strings);
+markerWeightSet = SetMarkerWeights();
+for i=1:length(markerNames)
+    markerWeightSet.cloneAndAppend(MarkerWeight(markerNames(i), 1.0));
+end
+try
+    markersReference = MarkersReference(fileName, markerWeightSet);
+catch
+    markersReference = MarkersReference(fileName);
+    markersReference.setMarkerWeightSet(markerWeightSet)
+end
+timeSeriesTable = libpointer;
 end
 
