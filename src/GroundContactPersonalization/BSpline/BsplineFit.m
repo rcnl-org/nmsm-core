@@ -2,8 +2,8 @@ function [qFit,qpFit,qppFit] = BsplineFit(time,q,degree,numNodes)
 
 % Create B-spline matrices for specified spline degree, number of B-spline
 % nodes, and number of data points.
-numPts = size(time,1);
-interval = time(2,1)-time(1,1);
+numPts = length(time);
+interval = time(2)-time(1);
 [N, Np, Npp] = BSplineMatrices(degree,numNodes,numPts,interval);
 % [N] = BSplineMatrix(degree,numNodes,numPts);
 % Note that the interval setting is only needed to calculate first and
