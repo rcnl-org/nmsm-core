@@ -28,6 +28,18 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcVerticalGroundReactionCost(values, fieldNameOrder, inputs, params)
+modelJointKinematics = calcJointKinematics();
+modelMarkerPositions = calcMarkerPositions();
+modelSpringKinematics = calcSpringKinematics();
+modelGroundReactForces = calcGroundReactionForce();
+modelCenterOfPressure = calcCenterOfPressure();
+modelFreeMoment = calcFreeMoment();
+
+cost = calculateCost()
+
+end
+
+function calculateCost(values, fieldNameOrder, inputs, params)
 modeledJointKinematics = makeModeledJointKinematics(inputs.N, findValuesByFieldName(values, inputs, "bSplineCoefficients", fieldNameOrder));
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(modeledJointKinematics, inputs);
