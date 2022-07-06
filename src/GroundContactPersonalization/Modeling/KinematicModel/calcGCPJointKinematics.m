@@ -1,9 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% This function calculates the new kinematic curves from the experimental
+% data and deviation values.
 %
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% jointKinematicsSplines is a struct with 3 fields (position, velocity,
+% acceleration) as comes out of makeJointKinematicsSplines()
+%
+% (2D Array of double, struct, 2D Array of double) -> ...
+% (2D Array of double, 2D Array of double, 2D Array of double)
+% Calculate new joint kinematics curves from data and deviations curves
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,7 +32,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modelJointKinematics = calcGCPJointKinematics(bSplineNodes)
+function [newPosition, newVelocity, newAcceleration] = ...
+    calcGCPJointKinematics(experimentalJointKinematics, ...
+    jointKinematicsSplines, deviationNodes)
+fittedPosition = jointKinematicsSplines.position * deviationNodes;
+fittedVelocity = jointKinematicsSplines.velocity * deviationNodes;
+fittedAcceleration = jointKinematicsSplines.acceleration * deviationNodes;
 
+newPosition = experimentalJointKinematics .* fittedPosition';
+newVelocity = experimentalJointKinematics .* fittedVelocity';
+newAcceleration = experimentalJointKinematics .* fittedAcceleration';
 end
 
