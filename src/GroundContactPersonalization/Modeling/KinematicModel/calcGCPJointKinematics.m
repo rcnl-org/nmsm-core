@@ -4,10 +4,10 @@
 % data and deviation values.
 %
 % jointKinematicsSplines is a struct with 3 fields (position, velocity,
-% acceleration) as comes out of makeJointKinematicsSplines()
+% acceleration) as comes out of makeJointKinematicsSplines(). The output
+% struct has matching fields.
 %
-% (2D Array of double, struct, 2D Array of double) -> ...
-% (2D Array of double, 2D Array of double, 2D Array of double)
+% (2D Array of double, struct, 2D Array of double) -> (struct)
 % Calculate new joint kinematics curves from data and deviations curves
 
 % ----------------------------------------------------------------------- %
@@ -32,15 +32,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [newPosition, newVelocity, newAcceleration] = ...
+function newKinematics = ...
     calcGCPJointKinematics(experimentalJointKinematics, ...
     jointKinematicsSplines, deviationNodes)
 fittedPosition = jointKinematicsSplines.position * deviationNodes;
 fittedVelocity = jointKinematicsSplines.velocity * deviationNodes;
 fittedAcceleration = jointKinematicsSplines.acceleration * deviationNodes;
 
-newPosition = experimentalJointKinematics .* fittedPosition';
-newVelocity = experimentalJointKinematics .* fittedVelocity';
-newAcceleration = experimentalJointKinematics .* fittedAcceleration';
+newKinematics.position = experimentalJointKinematics .* fittedPosition';
+newKinematics.velocity = experimentalJointKinematics .* fittedVelocity';
+newKinematics.acceleration = experimentalJointKinematics .* ...
+    fittedAcceleration';
 end
 
