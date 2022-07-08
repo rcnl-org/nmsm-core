@@ -1,12 +1,5 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function cuts the data files into the sections outlined with the
-% number of frames indicated
-%
-% Inputs -
-%   prefix - string name of trial
-%   fileName - string path of file
-%   timePairs - 2D array of size N x 2
 %
 % (string, string, string, string) -> (None)
 % Makes new EMG data files with columns matching the file given
@@ -33,44 +26,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function sectionDataFiles(fileNames, timePairs, numRows, prefix, model, ...
-    coordinates)
-import org.opensim.modeling.Storage
-for i=1:length(fileNames)
-    storage = Storage(fileNames(i));
-    data = storageToDoubleMatrix(storage);
-    time = findTimeColumn(storage);
-    columnNames = getStorageColumnNames(storage);
-    for j=1:size(timePairs, 1)
-        [filepath, name, ext] = fileparts(fileNames(i));
-        [newData, newTime] = cutData(data, time, timePairs(j,1), ...
-            timePairs(j,2), numRows);
-        [newData, newColumnNames] = removeUnusedColumns(newData, columnNames, model, ...
-            coordinates);
-        newFileName = insertAfter(name, prefix, "_" + num2str(j));
-        writeToSto(newColumnNames, newTime, newData', fullfile(filepath, ...
-            newFileName + ext));
-    end
-end
+function MuscleTendonPersonalizationPreprocessingTool(settingsFileName)
+settingsTree = xml2struct(settingsFileName);
+[inputs, params] = parseMtpPreprocessingSettingsTree(settingsTree);
+processMotionLabData(inputs, params)
 end
 
-function [newData, newTime] = cutData(data, time, startTime, endTime, ...
-    numRows)
-newTime = linspace(startTime, endTime, numRows);
-newData = spline(time, data, newTime);
-end
-
-function [newData, newNames] = removeUnusedColumns(data, names, modelFileName, ...
-    coordinates)
-model = Model(modelFileName);
-newNames = coordinates;
-if isempty(find(strcmp(names, newNames(1)), 1))
-    newNames = getEnabledMusclesInOrder(model);
-end
-newData = zeros(length(newNames), size(data, 2));
-for i = 1:length(newNames)
-    index = find(strcmp(names, newNames(i)));
-    column = data(index, :);
-    newData(i, :) = column;
-end
-end
