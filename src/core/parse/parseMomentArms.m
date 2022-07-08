@@ -41,6 +41,7 @@ for i=2:length(directories)
     cells(i, :, :, :) = parseMuscleAnalysisCoordinates(directories(i), ...
         model);
 end
+
 output = permute(cells, [4 1 3 2]);
 end
 
@@ -52,7 +53,7 @@ firstFile = storageToDoubleMatrix(Storage(coordFileNames(1)));
 cells = zeros([length(coordFileNames) size(firstFile)]);
 cells(1, :, :) = firstFile;
 for i=2:length(coordFileNames)
-    cells(2, :, :) = storageToDoubleMatrix(Storage(coordFileNames(i)));
+    cells(i, :, :) = storageToDoubleMatrix(Storage(coordFileNames(i)));
 end
 end
 
