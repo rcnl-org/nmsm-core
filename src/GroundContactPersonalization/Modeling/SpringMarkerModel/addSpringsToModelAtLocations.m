@@ -46,6 +46,8 @@ for i=1:length(insideToes)
     pointX = pointX - (calcnVec3.get(0) - heelVec3.get(0));
     if(isLeftFoot)
         pointY = 1 - insideToes(i, 1);
+    else
+        pointY = insideToes(i, 1);
     end
     pointY = pointY * normalizedFootWidth;
     pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
@@ -57,6 +59,8 @@ for i=1:length(insideHindfoot)
     pointX = pointX - (calcnVec3.get(0) - heelVec3.get(0));
     if(isLeftFoot)
         pointY = 1 - insideHindfoot(i, 1);
+    else
+        pointY = insideHindfoot(i, 1);
     end
     pointY = pointY * normalizedFootWidth;
     pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
