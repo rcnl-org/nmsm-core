@@ -31,8 +31,6 @@ function [insideToes, insideHindfoot] = splitGridPointsByToeJoint( ...
     insidePoints, medialPt, lateralPt)
 insideToes = [];
 insideHindfoot = [];
-medialPt
-lateralPt
 for i=1:length(insidePoints)
     if isAboveToeJoint(medialPt, lateralPt, insidePoints(i, :))
         insideHindfoot(end+1, :) = insidePoints(i, :);
