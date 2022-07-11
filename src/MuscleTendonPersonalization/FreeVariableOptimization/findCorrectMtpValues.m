@@ -39,7 +39,8 @@ function output = findCorrectMtpValues(index, valuesStruct)
 if (valuesStruct.isIncluded(index))
     [startIndex, endIndex] = findIsIncludedStartAndEndIndex( ...
         valuesStruct.primaryValues, valuesStruct.isIncluded, index);
-    output = valuesStruct.secondaryValues(startIndex:endIndex);
+    % Secondary values are all zero
+    output = valuesStruct.primaryValues(startIndex:endIndex);
 else
     output = valuesStruct.primaryValues(index, :);
 end
