@@ -36,6 +36,7 @@ normalizedFootHeight = abs(markerPositions.toe(1) - ...
 normalizedFootWidth = abs(markerPositions.medial(2) - ...
     markerPositions.lateral(2));
 calcnVec3 = model.getBodySet().get(hindfootBodyName).getPositionInGround(state);
+toesVec3 = model.getBodySet().get(toesBodyName).getPositionInGround(state);
 heelVec3 = model.getMarkerSet().get(heelMarkerName).getLocationInGround(state);
 calcnToToes = model.getBodySet().get(toesBodyName).findTransformBetween( ...
     state, model.getBodySet().get(hindfootBodyName));
@@ -51,7 +52,7 @@ for i=1:length(insideToes)
     end
     pointY = pointY * normalizedFootWidth;
     pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
-    addSpringToModel(model, [pointX, pointY], toesBodyName, toesBodyName + "_marker_" + num2str(i))
+    addSpringToModel(model, toesVec3, [pointX, pointY], toesBodyName, toesBodyName + "_marker_" + num2str(i))
 end
 
 for i=1:length(insideHindfoot)
@@ -64,16 +65,17 @@ for i=1:length(insideHindfoot)
     end
     pointY = pointY * normalizedFootWidth;
     pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
-    addSpringToModel(model, [pointX, pointY], hindfootBodyName, hindfootBodyName + "hindfoot_marker_" + num2str(i))
+    addSpringToModel(model, calcnVec3, [pointX, pointY], hindfootBodyName, hindfootBodyName + "hindfoot_marker_" + num2str(i))
 end
 end
 
-function addSpringToModel(model, point, body, name)
+function addSpringToModel(model, bodyPosition, point, body, name)
 import org.opensim.modeling.Marker
 import org.opensim.modeling.Vec3
 marker = Marker();
 marker.setName(name);
 marker.setParentFrame(model.getBodySet().get(body));
-marker.set_location(Vec3(point(1), 0, point(2)));
+% bodyHeight = model.getBodySet().get(body).getPositionInGround(state).get(2);
+marker.set_location(Vec3(point(1), -bodyPosition.get(1), point(2)));
 model.addMarker(marker);
 end
