@@ -37,7 +37,7 @@ for i=1:length(markerNamesList)
     normalizedMarkerPositions.(markerNamesList{i})(1) = ...
         markerPositions.(markerNamesList{i})(1) / normalizedFootHeight;
     normalizedMarkerPositions.(markerNamesList{i})(2) = ...
-        abs(markerPositions.(markerNamesList{i})(2) / normalizedFootWidth);
+        markerPositions.(markerNamesList{i})(2) / normalizedFootWidth;
 end
 end
 
