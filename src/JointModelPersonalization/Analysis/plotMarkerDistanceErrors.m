@@ -32,8 +32,9 @@ if(onePlot)
     end
     legend(legendList)
 else
-    plotSize = ceil(sqrt(storages{1}.getColumnLabels.getSize()-1));
-    tiledlayout(plotSize, plotSize);
+    numberOfPlots = storages{1}.getColumnLabels.getSize()-1;
+    plotSize = ceil(sqrt(numberOfPlots));
+    tiledlayout(ceil(numberOfPlots/plotSize), plotSize);
     for i=1:storages{1}.getColumnLabels().getSize()-1
         plots(end+1) = nexttile;
         for j=1:length(storages)

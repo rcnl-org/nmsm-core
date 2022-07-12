@@ -3,7 +3,18 @@
 % This function calculates the cost associated to joint moment matching   %
 % while penalizing muscle parameter differences and violations.           %
 %
-% inputs
+% data:
+%   emgTime - 2D Array of double - frames+buffer x trials
+%   emgSplines - 2D Array of double - trials x muscles
+%   numPaddingFrames - double
+%   momentArms - 4D Array of double - joints x frames x trials x muscles
+%   muscleTendonLength - 3D Array of double - frames x trials x muscles
+%   muscleTendonVelocity - 3D Array of double - frames x trials x muscles
+%   maxVelocityFactor - double
+%   pennationAngle - 3D Array of double - 1 x 1 x muscles
+%   maxMuscleForce - 3D Array of double - 1 x 1 x muscles
+%   optimalMuscleLength - 3D Array of double - 1 x 1 x muscles
+%   tendonSlackLength - 3D Array of double - 1 x 1 x muscles
 %
 % (Array of number, struct) -> (Array of number)
 % returns the cost for all rounds of the Muscle Tendon optimization
@@ -11,8 +22,6 @@
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
-
-
 % nmsm.rice.edu and the NOTICE file for more information. The             %
 % NMSM Pipeline is developed at Rice University and supported by the US   %
 % National Institutes of Health (R01 EB030520).                           %
@@ -32,33 +41,41 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputCost] = computeMuscleTendonCostFunction(valuesStruct, ...
-    inputData, params)
-
-muscleExcitations = calcMuscleExcitations(inputData.timeEMG, ...
-    inputData.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
+function sumSquaredOutputCost = computeMuscleTendonCostFunction(values, ...
+    primaryValues, isIncluded, experimentalData, params)
+valuesStruct = makeValuesStruct(values, primaryValues, isIncluded);
+muscleExcitations = calcMuscleExcitations(experimentalData.emgTime, ...
+    experimentalData.emgSplines, findCorrectMtpValues(1, valuesStruct), ...
     findCorrectMtpValues(4, valuesStruct));
 neuralActivations = calcNeuralActivations(muscleExcitations, ...
-    findCorrectMtpValues(2, valuesStruct), inputData.timeEMG, ...
-    inputData.nPad);
+    findCorrectMtpValues(2, valuesStruct), experimentalData.emgTime, ...
+    experimentalData.numPaddingFrames);
 muscleActivations = calcMuscleActivations(findCorrectMtpValues(3, ...   
     valuesStruct), neuralActivations);
-[lMtilda, vMtilda] = ...
-    calcNormalizedMusceFiberLengthsAndVelocities(inputData, valuesStruct);
+[normalizedFiberLength, normalizedFiberVelocity] = ...
+    calcNormalizedMusceFiberLengthsAndVelocities(experimentalData, valuesStruct);
 [passiveForce, muscleForce, muscleMoments, modelMoments] = ...
-    calcMuscleMomentsAndForces(inputData, muscleActivations, lMtilda, ...
-    vMtilda);
+    calcMuscleMomentsAndForces(experimentalData, muscleActivations, normalizedFiberLength, ...
+    normalizedFiberVelocity);
 
-costs = calcAllTrackingCosts(inputData, modelMoments, lMtilda);
-costs = calcAllDeviationPenaltyCosts(valuesStruct, inputData,  ...
+costs = calcAllTrackingCosts(experimentalData, modelMoments, normalizedFiberLength);
+costs = calcAllDeviationPenaltyCosts(valuesStruct, experimentalData,  ...
     passiveForce, costs);
-costs = calcLmTildaCurveChangesCost(lMtilda, ...
-    inputData.lMtildaExperimental, inputData.lmtildaPairs, ...
-    inputData.errorCenters, inputData.maxAllowableErrors, costs);
-costs = calcPairedMusclePenalties(valuesStruct, inputData.activationPairs, ...
-    inputData.errorCenters, inputData.maxAllowableErrors, costs);
+costs = calcNormalizedFiberLengthCurveChangesCost(normalizedFiberLength, ...
+    experimentalData.normalizedFiberLength, experimentalData.normalizedFiberLengthPairs, ...
+    experimentalData.errorCenters, experimentalData.maxAllowableErrors, costs);
+costs = calcPairedMusclePenalties(valuesStruct, ...
+    experimentalData.activationPairs, experimentalData.errorCenters, ...
+    experimentalData.maxAllowableErrors, costs);
 
 % Combine all costs into single vector
-outputCost = combineCostsIntoVector(inputData.costWeight, costs);
+outputCost = combineCostsIntoVector(experimentalData.costWeight, costs);
 outputCost(isnan(outputCost))=0;
+sumSquaredOutputCost = sum(outputCost.^2);
+end
+
+function valuesStruct = makeValuesStruct(values, primaryValues, isIncluded)
+valuesStruct.secondaryValues = values;
+valuesStruct.primaryValues = primaryValues;
+valuesStruct.isIncluded = isIncluded;
 end
