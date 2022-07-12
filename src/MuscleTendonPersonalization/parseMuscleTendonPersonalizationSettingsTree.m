@@ -32,6 +32,7 @@ function [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
+inputs = getModelInputs(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -42,28 +43,42 @@ function inputs = getInputs(tree)
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(~isempty(inputDirectory))
-    inputs.model = Model(fullfile(inputDirectory, modelFile));
+    try
+        inputs.model = fullfile(inputDirectory, modelFile);
+    catch
+        inputs.model = fullfile(pwd, inputDirectory, modelFile);
+        inputDirectory = fullfile(pwd, inputDirectory);
+    end
 else
-    inputs.model = Model(fullfile(pwd, modelFile));
+    inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
 prefixes = getPrefixes(tree, inputDirectory);
-inputs.jointMoment = parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(inputDirectory, getFieldByNameOrError(tree, ...
-    'joint_moment_directory').Text), prefixes));
-inputs.muscleTendonVelocity = parseMtpStandard( ...
-    findFileListFromPrefixList(fullfile(inputDirectory, ...
-    getFieldByNameOrError(tree, 'muscle_velocity_directory').Text), ...
+inputs.experimentalMoments = parseMtpStandard( ...
+    findFileListFromPrefixList(fullfile(inputDirectory, "IDData"), ...
     prefixes));
+% inputs.muscleTendonVelocity = parseMtpStandard( ...
+%     findFileListFromPrefixList(fullfile(inputDirectory, ...
+%     getFieldByNameOrError(tree, 'muscle_velocity_directory').Text), ...
+%     prefixes));
 inputs.emgData = parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(inputDirectory, getFieldByNameOrError(tree, ...
-    'emg_data_directory').Text), prefixes));
+    fullfile(inputDirectory, "EMGData"), prefixes));
+inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
+    fullfile(inputDirectory, "EMGData"), prefixes));
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    inputDirectory, getFieldByNameOrError(tree, ...
-    'muscle_analysis_directory').Text), prefixes);
-inputs.muscleTendonLength = parseMuscleTendonLengths(directories);
-inputs.muscleTendonMomentArm = parseMomentArms(directories, inputs.model);
+    inputDirectory, "MAData"), prefixes);
+inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
+    "Length.sto");
+inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
+    "Velocity.sto");
+inputs.momentArms = parseMomentArms(directories, inputs.model);
+inputs.numPaddingFrames = (size(inputs.experimentalMoments, 1) - 101) / 2;
+inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.tasks = getTasks(tree);
+inputs.activationPairs = getPairs(getFieldByNameOrError(tree, 'PairedActivationTimeConstants'), inputs.model);
+inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, 'PairedNormalizedMuscleFiberLengths'), inputs.model);
+inputs = getCostFunctionTerms(getFieldByNameOrError(tree, 'MuscleTendonCostFunctionTerms'), inputs);
+inputs.vMaxFactor = getVMaxFactor(tree)
 end
 
 % (struct) -> (Array of string)
@@ -72,9 +87,13 @@ prefixField = getFieldByName(tree, 'trial_prefixes');
 if(length(prefixField.Text) > 0)
     prefixes = strsplit(prefixField.Text, ' ');
 else
-    prefixes = findDirectoryPrefixesFromSuffix(fullfile(inputDirectory, ...
-    getFieldByNameOrError(tree, 'joint_moment_directory').Text), ...
-    "_ik");
+    files = dir(fullfile(inputDirectory, "IKData"));
+    prefixes = string([]);
+    for i=1:length(files)
+        if(~files(i).isdir)
+            prefixes(end+1) = files(i).name(1:end-4);
+        end
+    end
 end
 end
 
@@ -108,6 +127,43 @@ for i=1:length(items)
 end
 end
 
+function pairs = getPairs(tree, model)
+pairElements = getFieldByName(tree, 'musclepairs');
+activationGroupNames = string([]);
+if isstruct(pairElements)
+    activationGroupNames(end+1) = pairElements.Text;
+elseif iscell(pairElements)
+    for i=1:length(pairElements)
+        activationGroupNames(end+1) = pairElements{i}.Text;
+    end
+else
+    pairs = {};
+    return
+end
+pairs = groupNamesToPairs(activationGroupNames, model);
+end
+
+function pairs = groupNamesToPairs(groupNames, model)
+pairs = {};
+model = Model(model);
+for i=1:length(groupNames)
+    group = [];
+    for j=0:model.getForceSet().getGroup(groupNames(i)).getMembers().getSize()-1
+        count = 1;
+        for k=0:model.getForceSet().getMuscles().getSize()-1
+            if strcmp(model.getForceSet().getMuscles().get(k).getName().toCharArray', model.getForceSet().getGroup(groupNames(i)).getMembers().get(j))
+                break
+            end
+            if(model.getForceSet().getMuscles().get(k).get_appliesForce())
+                count = count + 1;
+            end
+        end
+        group(end+1) = count;
+    end
+    pairs{end + 1} = group;
+end
+end
+
 % (struct) -> (struct)
 function params = getParams(tree)
 params = struct();
@@ -121,3 +177,69 @@ if(isstruct(maxFunctionEvaluations))
 end
 end
 
+function inputs = getModelInputs(inputs)
+inputs.optimalFiberLength = [];
+inputs.tendonSlackLength = [];
+inputs.pennationAngle = [];
+inputs.maxIsometricForce = [];
+model = Model(inputs.model);
+for i = 0:model.getForceSet().getMuscles().getSize()-1
+    if model.getForceSet().getMuscles().get(i).get_appliesForce()
+        inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
+            getMuscles().get(i).getOptimalFiberLength()*100;
+        inputs.tendonSlackLength(end+1) = model.getForceSet(). ...
+            getMuscles().get(i).getTendonSlackLength()*100;
+        inputs.pennationAngle(end+1) = model.getForceSet(). ...
+            getMuscles().get(i). ...
+            getPennationAngleAtOptimalFiberLength()*(180/pi);
+        inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
+            getMuscles().get(i).getMaxIsometricForce();
+    end
+end
+end
+
+function inputs = getCostFunctionTerms(tree, inputs)
+inputs.costWeight = [];
+inputs.errorCenters = [];
+inputs.maxAllowableErrors = [];
+individualMusclesTree = getFieldByNameOrError(tree, "IndividualMuscles");
+pairedMusclesTree = getFieldByNameOrError(tree, "PairedMuscles");
+individualMuscleTerms = ["InverseDynamicJointMoments", "ActivationTimeConstant", "ActivationNonlinearityConstant", "OptimalMuscleFiberLength", "TendonSlackLength", "EmgScalingFactors", "NormalizedMuscleFiberLength", "PassiveMuscleForces"];
+for i=1:length(individualMuscleTerms)
+    inputs = addCostFunctionTerms(getFieldByNameOrError(individualMusclesTree, individualMuscleTerms(i)), inputs);
+end
+pairedMuscleTerms = ["NormalizedMuscleFiberLength", "EmgScalingFactors", "ElectromechanicalDelay"];
+for i=1:length(pairedMuscleTerms)
+    inputs = addCostFunctionTerms(getFieldByNameOrError(pairedMusclesTree, pairedMuscleTerms(i)), inputs);
+end
+end
+
+function inputs = addCostFunctionTerms(tree, inputs)
+enabled = getFieldByNameOrError(tree, "is_enabled").Text;
+if(enabled == "true"); inputs.costWeight(end+1) = 1;
+else; inputs.costWeight(end+1) = 0; end
+maxError = getFieldByNameOrError(tree, "max_allowable_error").Text;
+inputs.maxAllowableErrors(end+1) = str2double(maxError);
+errorCenter = getFieldByName(tree, "error_center");
+if ~isstruct(errorCenter)
+    inputs.errorCenters(end+1) = 0;
+else
+inputs.errorCenters(end+1) = str2double(errorCenter.Text);
+end
+end
+
+function inputs = reduceDataSize(inputs, numPaddingFrames)
+inputs.experimentalMoments = inputs.experimentalMoments(numPaddingFrames + 1:end-numPaddingFrames, :, :);
+inputs.muscleTendonLength = inputs.muscleTendonLength(numPaddingFrames + 1:end-numPaddingFrames, :, :);
+inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(numPaddingFrames + 1:end-numPaddingFrames, :, :);
+inputs.momentArms = inputs.momentArms(numPaddingFrames + 1:end-numPaddingFrames, :, :, :);
+end
+
+function vMaxFactor = getVMaxFactor(tree)
+vMaxFactor = getFieldByName(tree, 'v_max_factor');
+if(isstruct(vMaxFactor))
+    vMaxFactor = str2double(vMaxFactor.Text);
+else
+    vMaxFactor = 10;
+end
+end

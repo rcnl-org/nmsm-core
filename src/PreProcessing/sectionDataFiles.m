@@ -33,7 +33,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function sectionDataFiles(fileNames, timePairs, numRows, prefix)
+function sectionDataFiles(fileNames, timePairs, numRows, prefix, model, ...
+    coordinates)
 import org.opensim.modeling.Storage
 for i=1:length(fileNames)
     storage = Storage(fileNames(i));
@@ -44,8 +45,10 @@ for i=1:length(fileNames)
         [filepath, name, ext] = fileparts(fileNames(i));
         [newData, newTime] = cutData(data, time, timePairs(j,1), ...
             timePairs(j,2), numRows);
+        [newData, newColumnNames] = removeUnusedColumns(newData, columnNames, model, ...
+            coordinates);
         newFileName = insertAfter(name, prefix, "_" + num2str(j));
-        writeToSto(columnNames, newTime, newData', fullfile(filepath, ...
+        writeToSto(newColumnNames, newTime, newData', fullfile(filepath, ...
             newFileName + ext));
     end
 end
@@ -55,4 +58,19 @@ function [newData, newTime] = cutData(data, time, startTime, endTime, ...
     numRows)
 newTime = linspace(startTime, endTime, numRows);
 newData = spline(time, data, newTime);
+end
+
+function [newData, newNames] = removeUnusedColumns(data, names, modelFileName, ...
+    coordinates)
+model = Model(modelFileName);
+newNames = coordinates;
+if isempty(find(strcmp(names, newNames(1)), 1))
+    newNames = getEnabledMusclesInOrder(model);
+end
+newData = zeros(length(newNames), size(data, 2));
+for i = 1:length(newNames)
+    index = find(strcmp(names, newNames(i)));
+    column = data(index, :);
+    newData(i, :) = column;
+end
 end
