@@ -31,6 +31,9 @@
 
 function output = parseMomentArms(directories, model)
 import org.opensim.modeling.Storage
+if ~isequal(class(model), 'org.opensim.modeling.Model')
+    model = Model(model);
+end
 firstTrial = parseMuscleAnalysisCoordinates(directories(1), model);
 cells = zeros([length(directories) size(firstTrial)]);
 cells(1, :, :, :) = firstTrial;
@@ -38,6 +41,7 @@ for i=2:length(directories)
     cells(i, :, :, :) = parseMuscleAnalysisCoordinates(directories(i), ...
         model);
 end
+
 output = permute(cells, [4 1 3 2]);
 end
 
@@ -49,7 +53,7 @@ firstFile = storageToDoubleMatrix(Storage(coordFileNames(1)));
 cells = zeros([length(coordFileNames) size(firstFile)]);
 cells(1, :, :) = firstFile;
 for i=2:length(coordFileNames)
-    cells(2, :, :) = storageToDoubleMatrix(Storage(coordFileNames(i)));
+    cells(i, :, :) = storageToDoubleMatrix(Storage(coordFileNames(i)));
 end
 end
 
