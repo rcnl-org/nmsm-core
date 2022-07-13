@@ -40,7 +40,7 @@ if (valuesStruct.isIncluded(index))
     [startIndex, endIndex] = findIsIncludedStartAndEndIndex( ...
         valuesStruct.primaryValues, valuesStruct.isIncluded, index);
     % Secondary values are all zero
-    output = valuesStruct.primaryValues(startIndex:endIndex);
+    output = valuesStruct.secondaryValues(startIndex:endIndex);
 else
     output = valuesStruct.primaryValues(index, :);
 end
