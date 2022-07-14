@@ -6,10 +6,9 @@
 % analyze coordinates. The organization is column major. I.E. output(0,:) 
 % is the first column of the Storage (not including the time column).
 %
-% (Model, Storage) -> (Array of string, Array of double, 
+% (Model, Storage) -> (Array of string, Array of double, ...
 %                       2D Array of double) 
-% Extracts string Array, double Array, 2D double Array from Model and 
-% Storage objects.
+% Extracts components from .mot Storage object.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -33,7 +32,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [columnNames, time, data] = modelMotToDoubleMatrix(model, storage)
+function [columnNames, time, data] = parseMotToComponents(model, storage)
 import org.opensim.modeling.*
 
 columnNames = getStorageColumnNames(storage);
@@ -52,9 +51,8 @@ for i=1:nCol
         data(i, j) = col.getitem(j-1);
     end
     if (isInDegrees & all(coordinates.get(i-1).getMotionType() == ...
-                      'Rotational'))
+            'Rotational'))
         data(i, :) = deg2rad(data(i, :));
     end
 end
 end
-
