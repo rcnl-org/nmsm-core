@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Processes an array of string into a StdVectorString.
+% This function calls an error if the value is not true
 %
-% (Array of string) -> (StdVectorString)
-% Print results of optimization to console or file
-
+% (boolean, ) -> (number)
+% iterate through markers and sum the error
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
@@ -27,11 +26,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = stringArrayToStdVectorString(stringArray)
-import org.opensim.modeling.StdVectorString
-output = StdVectorString();
-for i=1:length(stringArray)
-    output.add(i-1, stringArray(i))
+function verifyTrue(truthyStatement, message)
+if(~truthyStatement)
+    error(message);
 end
 end
 
