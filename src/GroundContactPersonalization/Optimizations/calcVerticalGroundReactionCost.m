@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% inputs:
+%   model - Model
+%   experimentalJointKinematics - 2D Array of double
+%   coordinateColumns - 1D array of int of coordinate indexes
 %
 % (Array of double, Array of string, struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
@@ -27,20 +30,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcVerticalGroundReactionCost(values, fieldNameOrder, inputs, params)
-modelJointKinematics = calcJointKinematics();
+function cost = calcVerticalGroundReactionCost(values, fieldNameOrder, ...
+    inputs, params)
+modeledJointKinematics = calcGCPJointKinematics( ...
+    inputs.experimentalJointKinematics, inputs.jointKinematicsSplines, ...
+    findValuesByFieldName(values, inputs, "bSplineCoefficients", ...
+    fieldNameOrder));
+[model, state] = Model(inputs.model);
+cost = 0;
+for i=1:length(modeledJointKinematics.position)
+    temp.position = modeledJointKinematics.position(i, :);
+    temp.velocity = modeledJointKinematics.velocity(i, :);
+    temp.acceleration = modeledJointKinematics.acceleration(i, :);
+    makeGCPState(model, state, temp, inputs.coordinateColumns)
+    cost = cost + calcStateCost()
+end
 modelMarkerPositions = calcMarkerPositions();
 modelSpringKinematics = calcSpringKinematics();
 modelGroundReactForces = calcGroundReactionForce();
 modelCenterOfPressure = calcCenterOfPressure();
 modelFreeMoment = calcFreeMoment();
 
-cost = calculateCost()
+cost = calculateCost(modeledJointKinematics)
 
 end
 
-function calculateCost(values, fieldNameOrder, inputs, params)
-modeledJointKinematics = makeModeledJointKinematics(inputs.N, findValuesByFieldName(values, inputs, "bSplineCoefficients", fieldNameOrder));
+function calculateCost(modeledJointKinematics, values, fieldNameOrder, inputs, params)
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(modeledJointKinematics, inputs);
 cost = 2 * footMarkerPositionError;
