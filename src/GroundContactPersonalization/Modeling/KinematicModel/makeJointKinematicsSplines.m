@@ -4,7 +4,7 @@
 % at the start of GCP and used to calculate the kinematic curves throughout
 % the optimization
 %
-% jointKinematicSplines has 3 fields (position, velocity, acceleration)
+% jointKinematicSplines has 2 fields (position, velocity)
 %
 % (Array of double, int, int) -> (struct)
 % Calculate new joint kinematics curves from data and deviations curves
@@ -35,9 +35,8 @@ function jointKinematicsSplines = makeJointKinematicsSplines(time, ...
     degree, numNodes)
 numPts = length(time);
 interval = time(2)-time(1);
-[N, Np, Npp] = BSplineMatrices(degree, numNodes, numPts, interval);
+[N, Np, ~] = BSplineMatrices(degree, numNodes, numPts, interval);
 jointKinematicsSplines.position = N;
 jointKinematicsSplines.velocity = Np;
-jointKinematicsSplines.acceleration = Npp;
 end
 
