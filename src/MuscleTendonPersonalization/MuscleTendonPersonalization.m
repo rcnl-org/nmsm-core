@@ -43,9 +43,10 @@ function primaryValues = MuscleTendonPersonalization(inputs, ...
     params)
 %verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
-if ~isfield(inputs, "emgSplines")
-    inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
-end
+% emgSplines now made in parse settings tree step
+% if ~isfield(inputs, "emgSplines")
+%     inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
+% end
 primaryValues = prepareInitialValues(inputs, params);
 [inputs.normalizedFiberLength, ~] = calcNormalizedMusceFiberLengthsAndVelocities(inputs, struct("isIncluded", zeros(1,6), "primaryValues", primaryValues, "secondaryValues", zeros(size(primaryValues))));
 lowerBounds = makeLowerBounds(inputs, params);

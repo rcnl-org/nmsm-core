@@ -79,6 +79,9 @@ inputs.activationPairs = getPairs(getFieldByNameOrError(tree, 'PairedActivationT
 inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, 'PairedNormalizedMuscleFiberLengths'), inputs.model);
 inputs = getCostFunctionTerms(getFieldByNameOrError(tree, 'MuscleTendonCostFunctionTerms'), inputs);
 inputs.vMaxFactor = getVMaxFactor(tree)
+if ~isfield(inputs, "emgSplines")
+    inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
+end
 end
 
 % (struct) -> (Array of string)
