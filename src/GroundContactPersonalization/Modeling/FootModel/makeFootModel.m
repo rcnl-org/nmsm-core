@@ -38,10 +38,11 @@ footModel.upd_BodySet().adoptAndAppend(model.getBodySet().get( ...
 footModel.upd_BodySet().adoptAndAppend(model.getBodySet().get( ...
     toesBody));
 footModel.upd_JointSet().adoptAndAppend(model.getJointSet().get( ...
-    toeJointName))
+    toeJointName));
 markers = getMarkersFromJoint(model, toeJointName);
 for i=1:length(markers)
-    footModel.upd_MarkerSet().adoptAndAppend(model.getMarkerSet().get(markers{i}))
+    footModel.upd_MarkerSet().adoptAndAppend( ...
+        model.getMarkerSet().get(markers{i}));
 end
 footModel.finalizeConnections()
 end
