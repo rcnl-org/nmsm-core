@@ -3,8 +3,8 @@
 % This function calculates the new kinematic curves from the experimental
 % data and deviation values.
 %
-% jointKinematicsSplines is a struct with 2 fields (position, velocity)
-% as comes out of makeJointKinematicsSplines(). The output
+% jointKinematicsBSplines is a struct with 2 fields (position, velocity)
+% as comes out of makeJointKinematicsBSplines(). The output
 % struct has matching fields.
 %
 % (2D Array of double, struct, 2D Array of double) -> (struct)
@@ -34,9 +34,9 @@
 
 function newKinematics = ...
     calcGCPJointKinematics(experimentalJointKinematics, ...
-    jointKinematicsSplines, deviationNodes)
-fittedPosition = jointKinematicsSplines.position * deviationNodes;
-fittedVelocity = jointKinematicsSplines.velocity * deviationNodes;
+    jointKinematicsBSplines, deviationNodes)
+fittedPosition = jointKinematicsBSplines.position * deviationNodes;
+fittedVelocity = jointKinematicsBSplines.velocity * deviationNodes;
 
 newKinematics.position = experimentalJointKinematics .* fittedPosition';
 newKinematics.velocity = experimentalJointKinematics .* fittedVelocity';

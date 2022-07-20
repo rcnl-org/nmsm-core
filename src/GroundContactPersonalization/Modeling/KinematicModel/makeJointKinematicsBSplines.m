@@ -31,12 +31,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function jointKinematicsSplines = makeJointKinematicsSplines(time, ...
+function jointKinematicsBSplines = makeJointKinematicsBSplines(time, ...
     degree, numNodes)
 numPts = length(time);
 interval = time(2)-time(1);
 [N, Np, ~] = BSplineMatrices(degree, numNodes, numPts, interval);
-jointKinematicsSplines.position = N;
-jointKinematicsSplines.velocity = Np;
+jointKinematicsBSplines.position = N;
+jointKinematicsBSplines.velocity = Np;
 end
 
