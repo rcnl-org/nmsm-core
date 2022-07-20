@@ -33,7 +33,10 @@
 
 function [footModel, footPosition, footVelocity] = prepareModel( ...
     modelName, motionFileName, hindfootBodyName, toesBodyName, ...
-    toesCoordinateName, markerNames, gridWidth, gridHeight, isLeftFoot)
+    toesJointName, toesCoordinateName, markerNames, gridWidth, ...
+    gridHeight, isLeftFoot)
+
+import org.opensim.modeling.Storage
 
 model = Model(modelName);
 time = findTimeColumn(Storage(motionFileName));
@@ -43,7 +46,7 @@ footPosition = makeFootKinematics(model, motionFileName, ...
     coordinatesOfInterest, hindfootBodyName, toesCoordinateName);
 footVelocity = calcDerivative(time, footPosition);
 
-footModel = makeFootModel(model, "mtp_r");
+footModel = makeFootModel(model, toesJointName);
 footModel = addSpringsToModel(footModel, markerNames, gridWidth, ...
     gridHeight, hindfootBodyName, toesBodyName, isLeftFoot);
 end
