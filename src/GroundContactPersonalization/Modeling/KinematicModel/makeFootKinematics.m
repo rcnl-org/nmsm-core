@@ -4,7 +4,9 @@
 % ground to the contact bodies. These coordinates all will be modeled in
 % the kinematic model for GCP.
 %
-% (Model, Array of string) -> (Array of string)
+% coordinatesOfInterest can be found from findGCPFreeCoordinates()
+%
+% (Model, string, Array of string, string, string) -> (2D Array of double)
 % Create an array of coordinate names connecting the bodies to ground
 
 % ----------------------------------------------------------------------- %
