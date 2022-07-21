@@ -49,10 +49,10 @@ function [startIndex, endIndex] = findStartAndEndIndex(secondaryValues, ...
 rows = length(secondaryValues) / sum(isIncluded);
 startIndex = 1;
 endIndex = rows;
-for i=1:index
-    if(isIncluded)
-        startIndex = startIndex + row;
-        endIndex = endIndex + row;
+for i=1:index-1
+    if(isIncluded(i))
+        startIndex = startIndex + rows;
+        endIndex = endIndex + rows;
     end
 end
 end
