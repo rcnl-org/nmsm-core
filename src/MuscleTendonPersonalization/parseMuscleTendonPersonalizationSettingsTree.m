@@ -79,6 +79,9 @@ inputs.activationPairs = getPairs(getFieldByNameOrError(tree, 'PairedActivationT
 inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, 'PairedNormalizedMuscleFiberLengths'), inputs.model);
 inputs = getCostFunctionTerms(getFieldByNameOrError(tree, 'MuscleTendonCostFunctionTerms'), inputs);
 inputs.vMaxFactor = getVMaxFactor(tree)
+if ~isfield(inputs, "emgSplines")
+    inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
+end
 end
 
 % (struct) -> (Array of string)
@@ -186,12 +189,12 @@ model = Model(inputs.model);
 for i = 0:model.getForceSet().getMuscles().getSize()-1
     if model.getForceSet().getMuscles().get(i).get_appliesForce()
         inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
-            getMuscles().get(i).getOptimalFiberLength()*100;
+            getMuscles().get(i).getOptimalFiberLength();
         inputs.tendonSlackLength(end+1) = model.getForceSet(). ...
-            getMuscles().get(i).getTendonSlackLength()*100;
+            getMuscles().get(i).getTendonSlackLength();
         inputs.pennationAngle(end+1) = model.getForceSet(). ...
             getMuscles().get(i). ...
-            getPennationAngleAtOptimalFiberLength()*(180/pi);
+            getPennationAngleAtOptimalFiberLength();
         inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
             getMuscles().get(i).getMaxIsometricForce();
     end
