@@ -30,6 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function processMotionLabData(inputs, params)
+import org.opensim.modeling.Storage
 ikResultsDir = 'IKData';
 idResultsDir = 'IDData';
 maResultsDir = 'MAData';
@@ -38,12 +39,9 @@ verifyInputs(inputs);
 verifyParams(params);
 makeDirectoryStructure(inputs.resultsDir, ikResultsDir, idResultsDir, ...
     maResultsDir, emgResultsDir);
-% copyfile(inputs.ikResultsFileName, fullfile(inputs.resultsDir, ...
-%     ikResultsDir, inputs.prefix + ".mot"))
-% Loads IK data and converts to .mot to .sto
 [ikColumnLabels, ikTime, ikData] = parseMotToComponents( ...
     Model(inputs.model), Storage(inputs.ikResultsFileName));
-writeToSto(ikColumnLabels, ikTime, ikData, fullfile(inputs.resultsDir, ...
+writeToSto(ikColumnLabels, ikTime, ikData', fullfile(inputs.resultsDir, ...
     ikResultsDir, inputs.prefix + ".sto"))
 copyfile(inputs.idResultsFileName, fullfile(inputs.resultsDir, ...
     idResultsDir, inputs.prefix + ".sto"))
