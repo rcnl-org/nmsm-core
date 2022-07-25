@@ -28,26 +28,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function derivative = calcDerivative(time, data)
-verifyTrue(length(time)==size(data, 2), ...
-    "time and data arrays are not of correct shape.");
-gcvSplines = {};
-for i=1:size(data, 1)
-    gcvSplines{i} = org.opensim.modeling.GCVSpline();
-    gcvSplines{i}.setDegree(7);
+function derivative = calcBSplineDerivative(time, data, degree, numNodes)
+if ~((length(time)==size(data, 2))||(length(time)==size(data, 1)))
+    error("time and data arrays are not of correct shape.");
 end
-for i=1:length(time)
-    for j=1:size(data, 1)
-        gcvSplines{j}.addPoint(time(i), data(j, i));
-    end
+
+numPts = length(time);
+interval = time(2)-time(1);
+[N, Np, ~] = BSplineMatrices(degree,numNodes,numPts,interval);
+
+if length(time)==size(data, 2)
+data = data';
 end
-derivative = zeros(size(data));
-setting = org.opensim.modeling.StdVectorInt([0]);
-for i=1:length(time)
-    for j=1:size(data, 1)
-        timeVector = org.opensim.modeling.Vector.createFromMat([time(i)]);
-        pointDerivative = gcvSplines{j}.calcDerivative(setting, timeVector);
-        derivative(j, i) = pointDerivative;
-    end
+
+Nodes = N\data;
+derivative = Np*Nodes;
+
+if length(time)==size(data, 2)
+derivative = derivative';
 end
+
 end
