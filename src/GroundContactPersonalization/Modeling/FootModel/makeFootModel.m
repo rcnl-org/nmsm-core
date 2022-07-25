@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% This function makes a new model with the parent and child bodies of the
+% given toeJointName. For use in tracking joint kinematics in the GCP
+% model.
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (Model, string) -> (Model)
+% Makes a new model with just the hindfoot and toe bodies
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +29,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
+function footModel = makeFootModel(model, toeJointName)
+import org.opensim.modeling.Model
+footModel = Model();
+[hindfootBody, toesBody] = getJointBodyNames(model, toeJointName);
+footModel.upd_BodySet().adoptAndAppend(model.getBodySet().get( ...
+    hindfootBody));
+footModel.upd_BodySet().adoptAndAppend(model.getBodySet().get( ...
+    toesBody));
+footModel.upd_JointSet().adoptAndAppend(model.getJointSet().get( ...
+    toeJointName));
+markers = getMarkersFromJoint(model, toeJointName);
+for i=1:length(markers)
+    footModel.upd_MarkerSet().adoptAndAppend( ...
+        model.getMarkerSet().get(markers{i}));
 end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
+footModel.finalizeConnections()
 end
 

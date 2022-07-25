@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+%
+% (Array of double, int, int, int) -> (2D Array of double)
+% Calculate new joint kinematics curves from data and deviations curves
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
+function nodes = calcInitialDeviationNodes(time, degree, numNodes, ...
+    numColumns)
+numPts = length(time);
+interval = time(2)-time(1);
+[N,~,~] = BSplineMatrices(degree, numNodes, numPts, interval);
+nodes = N\ones(101, numColumns);
 end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
-end
-

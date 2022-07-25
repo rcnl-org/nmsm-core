@@ -1,11 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% This function calculates the new kinematic curves from the experimental
+% data and deviation values.
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% jointKinematicsBSplines is a struct with 2 fields (position, velocity)
+% as comes out of makeJointKinematicsBSplines(). The output
+% struct has matching fields.
+%
+% (2D Array of double, struct, 2D Array of double) -> (struct)
+% Calculate new joint kinematics curves from data and deviations curves
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +32,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
+function newKinematics = ...
+    calcGCPJointKinematics(experimentalJointKinematics, ...
+    jointKinematicsBSplines, deviationNodes)
+fittedPosition = jointKinematicsBSplines.position * deviationNodes;
+fittedVelocity = jointKinematicsBSplines.velocity * deviationNodes;
+
+newKinematics.position = experimentalJointKinematics .* fittedPosition';
+newKinematics.velocity = experimentalJointKinematics .* fittedVelocity';
 end
 

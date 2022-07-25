@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% 
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +27,47 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
+function [insidePoints, outsidePoints] = splitNormalizedGridPoints( ...
+    points, isLeftFoot)
+shoeCurve = load(fullfile(fileparts(mfilename('fullpath')), ...
+    "shoeCurve.mat")).shoeCurve;
+insidePoints = [];
+outsidePoints = [];
+for i=1:size(points, 1)
+    if(isLeftFoot) %flip across vertical centerline
+        points(i,1) = 1 - points(i,1);
     end
+    if(isInShoeOutline(points(i,1), points(i,2), shoeCurve.x, shoeCurve.y))
+        insidePoints(end+1, :) = points(i, :);
+    else
+        outsidePoints(end+1, :) = points(i, :);
+    end
+end
+end
+
+function isInShoe = isInShoeOutline(normalizedX, normalizedY, curveX, ...
+    curveY)
+try
+    lineX = normalizedX:abs(normalizedX-1)/100:1;
+    lineY = ones(1,length(lineX)) * normalizedY;
+    isInShoe = checkIntersection(curveX, curveY, lineX, lineY);
+    if(isInShoe)
+        lineX = 0:abs(normalizedX)/100:normalizedX;
+        lineY = ones(1,length(lineX)) * normalizedY;
+        isInShoe = checkIntersection(curveX, curveY, lineX, lineY);
+    end
+    if(isInShoe)
+        lineY = normalizedY:abs(normalizedY-1)/100:1;
+        lineX = ones(1,length(lineY)) * normalizedX;
+        isInShoe = checkIntersection(curveX, curveY, lineX, lineY);
+    end
+    if(isInShoe)
+        lineY = 0:abs(normalizedY)/100:normalizedY;
+        lineX = ones(1,length(lineY)) * normalizedX;
+        isInShoe = checkIntersection(curveX, curveY, lineX, lineY);
+    end
+catch
+    isInShoe = false;
 end
 end
 

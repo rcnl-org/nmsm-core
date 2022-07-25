@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% This function returns an array of names of coordinates that connect the
+% ground to the contact bodies. These coordinates all will be modeled in
+% the kinematic model for GCP.
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (Model, Array of string) -> (Array of string)
+% Create an array of coordinate names connecting the bodies to ground
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +29,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
+function coordinatesOfInterest = findGCPFreeCoordinates(model, ...
+    contactBodies)
+bodyStructure = makeBodyTree(model);
+
+bodiesOfInterest = string([]);
+for i=1:length(contactBodies)
+    [~, path] = getFieldByName(bodyStructure, contactBodies(i));
+    bodiesOfInterest = unique([bodiesOfInterest, string(path)]);
 end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
+
+coordinatesOfInterest = getCoordinatesFromBodies(model, bodiesOfInterest);
 end
 
