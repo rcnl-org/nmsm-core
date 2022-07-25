@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% 
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +27,33 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
+function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
+[initialValues, fieldNameOrder] = makeInitialValues(inputs, params);
+results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
+    fieldNameOrder, inputs, params), initialValues);
+inputs = mergeResults(inputs, results);
 end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
+
+% (struct, struct) -> (Array of double)
+% generate initial values to be optimized from inputs, params
+function [initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
+    params)
+initialValues = [inputs.springConstants inputs.dampingFactors];
+initialValues = [initialValues reshape(inputs.rightKinematicCurveCoefficients([2, 5:7], :)', 1, [])]; % B spline coeff right
+initialValues = [initialValues reshape(inputs.leftKinematicCurveCoefficients([2, 5:7], :)', 1, [])]; % B spline coeff left
+initialValues = [initialValues inputs.rightFootVerticalPosition]; % YvalR 
+initialValues = [initialValues inputs.leftFootVerticalPosition]; % YvalL
+fieldNameOrder = ["springConstants", "dampingFactors", "kinematicCurve", "footVerticalPosition"];
 end
+
+% (struct, Array of double) -> (struct)
+% merge the results of the optimization back into the input values
+function inputs = mergeResults(inputs, results)
+index = 1;
+inputs.springConstants = results(index, index + length(inputs.springConstants));
+index = index + length(inputs.springConstants);
+inputs.dampingFactors = results(index, index + length(inputs.dampingFactors));
+index = index + length(inputs.dampingFactors);
+
 end
 

@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% This function uses GCVSplines from OpenSim to calculate the derivative of
+% each column and returns an array of the same shape as provided.
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (Array of double, 2D array of double) => (2D array of double)
+% Returns the derivative of each column provided
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +28,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
+function derivative = calcBSplineDerivative(time, data, degree, numNodes)
+if ~((length(time)==size(data, 2))||(length(time)==size(data, 1)))
+    error("time and data arrays are not of correct shape.");
 end
 
+numPts = length(time);
+interval = time(2)-time(1);
+[N, Np, ~] = BSplineMatrices(degree,numNodes,numPts,interval);
+
+if length(time)==size(data, 2)
+data = data';
+end
+
+Nodes = N\data;
+derivative = Np*Nodes;
+
+if length(time)==size(data, 2)
+derivative = derivative';
+end
+
+end

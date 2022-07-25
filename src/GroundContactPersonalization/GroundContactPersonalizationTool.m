@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% This function is a wrapper for the GroundContactPersonalization function
+% such that an xml file can be passed and the resulting computation can be
+% completed according to the instructions of that file.
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (string) -> (None)
+% Run GroundContactPersonalization from settings file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +29,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
+function GroundContactPersonalizationTool(settingsFileName)
+settingsTree = xml2struct(settingsFileName);
+[inputs, params, resultsDirectory] = ...
+    parseGroundContactPersonalizationTool(settingsTree);
+results = GroundContactPersonalization(inputs, params);
+saveGroundContactPersonalizationResults(results, resultsDirectory);
 end
 

@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% This function takes a model and an array of body names and returns an
+% array of strings of coordinates directly connected to the bodies.
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (Model, Array of string) -> (Array of string)
+% Create and return an array of coordinate names associated with the bodies
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +28,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
+function coordinates = getCoordinatesFromBodies(model, bodies)
+coordinates = {};
+for i = 0 : model.getJointSet().getSize()-1
+    childName = model.findComponent(model.getJointSet().get(i) ...
+        .getChildFrame().getSocket('parent').getConnecteePath()) ...
+        .getName().toCharArray';
+    if(any(strcmp(bodies, childName)))
+        for j=0:model.getJointSet().get(i).numCoordinates()-1
+            coordinates{end+1} = model.getJointSet().get(i) ...
+                .get_coordinates(j);
         end
     end
 end
+coordinates = string(coordinates);
 end
 

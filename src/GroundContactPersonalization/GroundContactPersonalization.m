@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% 
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +27,39 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
+function results = GroundContactPersonalization(inputs, params)
+verifyInputs(inputs); % (struct) -> (None)
+verifyParams(params); % (struct) -> (None)
+inputs = prepareInputs(inputs, params);
+inputs = optimizeByVerticalGroundReactionForce(inputs, params);
+inputs = optimizeByGroundReactionForces(inputs, params);
+results = optimizeByGroundReactionAndCenterOfPressureAndFreeMoment( ...
+    inputs, params);
+
 end
 
+% (struct) -> (None)
+% throws an error if any of the inputs are invalid
+function verifyInputs(inputs)
+
+end
+
+% (struct) -> (None)
+% throws an error if the parameter is included but is not of valid type
+function verifyParams(params)
+
+end
+
+% (struct, struct) -> (struct)
+% prepares optimization values from inputs
+function inputs = prepareInputs(inputs, params)
+inputs.springConstants = []; % 38 vals
+inputs.dampingFactors = []; % 38 vals
+inputs.rightKinematicCurveCoefficients = []; % 25 x 7 matrix
+inputs.leftKinematicCurveCoefficients = []; % 25 x 7 matrix
+inputs.rightFootVerticalPosition = []; % 1 val
+inputs.leftFootVerticalPosition = []; % 1 val
+inputs.staticFrictionCoefficient = []; % 1 val
+inputs.dynamicFrictionCoefficient = []; % 1 val
+inputs.viscousFrictionCoefficient = []; % 1 val
+end

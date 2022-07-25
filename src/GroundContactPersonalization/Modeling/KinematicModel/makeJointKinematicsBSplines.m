@@ -1,11 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% This function creates the joint kinematics splines to be generated once
+% at the start of GCP and used to calculate the kinematic curves throughout
+% the optimization
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% jointKinematicSplines has 2 fields (position, velocity)
+%
+% (Array of double, int, int) -> (struct)
+% Calculate new joint kinematics curves from data and deviations curves
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +31,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
+function jointKinematicsBSplines = makeJointKinematicsBSplines(time, ...
+    degree, numNodes)
+numPts = length(time);
+interval = time(2)-time(1);
+[N, Np, ~] = BSplineMatrices(degree, numNodes, numPts, interval);
+jointKinematicsBSplines.position = N;
+jointKinematicsBSplines.velocity = Np;
 end
 

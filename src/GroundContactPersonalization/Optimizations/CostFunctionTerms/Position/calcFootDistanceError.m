@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+%
+% (Array of double, struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +27,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
+function error = calcFootDistanceError(values, ...
+    experimentalData, params)
+
+for i=1:size(FootError,2)/3
+    FootDistanceError(:,i) = sqrt( FootError(:,i*3-2).^2 + FootError(:,i*3-1).^2 + FootError(:,i*3).^2 )*1000;
 end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
+error = (sum((FootDistanceError).^2,1)./size(FootDistanceError,1)).^(.5); 
 end
 

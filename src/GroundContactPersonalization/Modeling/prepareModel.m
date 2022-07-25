@@ -1,11 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% This function returns an array of names of coordinates that connect the
+% ground to the contact bodies. These coordinates all will be modeled in
+% the kinematic model for GCP.
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% coordinatesOfInterest can be found from findGCPFreeCoordinates()
+%
+% (Model, string, Array of string, string, string) -> (2D Array of double)
+% Create an array of coordinate names connecting the bodies to ground
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +31,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
+function [footModel, footPosition, footVelocity] = prepareModel( ...
+    modelName, motionFileName, hindfootBodyName, toesBodyName, ...
+    toesJointName, toesCoordinateName, markerNames, gridWidth, ...
+    gridHeight, isLeftFoot)
+
+import org.opensim.modeling.Storage
+
+model = Model(modelName);
+time = findTimeColumn(Storage(motionFileName));
+coordinatesOfInterest = findGCPFreeCoordinates(model, toesBodyName);
+
+footPosition = makeFootKinematics(model, motionFileName, ...
+    coordinatesOfInterest, hindfootBodyName, toesCoordinateName);
+footVelocity = calcDerivative(time, footPosition);
+
+footModel = makeFootModel(model, toesJointName);
+footModel = addSpringsToModel(footModel, markerNames, gridWidth, ...
+    gridHeight, hindfootBodyName, toesBodyName, isLeftFoot);
 end
 

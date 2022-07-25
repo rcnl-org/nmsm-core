@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+%
+% (Array of double, struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +27,30 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
+function [valueError, slopeError] = ...
+    calcGroundReactionForceAndSlopeError(values, experimentalData, params)
+
+yPens = zeros(nframes,nvals);
+normvel = zeros(nframes,nvals);
+for j = 1:nframes
+    for i = 1:nvals
+         ClearanceVars = footcontactoutvecallparams(JointLocRa,JRotR,SPLocR(i,:)',RQDataHF_opt(j,:)',RQDataT_opt(j,1),RQpDataHF_opt(j,:)',RQpDataT_opt(j,1),[0;0;0]);
+        if i <= numhfr     
+            yPens(j,i) = max(-ClearanceVars(2,1),0);
+            normvel(j,i) = -(ClearanceVars(8,1));
+        else     
+            yPens(j,i) = max(-ClearanceVars(13,1),0);
+            normvel(j,i) = -(ClearanceVars(19,1));
         end
     end
 end
+
+
+Fy = repmat(Kvals',nframes,1).*yPens.*(1+repmat(cvals',nframes,1).*normvel);
+Fyvals_Calculated = sum(Fy,2);
+valueError = abs(Fyvals - Fyvals_Calculated);
+y_real_diff = diff(Fyvals);
+y_calc_diff = diff(Fyvals_Calculated);
+slopeError = abs(abs(y_real_diff) - abs(y_calc_diff));
 end
 
