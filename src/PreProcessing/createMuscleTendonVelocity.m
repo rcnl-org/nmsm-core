@@ -30,15 +30,14 @@
 
 function createMuscleTendonVelocity(muscleTendonLengthFileName, ...
     outputVelocityFileName)
-import org.opensim.modeling.*
+import org.opensim.modeling.Storage
 storage = Storage(muscleTendonLengthFileName);
+length = storageToDoubleMatrix(storage);
 time = findTimeColumn(storage);
-newTime = linspace(time(1), time(end), length(time) + 1);
 
-lengthData = storageToDoubleMatrix(storage);
-newLengthData = spline(time, lengthData, newTime);
-velocityData = diff(newLengthData, 1, 2);
-writeToSto(getStorageColumnNames(storage), time, velocityData', ...
+velocityData = calcBSplineDerivative(time, length, 4, ceil((time(end)-time(1))*21));
+
+writeToSto(getStorageColumnNames(storage), time, velocityData, ...
     outputVelocityFileName)
 
 end
