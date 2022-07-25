@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% 
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +27,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
+function [insideToes, insideHindfoot] = splitGridPointsByToeJoint( ...
+    insidePoints, medialPt, lateralPt)
+insideToes = [];
+insideHindfoot = [];
+for i=1:length(insidePoints)
+    if isAboveToeJoint(medialPt, lateralPt, insidePoints(i, :))
+        insideHindfoot(end+1, :) = insidePoints(i, :);
+    else
+        insideToes(end+1, :) = insidePoints(i, :);
     end
 end
 end
 
+function out = isAboveToeJoint(medialPt, lateralPt, springPt)
+lineX = linspace(medialPt(2), lateralPt(2));
+lineY = linspace(medialPt(1), lateralPt(1));
+springLineY = linspace(springPt(2), 1);
+springLineX = ones(1,length(springLineY)) * springPt(1);
+out = checkIntersection(lineX, lineY, springLineX, springLineY);
+end

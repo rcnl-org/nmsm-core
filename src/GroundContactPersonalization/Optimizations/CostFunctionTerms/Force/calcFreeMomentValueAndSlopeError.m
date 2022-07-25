@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+%
+% (Array of double, struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +27,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
-end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
-end
+function [valueError, slopeError] = calcFreeMomentValueAndSlopeError( ...
+    values, experimentalData, params)
+xq = ECData(1,1) + Moment_z./Fyvals_Calculated;
+xq(isnan(xq)) = ECData(1,1);
+xq(64:end) = ECData(1,1);
+zq = ECData(3,1) - Moment_x./Fyvals_Calculated;
+zq(isnan(zq)) = ECData(3,1);
+zq(64:end) = ECData(3,1);
+free_Torque = Moment_y + Fxvals_Calculated.*(repmat(ECData(3,1)',nframes,1) - zq) - Fzvals_Calculated.*(repmat(ECData(1,1)',nframes,1) - xq);
+tfs = linspace(1,nframes,nframes);
+FTdiff = abs(COPvals(tfs(Fyvals>100),7) - free_Torque(tfs(Fyvals>100),1));
 
+ft_real_diff = diff(COPvals(tfs(Fyvals>100),7));
+ft_calc_diff = diff(free_Torque(tfs(Fyvals>100),1));
+ft_slope_diff = abs(abs(ft_real_diff) - abs(ft_calc_diff))/0.01;
+end

@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the first instance of a field matching the given
-% name and can be used to find a field in a struct that has been parsed
-% from and XML (xml2struct)
+% 
 %
-% (struct, field) => (struct)
-% Find first instance of field in nested struct
+% (struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,23 +27,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, path] = getFieldByName(deepStruct, field)
-output = false;
-path = [field];
-try
-    output = deepStruct.(field);
-    return
-catch
+function model = addSpringsToModel(model, markerNames, gridWidth, ...
+    gridHeight, hindfootBodyName, toesBodyName, isLeftFoot)
+points = makeNormalizedGrid(gridWidth, gridHeight);
+[insidePoints, ~] = splitNormalizedGridPoints(points, isLeftFoot);
+markerPositions = rotateMarkersToeToHeelVertical(findMarkerPositions( ...
+    model, markerNames));
+normalizedMarkerPositions = removeNormalizedMarkerOffsets( ...
+    normalizeMarkerPositions(markerPositions));
+[insideToes, insideHindfoot] = splitGridPointsByToeJoint(insidePoints, ...
+    normalizedMarkerPositions.medial, normalizedMarkerPositions.lateral);
+model = addSpringsToModelAtLocations(model, markerPositions, ...
+    normalizedMarkerPositions, insideToes, insideHindfoot, ...
+    hindfootBodyName, toesBodyName, markerNames.heel, isLeftFoot);
+model.finalizeConnections();
 end
-if(isstruct(deepStruct))
-    fields = fieldnames(deepStruct);
-    for i=1:length(fields)
-        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
-            path = [string(fields{i}) path];
-            return
-        end
-    end
-end
-end
-
