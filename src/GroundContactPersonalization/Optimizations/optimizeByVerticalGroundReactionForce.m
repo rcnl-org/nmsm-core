@@ -39,10 +39,8 @@ end
 function [initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
     params)
 initialValues = [inputs.springConstants inputs.dampingFactors];
-initialValues = [initialValues reshape(inputs.rightKinematicCurveCoefficients([2, 5:7], :)', 1, [])]; % B spline coeff right
-initialValues = [initialValues reshape(inputs.leftKinematicCurveCoefficients([2, 5:7], :)', 1, [])]; % B spline coeff left
-initialValues = [initialValues inputs.rightFootVerticalPosition]; % YvalR 
-initialValues = [initialValues inputs.leftFootVerticalPosition]; % YvalL
+initialValues = [initialValues reshape(inputs.bSplineCoefficients([2, 5:7], :)', 1, [])]; % B spline coeff right
+initialValues = [initialValues inputs.footVerticalPosition]; % YvalR 
 fieldNameOrder = ["springConstants", "dampingFactors", "kinematicCurve", "footVerticalPosition"];
 end
 
