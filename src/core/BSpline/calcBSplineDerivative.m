@@ -44,7 +44,7 @@ end
 Nodes = N\data;
 derivative = Np*Nodes;
 
-if length(time)==size(data, 2)
+if length(time)==size(derivative, 1)
 derivative = derivative';
 end
 
