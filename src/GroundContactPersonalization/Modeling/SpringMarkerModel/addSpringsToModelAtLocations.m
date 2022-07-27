@@ -41,6 +41,9 @@ heelVec3 = model.getMarkerSet().get(heelMarkerName).getLocationInGround(state);
 calcnToToes = model.getBodySet().get(toesBodyName).findTransformBetween( ...
     state, model.getBodySet().get(hindfootBodyName));
 
+markerNumber = 1;
+markerPrefix = "spring_marker_";
+
 for i=1:length(insideToes)
     pointX = insideToes(i, 2) * normalizedFootHeight;
     pointX = pointX - calcnToToes.T.get(0);
@@ -52,9 +55,9 @@ for i=1:length(insideToes)
     end
     pointY = pointY * normalizedFootWidth;
     pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
-    addSpringToModel(model, toesVec3, [pointX, pointY], toesBodyName, toesBodyName + "_marker_" + num2str(i))
+    addSpringToModel(model, toesVec3, [pointX, pointY], toesBodyName, markerPrefix + num2str(markerNumber));
+    markerNumber = markerNumber + 1;
 end
-
 for i=1:length(insideHindfoot)
     pointX = insideHindfoot(i, 2) * normalizedFootHeight;
     pointX = pointX - (calcnVec3.get(0) - heelVec3.get(0));
@@ -65,7 +68,8 @@ for i=1:length(insideHindfoot)
     end
     pointY = pointY * normalizedFootWidth;
     pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
-    addSpringToModel(model, calcnVec3, [pointX, pointY], hindfootBodyName, hindfootBodyName + "hindfoot_marker_" + num2str(i))
+    addSpringToModel(model, calcnVec3, [pointX, pointY], hindfootBodyName, markerPrefix + num2str(markerNumber));
+    markerNumber = markerNumber + 1;
 end
 end
 
