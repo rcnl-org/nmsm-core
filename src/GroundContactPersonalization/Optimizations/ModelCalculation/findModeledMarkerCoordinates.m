@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function uses GCVSplines from OpenSim to calculate the derivative of
-% each column and returns an array of the same shape as provided.
+% This function updates the given modeledMarkerPositions argument with the
+% marker positions included in markerNames. The modeledMarkerPositions
+% struct and markerNames need to match to facilitate this function.
 %
-% (Array of double, 2D array of double) => (2D array of double)
-% Returns the derivative of each column provided
+% (Model, State, struct, struct, integer) => (double)
+% Records the coordinates of the markerNames for the given state
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,24 +29,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function derivative = calcBSplineDerivative(time, data, degree, numNodes)
-if ~((length(time)==size(data, 2))||(length(time)==size(data, 1)))
-    error("time and data arrays are not of correct shape.");
+function [modeledMarkerPositions, modeledMarkerVelocities] = findModeledMarkerCoordinates(model, ...
+    state, modeledMarkerPositions, modeledMarkerVelocities, ...
+    markerNames, index)
+markerNamesFields = fieldnames(markerNames);
+for j=1:size(markerNamesFields)
+    modeledMarkerPositions.(markerNamesFields{j})(index, :) = model. ...
+        getMarkerSet().get(markerNames.(markerNamesFields{j})). ...
+        getLocationInGround(state).getAsMat()';
+    modeledMarkerVelocities.(markerNamesFields{j})(index, :) = model. ...
+        getMarkerSet().get(markerNames.(markerNamesFields{j})). ...
+        getVelocityInGround(state).getAsMat()';
+end
 end
 
-numPts = length(time);
-interval = time(2)-time(1);
-[N, Np, ~] = BSplineMatrices(degree,numNodes,numPts,interval);
 
-if length(time)==size(data, 2)
-data = data';
-end
-
-Nodes = N\data;
-derivative = Np*Nodes;
-
-if length(time)==size(derivative, 1)
-derivative = derivative';
-end
-
-end

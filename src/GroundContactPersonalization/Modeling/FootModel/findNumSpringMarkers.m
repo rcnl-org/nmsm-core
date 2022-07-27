@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function uses GCVSplines from OpenSim to calculate the derivative of
-% each column and returns an array of the same shape as provided.
+% This function returns the number of markers that have "spring_marker_"
+% prefix in their name.
 %
-% (Array of double, 2D array of double) => (2D array of double)
-% Returns the derivative of each column provided
+% (Model) -> (int)
+% Find the number of "spring_marker_" prefix markers are in the model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,24 +28,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function derivative = calcBSplineDerivative(time, data, degree, numNodes)
-if ~((length(time)==size(data, 2))||(length(time)==size(data, 1)))
-    error("time and data arrays are not of correct shape.");
+function counter = findNumSpringMarkers(model)
+model = Model(model);
+counter = 0;
+for i=0:model.getMarkerSet().getSize()-1
+    if contains(model.getMarkerSet().get(i).getName().toCharArray', ...
+            "spring_marker_")
+        counter = counter + 1;
+    end
+end
 end
 
-numPts = length(time);
-interval = time(2)-time(1);
-[N, Np, ~] = BSplineMatrices(degree,numNodes,numPts,interval);
-
-if length(time)==size(data, 2)
-data = data';
-end
-
-Nodes = N\data;
-derivative = Np*Nodes;
-
-if length(time)==size(derivative, 1)
-derivative = derivative';
-end
-
-end

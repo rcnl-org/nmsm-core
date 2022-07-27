@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function uses GCVSplines from OpenSim to calculate the derivative of
-% each column and returns an array of the same shape as provided.
+% This function uses Equation 1 from Jackson et al 2016 to calculate the
+% modeled vertical GRF force as the summation of the forces applied by each
+% individual spring
 %
-% (Array of double, 2D array of double) => (2D array of double)
-% Returns the derivative of each column provided
+% (Model, State, Array of double, Array of double, double) => (double)
+% Returns the sum of the modeled vertical GRF forces at the given state
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,24 +29,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function derivative = calcBSplineDerivative(time, data, degree, numNodes)
-if ~((length(time)==size(data, 2))||(length(time)==size(data, 1)))
-    error("time and data arrays are not of correct shape.");
+function modeledVerticalGrf = calcModeledVerticalGroundReactionForce( ...
+    model, state, springConstants, dampingFactors, springRestingLength)
+modeledVerticalGrf = 0;
+for i=1:length(springConstants)
+    height = model.getMarkerSet().get("spring_marker_" + ...
+        num2str(i)).getLocationInGround(state).get(1);
+    verticalVelocity = model.getMarkerSet().get("spring_marker_" + ...
+        num2str(i)).getVelocityInGround(state).get(1);
+    if (height-springRestingLength)>0
+        modeledVerticalGrf = 0;
+    else
+        modeledVerticalGrf = modeledVerticalGrf + (springConstants(i) * ...
+            (height-springRestingLength) * (1 + dampingFactors(i) * ...
+            verticalVelocity)); % Equation 1 from Jackson et al, 2016
+    end
 end
-
-numPts = length(time);
-interval = time(2)-time(1);
-[N, Np, ~] = BSplineMatrices(degree,numNodes,numPts,interval);
-
-if length(time)==size(data, 2)
-data = data';
-end
-
-Nodes = N\data;
-derivative = Np*Nodes;
-
-if length(time)==size(derivative, 1)
-derivative = derivative';
-end
-
 end
