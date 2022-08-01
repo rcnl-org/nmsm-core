@@ -43,30 +43,34 @@ inputDirectory = getFieldByName(tree, 'input_directory').Text;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(~isempty(inputDirectory))
     try
-        inputs.model = fullfile(inputDirectory, modelFile);
+        inputs.bodyModel = fullfile(inputDirectory, modelFile);
     catch
-        inputs.model = fullfile(pwd, inputDirectory, modelFile);
+        inputs.bodyModel = fullfile(pwd, inputDirectory, modelFile);
         inputDirectory = fullfile(pwd, inputDirectory);
     end
 else
-    inputs.model = fullfile(pwd, modelFile);
+    inputs.bodyModel = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
 prefixes = getPrefixes(tree, inputDirectory);
-inputs.ikTime = parseTimeColumn(findFileListFromPrefixList(...
-    fullfile(inputDirectory, "IKData"), prefixes));
-inputs.experimentalJointKinematics = parseGcpStandard(inputs.model, ...
-    findFileListFromPrefixList(fullfile(inputDirectory, "IKData"), ...
-    prefixes));
-inputs.grfTime = parseTimeColumn(findFileListFromPrefixList(...
+inputs.isLeftFoot = strcmpi(getFieldByNameOrError(tree, ...
+    'is_left_foot').Text, 'true');
+inputs.motionFileNames = findFileListFromPrefixList(...
+    fullfile(inputDirectory, "IKData"), prefixes);
+inputs.time = parseTimeColumn(inputs.motionFileNames);
+verifyTime(inputs.time, parseTimeColumn(findFileListFromPrefixList(...
+    fullfile(inputDirectory, "GRFData"), prefixes)));
+inputs.experimentalJointKinematics = parseGcpStandard(inputs.bodyModel, ...
+    inputs.motionFileNames);
+[grfLeft, grfRight] = getGrf(findFileListFromPrefixList(...
     fullfile(inputDirectory, "GRFData"), prefixes));
-[inputs.experimentalGrf1, inputs.experimentalGrf2] = getGrf( ...
-    findFileListFromPrefixList(fullfile(inputDirectory, "GRFData"), ...
-    prefixes));
-inputs.toeCoordinateName = getFieldByNameOrError(tree, ...
+if (isLeftFoot)
+    inputs.experimentalGroundReactionForces = grfLeft;
+else
+    inputs.experimentalGroundReactionForces = grfRight;
+end
+inputs.toesCoordinateName = getFieldByNameOrError(tree, ...
     'toe_coordinate').Text;
-inputs.toeJointName = char(Model(inputs.model).getCoordinateSet().get( ...
-    inputs.toeCoordinateName).getJoint().getName());
 inputs.errorCenters.markerDistanceError = getFieldByNameOrError(tree, ...
     'marker_distance_error');
 inputs.errorCenters.staticFrictionCoefficient = getFieldByNameOrError(...
@@ -125,11 +129,22 @@ for file=1:length(files)
             end
         end
     end
-    if any(isnan(grf1)) | any(isnan(grf1))
+    if any(isnan(grf1)) || any(isnan(grf2))
         throw(MException('', ['Unable to parse GRF file, check that ' ...
             'all necessary column labels are present']))
     end
 end
+end
+
+% (Array of double, Array of double) -> (None)
+function verifyTime(ikTime, grfTime)
+    if size(ikTime) ~= size(grfTime)
+        throw(MException('', ['IK and GRF time columns have' ...
+            'different lengths']))
+    end
+    if any(abs(ikTime - grfTime) > 0.005)
+        throw(MException('', ['IK and GRF time points are not equal']))
+    end
 end
 
 function params = getParams(tree)
