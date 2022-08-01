@@ -53,13 +53,66 @@ end
 % (struct, struct) -> (struct)
 % prepares optimization values from inputs
 function inputs = prepareInputs(inputs, params)
-inputs.springConstants = []; % 38 vals
-inputs.dampingFactors = []; % 38 vals
-inputs.rightKinematicCurveCoefficients = []; % 25 x 7 matrix
-inputs.leftKinematicCurveCoefficients = []; % 25 x 7 matrix
-inputs.rightFootVerticalPosition = []; % 1 val
-inputs.leftFootVerticalPosition = []; % 1 val
-inputs.staticFrictionCoefficient = []; % 1 val
-inputs.dynamicFrictionCoefficient = []; % 1 val
-inputs.viscousFrictionCoefficient = []; % 1 val
+inputs.markerNames.toe = "R.Toe";
+inputs.markerNames.medial = "R.Toe.Medial";
+inputs.markerNames.lateral = "R.Toe.Lateral";
+inputs.markerNames.heel = "R.Heel";
+inputs.gridWidth = 5;
+inputs.gridHeight = 15;
+inputs.toesJointName = char(Model(inputs.bodyModel).getCoordinateSet(...
+    ).get(inputs.toesCoordinateName).getJoint().getName());
+[inputs.hindfootBodyName, inputs.toesBodyName] = ...
+    getJointBodyNames(Model(inputs.bodyModel), inputs.toesJointName);
+inputs.coordinatesOfInterest = findGCPFreeCoordinates(Model(model), ...
+    inputs.toesBodyName);
+initialSpringConstants = 2596; % Jackson et al 2016 Table 2
+initialDampingFactors = 10;
+initialSpringRestingLength = 0.05;
+
+[footPosition, markerPositions] = makeFootKinematics(...
+    inputs.bodyModel, inputs.motionFileNames(1), ...
+    inputs.coordinatesOfInterest, inputs.hindfootBodyName, ...
+    inputs.toesCoordinateName, inputs.markerNames);
+
+footVelocity = calcBSplineDerivative(inputs.time, footPosition, 4, 21);
+markerNamesFields = fieldnames(inputs.markerNames);
+for i=1:length(inputs.markerNamesFields)
+markerVelocities.(inputs.markerNamesFields{i}) = ...
+    calcBSplineDerivative(time, markerPositions.(...
+    markerNamesFields{i}), 4, 21);
+end
+
+inputs.model = makeFootModel(inputs.bodyModel, inputs.toesJointName);
+inputs.model = addSpringsToModel(inputs.model, inputs.markerNames, ...
+    inputs.gridWidth, inputs.gridHeight, inputs.hindfootBodyName, ...
+    inputs.toesBodyName, inputs.isLeftFoot);
+inputs.model.print("footModel.osim");
+inputs.model = Model("footModel.osim");
+inputs.numSpringMarkers = findNumSpringMarkers(inputs.model);
+
+inputs.experimentalMarkerPositions = markerPositions;
+inputs.experimentalMarkerVelocities = markerVelocities;
+inputs.experimentalJointPositions = footPosition;
+inputs.experimentalJointVelocities = footVelocity;
+
+inputs.springConstants = initialSpringConstants * ones(1, ...
+    inputs.numSpringMarkers);
+inputs.dampingFactors = initialDampingFactors * ones(1, ...
+    inputs.numSpringMarkers);
+inputs.springRestingLength = initialSpringRestingLength;
+% inputs.rightKinematicCurveCoefficients = []; % 25 x 7 matrix
+% inputs.leftKinematicCurveCoefficients = []; % 25 x 7 matrix
+% inputs.rightFootVerticalPosition = []; % 1 val
+% inputs.leftFootVerticalPosition = []; % 1 val
+inputs.experimentalGroundReactionForcesSlope = calcBSplineDerivative( ...
+    time, inputs.experimentalGroundReactionForces, 2, 25);
+inputs.jointKinematicsBSplines = makeJointKinematicsBSplines(time, 4, 25);
+inputs.bSplineCoefficients = calcInitialDeviationNodes(time, 4, 25, 7);
+inputs.springRestingLength = initialSpringRestingLength;
+inputs.staticFrictionCoefficient = ... 
+    inputs.errorCenters.staticFrictionCoefficient;
+inputs.dynamicFrictionCoefficient = ...
+    inputs.errorCenters.dynamicFrictionCoefficient;
+inputs.viscousFrictionCoefficient = ...
+    inputs.errorCenters.viscousFrictionCoefficient;
 end
