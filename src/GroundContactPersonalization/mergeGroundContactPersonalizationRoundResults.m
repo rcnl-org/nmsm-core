@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% 
 %
-%
-% (Array of double, struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct, Array of double, int in [1, 2, 3]) -> (struct)
+% merge the results of the optimization back into the input values
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,27 +27,41 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGroundReactionCost(values, inputs, params)
-[footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError();
-cost = 2 * footMarkerPositionError;
-cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 10000 * calcKinematicCurveSlopeError()];
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcGroundReactionForceAndSlopeError();
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean()];
-cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
-cost = [cost 100 * calcDampingFactorsErrorFromMean()];
-cost = [cost calcSpringRestingLengthError()];
-cost = [cost calcDampingFactorDeviationFromInitialValueError()];
-cost = [cost calcSpringConstantDeviationFromInitialValueError()];
-cost = [cost calcStaticFrictionDeviationError()];
-cost = [cost calcDynamicFrictionDeviationError()];
-cost = [cost calcViscousFrictionDeviationError()];
-cost = [cost calcStaticToDynamicFrictionDeviationError()];
+function inputs = mergeGroundContactPersonalizationRoundResults(inputs, ...
+    results, stage)
 
-cost = cost / 50;
+if ~any([1 2 3] == stage)
+    error("Stage value is not valid");
+end
+if stage == 1
+    inputs = mergeStageOneResults(inputs, results);
+end
+if stage == 2
+    inputs = mergeStageTwoResults(inputs, results);
+end
+if stage == 3
+    inputs = mergeStageThreeResults(inputs, results);
 end
 
+end
+
+function inputs = mergeStageOneResults(inputs, results)
+index = 1;
+inputs.springConstants = results(index, index + length(inputs.springConstants));
+index = index + length(inputs.springConstants);
+inputs.dampingFactors = results(index, index + length(inputs.dampingFactors));
+index = index + length(inputs.dampingFactors);
+
+
+inputs.restingSpringLength = results(index, index + ...
+    length(reshape(inputs.bSplineCoefficientsVerticalSubset, 1, [])));
+index = index + length()
+end
+
+function inputs = mergeStageTwoResults(inputs, results)
+
+end
+
+function inputs = mergeStageThreeResults(inputs, results)
+
+end

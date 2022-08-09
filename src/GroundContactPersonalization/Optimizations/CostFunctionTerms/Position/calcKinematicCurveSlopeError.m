@@ -2,8 +2,8 @@
 %
 %
 %
-% (Array of double, struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (Array of double, struct, Array of integer) -> (struct)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,13 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcKinematicCurveSlopeError(modeledJointKinematics, ...
-    inputs)
-
-error = abs(abs(diff(inputs.jointKinematics)) - ...
-    abs(modeledJointKinematics));
-if(size(inputs.N, 2) == 5)
-    error = error(:, [2,4:7]);
-end
+function error = calcKinematicCurveSlopeError(inputs, modeledValues, ...
+    curves)
+error = abs(inputs.experimentalJointVelocities(curves, :) - ...
+    modeledValues.jointVelocities(curves, :));
+error = sum(error, "all");
 end
 

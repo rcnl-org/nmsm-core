@@ -27,27 +27,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGroundReactionCost(values, inputs, params)
-[footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError();
-cost = 2 * footMarkerPositionError;
-cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 10000 * calcKinematicCurveSlopeError()];
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcGroundReactionForceAndSlopeError();
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean()];
-cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
-cost = [cost 100 * calcDampingFactorsErrorFromMean()];
-cost = [cost calcSpringRestingLengthError()];
-cost = [cost calcDampingFactorDeviationFromInitialValueError()];
-cost = [cost calcSpringConstantDeviationFromInitialValueError()];
-cost = [cost calcStaticFrictionDeviationError()];
-cost = [cost calcDynamicFrictionDeviationError()];
-cost = [cost calcViscousFrictionDeviationError()];
-cost = [cost calcStaticToDynamicFrictionDeviationError()];
-
-cost = cost / 50;
+function [valueError, slopeError] = ...
+    calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues)
+valueError = abs(inputs.experimentalGroundReactionForces(2, :) - ...
+    modeledValues.verticalGrf);
+slopeError = abs(inputs.experimentalGroundReactionForcesSlope(2, :) - ...
+    calcBSplineDerivative(inputs.time, modeledValues.verticalGrf, 2, 25));
+valueError = sum(valueError, "all");
+slopeError = sum(slopeError, "all");
 end
 
