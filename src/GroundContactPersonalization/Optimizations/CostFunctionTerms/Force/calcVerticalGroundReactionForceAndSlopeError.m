@@ -28,29 +28,12 @@
 % ----------------------------------------------------------------------- %
 
 function [valueError, slopeError] = ...
-    calcGroundReactionForceAndSlopeError(values, experimentalData, params)
-
-yPens = zeros(nframes,nvals);
-normvel = zeros(nframes,nvals);
-for j = 1:nframes
-    for i = 1:nvals
-         ClearanceVars = footcontactoutvecallparams(JointLocRa,JRotR,SPLocR(i,:)',RQDataHF_opt(j,:)',RQDataT_opt(j,1),RQpDataHF_opt(j,:)',RQpDataT_opt(j,1),[0;0;0]);
-        if i <= numhfr     
-            yPens(j,i) = max(-ClearanceVars(2,1),0);
-            normvel(j,i) = -(ClearanceVars(8,1));
-        else     
-            yPens(j,i) = max(-ClearanceVars(13,1),0);
-            normvel(j,i) = -(ClearanceVars(19,1));
-        end
-    end
-end
-
-
-Fy = repmat(Kvals',nframes,1).*yPens.*(1+repmat(cvals',nframes,1).*normvel);
-Fyvals_Calculated = sum(Fy,2);
-valueError = abs(Fyvals - Fyvals_Calculated);
-y_real_diff = diff(Fyvals);
-y_calc_diff = diff(Fyvals_Calculated);
-slopeError = abs(abs(y_real_diff) - abs(y_calc_diff));
+    calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues)
+valueError = abs(inputs.experimentalGroundReactionForces(2, :) - ...
+    modeledValues.verticalGrf);
+valueError = sum(valueError, "all");
+slopeError = abs(inputs.experimentalGroundReactionForcesSlope(2, :) - ...
+    calcBSplineDerivative(inputs.time, modeledValues.verticalGrf, 2, 25));
+slopeError = sum(slopeError, "all");
 end
 

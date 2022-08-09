@@ -37,14 +37,15 @@ numPts = length(time);
 interval = time(2)-time(1);
 [N, Np, ~] = BSplineMatrices(degree,numNodes,numPts,interval);
 
-if length(time)==size(data, 2)
-data = data';
+newData = data;
+if length(time)==size(newData, 2)
+newData = newData';
 end
 
-Nodes = N\data;
+Nodes = N\newData;
 derivative = Np*Nodes;
 
-if length(time)==size(derivative, 1)
+if size(data, 1)~=size(derivative, 1)
 derivative = derivative';
 end
 

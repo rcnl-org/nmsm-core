@@ -27,9 +27,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcKValueFromMeanError(kValues)
+function error = calcDampingFactorsErrorFromMean(dampingFactors)
 
-meanK = sum(kValues)/length(kValues);
-error = (kValues - meanK);
+meanDampingFactor = sum(dampingFactors)/length(dampingFactors);
+error = (dampingFactors - meanDampingFactor);
 end
 

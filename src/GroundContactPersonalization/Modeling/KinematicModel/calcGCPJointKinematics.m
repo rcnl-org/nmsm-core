@@ -35,8 +35,6 @@
 function [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
     experimentalJointPositions, experimentalJointVelocities, ...
     jointKinematicsBSplines, deviationNodes)
-size(deviationNodes)
-size(jointKinematicsBSplines.position)
 fittedPosition = jointKinematicsBSplines.position * deviationNodes;
 fittedVelocity = jointKinematicsBSplines.velocity * deviationNodes;
 

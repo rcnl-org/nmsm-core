@@ -27,10 +27,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcCValueFromMeanError(values, experimentalData, ...
-    params)
-
-meanC = sum(Cvals)/length(Cvals);
-error = (Cvals - meanC);
+function error = calcSpringRestingLengthError(initialSpringLength, ...
+    modeledSpringLength)
+error = ((modeledSpringLength - initialSpringLength)/ ...
+    initialSpringLength)^10;
 end
 

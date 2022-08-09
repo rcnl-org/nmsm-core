@@ -27,12 +27,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcFootDistanceError(values, ...
-    experimentalData, params)
+function error = calcDampingFactorDeviationFromInitialValueError( ...
+    initialDampingFactors, modeledDampingFactors)
 
-for i=1:size(FootError,2)/3
-    FootDistanceError(:,i) = sqrt( FootError(:,i*3-2).^2 + FootError(:,i*3-1).^2 + FootError(:,i*3).^2 )*1000;
-end
-error = (sum((FootDistanceError).^2,1)./size(FootDistanceError,1)).^(.5); 
+error = ((modeledDampingFactors - initialDampingFactors)./initialDampingFactors).^10;
 end
 
