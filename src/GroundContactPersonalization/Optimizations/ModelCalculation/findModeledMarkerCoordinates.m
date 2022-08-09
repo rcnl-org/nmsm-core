@@ -1,9 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function updates the given modeledMarkerPositions argument with the
+% marker positions included in markerNames. The modeledMarkerPositions
+% struct and markerNames need to match to facilitate this function.
 %
-%
-% (Array of double, struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (Model, State, struct, struct, integer) => (double)
+% Records the coordinates of the markerNames for the given state
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,27 +29,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGroundReactionCost(values, inputs, params)
-[footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError();
-cost = 2 * footMarkerPositionError;
-cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 10000 * calcKinematicCurveSlopeError()];
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcGroundReactionForceAndSlopeError();
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean()];
-cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
-cost = [cost 100 * calcDampingFactorsErrorFromMean()];
-cost = [cost calcSpringRestingLengthError()];
-cost = [cost calcDampingFactorDeviationFromInitialValueError()];
-cost = [cost calcSpringConstantDeviationFromInitialValueError()];
-cost = [cost calcStaticFrictionDeviationError()];
-cost = [cost calcDynamicFrictionDeviationError()];
-cost = [cost calcViscousFrictionDeviationError()];
-cost = [cost calcStaticToDynamicFrictionDeviationError()];
-
-cost = cost / 50;
+function [modeledMarkerPositions, modeledMarkerVelocities] = findModeledMarkerCoordinates(model, ...
+    state, modeledMarkerPositions, modeledMarkerVelocities, ...
+    markerNames, index)
+markerNamesFields = fieldnames(markerNames);
+for j=1:size(markerNamesFields)
+    modeledMarkerPositions.(markerNamesFields{j})(index, :) = model. ...
+        getMarkerSet().get(markerNames.(markerNamesFields{j})). ...
+        getLocationInGround(state).getAsMat()';
+    modeledMarkerVelocities.(markerNamesFields{j})(index, :) = model. ...
+        getMarkerSet().get(markerNames.(markerNamesFields{j})). ...
+        getVelocityInGround(state).getAsMat()';
 end
+end
+
 
