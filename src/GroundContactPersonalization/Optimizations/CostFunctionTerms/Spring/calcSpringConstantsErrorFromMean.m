@@ -27,11 +27,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcCDeviationFromInitialValueError(values, params)
-errorCenter = valueOrAlternate(params, ...
-    "cValuesErrorCenter", 2);
-maxAllowableError = valueOrAlternate(params, ...
-    "cValuesMaxAllowableError", 1);
-error = calcWallError(values, errorCenter, maxAllowableError, 10);
+function error = calcSpringConstantsErrorFromMean(springConstants)
+
+meanSpringConstant = sum(springConstants)/length(springConstants);
+error = (springConstants - meanSpringConstant);
 end
 

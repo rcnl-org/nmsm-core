@@ -27,9 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcKDeviationFromInitialValueError(values, ...
-    experimentalData, params)
+function error = calcSpringConstantDeviationFromInitialValueError(initialSpringConstants, modeledSpringConstants)
 
-error = ((Kvals - 5e3)./5e3).^10;
+error = ((modeledSpringConstants - initialSpringConstants)./initialSpringConstants).^10;
 end
 
