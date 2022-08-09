@@ -31,9 +31,9 @@ function [valueError, slopeError] = ...
     calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues)
 valueError = abs(inputs.experimentalGroundReactionForces(2, :) - ...
     modeledValues.verticalGrf);
-valueError = sum(valueError, "all");
 slopeError = abs(inputs.experimentalGroundReactionForcesSlope(2, :) - ...
     calcBSplineDerivative(inputs.time, modeledValues.verticalGrf, 2, 25));
+valueError = sum(valueError, "all");
 slopeError = sum(slopeError, "all");
 end
 
