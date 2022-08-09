@@ -81,7 +81,7 @@ cost = [cost 1 / 100 * calcSpringConstantsErrorFromMean(valuesStruct.springConst
 cost = [cost 100 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
 cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)];
 cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)];
-cost = [cost calcSpringRestingLengthError(inputs.restingSpringLength, valuesStruct.restingSpringLength)];
+cost = [cost calcSpringRestingLengthError(inputs.initialRestingSpringLength, valuesStruct.restingSpringLength)];
 cost = cost / 10;
 end
 
