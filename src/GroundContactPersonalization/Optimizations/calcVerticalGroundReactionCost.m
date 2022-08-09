@@ -32,66 +32,56 @@
 
 function cost = calcVerticalGroundReactionCost(values, fieldNameOrder, ...
     inputs, params)
-modeledJointKinematics = calcGCPJointKinematics( ...
-    inputs.experimentalJointKinematics, inputs.jointKinematicsBSplines, ...
-    findValuesByFieldName(values, inputs, "bSplineCoefficients", ...
-    fieldNameOrder));
-[model, state] = Model(inputs.model);
-cost = 0;
-for i=1:length(modeledJointKinematics.position)
-    temp.position = modeledJointKinematics.position(i, :);
-    temp.velocity = modeledJointKinematics.velocity(i, :);
-    temp.acceleration = modeledJointKinematics.acceleration(i, :);
-    makeGCPState(model, state, temp, inputs.coordinateColumns)
-    cost = cost + calcStateCost()
-end
-modelMarkerPositions = calcMarkerPositions();
-modelSpringKinematics = calcSpringKinematics();
-modelGroundReactForces = calcGroundReactionForce();
-modelCenterOfPressure = calcCenterOfPressure();
-modelFreeMoment = calcFreeMoment();
+valuesStruct = unpackValues(values, inputs, fieldNameOrder);
+bSplineCoefficients = makeFullBSplineSet( ...
+    valuesStruct.bSplineCoefficientsVerticalSubset, ...
+    inputs.bSplineCoefficients);
+[modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
+    inputs.experimentalJointPositions, ...
+    inputs.experimentalJointVelocities, inputs.jointKinematicsBSplines, ...
+    bSplineCoefficients);
+modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
+    modeledJointPositions, modeledJointVelocities, [1, 1, 0, 0]);
+modeledValues.jointPositions = modeledJointPositions;
+modeledValues.jointVelocities = modeledJointVelocities;
 
-cost = calculateCost(modeledJointKinematics)
+cost = calcCost(inputs, modeledValues, valuesStruct);
 
 end
 
-function calculateCost(modeledJointKinematics, values, fieldNameOrder, inputs, params)
+function valuesStruct = unpackValues(values, inputs, fieldNameOrder)
+valuesStruct = struct();
+start = 1;
+for i=1:length(fieldNameOrder)
+    valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
+        numel(inputs.(fieldNameOrder(i))) - 1);
+    start = start + numel(inputs.(fieldNameOrder(i)));
+end
+end
+
+function bSplineCoefficients = makeFullBSplineSet( ...
+    valuesBSplineCoefficientsSubset, inputBSplineCoefficients)
+bSplineCoefficients = inputBSplineCoefficients;
+bSplineCoefficients(:, [1, 3, 5:7]) = reshape( ...
+    valuesBSplineCoefficientsSubset, ...
+    size(inputBSplineCoefficients, 1), []);
+end
+
+function cost = calcCost(inputs, modeledValues, valuesStruct)
 [footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError(modeledJointKinematics, inputs);
+    calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
 cost = 2 * footMarkerPositionError;
 cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 1000 * calcKinematicCurveSlopeError(modeledJointKinematics, inputs)];
+cost = [cost 1000 * calcKinematicCurveSlopeError(inputs, modeledValues, [1, 3, 5:7])];
 [groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcGroundReactionForceAndSlopeError();
+    calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues);
 cost = [cost groundReactionForceValueError];
 cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 100 * calcKValueFromMeanError()];
-cost = [cost 100 * calcCValueFromMeanError()];
-cost = [cost calcCDeviationFromInitialValueError()];
-cost = [cost calcKDeviationFromInitialValueError()];
-cost = [cost calcFootDistanceError()];
+cost = [cost 1 / 100 * calcSpringConstantsErrorFromMean(valuesStruct.springConstants)];
+cost = [cost 100 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
+cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)];
+cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)];
+cost = [cost calcSpringRestingLengthError(inputs.initialRestingSpringLength, valuesStruct.restingSpringLength)];
 cost = cost / 10;
 end
 
-function modeledJointKinematics = makeModeledJointKinematics(N, ...
-    bSplineCoefficients, experimentalJointKinematics)
-qs = N*bSplineCoefficients;
-modeledJointKinematics = experimentalJointKinematics;
-
-if(size(qs, 2) == 5)
-    modeledJointKinematics(:, 2) = modeledJointKinematics(:, 2) + qs(:, 1);
-    modeledJointKinematics(:, 4:7) = modeledJointKinematics(:, 4:7) + qs(:, 2:5);
-else
-    modeledJointKinematics = modeledJointKinematics + qs;
-end
-end
-
-function newValues = findValuesByFieldName(values, inputs, fieldName, ...
-    fieldNameOrder)
-start = 1;
-for i = 1:find(strcmp(fieldName, fieldNameOrder))-1
-    start = start + numel(inputs.(fieldNameOrder(i)));
-end
-newValues = values(start:start + numel(inputs.(fieldName)) - 1)
-length(newValues)
-end

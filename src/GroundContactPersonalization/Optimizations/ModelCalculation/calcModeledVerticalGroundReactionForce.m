@@ -1,9 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function uses Equation 1 from Jackson et al 2016 to calculate the
+% modeled vertical GRF force as the summation of the forces applied by each
+% individual spring
 %
-%
-% (Array of double, struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (Model, State, Array of double, Array of double, double) => (double)
+% Returns the sum of the modeled vertical GRF forces at the given state
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,27 +29,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGroundReactionCost(values, inputs, params)
-[footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError();
-cost = 2 * footMarkerPositionError;
-cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 10000 * calcKinematicCurveSlopeError()];
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcGroundReactionForceAndSlopeError();
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean()];
-cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
-cost = [cost 100 * calcDampingFactorsErrorFromMean()];
-cost = [cost calcSpringRestingLengthError()];
-cost = [cost calcDampingFactorDeviationFromInitialValueError()];
-cost = [cost calcSpringConstantDeviationFromInitialValueError()];
-cost = [cost calcStaticFrictionDeviationError()];
-cost = [cost calcDynamicFrictionDeviationError()];
-cost = [cost calcViscousFrictionDeviationError()];
-cost = [cost calcStaticToDynamicFrictionDeviationError()];
-
-cost = cost / 50;
+function modeledVerticalGrf = calcModeledVerticalGroundReactionForce( ...
+    model, state, springConstants, dampingFactors, springRestingLength)
+modeledVerticalGrf = 0;
+for i=1:length(springConstants)
+    height = model.getMarkerSet().get("spring_marker_" + ...
+        num2str(i)).getLocationInGround(state).get(1);
+    verticalVelocity = model.getMarkerSet().get("spring_marker_" + ...
+        num2str(i)).getVelocityInGround(state).get(1);
+    if (height-springRestingLength)>0
+        modeledVerticalGrf = 0;
+    else
+        modeledVerticalGrf = modeledVerticalGrf + (springConstants(i) * ...
+            (height-springRestingLength) * (1 + dampingFactors(i) * ...
+            verticalVelocity)); % Equation 1 from Jackson et al, 2016
+    end
 end
-
+end
