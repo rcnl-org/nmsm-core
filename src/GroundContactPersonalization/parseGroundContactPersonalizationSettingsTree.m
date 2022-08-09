@@ -41,36 +41,48 @@ function inputs = getInputs(tree)
 import org.opensim.modeling.*
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
+motionFile = getFieldByNameOrError(tree, 'input_motion_file').Text;
+grfFile = getFieldByNameOrError(tree, 'input_grf_file').Text;
 if(~isempty(inputDirectory))
     try
-        inputs.bodyModel = fullfile(inputDirectory, modelFile);
+        inputs.bodyModel = Model(fullfile(inputDirectory, modelFile));
+        inputs.motionFileName = fullfile(inputDirectory, motionFile);
+        inputs.grfFileName = fullfile(inputDirectory, grfFile);
     catch
-        inputs.bodyModel = fullfile(pwd, inputDirectory, modelFile);
+        inputs.bodyModel = Model(fullfile(pwd, inputDirectory, modelFile));
+        inputs.motionFileName = fullfile(pwd, inputDirectory, motionFile);
+        inputs.grfFileName = fullfile(pwd, inputDirectory, grfFile);
         inputDirectory = fullfile(pwd, inputDirectory);
     end
 else
-    inputs.bodyModel = fullfile(pwd, modelFile);
+    inputs.bodyModel = Model(fullfile(pwd, modelFile));
+    inputs.motionFileName = fullfile(pwd, motionFile);
+    inputs.grfFileName = fullfile(pwd, grfFile);
     inputDirectory = pwd;
 end
-prefixes = getPrefixes(tree, inputDirectory);
-inputs.isLeftFoot = strcmpi(getFieldByNameOrError(tree, ...
-    'is_left_foot').Text, 'true');
-inputs.motionFileNames = findFileListFromPrefixList(...
-    fullfile(inputDirectory, "IKData"), prefixes);
-inputs.time = parseTimeColumn(inputs.motionFileNames);
-verifyTime(inputs.time, parseTimeColumn(findFileListFromPrefixList(...
-    fullfile(inputDirectory, "GRFData"), prefixes)));
-inputs.experimentalJointKinematics = parseGcpStandard(inputs.bodyModel, ...
-    inputs.motionFileNames);
-[grfLeft, grfRight] = getGrf(findFileListFromPrefixList(...
-    fullfile(inputDirectory, "GRFData"), prefixes));
-if (isLeftFoot)
-    inputs.experimentalGroundReactionForces = grfLeft;
-else
-    inputs.experimentalGroundReactionForces = grfRight;
+inputs.numberCycles = getFieldByNameOrError(tree, 'number_of_cycles');
+inputs.nodesPerCycle = getFieldByNameOrError(tree, 'nodes_per_cycle');
+rightTree = getFieldByNameOrError(tree, 'RightFootPersonalization');
+leftTree = getFieldByNameOrError(tree, 'LeftFootPersonalization');
+inputs.right.isEnabled = strcmpi(getFieldByNameOrError(rightTree, ...
+    'is_enabled').Text, 'true');
+inputs.left.isEnabled = strcmpi(getFieldByNameOrError(leftTree, ...
+    'is_enabled').Text, 'true');
+[ik.columnNames, ik.time, ik.data] = parseMotToComponents(...
+    inputs.bodyModel, Storage(inputs.grfFileName));
+[~, grfTime, ~] = parseMotToComponents(...
+    inputs.bodyModel, Storage(inputs.grfFileName));
+verifyTime(ik.time, grfTime);
+[inputs.left.experimentalGroundReactionForces, ...
+    inputs.right.experimentalGroundReactionForces] = getGrf(...
+    inputs.bodyModel, inputs.grfFileName);
+
+if inputs.right.isEnabled
+    inputs.right = getInputsForSide(inputs.right, rightTree, ik);
 end
-inputs.toesCoordinateName = getFieldByNameOrError(tree, ...
-    'toe_coordinate').Text;
+if inputs.left.isEnabled
+    inputs.left = getInputsForSide(inputs.left, leftTree, ik);
+end
 inputs.errorCenters.markerDistanceError = getFieldByNameOrError(tree, ...
     'marker_distance_error');
 inputs.errorCenters.staticFrictionCoefficient = getFieldByNameOrError(...
@@ -81,59 +93,54 @@ inputs.errorCenters.viscousFrictionCoefficient = getFieldByNameOrError(...
     tree, 'viscous_friction_coefficient');
 end
 
-% (struct) -> (Array of string)
-function prefixes = getPrefixes(tree, inputDirectory)
-prefixField = getFieldByName(tree, 'trial_prefixes');
-if(length(prefixField.Text) > 0)
-    prefixes = strsplit(prefixField.Text, ' ');
-else
-    files = dir(fullfile(inputDirectory, "IKData"));
-    prefixes = string([]);
-    for i=1:length(files)
-        if(~files(i).isdir)
-            prefixes(end+1) = files(i).name(1:end-4);
+% (Model, string) -> (Array of double, Array of double)
+function [grfLeft, grfRight] = getGrf(bodyModel, grfFile)
+import org.opensim.modeling.Storage
+storage = Storage(grfFile);
+[grfColumnNames, ~, grfData] = parseMotToComponents(bodyModel, ...
+    Storage(grfFileName));
+grfLeft = NaN(3, storage.getSize());
+grfRight = NaN(3, storage.getSize());
+for i=1:size(grfColumnNames)
+    label = grfColumnNames(i);
+    if contains(label, 'F')
+        if contains(label, '1') && contains(label, 'x')
+            grfLeft(1, :) = grfData(i, :);
+        end
+        if contains(label, '1') && contains(label, 'y')
+            grfLeft(2, :) = grfData(i, :);
+        end
+        if contains(label, '1') && contains(label, 'z')
+            grfLeft(3, :) = grfData(i, :);
+        end
+        if contains(label, '2') && contains(label, 'x')
+            grfRight(1, :) = grfData(i, :);
+        end
+        if contains(label, '2') && contains(label, 'y')
+            grfRight(2, :) = grfData(i, :);
+        end
+        if contains(label, '2') && contains(label, 'z')
+            grfRight(3, :) = grfData(i, :);
         end
     end
+end
+if any(isnan(grfLeft)) || any(isnan(grfRight))
+    throw(MException('', ['Unable to parse GRF file, check that ' ...
+        'all necessary column labels are present']))
 end
 end
 
-% (Array of string) -> (Array of double, Array of double)
-function [grf1, grf2] = getGrf(files)
-import org.opensim.modeling.Storage
-for file=1:length(files)
-    currentStorage = Storage(files(file));
-    colLabels = currentStorage.getColumnLabels();
-    fullGrfFile = storageToDoubleMatrix(currentStorage);
-    grf1 = NaN(length(files), 3, currentStorage.getSize());
-    grf2 = NaN(length(files), 3, currentStorage.getSize());
-    for i=1:colLabels.size()-1
-        label = char(colLabels.get(i));
-        if contains(label, 'F')
-            if contains(label, '1') && contains(label, 'x')
-                grf1(file, 1, :) = fullGrfFile(i, :);
-            end
-            if contains(label, '1') && contains(label, 'y')
-                grf1(file, 2, :) = fullGrfFile(i, :);
-            end
-            if contains(label, '1') && contains(label, 'z')
-                grf1(file, 3, :) = fullGrfFile(i, :);
-            end
-            if contains(label, '2') && contains(label, 'x')
-                grf2(file, 1, :) = fullGrfFile(i, :);
-            end
-            if contains(label, '2') && contains(label, 'y')
-                grf2(file, 2, :) = fullGrfFile(i, :);
-            end
-            if contains(label, '2') && contains(label, 'z')
-                grf2(file, 3, :) = fullGrfFile(i, :);
-            end
-        end
-    end
-    if any(isnan(grf1)) || any(isnan(grf2))
-        throw(MException('', ['Unable to parse GRF file, check that ' ...
-            'all necessary column labels are present']))
-    end
-end
+% (struct, struct, struct) -> (struct)
+function inputs = getInputsForSide(inputs, tree, ik)
+    inputs.toesCoordinateName = getFieldByNameOrError(tree, ...
+        'toe_coordinate').Text;
+    inputs.startTime = getFieldByNameOrError(tree, 'start_time');
+    inputs.endTime = getFieldByNameOrError(tree, 'end_time');
+    startIndex = find(ik.time >= inputs.startTime, 1, 'first');
+    endIndex = find(ik.time <= inputs.endTime, 1, 'last');
+    inputs.time = ik.time(startIndex:endIndex);
+    inputs.motion = ik.data(:, startIndex:endIndex);
+    inputs.grf = inputs.grf(:, startIndex:endIndex);
 end
 
 % (Array of double, Array of double) -> (None)
