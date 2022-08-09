@@ -30,16 +30,18 @@
 function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
 [initialValues, fieldNameOrder, inputs] = makeInitialValues(inputs, ...
     params);
-calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params);
-% results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
-%     fieldNameOrder, inputs, params), initialValues);
-% inputs = mergeResults(inputs, results);
+optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
+% calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params);
+results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
+    fieldNameOrder, inputs, params), initialValues, [], [], optimizerOptions);
+inputs = mergeGroundContactPersonalizationRoundResults(inputs, results);
 end
 
 % (struct, struct) -> (Array of double)
 % generate initial values to be optimized from inputs, params
 function [initialValues, fieldNameOrder, inputs] = makeInitialValues( ...
     inputs, params)
+inputs.initialRestingSpringLength = inputs.restingSpringLength;
 inputs.bSplineCoefficientsVerticalSubset = ...
     inputs.bSplineCoefficients(:, [1, 3, 5:7]);
 initialValues = [inputs.springConstants inputs.dampingFactors];
@@ -50,14 +52,19 @@ fieldNameOrder = ["springConstants", "dampingFactors", ...
     "bSplineCoefficientsVerticalSubset", "restingSpringLength"];
 end
 
-% (struct, Array of double) -> (struct)
-% merge the results of the optimization back into the input values
-function inputs = mergeResults(inputs, results)
-index = 1;
-inputs.springConstants = results(index, index + length(inputs.springConstants));
-index = index + length(inputs.springConstants);
-inputs.dampingFactors = results(index, index + length(inputs.dampingFactors));
-index = index + length(inputs.dampingFactors);
-
+% (struct) -> (struct)
+% Prepare params for outer optimizer for Kinematic Calibration
+function output = prepareOptimizerOptions(params)
+output = optimoptions('lsqnonlin', 'UseParallel', true);
+output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
+output.OptimalityTolerance = valueOrAlternate(params, ...
+    'optimalityTolerance', 1e-6);
+output.FunctionTolerance = valueOrAlternate(params, ...
+    'functionTolerance', 1e-6);
+output.StepTolerance = valueOrAlternate(params, ...
+    'stepTolerance', 1e-6);
+output.MaxFunctionEvaluations = valueOrAlternate(params, ...
+    'maxFunctionEvaluations', 3e3);
+output.Display = valueOrAlternate(params, ...
+    'display','iter');
 end
-
