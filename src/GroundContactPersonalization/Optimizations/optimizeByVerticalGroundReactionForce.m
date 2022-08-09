@@ -30,7 +30,7 @@
 function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
 [initialValues, fieldNameOrder, inputs] = makeInitialValues(inputs, ...
     params);
-calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params)
+calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params);
 % results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
 %     fieldNameOrder, inputs, params), initialValues);
 % inputs = mergeResults(inputs, results);
@@ -45,9 +45,9 @@ inputs.bSplineCoefficientsVerticalSubset = ...
 initialValues = [inputs.springConstants inputs.dampingFactors];
 initialValues = [initialValues ...
     reshape(inputs.bSplineCoefficientsVerticalSubset, 1, [])];
-initialValues = [initialValues inputs.springRestingLength];
+initialValues = [initialValues inputs.restingSpringLength];
 fieldNameOrder = ["springConstants", "dampingFactors", ...
-    "bSplineCoefficientsVerticalSubset", "springRestingLength"];
+    "bSplineCoefficientsVerticalSubset", "restingSpringLength"];
 end
 
 % (struct, Array of double) -> (struct)
