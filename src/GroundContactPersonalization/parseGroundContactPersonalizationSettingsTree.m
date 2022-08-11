@@ -60,8 +60,10 @@ else
     inputs.grfFileName = fullfile(pwd, grfFile);
     inputDirectory = pwd;
 end
-inputs.numberCycles = getFieldByNameOrError(tree, 'number_of_cycles');
-inputs.nodesPerCycle = getFieldByNameOrError(tree, 'nodes_per_cycle');
+inputs.numberCycles = str2double(getFieldByNameOrError(tree, ...
+    'number_of_cycles').Text);
+inputs.nodesPerCycle = str2double(getFieldByNameOrError(tree, ...
+    'nodes_per_cycle').Text);
 rightTree = getFieldByNameOrError(tree, 'RightFootPersonalization');
 leftTree = getFieldByNameOrError(tree, 'LeftFootPersonalization');
 inputs.right.isEnabled = strcmpi(getFieldByNameOrError(rightTree, ...
@@ -83,14 +85,14 @@ end
 if inputs.left.isEnabled
     inputs.left = getInputsForSide(inputs.left, leftTree, ik);
 end
-inputs.errorCenters.markerDistanceError = getFieldByNameOrError(tree, ...
-    'marker_distance_error');
-inputs.errorCenters.staticFrictionCoefficient = getFieldByNameOrError(...
-    tree, 'static_friction_coefficient');
-inputs.errorCenters.dynamicFrictionCoefficient = getFieldByNameOrError(...
-    tree, 'dynamic_friction_coefficient');
-inputs.errorCenters.viscousFrictionCoefficient = getFieldByNameOrError(...
-    tree, 'viscous_friction_coefficient');
+inputs.errorCenters.markerDistanceError = str2double(getFieldByNameOrError(tree, ...
+    'marker_distance_error').Text);
+inputs.errorCenters.staticFrictionCoefficient = str2double(getFieldByNameOrError(...
+    tree, 'static_friction_coefficient').Text);
+inputs.errorCenters.dynamicFrictionCoefficient = str2double(getFieldByNameOrError(...
+    tree, 'dynamic_friction_coefficient').Text);
+inputs.errorCenters.viscousFrictionCoefficient = str2double(getFieldByNameOrError(...
+    tree, 'viscous_friction_coefficient').Text);
 end
 
 % (Model, string) -> (Array of double, Array of double)
@@ -98,10 +100,10 @@ function [grfLeft, grfRight] = getGrf(bodyModel, grfFile)
 import org.opensim.modeling.Storage
 storage = Storage(grfFile);
 [grfColumnNames, ~, grfData] = parseMotToComponents(bodyModel, ...
-    Storage(grfFileName));
+    Storage(grfFile));
 grfLeft = NaN(3, storage.getSize());
 grfRight = NaN(3, storage.getSize());
-for i=1:size(grfColumnNames)
+for i=1:size(grfColumnNames')
     label = grfColumnNames(i);
     if contains(label, 'F')
         if contains(label, '1') && contains(label, 'x')
@@ -124,7 +126,7 @@ for i=1:size(grfColumnNames)
         end
     end
 end
-if any(isnan(grfLeft)) || any(isnan(grfRight))
+if any([isnan(grfLeft) isnan(grfRight)])
     throw(MException('', ['Unable to parse GRF file, check that ' ...
         'all necessary column labels are present']))
 end
@@ -134,13 +136,16 @@ end
 function inputs = getInputsForSide(inputs, tree, ik)
     inputs.toesCoordinateName = getFieldByNameOrError(tree, ...
         'toe_coordinate').Text;
-    inputs.startTime = getFieldByNameOrError(tree, 'start_time');
-    inputs.endTime = getFieldByNameOrError(tree, 'end_time');
+    inputs.startTime = str2double(getFieldByNameOrError(tree, ...
+        'start_time').Text);
+    inputs.endTime = str2double(getFieldByNameOrError(tree, ...
+        'end_time').Text);
     startIndex = find(ik.time >= inputs.startTime, 1, 'first');
     endIndex = find(ik.time <= inputs.endTime, 1, 'last');
     inputs.time = ik.time(startIndex:endIndex);
     inputs.motion = ik.data(:, startIndex:endIndex);
-    inputs.grf = inputs.grf(:, startIndex:endIndex);
+    inputs.experimentalGroundReactionForces = ...
+        inputs.experimentalGroundReactionForces(:, startIndex:endIndex);
 end
 
 % (Array of double, Array of double) -> (None)
