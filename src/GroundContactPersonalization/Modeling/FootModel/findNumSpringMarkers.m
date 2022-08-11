@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function returns the number of markers that have "spring_marker_"
+% prefix in their name.
 %
-%
-% (Array of double, struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (Model) -> (int)
+% Find the number of "spring_marker_" prefix markers are in the model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,27 +28,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGroundReactionCost(values, inputs, params)
-[footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError();
-cost = 2 * footMarkerPositionError;
-cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 10000 * calcKinematicCurveSlopeError()];
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcGroundReactionForceAndSlopeError();
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean()];
-cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
-cost = [cost 100 * calcDampingFactorsErrorFromMean()];
-cost = [cost calcSpringRestingLengthError()];
-cost = [cost calcDampingFactorDeviationFromInitialValueError()];
-cost = [cost calcSpringConstantDeviationFromInitialValueError()];
-cost = [cost calcStaticFrictionDeviationError()];
-cost = [cost calcDynamicFrictionDeviationError()];
-cost = [cost calcViscousFrictionDeviationError()];
-cost = [cost calcStaticToDynamicFrictionDeviationError()];
-
-cost = cost / 50;
+function counter = findNumSpringMarkers(model)
+model = Model(model);
+counter = 0;
+for i=0:model.getMarkerSet().getSize()-1
+    if contains(model.getMarkerSet().get(i).getName().toCharArray', ...
+            "spring_marker_")
+        counter = counter + 1;
+    end
+end
 end
 
