@@ -30,6 +30,7 @@
 function error = calcDampingFactorDeviationFromInitialValueError( ...
     initialDampingFactors, modeledDampingFactors)
 
-error = ((modeledDampingFactors - initialDampingFactors)./initialDampingFactors).^10;
+error = ((modeledDampingFactors - initialDampingFactors) ./ ...
+    initialDampingFactors).^10;
 end
 
