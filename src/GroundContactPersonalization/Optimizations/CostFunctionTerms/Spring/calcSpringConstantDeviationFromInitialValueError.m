@@ -29,6 +29,7 @@
 
 function error = calcSpringConstantDeviationFromInitialValueError(initialSpringConstants, modeledSpringConstants)
 
-error = ((modeledSpringConstants - initialSpringConstants)./initialSpringConstants).^10;
+error = ((modeledSpringConstants - initialSpringConstants) ./ ...
+    initialSpringConstants).^10;
 end
 
