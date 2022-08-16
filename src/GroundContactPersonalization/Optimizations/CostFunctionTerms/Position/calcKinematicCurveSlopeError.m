@@ -31,6 +31,6 @@ function error = calcKinematicCurveSlopeError(inputs, modeledValues, ...
     curves)
 error = abs(inputs.experimentalJointVelocities(curves, :) - ...
     modeledValues.jointVelocities(curves, :));
-error = sum(error, "all");
+error = sum(error, 2)';
 end
 

@@ -33,7 +33,7 @@ valueError = abs(inputs.experimentalGroundReactionForces(2, :) - ...
     modeledValues.verticalGrf);
 slopeError = abs(inputs.experimentalGroundReactionForcesSlope(2, :) - ...
     calcBSplineDerivative(inputs.time, modeledValues.verticalGrf, 2, 25));
-valueError = sum(valueError, "all");
-slopeError = sum(slopeError, "all");
+valueError = sum(valueError, 2);
+slopeError = sum(slopeError, 2);
 end
 
