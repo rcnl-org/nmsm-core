@@ -2,7 +2,7 @@
 %
 %
 %
-% (struct, struct) -> (double, double)
+% (struct, struct) -> (Array of double, Array of double)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams, Claire V. Hammond                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,13 +27,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [valueError, slopeError] = ...
-    calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues)
-valueError = abs(inputs.experimentalGroundReactionForces(2, :) - ...
-    modeledValues.verticalGrf);
-slopeError = abs(inputs.experimentalGroundReactionForcesSlope(2, :) - ...
-    calcBSplineDerivative(inputs.time, modeledValues.verticalGrf, 2, 25));
-valueError = sum(valueError, "all");
-slopeError = sum(slopeError, "all");
+function [valueErrors, slopeErrors] = ...
+    calcGroundReactionForceAndSlopeError(inputs, modeledValues)
+valueErrors(1) = sum(abs(inputs.experimentalGroundReactionForces(1, :) -...
+    modeledValues.horizontalGrf(1, :)), "all");
+slopeErrors(1) = sum(abs(inputs.experimentalGroundReactionForcesSlope(...
+    1, :) - calcBSplineDerivative(inputs.time, ...
+    modeledValues.horizontalGrf(1, :), 2, 25)), "all");
+valueErrors(2) = sum(abs(inputs.experimentalGroundReactionForces(2, :) -...
+    modeledValues.verticalGrf), "all");
+slopeErrors(2) = sum(abs(inputs.experimentalGroundReactionForcesSlope(...
+    2, :) - calcBSplineDerivative(inputs.time, ...
+    modeledValues.verticalGrf, 2, 25)), "all");
+valueErrors(3) = sum(abs(inputs.experimentalGroundReactionForces(3, :) -...
+    modeledValues.horizontalGrf(2, :)), "all");
+slopeErrors(3) = sum(abs(inputs.experimentalGroundReactionForcesSlope(...
+    3, :) - calcBSplineDerivative(inputs.time, ...
+    modeledValues.horizontalGrf(2, :), 2, 25)), "all");
 end
 

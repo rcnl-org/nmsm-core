@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,27 +27,69 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGroundReactionCost(values, inputs, params)
+function cost = calcGroundReactionCost(values, fieldNameOrder, inputs, ...
+    params)
+valuesStruct = unpackValues(values, inputs, fieldNameOrder);
+[modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
+    inputs.experimentalJointPositions, ...
+    inputs.experimentalJointVelocities, inputs.jointKinematicsBSplines, ...
+    inputs.bSplineCoefficients);
+modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
+    modeledJointPositions, modeledJointVelocities, [1, 1, 1, 0]);
+modeledValues.jointPositions = modeledJointPositions;
+modeledValues.jointVelocities = modeledJointVelocities;
+
+cost = calcCost(inputs, modeledValues, valuesStruct);
+end
+
+function valuesStruct = unpackValues(values, inputs, fieldNameOrder)
+valuesStruct = struct();
+start = 1;
+for i=1:length(fieldNameOrder)
+    valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
+        numel(inputs.(fieldNameOrder(i))) - 1);
+    start = start + numel(inputs.(fieldNameOrder(i)));
+end
+end
+
+function cost = calcCost(inputs, modeledValues, valuesStruct)
 [footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError();
-cost = 2 * footMarkerPositionError;
+    calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
+cost = footMarkerPositionError;
 cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 10000 * calcKinematicCurveSlopeError()];
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcGroundReactionForceAndSlopeError();
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean()];
-cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
-cost = [cost 100 * calcDampingFactorsErrorFromMean()];
-cost = [cost calcSpringRestingLengthError()];
-cost = [cost calcDampingFactorDeviationFromInitialValueError()];
-cost = [cost calcSpringConstantDeviationFromInitialValueError()];
-cost = [cost calcStaticFrictionDeviationError()];
-cost = [cost calcDynamicFrictionDeviationError()];
-cost = [cost calcViscousFrictionDeviationError()];
-cost = [cost calcStaticToDynamicFrictionDeviationError()];
+cost = [cost 10000 * calcKinematicCurveSlopeError(inputs, ...
+    modeledValues, [1:7])];
+[groundReactionForceValueErrors, groundReactionForceSlopeErrors] = ...
+    calcGroundReactionForceAndSlopeError(inputs, modeledValues);
+if inputs.isLeftFoot
+    cost = [cost 5 * groundReactionForceValueErrors(1)]; % are the different L/R weights useful here?
+    cost = [cost 5 * groundReactionForceValueErrors(2)];
+    cost = [cost 5 * groundReactionForceValueErrors(3)];
+else
+    cost = [cost 3 * groundReactionForceValueErrors(1)];
+    cost = [cost 2 * groundReactionForceValueErrors(2)];
+    cost = [cost 2 * groundReactionForceValueErrors(3)];
+end
+cost = [cost 1 / 3 * groundReactionForceSlopeErrors(1)];
+cost = [cost 1 / 5 * groundReactionForceSlopeErrors(2)];
+cost = [cost 2 * groundReactionForceSlopeErrors(3)];
+cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean(...
+    valuesStruct.springConstants)];
+cost = [cost 1 / 100 * abs(inputs.springConstants - ...
+    valuesStruct.springConstants)]; % K_err?
+cost = [cost 100 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
+cost = [cost calcSpringRestingLengthError()]; % replace with marker distance errors
+cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)]; % should denominator change between stages?
+cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)]; % ^^^
+cost = [cost calcStaticFrictionDeviationError(...
+    valuesStruct.staticFrictionCoefficient, params)];
+cost = [cost calcDynamicFrictionDeviationError(...
+    valuesStruct.dynamicFrictionCoefficient, params)];
+cost = [cost calcViscousFrictionDeviationError(... % 38 values?
+    valuesStruct.viscousFrictionCoefficient, params)];
+cost = [cost calcStaticToDynamicFrictionDeviationError(...
+    valuesStruct.staticFrictionCoefficient, ...
+    valuesStruct.dynamicFrictionCoefficient)];
 
 cost = cost / 50;
 end
-
