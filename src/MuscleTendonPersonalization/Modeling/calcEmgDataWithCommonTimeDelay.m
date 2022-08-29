@@ -1,12 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function evaluates the EMG signal from a Spline when there is only
-% one electromechanical time delay
+% This function takes a 2D array (time) containing the time data for each
+% (trial, time point), a 2D Cell Array of pp splines (spline(x,y)) of time
+% and emg data, and a number for the time delay across all muscles.
+% It applies the time delay to the spline and returns the new segment of
+% emg data for each unique trial and muscle combination.
 %
-% EMG - 3D matrix of (numFrames, numMuscle, numTrials)
-%
-% (Array of number, cell, number) -> (3D matrix)
-% returns the EMG signal
+% (2D Array of number, 2D Cell Array of pp, number) -> (3D Array of number)
+% returns new emg data after applying the same time delay to all muscles
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +17,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond, Spencer Williams            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
