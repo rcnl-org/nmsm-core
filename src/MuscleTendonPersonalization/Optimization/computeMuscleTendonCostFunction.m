@@ -59,11 +59,7 @@ valuesStruct.primaryValues = primaryValues;
 valuesStruct.isIncluded = isIncluded;
 end
 
-function modeledValues = calcMtpModeledValues(valuesStruct, experimentalData, params)
-
-end
-
-function calcMtpCost(modeledValues, experimentalData, params);
+function cost = calcMtpCost(modeledValues, experimentalData, params)
 costs = calcAllTrackingCosts(experimentalData, modelMoments, normalizedFiberLength);
 costs = calcAllDeviationPenaltyCosts(valuesStruct, experimentalData,  ...
     passiveForce, costs);
