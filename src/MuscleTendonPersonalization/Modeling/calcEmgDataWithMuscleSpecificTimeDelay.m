@@ -1,12 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function evaluates the EMG signal from a Spline when the 
-% electromechanical time delay is muscle specific
+% This function takes a 2D array (time) containing the time data for each
+% (trial, time point), a 2D Cell Array of pp splines (spline(x,y)) of time
+% and emg data, and a 1D array of number of the time delay for each muscle.
+% It applies the time delay to the spline and returns the new segment of
+% emg data for each unique trial and muscle combination.
 %
-% EMG - 3D matrix of (numFrames, numMuscle, numTrials)
-%
-% (Array of number, cell, array of number) -> (3D matrix)
-% returns the EMG signal 
+% (2D Array of number, 2D Cell Array of pp, Array of number) -> 
+% (3D Array of number)
+% returns new emg data after applying the time delay
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,18 +32,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function emg = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
+function emg = calcEmgDataWithMuscleSpecificTimeDelay(time, ...
     emgSplines, timeDelay)
-timeIntervalInterp = linspace(0, 1, size(time, 1))'; 
-% preallocate memory
-emg = zeros(size(time, 1), size(emgSplines, 2), size(emgSplines, 1)); 
-for i = 1:size(emgSplines, 2)
-    for j = 1:size(emgSplines, 1)
-        interpTime = (time(end, j) - time(1, j)) * timeIntervalInterp + ...
-            time(1, j);
-        % Interpolation
-        emg(:, i, j) = ppval(interpTime - timeDelay(1, i), ...
-            emgSplines{j, i})'; 
+timeIntervalInterp = linspace(0, 1, size(time, 2))'; 
+emg = zeros(size(emgSplines, 1), size(emgSplines, 2), size(time, 2)); 
+for trial = 1:size(emgSplines, 1)
+    for muscle = 1:size(emgSplines, 2)
+        interpTime = ((time(trial, end) - time(trial, 1)) * ...
+            timeIntervalInterp + time(trial, 1));
+        emg(trial, muscle, :) = ppval(interpTime - timeDelay(muscle), ...
+            emgSplines{trial, muscle})';
     end
 end
 end
