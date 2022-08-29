@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond, Spencer Williams            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,22 +29,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [muscleExcitations] = calcMuscleExcitations(time, emgSplines, ...
-    timeDelay, emgScalingFactor)      
+function muscleExcitations = calcMuscleExcitations(emgTime, ...
+    emgSplines, timeDelay, emgScalingFactor)      
 
-% Interpolated Emg is formatted as (numFrames, numMusc, numTrials)
-if size(timeDelay, 2) == 1
-    Emg = calcEmgDataWithCommonTimeDelay(time, emgSplines, ...
+if length(timeDelay) == 1
+    timeDelayedEmg = calcEmgDataWithCommonTimeDelay(emgTime, emgSplines, ...
         timeDelay / 10);
 else
-    Emg = calcEmgDataWithMuscleSpecificTimeDelay(time, ...
+    timeDelayedEmg = calcEmgDataWithMuscleSpecificTimeDelay(emgTime, ...
         emgSplines, timeDelay / 10); 
 end 
-% Emg is reformatted as (numFrames, numTrials, numMusc)
-Emg = permute(Emg, [1 3 2]); 
-% EmgScalingFactor is formatted as (1, numTrials, numMusc)
-emgScalingFactor = permute(emgScalingFactor(ones(size(emgSplines, ...
-    1), 1), :), [3 1 2]); 
-% muscleExcitations are scaled processed Emg signals
-muscleExcitations = Emg.* emgScalingFactor(ones(size(time, 1), 1), :, :); 
+expandedEmgScalingFactor = ones(1, length(emgScalingFactor, 2), 1);
+expandedEmgScalingFactor(1, :, 1) = emgScalingFactor;
+muscleExcitations = timeDelayedEmg .* expandedEmgScalingFactor; 
 end
