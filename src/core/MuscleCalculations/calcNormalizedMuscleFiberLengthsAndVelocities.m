@@ -16,8 +16,9 @@
 % lMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
 % vMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
 %
-% (Struct, Struct) -> (Array of number,Array of number)
-% returns muscle fiber lengths and velocities
+% (Struct, Array of number, Array of number) ->
+% (3D Array of number, 3D Array of number)
+% returns computed muscle fiber lengths and velocities with scale factor
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,7 +28,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond, Spencer Williams            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -41,23 +42,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [lMtilda, vMtilda] = ...
+function [normalizedFiberLength, normalizedFiberVelocity] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities(experimentalData, ...
-    valuesStruct)
+    optimalFiberLengthScaleFactor, tendonSlackLengthScaleFactor)
 
-scaledOptimalFiberLength = permute(experimentalData.optimalFiberLength .* ...
-    findCorrectMtpValues(6, valuesStruct), [1 3 2]);
-scaledTendonSlackLength = permute(experimentalData.tendonSlackLength .* ...
-    findCorrectMtpValues(5, valuesStruct), [1 3 2]);
-onesCol = ones(size(experimentalData.muscleTendonLength, 1:1), ...
-    size(experimentalData.muscleTendonLength, 2));
+scaledOptimalFiberLength = experimentalData.optimalFiberLength .* optimalFiberLengthScaleFactor;
+scaledTendonSlackLength = experimentalData.tendonSlackLength .* tendonSlackLengthScaleFactor;
+
 % Normalized muscle fiber length, equation 2 from Meyer 2017
-lMtilda = (experimentalData.muscleTendonLength - onesCol .* ...
-    scaledTendonSlackLength) ./ (onesCol .* ...
-    (scaledOptimalFiberLength .* permute(cos(experimentalData.pennationAngle), ...
-    [1 3 2])));
+normalizedFiberLength = (experimentalData.muscleTendonLength - scaledTendonSlackLength) ./ (scaledOptimalFiberLength * cos(experimentalData.pennationAngle));
+
 % Normalized muscle fiber velocity, equation 3 from Meyer 2017
-vMtilda = experimentalData.muscleTendonVelocity ./ ...
-    (experimentalData.vMaxFactor * onesCol .* (scaledOptimalFiberLength .* ...
-    permute(cos(experimentalData.pennationAngle), [1 3 2])));
+normalizedFiberVelocity = (experimentalData.muscleTendonVelocity) ./ (experimentalData.vMaxFactor * scaledOptimalFiberLength);
+
 end
