@@ -42,17 +42,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [normalizedFiberLength, normalizedFiberVelocity] = ...
+function [normalizedFiberLengths, normalizedFiberVelocities] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities(experimentalData, ...
-    optimalFiberLengthScaleFactor, tendonSlackLengthScaleFactor)
+    optimalFiberLengthScaleFactors, tendonSlackLengthScaleFactors)
 
-scaledOptimalFiberLength = experimentalData.optimalFiberLength .* optimalFiberLengthScaleFactor;
-scaledTendonSlackLength = experimentalData.tendonSlackLength .* tendonSlackLengthScaleFactor;
+scaledOptimalFiberLength = experimentalData.optimalFiberLength .* optimalFiberLengthScaleFactors;
+scaledTendonSlackLength = experimentalData.tendonSlackLength .* tendonSlackLengthScaleFactors;
 
 % Normalized muscle fiber length, equation 2 from Meyer 2017
-normalizedFiberLength = (experimentalData.muscleTendonLength - scaledTendonSlackLength) ./ (scaledOptimalFiberLength * cos(experimentalData.pennationAngle));
+normalizedFiberLengths = (experimentalData.muscleTendonLength - scaledTendonSlackLength) ./ (scaledOptimalFiberLength * cos(experimentalData.pennationAngle));
 
 % Normalized muscle fiber velocity, equation 3 from Meyer 2017
-normalizedFiberVelocity = (experimentalData.muscleTendonVelocity) ./ (experimentalData.vMaxFactor * scaledOptimalFiberLength);
+normalizedFiberVelocities = (experimentalData.muscleTendonVelocity) ./ (experimentalData.vMaxFactor * scaledOptimalFiberLength);
 
 end
