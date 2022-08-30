@@ -48,7 +48,7 @@ function primaryValues = MuscleTendonPersonalization(inputs, ...
 %     inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
 % end
 primaryValues = prepareInitialValues(inputs, params);
-[inputs.normalizedFiberLength, ~] = calcNormalizedMusceFiberLengthsAndVelocities(inputs, struct("isIncluded", zeros(1,6), "primaryValues", primaryValues, "secondaryValues", zeros(size(primaryValues))));
+[inputs.normalizedFiberLength, ~] = calcNormalizedMuscleFiberLengthsAndVelocities(inputs, struct("isIncluded", zeros(1,6), "primaryValues", primaryValues, "secondaryValues", zeros(size(primaryValues))));
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
