@@ -46,7 +46,7 @@ function cost = computeMuscleTendonCostFunction(secondaryValues, ...
 
 values = makeValuesAsStruct(secondaryValues, primaryValues, isIncluded);
 modeledValues = calcMtpModeledValues(values, experimentalData, params);
-cost = calcMtpCost(modeledValues, experimentalData, params);
+cost = calcMtpCost(values, modeledValues, experimentalData, params);
 
 % outputCost = combineCostsIntoVector(experimentalData.costWeight, costs);
 % outputCost(isnan(outputCost))=0;
@@ -61,8 +61,8 @@ values.electromechanicalDelays = findCorrectMtpValues(1, valuesHelper);
 values.activationTimeConstants = findCorrectMtpValues(2, valuesHelper);
 values.activationNonlinearityConstants = findCorrectMtpValues(3, valuesHelper);
 values.emgScaleFactors = findCorrectMtpValues(4, valuesHelper);
-values.optimalMuscleLengths = findCorrectMtpValues(5, valuesHelper);
-values.tendonSlackLengths = findCorrectMtpValues(6, valuesHelper);
+values.optimalFiberLengthScaleFactors = findCorrectMtpValues(5, valuesHelper);
+values.tendonSlackLengthScaleFactors = findCorrectMtpValues(6, valuesHelper);
 end
 
 function output = findCorrectMtpValues(index, valuesStruct)
@@ -75,14 +75,14 @@ else
 end
 end
 
-function cost = calcMtpCost(modeledValues, experimentalData, params)
-cost = calcAllTrackingCosts(experimentalData, modelMoments, normalizedFiberLength);
-cost = cost + calcAllDeviationPenaltyCosts(valuesStruct, experimentalData,  ...
+function cost = calcMtpCost(values, modeledValues, experimentalData, params)
+cost = calcAllTrackingCosts(experimentalData, modeledValues.muscleMoments, modeledValues.normalizedFiberLength);
+cost = cost + calcAllDeviationPenaltyCosts(values, experimentalData,  ...
     passiveForce);
-cost = cost + calcNormalizedFiberLengthCurveChangesCost(normalizedFiberLength, ...
+cost = cost + calcNormalizedFiberLengthCurveChangesCost(modeledValues.normalizedFiberLength, ...
     experimentalData.normalizedFiberLength, experimentalData.normalizedFiberLengthPairs, ...
     experimentalData.errorCenters, experimentalData.maxAllowableErrors);
-cost = cost + calcPairedMusclePenalties(valuesStruct, ...
+cost = cost + calcPairedMusclePenalties(values, ...
     experimentalData.activationPairs, experimentalData.errorCenters, ...
-    experimentalData.maxAllowableErrors, costs);
+    experimentalData.maxAllowableErrors);
 end
