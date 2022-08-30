@@ -56,4 +56,5 @@ for j = 3:size(muscleExcitation, 1)
 end
 neuralActivations = neuralActivations(:, :, numPaddingFrames + ...
     1:size(emgTime, 1) - numPaddingFrames);
+neuralActivations(neuralActivations < 0) = 0; %remove negative neural activ
 end
