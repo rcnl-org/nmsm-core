@@ -30,16 +30,16 @@
 % ----------------------------------------------------------------------- %
 
 function muscleExcitations = calcMuscleExcitations(emgTime, ...
-    emgSplines, timeDelay, emgScalingFactor)      
+    emgSplines, electromechanicalDelays, emgScaleFactors)      
 
-if length(timeDelay) == 1
-    timeDelayedEmg = calcEmgDataWithCommonTimeDelay(emgTime, emgSplines, ...
-        timeDelay / 10);
+if length(electromechanicalDelays) == 1
+    timeDelayedEmg = calcEmgDataWithCommonTimeDelay(emgTime, ...
+        emgSplines, electromechanicalDelays / 10);
 else
     timeDelayedEmg = calcEmgDataWithMuscleSpecificTimeDelay(emgTime, ...
-        emgSplines, timeDelay / 10); 
+        emgSplines, electromechanicalDelays / 10); 
 end 
-expandedEmgScalingFactor = ones(1, length(emgScalingFactor, 2), 1);
-expandedEmgScalingFactor(1, :, 1) = emgScalingFactor;
-muscleExcitations = timeDelayedEmg .* expandedEmgScalingFactor; 
+expandedEmgScalingFactors = ones(1, length(emgScaleFactors, 2), 1);
+expandedEmgScalingFactors(1, :, 1) = emgScaleFactors;
+muscleExcitations = timeDelayedEmg .* expandedEmgScalingFactors; 
 end
