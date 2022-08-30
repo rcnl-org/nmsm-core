@@ -41,32 +41,48 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function sumSquaredOutputCost = computeMuscleTendonCostFunction(values, ...
+function cost = computeMuscleTendonCostFunction(secondaryValues, ...
     primaryValues, isIncluded, experimentalData, params)
 
-valuesStruct = makeValuesStruct(values, primaryValues, isIncluded);
-modeledValues = calcMtpModeledValues(valuesStruct, experimentalData, params);
+values = makeValuesAsStruct(secondaryValues, primaryValues, isIncluded);
+modeledValues = calcMtpModeledValues(values, experimentalData, params);
 cost = calcMtpCost(modeledValues, experimentalData, params);
 
-outputCost = combineCostsIntoVector(experimentalData.costWeight, costs);
-outputCost(isnan(outputCost))=0;
-sumSquaredOutputCost = sum(outputCost.^2);
+% outputCost = combineCostsIntoVector(experimentalData.costWeight, costs);
+% outputCost(isnan(outputCost))=0;
+% sumSquaredOutputCost = sum(outputCost.^2);
 end
 
-function valuesStruct = makeValuesStruct(values, primaryValues, isIncluded)
-valuesStruct.secondaryValues = values;
-valuesStruct.primaryValues = primaryValues;
-valuesStruct.isIncluded = isIncluded;
+function values = makeValuesAsStruct(secondaryValues, primaryValues, isIncluded)
+valuesHelper.secondaryValues = secondaryValues;
+valuesHelper.primaryValues = primaryValues;
+valuesHelper.isIncluded = isIncluded;
+values.electromechanicalDelays = findCorrectMtpValues(1, valuesHelper);
+values.activationTimeConstants = findCorrectMtpValues(2, valuesHelper);
+values.activationNonlinearityConstants = findCorrectMtpValues(3, valuesHelper);
+values.emgScaleFactors = findCorrectMtpValues(4, valuesHelper);
+values.optimalMuscleLengths = findCorrectMtpValues(5, valuesHelper);
+values.tendonSlackLengths = findCorrectMtpValues(6, valuesHelper);
+end
+
+function output = findCorrectMtpValues(index, valuesStruct)
+if (valuesStruct.isIncluded(index))
+    [startIndex, endIndex] = findIsIncludedStartAndEndIndex( ...
+        valuesStruct.primaryValues, valuesStruct.isIncluded, index);
+    output = valuesStruct.secondaryValues(startIndex:endIndex);
+else
+    output = valuesStruct.primaryValues(index, :);
+end
 end
 
 function cost = calcMtpCost(modeledValues, experimentalData, params)
-costs = calcAllTrackingCosts(experimentalData, modelMoments, normalizedFiberLength);
-costs = calcAllDeviationPenaltyCosts(valuesStruct, experimentalData,  ...
-    passiveForce, costs);
-costs = calcNormalizedFiberLengthCurveChangesCost(normalizedFiberLength, ...
+cost = calcAllTrackingCosts(experimentalData, modelMoments, normalizedFiberLength);
+cost = cost + calcAllDeviationPenaltyCosts(valuesStruct, experimentalData,  ...
+    passiveForce);
+cost = cost + calcNormalizedFiberLengthCurveChangesCost(normalizedFiberLength, ...
     experimentalData.normalizedFiberLength, experimentalData.normalizedFiberLengthPairs, ...
-    experimentalData.errorCenters, experimentalData.maxAllowableErrors, costs);
-costs = calcPairedMusclePenalties(valuesStruct, ...
+    experimentalData.errorCenters, experimentalData.maxAllowableErrors);
+cost = cost + calcPairedMusclePenalties(valuesStruct, ...
     experimentalData.activationPairs, experimentalData.errorCenters, ...
     experimentalData.maxAllowableErrors, costs);
 end
