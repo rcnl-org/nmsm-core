@@ -48,9 +48,6 @@ values = makeValuesAsStruct(secondaryValues, primaryValues, isIncluded);
 modeledValues = calcMtpModeledValues(values, experimentalData, params);
 cost = calcMtpCost(values, modeledValues, experimentalData, params);
 
-% outputCost = combineCostsIntoVector(experimentalData.costWeight, costs);
-% outputCost(isnan(outputCost))=0;
-% sumSquaredOutputCost = sum(outputCost.^2);
 end
 
 function values = makeValuesAsStruct(secondaryValues, primaryValues, isIncluded)
@@ -75,14 +72,109 @@ else
 end
 end
 
-function cost = calcMtpCost(values, modeledValues, experimentalData, params)
-cost = calcAllTrackingCosts(experimentalData, modeledValues.muscleMoments, modeledValues.normalizedFiberLength);
-cost = cost + calcAllDeviationPenaltyCosts(values, experimentalData,  ...
-    passiveForce);
-cost = cost + calcNormalizedFiberLengthCurveChangesCost(modeledValues.normalizedFiberLength, ...
-    experimentalData.normalizedFiberLength, experimentalData.normalizedFiberLengthPairs, ...
-    experimentalData.errorCenters, experimentalData.maxAllowableErrors);
-cost = cost + calcPairedMusclePenalties(values, ...
-    experimentalData.activationPairs, experimentalData.errorCenters, ...
-    experimentalData.maxAllowableErrors);
+function totalCost = calcMtpCost(values, modeledValues, ...
+    experimentalData, params)
+totalCost = calcMomentTrackingCost(modeledValues, experimentalData, ...
+    params);
+totalCost = totalCost + calcActivationTimeConstantDeviationCost(values, ...
+    modeledValues, experimentalData, params);
+totalCost = totalCost + calcActivationNonlinearityDeviationCost(values, ...
+    modeledValues, experimentalData, params);
+totalCost = totalCost + calcOptimalFiberLengthDeviationCost(values, ...
+    modeledValues, experimentalData, params);
+totalCost = totalCost + calcTendonSlackLengthDeviationCost(values, ...
+    modeledValues, experimentalData, params);
+totalCost = totalCost + calcEmgScaleFactorDevationCost(values, ...
+    modeledValues, experimentalData, params);
+totalCost = totalCost + calcNormalizedFiberLengthDeviationCost(values, ...
+    modeledValues, experimentalData, params);
+totalCost = totalCost + calcNormalizedFiberLengthPairedSimilarityCost( ...
+    values, modeledValues, experimentalData, params);
+totalCost = totalCost + calcEmgScaleFactorPairedSimilarityCost( ...
+    values, modeledValues, experimentalData, params);
+totalCost = totalCost + calcElectromechanicalDelayPairedSimilarityCost( ...
+    values, modeledValues, experimentalData, params);
+totalCost = totalCost + calcPassiveForceCost(values, modeledValues, ...
+    experimentalData, params);
+
+end
+
+function cost = calcMomentTrackingCost(values, modeledValues, ...
+    experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0);
+maximumAllowableError = valueOrAlternate(params, "", 2);
+cost = calcTrackingCostTerm(modeledValues.jointMoments, ...
+    experimentalData.jointMoments, experimentalData.errorCenters(1), ...
+    experimentalData.maxAllowableErrors(1))
+end
+
+function cost = calcActivationTimeConstantDeviationCost(values, ...
+    modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0.15);
+maximumAllowableError = valueOrAlternate(params, "", 0.002);
+end
+
+function cost = calcActivationNonlinearityDeviationCost(values, ...
+    modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0);
+maximumAllowableError = valueOrAlternate(params, "", 0.1);
+end
+
+function cost = calcOptimalFiberLengthDeviationCost(values, ...
+    modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0);
+maximumAllowableError = valueOrAlternate(params, "", 0.1);
+end
+
+function cost = calcTendonSlackLengthDeviationCost(values, ...
+    modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0);
+maximumAllowableError = valueOrAlternate(params, "", 0.1);
+end
+
+function cost = calcEmgScaleFactorDevationCost(values, ...
+    modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0.5);
+maximumAllowableError = valueOrAlternate(params, "", 0.3);
+end
+
+function cost = calcNormalizedFiberLengthDeviationCost(values, ...
+    modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0);
+maximumAllowableError = valueOrAlternate(params, "", 0.1);
+end
+
+function cost = calcNormalizedFiberLengthPairedSimilarityCost( ...
+    values, modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0);
+maximumAllowableError = valueOrAlternate(params, "", 0.05);
+end
+
+function cost = calcEmgScaleFactorPairedSimilarityCost( ...
+    values, modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0);
+maximumAllowableError = valueOrAlternate(params, "", 0.1);
+end
+
+function cost = calcElectromechanicalDelayPairedSimilarityCost( ...
+    values, modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0);
+maximumAllowableError = valueOrAlternate(params, "", 0.1);
+end
+
+function cost = calcPassiveForceCost(values, modeledValues, ...
+    experimentalData, params)
+costWeight = valueOrAlternate(params, "", 1);
+errorCenter = valueOrAlternate(params, "", 0);
+maximumAllowableError = valueOrAlternate(params, "", 30);
 end
