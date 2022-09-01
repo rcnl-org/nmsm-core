@@ -1,26 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the model Joint moments, muscle moments, passive
-% and active muscle forces, normalized muscle lengths, normalized muscle
-% velocity, muscle tendon length, muscle tendon velocity, and max isometric
-% force.
-%
-% Inputs:
-% momentArms - 4D matrix of (numFrames, numTrials, numMuscles, numJoints) 
-% hillTypeParams.lMt - 3D matrix of (numFrames, numTrials, numMuscles)
-% hillTypeParams.vMT - 3D matric of (numFrames, numTrials, numMuscles)
-% hillTypeParams.vMaxFactor - number
-% hillTypeParams.pennationAngle - 3D matrix of (1, 1, numMuscles)
-% hillTypeParams.fMax - 3D matrix of (1, 1, numMuscles)
-% hillTypeParams.lMo - 3D matrix of (1, 1, numMuscles)
-% hillTypeParams.lTs - 3D matrix of (1, 1, numMuscles)
-% muscleActivations - 3D matrix of (numFrames, numTrials, numMuscles)
-%
-% Outputs:
-% passiveForce - 3D matrix of (numFrames, numTrials, numMuscles)
-% muscleForce - 3D matrix of (numFrames, numTrials, numMuscles)
-% muscleMoments - 3D matrix of (numFrames, numTrials, numMuscles, numJoints)
-% modelMoments - 3D matrix of (numFrames, numTrials, numJoints)
+% This function calculates the model Joint moments for each muscle%
 %
 % (Cell, Struct, Array of number) -> (Array of number, Array of number, 
 % Array of number, Array of number)
@@ -48,11 +28,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modelMoments = calcMuscleMoments(experimentalData, ...
+function muscleJointMoments = calcMuscleJointMoments(experimentalData, ...
     passiveForce, muscleActivations, normalizedFiberLength, ...
     normalizedFiberVelocity)
 
-modelMoments = experimentalData.momentArms .* ...
+muscleJointMoments = experimentalData.momentArms .* ...
     experimentalData.maxIsometricForce .* (muscleActivations .* ...
     activeForceLengthCurve(normalizedFiberLength) .* ...
     forceVelocityCurve(normalizedFiberVelocity) + passiveForce) .* ...
