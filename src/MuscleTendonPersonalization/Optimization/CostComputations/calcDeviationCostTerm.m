@@ -28,10 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcPenalizeDifferencesCostTerm(value, ...
+function cost = calcDeviationCostTerm(value, ...
     errorCenter, maxAllowableError)
 
-cost = ((value - errorCenter) ./ maxAllowableError) ./ ...
-    sqrt(size(value(:), 1));
+cost = sum(((value - errorCenter) ./ maxAllowableError) .^ 2 ./ ...
+    numel(value));
 
 end
