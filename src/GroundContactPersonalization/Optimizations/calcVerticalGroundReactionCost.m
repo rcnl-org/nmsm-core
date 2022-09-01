@@ -33,12 +33,13 @@
 function cost = calcVerticalGroundReactionCost(values, fieldNameOrder, ...
     inputs, params)
 valuesStruct = unpackValues(values, inputs, fieldNameOrder);
-bSplineCoefficients = makeFullBSplineSet( ...
-    valuesStruct.bSplineCoefficientsVerticalSubset, ...
-    inputs.bSplineCoefficients);
+% bSplineCoefficients = makeFullBSplineSet( ...
+%     valuesStruct.bSplineCoefficientsVerticalSubset, ...
+%     inputs.bSplineCoefficients);
 [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
-    bSplineCoefficients);
+    inputs.bSplineCoefficients);
+%     bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
     modeledJointPositions, modeledJointVelocities, [1, 1, 0, 0]);
 modeledValues.jointPositions = modeledJointPositions;
@@ -66,20 +67,21 @@ bSplineCoefficients(:, [1, 3, 5:7]) = reshape( ...
 end
 
 function cost = calcCost(inputs, modeledValues, valuesStruct)
-[footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-cost = 2 * footMarkerPositionError;
-cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 1000 * calcKinematicCurveSlopeError(inputs, modeledValues, [1, 3, 5:7])];
+cost = [];
+% [footMarkerPositionError, footMarkerSlopeError] = ...
+%     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
+% cost = [cost 1 * footMarkerPositionError];
+% cost = [cost 1 * footMarkerSlopeError];
+% cost = [cost 1 * calcKinematicCurveSlopeError(inputs, modeledValues, [1, 3, 5:7])];
 [groundReactionForceValueError, groundReactionForceSlopeError] = ...
     calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues);
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 150 * calcSpringConstantsErrorFromMean(valuesStruct.springConstants)];
-cost = [cost 50 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
-cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)];
-cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)];
-cost = [cost calcSpringRestingLengthError(inputs.initialRestingSpringLength, valuesStruct.restingSpringLength)];
+cost = [cost 1 / 1000 * groundReactionForceValueError];
+% cost = [cost 1 / 10000 * groundReactionForceSlopeError];
+% cost = [cost 1 / 150 * calcSpringConstantsErrorFromMean(valuesStruct.springConstants)];
+% cost = [cost 50 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
+% cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)];
+% cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)];
+% cost = [cost calcSpringRestingLengthError(inputs.restingSpringLength, valuesStruct.restingSpringLength)];
 cost = cost / 10;
 end
 
