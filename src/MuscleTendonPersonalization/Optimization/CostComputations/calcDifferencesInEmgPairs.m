@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function deviationsEMGScale = calcDifferencesInEMGPairs( ...
+function deviationsEMGScale = calcDifferencesInEmgPairs( ...
     emgScale, activationPairs)
 
 Ind = 1;

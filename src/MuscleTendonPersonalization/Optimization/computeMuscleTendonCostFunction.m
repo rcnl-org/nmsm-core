@@ -205,22 +205,39 @@ maximumAllowableError = valueOrAlternate(params, "", 0.05);
 end
 
 function cost = calcEmgScaleFactorPairedSimilarityCost( ...
-    values, modeledValues, experimentalData, params)
-costWeight = valueOrAlternate(params, "", 1);
-errorCenter = valueOrAlternate(params, "", 0);
-maximumAllowableError = valueOrAlternate(params, "", 0.1);
+    values, experimentalData, params)
+costWeight = valueOrAlternate(params, ...
+    "emgScaleFactorPairedSimilarityCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "emgScaleFactorPairedSimilarityErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "emgScaleFactorPairedSimilarityMaximumAllowableError", 0.1);
+emgScaleDeviations = calcDifferencesInEmgPairs(values.emgScaleFactors, ...
+    experimentalData.activationPairs);
+cost = costWeight * calcDeviationCostTerm(emgScaleDeviations, ...
+    errorCenter, maximumAllowableError);
 end
 
 function cost = calcElectromechanicalDelayPairedSimilarityCost( ...
-    values, modeledValues, experimentalData, params)
-costWeight = valueOrAlternate(params, "", 1);
-errorCenter = valueOrAlternate(params, "", 0);
-maximumAllowableError = valueOrAlternate(params, "", 0.1);
+    values, experimentalData, params)
+costWeight = valueOrAlternate(params, ...
+    "electromechanicalDelayPairedSimilarityCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "electromechanicalDelayPairedSimilarityErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "electromechanicalDelayPairedSimilarityMaximumAllowableError", 0.1);
+electromechanicalDelayDeviations = calcDifferencesInEmgPairs( ...
+    values.electromechanicalDelays, experimentalData.activationPairs);
+cost = costWeight * calcDeviationCostTerm( ...
+    electromechanicalDelayDeviations, errorCenter, maximumAllowableError);
 end
 
-function cost = calcPassiveForceCost(values, modeledValues, ...
-    experimentalData, params)
-costWeight = valueOrAlternate(params, "", 1);
-errorCenter = valueOrAlternate(params, "", 0);
-maximumAllowableError = valueOrAlternate(params, "", 30);
+function cost = calcPassiveForceCost(modeledValues, params)
+costWeight = valueOrAlternate(params, "passiveForceCostWeight", 1);
+errorCenter = valueOrAlternate(params, "passiveForceErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "passiveForceMaximumAllowableError", 30);
+
+cost = costWeight * calcDeviationCostTerm(modeledValues.passiveForce, ...
+    errorCenter, maximumAllowableError);
 end
