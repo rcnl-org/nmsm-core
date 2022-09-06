@@ -57,10 +57,6 @@ prefixes = getPrefixes(tree, inputDirectory);
 inputs.experimentalMoments = parseMtpStandard( ...
     findFileListFromPrefixList(fullfile(inputDirectory, "IDData"), ...
     prefixes));
-% inputs.muscleTendonVelocity = parseMtpStandard( ...
-%     findFileListFromPrefixList(fullfile(inputDirectory, ...
-%     getFieldByNameOrError(tree, 'muscle_velocity_directory').Text), ...
-%     prefixes));
 inputs.emgData = parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGData"), prefixes));
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
@@ -72,13 +68,13 @@ inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
 inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
     "Velocity.sto");
 inputs.momentArms = parseMomentArms(directories, inputs.model);
-inputs.numPaddingFrames = (size(inputs.experimentalMoments, 1) - 101) / 2;
+inputs.numPaddingFrames = (size(inputs.experimentalMoments, 3) - 101) / 2;
 inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.tasks = getTasks(tree);
 inputs.activationPairs = getPairs(getFieldByNameOrError(tree, 'PairedActivationTimeConstants'), inputs.model);
 inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, 'PairedNormalizedMuscleFiberLengths'), inputs.model);
 inputs = getCostFunctionTerms(getFieldByNameOrError(tree, 'MuscleTendonCostFunctionTerms'), inputs);
-inputs.vMaxFactor = getVMaxFactor(tree)
+inputs.vMaxFactor = getVMaxFactor(tree);
 if ~isfield(inputs, "emgSplines")
     inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
 end
@@ -232,9 +228,9 @@ end
 end
 
 function inputs = reduceDataSize(inputs, numPaddingFrames)
-inputs.experimentalMoments = inputs.experimentalMoments(numPaddingFrames + 1:end-numPaddingFrames, :, :);
-inputs.muscleTendonLength = inputs.muscleTendonLength(numPaddingFrames + 1:end-numPaddingFrames, :, :);
-inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(numPaddingFrames + 1:end-numPaddingFrames, :, :);
+inputs.experimentalMoments = inputs.experimentalMoments(:, :, numPaddingFrames + 1:end-numPaddingFrames);
+inputs.muscleTendonLength = inputs.muscleTendonLength(:, :, numPaddingFrames + 1:end-numPaddingFrames);
+inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(:, :, numPaddingFrames + 1:end-numPaddingFrames);
 inputs.momentArms = inputs.momentArms(numPaddingFrames + 1:end-numPaddingFrames, :, :, :);
 end
 
