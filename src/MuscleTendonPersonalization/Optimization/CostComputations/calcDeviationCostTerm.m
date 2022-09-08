@@ -32,6 +32,6 @@ function cost = calcDeviationCostTerm(value, ...
     errorCenter, maxAllowableError)
 
 cost = sum(((value - errorCenter) ./ maxAllowableError) .^ 2 ./ ...
-    numel(value));
+    numel(value), 'all');
 
 end

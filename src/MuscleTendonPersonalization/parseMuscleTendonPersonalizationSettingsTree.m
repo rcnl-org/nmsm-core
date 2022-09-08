@@ -231,7 +231,7 @@ function inputs = reduceDataSize(inputs, numPaddingFrames)
 inputs.experimentalMoments = inputs.experimentalMoments(:, :, numPaddingFrames + 1:end-numPaddingFrames);
 inputs.muscleTendonLength = inputs.muscleTendonLength(:, :, numPaddingFrames + 1:end-numPaddingFrames);
 inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(:, :, numPaddingFrames + 1:end-numPaddingFrames);
-inputs.momentArms = inputs.momentArms(numPaddingFrames + 1:end-numPaddingFrames, :, :, :);
+inputs.momentArms = inputs.momentArms(:, :, :, numPaddingFrames + 1:end-numPaddingFrames);
 end
 
 function vMaxFactor = getVMaxFactor(tree)

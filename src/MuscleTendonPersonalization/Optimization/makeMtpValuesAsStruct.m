@@ -1,11 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the scaled muscle excitations given the
-% processed EMG signals
 %
-% (Array of numbers, 2D cell, Array of numbers, Array of numbers) -> 
-% (3D matrix of numbers)
-% returns the muscle excitations with time padding
+% (Array of number, Array of number, Array of number) -> (struct)
+% changes optimization values into a struct for use in cost function
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond, Spencer Williams            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,17 +26,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function muscleExcitations = calcMuscleExcitations(emgTime, ...
-    emgSplines, electromechanicalDelays, emgScaleFactors)      
+function values = makeMtpValuesAsStruct(secondaryValues, primaryValues, isIncluded)
+valuesHelper.secondaryValues = secondaryValues;
+valuesHelper.primaryValues = primaryValues;
+valuesHelper.isIncluded = isIncluded;
+values.electromechanicalDelays = findCorrectMtpValues(1, valuesHelper);
+values.activationTimeConstants = findCorrectMtpValues(2, valuesHelper);
+values.activationNonlinearityConstants = findCorrectMtpValues(3, valuesHelper);
+values.emgScaleFactors = findCorrectMtpValues(4, valuesHelper);
+values.optimalFiberLengthScaleFactors = findCorrectMtpValues(5, valuesHelper);
+values.tendonSlackLengthScaleFactors = findCorrectMtpValues(6, valuesHelper);
+end
 
-if length(electromechanicalDelays) == 1
-    timeDelayedEmg = calcEmgDataWithCommonTimeDelay(emgTime, ...
-        emgSplines, electromechanicalDelays / 10);
+function output = findCorrectMtpValues(index, valuesStruct)
+if (valuesStruct.isIncluded(index))
+    [startIndex, endIndex] = findIsIncludedStartAndEndIndex( ...
+        valuesStruct.primaryValues, valuesStruct.isIncluded, index);
+    output = valuesStruct.secondaryValues(startIndex:endIndex);
 else
-    timeDelayedEmg = calcEmgDataWithMuscleSpecificTimeDelay(emgTime, ...
-        emgSplines, electromechanicalDelays / 10); 
-end 
-expandedEmgScalingFactors = ones(1, size(emgScaleFactors, 2), 1);
-expandedEmgScalingFactors(1, :, 1) = emgScaleFactors;
-muscleExcitations = timeDelayedEmg .* expandedEmgScalingFactors; 
+    output = valuesStruct.primaryValues(index, :);
+end
 end
