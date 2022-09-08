@@ -50,9 +50,9 @@ scaledOptimalFiberLength = experimentalData.optimalFiberLength .* optimalFiberLe
 scaledTendonSlackLength = experimentalData.tendonSlackLength .* tendonSlackLengthScaleFactors;
 
 % Normalized muscle fiber length, equation 2 from Meyer 2017
-normalizedFiberLengths = (experimentalData.muscleTendonLength - scaledTendonSlackLength) ./ (scaledOptimalFiberLength * cos(experimentalData.pennationAngle));
+normalizedFiberLengths = (experimentalData.muscleTendonLength - scaledTendonSlackLength) ./ (scaledOptimalFiberLength .* cos(experimentalData.pennationAngle));
 
 % Normalized muscle fiber velocity, equation 3 from Meyer 2017
-normalizedFiberVelocities = (experimentalData.muscleTendonVelocity) ./ (experimentalData.vMaxFactor * scaledOptimalFiberLength);
+normalizedFiberVelocities = (experimentalData.muscleTendonVelocity) ./ (experimentalData.vMaxFactor .* scaledOptimalFiberLength);
 
 end
