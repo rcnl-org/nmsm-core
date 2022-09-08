@@ -32,6 +32,6 @@ function cost = calcTrackingCostTerm(modelValue, experimentalValue, ...
 
 errorMatching = modelValue - experimentalValue;
 cost = sum(((errorMatching - errorCenter) ./ maxAllowableError) .^ 2 ./ ...
-    numel(errorMatching));
+    numel(errorMatching), 'all');
 
 end
