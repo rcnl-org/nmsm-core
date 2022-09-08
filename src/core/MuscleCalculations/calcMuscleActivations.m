@@ -37,7 +37,7 @@ nonlinearityCoefficients = [29.280183270562596 4.107869238218326 ...
 % see Meyer 2017 equation 8 (coefficients relabeled)
 g = nonlinearityCoefficients;
 expandedActivationNonlinearity = ones(1, ...
-    length(activationNonlinearity), 1);
+    size(activationNonlinearity, 2), 1);
 expandedActivationNonlinearity(1, :, 1) = activationNonlinearity;
 denominator = g(1) * (neuralActivations + g(6)) .^ g(5) + g(2);
 bracketed = (g(4) / denominator) + g(3);
