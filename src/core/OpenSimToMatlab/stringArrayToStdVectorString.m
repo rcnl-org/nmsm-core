@@ -29,9 +29,9 @@
 
 function output = stringArrayToStdVectorString(stringArray)
 import org.opensim.modeling.StdVectorString
-output = StdVectorString(length(stringArray));
+output = StdVectorString();
 for i=1:length(stringArray)
-    output.set(i-1, stringArray(i))
+    output.add(i-1, stringArray(i))
 end
 end
 

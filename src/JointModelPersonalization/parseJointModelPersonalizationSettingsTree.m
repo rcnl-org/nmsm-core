@@ -62,13 +62,13 @@ output.desiredError = ...
 end
 
 function output = getTasks(model, tree, inputDirectory)
-tasks = getFieldByNameOrError(tree, 'JointPersonalizationTaskList');
+tasks = getFieldByNameOrError(tree, 'JMPTaskList');
 counter = 1;
-for i=1:length(tasks.JointPersonalizationTask)
-    if(length(tasks.JointPersonalizationTask) == 1)
-        task = tasks.JointPersonalizationTask;
+for i=1:length(tasks.JMPTask)
+    if(length(tasks.JMPTask) == 1)
+        task = tasks.JMPTask;
     else
-        task = tasks.JointPersonalizationTask{i};
+        task = tasks.JMPTask{i};
     end
     if(task.is_enabled.Text == 'true')
         output{counter} = getTask(model, task, inputDirectory);
@@ -85,7 +85,7 @@ if(isstruct(timeRange))
     output.startTime = str2double(timeRange{1});
     output.finishTime = str2double(timeRange{2});
 end
-output.parameters = getJointParameters(tree.Joint);%includes all joints
+output.parameters = getJointParameters(tree.JMPJoint);%includes all joints
 translationBounds = getFieldByName(tree, 'translation_bounds');
 if(isstruct(translationBounds))
     translationBounds = str2double(translationBounds.Text);
