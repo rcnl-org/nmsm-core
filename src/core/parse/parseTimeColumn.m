@@ -29,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = parseTimeColumn(files)
+function cells = parseTimeColumn(files)
 import org.opensim.modeling.Storage
 dataFromFileOne = findTimeColumn(Storage(files(1)));
 cells = zeros(length(files), length(dataFromFileOne));
@@ -37,5 +37,4 @@ cells(1, :) = dataFromFileOne;
 for i=2:length(files)
     cells(i, :) = findTimeColumn(Storage(files(i)));
 end
-output = permute(cells, [2, 1]);
 end

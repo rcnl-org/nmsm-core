@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function pulls the files from the directory given as the input. 
-% These files are then organized into a 3D matrix with dimensions matching:
-% (numFrames, numTrials, numMuscles)
+% Penalize differences in EMGScales and electromechanical time delay 
+% differences between paired muscles
 %
-% (Array of string) -> (3D matrix of number)
-% returns a 3D matrix of the loaded data trials
+% (struct, cell array, array of number, array of number, struct) -> (struct)
+% calculates the cost of differences between paired muscles
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,13 +28,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cells = parseMtpStandard(files)
-import org.opensim.modeling.Storage
-dataFromFileOne = storageToDoubleMatrix(Storage(files(1)));
-cells = zeros([length(files) ...
-    size(dataFromFileOne)]);
-cells(1, :, :) = dataFromFileOne;
-for i=2:length(files)
-    cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
+function cost = calcPairedMusclePenalties(valuesStruct, ...
+    activationPairs, errorCenters, maxAllowableErrors, cost)
+
+% Penalize violation of EMGScales similarity between paired muscles
+deviationsEMGScale = calcDifferencesInEmgPairs(findCorrectMtpValues(4, ...
+    valuesStruct) , activationPairs);
+cost.emgScalePairedSimilarity = calcDeviationCostTerm( ...
+    deviationsEMGScale, errorCenters(9), maxAllowableErrors(9));
+% Penalize violation of tdelay similarity between paired muscles
+if size(findCorrectMtpValues(1, valuesStruct), 2) > 2
+    deviationsTdelay = calcDifferencesInEmgPairs(findCorrectMtpValues(1, ...
+        valuesStruct) / 10, activationPairs);
+    cost.tdelayPairedSimilarity = calcDeviationCostTerm( ...
+        deviationsTdelay, errorCenters(10), maxAllowableErrors(10));
+else
+    cost.tdelayPairedSimilarity = 0;
 end
 end
