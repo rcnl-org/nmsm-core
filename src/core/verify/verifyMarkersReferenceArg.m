@@ -34,7 +34,6 @@
 % ----------------------------------------------------------------------- %
 
 function verifyMarkersReferenceArg(input)
-import org.opensim.modeling.*
 try
     MarkersReference(input);
 catch

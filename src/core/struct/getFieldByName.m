@@ -29,8 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = getFieldByName(deepStruct, field)
+function [output, path] = getFieldByName(deepStruct, field)
 output = false;
+path = [field];
 try
     output = deepStruct.(field);
     return
@@ -39,8 +40,9 @@ end
 if(isstruct(deepStruct))
     fields = fieldnames(deepStruct);
     for i=1:length(fields)
-        output = getFieldByName(deepStruct.(fields{i}),field);
+        [output, path] = getFieldByName(deepStruct.(fields{i}),field);
         if(isstruct(output))
+            path = [string(fields{i}) path];
             return
         end
     end

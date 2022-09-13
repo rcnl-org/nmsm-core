@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond, Spencer Williams            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,22 +29,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [muscleExcitations] = calcMuscleExcitations(time, EmgSplines, ...
-    timeDelay, EmgScalingFactor)      
+function muscleExcitations = calcMuscleExcitations(emgTime, ...
+    emgSplines, electromechanicalDelays, emgScaleFactors)      
 
-% Interpolated Emg is formatted as (numFrames, numMusc, numTrials)
-if size(timeDelay, 2) == 1
-    Emg = evaluateEMGsplinesWithOneTimeDelay(time, EmgSplines, ...
-        timeDelay / 10);
+if length(electromechanicalDelays) == 1
+    timeDelayedEmg = calcEmgDataWithCommonTimeDelay(emgTime, ...
+        emgSplines, electromechanicalDelays / 10);
 else
-    Emg = evaluateEMGsplinesWithMuscleSpecificTimeDelay(time, ...
-        EmgSplines, timeDelay / 10); 
+    timeDelayedEmg = calcEmgDataWithMuscleSpecificTimeDelay(emgTime, ...
+        emgSplines, electromechanicalDelays / 10); 
 end 
-% Emg is reformatted as (numFrames, numTrials, numMusc)
-Emg = permute(Emg, [1 3 2]); 
-% EmgScalingFactor is formatted as (1, numTrials, numMusc)
-EmgScalingFactor = permute(EmgScalingFactor(ones(size(EmgSplines, ...
-    1), 1), :), [3 1 2]); 
-% muscleExcitations are scaled processed Emg signals
-muscleExcitations = Emg.* EmgScalingFactor(ones(size(time, 1), 1), :, :); 
+expandedEmgScalingFactors = ones(1, size(emgScaleFactors, 2), 1);
+expandedEmgScalingFactors(1, :, 1) = emgScaleFactors;
+muscleExcitations = timeDelayedEmg .* expandedEmgScalingFactors; 
 end

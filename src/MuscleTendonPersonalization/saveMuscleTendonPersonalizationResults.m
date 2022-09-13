@@ -35,7 +35,7 @@ function saveMuscleTendonPersonalizationResults(modelFileName, results, ...
     muscleActivationFileName)
 
 model = Model(modelFileName);
-muscleColumnNames = getMusclesInOrder(model);
+muscleColumnNames = getEnabledMusclesInOrder(model);
 for i = 1:size(results.muscleActivations, 2)
 % Need to figure out how to print out individuals file names for each trial
 writeToSto(muscleColumnNames, results.time(:, i, :), ...

@@ -37,15 +37,14 @@ markerTable = markersReference.getMarkerTable();
 times = markerTable.getIndependentColumn();
 error = [];
 frameCounter = 0;
-for i=1:numFrames - 1 %start time is set so start with recording error
+for i=1:numFrames %start time is set so start with recording error
     ikSolver.track(state);
     error = [error calculateFrameSquaredError(ikSolver)];
     frameCounter = frameCounter + 1;
-    state.setTime(times.get(markerTable.getNearestRowIndexForTime( ...
-        state.getTime() + 1/frequency)));
-    if(finishTime)
-        if(state.getTime() + 1/frequency > finishTime);break;end
-    end
+    if(state.getTime() + 1/frequency > finishTime);break;end
+    time = times.get(markerTable.getNearestRowIndexForTime( ...
+        state.getTime() + 1/frequency - 0.00001));
+    state.setTime(double(time));
 end
 error = error / sqrt(frameCounter);
 end
@@ -63,5 +62,6 @@ numFrames = valueOrAlternate(params, 'numFrames', ...
     markersReference.getNumFrames());
 frequency = valueOrAlternate(params, 'frequency', ...
     markersReference.getSamplingFrequency());
-finishTime = valueOrZero(params, 'finishTime');
+finishTime = valueOrAlternate(params, 'finishTime', ...
+    markersReference.getValidTimeRange().get(1));
 end
