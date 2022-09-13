@@ -154,6 +154,7 @@ output.MaxFunctionEvaluations = valueOrAlternate(params, ...
 output.Algorithm = valueOrAlternate(params, 'algorithm', 'sqp');
 output.ScaleProblem = valueOrAlternate(params, 'scaleProblem', ...
     'obj-and-constr');
+output.Display = 'iter';
 end
 
 % (struct, struct) -> (Array of number)
