@@ -32,14 +32,17 @@ function writeMuscleTendonPersonalizationOsimxFile(modelFileName, ...
     optimizedParams, muscleModelFileName)
 
 model = Model(modelFileName);
-muscleColumnNames = getMusclesInOrder(model);
+muscleColumnNames = getEnabledMusclesInOrder(model);
 
 MTP.OpenSimDocument.Attributes.Version = '40000';
-MTP.OpenSimDocument.OsimxModel.Attributes.name = replace(model.getName.toCharArray',".","_dot_");
-MTP.OpenSimDocument.OsimxModel.associated_osim_model.Comment = 'Full path of the associated osim model';
-MTP.OpenSimDocument.OsimxModel.associated_osim_model.Text = modelFileName;
-MTP.OpenSimDocument.OsimxModel.MTPMuscleSet.Comment = ['Optimized muscle ' ...
-    'parameters'];
+MTP.OpenSimDocument.OsimxModel.Attributes.name = replace( ...
+    model.getName.toCharArray',".","_dot_");
+MTP.OpenSimDocument.OsimxModel.associated_osim_model.Comment = ...
+    ['Full path of the associated osim model'];
+MTP.OpenSimDocument.OsimxModel.associated_osim_model.Text = ...
+    convertStringsToChars(modelFileName);
+MTP.OpenSimDocument.OsimxModel.MTPMuscleSet.Comment = [ ...
+    'Optimized muscle parameters'];
 for i = 1:size(muscleColumnNames, 2)
     MTP.OpenSimDocument.OsimxModel.MTPMuscleSet.objects.RCNLMuscle{i}. ...
         Attributes.name = muscleColumnNames{i};
@@ -77,7 +80,7 @@ for i = 1:size(muscleColumnNames, 2)
         optimizedParams(6, i));
 end
 MTP.OpenSimDocument.OsimxModel.MTPMuscleSet.groups = '';
-struct2xml_modified(MTP,muscleModelFileName)
+struct2xml_modified(MTP, muscleModelFileName)
 copyfile(muscleModelFileName, fullfile(strrep(muscleModelFileName, ...
     'xml','osimx')))
 delete(muscleModelFileName) 
