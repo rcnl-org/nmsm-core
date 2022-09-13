@@ -40,6 +40,7 @@ end
 end
 
 function inputs = getInputs(tree)
+import org.opensim.modeling.Storage
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(~isempty(inputDirectory))
@@ -54,9 +55,11 @@ else
     inputDirectory = pwd;
 end
 prefixes = getPrefixes(tree, inputDirectory);
-inputs.experimentalMoments = parseMtpStandard( ...
-    findFileListFromPrefixList(fullfile(inputDirectory, "IDData"), ...
-    prefixes));
+inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
+    inputDirectory, "IDData"), prefixes);
+inputs.coordinates = getStorageColumnNames(Storage( ...
+    inverseDynamicsFileNames(1)));
+inputs.experimentalMoments = parseMtpStandard(inverseDynamicsFileNames);
 inputs.emgData = parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGData"), prefixes));
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
