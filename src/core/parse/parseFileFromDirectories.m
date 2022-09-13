@@ -29,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = parseFileFromDirectories(directories, suffix)
+function cells = parseFileFromDirectories(directories, suffix)
 import org.opensim.modeling.Storage
 firstTrial = parseFileInDirectory(directories(1), suffix);
 cells = zeros([length(directories) size(firstTrial)]);
@@ -37,7 +37,6 @@ cells(1, :, :) = firstTrial;
 for i=2:length(directories)
     cells(i, :, :) = parseFileInDirectory(directories(i), suffix);
 end
-output = permute(cells, [3, 1, 2]);
 end
 
 function data = parseFileInDirectory(inputDirectory, suffix)

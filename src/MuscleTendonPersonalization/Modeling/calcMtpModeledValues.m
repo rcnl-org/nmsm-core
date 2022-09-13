@@ -1,11 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function pulls the files from the directory given as the input. 
-% These files are then organized into a 3D matrix with dimensions matching:
-% (numFrames, numTrials, numMuscles)
 %
-% (Array of string) -> (3D matrix of number)
-% returns a 3D matrix of the loaded data trials
+% (struct, struct, struct) -> (struct)
+% returns the modeled values for the given inputs for MTP
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,13 +26,25 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cells = parseMtpStandard(files)
-import org.opensim.modeling.Storage
-dataFromFileOne = storageToDoubleMatrix(Storage(files(1)));
-cells = zeros([length(files) ...
-    size(dataFromFileOne)]);
-cells(1, :, :) = dataFromFileOne;
-for i=2:length(files)
-    cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
-end
+function modeledValues = calcMtpModeledValues(values, ...
+    experimentalData, params)
+muscleExcitations = calcMuscleExcitations(experimentalData.emgTime, ...
+    experimentalData.emgSplines, values.electromechanicalDelays, ...
+    values.emgScaleFactors);
+neuralActivations = calcNeuralActivations(muscleExcitations, ...
+    values.activationTimeConstants, experimentalData.emgTime, ...
+    experimentalData.numPaddingFrames);
+muscleActivations = calcMuscleActivations(neuralActivations, ...
+    values.activationNonlinearityConstants);
+[modeledValues.normalizedFiberLength, ...
+    modeledValues.normalizedFiberVelocity] = ...
+    calcNormalizedMuscleFiberLengthsAndVelocities(experimentalData, ...
+    values.optimalFiberLengthScaleFactors, ...
+    values.tendonSlackLengthScaleFactors);
+modeledValues.passiveForce = passiveForceLengthCurve( ...
+    modeledValues.normalizedFiberLength);
+modeledValues.muscleJointMoments = calcMuscleJointMoments(experimentalData, ...
+    modeledValues.passiveForce, muscleActivations, ...
+    modeledValues.normalizedFiberLength, ...
+    modeledValues.normalizedFiberVelocity);
 end

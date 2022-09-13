@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function pulls the files from the directory given as the input. 
-% These files are then organized into a 3D matrix with dimensions matching:
-% (numFrames, numTrials, numMuscles)
+% This function calculates the cost that penalize the changes in parameter 
+% values
 %
-% (Array of string) -> (3D matrix of number)
-% returns a 3D matrix of the loaded data trials
+% (Array of number, number, number) -> (Array of number)
+% returns cost that penalizes differences 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,13 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cells = parseMtpStandard(files)
-import org.opensim.modeling.Storage
-dataFromFileOne = storageToDoubleMatrix(Storage(files(1)));
-cells = zeros([length(files) ...
-    size(dataFromFileOne)]);
-cells(1, :, :) = dataFromFileOne;
-for i=2:length(files)
-    cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
-end
+function cost = calcDeviationCostTerm(value, ...
+    errorCenter, maxAllowableError)
+
+cost = sum(((value - errorCenter) ./ maxAllowableError) .^ 2 ./ ...
+    numel(value), 'all');
+
 end

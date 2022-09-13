@@ -1,11 +1,24 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the scaled muscle excitations given the
-% processed EMG signals
+% This function calculates the model normalized muscle fiber lengths and
+% velocities
 %
-% (Array of numbers, 2D cell, Array of numbers, Array of numbers) -> 
-% (3D matrix of numbers)
-% returns the muscle excitations with time padding
+% Inputs:
+% inputData.lMt - 3D matrix of (numFrames, numTrials, numMuscles)
+% inputData.vMT - 3D matric of (numFrames, numTrials, numMuscles)
+% inputData.vMaxFactor - number
+% inputData.pennationAngle - 3D matrix of (1, 1, numMuscles)
+% inputData.fMax - 3D matrix of (1, 1, numMuscles)
+% inputData.lMo - 3D matrix of (1, 1, numMuscles)
+% inputData.lTs - 3D matrix of (1, 1, numMuscles)
+%
+% Outputs:
+% lMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
+% vMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
+%
+% (Struct, Array of number, Array of number) ->
+% (3D Array of number, 3D Array of number)
+% returns computed muscle fiber lengths and velocities with scale factor
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,17 +42,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function muscleExcitations = calcMuscleExcitations(emgTime, ...
-    emgSplines, electromechanicalDelays, emgScaleFactors)      
+function [normalizedFiberLengths, normalizedFiberVelocities] = ...
+    calcNormalizedMuscleFiberLengthsAndVelocities(experimentalData, ...
+    optimalFiberLengthScaleFactors, tendonSlackLengthScaleFactors)
 
-if length(electromechanicalDelays) == 1
-    timeDelayedEmg = calcEmgDataWithCommonTimeDelay(emgTime, ...
-        emgSplines, electromechanicalDelays / 10);
-else
-    timeDelayedEmg = calcEmgDataWithMuscleSpecificTimeDelay(emgTime, ...
-        emgSplines, electromechanicalDelays / 10); 
-end 
-expandedEmgScalingFactors = ones(1, size(emgScaleFactors, 2), 1);
-expandedEmgScalingFactors(1, :, 1) = emgScaleFactors;
-muscleExcitations = timeDelayedEmg .* expandedEmgScalingFactors; 
+scaledOptimalFiberLength = experimentalData.optimalFiberLength .* optimalFiberLengthScaleFactors;
+scaledTendonSlackLength = experimentalData.tendonSlackLength .* tendonSlackLengthScaleFactors;
+
+% Normalized muscle fiber length, equation 2 from Meyer 2017
+normalizedFiberLengths = (experimentalData.muscleTendonLength - scaledTendonSlackLength) ./ (scaledOptimalFiberLength .* cos(experimentalData.pennationAngle));
+
+% Normalized muscle fiber velocity, equation 3 from Meyer 2017
+normalizedFiberVelocities = (experimentalData.muscleTendonVelocity) ./ (experimentalData.vMaxFactor .* scaledOptimalFiberLength);
+
 end
