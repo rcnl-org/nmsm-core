@@ -1,11 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function pulls the files from the directory given as the input. 
-% These files are then organized into a 3D matrix with dimensions matching:
-% (numFrames, numTrials, numMuscles)
+% This function takes a 2D array (time) containing the time data for each
+% (trial, time point), a 2D Cell Array of pp splines (spline(x,y)) of time
+% and emg data, and a number for the time delay across all muscles.
+% It applies the time delay to the spline and returns the new segment of
+% emg data for each unique trial and muscle combination.
 %
-% (Array of string) -> (3D matrix of number)
-% returns a 3D matrix of the loaded data trials
+% (2D Array of number, 2D Cell Array of pp, number) -> (3D Array of number)
+% returns new emg data after applying the same time delay to all muscles
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +17,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega, Claire V. Hammond, Spencer Williams            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,13 +31,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cells = parseMtpStandard(files)
-import org.opensim.modeling.Storage
-dataFromFileOne = storageToDoubleMatrix(Storage(files(1)));
-cells = zeros([length(files) ...
-    size(dataFromFileOne)]);
-cells(1, :, :) = dataFromFileOne;
-for i=2:length(files)
-    cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
+function emg = calcEmgDataWithCommonTimeDelay(time, emgSplines, ...
+    timeDelay)
+timeIntervalInterp = linspace(0, 1, size(time, 2))';
+emg = zeros(size(emgSplines, 1), size(emgSplines, 2), size(time, 2));
+for trial = 1:size(emgSplines, 1)
+    interpTime = ((time(trial, end) - time(trial, 1)) * ...
+        timeIntervalInterp + time(trial, 1));
+    emg(trial, :, :) = ppval(interpTime - timeDelay, ...
+        emgSplines{trial})';
 end
 end

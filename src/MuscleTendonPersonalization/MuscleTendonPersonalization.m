@@ -48,7 +48,8 @@ function primaryValues = MuscleTendonPersonalization(inputs, ...
 %     inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
 % end
 primaryValues = prepareInitialValues(inputs, params);
-[inputs.normalizedFiberLength, ~] = calcNormalizedMusceFiberLengthsAndVelocities(inputs, struct("isIncluded", zeros(1,6), "primaryValues", primaryValues, "secondaryValues", zeros(size(primaryValues))));
+inputs = finalizeInputs(inputs, primaryValues, params);
+save("testData.mat", "inputs", "-mat")
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
@@ -101,8 +102,14 @@ values(1, :) = 0.5; % electromechanical delay
 values(2, :) = 1.5; % activation time
 values(3, :) = 0.05; % activation nonlinearity
 values(4, :) = 0.5; % EMG scale factors
-values(5, :) = 1; % lmo scale factor
-values(6, :) = 1; % lts scale factor
+values(5, :) = 1; % optimal fiber length scale factor
+values(6, :) = 1; % tendon slack length scale factor
+end
+
+function inputs = finalizeInputs(inputs, primaryValues, params)
+values = makeMtpValuesAsStruct(struct(), primaryValues, zeros(1, 6));
+modeledValues = calcMtpModeledValues(values, inputs, params);
+inputs = mergeStructs(inputs, modeledValues);
 end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
