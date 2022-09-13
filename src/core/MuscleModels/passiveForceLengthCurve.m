@@ -33,6 +33,11 @@ function normalizedPassiveForce = passiveForceLengthCurve(...
 e1 = 0.232000797810576;
 e2 = 12.438535493526128;
 e3 = 1.329470475731338;
-normalizedPassiveForce = e1 * log(exp(e2 * (...
-    normalizedMuscleFiberLength - e3)) + 1);
+% Result of exp can be greater than a double can store
+% normalizedPassiveForce = e1 * log(exp(e2 * (... 
+%     normalizedMuscleFiberLength - e3)) + 1);
+
+fiberLengthPower = e2 * (normalizedMuscleFiberLength - e3);
+normalizedPassiveForce = e1 * (log(exp(0.5 * fiberLengthPower) + ...
+    exp(-0.5 * fiberLengthPower)) + log(exp(0.5 * fiberLengthPower)));
 end

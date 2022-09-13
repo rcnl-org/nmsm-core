@@ -36,7 +36,7 @@ function expandEmgDatas(modelFileName, emgFileName, outputDirectory, ...
     prefix, params)
 emgData = org.opensim.modeling.TimeSeriesTable(emgFileName);
 model = Model(modelFileName);
-columnNames = getMusclesInOrder(model);
+columnNames = getEnabledMusclesInOrder(model);
 groupToName = getMuscleNameByGroupStruct(model, ...
     getTimeSeriesTableColumnNames(emgData));
 timeColumn = stdVectorDoubleToDoubleArray( ...
@@ -45,7 +45,7 @@ newEmgData = expandEmgData(columnNames, emgData, timeColumn, ...
     groupToName, params);
 [~, ~, ext] = fileparts(emgFileName);
 writeToSto(columnNames, timeColumn, newEmgData, fullfile( ...
-    outputDirectory, prefix + ext) );
+    outputDirectory, strcat(prefix, ext)));
 end
 
 % (Model, Array of string) -> (struct)

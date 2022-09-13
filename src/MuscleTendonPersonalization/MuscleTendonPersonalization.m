@@ -4,12 +4,15 @@
 % the muscle characteristics of the patient.
 %
 % inputs:
-%   - model (Model)
+%   - tasks (cell array)
+%       - isIncluded (array of boolean)
+%   - model (string)
 %   - jointMoment (3D array)
 %   - muscleTendonLength (3D array)
 %   - muscleTendonVelocity (3D array)
 %   - muscleTendonMomentArm (4D array)
 %   - emgData (3D array)
+%   - experimentalData (struct) - see costFunction
 %
 % (struct, struct) -> (struct)
 % Runs the Muscle Tendon Personalization algorithm
@@ -36,21 +39,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function primaryValues = MuscleTendonPersonalization(inputs, inputData, ...
+function primaryValues = MuscleTendonPersonalization(inputs, ...
     params)
-verifyInputs(inputs); % (struct) -> (None)
-verifyParams(params); % (struct) -> (None)
+%verifyInputs(inputs); % (struct) -> (None)
+%verifyParams(params); % (struct) -> (None)
+% emgSplines now made in parse settings tree step
+% if ~isfield(inputs, "emgSplines")
+%     inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
+% end
 primaryValues = prepareInitialValues(inputs, params);
+inputs = finalizeInputs(inputs, primaryValues, params);
+save("testData.mat", "inputs", "-mat")
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
 for i=1:length(inputs.tasks)
-    taskValues = makeTaskValues(primaryValues, inputs.tasks{i}, params);
+    [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
+        primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
     taskParams = makeTaskParams(inputs.tasks{i}, params);
     optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-        lowerBounds, upperBounds, inputData, taskParams, optimizerOptions);
+        primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
+        taskUpperBounds, inputs, taskParams, optimizerOptions);
     primaryValues = updateDesignVariables(primaryValues, ...
-        optimizedValues, taskParams);
+        optimizedValues, inputs.tasks{i}.isIncluded);
 end
 end
 
@@ -91,8 +102,14 @@ values(1, :) = 0.5; % electromechanical delay
 values(2, :) = 1.5; % activation time
 values(3, :) = 0.05; % activation nonlinearity
 values(4, :) = 0.5; % EMG scale factors
-values(5, :) = 1; % lmo scale factor
-values(6, :) = 1; % lts scale factor
+values(5, :) = 1; % optimal fiber length scale factor
+values(6, :) = 1; % tendon slack length scale factor
+end
+
+function inputs = finalizeInputs(inputs, primaryValues, params)
+values = makeMtpValuesAsStruct(struct(), primaryValues, zeros(1, 6));
+modeledValues = calcMtpModeledValues(values, inputs, params);
+inputs = mergeStructs(inputs, modeledValues);
 end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
@@ -141,11 +158,16 @@ end
 
 % (struct, struct) -> (Array of number)
 % prepare values to be optimized for the given task
-function taskValues = makeTaskValues(primaryValues, taskInputs, params)
+function [taskValues, taskLowerBounds, taskUpperBounds] = ...
+    makeTaskValues(primaryValues, taskInputs, lowerBounds, upperBounds)
 taskValues = [];
+taskLowerBounds = [];
+taskUpperBounds = [];
 for i = 1:length(taskInputs.isIncluded)
    if(taskInputs.isIncluded(i))
        taskValues = [taskValues primaryValues(i, :)];
+       taskLowerBounds = [taskLowerBounds lowerBounds(i, :)];
+       taskUpperBounds = [taskUpperBounds upperBounds(i, :)];
    end
 end
 end
