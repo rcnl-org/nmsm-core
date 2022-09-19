@@ -87,8 +87,7 @@ paramName = ["processEmg", "filterDegree", "highPassCutoff", ...
     "lowPassCutoff"];
 preprocessEmg = getFieldByName(tree, paramArgs(1));
 if(isstruct(preprocessEmg))
-    params.(paramName(1)) = strcmpi(...
-        getFieldByName(tree, paramArgs(1)).Text, 'true');
+    params.(paramName(1)) = strcmpi(preprocessEmg.Text, 'true');
 end
 for i=2:length(paramArgs)
     value = getFieldByName(tree, paramArgs(i));
