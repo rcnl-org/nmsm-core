@@ -47,17 +47,17 @@ end
 
 function inputs = mergeStageOneResults(inputs, results)
 index = 1;
-inputs.springConstants = results(index : index + length(inputs.springConstants) - 1) * 1000;
+inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
 index = index + length(inputs.springConstants);
-inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1) / 1000;
+inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
 index = index + length(inputs.dampingFactors);
 
-% bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficientsVerticalSubset, 1, []));
-% bSplineCoefficientsVerticalSubset = results(index : index + bSplineCoefficientLength - 1);
-% bSplineCoefficientsVerticalSubset = reshape(bSplineCoefficientsVerticalSubset, [], 5);
+bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficientsVerticalSubset, 1, []));
+bSplineCoefficientsVerticalSubset = results(index : index + bSplineCoefficientLength - 1);
+bSplineCoefficientsVerticalSubset = reshape(bSplineCoefficientsVerticalSubset, [], 5);
 
-% inputs.bSplineCoefficients(:, [1, 3, 5:7]) = bSplineCoefficientsVerticalSubset;
-% index = index + bSplineCoefficientLength;
+inputs.bSplineCoefficients(:, [1, 3, 5:7]) = bSplineCoefficientsVerticalSubset;
+index = index + bSplineCoefficientLength;
 
 inputs.restingSpringLength = results(index);
 end
