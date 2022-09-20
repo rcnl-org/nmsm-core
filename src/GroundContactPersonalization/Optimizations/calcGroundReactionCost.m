@@ -58,11 +58,11 @@ function cost = calcCost(inputs, modeledValues, valuesStruct)
 cost = footMarkerPositionError;
 cost = [cost 1000 * footMarkerSlopeError];
 cost = [cost 10000 * calcKinematicCurveSlopeError(inputs, ...
-    modeledValues, [1:7])];
+    modeledValues, 1:size(modeledValues.jointVelocities, 1))];
 [groundReactionForceValueErrors, groundReactionForceSlopeErrors] = ...
     calcGroundReactionForceAndSlopeError(inputs, modeledValues);
 if inputs.isLeftFoot
-    cost = [cost 5 * groundReactionForceValueErrors(1)]; % are the different L/R weights useful here?
+    cost = [cost 5 * groundReactionForceValueErrors(1)]; % weights are not general
     cost = [cost 5 * groundReactionForceValueErrors(2)];
     cost = [cost 5 * groundReactionForceValueErrors(3)];
 else
@@ -76,11 +76,11 @@ cost = [cost 2 * groundReactionForceSlopeErrors(3)];
 cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean(...
     valuesStruct.springConstants)];
 cost = [cost 1 / 100 * abs(inputs.springConstants - ...
-    valuesStruct.springConstants)]; % K_err?
+    valuesStruct.springConstants)];
 cost = [cost 100 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
 cost = [cost calcSpringRestingLengthError()]; % replace with marker distance errors
-cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)]; % should denominator change between stages?
-cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)]; % ^^^
+cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)];
+cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)];
 cost = [cost calcStaticFrictionDeviationError(...
     valuesStruct.staticFrictionCoefficient, params)];
 cost = [cost calcDynamicFrictionDeviationError(...
