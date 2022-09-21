@@ -34,10 +34,11 @@ settingsTree = xml2struct(settingsFileName);
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 optimizedParams = MuscleTendonPersonalization(inputs, params);
-%% results is a structure?
-results = calcFinalMuscleActivations(optimizedParams, inputData);
-results = calcFinalModelMoments(results, inputData);
-reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalization(inputs.model, results, resultsDirectory,...
-    muscleModelFileName, muscleMomentFileName, muscleActivationFileName);
+%% results is a structure, report not implemented yet
+results = calcFinalMuscleActivations(optimizedParams, inputs);
+results = calcFinalModelMoments(results, inputs);
+save("results.mat", "results", '-mat')
+% reportMuscleTendonPersonalization(inputs.model, results)
+saveMuscleTendonPersonalizationResults(inputs.model, ...
+    inputs.coordinates, results, resultsDirectory);
 end
