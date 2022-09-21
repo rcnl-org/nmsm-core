@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function runs fmincon for MuscleTendonPersonalization with settings
-% controlled by the input params.
+% Wrapper for splder() as published in C++ by Kelly Rooney and B.J. Fregly
 %
-% (string) -> (None)
-% returns the optimized values from Muscle Tendon optimization round
+% (1D Array of double, 2D Array of double, integer, double) -> (None)
+% Calculates the derivative of the given gcvSpline at original time points
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,18 +27,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function createMuscleTendonVelocity(muscleTendonLengthFileName, ...
-    outputVelocityFileName, cutoffFrequency)
-import org.opensim.modeling.Storage
-storage = Storage(muscleTendonLengthFileName);
-length = storageToDoubleMatrix(storage);
-time = findTimeColumn(storage);
-
-velocityData = calcDerivativesFromGcvSplines(time, length, 4, ...
-    cutoffFrequency);
-
-writeToSto(getStorageColumnNames(storage), time, velocityData, ...
-    outputVelocityFileName)
-
+function derivative = calcGcvSplineDerivative(time, gcvSpline, degree)
+IDER = 1;
+X = time;
+C = gcvSpline;
+M = (degree + 1) / 2;
+N = size(X, 2);
+Q = ones(1, 2 * M);
+derivative = zeros(1, length(X));
+for i = 1:length(time)
+    T = time(i);
+    L = ceil(N * (T - X(1)) / (X(end) - X(1)));
+    derivative(i) = splder(IDER, M, N, T, X, C, L, Q);
 end
-

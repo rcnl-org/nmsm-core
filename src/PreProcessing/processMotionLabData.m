@@ -156,8 +156,10 @@ for k=1:length(files)
     end
 end
 if(~found) throwCantFindMAFileException("_MuscleAnalysis_Length.sto"); end
+
 createMuscleTendonVelocity(fullfile(resultsDir, prefix + ...
-    "_Length.sto"), fullfile(resultsDir, prefix + "_Velocity.sto"));
+    "_Length.sto"), fullfile(resultsDir, prefix + "_Velocity.sto"), ...
+    muscleTendonVelocityCutoffFrequency);
 end
 
 
