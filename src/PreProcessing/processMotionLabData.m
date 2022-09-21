@@ -46,7 +46,8 @@ writeToSto(ikColumnLabels, ikTime, ikData', fullfile(inputs.resultsDir, ...
 copyfile(inputs.idResultsFileName, fullfile(inputs.resultsDir, ...
     idResultsDir, inputs.prefix + ".sto"))
 moveMuscleAnalysis(fullfile(inputs.resultsDir, maResultsDir), ...
-    inputs.maResultsDir, inputs.coordinates, inputs.prefix);
+    inputs.maResultsDir, inputs.coordinates, inputs.prefix, ...
+    inputs.muscleTendonVelocityCutoffFrequency);
 expandEmgDatas(inputs.model, inputs.emgFileName, ...
     fullfile(inputs.resultsDir, emgResultsDir), inputs.prefix, params);
 filesToSection = [ ...
@@ -91,7 +92,8 @@ mkdir(fullfile(resultsDir, maDir))
 mkdir(fullfile(resultsDir, emgDir))
 end
 
-function moveMuscleAnalysis(resultsDir, inputDir, coordinates, prefix)
+function moveMuscleAnalysis(resultsDir, inputDir, coordinates, prefix, ...
+    muscleTendonVelocityCutoffFrequency)
 files = dir(inputDir);
 for i=1:length(coordinates)
     found = false;
@@ -120,8 +122,10 @@ for k=1:length(files)
     end
 end
 if(~found) throwCantFindMAFileException("_MuscleAnalysis_Length.sto"); end
+
 createMuscleTendonVelocity(fullfile(resultsDir, prefix + ...
-    "_Length.sto"), fullfile(resultsDir, prefix + "_Velocity.sto"));
+    "_Length.sto"), fullfile(resultsDir, prefix + "_Velocity.sto"), ...
+    muscleTendonVelocityCutoffFrequency);
 end
 
 
