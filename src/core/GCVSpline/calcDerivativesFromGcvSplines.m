@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function runs fmincon for MuscleTendonPersonalization with settings
-% controlled by the input params.
+% This function uses calcGcvSpline() and calcGcvSplineDerivative() to
+% calculate the derivative of the 2D data using a generalized cross
+% validated spline.
 %
-% (string) -> (None)
-% returns the optimized values from Muscle Tendon optimization round
+% (1D Array of double, 2D Array of double, integer, double) -> (None)
+% Calculates the derivative for the given data using a GCV Spline
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,18 +29,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function createMuscleTendonVelocity(muscleTendonLengthFileName, ...
-    outputVelocityFileName, cutoffFrequency)
-import org.opensim.modeling.Storage
-storage = Storage(muscleTendonLengthFileName);
-length = storageToDoubleMatrix(storage);
-time = findTimeColumn(storage);
-
-velocityData = calcDerivativesFromGcvSplines(time, length, 4, ...
-    cutoffFrequency);
-
-writeToSto(getStorageColumnNames(storage), time, velocityData, ...
-    outputVelocityFileName)
-
+function derivatives = calcDerivativesFromGcvSplines(time, data, ...
+    degree, cutoffFreqency)
+derivatives = zeros(size(data));
+for i=1:size(data, 1)
+    gcvSpline = calcGcvSpline(time, data(i, :), degree, cutoffFreqency);
+    derivatives(i, :) = calcGcvSplineDerivative(time, gcvSpline, degree);
 end
-
+end
