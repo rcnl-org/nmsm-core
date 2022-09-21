@@ -28,16 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function results = calcFinalMuscleActivations(optimizedParams, inputData)
+function results = calcFinalMuscleActivations(optimizedParams, inputs)
 
-muscleExcitations = calcMuscleExcitations(inputData.timeEMG, ...
-    inputData.emgSplines, findCorrectMtpValues(1, optimizedParams), ...
-    findCorrectMtpValues(4, optimizedParams));
+muscleExcitations = calcMuscleExcitations(inputs.emgTime, ...
+    inputs.emgSplines, optimizedParams(1,:), optimizedParams(4, :));
 neuralActivations = calcNeuralActivations(muscleExcitations, ...
-    findCorrectMtpValues(2, optimizedParams), inputData.timeEMG, ...
-    inputData.nPad);
+    optimizedParams(2, :), inputs.emgTime, inputs.numPaddingFrames);
 results.muscleActivations = calcMuscleActivations(...
-    findCorrectMtpValues(3, optimizedParams), neuralActivations);
-results.time = inputData.timeEMG;
+    neuralActivations, optimizedParams(3, :));
+results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : end - ...
+    inputs.numPaddingFrames);
 results.optimizedParams = optimizedParams;
 end
