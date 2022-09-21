@@ -32,7 +32,15 @@
 			<!-- Space separated pair of start and end times for a given trial -->
 			<MTPTimePair>4.907 5.993</MTPTimePair>
 		</MTPTimePairList>
-		<!-- Prefix to denote each trial (gait, squat, step_up), useful when multiple motions are used -->
+		<!-- Prefix (one string without space) to denote each trial (gait, squat, step_up), useful when multiple motions are used -->
 		<MTPTrialPrefix>gait</MTPTrialPrefix>
+		<!-- *optional* true if you want to process the emg data as part of preprocessing-->
+		<preprocess_emg>true</preprocess_emg>
+		<!-- *optional* filter degree for emg preprocessing -->
+		<preprocess_emg_filter_degree>4</preprocess_emg_filter_degree>
+		<!-- *optional* filter degree for emg preprocessing -->
+		<preprocess_emg_high_pass_cutoff>10</preprocess_emg_high_pass_cutoff>
+		<!-- *optional* filter degree for emg preprocessing -->
+		<preprocess_emg_low_pass_cutoff>40</preprocess_emg_low_pass_cutoff>
     </MuscleTendonPersonalizationPreprocessingTool>
 </OpenSimDocument>
