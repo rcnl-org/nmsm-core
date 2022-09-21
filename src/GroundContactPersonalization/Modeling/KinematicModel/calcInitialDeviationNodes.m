@@ -27,10 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function nodes = calcInitialDeviationNodes(time, degree, numNodes, ...
+function nodes = calcInitialDeviationNodes(numNodes, ...
     numColumns)
-numPts = length(time);
-interval = time(2)-time(1);
-[N,~,~] = BSplineMatrices(degree, numNodes, numPts, interval);
-nodes = N\ones(101, numColumns);
+
+nodes = ones(numNodes, numColumns);
 end
