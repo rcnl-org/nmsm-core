@@ -29,13 +29,14 @@
 % ----------------------------------------------------------------------- %
 
 function createMuscleTendonVelocity(muscleTendonLengthFileName, ...
-    outputVelocityFileName)
+    outputVelocityFileName, cutoffFrequency)
 import org.opensim.modeling.Storage
 storage = Storage(muscleTendonLengthFileName);
 length = storageToDoubleMatrix(storage);
 time = findTimeColumn(storage);
 
-velocityData = calcBSplineDerivative(time, length, 4, ceil((time(end)-time(1))*21));
+velocityData = calcDerivativesFromGcvSplines(time, length, 4, ...
+    cutoffFrequency);
 
 writeToSto(getStorageColumnNames(storage), time, velocityData, ...
     outputVelocityFileName)

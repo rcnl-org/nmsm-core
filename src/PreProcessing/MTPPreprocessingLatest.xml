@@ -17,6 +17,8 @@
 		<muscle_analysis_directory>MuscleAnalysis</muscle_analysis_directory>
 		<!-- The space separated list of names of coordinates to be used in MTP-->
 		<MTPCoordinateList>hip_adduction_l hip_flexion_l hip_rotation_l knee_angle_l ankle_angle_l subtalar_angle_l</MTPCoordinateList>
+		<!-- The cutoff frequency for muscle tendon velocity GCV Spline -->
+		<muscle_tendon_velocity_cutoff_frequency></muscle_tendon_velocity_cutoff_frequency>
 		<!-- The list of start and end times of trials to be used in MTP -->
 		<MTPTimePairList>
 			<!-- Space separated pair of start and end times for a given trial -->
