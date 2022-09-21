@@ -32,8 +32,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function expandEmgDatas(modelFileName, emgFileName, outputDirectory, ...
-    prefix, params)
+function emgData = expandEmgDatas(modelFileName, emgFileName)
 emgData = org.opensim.modeling.TimeSeriesTable(emgFileName);
 model = Model(modelFileName);
 columnNames = getEnabledMusclesInOrder(model);
@@ -41,8 +40,8 @@ groupToName = getMuscleNameByGroupStruct(model, ...
     getTimeSeriesTableColumnNames(emgData));
 timeColumn = stdVectorDoubleToDoubleArray( ...
     emgData.getIndependentColumn());
-newEmgData = expandEmgData(columnNames, emgData, timeColumn, ...
-    groupToName, params);
+newEmgData = expandEmgData(columnNames, emgData, ...
+    groupToName);
 [~, ~, ext] = fileparts(emgFileName);
 writeToSto(columnNames, timeColumn, newEmgData, fullfile( ...
     outputDirectory, strcat(prefix, ext)));
@@ -64,7 +63,7 @@ end
 end
 
 function newEmgData = expandEmgData(expandedColumnNames, emgData, ...
-    timeColumn, namesByGroup, params)
+    namesByGroup)
 % expandedData.scaleTime((emgData.getLastTime() - ... %scale time
 %     emgData.getFirstTime()) / (expandedData.getLastTime() - ...
 %     expandedData.getFirstTime())); %shift time
@@ -80,6 +79,4 @@ for i=1:length(emgColumnNames)
             musclesInGroup(j)))) = temp;
     end
 end
-newEmgData = processEmg(newEmgData, ...
-    timeColumn, params);
 end
