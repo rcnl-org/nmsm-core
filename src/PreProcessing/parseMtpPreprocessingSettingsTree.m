@@ -82,5 +82,20 @@ end
 
 function params = getParams(tree)
 params = struct();
+paramArgs = ["preprocess_emg", "preprocess_emg_filter_degree", ...
+    "preprocess_emg_high_pass_cutoff", "preprocess_emg_low_pass_cutoff"];
+% name in matlab is different, use for output struct arg name
+paramName = ["processEmg", "filterDegree", "highPassCutoff", ...
+    "lowPassCutoff"];
+preprocessEmg = getFieldByName(tree, paramArgs(1));
+if(isstruct(preprocessEmg))
+    params.(paramName(1)) = strcmpi(preprocessEmg.Text, 'true');
+end
+for i=2:length(paramArgs)
+    value = getFieldByName(tree, paramArgs(i));
+    if(isstruct(value))
+        params.(paramName(i)) = str2double(value.Text);
+    end
+end
 end
 
