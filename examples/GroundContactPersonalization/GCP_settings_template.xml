@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+    <MuscleTendonPersonalizationTool>
+        <!--Directory used for writing results.-->
+        <results_directory/>
+        <!--Directory for input files-->
+        <input_directory>GCP_inputs</input_directory>
+        <!--Name of the input model file (.osim) to use-->
+        <input_model_file>Patient_model.osim</input_model_file>
+		<!--Name of the toe angle coordinate in the model file-->
+		<toe_coordinate>mtp_angle_r</toe_coordinate>
+        <!--The set of <GroundContactPersonalizationTask> to be completed by the tool, each Task is a separate design variable. All values are true by default.-->
+        <GroundContactPersonalizationTaskList>
+			<!--Stage 1 of optimization, optimizing by vertical ground reaction forces-->
+            <GroundContactPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+                <!--Boolean (true, false) indicating if foot kinematics (not including horizontal translations) should be optimized for this task-->
+                <optimize_5dof_kinematics>true</optimize_5dof_kinematics>
+                <!--Boolean (true, false) indicating if common spring resting length should be optimized for this task-->
+                <optimize_spring_resting_length>true</optimize_spring_resting_length>
+                <!--Boolean (true, false) indicating if spring stiffness coefficients should be optimized for this task-->
+                <optimize_spring_stiffness_coefficients>true</optimize_spring_stiffness_coefficients>
+                <!--Boolean (true, false) indicating if spring damping coefficients should be optimized for this task-->
+                <optimize_spring_damping_coefficients>true</optimize_spring_damping_coefficients>
+            </GroundContactPersonalizationTask>
+			<!--Stage 2 of optimization, optimizing by all orthogonal components of ground reaction forces-->
+            <GroundContactPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+                <!--Boolean (true, false) indicating if foot kinematics should be optimized for this task-->
+                <optimize_7dof_kinematics>true</optimize_7dof_kinematics>
+                <!--Boolean (true, false) indicating if coefficients of friction should be optimized for this task-->
+                <optimize_friction_coefficients>true</optimize_friction_coefficients>
+                <!--Boolean (true, false) indicating if spring stiffness coefficients should be optimized for this task-->
+                <optimize_spring_stiffness_coefficients>true</optimize_spring_stiffness_coefficients>
+                <!--Boolean (true, false) indicating if spring damping coefficients should be optimized for this task-->
+                <optimize_spring_damping_coefficients>true</optimize_spring_damping_coefficients>
+            </GroundContactPersonalizationTask>
+			<!--Stage 3 of optimization, optimizing by ground reaction forces, center of pressure location, and free reaction moment-->
+            <GroundContactPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+                <!--Boolean (true, false) indicating if foot kinematics should be optimized for this task-->
+                <optimize_7dof_kinematics>true</optimize_7dof_kinematics>
+                <!--Boolean (true, false) indicating if coefficients of friction should be optimized for this task-->
+                <optimize_friction_coefficients>true</optimize_friction_coefficients>
+                <!--Boolean (true, false) indicating if spring stiffness coefficients should be optimized for this task-->
+                <optimize_spring_stiffness_coefficients>true</optimize_spring_stiffness_coefficients>
+                <!--Boolean (true, false) indicating if spring damping coefficients should be optimized for this task-->
+                <optimize_spring_damping_coefficients>true</optimize_spring_damping_coefficients>
+            </GroundContactPersonalizationTask>
+        </GroundContactPersonalizationTaskList>
+        <GroundContactCostFunctionErrorCenters>
+            <!--*Optional* Default value for marker distance errors (in meters)-->
+			<marker_distance_error>0.0025</marker_distance_error>
+			<!--*Optional* Default value for static friction coefficients-->
+			<static_friction_coefficient>0.2</static_friction_coefficient>
+			<!--*Optional* Default value for dynamic friction coefficients-->
+			<dynamic_friction_coefficient>0.15</dynamic_friction_coefficient>
+			<!--*Optional* Default value for viscous friction coefficients-->
+			<viscous_friction_coefficient>0.005</viscous_friction_coefficient>
+        </GroundContactCostFunctionErrorCenters>
+        <!--*Optional* The number of random initial guesses of design parameters to try optimizing-->
+        <initial_guesses>10</initial_guesses>
+        <!--*Optional* The number of allowed iterations of the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
+        <max_iterations>400</max_iterations>
+		<!--*Optional* The number of allowed cost function calls for the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
+        <max_function_evaluations>1e8</max_function_evaluations>
+        <!--*Optional* space-separated list of prefixes to use for data files, if left blank, use all prefixes fron IK folder-->
+        <trial_prefixes></trial_prefixes>
+    </MuscleTendonPersonalizationTool>
+</OpenSimDocument>
