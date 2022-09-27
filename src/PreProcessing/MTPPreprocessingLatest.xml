@@ -17,6 +17,8 @@
 		<muscle_analysis_directory>MuscleAnalysis</muscle_analysis_directory>
 		<!-- The space separated list of names of coordinates to be used in MTP-->
 		<MTPCoordinateList>hip_adduction_l hip_flexion_l hip_rotation_l knee_angle_l ankle_angle_l subtalar_angle_l</MTPCoordinateList>
+		<!-- The cutoff frequency for muscle tendon velocity GCV Spline -->
+		<muscle_tendon_velocity_cutoff_frequency></muscle_tendon_velocity_cutoff_frequency>
 		<!-- The list of start and end times of trials to be used in MTP -->
 		<MTPTimePairList>
 			<!-- Space separated pair of start and end times for a given trial -->
@@ -30,7 +32,15 @@
 			<!-- Space separated pair of start and end times for a given trial -->
 			<MTPTimePair>4.907 5.993</MTPTimePair>
 		</MTPTimePairList>
-		<!-- Prefix to denote each trial (gait, squat, step_up), useful when multiple motions are used -->
+		<!-- Prefix (one string without space) to denote each trial (gait, squat, step_up), useful when multiple motions are used -->
 		<MTPTrialPrefix>gait</MTPTrialPrefix>
+		<!-- *optional* true if you want to process the emg data as part of preprocessing-->
+		<preprocess_emg>true</preprocess_emg>
+		<!-- *optional* filter degree for emg preprocessing -->
+		<preprocess_emg_filter_degree>4</preprocess_emg_filter_degree>
+		<!-- *optional* filter degree for emg preprocessing -->
+		<preprocess_emg_high_pass_cutoff>10</preprocess_emg_high_pass_cutoff>
+		<!-- *optional* filter degree for emg preprocessing -->
+		<preprocess_emg_low_pass_cutoff>40</preprocess_emg_low_pass_cutoff>
     </MuscleTendonPersonalizationPreprocessingTool>
 </OpenSimDocument>

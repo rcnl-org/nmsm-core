@@ -6,7 +6,14 @@
 %
 % coordinatesOfInterest can be found from findGCPFreeCoordinates()
 %
-% (Model, string, Array of string, string, string) -> (2D Array of double)
+% markerNames is a struct of strings with 4 fields (toe, medial, ...
+% lateral, heel)
+%
+% markerPositions is a struct of arrays of double with the same fields as
+% markerNames
+%
+% (Model, string, Array of string, string, string, struct) -> ...
+% (2D Array of double)
 % Create an array of coordinate names connecting the bodies to ground
 
 % ----------------------------------------------------------------------- %
@@ -31,8 +38,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function footPosition = makeFootKinematics(model, motionFileName, ...
-    coordinatesOfInterest, hindfootBodyName, toesJointName)
+function [footPosition, markerPositions] = makeFootKinematics(model, ...
+    motionFileName, coordinatesOfInterest, hindfootBodyName, ...
+    toesJointName, markerNames)
 
 import org.opensim.modeling.Storage
 [model, state] = Model(model);
@@ -66,6 +74,11 @@ functions = { % defining the 7 free coordinates to record
 
 footPosition = zeros(7, length(time));
 
+markerNamesFields = fieldnames(markerNames);
+for i=1:length(markerNamesFields)
+    markerPositions.(markerNamesFields{i}) = zeros(length(time), 3);
+end
+
 for i=1:length(time)
     state.setTime(time(i));
     for j=1:length(coordinatesOfInterest)
@@ -74,6 +87,11 @@ for i=1:length(time)
     end
     for j=1:length(functions)
         footPosition(j, i) = functions{j}(model, state);
+    end
+    for j=1:length(markerNamesFields)
+        markerPositions.(markerNamesFields{j})(i, :) = model. ...
+            getMarkerSet().get(markerNames.(markerNamesFields{j})). ...
+            getLocationInGround(state).getAsMat()';
     end
 end
 end

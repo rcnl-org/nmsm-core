@@ -2,10 +2,8 @@
 %
 % This function calculates the muscle activations given the
 % EMG signals and activation dynamic parameters
-% 
-% neuralActivation - 2D matrix of (length(nptsShort*numTrials), numMuscles)
 %
-% (Array of number, 2D array of number) -> (Array of number)
+% (3D Array of number, Array of number) -> (3D Array of number)
 % computes the muscle activations from neural activations and nonlinearity
 
 % ----------------------------------------------------------------------- %
@@ -16,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond, Spencer Williams            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,20 +28,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [muscleActivations] = calcMuscleActivations( ...
-    activationNonlinearity, neuralActivations)
+function muscleActivations = calcMuscleActivations(neuralActivations, ...
+    activationNonlinearity)
 
-activationNonlinearity = permute(activationNonlinearity, [1 3 2]);
-neuralActivations(neuralActivations < 0) = 0; %remove negative neural activ
 nonlinearityCoefficients = [29.280183270562596 4.107869238218326 ...
     1.000004740962477 -7.623282868703527 17.227022969058535 ...
     0.884220539986325]; % defined by BJ Fregly
-muscleActivations = (1 - activationNonlinearity(ones(size( ...
-    neuralActivations, 1), 1), ones(size(neuralActivations, 2), 1), :)) .* ...
-    neuralActivations + (activationNonlinearity(ones(size( ...
-    neuralActivations, 1), 1), ones(size(neuralActivations, 2), 1), :)) .* ...
-    (nonlinearityCoefficients(4) ./ (nonlinearityCoefficients(1) * ...
-    (neuralActivations + nonlinearityCoefficients(6)) .^ ...
-    nonlinearityCoefficients(5) + nonlinearityCoefficients(2)) + ...
-    nonlinearityCoefficients(3)); % equation 8 from Meyer 2017
+% see Meyer 2017 equation 8 (coefficients relabeled)
+g = nonlinearityCoefficients;
+expandedActivationNonlinearity = ones(1, ...
+    size(activationNonlinearity, 2), 1);
+expandedActivationNonlinearity(1, :, 1) = activationNonlinearity;
+denominator = g(1) * (neuralActivations + g(6)) .^ g(5) + g(2);
+bracketed = (g(4) / denominator) + g(3);
+muscleActivations = (1 - expandedActivationNonlinearity) .* ...
+    neuralActivations + expandedActivationNonlinearity .* bracketed;
 end
