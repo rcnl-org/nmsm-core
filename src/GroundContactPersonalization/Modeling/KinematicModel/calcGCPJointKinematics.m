@@ -32,13 +32,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newKinematics = ...
-    calcGCPJointKinematics(experimentalJointKinematics, ...
-    jointKinematicsBSplines, deviationNodes)
-fittedPosition = jointKinematicsBSplines.position * deviationNodes;
-fittedVelocity = jointKinematicsBSplines.velocity * deviationNodes;
+function [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
+    experimentalJointPositions, jointKinematicsBSplines, deviationNodes)
+nodes = jointKinematicsBSplines.position \ experimentalJointPositions';
+fittedNodes = nodes .* deviationNodes;
 
-newKinematics.position = experimentalJointKinematics .* fittedPosition';
-newKinematics.velocity = experimentalJointKinematics .* fittedVelocity';
+modeledJointPositions = jointKinematicsBSplines.position * fittedNodes;
+modeledJointVelocities = jointKinematicsBSplines.velocity * fittedNodes;
+modeledJointPositions = modeledJointPositions';
+modeledJointVelocities = modeledJointVelocities';
 end
 

@@ -25,7 +25,7 @@
                 <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
                 <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
                 <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_optimal_muscle_lengths>false</optimize_optimal_muscle_lengths>
+                <optimize_optimal_fiber_lengths>false</optimize_optimal_fiber_lengths>
                 <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
                 <optimize_tendon_slack_lengths>false</optimize_tendon_slack_lengths>
             </MuscleTendonPersonalizationTask>
