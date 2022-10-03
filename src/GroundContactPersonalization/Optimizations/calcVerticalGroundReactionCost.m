@@ -68,8 +68,8 @@ end
 function cost = calcCost(inputs, modeledValues, valuesStruct)
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-cost = 2 * footMarkerPositionError(:); %270
-cost = [cost 1000 * footMarkerSlopeError(:)]; %12.8
+cost = 2 * footMarkerPositionError; %270
+cost = [cost 1000 * footMarkerSlopeError]; %12.8
 cost = [cost 1000 * calcKinematicCurveSlopeError(inputs, modeledValues, [1, 3, 5:7])]; %27.3
 [groundReactionForceValueError, groundReactionForceSlopeError] = ...
     calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues);
