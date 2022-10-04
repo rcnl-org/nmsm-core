@@ -1,13 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function extracts the data of an OpenSim Storage object loaded from 
-% a .mot file to a vector of column names, a time column, and a 2D MATLAB 
+% This function extracts the data of an OpenSim Storage object loaded from
+% a .mot file to a vector of column names, a time column, and a 2D MATLAB
 % array containing data converted to radians if necessary, using a Model to
-% analyze coordinates. The organization is column major. I.E. output(0,:) 
+% analyze coordinates. The organization is column major. I.E. output(0,:)
 % is the first column of the Storage (not including the time column).
 %
 % (Model, Storage) -> (Array of string, Array of double, ...
-%                       2D Array of double) 
+%                       2D Array of double)
 % Extracts components from .mot Storage object.
 
 % ----------------------------------------------------------------------- %
@@ -33,26 +33,25 @@
 % ----------------------------------------------------------------------- %
 
 function [columnNames, time, data] = parseMotToComponents(model, storage)
-import org.opensim.modeling.*
+import org.opensim.modeling.ArrayDouble
 
 columnNames = getStorageColumnNames(storage);
 time = findTimeColumn(storage);
 coordinates = model.getCoordinateSet();
 
-nCol = coordinates.getSize();
 nRow = storage.getSize();
 isInDegrees = storage.isInDegrees();
 
-data = zeros(nCol, nRow);
+data = zeros(length(columnNames), nRow);
 col = ArrayDouble();
-for i=1:nCol
+for i=1:length(columnNames)
     storage.getDataColumn(i-1, col);
-    for j=1:col.getSize()
-        data(i, j) = col.getitem(j-1);
-    end
-    if (isInDegrees & all(coordinates.get(i-1).getMotionType() == ...
-            'Rotational'))
-        data(i, :) = deg2rad(data(i, :));
-    end
+    data(i, :) = arrayDoubleToDoubleArray(col);
+    try
+        if (isInDegrees && coordinates.get(columnNames(i)). ...
+                getMotionType().toString().toCharArray()' == "Rotational")
+            data(i, :) = deg2rad(data(i, :));
+        end
+    catch;end
 end
 end
