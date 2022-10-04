@@ -56,7 +56,7 @@ bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficientsVerticalSubs
 bSplineCoefficientsVerticalSubset = results(index : index + bSplineCoefficientLength - 1);
 bSplineCoefficientsVerticalSubset = reshape(bSplineCoefficientsVerticalSubset, [], 5);
 
-inputs.bSplineCoefficients(:, [1, 3, 5:7]) = bSplineCoefficientsVerticalSubset;
+inputs.bSplineCoefficients(:, [1:4, 6]) = bSplineCoefficientsVerticalSubset;
 index = index + bSplineCoefficientLength;
 
 inputs.restingSpringLength = results(index);
