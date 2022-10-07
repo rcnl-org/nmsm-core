@@ -31,15 +31,14 @@ function cost = calcGroundReactionCost(values, fieldNameOrder, inputs, ...
     params)
 valuesStruct = unpackValues(values, inputs, fieldNameOrder);
 [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
-    inputs.experimentalJointPositions, ...
-    inputs.experimentalJointVelocities, inputs.jointKinematicsBSplines, ...
+    inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     inputs.bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
     modeledJointPositions, modeledJointVelocities, [1, 1, 1, 0]);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
-cost = calcCost(inputs, modeledValues, valuesStruct);
+cost = calcCost(inputs, params, modeledValues, valuesStruct);
 end
 
 function valuesStruct = unpackValues(values, inputs, fieldNameOrder)
@@ -52,7 +51,7 @@ for i=1:length(fieldNameOrder)
 end
 end
 
-function cost = calcCost(inputs, modeledValues, valuesStruct)
+function cost = calcCost(inputs, params, modeledValues, valuesStruct)
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
 cost = footMarkerPositionError;
