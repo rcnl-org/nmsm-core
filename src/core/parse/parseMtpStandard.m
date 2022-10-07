@@ -29,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = parseMtpStandard(files)
+function cells = parseMtpStandard(files)
 import org.opensim.modeling.Storage
 dataFromFileOne = storageToDoubleMatrix(Storage(files(1)));
 cells = zeros([length(files) ...
@@ -38,5 +38,4 @@ cells(1, :, :) = dataFromFileOne;
 for i=2:length(files)
     cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
 end
-output = permute(cells, [3, 1, 2]);
 end
