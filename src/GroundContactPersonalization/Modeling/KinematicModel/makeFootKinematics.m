@@ -76,7 +76,7 @@ footPosition = zeros(7, length(time));
 
 markerNamesFields = fieldnames(markerNames);
 for i=1:length(markerNamesFields)
-    markerPositions.(markerNamesFields{i}) = zeros(length(time), 3);
+    markerPositions.(markerNamesFields{i}) = zeros(3, length(time));
 end
 
 for i=1:length(time)
@@ -89,7 +89,7 @@ for i=1:length(time)
         footPosition(j, i) = functions{j}(model, state);
     end
     for j=1:length(markerNamesFields)
-        markerPositions.(markerNamesFields{j})(i, :) = model. ...
+        markerPositions.(markerNamesFields{j})(:, i) = model. ...
             getMarkerSet().get(markerNames.(markerNamesFields{j})). ...
             getLocationInGround(state).getAsMat()';
     end

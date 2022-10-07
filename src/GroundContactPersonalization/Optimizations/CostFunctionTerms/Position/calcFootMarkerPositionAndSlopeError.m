@@ -42,6 +42,7 @@ newSlope = abs(inputs.experimentalMarkerVelocities. ...
 valueError = [valueError newValues];
 slopeError = [slopeError newSlope];
 end
-valueError = 1000 * sum(valueError, 1);
-slopeError = sum(slopeError, 1);
+valueError = 1000 * valueError;
+valueError = reshape(valueError, 1, []);
+slopeError = reshape(slopeError, 1, []);
 end
