@@ -7,7 +7,7 @@
 *.m~
 
 # Compiled MEX binaries (all platforms)
-*.mex*
+# *.mex*
 
 *.log
 
