@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -63,7 +63,29 @@ inputs.restingSpringLength = results(index);
 end
 
 function inputs = mergeStageTwoResults(inputs, results)
+index = 1;
+inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
+index = index + length(inputs.springConstants);
+inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
+index = index + length(inputs.dampingFactors);
 
+bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficients, 1, []));
+bSplineCoefficients = results(index : index + bSplineCoefficientLength - 1);
+bSplineCoefficients = reshape(bSplineCoefficients, [], 7);
+
+inputs.bSplineCoefficients = bSplineCoefficients;
+index = index + bSplineCoefficientLength;
+
+inputs.restingSpringLength = results(index);
+index = index + 1;
+
+inputs.staticFrictionCoefficient = results(index);
+index = index + 1;
+
+inputs.dynamicFrictionCoefficient = results(index);
+index = index + 1;
+
+inputs.viscousFrictionCoefficient = results(index);
 end
 
 function inputs = mergeStageThreeResults(inputs, results)
