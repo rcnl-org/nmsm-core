@@ -52,6 +52,7 @@ end
 end
 
 function cost = calcCost(inputs, params, modeledValues, valuesStruct)
+cost = [];
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
 cost = footMarkerPositionError;
@@ -63,13 +64,13 @@ cost = [cost calcFootMarkerDistanceError(inputs, params, ...
 [groundReactionForceValueErrors, groundReactionForceSlopeErrors] = ...
     calcGroundReactionForceAndSlopeError(inputs, modeledValues);
 if inputs.isLeftFoot
-    cost = [cost 5 * groundReactionForceValueErrors(1)]; % weights are not general
-    cost = [cost 5 * groundReactionForceValueErrors(2)];
-    cost = [cost 5 * groundReactionForceValueErrors(3)];
+    cost = [cost 5 * groundReactionForceValueErrors(1, :)]; % weights are not general
+    cost = [cost 5 * groundReactionForceValueErrors(2, :)];
+    cost = [cost 5 * groundReactionForceValueErrors(3, :)];
 else
-    cost = [cost 3 * groundReactionForceValueErrors(1)];
-    cost = [cost 2 * groundReactionForceValueErrors(2)];
-    cost = [cost 2 * groundReactionForceValueErrors(3)];
+    cost = [cost 5 * groundReactionForceValueErrors(1, :)]; % original weights: 3
+    cost = [cost 5 * groundReactionForceValueErrors(2, :)]; % 2
+    cost = [cost 5 * groundReactionForceValueErrors(3, :)]; % 2
 end
 % cost = [cost 1 / 3 * groundReactionForceSlopeErrors(1)];
 % cost = [cost 1 / 5 * groundReactionForceSlopeErrors(2)];
