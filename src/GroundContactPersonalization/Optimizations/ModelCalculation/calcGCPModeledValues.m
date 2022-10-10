@@ -38,6 +38,9 @@ function modeledValues = calcGCPModeledValues(inputs, values, ...
     modeledJointPositions, modeledJointVelocities, isCalculated)
 [model, state] = Model(inputs.model);
 markerNamesFields = fieldnames(inputs.markerNames);
+if isCalculated(3) 
+    values.restingSpringLength = inputs.restingSpringLength;
+end
 for i=1:length(markerNamesFields)
     modeledValues.markerPositions.(markerNamesFields{i}) = ...
         zeros(3, size(modeledJointPositions, 2));
