@@ -76,9 +76,6 @@ bSplineCoefficients = reshape(bSplineCoefficients, [], 7);
 inputs.bSplineCoefficients = bSplineCoefficients;
 index = index + bSplineCoefficientLength;
 
-inputs.restingSpringLength = results(index);
-index = index + 1;
-
 inputs.staticFrictionCoefficient = results(index);
 index = index + 1;
 
