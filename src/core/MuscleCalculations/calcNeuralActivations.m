@@ -41,7 +41,7 @@ differenceOfTimeConstants = (1 ./ activationTimeConstants) - ...
     inverseDeactivationTimeConstants; 
 % Each emg trial could have different time interval
 trialSpecificTimeInterval = mean(diff(emgTime, 1, 2), 2); 
-neuralActivations = muscleExcitation;
+neuralActivations = zeros(size(muscleExcitation));
 % equation 7 from Meyer 2017
 for j = 3:size(muscleExcitation, 3)
     finiteDifferenceTimeConstants = 2 * trialSpecificTimeInterval .* ...
