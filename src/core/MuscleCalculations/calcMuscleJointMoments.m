@@ -29,8 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function muscleJointMoments = calcMuscleJointMoments(experimentalData, ...
-    passiveForce, muscleActivations, normalizedFiberLength, ...
-    normalizedFiberVelocity)
+    muscleActivations, normalizedFiberLength, normalizedFiberVelocity)
 
 expandedMaxIsometricForce = ones(1, 1, ...
     length(experimentalData.maxIsometricForce), 1);
@@ -50,6 +49,7 @@ expandedMuscleVelocity = ones(size(muscleVelocity, 1), 1, ...
     size(muscleVelocity, 2), size(muscleVelocity, 3));
 expandedMuscleVelocity(:, 1, :, :) = muscleVelocity;
 
+passiveForce = passiveForceLengthCurve(normalizedFiberLength);
 expandedPassiveForce = ones(size(passiveForce, 1), 1, ...
     size(passiveForce, 2), size(passiveForce, 3));
 expandedPassiveForce(:, 1, :, :) = passiveForce;
