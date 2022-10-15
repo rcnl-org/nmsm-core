@@ -25,54 +25,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, isIncluded, experimentalData, params)
-values = makeMtpValuesAsStruct(secondaryValues, primaryValues, isIncluded);
-modeledValues = calcMtpModeledValues(values, experimentalData, params);
-cost = calcMtpCost(values, modeledValues, experimentalData, params);
-end
-
-function totalCost = calcMtpCost(values, modeledValues, ...
+function cost = calcTendonSlackLengthDeviationCost(values, ...
     experimentalData, params)
-totalCost = calcMomentTrackingCost(modeledValues, experimentalData, ...
-    params);
-totalCost = totalCost + calcActivationTimeConstantDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcActivationNonlinearityDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcOptimalFiberLengthDeviationCost(values, ...
-    experimentalData, params);
-totalCost = totalCost + calcTendonSlackLengthDeviationCost(values, ...
-    experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorDevationCost(values, params);
-totalCost = totalCost + calcNormalizedFiberLengthDeviationCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcNormalizedFiberLengthPairedSimilarityCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcElectromechanicalDelayPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcPassiveForceCost(modeledValues, params);
+costWeight = valueOrAlternate(params, ...
+    "tendonSlackLengthDeviationCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "tendonSlackLengthDeviationErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "tendonSlackLengthDeviationMaximumAllowableError", 0.1);
+cost = costWeight * calcDeviationCostTerm( ...
+    experimentalData.tendonSlackLength .* ...
+    values.tendonSlackLengthScaleFactors, errorCenter, ...
+    maximumAllowableError);
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

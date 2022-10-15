@@ -25,54 +25,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, isIncluded, experimentalData, params)
-values = makeMtpValuesAsStruct(secondaryValues, primaryValues, isIncluded);
-modeledValues = calcMtpModeledValues(values, experimentalData, params);
-cost = calcMtpCost(values, modeledValues, experimentalData, params);
+function cost = calcEmgScaleFactorDevationCost(values, params)
+costWeight = valueOrAlternate(params, ...
+    "emgScaleFactorDeviationCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "emgScaleFactorDeviationErrorCenter", 0.5);
+maximumAllowableError = valueOrAlternate(params, ...
+    "emgScaleFactorDeviationMaximumAllowableError", 0.3);
+
+cost = costWeight * calcDeviationCostTerm(values.emgScaleFactors, ...
+    errorCenter, maximumAllowableError);
 end
-
-function totalCost = calcMtpCost(values, modeledValues, ...
-    experimentalData, params)
-totalCost = calcMomentTrackingCost(modeledValues, experimentalData, ...
-    params);
-totalCost = totalCost + calcActivationTimeConstantDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcActivationNonlinearityDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcOptimalFiberLengthDeviationCost(values, ...
-    experimentalData, params);
-totalCost = totalCost + calcTendonSlackLengthDeviationCost(values, ...
-    experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorDevationCost(values, params);
-totalCost = totalCost + calcNormalizedFiberLengthDeviationCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcNormalizedFiberLengthPairedSimilarityCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcElectromechanicalDelayPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcPassiveForceCost(modeledValues, params);
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

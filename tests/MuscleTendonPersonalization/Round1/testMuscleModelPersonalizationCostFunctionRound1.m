@@ -1,6 +1,6 @@
 %% Core Cost Function Testing Round 1
 clear
-load('updatedRound1.mat')
+load('updatedTest.mat')
 
 valuesStruct.electromechanicalDelays = ones(1, numMuscles) * 0.5; % electromechanical delay
 valuesStruct.activationTimeConstants = ones(1, numMuscles) * 1.5; % activation time
@@ -9,57 +9,56 @@ valuesStruct.emgScaleFactors = ones(1, numMuscles) * 0.5; % EMG scale factors
 valuesStruct.optimalFiberLengthScaleFactors = guess.Round1(1,numMuscles+1:end); % lmo scale factor
 valuesStruct.tendonSlackLengthScaleFactors = guess.Round1(1,1:numMuscles); % lts scale factor
 
-% Muscle Excitation Calculation
-
-muscleExcitations = calcMuscleExcitations(inputData.emgTime, ...
-    inputData.emgSplines, valuesStruct.electromechanicalDelays, ...
-    valuesStruct.emgScaleFactors);
-
-
-muscleExcitationsExpected = load('muscleExcitationsExpected.mat').muscleExcitationsExpected;
-
-muscleExcitationsExpected = permute(muscleExcitationsExpected, [2, 3, 1]);
-
-% changed emgTime to 10x141 from 141x10
-% permuted results
-assertWithinRange(muscleExcitations, muscleExcitationsExpected, 0.0001)
-
-% Neural Activation Calculation
-
-neuralActivations = calcNeuralActivations(muscleExcitations, ...
-    valuesStruct.activationTimeConstants, inputData.emgTime, inputData.numPaddingFrames);
-
-neuralActivationsExpected = load('neuralActivationsExpected.mat').neuralActivationsExpected;
-neuralActivationsExpected = permute(neuralActivationsExpected, [2, 3, 1]);
-
-% required to update to 0.002 from 0.001 to pass
-assertWithinRange(neuralActivations, neuralActivationsExpected, 0.0001)
-
-% Muscle Activation Calculation
-
-muscleActivations = calcMuscleActivations(neuralActivations, valuesStruct.activationNonlinearityConstants);
-
-muscleActivationsExpected = load('muscleActivationsExpected.mat').muscleActivationsExpected;
-muscleActivationsExpected = permute(muscleActivationsExpected, [2, 3, 1]);
-
-% required to update to 0.0023 from 0.001 to pass
-assertWithinRange(muscleActivations, muscleActivationsExpected, 0.0001)
-
-% Normalized Muscle Fiber Lengths and Velocities Calculation
-
-[normalizedFiberLength, normalizedFiberVelocity] = ...
-    calcNormalizedMuscleFiberLengthsAndVelocities(inputData, ...
-    valuesStruct.optimalFiberLengthScaleFactors, ...
-    valuesStruct.tendonSlackLengthScaleFactors);
-
-% save("round1test.mat")
-
-lMtildaExpected = load('normalizedMuscleLengthandVelocitiesExpected.mat').lMtildaExpected;
-lMtildaExpected = permute(lMtildaExpected, [2, 3, 1]);
-vMtildaExpected = load('normalizedMuscleLengthandVelocitiesExpected.mat').vMtildaExpected;
-vMtildaExpected = permute(vMtildaExpected, [2, 3, 1]);
-assertWithinRange(normalizedFiberLength, lMtildaExpected, 0.0001)
-assertWithinRange(normalizedFiberVelocity, vMtildaExpected, 0.0001)
+% % Muscle Excitation Calculation
+% 
+% muscleExcitations = calcMuscleExcitations(inputData.emgTime, ...
+%     inputData.emgSplines, valuesStruct.electromechanicalDelays, ...
+%     valuesStruct.emgScaleFactors);
+% 
+% muscleExcitationsExpected = load('muscleExcitationsExpected.mat').muscleExcitationsExpected;
+% 
+% muscleExcitationsExpected = permute(muscleExcitationsExpected, [2, 3, 1]);
+% 
+% % changed emgTime to 10x141 from 141x10
+% % permuted results
+% assertWithinRange(muscleExcitations, muscleExcitationsExpected, 0.0001)
+% 
+% % Neural Activation Calculation
+% 
+% neuralActivations = calcNeuralActivations(muscleExcitations, ...
+%     valuesStruct.activationTimeConstants, inputData.emgTime, inputData.numPaddingFrames);
+% 
+% neuralActivationsExpected = load('neuralActivationsExpected.mat').neuralActivationsExpected;
+% neuralActivationsExpected = permute(neuralActivationsExpected, [2, 3, 1]);
+% 
+% % required to update to 0.002 from 0.001 to pass
+% assertWithinRange(neuralActivations, neuralActivationsExpected, 0.0001)
+% 
+% % Muscle Activation Calculation
+% 
+% muscleActivations = calcMuscleActivations(neuralActivations, valuesStruct.activationNonlinearityConstants);
+% 
+% muscleActivationsExpected = load('muscleActivationsExpected.mat').muscleActivationsExpected;
+% muscleActivationsExpected = permute(muscleActivationsExpected, [2, 3, 1]);
+% 
+% % required to update to 0.0023 from 0.001 to pass
+% assertWithinRange(muscleActivations, muscleActivationsExpected, 0.0001)
+% 
+% % Normalized Muscle Fiber Lengths and Velocities Calculation
+% 
+% [normalizedFiberLength, normalizedFiberVelocity] = ...
+%     calcNormalizedMuscleFiberLengthsAndVelocities(inputData, ...
+%     valuesStruct.optimalFiberLengthScaleFactors, ...
+%     valuesStruct.tendonSlackLengthScaleFactors);
+% 
+% % save("round1test.mat")
+% 
+% lMtildaExpected = load('normalizedMuscleLengthandVelocitiesExpected.mat').lMtildaExpected;
+% lMtildaExpected = permute(lMtildaExpected, [2, 3, 1]);
+% vMtildaExpected = load('normalizedMuscleLengthandVelocitiesExpected.mat').vMtildaExpected;
+% vMtildaExpected = permute(vMtildaExpected, [2, 3, 1]);
+% assertWithinRange(normalizedFiberLength, lMtildaExpected, 0.0001)
+% assertWithinRange(normalizedFiberVelocity, vMtildaExpected, 0.0001)
 % 
 % 
 % % Muscle Moments and Forces
@@ -73,20 +72,26 @@ assertWithinRange(normalizedFiberVelocity, vMtildaExpected, 0.0001)
 % load('muscleMomentsAndForcesExpected.mat')
 % 
 % passiveForceExpected = permute(passiveForceExpected, [2, 3, 1]);
-% assertWithinRange(passiveForce, passiveForceExpected, 0.001)
+% assertWithinRange(passiveForce, passiveForceExpected, 0.0001)
 % % assertWithinRange(muscleForce, muscleForceExpected, 0.001)
 % % assertWithinRange(muscleMoments, muscleMomentsExpected, 0.001)
 % 
 % muscleMomentsExpected = permute(muscleMomentsExpected, [2, 4, 3, 1]);
-% assertWithinRange(muscleJointMoments, muscleMomentsExpected, 0.001)
+% assertWithinRange(muscleJointMoments, muscleMomentsExpected, 0.0001)
 
-% load('individualCostsExpected.mat')
-% individualCosts = calcAllTrackingCosts(inputData, modelMoments, lMtilda);
-% 
-% assertWithinRange(individualCosts.momentMatching, ...
-%     individualCostsExpected.momentMatching, 0.001)
-% assertWithinRange(individualCosts.lMtildaPenalty, ...
-%     individualCostsExpected.lMtildaPenalty, 0.001)
+%%%%%%%%%%%%%%%%%%%%%%%% COST FN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+modeledValues = calcMtpModeledValues(valuesStruct, inputData, struct());
+
+expectedCost = load('individualCostsExpected.mat').individualCostsExpected;
+
+momentTrackingCost = calcMomentTrackingCost(modeledValues, inputData, struct());
+assertWithinRange(momentTrackingCost, sum(expectedCost.momentMatching .^ 2, "all"), 0.001)
+
+normalizedFiberLengthCost = calcNormalizedFiberLengthDeviationCost(modeledValues, inputData, struct());
+max(abs(normalizedFiberLengthCost - sum(expectedCost.lMtildaPenalty) .^ 2), [], 'all')
+assertWithinRange(normalizedFiberLengthCost, ...
+    sum(expectedCost.lMtildaPenalty) .^ 2, 0.001)
 % 
 % individualCosts = calcAllDeviationPenaltyCosts(valuesStruct, inputData,  ...
 %     passiveForce, individualCosts);
