@@ -31,7 +31,6 @@
 
 function neuralActivations = calcNeuralActivations(muscleExcitation, ...
     activationTimeConstants, emgTime, numPaddingFrames)
-
 activationTimeConstants = activationTimeConstants / 100;
 deactivationTimeConstants = 4 * activationTimeConstants;
 % equation 6 from Meyer 2017
