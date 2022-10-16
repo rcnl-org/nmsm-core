@@ -31,8 +31,10 @@
 
 function magnitudeDeviations = calcMagnitudeDeviations(optimizedCurves, ...
     originalCurves)
+
 meanOptimizedCurves = mean(optimizedCurves, 1);
 meanOriginalCurves = mean(originalCurves, 1);
+
 magnitudeDeviations = meanOptimizedCurves - meanOriginalCurves;
 end
 
