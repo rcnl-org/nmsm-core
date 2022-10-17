@@ -25,55 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, isIncluded, experimentalData, params)
-values = makeMtpValuesAsStruct(secondaryValues, primaryValues, isIncluded);
-modeledValues = calcMtpModeledValues(values, experimentalData, params);
-cost = calcMtpCost(values, modeledValues, experimentalData, params);
+function cost = calcPassiveForceCost(modeledValues, params)
+costWeight = valueOrAlternate(params, "passiveForceCostWeight", 1);
+errorCenter = valueOrAlternate(params, "passiveForceErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "passiveForceMaximumAllowableError", 30);
+
+cost = costWeight * calcDeviationCostTerm(modeledValues.passiveForce, ...
+    errorCenter, maximumAllowableError);
 end
-
-function totalCost = calcMtpCost(values, modeledValues, ...
-    experimentalData, params)
-totalCost = calcMomentTrackingCost(modeledValues, experimentalData, ...
-    params);
-totalCost = totalCost + calcActivationTimeConstantDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcActivationNonlinearityDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcOptimalFiberLengthDeviationCost(values, ...
-    experimentalData, params);
-totalCost = totalCost + calcTendonSlackLengthDeviationCost(values, ...
-    experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorDevationCost(values, params);
-totalCost = totalCost + calcNormalizedFiberLengthDeviationCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcNormalizedFiberLengthPairedSimilarityCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcElectromechanicalDelayPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcPassiveForceCost(modeledValues, params);
-totalCost = totalCost / numel(experimentalData.muscleTendonLength);
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

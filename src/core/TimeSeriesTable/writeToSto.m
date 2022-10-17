@@ -30,7 +30,8 @@
 % ----------------------------------------------------------------------- %
 
 function writeToSto(columnLabels, timePoints, data, outfile)
-import org.opensim.modeling.*
+import org.opensim.modeling.TimeSeriesTable
+import org.opensim.modeling.STOFileAdapter
 table = TimeSeriesTable();
 table.setColumnLabels(stringArrayToStdVectorString(columnLabels));
 for i=1:length(timePoints)

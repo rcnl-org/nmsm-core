@@ -25,55 +25,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, isIncluded, experimentalData, params)
-values = makeMtpValuesAsStruct(secondaryValues, primaryValues, isIncluded);
-modeledValues = calcMtpModeledValues(values, experimentalData, params);
-cost = calcMtpCost(values, modeledValues, experimentalData, params);
-end
-
-function totalCost = calcMtpCost(values, modeledValues, ...
+function cost = calcMomentTrackingCost(modeledValues, ...
     experimentalData, params)
-totalCost = calcMomentTrackingCost(modeledValues, experimentalData, ...
-    params);
-totalCost = totalCost + calcActivationTimeConstantDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcActivationNonlinearityDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcOptimalFiberLengthDeviationCost(values, ...
-    experimentalData, params);
-totalCost = totalCost + calcTendonSlackLengthDeviationCost(values, ...
-    experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorDevationCost(values, params);
-totalCost = totalCost + calcNormalizedFiberLengthDeviationCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcNormalizedFiberLengthPairedSimilarityCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcElectromechanicalDelayPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcPassiveForceCost(modeledValues, params);
-totalCost = totalCost / numel(experimentalData.muscleTendonLength);
+costWeight = valueOrAlternate(params, "momentTrackingCostWeight", 1);
+errorCenter = valueOrAlternate(params, "momentTrackingErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "momentTrackingMaximumAllowableError", 2);
+cost = costWeight * calcTrackingCostTerm( ...
+    modeledValues.muscleJointMoments, ...
+    experimentalData.muscleJointMoments, errorCenter, ...
+    maximumAllowableError);
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
