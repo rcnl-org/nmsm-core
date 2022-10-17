@@ -88,10 +88,10 @@ expectedCost = load('individualCostsExpected.mat').individualCostsExpected;
 momentTrackingCost = calcMomentTrackingCost(modeledValues, inputData, struct());
 assertWithinRange(momentTrackingCost, sum(expectedCost.momentMatching .^ 2, "all"), 0.001)
 
-normalizedFiberLengthCost = calcNormalizedFiberLengthDeviationCost(modeledValues, inputData, struct());
-max(abs(normalizedFiberLengthCost - sum(expectedCost.lMtildaPenalty) .^ 2), [], 'all')
-assertWithinRange(normalizedFiberLengthCost, ...
-    sum(expectedCost.lMtildaPenalty) .^ 2, 0.001)
+% normalizedFiberLengthCost = calcNormalizedFiberLengthDeviationCost(modeledValues, inputData, struct());
+% max(abs(normalizedFiberLengthCost - sum(expectedCost.lMtildaPenalty) .^ 2), [], 'all')
+% assertWithinRange(normalizedFiberLengthCost, ...
+%     sum(expectedCost.lMtildaPenalty) .^ 2, 0.001)
 % 
 % individualCosts = calcAllDeviationPenaltyCosts(valuesStruct, inputData,  ...
 %     passiveForce, individualCosts);

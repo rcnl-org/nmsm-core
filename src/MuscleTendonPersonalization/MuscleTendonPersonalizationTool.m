@@ -35,10 +35,14 @@ settingsTree = xml2struct(settingsFileName);
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 optimizedParams = MuscleTendonPersonalization(inputs, params);
 %% results is a structure, report not implemented yet
-results = calcFinalMuscleActivations(optimizedParams, inputs);
-results = calcFinalModelMoments(results, inputs);
-save("results.mat", "results", '-mat')
+finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 6));
+results = calcMtpModeledValues(finalValues, inputs, params);
+results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : end - ...
+    inputs.numPaddingFrames);
+% results = calcFinalMuscleActivations(optimizedParams, inputs);
+% results = calcFinalModelMoments(results, inputs);
+save("results.mat", "results", "finalValues", '-mat')
 % reportMuscleTendonPersonalization(inputs.model, results)
 saveMuscleTendonPersonalizationResults(inputs.model, ...
-    inputs.coordinates, results, resultsDirectory);
+    inputs.coordinates, finalValues, results, resultsDirectory);
 end
