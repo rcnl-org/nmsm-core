@@ -31,8 +31,15 @@
 
 function shapeDeviations = calcShapeDeviations(optimizedCurves, ...
     originalCurves)
-optimizedCurvesShapes = optimizedCurves - mean(optimizedCurves, [1 3]);
-originalCurvesShapes = originalCurves - mean(originalCurves, [1 3]);
+
+optimizedCurves = reshape(optimizedCurves, [], ...
+    size(optimizedCurves, 3), 1);
+optimizedCurvesShapes = optimizedCurves - mean(optimizedCurves, 1);
+
+originalCurves = reshape(originalCurves, [], ...
+    size(originalCurves, 3), 1);
+originalCurvesShapes = originalCurves - mean(originalCurves, 1);
+
 shapeDeviations = optimizedCurvesShapes - originalCurvesShapes;
 end
 
