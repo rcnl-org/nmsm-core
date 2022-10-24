@@ -54,7 +54,6 @@ totalCost = totalCost + calcEmgScaleFactorPairedSimilarityCost( ...
 totalCost = totalCost + calcElectromechanicalDelayPairedSimilarityCost( ...
     values, experimentalData, params);
 totalCost = totalCost + calcPassiveForceCost(modeledValues, params);
-totalCost = totalCost / numel(experimentalData.muscleTendonLength);
 end
 
 
