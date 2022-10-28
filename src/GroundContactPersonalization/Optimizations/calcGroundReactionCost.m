@@ -38,6 +38,23 @@ modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
+% Debug plots
+% subplot(1,3,1)
+% plot(inputs.time, modeledValues.verticalGrf)
+% hold on
+% plot(inputs.time, inputs.experimentalGroundReactionForces(2,:))
+% hold off
+% subplot(1,3,2)
+% plot(inputs.time, modeledValues.anteriorGrf)
+% hold on
+% plot(inputs.time, inputs.experimentalGroundReactionForces(1,:))
+% hold off
+% subplot(1,3,3)
+% plot(inputs.time, modeledValues.lateralGrf)
+% hold on
+% plot(inputs.time, inputs.experimentalGroundReactionForces(3,:))
+% hold off
+
 cost = calcCost(inputs, params, modeledValues, valuesStruct);
 end
 
@@ -56,41 +73,38 @@ cost = [];
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
 cost = footMarkerPositionError;
-cost = [cost calcFootMarkerDistanceError(inputs, params, ...
-    footMarkerPositionError)];
+% cost = [cost calcFootMarkerDistanceError(inputs, params, ...
+%     footMarkerPositionError)];
 % cost = [cost 1000 * footMarkerSlopeError];
 % cost = [cost 10000 * calcKinematicCurveSlopeError(inputs, ...
 %     modeledValues, 1:size(modeledValues.jointVelocities, 1))];
 [groundReactionForceValueErrors, groundReactionForceSlopeErrors] = ...
     calcGroundReactionForceAndSlopeError(inputs, modeledValues);
-if inputs.isLeftFoot
-    cost = [cost 5 * groundReactionForceValueErrors(1, :)]; % weights are not general
-    cost = [cost 5 * groundReactionForceValueErrors(2, :)];
-    cost = [cost 5 * groundReactionForceValueErrors(3, :)];
-else
-    cost = [cost 5 * groundReactionForceValueErrors(1, :)]; % original weights: 3
-    cost = [cost 5 * groundReactionForceValueErrors(2, :)]; % 2
-    cost = [cost 5 * groundReactionForceValueErrors(3, :)]; % 2
-end
+cost = [cost 5 * groundReactionForceValueErrors(1, :)];
+cost = [cost 5 * groundReactionForceValueErrors(2, :)];
+cost = [cost 5 * groundReactionForceValueErrors(3, :)];
 % cost = [cost 1 / 3 * groundReactionForceSlopeErrors(1)];
 % cost = [cost 1 / 5 * groundReactionForceSlopeErrors(2)];
 % cost = [cost 2 * groundReactionForceSlopeErrors(3)];
-cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean(...
-    valuesStruct.springConstants)];
-cost = [cost 1 / 100 * abs(inputs.springConstants - ...
-    valuesStruct.springConstants)];
-cost = [cost 100 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
-cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)];
-cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)];
-cost = [cost calcStaticFrictionDeviationError(...
-    valuesStruct.staticFrictionCoefficient, params)];
-cost = [cost calcDynamicFrictionDeviationError(...
-    valuesStruct.dynamicFrictionCoefficient, params)];
-cost = [cost calcViscousFrictionDeviationError(...
-    valuesStruct.viscousFrictionCoefficient, params)];
-cost = [cost calcStaticToDynamicFrictionDeviationError(...
-    valuesStruct.staticFrictionCoefficient, ...
-    valuesStruct.dynamicFrictionCoefficient)];
+% cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean(...
+%     valuesStruct.springConstants)];
+% cost = [cost 1 / 100 * abs(inputs.springConstants - ...
+%     valuesStruct.springConstants)];
+% cost = [cost 100 * calcDampingFactorsErrorFromMean(...
+%     valuesStruct.dampingFactors)];
+% cost = [cost calcDampingFactorDeviationFromInitialValueError(...
+%     inputs.dampingFactors, valuesStruct.dampingFactors)];
+% cost = [cost calcSpringConstantDeviationFromInitialValueError(...
+%     inputs.springConstants, valuesStruct.springConstants)];
+% cost = [cost calcStaticFrictionDeviationError(...
+%     valuesStruct.staticFrictionCoefficient, params)];
+% cost = [cost calcDynamicFrictionDeviationError(...
+%     valuesStruct.dynamicFrictionCoefficient, params)];
+% cost = [cost calcViscousFrictionDeviationError(...
+%     valuesStruct.viscousFrictionCoefficient, params)];
+% cost = [cost calcStaticToDynamicFrictionDeviationError(...
+%     valuesStruct.staticFrictionCoefficient, ...
+%     valuesStruct.dynamicFrictionCoefficient)];
 
 cost = cost / 50;
 end
