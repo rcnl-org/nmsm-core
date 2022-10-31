@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,14 +30,11 @@
 
 function optimizedValues = computeMuscleTendonRoundOptimization( ...
     initialValues, primaryValues, isIncluded, lowerBounds, upperBounds, ...
-    experimentalData, params, optimizerOptions)
+    experimentalData, params, optimizerOptions, A, b)
 
 optimizedValues = fmincon(@(values)computeMuscleTendonCostFunction( ...
     values, primaryValues, isIncluded, experimentalData, params), ...
-    initialValues, [], [], [], [], lowerBounds, upperBounds, ...
-    @(values)calcMuscleTendonNonLinearConstraints(values, params), ...
-    optimizerOptions);
-
+    initialValues, A, b, [], [], lowerBounds, upperBounds, ...
+    @(values)calcMuscleTendonNonLinearConstraints(values, primaryValues, ...
+    isIncluded, experimentalData, params), optimizerOptions);
 end
-
-
