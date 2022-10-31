@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -35,8 +35,8 @@ settingsTree = xml2struct(settingsFileName);
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 optimizedParams = MuscleTendonPersonalization(inputs, params);
 %% results is a structure, report not implemented yet
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 6));
-results = calcMtpModeledValues(finalValues, inputs, params);
+finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
+results = calcMtpSynXModeledValues(finalValues, inputs, params);
 results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : end - ...
     inputs.numPaddingFrames);
 % results = calcFinalMuscleActivations(optimizedParams, inputs);
