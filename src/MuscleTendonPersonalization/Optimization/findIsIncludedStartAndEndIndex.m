@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -32,9 +32,9 @@ function [startIndex, endIndex] = findIsIncludedStartAndEndIndex( ...
 startIndex = 1;
 for i=1:index-1
     if(isIncluded(i))
-        length(primaryValues(i, :));
-        startIndex = startIndex + length(primaryValues(i, :));
+        length(primaryValues{i});
+        startIndex = startIndex + length(primaryValues{i});
     end 
 end
-endIndex = startIndex + length(primaryValues(index, :)) - 1;
+endIndex = startIndex + length(primaryValues{index}) - 1;
 end

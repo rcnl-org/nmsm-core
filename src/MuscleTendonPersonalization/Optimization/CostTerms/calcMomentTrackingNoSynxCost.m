@@ -1,9 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost for tracking values 
-%
-% (Array of number, Array of number, number, number) -> (struct)
-% returns tracking cost
+% (Array of number, struct) -> (Array of number)
+% returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,12 +25,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingCostTerm(modelValue, experimentalValue, ...
-    errorCenter, maxAllowableError)
-
-errorMatching = modelValue - experimentalValue;
-cost = ((errorMatching - errorCenter) ./ maxAllowableError) .^ 2 ./ ...
-    numel(errorMatching);
-cost(isnan(cost))=0;
-cost = sum(cost, 'all');
+function cost = calcMomentTrackingNoSynxCost(modeledValues, ...
+    experimentalData, params)
+costWeight = valueOrAlternate(params, "measuredMomentTrackingCostWeight", 1);
+errorCenter = valueOrAlternate(params, "measureMomentTrackingErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "measureMomentTrackingMaximumAllowableError", 2.5);
+cost = costWeight * calcTrackingCostTerm( ...
+    modeledValues.muscleJointMoments, ...
+    experimentalData.experimentalMoments, errorCenter, ...
+    maximumAllowableError);
 end
+
