@@ -46,7 +46,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [A,b] = synXlinearInequalityConstraints(params, ...
+function [A,b] = getLinearInequalityConstraints(params, ...
     numOtherDesignVariables, synergyCommands, emgData)
 
 if strcmp(params.matrixFactorizationMethod,'PCA')
