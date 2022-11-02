@@ -5,7 +5,7 @@
 % muscle excitations for both synX and residual excitation construction     %
 %
 % data:
-%   synXCommands - synergy excitations extracted from measured muscle excitations
+%   extrapolationCommands - synergy excitations extracted from measured muscle excitations
 %   params.numberOfSynergies - number of synergies - double
 %   size(emgData,2) - number of trials in total - double
 %   params.numberOfMeasuredEmgChannels - number of measured EMG channels in total - double
@@ -45,8 +45,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [synXCommands, residualCommands] = ...
-    synergyExcitationExtraction(emgData, numberOfSynergies, ...
+function [extrapolationCommands, residualCommands] = ...
+    getSynergyCommands(emgData, numberOfSynergies, ...
     matrixFactorizationMethod, synergyCategorizationOfTrials, ...
     residualCategorizationOfTrials) 
 
@@ -55,18 +55,18 @@ max_all_trials = max(max(emgData,[],3),[],1);
 normalizedEMG = permute(emgData./max_all_trials, [3 2 1]);
 %--Extract synergy excitations from measured muscle excitations 
 if strcmpi(matrixFactorizationMethod,'PCA')
-    synXCommands = getPcaCommands(normalizedEMG, numberOfSynergies, ...
+    extrapolationCommands = getPcaCommands(normalizedEMG, numberOfSynergies, ...
         synergyCategorizationOfTrials);
     residualCommands = getPcaCommands(normalizedEMG, numberOfSynergies, ...
         residualCategorizationOfTrials);
 elseif strcmpi(matrixFactorizationMethod,'NMF')
     options = statset('Display', 'off', 'TolX', 1e-10, 'TolFun', 1e-10);
     if  ~exist('nmfResultsSynX.mat')
-        synXCommands = getNmfCommands(normalizedEMG, numberOfSynergies, ...
+        extrapolationCommands = getNmfCommands(normalizedEMG, numberOfSynergies, ...
             synergyCategorizationOfTrials, options);
         residualCommands = getNmfCommands(normalizedEMG, numberOfSynergies, ...
             residualCategorizationOfTrials, options);
-        save('nmfResultsSynX.mat','synXCommands', 'residualCommands');
+        save('nmfResultsSynX.mat','extrapolationCommands', 'residualCommands');
     else
         load('nmfResultsSynX.mat');
     end

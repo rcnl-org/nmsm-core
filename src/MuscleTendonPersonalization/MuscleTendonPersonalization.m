@@ -57,8 +57,9 @@ for i=1:length(inputs.tasks)
         primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
     taskParams = makeTaskParams(inputs.tasks{i}, params);
     numMuscles = getNumEnabledMuscles(inputs.model);
-    [A, b] = synXlinearInequalityConstraints(inputs.synergyExtrapolation, ...
-        6 * numMuscles, inputs.SynXCommands, permute(inputs.emgData, [3 1 2]));
+    [A, b] = getLinearInequalityConstraints(inputs.synergyExtrapolation, ...
+        6 * numMuscles, inputs.extrapolationCommands, ...
+        permute(inputs.emgData, [3 1 2]));
     optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
         primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
         taskUpperBounds, inputs, taskParams, optimizerOptions, A, b);
@@ -105,7 +106,8 @@ values{3} = repmat(0.05, 1, numMuscles); % activation nonlinearity
 values{4} = repmat(0.5, 1, numMuscles); % EMG scale factors
 values{5} = repmat(1, 1, numMuscles); % optimal fiber length scale factor
 values{6} = repmat(1, 1, numMuscles); % tendon slack length scale factor
-values{7} = repmat(0, 1, inputs.nSynxVariables + inputs.nResVariables); % synergy commands
+values{7} = repmat(0, 1, inputs.numberOfExtrapolationWeights + ...
+    inputs.numberOfResidualWeights); % synergy commands
 end
 
 function inputs = finalizeInputs(inputs, primaryValues, params)
@@ -126,7 +128,8 @@ else
     lowerBounds{4} = repmat(0.05, 1, numMuscles); % EMG scale factors
     lowerBounds{5} = repmat(0.6, 1, numMuscles); % optimal fiber length scale factor
     lowerBounds{6} = repmat(0.6, 1, numMuscles); % tendon slack length scale factor
-    lowerBounds{7} = repmat(-100, 1, inputs.nSynxVariables + inputs.nResVariables); % synergy commands
+    lowerBounds{7} = repmat(-100, 1, inputs.numberOfExtrapolationWeights + ...
+        inputs.numberOfResidualWeights); % synergy commands
 end
 end
 
@@ -142,7 +145,8 @@ else
     upperBounds{4} = repmat(1, 1, numMuscles); % EMG scale factors
     upperBounds{5} = repmat(1.4, 1, numMuscles); % optimal fiber length scale factor
     upperBounds{6} = repmat(1.4, 1, numMuscles); % tendon slack length scale factor
-    upperBounds{7} = repmat(100, 1, inputs.nSynxVariables + inputs.nResVariables); % synergy commands    
+    upperBounds{7} = repmat(100, 1, inputs.numberOfExtrapolationWeights + ...
+        inputs.numberOfResidualWeights); % synergy commands    
 end
 end
 
