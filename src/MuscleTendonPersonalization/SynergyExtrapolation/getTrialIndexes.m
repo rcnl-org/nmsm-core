@@ -31,7 +31,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function  params = organizeTrialEachTask(params,nTrials,TrialNames)
+function  params = getTrialIndexes(params, nTrials, TrialNames)
 %---Identify the trial index according to the labels in 'Tasks'
 trialIndex = cell(1,length(params.taskNames));
 for i=1:nTrials
@@ -45,15 +45,14 @@ for i=1:nTrials
         end
     end
 end
-
 params.synergyCategorizationOfTrials = getCategorizationOfTrials(...
     params.synergyExtrapolationCategorization, trialIndex, nTrials);
 params.residualCategorizationOfTrials = getCategorizationOfTrials(...
     params.residualCategorization, trialIndex, nTrials);
 end
+
 function categorizationOfTrials = getCategorizationOfTrials(...
     categorizationMethod, trialIndex, nTrials)
-
 if strcmpi(categorizationMethod, 'trial')
     for i = 1 : nTrials
         categorizationOfTrials{i} = i;
