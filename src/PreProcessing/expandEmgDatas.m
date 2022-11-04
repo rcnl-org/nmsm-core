@@ -32,19 +32,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function emgData = expandEmgDatas(modelFileName, emgFileName)
+function newEmgData = expandEmgDatas(modelFileName, emgFileName)
 emgData = org.opensim.modeling.TimeSeriesTable(emgFileName);
 model = Model(modelFileName);
 columnNames = getEnabledMusclesInOrder(model);
 groupToName = getMuscleNameByGroupStruct(model, ...
     getTimeSeriesTableColumnNames(emgData));
-timeColumn = stdVectorDoubleToDoubleArray( ...
-    emgData.getIndependentColumn());
 newEmgData = expandEmgData(columnNames, emgData, ...
     groupToName);
-[~, ~, ext] = fileparts(emgFileName);
-writeToSto(columnNames, timeColumn, newEmgData, fullfile( ...
-    outputDirectory, strcat(prefix, ext)));
 end
 
 % (Model, Array of string) -> (struct)
