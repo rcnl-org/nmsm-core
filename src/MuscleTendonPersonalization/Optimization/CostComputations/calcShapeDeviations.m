@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Spencer Williams                          %
+% Author(s): Claire V. Hammond, Spencer Williams, Marleny Vega            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -32,14 +32,7 @@
 function shapeDeviations = calcShapeDeviations(optimizedCurves, ...
     originalCurves)
 
-optimizedCurves = reshape(optimizedCurves, [], ...
-    size(optimizedCurves, 3), 1);
-optimizedCurvesShapes = optimizedCurves - mean(optimizedCurves, 1);
-
-originalCurves = reshape(originalCurves, [], ...
-    size(originalCurves, 3), 1);
-originalCurvesShapes = originalCurves - mean(originalCurves, 1);
-
+optimizedCurvesShapes = optimizedCurves - mean(mean(optimizedCurves, 1), 3);
+originalCurvesShapes = originalCurves - mean(mean(originalCurves, 1), 3);
 shapeDeviations = optimizedCurvesShapes - originalCurvesShapes;
 end
-
