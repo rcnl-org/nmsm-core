@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,27 +27,86 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGroundReactionCost(values, inputs, params)
+function cost = calcGroundReactionCost(values, fieldNameOrder, inputs, ...
+    params)
+valuesStruct = unpackValues(values, inputs, fieldNameOrder);
+valuesBSplineCoefficients = ...
+    reshape(valuesStruct.bSplineCoefficients, [], 7);
+[modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
+    inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
+    valuesBSplineCoefficients);
+modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
+    modeledJointPositions, modeledJointVelocities, [1, 1, 1, 0]);
+modeledValues.jointPositions = modeledJointPositions;
+modeledValues.jointVelocities = modeledJointVelocities;
+
+% Debug plots
+% subplot(1,3,1)
+% plot(inputs.time, modeledValues.verticalGrf)
+% hold on
+% plot(inputs.time, inputs.experimentalGroundReactionForces(2,:))
+% hold off
+% subplot(1,3,2)
+% plot(inputs.time, modeledValues.anteriorGrf)
+% hold on
+% plot(inputs.time, inputs.experimentalGroundReactionForces(1,:))
+% hold off
+% subplot(1,3,3)
+% plot(inputs.time, modeledValues.lateralGrf)
+% hold on
+% plot(inputs.time, inputs.experimentalGroundReactionForces(3,:))
+% hold off
+
+cost = calcCost(inputs, params, modeledValues, valuesStruct);
+end
+
+function valuesStruct = unpackValues(values, inputs, fieldNameOrder)
+valuesStruct = struct();
+start = 1;
+for i=1:length(fieldNameOrder)
+    valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
+        numel(inputs.(fieldNameOrder(i))) - 1);
+    start = start + numel(inputs.(fieldNameOrder(i)));
+end
+end
+
+function cost = calcCost(inputs, params, modeledValues, valuesStruct)
+cost = [];
 [footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError();
-cost = 2 * footMarkerPositionError;
-cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 10000 * calcKinematicCurveSlopeError()];
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcGroundReactionForceAndSlopeError();
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean()];
-cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
-cost = [cost 100 * calcDampingFactorsErrorFromMean()];
-cost = [cost calcSpringRestingLengthError()];
-cost = [cost calcDampingFactorDeviationFromInitialValueError()];
-cost = [cost calcSpringConstantDeviationFromInitialValueError()];
-cost = [cost calcStaticFrictionDeviationError()];
-cost = [cost calcDynamicFrictionDeviationError()];
-cost = [cost calcViscousFrictionDeviationError()];
-cost = [cost calcStaticToDynamicFrictionDeviationError()];
+    calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
+cost = footMarkerPositionError;
+% cost = [cost calcFootMarkerDistanceError(inputs, params, ...
+%     footMarkerPositionError)];
+% cost = [cost 1000 * footMarkerSlopeError];
+% cost = [cost 10000 * calcKinematicCurveSlopeError(inputs, ...
+%     modeledValues, 1:size(modeledValues.jointVelocities, 1))];
+[groundReactionForceValueErrors, groundReactionForceSlopeErrors] = ...
+    calcGroundReactionForceAndSlopeError(inputs, modeledValues);
+cost = [cost 5 * groundReactionForceValueErrors(1, :)];
+cost = [cost 5 * groundReactionForceValueErrors(2, :)];
+cost = [cost 5 * groundReactionForceValueErrors(3, :)];
+% cost = [cost 1 / 3 * groundReactionForceSlopeErrors(1)];
+% cost = [cost 1 / 5 * groundReactionForceSlopeErrors(2)];
+% cost = [cost 2 * groundReactionForceSlopeErrors(3)];
+cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean(...
+    valuesStruct.springConstants)];
+cost = [cost 1 / 100 * abs(inputs.springConstants - ...
+    valuesStruct.springConstants)];
+cost = [cost 100 * calcDampingFactorsErrorFromMean(...
+    valuesStruct.dampingFactors)];
+cost = [cost calcDampingFactorDeviationFromInitialValueError(...
+    inputs.dampingFactors, valuesStruct.dampingFactors)];
+cost = [cost calcSpringConstantDeviationFromInitialValueError(...
+    inputs.springConstants, valuesStruct.springConstants)];
+cost = [cost calcStaticFrictionDeviationError(...
+    valuesStruct.staticFrictionCoefficient, params)];
+cost = [cost calcDynamicFrictionDeviationError(...
+    valuesStruct.dynamicFrictionCoefficient, params)];
+cost = [cost calcViscousFrictionDeviationError(...
+    valuesStruct.viscousFrictionCoefficient, params)];
+cost = [cost calcStaticToDynamicFrictionDeviationError(...
+    valuesStruct.staticFrictionCoefficient, ...
+    valuesStruct.dynamicFrictionCoefficient)];
 
 cost = cost / 50;
 end
-
