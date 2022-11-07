@@ -2,7 +2,7 @@
 %
 %
 %
-% (Array of double, struct, struct) -> (struct)
+% (struct, struct, Array of double) -> (double)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,22 +27,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [valueError, slopeError] = ...
-    calcFootMarkerPositionAndSlopeError(inputs, modeledValues)
-markerFieldNames = fieldnames(inputs.markerNames);
-valueError = [];
-slopeError = [];
-for i=1:length(markerFieldNames)
-newValues = abs(inputs.experimentalMarkerPositions. ...
-    (markerFieldNames{i}) - modeledValues.markerPositions. ...
-    (markerFieldNames{i}));
-newSlope = abs(inputs.experimentalMarkerVelocities. ...
-    (markerFieldNames{i}) - modeledValues.markerVelocities. ...
-    (markerFieldNames{i}));
-valueError = [valueError newValues];
-slopeError = [slopeError newSlope];
-end
-valueError = 1000 * valueError;
-valueError = reshape(valueError, 1, []);
-slopeError = reshape(slopeError, 1, []);
+function error = calcFootMarkerDistanceError(inputs, params, ...
+    footMarkerPositionError)
+footMarkerPositionError = footMarkerPositionError / 1000;
+footDistanceRmsError = sqrt(sum(footMarkerPositionError .^ 2) ./ ...
+    length(fieldnames(inputs.markerNames)));
+errorCenter = valueOrAlternate(params, ...
+    "footMarkerDistanceErrorCenter", 2.5);
+maxAllowableError = valueOrAlternate(params, ...
+    "footMarkerDistanceMaxAllowableError", 2.5);
+error = calcWallError(footDistanceRmsError, errorCenter, ...
+    maxAllowableError, 20);
 end

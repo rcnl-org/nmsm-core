@@ -2,7 +2,7 @@
 %
 %
 %
-% (Array of double, struct, struct) -> (struct)
+% (struct, struct) -> (Array of double, Array of double)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams, Claire V. Hammond                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,22 +27,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [valueError, slopeError] = ...
-    calcFootMarkerPositionAndSlopeError(inputs, modeledValues)
-markerFieldNames = fieldnames(inputs.markerNames);
-valueError = [];
-slopeError = [];
-for i=1:length(markerFieldNames)
-newValues = abs(inputs.experimentalMarkerPositions. ...
-    (markerFieldNames{i}) - modeledValues.markerPositions. ...
-    (markerFieldNames{i}));
-newSlope = abs(inputs.experimentalMarkerVelocities. ...
-    (markerFieldNames{i}) - modeledValues.markerVelocities. ...
-    (markerFieldNames{i}));
-valueError = [valueError newValues];
-slopeError = [slopeError newSlope];
+function [valueErrors, slopeErrors] = ...
+    calcGroundReactionForceAndSlopeError(inputs, modeledValues)
+valueErrors(1, :) = inputs.experimentalGroundReactionForces(1, :) -...
+    modeledValues.anteriorGrf;
+slopeErrors(1, :) = inputs.experimentalGroundReactionForcesSlope(...
+    1, :) - calcBSplineDerivative(inputs.time, ...
+    modeledValues.anteriorGrf, 2, 25);
+valueErrors(2, :) = inputs.experimentalGroundReactionForces(2, :) -...
+    modeledValues.verticalGrf;
+slopeErrors(2, :) = inputs.experimentalGroundReactionForcesSlope(...
+    2, :) - calcBSplineDerivative(inputs.time, ...
+    modeledValues.verticalGrf, 2, 25);
+valueErrors(3, :) = inputs.experimentalGroundReactionForces(3, :) -...
+    modeledValues.lateralGrf;
+slopeErrors(3, :) = inputs.experimentalGroundReactionForcesSlope(...
+    3, :) - calcBSplineDerivative(inputs.time, ...
+    modeledValues.lateralGrf, 2, 25);
 end
-valueError = 1000 * valueError;
-valueError = reshape(valueError, 1, []);
-slopeError = reshape(slopeError, 1, []);
-end
+
