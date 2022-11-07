@@ -28,52 +28,8 @@
 function cost = computeMuscleTendonCostFunction(secondaryValues, ...
     primaryValues, isIncluded, experimentalData, params)
 values = makeMtpValuesAsStruct(secondaryValues, primaryValues, isIncluded);
+synxModeledValues = calcMtpSynXModeledValues(values, experimentalData, params);
 modeledValues = calcMtpModeledValues(values, experimentalData, params);
-cost = calcMtpCost(values, modeledValues, experimentalData, params);
-end
-
-function totalCost = calcMtpCost(values, modeledValues, ...
-    experimentalData, params)
-totalCost = calcMomentTrackingCost(modeledValues, experimentalData, ...
-    params);
-totalCost = totalCost + calcActivationTimeConstantDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcActivationNonlinearityDeviationCost(values, ...
-    params);
-totalCost = totalCost + calcOptimalFiberLengthDeviationCost(values, ...
+cost = calcMtpCost(values, synxModeledValues, modeledValues, ...
     experimentalData, params);
-totalCost = totalCost + calcTendonSlackLengthDeviationCost(values, ...
-    experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorDevationCost(values, params);
-totalCost = totalCost + calcNormalizedFiberLengthDeviationCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcNormalizedFiberLengthPairedSimilarityCost( ...
-    modeledValues, experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcElectromechanicalDelayPairedSimilarityCost( ...
-    values, experimentalData, params);
-totalCost = totalCost + calcPassiveForceCost(modeledValues, params);
-totalCost = totalCost / numel(experimentalData.muscleTendonLength);
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
