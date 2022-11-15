@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function runs lsqnonlin for PreCalibration with settings
+% controlled by the input params.
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (Array of number, struct, struct) -> (Array of number)
+% returns the optimized values from PreCalibration
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Marleny Vega                              %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,24 +28,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[mtpInputs, mtpParams, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-if mtpParams.performPrecalibration
-    precalInputs = parsePreCalibrationSettingsTree(settingsTree);
-    optimizedParams = PreCalibration(precalInputs);
-end
-optimizedParams = MuscleTendonPersonalization(mtpInputs, mtpParams);
-%% results is a structure, report not implemented yet
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
-results = calcMtpSynXModeledValues(finalValues, mtpInputs, mtpParams);
-results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
-    end - mtpInputs.numPaddingFrames);
-% results = calcFinalMuscleActivations(optimizedParams, inputs);
-% results = calcFinalModelMoments(results, inputs);
-save("results.mat", "results", "finalValues", '-mat')
-% reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalizationResults(mtpInputs.model, ...
-    mtpInputs.coordinates, finalValues, results, resultsDirectory);
+function optimizedValues = computePreCalibrationOptimization( ...
+    initialValues, primaryValues, isIncluded, lowerBounds, upperBounds, ...
+    experimentalData, params, optimizerOptions)
+
+optimizedValues = lsqnonlin(@computePreCalibrationCostFunction, ...
+    initialValues, lowerBounds, upperBounds, optimizerOptions, experimentalData);
+% optimizedValues = fmincon(@(values)computeMuscleTendonCostFunction( ...
+%     values, primaryValues, isIncluded, experimentalData, params), ...
+%     initialValues, A, b, [], [], lowerBounds, upperBounds, ...
+%     @(values)calcMuscleTendonNonLinearConstraints(values, primaryValues, ...
+%     isIncluded, experimentalData, params), optimizerOptions);
+% optimizedValues = lsqnonlin(@(values)computePreCalibrationCostFunction( ...
+%     values, primaryValues, isIncluded, experimentalData, params), ...
+%     initialValues, lowerBounds, upperBounds, optimizerOptions);
 end
