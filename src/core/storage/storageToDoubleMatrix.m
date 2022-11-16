@@ -32,6 +32,10 @@
 function output = storageToDoubleMatrix(storage)
 import org.opensim.modeling.ArrayDouble
 
+if(class(storage) ~= "org.opensim.modeling.Storage")
+    storage = org.opensim.modeling.Storage(storage);
+end
+
 nCol = storage.getColumnLabels().size()-1;
 nRow = storage.getSize();
 
