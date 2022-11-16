@@ -49,7 +49,6 @@ function primaryValues = MuscleTendonPersonalization(inputs, ...
 % end
 primaryValues = prepareInitialValues(inputs, params);
 inputs = finalizeInputs(inputs, primaryValues, params);
-save("testData.mat", "inputs", "-mat")
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
@@ -57,9 +56,13 @@ for i=1:length(inputs.tasks)
     [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
         primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
     taskParams = makeTaskParams(inputs.tasks{i}, params);
+    numMuscles = getNumEnabledMuscles(inputs.model);
+    [A, b] = getLinearInequalityConstraints(inputs.synergyExtrapolation, ...
+        6 * numMuscles, inputs.extrapolationCommands, ...
+        permute(inputs.emgData, [3 1 2]));
     optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
         primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
-        taskUpperBounds, inputs, taskParams, optimizerOptions);
+        taskUpperBounds, inputs, taskParams, optimizerOptions, A, b);
     primaryValues = updateDesignVariables(primaryValues, ...
         optimizedValues, inputs.tasks{i}.isIncluded);
 end
@@ -97,17 +100,18 @@ end
 % extract initial version of optimized values from inputs/params
 function values = prepareInitialValues(inputs, params)
 numMuscles = getNumEnabledMuscles(inputs.model);
-values = zeros(6, numMuscles);
-values(1, :) = 0.5; % electromechanical delay
-values(2, :) = 1.5; % activation time
-values(3, :) = 0.05; % activation nonlinearity
-values(4, :) = 0.5; % EMG scale factors
-values(5, :) = 1; % optimal fiber length scale factor
-values(6, :) = 1; % tendon slack length scale factor
+values{1} = repmat(0.5, 1, numMuscles); % electromechanical delay
+values{2} = repmat(1.5, 1, numMuscles); % activation time
+values{3} = repmat(0.05, 1, numMuscles); % activation nonlinearity
+values{4} = repmat(0.5, 1, numMuscles); % EMG scale factors
+values{5} = repmat(1, 1, numMuscles); % optimal fiber length scale factor
+values{6} = repmat(1, 1, numMuscles); % tendon slack length scale factor
+values{7} = repmat(0, 1, inputs.numberOfExtrapolationWeights + ...
+    inputs.numberOfResidualWeights); % synergy commands
 end
 
 function inputs = finalizeInputs(inputs, primaryValues, params)
-values = makeMtpValuesAsStruct(struct(), primaryValues, zeros(1, 6));
+values = makeMtpValuesAsStruct(struct(), primaryValues, zeros(1, 7));
 modeledValues = calcMtpModeledValues(values, inputs, params);
 inputs = mergeStructs(inputs, modeledValues);
 end
@@ -118,13 +122,14 @@ if isfield(params, 'lowerBounds')
     lowerBounds = params.lowerBounds;
 else
     numMuscles = getNumEnabledMuscles(inputs.model);
-    lowerBounds = zeros(6, numMuscles);
-    lowerBounds(1, :) = 0.0; % electromechanical delay
-    lowerBounds(2, :) = 0.75; % activation time
-    lowerBounds(3, :) = 0.0; % activation nonlinearity
-    lowerBounds(4, :) = 0.05; % EMG scale factors
-    lowerBounds(5, :) = 0.6; % lmo scale factor
-    lowerBounds(6, :) = 0.6; % lts scale factor
+    lowerBounds{1} = repmat(0.0, 1, numMuscles); % electromechanical delay
+    lowerBounds{2} = repmat(0.75, 1, numMuscles); % activation time
+    lowerBounds{3} = repmat(0.0, 1, numMuscles); % activation nonlinearity
+    lowerBounds{4} = repmat(0.05, 1, numMuscles); % EMG scale factors
+    lowerBounds{5} = repmat(0.6, 1, numMuscles); % optimal fiber length scale factor
+    lowerBounds{6} = repmat(0.6, 1, numMuscles); % tendon slack length scale factor
+    lowerBounds{7} = repmat(-100, 1, inputs.numberOfExtrapolationWeights + ...
+        inputs.numberOfResidualWeights); % synergy commands
 end
 end
 
@@ -134,27 +139,30 @@ if isfield(params, 'upperBounds')
     upperBounds = params.upperBounds;
 else
     numMuscles = getNumEnabledMuscles(inputs.model);
-    upperBounds = zeros(6, numMuscles);
-    upperBounds(1,:) = 1.25; % electromechanical delay
-    upperBounds(2,:) = 3.5; % activation time
-    upperBounds(3,:) = 0.35; % activation nonlinearity
-    upperBounds(4,:) = 1; % EMG scale factors
-    upperBounds(5,:) = 1.4; % lmo scale factor
-    upperBounds(6,:) = 1.4; % lts scale factor
+    upperBounds{1} = repmat(1.25, 1, numMuscles); % electromechanical delay
+    upperBounds{2} = repmat(3.5, 1, numMuscles); % activation time
+    upperBounds{3} = repmat(0.35, 1, numMuscles); % activation nonlinearity
+    upperBounds{4} = repmat(1, 1, numMuscles); % EMG scale factors
+    upperBounds{5} = repmat(1.4, 1, numMuscles); % optimal fiber length scale factor
+    upperBounds{6} = repmat(1.4, 1, numMuscles); % tendon slack length scale factor
+    upperBounds{7} = repmat(100, 1, inputs.numberOfExtrapolationWeights + ...
+        inputs.numberOfResidualWeights); % synergy commands    
 end
 end
 
 % (struct) -> (struct)
 % setup optimizer options struct to pass to fmincon
 function output = makeOptimizerOptions(params)
-output = optimoptions('fmincon', 'UseParallel', true);
-output.MaxIterations = valueOrAlternate(params, 'maxIterations', 2000);
-output.MaxFunctionEvaluations = valueOrAlternate(params, ...
+output = optimset('UseParallel', true);
+output.MaxIter = valueOrAlternate(params, 'maxIterations', 10000);
+output.MaxFunEvals = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 100000000);
 output.Algorithm = valueOrAlternate(params, 'algorithm', 'sqp');
 output.ScaleProblem = valueOrAlternate(params, 'scaleProblem', ...
     'obj-and-constr');
 output.Display = 'iter';
+output.Hessian = 'lbfgs';
+output.GradObj = 'off';
 end
 
 % (struct, struct) -> (Array of number)
@@ -166,9 +174,9 @@ taskLowerBounds = [];
 taskUpperBounds = [];
 for i = 1:length(taskInputs.isIncluded)
    if(taskInputs.isIncluded(i))
-       taskValues = [taskValues primaryValues(i, :)];
-       taskLowerBounds = [taskLowerBounds lowerBounds(i, :)];
-       taskUpperBounds = [taskUpperBounds upperBounds(i, :)];
+       taskValues = [taskValues primaryValues{i}];
+       taskLowerBounds = [taskLowerBounds lowerBounds{i}];
+       taskUpperBounds = [taskUpperBounds upperBounds{i}];
    end
 end
 end

@@ -12,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Spencer Williams                          %
+% Author(s): Claire V. Hammond, Spencer Williams, Marleny Vega            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -36,6 +36,7 @@ values.activationNonlinearityConstants = findCorrectMtpValues(3, valuesHelper);
 values.emgScaleFactors = findCorrectMtpValues(4, valuesHelper);
 values.optimalFiberLengthScaleFactors = findCorrectMtpValues(5, valuesHelper);
 values.tendonSlackLengthScaleFactors = findCorrectMtpValues(6, valuesHelper);
+values.synergyWeights = findCorrectMtpValues(7, valuesHelper);
 end
 
 function output = findCorrectMtpValues(index, valuesStruct)
@@ -44,6 +45,6 @@ if (valuesStruct.isIncluded(index))
         valuesStruct.primaryValues, valuesStruct.isIncluded, index);
     output = valuesStruct.secondaryValues(startIndex:endIndex);
 else
-    output = valuesStruct.primaryValues(index, :);
+    output = valuesStruct.primaryValues{index};
 end
 end
