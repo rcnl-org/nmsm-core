@@ -68,15 +68,15 @@ end
 function cost = calcCost(inputs, modeledValues, valuesStruct)
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-cost = (1 / (12 * 101)) * (1 / 0.01 * footMarkerPositionError);
+cost = sqrt(1 / (12 * 101)) * (1 / 0.02 * footMarkerPositionError);
 % cost = [];
 % cost = [cost 1000 * footMarkerSlopeError]; %12.8
 % cost = [cost 1000 * calcKinematicCurveSlopeError(inputs, modeledValues, [1:4, 6])]; %27.3
 [groundReactionForceValueError, groundReactionForceSlopeError] = ...
     calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues);
-cost = [cost (1 / 101) * (1 / 10) * groundReactionForceValueError]; % 1 N
+cost = [cost sqrt(1 / 101) * (1 / 1) * groundReactionForceValueError]; % 1 N
 % cost = [cost 1 / 100 * groundReactionForceSlopeError]; %375970
-cost = [cost (1 / length(valuesStruct.springConstants)) * (1 / 2000) * calcSpringConstantsErrorFromMean(valuesStruct.springConstants)]; % 10 N/m, try making looser bounds
+cost = [cost sqrt(1 / length(valuesStruct.springConstants)) * (1 / 2000) * calcSpringConstantsErrorFromMean(valuesStruct.springConstants)]; % 10 N/m, try making looser bounds
 % cost = [cost 1 / 1e-6 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)]; % Allowable error to be determined, 1e-8?
 % cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)]; % Can remove these potentially redundant costs
 % cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)]; %
