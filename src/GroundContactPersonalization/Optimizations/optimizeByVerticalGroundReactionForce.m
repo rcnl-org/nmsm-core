@@ -30,11 +30,12 @@
 function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
 [initialValues, fieldNameOrder, inputs] = makeInitialValues(inputs, ...
     params);
+[lowerBounds, upperBounds] = makeBounds(inputs);
 optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
 % calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params);
 results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
-    fieldNameOrder, inputs, params), initialValues, [], [], ...
-    optimizerOptions);
+    fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
+    upperBounds, optimizerOptions);
 inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, 1);
 end
 
@@ -53,6 +54,21 @@ fieldNameOrder = ["springConstants", "dampingFactors", ...
     "bSplineCoefficientsVerticalSubset", "restingSpringLength"];
 end
 
+% (struct) -> (Array of double, Array of double)
+% Generate lower and upper bounds for design variables from inputs
+function [lowerBounds, upperBounds] = makeBounds(inputs)
+lowerBounds = zeros(1, length(inputs.springConstants));
+lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
+lowerBounds = [lowerBounds -Inf(1, length(reshape(...
+    inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
+lowerBounds = [lowerBounds 0];
+upperBounds = Inf(1, length(inputs.springConstants));
+upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
+upperBounds = [upperBounds Inf(1, length(reshape(...
+    inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
+upperBounds = [upperBounds Inf];
+end
+
 % (struct) -> (struct)
 % Prepare params for outer optimizer for Kinematic Calibration
 function output = prepareOptimizerOptions(params)
@@ -60,14 +76,16 @@ output = optimoptions('lsqnonlin', 'UseParallel', true);
 % output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
 % output.OptimalityTolerance = valueOrAlternate(params, ...
 %     'optimalityTolerance', 1e-6);
+% 1e-9 tolerances for levenberg-marquardt
 % output.FunctionTolerance = valueOrAlternate(params, ...
-%     'functionTolerance', 1e-6);
+%     'functionTolerance', 1e-9);
 % output.StepTolerance = valueOrAlternate(params, ...
-%     'stepTolerance', 1e-6);
+%     'stepTolerance', 1e-9);
 output.MaxFunctionEvaluations = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 3e6);
 output.MaxIterations = valueOrAlternate(params, ...
     'MaxIterations', 1e3);
 output.Display = valueOrAlternate(params, ...
     'display','iter');
+% output.Algorithm = 'levenberg-marquardt';
 end
