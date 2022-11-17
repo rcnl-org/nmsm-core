@@ -49,8 +49,8 @@ function inputs = mergeStageOneResults(inputs, results)
 index = 1;
 inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
 index = index + length(inputs.springConstants);
-inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
-index = index + length(inputs.dampingFactors);
+% inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
+% index = index + length(inputs.dampingFactors);
 
 bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficientsVerticalSubset, 1, []));
 bSplineCoefficientsVerticalSubset = results(index : index + bSplineCoefficientLength - 1);
