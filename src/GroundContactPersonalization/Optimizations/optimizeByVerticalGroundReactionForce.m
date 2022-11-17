@@ -46,11 +46,11 @@ function [initialValues, fieldNameOrder, inputs] = makeInitialValues( ...
 inputs.initialRestingSpringLength = inputs.restingSpringLength;
 inputs.bSplineCoefficientsVerticalSubset = ...
     inputs.bSplineCoefficients(:, [1:4, 6]);
-initialValues = [inputs.springConstants inputs.dampingFactors];
+initialValues = [inputs.springConstants ];...inputs.dampingFactors];
 initialValues = [initialValues ...
     reshape(inputs.bSplineCoefficientsVerticalSubset, 1, [])];
 initialValues = [initialValues inputs.restingSpringLength];
-fieldNameOrder = ["springConstants", "dampingFactors", ...
+fieldNameOrder = ["springConstants", ..."dampingFactors", ...
     "bSplineCoefficientsVerticalSubset", "restingSpringLength"];
 end
 
@@ -58,12 +58,12 @@ end
 % Generate lower and upper bounds for design variables from inputs
 function [lowerBounds, upperBounds] = makeBounds(inputs)
 lowerBounds = zeros(1, length(inputs.springConstants));
-lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
+% lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
 lowerBounds = [lowerBounds -Inf(1, length(reshape(...
     inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
 lowerBounds = [lowerBounds 0];
 upperBounds = Inf(1, length(inputs.springConstants));
-upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
+% upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
 upperBounds = [upperBounds Inf(1, length(reshape(...
     inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
 upperBounds = [upperBounds Inf];
