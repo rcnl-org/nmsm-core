@@ -74,7 +74,7 @@ function cost = calcCost(inputs, params, modeledValues, valuesStruct)
 cost = [];
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-cost = 1 / 0.01 * footMarkerPositionError; % Based on OpenSim IK best practices, 1-2 cm
+cost = 1 / 0.05 * footMarkerPositionError; % Based on OpenSim IK best practices, 1-2 cm
 % cost = [cost calcFootMarkerDistanceError(inputs, params, ...
 %     footMarkerPositionError)];
 % cost = [cost 1000 * footMarkerSlopeError];
@@ -82,26 +82,26 @@ cost = 1 / 0.01 * footMarkerPositionError; % Based on OpenSim IK best practices,
 %     modeledValues, 1:size(modeledValues.jointVelocities, 1))];
 [groundReactionForceValueErrors, groundReactionForceSlopeErrors] = ...
     calcGroundReactionForceAndSlopeError(inputs, modeledValues);
-cost = [cost groundReactionForceValueErrors(1, :)]; % may make this more strict (1 / 0.1)
-cost = [cost groundReactionForceValueErrors(2, :)];
-cost = [cost groundReactionForceValueErrors(3, :)]; % may make this more strict (1 / 0.1)
+cost = [cost 1 / 0.2 * groundReactionForceValueErrors(1, :)]; % may make this more strict (1 / 0.1)
+cost = [cost 1 / 0.2 * groundReactionForceValueErrors(2, :)];
+cost = [cost 1 / 0.2 * groundReactionForceValueErrors(3, :)]; % may make this more strict (1 / 0.1)
 % cost = [cost 1 / 3 * groundReactionForceSlopeErrors(1)];
 % cost = [cost 1 / 5 * groundReactionForceSlopeErrors(2)];
 % cost = [cost 2 * groundReactionForceSlopeErrors(3)];
-cost = [cost 1 / 100 * calcSpringConstantsErrorFromMean(...
+cost = [cost 1 / 2000 * calcSpringConstantsErrorFromMean(...
     valuesStruct.springConstants)];
-cost = [cost 1 / 10 * abs(inputs.springConstants - ...
-    valuesStruct.springConstants)];
-cost = [cost 1 / 1e-7 * calcDampingFactorsErrorFromMean(... % may combine damping factors to one scaling factor
+% cost = [cost 1 / 1 * abs(inputs.springConstants - ...
+%     valuesStruct.springConstants)];
+cost = [cost 1 / 1e-6 * calcDampingFactorsErrorFromMean(... % may combine damping factors to one scaling factor
     valuesStruct.dampingFactors)];
-cost = [cost 1 / 1e-8 * calcDampingFactorDeviationFromInitialValueError(... % may combine damping factors to one scaling factor
-    inputs.dampingFactors, valuesStruct.dampingFactors)];
-cost = [cost calcSpringConstantDeviationFromInitialValueError(... % may be redundant
-    inputs.springConstants, valuesStruct.springConstants)];
+% cost = [cost 1 / 0.0001 * calcDampingFactorDeviationFromInitialValueError(... % may combine damping factors to one scaling factor
+%     inputs.dampingFactors, valuesStruct.dampingFactors)];
+% cost = [cost calcSpringConstantDeviationFromInitialValueError(... % may be redundant
+%     inputs.springConstants, valuesStruct.springConstants)];
 % cost = [cost calcStaticFrictionDeviationError(...
 %     valuesStruct.staticFrictionCoefficient, params)];
-cost = [cost calcDynamicFrictionDeviationError(... % may not be needed
-    valuesStruct.dynamicFrictionCoefficient, params)];
+% cost = [cost calcDynamicFrictionDeviationError(... % may not be needed
+%     valuesStruct.dynamicFrictionCoefficient, params)];
 % cost = [cost calcViscousFrictionDeviationError(...
 %     valuesStruct.viscousFrictionCoefficient, params)];
 % cost = [cost calcStaticToDynamicFrictionDeviationError(...
