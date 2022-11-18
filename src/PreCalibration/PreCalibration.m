@@ -35,13 +35,8 @@ upperBounds = makeUpperBounds(inputs);
 optimizerOptions = makeOptimizerOptions(struct());
 [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
     primaryValues, inputs.tasks, lowerBounds, upperBounds);
-taskParams = makeTaskParams(struct());
-% optimizedValues = computePreCalibrationOptimization(taskValues, ...
-%     primaryValues, taskLowerBounds, taskUpperBounds, inputs, ...
-%     taskParams, optimizerOptions);
 optimizedValues = computePreCalibrationOptimization(taskValues, ...
-    primaryValues, inputs.tasks.maximumMuscleStressIsIncluded, ...
-    taskLowerBounds, taskUpperBounds, inputs, taskParams, optimizerOptions);
+    taskLowerBounds, taskUpperBounds, inputs, optimizerOptions);
 end
 
 % extract initial version of optimized values from inputs/params
@@ -100,16 +95,5 @@ if taskInputs.maximumMuscleStressIsIncluded
     taskValues = [taskValues primaryValues{end}];
     taskLowerBounds = [taskLowerBounds lowerBounds{end}];
     taskUpperBounds = [taskUpperBounds upperBounds{end}];
-end
-end
-
-% (struct, struct) -> (struct)
-% prepare optimizer parameters for the given task
-function taskParams = makeTaskParams(params)
-if(~isfield(params, 'maxIterations'))
-    taskParams.maxIterations = 2e3;
-end
-if(isfield(params, 'maxFunctionEvaluations'))
-    taskParams.maxFunctionEvaluations = 1e8;
 end
 end
