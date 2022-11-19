@@ -55,19 +55,3 @@ modeledValues.passiveModelMoments = calcPassiveMuscleMoments( ...
     experimentalData, modeledValues.maxIsometricForce, ...
     modeledValues.passiveNormalizedFiberLength);
 end
-
-function maxIsometricForce = getMaxIsometricForce(experimentalData, values)
-
-scaledOptimalFiberLength = experimentalData.optimalFiberLength .* ...
-    values.optimalFiberLengthScaleFactors;
-scaledMaximumMuscleStress = experimentalData.maximumMuscleStress .* ...
-    values.maximumMuscleStressScaleFactor;
-
-if experimentalData.optimizeIsometricMaxForce
-    maxIsometricForce = calcMaxIsometricForce( ...
-        experimentalData.muscleVolume, scaledOptimalFiberLength, ...
-        scaledMaximumMuscleStress);
-else 
-    maxIsometricForce = experimentalData.maxIsometricForce;
-end
-end
