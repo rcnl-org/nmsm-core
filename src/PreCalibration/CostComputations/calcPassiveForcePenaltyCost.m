@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +25,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
-
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+function cost = calcPassiveForcePenaltyCost(modeledValues, params)
+costWeight = valueOrAlternate(params, ...
+    "maximumMuscleStressPenaltyCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "maximumMuscleStressPenaltyErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "maximumMuscleStressPenaltyMaximumAllowableError", 10);
+cost = costWeight * calcDeviationCostArray( ...
+    modeledValues.passiveForce, errorCenter, ...
+    maximumAllowableError);
 end

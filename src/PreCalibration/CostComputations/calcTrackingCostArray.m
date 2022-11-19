@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% This function calculates the cost for tracking values 
+%
+% (Array of number, Array of number, number, number) -> (struct)
+% returns tracking cost
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
+function cost = calcTrackingCostArray(modelValue, ...
+    experimentalValue, errorCenter, maxAllowableError)
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+errorMatching = modelValue - experimentalValue;
+cost = ((errorMatching(:) - errorCenter) ./ maxAllowableError) ./ ...
+    sqrt(size(errorMatching(:), 1));
 end

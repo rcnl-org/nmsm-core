@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% This function calculates the passive model moment
+%
+% (Array of number) -> (Array of number)
+% returns passive model moment  
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +27,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
+function passiveModelMoments = calcPassiveMuscleMoments(experimentalData, ...
+    maxIsometricForce, normalizedFiberLength)
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+expandedMaxIsometricForce = ones(1, 1, length(maxIsometricForce), 1);
+expandedMaxIsometricForce(1, 1, :, 1) = maxIsometricForce;
+
+passiveForce = passiveForceLengthCurve(normalizedFiberLength);
+expandedPassiveForce = ones(size(passiveForce, 1), 1, ...
+    size(passiveForce, 2), size(passiveForce, 3));
+expandedPassiveForce(:, 1, :, :) = passiveForce;
+
+parallelComponentOfPennationAngle = cos(experimentalData.pennationAngle);
+expandedParallelComponentOfPennationAngle = ones(1, 1, length( ...
+    parallelComponentOfPennationAngle), 1);
+expandedParallelComponentOfPennationAngle(1, 1, :, 1) = ...
+    parallelComponentOfPennationAngle;
+
+passiveModelMoments = experimentalData.momentArms .* ...
+    expandedMaxIsometricForce .* expandedPassiveForce .* ...
+    expandedParallelComponentOfPennationAngle;
+
+passiveModelMoments = permute(sum(passiveModelMoments, 3), [1 2 4 3]);
 end
