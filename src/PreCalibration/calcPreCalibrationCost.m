@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% (Array of number, struct, struct, struct) -> (Array of number)
+% returns the total cost for the PreCalibration optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +25,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
+function totalCost = calcPreCalibrationCost(values, modeledValues, ...
     experimentalData)
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+params = getPreCalibrationCostParams(experimentalData);
+totalCost = calcPassiveMomentTrackingCost(modeledValues, experimentalData, params);
+totalCost = cat(1, totalCost, calcOptimalFiberLengthScaleFactorDeviationCost(values, params));
+totalCost = cat(1, totalCost, calcTendonSlackLengthScaleFactorDeviationCost(values, params));
+totalCost = cat(1, totalCost, calcMinimumNormalizedFiberLengthDeviationCost(modeledValues, experimentalData, params));
+totalCost = cat(1, totalCost, calcMaximumNormalizedFiberLengthSimilarityCost(values, experimentalData, params));
+totalCost = cat(1, totalCost, calcMaximumNormalizedFiberLengthDeviationCost(modeledValues, values, experimentalData, params));
+totalCost = cat(1, totalCost, calcNormalizedFiberLengthMeanSimilarityCost(modeledValues, experimentalData, params));
+totalCost = cat(1, totalCost, calcMaximumMuscleStressPenaltyCost(values, params));
+totalCost = cat(1, totalCost, calcPassiveForcePenaltyCost(modeledValues, params));
+end
+function params = getPreCalibrationCostParams(experimentalData)
+
+params.costWeight = experimentalData.costWeight;
+params.errorCenters = experimentalData.errorCenters;
+params.maxAllowableErrors = experimentalData.maxAllowableErrors;
 end

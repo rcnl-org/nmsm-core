@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% returns the cost for all rounds of the PreCalibration optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +25,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
+function cost = calcPassiveMomentTrackingCost(modeledValues, ...
+    experimentalData, params)
+costWeight = valueOrAlternate(params, ...
+    "passiveMomentTrackingCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "passiveMomentTrackingErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "passiveMomentTrackingMaximumAllowableError", 2);
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+columnsWithAllZeros = ...
+    all(experimentalData.passiveData.experimentalMoments == 0, 3);
+experimentalMoments = ...
+    experimentalData.passiveData.experimentalMoments( ...
+    repmat(~columnsWithAllZeros, 1, 1, 101));
+passiveModelMoments = modeledValues.passiveModelMoments( ...
+    repmat(~columnsWithAllZeros, 1, 1, 101));
+
+cost = costWeight * calcTrackingCostArray(passiveModelMoments, ...
+    experimentalMoments, errorCenter, maximumAllowableError);
 end

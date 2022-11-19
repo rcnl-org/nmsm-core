@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% This function calculates the maximum isometric force
+%
+% (Array of numbers, Array of numbers, number) -> 
+% (Array numbers)
+% returns the max isometric force
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +28,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
+function maxIsometricForce = calcMaxIsometricForce(muscleVolume, ...
+    optimalFiberLength, maximumMuscleStress)
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+maxIsometricForce = (muscleVolume ./ optimalFiberLength) * ...
+    maximumMuscleStress;
 end

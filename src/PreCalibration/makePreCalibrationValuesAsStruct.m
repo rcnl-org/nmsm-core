@@ -1,7 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+%
+% (Array of number, struct) -> (struct)
+% Gather optimization values into a struct for use in cost function
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +26,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
+function values = makePreCalibrationValuesAsStruct(parameterChange, ...
     experimentalData)
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+numMuscles = getNumEnabledMuscles(experimentalData.model);
+values.optimalFiberLengthScaleFactors = parameterChange(:, 1:numMuscles);
+values.tendonSlackLengthScaleFactors = ...
+    parameterChange(:, numMuscles + 1 : 2 * numMuscles);
+values.maxNormalizedFiberLength = ...
+    parameterChange(:, 2 * numMuscles + 1 : 2 * numMuscles + ...
+    experimentalData.numMusclePairs + experimentalData.numMusclesIndividual);
+if experimentalData.tasks.maximumMuscleStressIsIncluded
+    values.maximumMuscleStressScaleFactor = parameterChange(:, end);
+else
+    values.maximumMuscleStressScaleFactor = 1;
+end
 end
