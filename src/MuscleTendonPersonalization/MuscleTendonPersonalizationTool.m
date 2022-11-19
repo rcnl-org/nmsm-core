@@ -35,7 +35,9 @@ settingsTree = xml2struct(settingsFileName);
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 if mtpParams.performPrecalibration
     precalInputs = parsePreCalibrationSettingsTree(settingsTree);
-    optimizedParams = PreCalibration(precalInputs);
+    optimizedInitialGuess = PreCalibration(precalInputs);
+    mtpInputs = updateMtpInputs(mtpInputs, precalInputs, ...
+        optimizedInitialGuess);
 end
 optimizedParams = MuscleTendonPersonalization(mtpInputs, mtpParams);
 %% results is a structure, report not implemented yet
