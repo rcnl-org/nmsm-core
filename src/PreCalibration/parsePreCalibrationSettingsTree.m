@@ -33,17 +33,6 @@ function [inputs] = parsePreCalibrationSettingsTree(....
 inputs = getInputs(settingsTree);
 inputs = getModelInputs(inputs);
 inputs = getMuscleVolume(inputs);
-
-load('\\smb.rdf.rice.edu\research\bjf5\RCNL\Marleny\MTP_Patient4_Data\PreCalibration\otherVariables.mat')
-load('\\smb.rdf.rice.edu\research\bjf5\RCNL\Marleny\MTP_Patient4_Data\PreCalibration\otherVariables1.mat')
-load('\\smb.rdf.rice.edu\research\bjf5\RCNL\Marleny\MTP_Patient4_Data\PreCalibration\otherVariables2.mat')
-
-inputs.passiveMuscleTendonLength = lMtThelen;
-inputs.passiveMomentArms = momentArmsThelen;
-inputs.muscleTendonLength = lMt;
-inputs.momentArms = momentArms;
-inputs.experimentalPassiveMoments = thelenPassiveMoment;
-
 end
 
 function inputs = getInputs(tree)
@@ -62,33 +51,25 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-% muscleVolumeFile = getFieldByName(tree, 'muscle_volume_file').Text;
-% inputs.muscleVolumeFile = fullfile(passiveInputDirectory, muscleVolumeFile);
 prefixes = getPrefixes(tree, inputDirectory, 'trial_prefixes');
 passivePrefixes = getPrefixes(tree, passiveInputDirectory, 'passive_trial_prefixes');
 passiveJointMomentFileNames = findFileListFromPrefixList(fullfile( ...
     passiveInputDirectory, "IDData"), passivePrefixes);
 inputs.coordinates = getStorageColumnNames(Storage( ...
     passiveJointMomentFileNames(1)));
-inputs.experimentalPassiveMoments = parseMtpStandard(passiveJointMomentFileNames);
-
-% directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-%     inputDirectory, "MAData"), prefixes);
-% inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
-%     "Length.sto");
-% inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
-%     "Velocity.sto");
-% inputs.momentArms = parseMomentArms(directories, inputs.model);
-% passiveDirectories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-%     passiveInputDirectory, "MAData"), passivePrefixes);
-% inputs.passiveMuscleTendonLength = parseFileFromDirectories(passiveDirectories, ...
-%     "Length.sto");
-% inputs.passiveMuscleTendonVelocity = parseFileFromDirectories(passiveDirectories, ...
-%     "Velocity.sto");
-% inputs.passiveMomentArms = parseMomentArms(passiveDirectories, inputs.model);
-
-inputs.numPaddingFrames = (size(inputs.experimentalPassiveMoments, 3) - 101) / 2;
-% inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
+inputs.passiveData.experimentalMoments = parseMtpStandard(passiveJointMomentFileNames);
+directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
+    inputDirectory, "MAData"), prefixes);
+inputs.gaitData.muscleTendonLength = parseFileFromDirectories(directories, ...
+    "Length.sto");
+inputs.gaitData.momentArms = parseMomentArms(directories, inputs.model);
+passiveDirectories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
+    passiveInputDirectory, "MAData"), passivePrefixes);
+inputs.passiveData.muscleTendonLength = parseFileFromDirectories(passiveDirectories, ...
+    "Length.sto");
+inputs.passiveData.momentArms = parseMomentArms(passiveDirectories, inputs.model);
+inputs.numPaddingFrames = (size(inputs.passiveData.experimentalMoments, 3) - 101) / 2;
+inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.tasks = getTask(tree);
 optimizeIsometricMaxForce = getFieldByName(tree, ...
     'optimize_isometric_max_force').Text;
@@ -178,19 +159,15 @@ end
 end
 
 function inputs = reduceDataSize(inputs, numPaddingFrames)
-inputs.experimentalPassiveMoments = inputs.experimentalPassiveMoments(:, :, ...
+inputs.passiveData.experimentalMoments = inputs.passiveData.experimentalMoments(:, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
-inputs.muscleTendonLength = inputs.muscleTendonLength(:, :, ...
+inputs.gaitData.muscleTendonLength = inputs.gaitData.muscleTendonLength(:, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
-inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(:, :, ...
+inputs.gaitData.momentArms = inputs.gaitData.momentArms(:, :, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
-inputs.momentArms = inputs.momentArms(:, :, :, ...
+inputs.passiveData.muscleTendonLength = inputs.passiveData.muscleTendonLength(:, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
-inputs.passiveMuscleTendonLength = inputs.passiveMuscleTendonLength(:, :, ...
-    numPaddingFrames + 1:end-numPaddingFrames);
-inputs.passiveMuscleTendonVelocity = inputs.passiveMuscleTendonVelocity(:, :, ...
-    numPaddingFrames + 1:end-numPaddingFrames);
-inputs.passiveMomentArms = inputs.passiveMomentArms(:, :, :, ...
+inputs.passiveData.momentArms = inputs.passiveData.momentArms(:, :, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
 end
 
