@@ -1,7 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct, struct, struct) -> (Array of number)
-% returns the total cost for the PreCalibration optimization
+%
+% (struct, array of number) -> (array of number)
+% returns the maximum isometric force for PreCalibration
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,36 +26,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function totalCost = calcPreCalibrationCost(values, modeledValues, ...
-    experimentalData)
+function maxIsometricForce = getMaxIsometricForce(experimentalData, values)
 
-params = getPreCalibrationCostParams(experimentalData);
-totalCost = calcPassiveMomentTrackingCost(modeledValues, ...
-    experimentalData, params);
-totalCost = cat(1, totalCost, ...
-    calcOptimalFiberLengthScaleFactorDeviationCost(values, params));
-totalCost = cat(1, totalCost, ...
-    calcTendonSlackLengthScaleFactorDeviationCost(values, params));
-totalCost = cat(1, totalCost, ...
-    calcMinimumNormalizedFiberLengthDeviationCost(modeledValues, ...
-    experimentalData, params));
-totalCost = cat(1, totalCost, ...
-    calcMaximumNormalizedFiberLengthSimilarityCost(values, ...
-    experimentalData, params));
-totalCost = cat(1, totalCost, ...
-    calcMaximumNormalizedFiberLengthDeviationCost(modeledValues, ...
-    values, experimentalData, params));
-totalCost = cat(1, totalCost, ...
-    calcNormalizedFiberLengthMeanSimilarityCost(modeledValues, ...
-    experimentalData, params));
-totalCost = cat(1, totalCost, ...
-    calcMaximumMuscleStressPenaltyCost(values, params));
-totalCost = cat(1, totalCost, ...
-    calcPassiveForcePenaltyCost(modeledValues, params));
+scaledOptimalFiberLength = experimentalData.optimalFiberLength .* ...
+    values.optimalFiberLengthScaleFactors;
+scaledMaximumMuscleStress = experimentalData.maximumMuscleStress .* ...
+    values.maximumMuscleStressScaleFactor;
+
+if experimentalData.optimizeIsometricMaxForce
+    maxIsometricForce = calcMaxIsometricForce( ...
+        experimentalData.muscleVolume, scaledOptimalFiberLength, ...
+        scaledMaximumMuscleStress);
+else 
+    maxIsometricForce = experimentalData.maxIsometricForce;
 end
-function params = getPreCalibrationCostParams(experimentalData)
-
-params.costWeight = experimentalData.costWeight;
-params.errorCenters = experimentalData.errorCenters;
-params.maxAllowableErrors = experimentalData.maxAllowableErrors;
 end
