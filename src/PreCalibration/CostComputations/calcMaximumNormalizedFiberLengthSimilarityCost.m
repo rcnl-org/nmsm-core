@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% returns the cost for all rounds of the PreCalibration optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +25,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
+function cost = calcMaximumNormalizedFiberLengthSimilarityCost(values, ...
+    experimentalData, params)
+costWeight = valueOrAlternate(params, ...
+    "maximumNormalizedFiberLengthSimilarityCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "maximumNormalizedFiberLengthSimilarityErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "maximumNormalizedFiberLengthSimilarityMaximumAllowableError", 0.1);
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+groupedMaxNormalizedFiberLengths = ...
+    values.maxNormalizedFiberLength(...
+    experimentalData.groupedMaxNormalizedFiberLength);
+
+cost = costWeight * calcTrackingCostArray(...
+    experimentalData.maxNormalizedMuscleFiberLength, ...
+    groupedMaxNormalizedFiberLengths, errorCenter, maximumAllowableError);
 end

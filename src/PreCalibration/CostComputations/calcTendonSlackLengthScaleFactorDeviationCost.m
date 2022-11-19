@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +25,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
-
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+function cost = calcTendonSlackLengthScaleFactorDeviationCost(values, ...
+    params)
+costWeight = valueOrAlternate(params, ...
+    "tendonSlackLengthScaleFactorDeviationCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "tendonSlackLengthScaleFactorDeviationErrorCenter", 1);
+maximumAllowableError = valueOrAlternate(params, ...
+    "tendonSlackLengthScaleFactorDeviationMaximumAllowableError", 1);
+cost = costWeight * calcDeviationCostArray(...
+    values.tendonSlackLengthScaleFactors, errorCenter, ...
+    maximumAllowableError);
 end

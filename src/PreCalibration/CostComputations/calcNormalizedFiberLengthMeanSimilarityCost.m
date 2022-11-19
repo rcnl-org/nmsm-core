@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +25,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
+function cost = calcNormalizedFiberLengthMeanSimilarityCost( ...
+    modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, ...
+    "normalizedFiberLengthMeanSimilarityCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "normalizedFiberLengthMeanSimilarityErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "normalizedFiberLengthMeanSimilarityMaximumAllowableError", 0.1);
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+Ind = 1;
+for i = 1:length(experimentalData.normalizedFiberLengthPairs)
+normalizedFiberLengthSimilarity = ...
+    abs(modeledValues.normalizedFiberLength(:, ...
+    experimentalData.normalizedFiberLengthPairs{i}, :) - ...
+    mean(modeledValues.normalizedFiberLength(:, ...
+    experimentalData.normalizedFiberLengthPairs{i}, :),  2));
+normalizedFiberLengthSimilarityCost(Ind : Ind + ...
+    size(experimentalData.normalizedFiberLengthPairs{i}, 2) - 1) = ...
+    log(sum(exp(500 * (normalizedFiberLengthSimilarity)), [1 3])) / 500;
+Ind = Ind + size(experimentalData.normalizedFiberLengthPairs{i}, 2);
+end
+
+cost = costWeight * calcDeviationCostArray(...
+    normalizedFiberLengthSimilarityCost, errorCenter, ...
+    maximumAllowableError);
 end

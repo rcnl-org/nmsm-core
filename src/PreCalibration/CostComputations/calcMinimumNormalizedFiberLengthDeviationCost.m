@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +25,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
+function cost = calcMinimumNormalizedFiberLengthDeviationCost( ...
+    modeledValues, experimentalData, params)
+costWeight = valueOrAlternate(params, ...
+    "minimumNormalizedFiberLengthDeviationCostWeight", 1);
+errorCenter = valueOrAlternate(params, ...
+    "minimumNormalizedFiberLengthDeviationErrorCenter", 0);
+maximumAllowableError = valueOrAlternate(params, ...
+    "minimumNormalizedFiberLengthDeviationMaximumAllowableError", 0.3);
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+minNormalizedFiberLength = min(modeledValues.normalizedFiberLength, [], 3);
+for i = 1 : size(experimentalData.gaitData.muscleTendonLength,1)
+for ii = 1 : getNumEnabledMuscles(experimentalData.model)
+    if minNormalizedFiberLength(i, ii) < experimentalData.minNormalizedMuscleFiberLength 
+        minNormalizedFiberLengthError(i, ii) = ...
+            minNormalizedFiberLength(i, ii) - ...
+            experimentalData.minNormalizedMuscleFiberLength;
+    else
+        minNormalizedFiberLengthError(i, ii) = 0;
+    end
+end 
+end
+
+cost = costWeight * calcDeviationCostArray(...
+    minNormalizedFiberLengthError, errorCenter, maximumAllowableError);
 end
