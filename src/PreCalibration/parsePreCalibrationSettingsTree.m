@@ -234,6 +234,7 @@ end
 end
 
 function inputs = getModelInputs(inputs)
+inputs.numMuscles = getNumEnabledMuscles(inputs.model);
 inputs.optimalFiberLength = [];
 inputs.tendonSlackLength = [];
 inputs.pennationAngle = [];

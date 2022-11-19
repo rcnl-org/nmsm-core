@@ -32,7 +32,6 @@ function [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
-%% Will be influenced by PreCal
 inputs = getModelInputs(inputs);
 inputs = getSynergyExtrapolationInputs(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
@@ -189,6 +188,9 @@ maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
 if(isstruct(maxFunctionEvaluations))
     params.maxFunctionEvaluations = str2double(maxFunctionEvaluations.Text);
 end
+performPrecalibration = getFieldByName(tree, 'perform_precalibration');
+if(performPrecalibration.Text == "true"); params.performPrecalibration = 1;
+else; params.performPrecalibration = 0; end
 end
 
 function inputs = getModelInputs(inputs)
