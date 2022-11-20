@@ -45,41 +45,40 @@ markerNumber = 1;
 markerPrefix = "spring_marker_";
 
 for i=1:length(insideToes)
-    pointX = insideToes(i, 2) * normalizedFootHeight;
-    pointX = pointX - calcnToToes.T.get(0);
-    pointX = pointX - (calcnVec3.get(0) - heelVec3.get(0));
-    if(isLeftFoot)
-        pointY = 1 - insideToes(i, 1);
-    else
-        pointY = insideToes(i, 1);
-    end
-    pointY = pointY * normalizedFootWidth;
-    pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
-    addSpringToModel(model, toesVec3, [pointX, pointY], toesBodyName, markerPrefix + num2str(markerNumber));
+    newPoint = calcMarkerPosition(insideToes(i, :), normalizedFootHeight, normalizedFootWidth, normalizedMarkerPositions, calcnVec3, heelVec3, isLeftFoot);
+    newPoint(1) = newPoint(1) - toesVec3.get(0) + calcnVec3.get(0);
+    newPoint(2) = newPoint(2) - toesVec3.get(2) + calcnVec3.get(2);
+    height = - calcnVec3.get(1);
+    addSpringToModel(model, height, newPoint, toesBodyName, markerPrefix + num2str(markerNumber));
     markerNumber = markerNumber + 1;
 end
 for i=1:length(insideHindfoot)
-    pointX = insideHindfoot(i, 2) * normalizedFootHeight;
-    pointX = pointX - (calcnVec3.get(0) - heelVec3.get(0));
-    if(isLeftFoot)
-        pointY = 1 - insideHindfoot(i, 1);
-    else
-        pointY = insideHindfoot(i, 1);
-    end
-    pointY = pointY * normalizedFootWidth;
-    pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
-    addSpringToModel(model, calcnVec3, [pointX, pointY], hindfootBodyName, markerPrefix + num2str(markerNumber));
+    newPoint = calcMarkerPosition(insideHindfoot(i, :), normalizedFootHeight, normalizedFootWidth, normalizedMarkerPositions, calcnVec3, heelVec3, isLeftFoot);
+    addSpringToModel(model, -calcnVec3.get(1), newPoint, hindfootBodyName, markerPrefix + num2str(markerNumber));
     markerNumber = markerNumber + 1;
 end
 end
 
-function addSpringToModel(model, bodyPosition, point, body, name)
+function newPoint = calcMarkerPosition(point, normalizedFootHeight, normalizedFootWidth, normalizedMarkerPositions, calcnVec3, heelVec3, isLeftFoot)
+    pointX = point(2) * normalizedFootHeight;
+    pointX = pointX - (calcnVec3.get(0) - heelVec3.get(0));
+    if(isLeftFoot)
+        pointY = 1 - point(1);
+    else
+        pointY = point(1);
+    end
+    pointY = pointY * normalizedFootWidth;
+    pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
+    newPoint = [pointX, pointY];
+end
+
+function addSpringToModel(model, height, point, body, name)
 import org.opensim.modeling.Marker
 import org.opensim.modeling.Vec3
 marker = Marker();
 marker.setName(name);
 marker.setParentFrame(model.getBodySet().get(body));
 % bodyHeight = model.getBodySet().get(body).getPositionInGround(state).get(2);
-marker.set_location(Vec3(point(1), -bodyPosition.get(1), point(2)));
+marker.set_location(Vec3(point(1), height, point(2)));
 model.addMarker(marker);
 end
