@@ -43,7 +43,7 @@ markerVelocities.(markerNamesFields{i}) = calcBSplineDerivative(time, ...
 end
 
 footModel = makeFootModel(bodyModel, toesJointName);
-footModel = 
+% footModel = findTwoPointsOnToeJointAxis(footModel, toesJointName, hindfootBodyName);
 footModel = addSpringsToModel(footModel, markerNames, gridWidth, ...
     gridHeight, hindfootBodyName, toesBodyName, toesJointName, isLeftFoot);
 footModel.print("footModel2.osim");
@@ -124,8 +124,6 @@ marker = Marker();
 marker.setName("point1");
 marker.setParentFrame(model.getBodySet().get(body));
 bodyPosition = model.getBodySet().get(body).getPositionInGround(state);
-Vec3(point1(1) - bodyPosition.get(1), ...
-    point1(2) - bodyPosition.get(2), point1(3) - bodyPosition.get(3))
 marker.set_location(Vec3(point1(1) - bodyPosition.get(1), ...
     point1(2) - bodyPosition.get(2), point1(3) - bodyPosition.get(3)));
 model.addMarker(marker);
