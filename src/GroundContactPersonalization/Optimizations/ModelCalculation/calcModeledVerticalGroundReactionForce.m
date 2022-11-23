@@ -38,11 +38,24 @@ for i=1:length(springConstants)
         num2str(i)).getLocationInGround(state).get(1);
     verticalVelocity = model.getMarkerSet().get("spring_marker_" + ...
         num2str(i)).getVelocityInGround(state).get(1);
-    if (height-springRestingLength)<0
-        springVerticalGrf = (springConstants(i) * (springRestingLength ...
-            - height) * (1 + dampingFactors(i) * ...
-            verticalVelocity)); % Equation 1 from Jackson et al, 2016
-    end
+    %     if (height-springRestingLength)<0
+    %         springVerticalGrf = (springConstants(i) * (springRestingLength ...
+    %             - height) * (1 + dampingFactors(i) * ...
+    %             verticalVelocity)); % Equation 1 from Jackson et al, 2016
+    %     end
+    lowSpringConstant = 0.1;
+    h = 1e-3;
+    c = 5e-4;
+    v = (springConstants(i) + lowSpringConstant) / ...
+        (springConstants(i) - lowSpringConstant);
+    s = (springConstants(i) - lowSpringConstant) / 2;
+    restingLengthForceOffset = -s * (v * springRestingLength - c * ...
+        log(cosh((springRestingLength + h) / c)));
+    springVerticalGrf = (-s * (v * height - c * ...
+        log(cosh((height + h) / c))) - restingLengthForceOffset) * ...
+        (1 + dampingFactors(i) * verticalVelocity);
+
     modeledVerticalGrf = modeledVerticalGrf + springVerticalGrf;
 end
+disp(modeledVerticalGrf)
 end

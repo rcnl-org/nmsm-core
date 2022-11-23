@@ -30,10 +30,11 @@
 function inputs = optimizeByGroundReactionForces(inputs, params)
 [initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
     params);
+[lowerBounds, upperBounds] = makeBounds(inputs);
 optimizerOptions = prepareOptimizerOptions(params);
 results = lsqnonlin(@(values) calcGroundReactionCost(values, ...
-    fieldNameOrder, inputs, params), initialValues, [], [], ...
-    optimizerOptions);
+    fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
+    upperBounds, optimizerOptions);
 inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, 2);
 end
 
@@ -55,6 +56,21 @@ fieldNameOrder = ["springConstants", "dampingFactors", ...
     "dynamicFrictionCoefficient", "viscousFrictionCoefficient"];
 end
 
+% (struct) -> (Array of double, Array of double)
+% Generate lower and upper bounds for design variables from inputs
+function [lowerBounds, upperBounds] = makeBounds(inputs)
+lowerBounds = zeros(1, length(inputs.springConstants));
+lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
+lowerBounds = [lowerBounds -Inf(1, length(reshape(...
+    inputs.bSplineCoefficients, 1, [])))];
+lowerBounds = [lowerBounds 0 0 0];
+upperBounds = Inf(1, length(inputs.springConstants));
+upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
+upperBounds = [upperBounds Inf(1, length(reshape(...
+    inputs.bSplineCoefficients, 1, [])))];
+upperBounds = [upperBounds Inf Inf Inf];
+end
+
 % (struct) -> (struct)
 % Prepare params for outer optimizer for Kinematic Calibration
 function output = prepareOptimizerOptions(params)
@@ -65,7 +81,7 @@ output.OptimalityTolerance = valueOrAlternate(params, ...
 output.FunctionTolerance = valueOrAlternate(params, ...
     'functionTolerance', 1e-6);
 output.StepTolerance = valueOrAlternate(params, ...
-    'stepTolerance', 1e-3);
+    'stepTolerance', 1e-6);
 output.MaxFunctionEvaluations = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 3e6);
 output.Display = valueOrAlternate(params, ...
