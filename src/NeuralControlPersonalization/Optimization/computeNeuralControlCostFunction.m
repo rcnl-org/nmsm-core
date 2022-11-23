@@ -52,14 +52,14 @@ torqueErrors = torqueErrors(:);
 
 
 
-momentTr_allow_err = 1; % 1 Nm is the allowable error for moment tracking error
-actTr_allow_err = params.actTr_allow_err;%0.05; % 0.05 is the allowablw error for activation tracking error
+momentTrackAllowErr = params.momentTrackAllowErr; % 5 Nm is the allowable error for moment tracking error
+actTrackAllowErr = params.actTrackAllowErr;%0.05; % 0.05 is the allowablw error for activation tracking error
+actMinAllowErr = params.actMinAllowErr;
+actTrackErr = aVals(:,1:nMuscles_legs) - EMGact_all;
+actTrackErr = w_ActTrack^0.5*(actTrackErr(:)/actTrackAllowErr)/(nPts*nMuscles_legs)^0.5;
+momentErr = w_MTrack^0.5*(torqueErrors/momentTrackAllowErr)/(nPts*nJoints)^0.5;
+actMinErr = reshape(aVals(:,nMuscles_legs+1:end),[params.nPts*(nMuscles_trunk),1]);
+actMinErr = w_ActMin^0.5*(actMinErr/actMinAllowErr)/(nPts*nMuscles_trunk)^0.5;
 
-ActTr_err = aVals(:,1:nMuscles_legs) - EMGact_all;
-ActTr_err = w_ActTrack^0.5*(ActTr_err(:)/actTr_allow_err)/(nPts*nMuscles_legs)^0.5;
-T_err = w_MTrack^0.5*(torqueErrors/momentTr_allow_err)/(nPts*nJoints)^0.5;
-ActMin_err = reshape(aVals(:,nMuscles_legs+1:end),[params.nPts*(nMuscles_trunk),1]);
-ActMin_err = w_ActMin^0.5*ActMin_err/(nPts*nMuscles_trunk)^0.5;
-
-errs = 1/sqrt(w_MTrack + w_ActTrack + w_ActMin)*[T_err; ActTr_err; ActMin_err];
+errs = 1/sqrt(w_MTrack + w_ActTrack + w_ActMin)*[momentErr; actTrackErr; actMinErr];
 end
