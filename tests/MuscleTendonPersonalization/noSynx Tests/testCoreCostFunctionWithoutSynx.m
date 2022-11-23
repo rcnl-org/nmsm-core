@@ -15,8 +15,6 @@ muscleExcitations = calcMuscleExcitations(experimentalData.emgTime, ...
     experimentalData.emgSplines, values.electromechanicalDelays, ...
     values.emgScaleFactors);
 
-eps
-
 muscleExcitationsExpected = load('muscleExcitationsExpected.mat').muscleExcitationsExpected;
 muscleExcitationsExpected = permute(muscleExcitationsExpected, [2, 3, 1]);
 assertWithinRange(muscleExcitations, muscleExcitationsExpected, 1e-12)
