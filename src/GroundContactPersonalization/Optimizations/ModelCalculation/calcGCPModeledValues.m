@@ -38,6 +38,10 @@ function modeledValues = calcGCPModeledValues(inputs, values, ...
     modeledJointPositions, modeledJointVelocities, isCalculated)
 [model, state] = Model(inputs.model);
 markerNamesFields = fieldnames(inputs.markerNames);
+values.dampingFactors = inputs.dampingFactors;
+if isCalculated(3) 
+    values.restingSpringLength = inputs.restingSpringLength;
+end
 for i=1:length(markerNamesFields)
     modeledValues.markerPositions.(markerNamesFields{i}) = ...
         zeros(3, size(modeledJointPositions, 2));
@@ -59,6 +63,12 @@ for i=1:size(modeledJointPositions, 2)
             calcModeledVerticalGroundReactionForce(model, state, ...
             values.springConstants, values.dampingFactors, ...
             values.restingSpringLength);
+    end
+    if isCalculated(3)
+        [modeledValues.anteriorGrf(i), ...
+            modeledValues.lateralGrf(i)] = ...
+            calcModeledHorizontalGroundReactionForces(model, state, ...
+            values, inputs.beltSpeed);
     end
 end
 % if isCalculated(1)
