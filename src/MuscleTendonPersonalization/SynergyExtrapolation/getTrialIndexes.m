@@ -45,6 +45,7 @@ for i=1:nTrials
         end
     end
 end
+params.trialIndex = trialIndex;
 params.synergyCategorizationOfTrials = getCategorizationOfTrials(...
     params.synergyExtrapolationCategorization, trialIndex, nTrials);
 params.residualCategorizationOfTrials = getCategorizationOfTrials(...
