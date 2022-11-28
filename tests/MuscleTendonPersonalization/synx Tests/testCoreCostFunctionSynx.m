@@ -39,22 +39,22 @@ modeledValues.muscleJointMoments = calcMuscleJointMoments( ...
 
 synxMuscleExcitationsExpected = load('synxMuscleExcitationsExpected.mat').muscleExcitationsExpected;
 synxMuscleExcitationsExpected = permute(synxMuscleExcitationsExpected, [2, 3, 1]);
-assertWithinRange(muscleExcitations, synxMuscleExcitationsExpected, 1e-15)
+assertWithinRange(muscleExcitations, synxMuscleExcitationsExpected, 1e-12)
 
 synxNeuralActivationsExpected = load('synxNeuralActivationsExpected.mat').neuralActivationsExpected;
 synxNeuralActivationsExpected = permute(synxNeuralActivationsExpected, [2, 3, 1]);
-assertWithinRange(neuralActivations, synxNeuralActivationsExpected, 1e-15)
+assertWithinRange(neuralActivations, synxNeuralActivationsExpected, 1e-12)
 
 synxMuscleActivationsExpected = load('synxMuscleActivationsExpected.mat').muscleActivationsExpected;
 synxMuscleActivationsExpected = permute(synxMuscleActivationsExpected, [2, 3, 1]);
-assertWithinRange(modeledValues.muscleActivations, synxMuscleActivationsExpected, 1e-15)
+assertWithinRange(modeledValues.muscleActivations, synxMuscleActivationsExpected, 1e-12)
 
 lMtildaExpected = load('synxNormalizedMuscleLengthandVelocitiesExpected.mat').lMtildaExpected;
 lMtildaExpected = permute(lMtildaExpected, [2, 3, 1]);
-assertWithinRange(modeledValues.normalizedFiberLength, lMtildaExpected, 1e-15)
+assertWithinRange(modeledValues.normalizedFiberLength, lMtildaExpected, 1e-12)
 vMtildaExpected = load('synxNormalizedMuscleLengthandVelocitiesExpected.mat').vMtildaExpected;
 vMtildaExpected = permute(vMtildaExpected, [2, 3, 1]);
-assertWithinRange(modeledValues.normalizedFiberVelocity, vMtildaExpected, 1e-15)
+assertWithinRange(modeledValues.normalizedFiberVelocity, vMtildaExpected, 1e-12)
 
 load('synxMuscleMomentsAndForcesExpected.mat')
 passiveForceExpected = permute(passiveForceExpected, [2, 3, 1]);
@@ -88,22 +88,22 @@ modeledValues.muscleJointMoments = calcMuscleJointMoments( ...
 
 muscleExcitationsExpected = load('muscleExcitationsExpected.mat').muscleExcitationsExpected;
 muscleExcitationsExpected = permute(muscleExcitationsExpected, [2, 3, 1]);
-assertWithinRange(muscleExcitations, muscleExcitationsExpected, 1e-15)
+assertWithinRange(muscleExcitations, muscleExcitationsExpected, 1e-12)
 
 synxNeuralActivationsExpected = load('neuralActivationsExpected.mat').neuralActivationsExpected;
 synxNeuralActivationsExpected = permute(synxNeuralActivationsExpected, [2, 3, 1]);
-assertWithinRange(neuralActivations, synxNeuralActivationsExpected, 1e-15)
+assertWithinRange(neuralActivations, synxNeuralActivationsExpected, 1e-12)
 
 synxMuscleActivationsExpected = load('muscleActivationsExpected.mat').muscleActivationsExpected;
 synxMuscleActivationsExpected = permute(synxMuscleActivationsExpected, [2, 3, 1]);
-assertWithinRange(modeledValues.muscleActivations, synxMuscleActivationsExpected, 1e-15)
+assertWithinRange(modeledValues.muscleActivations, synxMuscleActivationsExpected, 1e-12)
 
 lMtildaExpected = load('normalizedMuscleLengthandVelocitiesExpected.mat').lMtildaExpected;
 lMtildaExpected = permute(lMtildaExpected, [2, 3, 1]);
-assertWithinRange(modeledValues.normalizedFiberLength, lMtildaExpected, 1e-15)
+assertWithinRange(modeledValues.normalizedFiberLength, lMtildaExpected, 1e-12)
 vMtildaExpected = load('normalizedMuscleLengthandVelocitiesExpected.mat').vMtildaExpected;
 vMtildaExpected = permute(vMtildaExpected, [2, 3, 1]);
-assertWithinRange(modeledValues.normalizedFiberVelocity, vMtildaExpected, 1e-15)
+assertWithinRange(modeledValues.normalizedFiberVelocity, vMtildaExpected, 1e-12)
 
 load('muscleMomentsAndForcesExpected.mat')
 passiveForceExpected = permute(passiveForceExpected, [2, 3, 1]);
@@ -194,5 +194,5 @@ c(c>1000) = 1;
 
 
 expectedNonlinearConstraint = load('expectedNonlinearConstraint.mat').expectedNonlinearConstraint;
-assertWithinRange(c, expectedNonlinearConstraint, 1e-15)
+assertWithinRange(c, expectedNonlinearConstraint, 1e-12)
 
