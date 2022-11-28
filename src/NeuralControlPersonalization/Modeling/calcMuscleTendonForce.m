@@ -1,17 +1,12 @@
 %--------------------------------------------------------------------------
 function [FMT,FMTpassive] = calcMuscleTendonForce(a,lMT,vMT,k,params)
 
-FMo = params.FMo(k);
-lMo = params.lMo(k);
-lTs = params.lTs(k);
-alpha = params.alpha(k);
-vMmax = params.vMmax(k);
+lMtilda = (lMT - params.lTs(k)) ./ (params.lMo(k) .* cos(params.alpha(k)));
+vMtilda = vMT / params.vMmax(k);
 
-lMtilda = (lMT-lTs)./(lMo.*cos(alpha));
-vMtilda = vMT/vMmax;
+FMTpassive = (params.FMo(k) .* cos(params.alpha(k))) .* passiveForceLengthCurve(lMtilda);
+FMTactive = (params.FMo(k) .* cos(params.alpha(k))) .* activeForceLengthCurve(lMtilda) .* forceVelocityCurve(vMtilda);
+FMT = a * FMTactive + FMTpassive;
 
-FMTpassive = (FMo.*cos(alpha)).*passiveForceLengthCurve(lMtilda);
-FMTactive = (FMo.*cos(alpha)).*activeForceLengthCurve(lMtilda)...
-    .*forceVelocityCurve(vMtilda);
-FMT = a*FMTactive + FMTpassive;
+end
 
