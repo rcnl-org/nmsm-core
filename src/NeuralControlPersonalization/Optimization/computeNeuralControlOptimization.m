@@ -9,12 +9,12 @@
 %     optimizerOptions);
 % end
 
-function x = computeNeuralControlOptimization(x0,params)
+function x = computeNeuralControlOptimization(x0, inputs, params)
 
 % Constraints
-nSynergies = params.nSynergies;
-nMuscles = params.nMuscles;
-nNodes = params.nNodes;
+nSynergies = inputs.nSynergies;
+nMuscles = inputs.nMuscles;
+nNodes = inputs.nNodes;
 nDesignVars = nSynergies*(nMuscles/2 + nNodes);
 A = [];
 b = [];
@@ -43,6 +43,6 @@ options = optimoptions('fmincon','Display','iter','MaxIterations',1e3,...
 
 %         [x,~,exitflag,~] = fmincon(@(x)calculateCost(x,lMTVals,vMTVals,rVals,IDmomentVals,params),...
 %             x0,A,b,Aeq,beq,lb,ub,nonlcon,options);
-[x,~,exitflag,~] = fmincon(@(x)computeNeuralControlCostFunction(x,params, struct()),...
-    x0,A,b,Aeq,beq,lb,ub,nonlcon,options);
+[x, ~, exitflag, ~] = fmincon(@(x)computeNeuralControlCostFunction(x, inputs, struct()),...
+    x0, A, b, Aeq, beq, lb, ub, nonlcon, options);
 end
