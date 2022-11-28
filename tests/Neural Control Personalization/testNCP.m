@@ -22,13 +22,11 @@ etmData_righttrunk = load('Patient3_etmData_refitted_right_trunk_1trial.mat');
 TrunkMuscParam = load('TrunkMuscleParams.mat'); TrunkMuscParam = TrunkMuscParam.TrunkMuscParam;
 
 % % Muscle Parameters
-muscleparams.FMo = [EMGD_data.Fmax, EMGD_data.Fmax, TrunkMuscParam.FMo, TrunkMuscParam.FMo];
-muscleparams.lMo = [EMGD_data.lmoOpt, EMGD_data.lmoOpt, TrunkMuscParam.lMo, TrunkMuscParam.lMo];
-muscleparams.lTs = [EMGD_data.ltsOpt, EMGD_data.ltsOpt, TrunkMuscParam.lTs, TrunkMuscParam.lTs];
-muscleparams.alpha = [EMGD_data.alpha, EMGD_data.alpha, TrunkMuscParam.alpha, TrunkMuscParam.alpha];
-muscleparams.vMmax = 10*muscleparams.lMo;
-
-inputs.muscleparams = muscleparams;
+inputs.FMo = [EMGD_data.Fmax, EMGD_data.Fmax, TrunkMuscParam.FMo, TrunkMuscParam.FMo];
+inputs.lMo = [EMGD_data.lmoOpt, EMGD_data.lmoOpt, TrunkMuscParam.lMo, TrunkMuscParam.lMo];
+inputs.lTs = [EMGD_data.ltsOpt, EMGD_data.ltsOpt, TrunkMuscParam.lTs, TrunkMuscParam.lTs];
+inputs.alpha = [EMGD_data.alpha, EMGD_data.alpha, TrunkMuscParam.alpha, TrunkMuscParam.alpha];
+inputs.vMmax = 10*inputs.lMo;
 
 % Define global parameters
 nMuscles = 148;      inputs.nMuscles = nMuscles;
@@ -109,9 +107,9 @@ toc
 
 inputs.savefilename = savefilename;
 inputs.NCPtimePercent = linspace(0,100,nPts)';
-reportNeuralControlPersonalizationResults(x,inputs);
+% reportNeuralControlPersonalizationResults(x,inputs);
 
-keyboard
+% keyboard
 end
 %--------------------------------------------------------------------------
 function MA = MACompiler(MomentArms,inputs)
