@@ -51,7 +51,7 @@ actTrackAllowErr = 0.01; params.actTrackAllowErr = actTrackAllowErr;       % 0.0
 actMinAllowErr = 0.05; params.actMinAllowErr = actMinAllowErr;             % 0.05 is the allowable error for activation minimization
 
 params.actTr_allow_err = 0.05;
-savefilename = "Syn" + num2str(nSynergies) + "_" + num2str(w_MTrack) + "_" + num2str(w_ActTrack) + "_" + num2str(w_ActMin) + "_" + num2str(momentTrackAllowErr) + "_" + num2str(actTrackAllowErr) + "_" + num2str(actMinAllowErr)
+savefilename = "Syn" + num2str(nSynergies) + "_" + num2str(w_MTrack) + "_" + num2str(w_ActTrack) + "_" + num2str(w_ActMin) + "_" + num2str(momentTrackAllowErr) + "_" + num2str(actTrackAllowErr) + "_" + num2str(actMinAllowErr);
 
 try
     initial_soln = load(savefilename);
@@ -100,7 +100,7 @@ MuscNames = fixStrings(MuscNames); params.MuscNames = MuscNames;
 CoordLabels = fixStrings(CoordLabels); params.CoordLabels = CoordLabels;
 
 tic
-if 0
+if 1
     x = computeNeuralControlOptimization(x0, params, struct());
 else
     x = x0;
