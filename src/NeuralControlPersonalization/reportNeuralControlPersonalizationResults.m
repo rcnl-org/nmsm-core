@@ -25,7 +25,10 @@ CoordLabels = params.CoordLabels;
 
 % Save solution
 savefilename = params.savefilename;
-save([pwd '\nonTrackedScripts\' savefilename '.mat'],'x');
+if not(isfolder(fullfile(pwd, "result")))
+    mkdir(fullfile(pwd, "result"))
+end
+save(fullfile(pwd, 'result', savefilename + ".mat"),'x');
 
 % Reconstruct activation values
 aVals = calcActivationsFromSynergyDesignVariables(x,params);
