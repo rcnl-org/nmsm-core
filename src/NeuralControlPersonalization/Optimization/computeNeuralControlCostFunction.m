@@ -6,32 +6,27 @@
 % cost = calcNcpCost(values, modeledValues, experimentalData, params);
 % end
 
-function cost = computeNeuralControlCostFunction(x,params)
+function cost = computeNeuralControlCostFunction(x, inputs, params)
 
-cost = calculateCost(x,params);
-
-end
-%--------------------------------------------------------------------------
-function cost = calculateCost(x,params)
-
-errs = calculateErrors(x,params);
+errs = calculateErrors(x, inputs, params);
 
 cost = errs'*errs;
+
 end
-%--------------------------------------------------------------------------
-function errs = calculateErrors(x,params)
-nJoints = params.nJoints; nPts = params.nPts; nMuscles = params.nMuscles;
-nMuscles_legs = params.nMuscles_legs; nMuscles_trunk = params.nMuscles_trunk;
-w_MTrack = params.w_MTrack;
-w_ActMin = params.w_ActMin;
-w_ActTrack = params.w_ActTrack;
-lMTVals = params.lMTVals;
-vMTVals = params.vMTVals;
-rVals = params.rVals;
-IDmomentVals = params.IDmomentVals;
+
+function errs = calculateErrors(x, inputs, params)
+nJoints = inputs.nJoints; nPts = inputs.nPts; nMuscles = inputs.nMuscles;
+nMuscles_legs = inputs.nMuscles_legs; nMuscles_trunk = inputs.nMuscles_trunk;
+w_MTrack = inputs.w_MTrack;
+w_ActMin = inputs.w_ActMin;
+w_ActTrack = inputs.w_ActTrack;
+lMTVals = inputs.lMTVals;
+vMTVals = inputs.vMTVals;
+rVals = inputs.rVals;
+IDmomentVals = inputs.IDmomentVals;
 % Form muscle activations from design variables
-aVals = calcActivationsFromSynergyDesignVariables(x,params);
-EMGact_all = params.EMGact_all;
+aVals = calcActivationsFromSynergyDesignVariables(x,inputs, params);
+EMGact_all = inputs.EMGact_all;
 
 % Calculate torque errors
 muscleJointMoments = zeros(nPts,nJoints);
@@ -41,7 +36,7 @@ muscleJointMoments = zeros(nPts,nJoints);
 for i = 1:nPts
     for j = 1:nJoints
         for k = 1:nMuscles
-            FMT = calcMuscleTendonForce(aVals(i,k),lMTVals(i,k),vMTVals(i,k),k,params);
+            FMT = calcMuscleTendonForce(aVals(i,k),lMTVals(i,k),vMTVals(i,k),k,inputs);
             r = rVals(i,k,j);
             muscleJointMoments(i,j) = muscleJointMoments(i,j) + r*FMT;
         end
@@ -52,13 +47,13 @@ torqueErrors = torqueErrors(:);
 
 
 
-momentTrackAllowErr = params.momentTrackAllowErr; % 5 Nm is the allowable error for moment tracking error
-actTrackAllowErr = params.actTrackAllowErr;%0.05; % 0.05 is the allowablw error for activation tracking error
-actMinAllowErr = params.actMinAllowErr;
+momentTrackAllowErr = inputs.momentTrackAllowErr; % 5 Nm is the allowable error for moment tracking error
+actTrackAllowErr = inputs.actTrackAllowErr;%0.05; % 0.05 is the allowablw error for activation tracking error
+actMinAllowErr = inputs.actMinAllowErr;
 actTrackErr = aVals(:,1:nMuscles_legs) - EMGact_all;
 actTrackErr = w_ActTrack^0.5*(actTrackErr(:)/actTrackAllowErr)/(nPts*nMuscles_legs)^0.5;
 momentErr = w_MTrack^0.5*(torqueErrors/momentTrackAllowErr)/(nPts*nJoints)^0.5;
-actMinErr = reshape(aVals(:,nMuscles_legs+1:end),[params.nPts*(nMuscles_trunk),1]);
+actMinErr = reshape(aVals(:,nMuscles_legs+1:end),[inputs.nPts*(nMuscles_trunk),1]);
 actMinErr = w_ActMin^0.5*(actMinErr/actMinAllowErr)/(nPts*nMuscles_trunk)^0.5;
 
 errs = 1/sqrt(w_MTrack + w_ActTrack + w_ActMin)*[momentErr; actTrackErr; actMinErr];
