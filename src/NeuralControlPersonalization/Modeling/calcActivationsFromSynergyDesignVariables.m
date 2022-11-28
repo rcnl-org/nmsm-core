@@ -1,8 +1,8 @@
-function a = calcActivationsFromSynergyDesignVariables(x,params)
-nSynergies = params.nSynergies;
-nMuscles_leg = params.nMuscles_legs/2;
+function a = calcActivationsFromSynergyDesignVariables(x, inputs, params)
+nSynergies = inputs.nSynergies;
+nMuscles_leg = inputs.nMuscles_legs/2;
 % Unpack design variables
-[commands,weights] = unpackDesignVariables(x,params);
+[commands,weights] = unpackDesignVariables(x,inputs);
 
 % Form feedforward muscle activations from synergies
 a_right = commands(:,1:nSynergies/2)*weights(1:nSynergies/2,:);
