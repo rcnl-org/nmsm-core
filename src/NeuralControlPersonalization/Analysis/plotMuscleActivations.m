@@ -1,10 +1,10 @@
 function plotMuscleActivations(activations, MuscLabels, inputs, params)
 
 % Plot activation results
-rightLegMuscleIndices = 1:inputs.numMuscles_legs / 2;
-leftLegMuscleIndices = inputs.numMuscles_legs / 2 + 1:inputs.numMuscles_legs;
-rightTrunkMuscleIndices = inputs.numMuscles_legs + 1:inputs.numMuscles_legs + inputs.numMuscles_trunk / 2;
-leftTrunkMuscleIndices = inputs.numMuscles_legs + inputs.numMuscles_trunk / 2 + 1:inputs.numMuscles_legs + inputs.numMuscles_trunk;
+rightLegMuscleIndices = 1:inputs.numLegMuscles / 2;
+leftLegMuscleIndices = inputs.numLegMuscles / 2 + 1:inputs.numLegMuscles;
+rightTrunkMuscleIndices = inputs.numLegMuscles + 1:inputs.numLegMuscles + inputs.numTrunkMuscles / 2;
+leftTrunkMuscleIndices = inputs.numLegMuscles + inputs.numTrunkMuscles / 2 + 1:inputs.numLegMuscles + inputs.numTrunkMuscles;
 
 if ~isempty(activations)
     figure('Name', 'Right Leg Activations');

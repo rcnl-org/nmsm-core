@@ -25,8 +25,8 @@ inputs.vMmax = 10 * inputs.optimalFiberLength;
 
 % Define global parameters
 inputs.numMuscles = 148;
-inputs.numMuscles_legs = 90;
-inputs.numMuscles_trunk = 58;
+inputs.numLegMuscles = 90;
+inputs.numTrunkMuscles = 58;
 inputs.numJoints = 15;
 inputs.numNodes = 21;
 inputs.numSynergies = 12;
