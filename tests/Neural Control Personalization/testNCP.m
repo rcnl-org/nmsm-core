@@ -29,45 +29,41 @@ inputs.alpha = [EMGD_data.alpha, EMGD_data.alpha, TrunkMuscParam.alpha, TrunkMus
 inputs.vMmax = 10*inputs.optimalFiberLength;
 
 % Define global parameters
-nMuscles = 148;      inputs.nMuscles = nMuscles;
-nMuscles_legs = 90;  inputs.nMuscles_legs = nMuscles_legs;
-nMuscles_trunk = 58; inputs.nMuscles_trunk = nMuscles_trunk;
-nJoints = 15;        inputs.nJoints = nJoints;
-nNodes = 21;         inputs.nNodes = nNodes;
-nSynergies = 12;     inputs.nSynergies = nSynergies;
-nPts = 101;          inputs.nPts = nPts;
+inputs.nMuscles = 148;
+inputs.nMuscles_legs = 90;
+inputs.nMuscles_trunk = 58;
+inputs.nJoints = 15;
+inputs.nNodes = 21;
+inputs.nSynergies = 12;
+inputs.nPts = 101;
 
-trial_no = 22; inputs.trial_no = trial_no; % 21 is the first trial of 1.4 m/s
-long2short_idx = 21:121; inputs.long2short_idx = long2short_idx;
+inputs.trial_no = 22; % 21 is the first trial of 1.4 m/s
+inputs.long2short_idx = 21:121;
 
 
-w_MTrack = 1; inputs.w_MTrack = w_MTrack;
-w_ActTrack = 1; inputs.w_ActTrack = w_ActTrack;
-w_ActMin = 1; inputs.w_ActMin = w_ActMin;
-momentTrackAllowErr = 5; inputs.momentTrackAllowErr = momentTrackAllowErr; % 5 Nm is the allowable error for moment tracking error
-actTrackAllowErr = 0.01; inputs.actTrackAllowErr = actTrackAllowErr;       % 0.01 is the allowable error for activation tracking error
-actMinAllowErr = 0.05; inputs.actMinAllowErr = actMinAllowErr;             % 0.05 is the allowable error for activation minimization
+inputs.w_MTrack = 1;
+inputs.w_ActTrack = 1;
+inputs.w_ActMin = 1;
+inputs.momentTrackAllowErr = 5; % 5 Nm is the allowable error for moment tracking error
+inputs.actTrackAllowErr = 0.01;       % 0.01 is the allowable error for activation tracking error
+inputs.actMinAllowErr = 0.05;             % 0.05 is the allowable error for activation minimization
 
 inputs.actTr_allow_err = 0.05;
-savefilename = "Syn" + num2str(nSynergies) + "_" + num2str(w_MTrack) + "_" + num2str(w_ActTrack) + "_" + num2str(w_ActMin) + "_" + num2str(momentTrackAllowErr) + "_" + num2str(actTrackAllowErr) + "_" + num2str(actMinAllowErr);
+savefilename = "Syn" + num2str(inputs.nSynergies) + "_" + num2str(inputs.w_MTrack) + "_" + num2str(inputs.w_ActTrack) + "_" + num2str(inputs.w_ActMin) + "_" + num2str(inputs.momentTrackAllowErr) + "_" + num2str(inputs.actTrackAllowErr) + "_" + num2str(inputs.actMinAllowErr);
 
 try
     initial_soln = load(savefilename);
 catch err
-    initial_soln.x = rand(1,2*(nSynergies/2*(nMuscles/2 + nNodes)));
+    initial_soln.x = rand(1,2*(inputs.nSynergies/2*(inputs.nMuscles/2 + inputs.nNodes)));
 end
 
-[MTL_all,MA_all,VMT_all,ID_all,MuscNames,CoordLabels,inputs] = data_parsing_WithOffset_lumbar6dof(etmData_rightleg,etmData_leftleg,etmData_lefttrunk,etmData_righttrunk,trial_no,EMGD_data,act_leftleg,inputs);
-
-
-EMGact_all = inputs.EMGact_all;
-
+[MTL_all,MA_all,VMT_all,ID_all,MuscNames,CoordLabels,inputs] = data_parsing_WithOffset_lumbar6dof(etmData_rightleg,etmData_leftleg,etmData_lefttrunk,etmData_righttrunk,inputs.trial_no,EMGD_data,act_leftleg,inputs);
 
 %%
 
-lMTVals = MTL_all(long2short_idx,:);
-vMTVals = VMT_all(long2short_idx,:);
-IDmomentVals = ID_all(long2short_idx,:);
+lMTVals = MTL_all(inputs.long2short_idx,:);
+vMTVals = VMT_all(inputs.long2short_idx,:);
+IDmomentVals = ID_all(inputs.long2short_idx,:);
 rVals = MACompiler(MA_all,inputs); clear 'MA_all';
 
 if exist('x0Synergies')
@@ -106,21 +102,17 @@ end
 toc
 
 inputs.savefilename = savefilename;
-inputs.NCPtimePercent = linspace(0,100,nPts)';
-reportNeuralControlPersonalizationResults(x,inputs);
+inputs.NCPtimePercent = linspace(0,100,inputs.nPts)';
+% reportNeuralControlPersonalizationResults(x,inputs);
 
 % keyboard
 end
 %--------------------------------------------------------------------------
 function MA = MACompiler(MomentArms,inputs)
-nPts = inputs.nPts;
-nJoints = inputs.nJoints;
-nMuscles = inputs.nMuscles;
-long2short_idx = inputs.long2short_idx;
 
-MA = zeros(nPts,nMuscles,nJoints);
-for i=1:nJoints
-    MA(:,:,i) = MomentArms{i}(long2short_idx,:);
+MA = zeros(inputs.nPts,inputs.nMuscles,inputs.nJoints);
+for i=1:inputs.nJoints
+    MA(:,:,i) = MomentArms{i}(inputs.long2short_idx,:);
 end
 end
 %--------------------------------------------------------------------------
@@ -134,7 +126,9 @@ end
 
 %% MTL
 %%% Left Leg 
-function [MTL_all,MA_all,VMT_all,ID_all,MuscNames,CoordLabels,inputs] = data_parsing_WithOffset_lumbar6dof(etmData_rightleg,etmData_leftleg,etmData_lefttrunk,etmData_righttrunk,trial_no,EMGD_data,act_leftleg,inputs)
+function [MTL_all,MA_all,VMT_all,ID_all,MuscNames,CoordLabels,inputs] = ...
+    data_parsing_WithOffset_lumbar6dof(etmData_rightleg,etmData_leftleg, ...
+    etmData_lefttrunk,etmData_righttrunk,trial_no,EMGD_data,act_leftleg,inputs)
 str = 'etmData_leftleg.Data';
 MTL_leftleg = eval([str,'.MTL']);
 
@@ -391,8 +385,7 @@ MuscNames = {'addbrev_r','addlong_r','addmagDist_r','addmagIsch_r','addmagMid_r'
              'IO2_l','IO4_l','IO5_l','EO10_l','EO12_l','IL_L2_l','IL_L4_l','IL_R7_l','IL_R10_l','IL_R11_l','IL_R12_l','LTpT_T8_l','LTpT_T12_l','LTpT_R8_l','LTpT_R11_l','LTpL_L2_l','LTpL_L4_l','LTpL_L5_l','MF_m1t_3_l','MF_m2t_3_l','MF_m3s_l','MF_m4t_3_l','MF_m5_laminar_l','QL_post_I1_L3_l','QL_post_I2_L4_l','QL_post_I3_L2_l','QL_ant_I2_T12_l','QL_ant_I3_R12_I2_l','rect_abd_l'};
 
 %% EMG activations
-nPts = inputs.nPts;
-EMGact_all = [EMGD_data.a((trial_no-1)*nPts+1:trial_no*nPts,:),act_leftleg.activation_L.case_3];
+EMGact_all = [EMGD_data.a((trial_no-1)*inputs.nPts+1:trial_no*inputs.nPts,:),act_leftleg.activation_L.case_3];
 inputs.EMGact_all = EMGact_all;
 end
 
