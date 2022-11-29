@@ -16,6 +16,80 @@
             <MuscleTendonPersonalizationTask>
                 <!--Flag indicating whether or not the task is enabled.-->
                 <is_enabled>true</is_enabled>
+                <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>1</index>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
+                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+                <optimize_activation_time_constants>true</optimize_activation_time_constants>
+                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+                <optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
+                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+                <optimize_emg_scale_factors>false</optimize_emg_scale_factors>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_optimal_fiber_lengths>false</optimize_optimal_fiber_lengths>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_tendon_slack_lengths>false</optimize_tendon_slack_lengths>
+            </MuscleTendonPersonalizationTask>
+			<MuscleTendonPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+                <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>2</index>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_electromechanical_delays>false</optimize_electromechanical_delays>
+                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+                <optimize_activation_time_constants>false</optimize_activation_time_constants>
+                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+                <optimize_activation_nonlinearity_constants>false</optimize_activation_nonlinearity_constants>
+                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+                <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
+            </MuscleTendonPersonalizationTask>
+			<MuscleTendonPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+                <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>3</index>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
+                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+                <optimize_activation_time_constants>true</optimize_activation_time_constants>
+                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+                <optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
+                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+                <optimize_emg_scale_factors>false</optimize_emg_scale_factors>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_optimal_fiber_lengths>false</optimize_optimal_fiber_lengths>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_tendon_slack_lengths>false</optimize_tendon_slack_lengths>
+            </MuscleTendonPersonalizationTask>
+			<MuscleTendonPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+                <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>4</index>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_electromechanical_delays>false</optimize_electromechanical_delays>
+                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+                <optimize_activation_time_constants>false</optimize_activation_time_constants>
+                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+                <optimize_activation_nonlinearity_constants>false</optimize_activation_nonlinearity_constants>
+                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+                <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
+            </MuscleTendonPersonalizationTask>
+			<MuscleTendonPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+                <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>5</index>
                 <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
                 <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
                 <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
@@ -25,9 +99,9 @@
                 <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
                 <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
                 <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_optimal_fiber_lengths>false</optimize_optimal_fiber_lengths>
+                <optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
                 <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_tendon_slack_lengths>false</optimize_tendon_slack_lengths>
+                <optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
             </MuscleTendonPersonalizationTask>
         </MuscleTendonPersonalizationTaskList>
         <MuscleTendonCostFunctionTerms>
