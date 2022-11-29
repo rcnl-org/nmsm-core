@@ -10,7 +10,7 @@ if ~isempty(activations)
     figure('Name', 'Right Leg Activations');
     for i = rightLegMuscleIndices
         subplot(5, 9, i), plot(inputs.NCPtimePercent, activations(:, i)); hold all;
-        plot(inputs.NCPtimePercent, inputs.EMGact_all(:, i));
+        plot(inputs.NCPtimePercent, inputs.emgActivation(:, i));
         title(sprintf('%s', MuscLabels{i}))
         axis([0 100 0 1])
         if rem(i, 9) == 1
@@ -26,7 +26,7 @@ if ~isempty(activations)
 
     for i = leftLegMuscleIndices
         subplot(5, 9, i - rightLegMuscleIndices(end)), plot(inputs.NCPtimePercent, activations(:, i)); hold all;
-        plot(inputs.NCPtimePercent, inputs.EMGact_all(:, i));
+        plot(inputs.NCPtimePercent, inputs.emgActivation(:, i));
         title(sprintf('%s', MuscLabels{i}))
         axis([0 100 0 1])
         if rem(i, 9) == 1
