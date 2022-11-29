@@ -12,16 +12,13 @@
 function x = computeNeuralControlOptimization(x0, inputs, params)
 
 % Constraints
-nSynergies = inputs.nSynergies;
-nMuscles = inputs.nMuscles;
-nNodes = inputs.nNodes;
-nDesignVars = nSynergies*(nMuscles/2 + nNodes);
+nDesignVars = inputs.nSynergies*(inputs.nMuscles/2 + inputs.nNodes);
 A = [];
 b = [];
-Aeq = zeros(nSynergies,nDesignVars);
-beq = 1*ones(nSynergies,1);
-for i4 = 1:nSynergies
-    Aeq(i4,(i4-1)*(nNodes+nMuscles/2)+nNodes+1:i4*(nNodes+nMuscles/2)) = 1;
+Aeq = zeros(inputs.nSynergies, nDesignVars);
+beq = 1*ones(inputs.nSynergies, 1);
+for i4 = 1:inputs.nSynergies
+    Aeq(i4,(i4-1)*(inputs.nNodes+inputs.nMuscles/2)+inputs.nNodes+1:i4*(inputs.nNodes+inputs.nMuscles/2)) = 1;
 end
 lb = zeros(nDesignVars,1);
 ub = [];
