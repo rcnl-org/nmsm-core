@@ -17,11 +17,11 @@ etmData_righttrunk = load('Patient3_etmData_refitted_right_trunk_1trial.mat');
 TrunkMuscParam = load('TrunkMuscleParams.mat').TrunkMuscParam;
 
 % % Muscle Parameters
-inputs.maxIsometricForce = [EMGD_data.Fmax, EMGD_data.Fmax, TrunkMuscParam.maxIsometricForce, TrunkMuscParam.maxIsometricForce];
+inputs.maxIsometricForce = [EMGD_data.Fmax, EMGD_data.Fmax, TrunkMuscParam.FMo, TrunkMuscParam.FMo];
 inputs.optimalFiberLength = [EMGD_data.lmoOpt, EMGD_data.lmoOpt, TrunkMuscParam.lMo, TrunkMuscParam.lMo];
 inputs.tendonSlackLength = [EMGD_data.ltsOpt, EMGD_data.ltsOpt, TrunkMuscParam.lTs, TrunkMuscParam.lTs];
 inputs.pennationAngle = [EMGD_data.alpha, EMGD_data.alpha, TrunkMuscParam.alpha, TrunkMuscParam.alpha];
-inputs.vMmax = 10 * inputs.optimalFiberLength;
+inputs.vMaxFactor = 10;
 
 % Define global parameters
 inputs.numMuscles = 148;
