@@ -51,7 +51,7 @@ catch err
     initial_soln.x = rand(1, 2 * (inputs.numSynergies / 2 * (inputs.numMuscles / 2 + inputs.numNodes)));
 end
 
-[MTL_all, MA_all, VMT_all, ID_all, MuscNames, CoordLabels, inputs] = data_parsing_WithOffset_lumbar6dof(etmData_rightleg, etmData_leftleg, etmData_lefttrunk, etmData_righttrunk, inputs.trial_no, EMGD_data, act_leftleg, inputs);
+[MTL_all, MA_all, VMT_all, ID_all, muscleNames, coordinateNames, inputs] = data_parsing_WithOffset_lumbar6dof(etmData_rightleg, etmData_leftleg, etmData_lefttrunk, etmData_righttrunk, inputs.trial_no, EMGD_data, act_leftleg, inputs);
 
 %%
 
@@ -85,14 +85,14 @@ inputs.muscleTendonLength = muscleTendonLength;
 inputs.muscleTendonVelocity = muscleTendonVelocity;
 inputs.rVals = rVals;
 inputs.IDmomentVals = IDmomentVals;
-MuscNames = fixStrings(MuscNames); inputs.MuscNames = MuscNames;
-CoordLabels = fixStrings(CoordLabels); inputs.CoordLabels = CoordLabels;
+muscleNames = fixStrings(muscleNames); inputs.muscleNames = muscleNames;
+coordinateNames = fixStrings(coordinateNames); inputs.coordinateNames = coordinateNames;
 
 tic
 
 fieldnames(inputs)
 
-if 0
+if 1
     x = computeNeuralControlOptimization(x0, inputs, struct());
 else
     x = x0;
@@ -129,7 +129,7 @@ end
 
 %% MTL
 %%% Left Leg
-function [MTL_all, MA_all, VMT_all, ID_all, MuscNames, CoordLabels, inputs] = ...
+function [MTL_all, MA_all, VMT_all, ID_all, muscleNames, coordinateNames, inputs] = ...
     data_parsing_WithOffset_lumbar6dof(etmData_rightleg, etmData_leftleg, ...
     etmData_lefttrunk, etmData_righttrunk, trial_no, EMGD_data, act_leftleg, inputs)
 str = 'etmData_leftleg.Data';
@@ -259,29 +259,19 @@ MA_leftleg{1, 15}(:, 31:33) = momentArmslumbar(:, 10:12);
 for ii = 1
     k = 1;
     StructureNames = fieldnames(etmData_lefttrunk.Data);
-
     for i = 1:size(MatStructure, 2)
-
         for j = 1:size(StructureNames)
-
             if size(StructureNames{j}, 2) == size(MatStructure{i}, 2)
-
                 if StructureNames{j} == MatStructure{i}
-
                     if ~isempty(strfind(MatStructure{i}, 'MomentArm'))
                         MA_lefttrunk{1, k} = etmData_lefttrunk.Data(ii).(StructureNames{j});
                         MA_lefttrunk{1, k}(isnan(MA_lefttrunk{1, k})) = 0;
                         k = k + 1;
                     end
-
                 end
-
             end
-
         end
-
     end
-
 end
 
 MA_lefttrunk{13} = MA_lefttrunk{1};
@@ -306,27 +296,18 @@ for ii = 1
     StructureNames = fieldnames(etmData_righttrunk.Data);
 
     for i = 1:size(MatStructure, 2)
-
         for j = 1:size(StructureNames)
-
             if size(StructureNames{j}, 2) == size(MatStructure{i}, 2)
-
                 if StructureNames{j} == MatStructure{i}
-
                     if ~isempty(strfind(MatStructure{i}, 'MomentArm'))
                         MA_righttrunk{1, k} = etmData_righttrunk.Data(ii).(StructureNames{j});
                         MA_righttrunk{1, k}(isnan(MA_righttrunk{1, k})) = 0;
                         k = k + 1;
                     end
-
                 end
-
             end
-
         end
-
     end
-
 end
 
 MA_righttrunk{13} = MA_righttrunk{1};
@@ -419,17 +400,17 @@ ID_all = [ID_rightleg ID_leftleg ID_trunk];
 clear 'ID_rightleg' 'ID_leftleg' 'ID_trunk'
 clear 'etmData_leftleg' 'etmData_rightleg' 'etmData_lefttrunk' 'etmData_righttrunk'
 
-% MuscNames_leftleg = eval([str,'.ColumnLabels']);
+% muscleNames_leftleg = eval([str,'.ColumnLabels']);
 % VTL_leftleg = eval([str,'.MuscleTendonVelocities']);
 % CoordNames_leftleg = eval([str,'.CoordinateLabels']);
 % JointAngles_leftleg = eval([str,'.JointAngles']);
 % JointVel_leftleg = eval([str,'.JointVelocities']);
 % MomentLabels_leftleg = eval([str,'.IDLoadLabels']);
 % Moments_leftleg = eval([str,'.IDLoads']);
-CoordLabels = {'hip_flexion_r', 'hip_adduction_r', 'hip_rotation_r', 'knee_angle_r', 'ankle_angle_r', 'subtalar_angle_r', ...
+coordinateNames = {'hip_flexion_r', 'hip_adduction_r', 'hip_rotation_r', 'knee_angle_r', 'ankle_angle_r', 'subtalar_angle_r', ...
     'hip_flexion_l', 'hip_adduction_l', 'hip_rotation_l', 'knee_angle_l', 'ankle_angle_l', 'subtalar_angle_l', ...
     'lumbar_extension', 'lumbar_bending', 'lumbar_rotation'};
-MuscNames = {'addbrev_r', 'addlong_r', 'addmagDist_r', 'addmagIsch_r', 'addmagMid_r', 'addmagProx_r', 'bflh_r', 'bfsh_r', 'edl_r', 'ehl_r', 'fdl_r', 'fhl_r', 'gaslat_r', 'gasmed_r', 'gem_r', 'glmax1_r', 'glmax2_r', 'glmax3_r', 'glmed1_r', 'glmed2_r', 'glmed3_r', 'glmin1_r', 'glmin2_r', 'glmin3_r', 'grac_r', 'iliacus_r', 'pect_r', 'perbrev_r', 'perlong_r', 'piri_r', 'Ps_L1_TP_r', 'Ps_L3_L4_IVD_r', 'Ps_L5_TP_r', 'quadfem_r', 'recfem_r', 'sart_r', 'semimem_r', 'semiten_r', 'soleus_r', 'tfl_r', 'tibant_r', 'tibpost_r', 'vasint_r', 'vaslat_r', 'vasmed_r', ...
+muscleNames = {'addbrev_r', 'addlong_r', 'addmagDist_r', 'addmagIsch_r', 'addmagMid_r', 'addmagProx_r', 'bflh_r', 'bfsh_r', 'edl_r', 'ehl_r', 'fdl_r', 'fhl_r', 'gaslat_r', 'gasmed_r', 'gem_r', 'glmax1_r', 'glmax2_r', 'glmax3_r', 'glmed1_r', 'glmed2_r', 'glmed3_r', 'glmin1_r', 'glmin2_r', 'glmin3_r', 'grac_r', 'iliacus_r', 'pect_r', 'perbrev_r', 'perlong_r', 'piri_r', 'Ps_L1_TP_r', 'Ps_L3_L4_IVD_r', 'Ps_L5_TP_r', 'quadfem_r', 'recfem_r', 'sart_r', 'semimem_r', 'semiten_r', 'soleus_r', 'tfl_r', 'tibant_r', 'tibpost_r', 'vasint_r', 'vaslat_r', 'vasmed_r', ...
     'addbrev_l', 'addlong_l', 'addmagDist_l', 'addmagIsch_l', 'addmagMid_l', 'addmagProx_l', 'bflh_l', 'bfsh_l', 'edl_l', 'ehl_l', 'fdl_l', 'fhl_l', 'gaslat_l', 'gasmed_l', 'gem_l', 'glmax1_l', 'glmax2_l', 'glmax3_l', 'glmed1_l', 'glmed2_l', 'glmed3_l', 'glmin1_l', 'glmin2_l', 'glmin3_l', 'grac_l', 'iliacus_l', 'pect_l', 'perbrev_l', 'perlong_l', 'piri_l', 'Ps_L1_TP_l', 'Ps_L3_L4_IVD_l', 'Ps_L5_TP_l', 'quadfem_l', 'recfem_l', 'sart_l', 'semimem_l', 'semiten_l', 'soleus_l', 'tfl_l', 'tibant_l', 'tibpost_l', 'vasint_l', 'vaslat_l', 'vasmed_l', ...
     'IO2_r', 'IO4_r', 'IO5_r', 'EO10_r', 'EO12_r', 'IL_L2_r', 'IL_L4_r', 'IL_R7_r', 'IL_R10_r', 'IL_R11_r', 'IL_R12_r', 'LTpT_T8_r', 'LTpT_T12_r', 'LTpT_R8_r', 'LTpT_R11_r', 'LTpL_L2_r', 'LTpL_L4_r', 'LTpL_L5_r', 'MF_m1t_3_r', 'MF_m2t_3_r', 'MF_m3s_r', 'MF_m4t_3_r', 'MF_m5_laminar_r', 'QL_post_I1_L3_r', 'QL_post_I2_L4_r', 'QL_post_I3_L2_r', 'QL_ant_I2_T12_r', 'QL_ant_I3_R12_I2_r', 'rect_abd_r', ...
     'IO2_l', 'IO4_l', 'IO5_l', 'EO10_l', 'EO12_l', 'IL_L2_l', 'IL_L4_l', 'IL_R7_l', 'IL_R10_l', 'IL_R11_l', 'IL_R12_l', 'LTpT_T8_l', 'LTpT_T12_l', 'LTpT_R8_l', 'LTpT_R11_l', 'LTpL_L2_l', 'LTpL_L4_l', 'LTpL_L5_l', 'MF_m1t_3_l', 'MF_m2t_3_l', 'MF_m3s_l', 'MF_m4t_3_l', 'MF_m5_laminar_l', 'QL_post_I1_L3_l', 'QL_post_I2_L4_l', 'QL_post_I3_L2_l', 'QL_ant_I2_T12_l', 'QL_ant_I3_R12_I2_l', 'rect_abd_l'};
