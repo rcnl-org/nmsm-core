@@ -13,14 +13,6 @@
 
 function reportNeuralControlPersonalizationResults(x, inputs, params)
 
-nPts = inputs.nPts;
-numMuscles = inputs.numMuscles;
-nJoints = inputs.nJoints;
-muscleTendonLength = inputs.muscleTendonLength;
-muscleTendonVelocity = inputs.muscleTendonVelocity;
-rVals = inputs.rVals;
-IDmomentVals = inputs.IDmomentVals;
-MuscNames = inputs.MuscNames;
 CoordLabels = inputs.CoordLabels;
 
 % Save solution
@@ -29,39 +21,34 @@ savefilename = inputs.savefilename;
 if not(isfolder(fullfile(pwd, "result")))
     mkdir(fullfile(pwd, "result"))
 end
-
 save(fullfile(pwd, 'result', savefilename + ".mat"), 'x');
 
 % Reconstruct activation values
 aVals = calcActivationsFromSynergyDesignVariables(x, inputs, params);
 
 % Calculate muscle-tendon forces from optimal activations
-for i5 = 1:nPts
-
+for i5 = 1:inputs.nPts
     for k2 = 1:inputs.numMuscles
-        [FMTVals(i5, k2), FTPassive(i5, k2)] = calcMuscleTendonForce(aVals(i5, k2), muscleTendonLength(i5, k2), muscleTendonVelocity(i5, k2), k2, inputs);
+        [FMTVals(i5, k2), FTPassive(i5, k2)] = calcMuscleTendonForce(aVals(i5, k2), inputs.muscleTendonLength(i5, k2), inputs.muscleTendonVelocity(i5, k2), k2, inputs);
     end
-
 end
 
 fprintf('Maximum estimated muscle activation is %f\n', max(max(aVals)));
 
 % Plot activations and musce-ltendon forces
-plotMuscleActivations(aVals, MuscNames, inputs)
-% plotMuscleForces(FMTVals,MuscNames,inputs) % can be added
+plotMuscleActivations(aVals, inputs.MuscNames, inputs)
+% plotMuscleForces(FMTVals, inputs.MuscNames,inputs) % can be added
 
 % Plot joint torque results
-muscleJointMoments = zeros(nPts, nJoints);
+muscleJointMoments = zeros(inputs.nPts, inputs.nJoints);
 % muscleJointMoments = calcMuscleJointMoments(experimentalData, ...
 %     muscleActivations, normalizedFiberLength, normalizedFiberVelocity);
 % net moment
-for i = 1:nPts
-
-    for j = 1:nJoints
-
-        for k = 1:numMuscles
-            FMT = calcMuscleTendonForce(aVals(i, k), muscleTendonLength(i, k), muscleTendonVelocity(i, k), k, inputs);
-            r = rVals(i, k, j);
+for i = 1:inputs.nPts
+    for j = 1:inputs.nJoints
+        for k = 1:inputs.numMuscles
+            FMT = calcMuscleTendonForce(aVals(i, k), inputs.muscleTendonLength(i, k), inputs.muscleTendonVelocity(i, k), k, inputs);
+            r = inputs.rVals(i, k, j);
             muscleJointMoments(i, j) = muscleJointMoments(i, j) + r * FMT;
         end
 
@@ -69,7 +56,7 @@ for i = 1:nPts
 
 end
 
-plotTorques(IDmomentVals, muscleJointMoments, CoordLabels, inputs)
+plotTorques(muscleJointMoments, CoordLabels, inputs)
 
 % plot synergy variables
 [C, W] = unpackDesignVariables(x, inputs, params);
@@ -80,21 +67,18 @@ end
 %--------------------------------------------------------------------------
 function plotMuscleActivations(aVals, MuscLabels, inputs, params)
 
-numMuscles_legs = inputs.numMuscles_legs; numMuscles_trunk = inputs.numMuscles_trunk; nPts = inputs.nPts;
-EMGact_all = inputs.EMGact_all;
 % Plot activation results
-NCPtimePercent = inputs.NCPtimePercent;
-rightLegMuscleIndices = 1:numMuscles_legs / 2;
-leftLegMuscleIndices = numMuscles_legs / 2 + 1:numMuscles_legs;
-rightTrunkMuscleIndices = numMuscles_legs + 1:numMuscles_legs + numMuscles_trunk / 2;
-leftTrunkMuscleIndices = numMuscles_legs + numMuscles_trunk / 2 + 1:numMuscles_legs + numMuscles_trunk;
+rightLegMuscleIndices = 1:inputs.numMuscles_legs / 2;
+leftLegMuscleIndices = inputs.numMuscles_legs / 2 + 1:inputs.numMuscles_legs;
+rightTrunkMuscleIndices = inputs.numMuscles_legs + 1:inputs.numMuscles_legs + inputs.numMuscles_trunk / 2;
+leftTrunkMuscleIndices = inputs.numMuscles_legs + inputs.numMuscles_trunk / 2 + 1:inputs.numMuscles_legs + inputs.numMuscles_trunk;
 
 if ~isempty(aVals)
     figure('Name', 'Right Leg Activations');
 
     for i = rightLegMuscleIndices
-        subplot(5, 9, i), plot(NCPtimePercent, aVals(:, i)); hold all;
-        plot(NCPtimePercent, EMGact_all(:, i));
+        subplot(5, 9, i), plot(inputs.NCPtimePercent, aVals(:, i)); hold all;
+        plot(inputs.NCPtimePercent, inputs.EMGact_all(:, i));
         title(sprintf('%s', MuscLabels{i}))
         axis([0 100 0 1])
 
@@ -112,8 +96,8 @@ if ~isempty(aVals)
     figure('Name', 'Left Leg Activations');
 
     for i = leftLegMuscleIndices
-        subplot(5, 9, i - rightLegMuscleIndices(end)), plot(NCPtimePercent, aVals(:, i)); hold all;
-        plot(NCPtimePercent, EMGact_all(:, i));
+        subplot(5, 9, i - rightLegMuscleIndices(end)), plot(inputs.NCPtimePercent, aVals(:, i)); hold all;
+        plot(inputs.NCPtimePercent, inputs.EMGact_all(:, i));
         title(sprintf('%s', MuscLabels{i}))
         axis([0 100 0 1])
 
@@ -131,7 +115,7 @@ if ~isempty(aVals)
     figure('Name', 'Right Trunk Activations');
 
     for i = rightTrunkMuscleIndices
-        subplot(5, 9, i - leftLegMuscleIndices(end)), plot(NCPtimePercent, aVals(:, i)); hold all;
+        subplot(5, 9, i - leftLegMuscleIndices(end)), plot(inputs.NCPtimePercent, aVals(:, i)); hold all;
         title(sprintf('%s', MuscLabels{i}))
         axis([0 100 0 1])
 
@@ -145,7 +129,7 @@ if ~isempty(aVals)
     figure('Name', 'Left Trunk Activations');
 
     for i = leftTrunkMuscleIndices
-        subplot(5, 9, i - rightTrunkMuscleIndices(end)), plot(NCPtimePercent, aVals(:, i)); hold all;
+        subplot(5, 9, i - rightTrunkMuscleIndices(end)), plot(inputs.NCPtimePercent, aVals(:, i)); hold all;
         title(sprintf('%s', MuscLabels{i}))
         axis([0 100 0 1])
 
@@ -160,14 +144,12 @@ end
 end
 
 %--------------------------------------------------------------------------
-function plotTorques(IDmomentVals, torqueVals, jointNames, inputs, params)
-
-nJoints = inputs.nJoints; NCPtimePercent = inputs.NCPtimePercent;
+function plotTorques(torqueVals, jointNames, inputs, params)
 
 figure;
 
-for i = 1:nJoints
-    subplot(4, 4, i), plot(NCPtimePercent, IDmomentVals(:, i), 'k-', NCPtimePercent, torqueVals(:, i)); hold all
+for i = 1:inputs.nJoints
+    subplot(4, 4, i), plot(inputs.NCPtimePercent, inputs.IDmomentVals(:, i), 'k-', inputs.NCPtimePercent, torqueVals(:, i)); hold all
 
     if rem(i, 4) == 1
         ylabel('Joint Torque (Nm)');
@@ -188,9 +170,6 @@ function plotSynergies(C, W, inputs, params) % to be tidied up
 % C: synergy curves
 % W: synergy weights
 numSynergies = inputs.numSynergies;
-numMuscles = inputs.numMuscles;
-MuscNames = inputs.MuscNames;
-nPts = inputs.nPts;
 y_lim = [0, 0.1];
 
 colors_old = [[0, 0, 1]; [0, 0.5, 0]; [1, 0, 0]; [0, 0.75, 0.75]; [0.75, 0, 0.75]; [0.75, 0.75, 0]; [0.25, 0.25, 0.25]];
@@ -208,14 +187,14 @@ for i = 1:6
 
     bar(W(i, :), 0.5, 'FaceColor', colors_all(i, :)); hold all
 
-    xlim([0, numMuscles / 2 + 1])
+    xlim([0, inputs.numMuscles / 2 + 1])
     ylim(y_lim)
 
     box on; grid off;
-    set(gca, 'XTick', 1:numMuscles / 2);
+    set(gca, 'XTick', 1:inputs.numMuscles / 2);
 
     if i == numSynergies / 2
-        set(gca, 'XTickLabel', MuscNames);
+        set(gca, 'XTickLabel', inputs.MuscNames);
     else
         set(gca, 'XTickLabel', []);
     end
@@ -236,14 +215,14 @@ for i = 7:12
 
     bar(W(i, :), 0.5, 'FaceColor', colors_all(i, :)); hold all
 
-    xlim([0, numMuscles / 2 + 1])
+    xlim([0, inputs.numMuscles / 2 + 1])
     ylim(y_lim)
 
     box on; grid off;
-    set(gca, 'XTick', 1:numMuscles / 2);
+    set(gca, 'XTick', 1:inputs.numMuscles / 2);
 
     if i == 12
-        set(gca, 'XTickLabel', MuscNames);
+        set(gca, 'XTickLabel', inputs.MuscNames);
     else
         set(gca, 'XTickLabel', []);
     end
@@ -268,10 +247,10 @@ for i = 1:numSynergies / 2
     %             subplot(plot_sub_no,NofSyn,i+(j-1-(kkk-1)*plot_sub_no)*NofSyn);
     set(gca, 'fontsize', 24)
 
-    plot(0:1:nPts - 1, C(:, i), 'color', colors_all(i, :), 'LineWidth', 2);
+    plot(0:1:inputs.nPts - 1, C(:, i), 'color', colors_all(i, :), 'LineWidth', 2);
 
     set(gca, 'Ylim', [0 inf])
-    set(gca, 'Xlim', [0 nPts - 1])
+    set(gca, 'Xlim', [0 inputs.nPts - 1])
     box on; grid off;
 
     title(['C' num2str(i) '- right']);
@@ -297,10 +276,10 @@ for i = 1:numSynergies / 2
     subplot(numSynergies / 2, 1, i)
     set(gca, 'fontsize', 24)
 
-    plot(0:1:nPts - 1, C(:, i + 6), 'color', colors_all(i + 6, :), 'LineWidth', 2);
+    plot(0:1:inputs.nPts - 1, C(:, i + 6), 'color', colors_all(i + 6, :), 'LineWidth', 2);
 
     set(gca, 'Ylim', [0 inf])
-    set(gca, 'Xlim', [0 nPts - 1])
+    set(gca, 'Xlim', [0 inputs.nPts - 1])
     box on; grid off;
 
     title(['C' num2str(i) '- left']);
