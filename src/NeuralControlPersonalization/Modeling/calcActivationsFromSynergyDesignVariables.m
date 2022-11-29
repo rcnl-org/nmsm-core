@@ -1,5 +1,5 @@
 function a = calcActivationsFromSynergyDesignVariables(x, inputs, params)
-numMuscles_leg = inputs.numMuscles_legs / 2;
+numMuscles_leg = inputs.numLegMuscles / 2;
 % Unpack design variables
 [commands, weights] = unpackDesignVariables(x, inputs);
 
