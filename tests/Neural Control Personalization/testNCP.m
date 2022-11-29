@@ -33,7 +33,7 @@ inputs.numSynergies = 12;
 inputs.numPoints = 101;
 
 trial_no = 22; % 21 is the first trial of 1.4 m/s
-inputs.long2short_idx = 21:121;
+long2short_idx = 21:121;
 
 inputs.momentTrackingWeight = 1;
 inputs.activationTrackingWeight = 1;
@@ -54,9 +54,9 @@ end
 
 %%
 
-muscleTendonLength = MTL_all(inputs.long2short_idx, :);
-muscleTendonVelocity = VMT_all(inputs.long2short_idx, :);
-inverseDynamicsMoments = ID_all(inputs.long2short_idx, :);
+muscleTendonLength = MTL_all(long2short_idx, :);
+muscleTendonVelocity = VMT_all(long2short_idx, :);
+inverseDynamicsMoments = ID_all(long2short_idx, :);
 momentArms = MACompiler(MA_all, inputs); clear 'MA_all';
 
 if exist('x0Synergies')
@@ -112,7 +112,7 @@ function MA = MACompiler(MomentArms, inputs)
 MA = zeros(inputs.numPoints, inputs.numMuscles, inputs.numJoints);
 
 for i = 1:inputs.numJoints
-    MA(:, :, i) = MomentArms{i}(inputs.long2short_idx, :);
+    MA(:, :, i) = MomentArms{i}(long2short_idx, :);
 end
 
 end
