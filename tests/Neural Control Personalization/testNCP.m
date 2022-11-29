@@ -19,7 +19,7 @@ etmData_leftleg = load('Patient3_etmData_left_outliersRemoved_Periodic_1trial.ma
 etmData_lefttrunk = load('Patient3_etmData_refitted_left_trunk_1trial.mat');
 etmData_righttrunk = load('Patient3_etmData_refitted_right_trunk_1trial.mat');
 
-TrunkMuscParam = load('TrunkMuscleParams.mat'); TrunkMuscParam = TrunkMuscParam.TrunkMuscParam;
+TrunkMuscParam = load('TrunkMuscleParams.mat').TrunkMuscParam;
 
 % % Muscle Parameters
 inputs.FMo = [EMGD_data.Fmax, EMGD_data.Fmax, TrunkMuscParam.FMo, TrunkMuscParam.FMo];
@@ -60,8 +60,8 @@ end
 
 %%
 
-lMTVals = MTL_all(inputs.long2short_idx, :);
-vMTVals = VMT_all(inputs.long2short_idx, :);
+muscleTendonLength = MTL_all(inputs.long2short_idx, :);
+muscleTendonVelocity = VMT_all(inputs.long2short_idx, :);
 IDmomentVals = ID_all(inputs.long2short_idx, :);
 rVals = MACompiler(MA_all, inputs); clear 'MA_all';
 
@@ -86,8 +86,8 @@ x0 = normalizeSynergyVariables(x0, inputs);
 
 fprintf('Running Neural Control Personalization optimization . . .\n')
 
-inputs.lMTVals = lMTVals;
-inputs.vMTVals = vMTVals;
+inputs.muscleTendonLength = muscleTendonLength;
+inputs.muscleTendonVelocity = muscleTendonVelocity;
 inputs.rVals = rVals;
 inputs.IDmomentVals = IDmomentVals;
 MuscNames = fixStrings(MuscNames); inputs.MuscNames = MuscNames;
@@ -95,7 +95,7 @@ CoordLabels = fixStrings(CoordLabels); inputs.CoordLabels = CoordLabels;
 
 tic
 
-if 0
+if 1
     x = computeNeuralControlOptimization(x0, inputs, struct());
 else
     x = x0;

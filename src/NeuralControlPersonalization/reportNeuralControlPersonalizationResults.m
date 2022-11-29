@@ -16,8 +16,8 @@ function reportNeuralControlPersonalizationResults(x,params)
 nPts = params.nPts;
 numMuscles = params.numMuscles;
 nJoints = params.nJoints;
-lMTVals = params.lMTVals;
-vMTVals = params.vMTVals;
+muscleTendonLength = params.muscleTendonLength;
+muscleTendonVelocity = params.muscleTendonVelocity;
 rVals = params.rVals;
 IDmomentVals = params.IDmomentVals;
 MuscNames = params.MuscNames;
@@ -36,7 +36,7 @@ aVals = calcActivationsFromSynergyDesignVariables(x,params);
 % Calculate muscle-tendon forces from optimal activations
 for i5 = 1:nPts
     for k2 = 1:params.numMuscles
-        [FMTVals(i5,k2),FTPassive(i5,k2)] = calcMuscleTendonForce(aVals(i5,k2),lMTVals(i5,k2),vMTVals(i5,k2),k2,params);
+        [FMTVals(i5,k2),FTPassive(i5,k2)] = calcMuscleTendonForce(aVals(i5,k2),muscleTendonLength(i5,k2),muscleTendonVelocity(i5,k2),k2,params);
     end
 end
 
@@ -54,7 +54,7 @@ muscleJointMoments = zeros(nPts,nJoints);
 for i = 1:nPts
     for j = 1:nJoints
         for k = 1:numMuscles
-            FMT = calcMuscleTendonForce(aVals(i,k),lMTVals(i,k),vMTVals(i,k),k,params);
+            FMT = calcMuscleTendonForce(aVals(i,k),muscleTendonLength(i,k),muscleTendonVelocity(i,k),k,params);
             r = rVals(i,k,j);
             muscleJointMoments(i,j) = muscleJointMoments(i,j) + r*FMT;
         end
