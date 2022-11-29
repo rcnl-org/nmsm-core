@@ -22,7 +22,7 @@ for i = 1:inputs.numPoints
     for j = 1:inputs.numJoints
         for k = 1:inputs.numMuscles
             FMT = calcMuscleTendonForce(activations(i,k),inputs.muscleTendonLength(i,k),inputs.muscleTendonVelocity(i,k),k,inputs);
-            r = inputs.rVals(i,k,j);
+            r = inputs.momentArms(i,k,j);
             muscleJointMoments(i,j) = muscleJointMoments(i,j) + r*FMT;
         end
     end

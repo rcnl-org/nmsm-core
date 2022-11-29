@@ -57,7 +57,7 @@ end
 muscleTendonLength = MTL_all(inputs.long2short_idx, :);
 muscleTendonVelocity = VMT_all(inputs.long2short_idx, :);
 inverseDynamicsMoments = ID_all(inputs.long2short_idx, :);
-rVals = MACompiler(MA_all, inputs); clear 'MA_all';
+momentArms = MACompiler(MA_all, inputs); clear 'MA_all';
 
 if exist('x0Synergies')
     x0 = x0Synergies;
@@ -82,7 +82,7 @@ fprintf('Running Neural Control Personalization optimization . . .\n')
 
 inputs.muscleTendonLength = muscleTendonLength;
 inputs.muscleTendonVelocity = muscleTendonVelocity;
-inputs.rVals = rVals;
+inputs.momentArms = momentArms;
 inputs.inverseDynamicsMoments = inverseDynamicsMoments;
 muscleNames = fixStrings(muscleNames); inputs.muscleNames = muscleNames;
 coordinateNames = fixStrings(coordinateNames); inputs.coordinateNames = coordinateNames;
