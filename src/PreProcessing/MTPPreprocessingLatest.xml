@@ -20,18 +20,18 @@
 		<!-- The cutoff frequency for muscle tendon velocity GCV Spline -->
 		<muscle_tendon_velocity_cutoff_frequency></muscle_tendon_velocity_cutoff_frequency>
 		<!-- The list of start and end times of trials to be used in MTP -->
-		<MTPTimePairList>
-			<!-- Space separated pair of start and end times for a given trial -->
-			<MTPTimePair>0.593 1.667</MTPTimePair>
-			<!-- Space separated pair of start and end times for a given trial -->
-			<MTPTimePair>1.667 2.767</MTPTimePair>
-			<!-- Space separated pair of start and end times for a given trial -->
-			<MTPTimePair>2.767 3.827</MTPTimePair>
-			<!-- Space separated pair of start and end times for a given trial -->
-			<MTPTimePair>3.827 4.907</MTPTimePair>
-			<!-- Space separated pair of start and end times for a given trial -->
-			<MTPTimePair>4.907 5.993</MTPTimePair>
-		</MTPTimePairList>
+		<MTPTimeGroupList>
+			<!-- Space separated group of start and end times for a given trial -->
+			<MTPTimeGroup>0.593 1.667</MTPTimeGroup>
+			<!-- Space separated group of start and end times for a given trial -->
+			<MTPTimeGroup>1.667 2.767</MTPTimeGroup>
+			<!-- Space separated group of start and end times for a given trial -->
+			<MTPTimeGroup>2.767 3.827</MTPTimeGroup>
+			<!-- Space separated group of start and end times for a given trial -->
+			<MTPTimeGroup>3.827 4.907</MTPTimeGroup>
+			<!-- Space separated group of start and end times for a given trial -->
+			<MTPTimeGroup>4.907 5.993</MTPTimeGroup>
+		</MTPTimeGroupList>
 		<!-- Prefix (one string without space) to denote each trial (gait, squat, step_up), useful when multiple motions are used -->
 		<MTPTrialPrefix>gait</MTPTrialPrefix>
 		<!-- *optional* true if you want to process the emg data as part of preprocessing-->

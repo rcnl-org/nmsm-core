@@ -3,7 +3,7 @@
 %
 %
 % (2D array of number) -> (2D array of number)
-% calculates the cost of differences in EMG pairs
+% calculates the cost of differences in EMG groups
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

@@ -74,8 +74,8 @@ inputs.momentArms = parseMomentArms(directories, inputs.model);
 inputs.numPaddingFrames = (size(inputs.experimentalMoments, 3) - 101) / 2;
 inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.tasks = getTasks(tree);
-inputs.activationPairs = getPairs(getFieldByNameOrError(tree, 'PairedActivationTimeConstants'), inputs.model);
-inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, 'PairedNormalizedMuscleFiberLengths'), inputs.model);
+inputs.activationGroups = getGroups(getFieldByNameOrError(tree, 'GroupedActivationTimeConstants'), inputs.model);
+inputs.normalizedFiberLengthGroups = getGroups(getFieldByNameOrError(tree, 'GroupedNormalizedMuscleFiberLengths'), inputs.model);
 inputs = getCostFunctionTerms(getFieldByNameOrError(tree, 'MuscleTendonCostFunctionTerms'), inputs);
 inputs.vMaxFactor = getVMaxFactor(tree);
 if ~isfield(inputs, "emgSplines")
@@ -129,24 +129,24 @@ for i=1:length(items)
 end
 end
 
-function pairs = getPairs(tree, model)
-pairElements = getFieldByName(tree, 'musclepairs');
+function groups = getGroups(tree, model)
+groupElements = getFieldByName(tree, 'musclegroups');
 activationGroupNames = string([]);
-if isstruct(pairElements)
-    activationGroupNames(end+1) = pairElements.Text;
-elseif iscell(pairElements)
-    for i=1:length(pairElements)
-        activationGroupNames(end+1) = pairElements{i}.Text;
+if isstruct(groupElements)
+    activationGroupNames(end+1) = groupElements.Text;
+elseif iscell(groupElements)
+    for i=1:length(groupElements)
+        activationGroupNames(end+1) = groupElements{i}.Text;
     end
 else
-    pairs = {};
+    groups = {};
     return
 end
-pairs = groupNamesToPairs(activationGroupNames, model);
+groups = groupNamesToGroups(activationGroupNames, model);
 end
 
-function pairs = groupNamesToPairs(groupNames, model)
-pairs = {};
+function groups = groupNamesToGroups(groupNames, model)
+groups = {};
 model = Model(model);
 for i=1:length(groupNames)
     group = [];
@@ -162,7 +162,7 @@ for i=1:length(groupNames)
         end
         group(end+1) = count;
     end
-    pairs{end + 1} = group;
+    groups{end + 1} = group;
 end
 end
 
@@ -205,14 +205,14 @@ inputs.costWeight = [];
 inputs.errorCenters = [];
 inputs.maxAllowableErrors = [];
 individualMusclesTree = getFieldByNameOrError(tree, "IndividualMuscles");
-pairedMusclesTree = getFieldByNameOrError(tree, "PairedMuscles");
+groupedMusclesTree = getFieldByNameOrError(tree, "GroupedMuscles");
 individualMuscleTerms = ["InverseDynamicJointMoments", "ActivationTimeConstant", "ActivationNonlinearityConstant", "OptimalMuscleFiberLength", "TendonSlackLength", "EmgScalingFactors", "NormalizedMuscleFiberLength", "PassiveMuscleForces"];
 for i=1:length(individualMuscleTerms)
     inputs = addCostFunctionTerms(getFieldByNameOrError(individualMusclesTree, individualMuscleTerms(i)), inputs);
 end
-pairedMuscleTerms = ["NormalizedMuscleFiberLength", "EmgScalingFactors", "ElectromechanicalDelay"];
-for i=1:length(pairedMuscleTerms)
-    inputs = addCostFunctionTerms(getFieldByNameOrError(pairedMusclesTree, pairedMuscleTerms(i)), inputs);
+groupedMuscleTerms = ["NormalizedMuscleFiberLength", "EmgScalingFactors", "ElectromechanicalDelay"];
+for i=1:length(groupedMuscleTerms)
+    inputs = addCostFunctionTerms(getFieldByNameOrError(groupedMusclesTree, groupedMuscleTerms(i)), inputs);
 end
 end
 

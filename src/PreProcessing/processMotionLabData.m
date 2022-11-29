@@ -46,16 +46,16 @@ preprocessEmgData(inputs, params, emgResultsDir)
 
 filesToSection = makeFilesToSection(inputs, ikResultsDir, idResultsDir, ...
     maResultsDir, emgResultsDir);
-numBufferRows = calcNumPaddingFrames(inputs.timePairs, params);
-paddedTimePairs = addBufferToTimePairs(inputs.timePairs, numBufferRows, ...
+numBufferRows = calcNumPaddingFrames(inputs.timeGroups, params);
+paddedTimeGroups = addBufferToTimeGroups(inputs.timeGroups, numBufferRows, ...
     params);
-sectionDataFiles(filesToSection, paddedTimePairs, ...
+sectionDataFiles(filesToSection, paddedTimeGroups, ...
     2 * numBufferRows + valueOrAlternate(params, 'rowsPerTrial', 101), ...
     inputs.prefix);
 for i=1:length(filesToSection)
     delete(filesToSection(i));
 end
-moveMAFilesToSeparateDirectories(inputs, maResultsDir, paddedTimePairs)
+moveMAFilesToSeparateDirectories(inputs, maResultsDir, paddedTimeGroups)
 end
 
 
@@ -167,34 +167,34 @@ function throwCantFindMAFileException(fileName)
 throw(MException('', "Cannot find Muscle Analysis file for " + fileName));
 end
 
-function numFramesBuffer = calcNumPaddingFrames(timePairs, params)
+function numFramesBuffer = calcNumPaddingFrames(timeGroups, params)
 normalizedNumDataPoints = valueOrAlternate(params, 'rowsPerTrial', 101);
-shortestTrialLength = timePairs(1,2) - timePairs(1,1);
-for i=2:size(timePairs, 1)
-    if(timePairs(i,2) - timePairs(i,1) < shortestTrialLength)
-        shortestTrialLength = timePairs(i,2) - timePairs(i,1);
+shortestTrialLength = timeGroups(1,2) - timeGroups(1,1);
+for i=2:size(timeGroups, 1)
+    if(timeGroups(i,2) - timeGroups(i,1) < shortestTrialLength)
+        shortestTrialLength = timeGroups(i,2) - timeGroups(i,1);
     end
 end
 timePerFrame = shortestTrialLength / (normalizedNumDataPoints-1);
 numFramesBuffer = ceil(0.2 / timePerFrame);
 end
 
-function newTimePairs = addBufferToTimePairs(timePairs, numBufferRows, ...
+function newTimeGroups = addBufferToTimeGroups(timeGroups, numBufferRows, ...
     params)
 rowsPerTrial = valueOrAlternate(params, 'rowsPerTrial', 101);
-for i=1:size(timePairs, 1)
-    trialTime = timePairs(i,2) - timePairs(i,1);
-    timePairs(i,1) = timePairs(i,1) - (numBufferRows / ...
+for i=1:size(timeGroups, 1)
+    trialTime = timeGroups(i,2) - timeGroups(i,1);
+    timeGroups(i,1) = timeGroups(i,1) - (numBufferRows / ...
         (rowsPerTrial - 1) * trialTime);
-    timePairs(i,2) = timePairs(i,2) + (numBufferRows / ...
+    timeGroups(i,2) = timeGroups(i,2) + (numBufferRows / ...
         (rowsPerTrial - 1) * trialTime);
 end
-newTimePairs = timePairs;
+newTimeGroups = timeGroups;
 end
 
 function moveMAFilesToSeparateDirectories(inputs, maResultsDir, ...
-    paddedTimePairs)
-for i=1:length(paddedTimePairs)
+    paddedTimeGroups)
+for i=1:length(paddedTimeGroups)
     mkdir(fullfile(inputs.resultsDir, maResultsDir, inputs.prefix + "_" ...
         + i));
     files = dir(fullfile(inputs.resultsDir, maResultsDir));
