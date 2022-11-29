@@ -66,13 +66,13 @@ end
 end
 
 function timeGroups = getTimeGroups(tree)
-groups = getFieldByNameOrError(tree, "MTPTimeGroupList");
-timeGroups = zeros(length(groups.MTPTimeGroup), 2);
-for i=1:length(groups.MTPTimeGroup)
-    if(length(groups.MTPTimeGroup) == 1)
-        group = groups.MTPTimeGroup;
+groups = getFieldByNameOrError(tree, "MTPTimePairList");
+timeGroups = zeros(length(groups.MTPTimePair), 2);
+for i=1:length(groups.MTPTimePair)
+    if(length(groups.MTPTimePair) == 1)
+        group = groups.MTPTimePair;
     else
-        group = groups.MTPTimeGroup{i};
+        group = groups.MTPTimePair{i};
     end
     if(~isempty(group.Text))
         timeGroups(i, :) = str2double(strsplit(group.Text, ' '));
