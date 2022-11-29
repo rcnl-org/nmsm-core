@@ -14,7 +14,7 @@
 function reportNeuralControlPersonalizationResults(x,params)
 
 nPts = params.nPts;
-nMuscles = params.nMuscles;
+numMuscles = params.numMuscles;
 nJoints = params.nJoints;
 lMTVals = params.lMTVals;
 vMTVals = params.vMTVals;
@@ -35,7 +35,7 @@ aVals = calcActivationsFromSynergyDesignVariables(x,params);
 
 % Calculate muscle-tendon forces from optimal activations
 for i5 = 1:nPts
-    for k2 = 1:params.nMuscles
+    for k2 = 1:params.numMuscles
         [FMTVals(i5,k2),FTPassive(i5,k2)] = calcMuscleTendonForce(aVals(i5,k2),lMTVals(i5,k2),vMTVals(i5,k2),k2,params);
     end
 end
@@ -53,7 +53,7 @@ muscleJointMoments = zeros(nPts,nJoints);
 % net moment
 for i = 1:nPts
     for j = 1:nJoints
-        for k = 1:nMuscles
+        for k = 1:numMuscles
             FMT = calcMuscleTendonForce(aVals(i,k),lMTVals(i,k),vMTVals(i,k),k,params);
             r = rVals(i,k,j);
             muscleJointMoments(i,j) = muscleJointMoments(i,j) + r*FMT;
@@ -72,14 +72,14 @@ end
 %--------------------------------------------------------------------------
 function plotMuscleActivations(aVals,MuscLabels,params)
 
-nMuscles_legs = params.nMuscles_legs; nMuscles_trunk = params.nMuscles_trunk; nPts = params.nPts;
+numMuscles_legs = params.numMuscles_legs; numMuscles_trunk = params.numMuscles_trunk; nPts = params.nPts;
 EMGact_all = params.EMGact_all;
 % Plot activation results
 NCPtimePercent = params.NCPtimePercent;
-rightLegMuscleIndices = 1:nMuscles_legs/2;
-leftLegMuscleIndices = nMuscles_legs/2 + 1:nMuscles_legs;
-rightTrunkMuscleIndices = nMuscles_legs + 1 : nMuscles_legs + nMuscles_trunk/2;
-leftTrunkMuscleIndices = nMuscles_legs + nMuscles_trunk/2 + 1 : nMuscles_legs + nMuscles_trunk;
+rightLegMuscleIndices = 1:numMuscles_legs/2;
+leftLegMuscleIndices = numMuscles_legs/2 + 1:numMuscles_legs;
+rightTrunkMuscleIndices = numMuscles_legs + 1 : numMuscles_legs + numMuscles_trunk/2;
+leftTrunkMuscleIndices = numMuscles_legs + numMuscles_trunk/2 + 1 : numMuscles_legs + numMuscles_trunk;
 if ~isempty(aVals)
     figure('Name','Right Leg Activations');
     for i = rightLegMuscleIndices
@@ -155,8 +155,8 @@ end
 function plotSynergies(C,W,params) % to be tidied up
 % C: synergy curves
 % W: synergy weights
-nSynergies = params.nSynergies;
-nMuscles = params.nMuscles;
+numSynergies = params.numSynergies;
+numMuscles = params.numMuscles;
 MuscNames = params.MuscNames;
 nPts = params.nPts;
 y_lim = [0,0.1];
@@ -176,12 +176,12 @@ for i=1:6
 
     bar(W(i,:),0.5,'FaceColor',colors_all(i,:));hold all
 
-    xlim([0,nMuscles/2+1])
+    xlim([0,numMuscles/2+1])
     ylim(y_lim)
 
     box on; grid off;
-    set(gca,'XTick',1:nMuscles/2);
-    if i == nSynergies/2
+    set(gca,'XTick',1:numMuscles/2);
+    if i == numSynergies/2
         set(gca, 'XTickLabel', MuscNames);
     else
         set(gca, 'XTickLabel', []);
@@ -202,11 +202,11 @@ for i=7:12
 
     bar(W(i,:),0.5,'FaceColor',colors_all(i,:));hold all
 
-    xlim([0,nMuscles/2+1])
+    xlim([0,numMuscles/2+1])
     ylim(y_lim)
 
     box on; grid off;
-    set(gca,'XTick',1:nMuscles/2);
+    set(gca,'XTick',1:numMuscles/2);
     if i == 12
         set(gca, 'XTickLabel', MuscNames);
     else
@@ -224,10 +224,10 @@ set(h,'units','normalized','outerposition',[0 0 1/2 1]);
 idx={'1','2','3','4','5','6'};
 idx=0;
 idx = idx+1;
-for i=1:nSynergies/2
+for i=1:numSynergies/2
 
     %subplot(Nsub,NofSyn,i+NofSyn*(j-1))
-    subplot(nSynergies/2,1,i)
+    subplot(numSynergies/2,1,i)
     %             subplot(plot_sub_no,NofSyn,i+(j-1-(kkk-1)*plot_sub_no)*NofSyn);
     set(gca,'fontsize',24)
 
@@ -258,9 +258,9 @@ set(h,'units','normalized','outerposition',[0 0 1/2 1]);
 idx={'1','2','3','4','5','6'};
 idx=0;
 idx = idx+1;
-for i=1:nSynergies/2
+for i=1:numSynergies/2
 
-    subplot(nSynergies/2,1,i)
+    subplot(numSynergies/2,1,i)
     set(gca,'fontsize',24)
 
     plot(0:1:nPts-1,C(:,i+6),'color',colors_all(i+6,:),'LineWidth',2);

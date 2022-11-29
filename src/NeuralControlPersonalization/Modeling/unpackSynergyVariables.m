@@ -1,11 +1,11 @@
 %--------------------------------------------------------------------------
 function [commandNodes,weights] = unpackSynergyVariables(x,params)
 
-nMuscles = params.nMuscles; nNodes = params.nNodes; nSynergies = params.nSynergies;
+numMuscles = params.numMuscles; numNodes = params.numNodes; numSynergies = params.numSynergies;
 
 % Unpack synergy quantities from design variable vector
 synergyDVs = x;
-synergyDVs = reshape(synergyDVs,nNodes+nMuscles/2,nSynergies);
+synergyDVs = reshape(synergyDVs,numNodes+numMuscles/2,numSynergies);
 
-commandNodes = synergyDVs(1:nNodes,:);
-weights = synergyDVs(nNodes+1:end,:)'; % The transpose is needed here
+commandNodes = synergyDVs(1:numNodes,:);
+weights = synergyDVs(numNodes+1:end,:)'; % The transpose is needed here

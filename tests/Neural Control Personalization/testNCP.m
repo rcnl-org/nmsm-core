@@ -29,12 +29,12 @@ inputs.alpha = [EMGD_data.alpha, EMGD_data.alpha, TrunkMuscParam.alpha, TrunkMus
 inputs.vMmax = 10*inputs.optimalFiberLength;
 
 % Define global parameters
-inputs.nMuscles = 148;
-inputs.nMuscles_legs = 90;
-inputs.nMuscles_trunk = 58;
+inputs.numMuscles = 148;
+inputs.numMuscles_legs = 90;
+inputs.numMuscles_trunk = 58;
 inputs.nJoints = 15;
-inputs.nNodes = 21;
-inputs.nSynergies = 12;
+inputs.numNodes = 21;
+inputs.numSynergies = 12;
 inputs.nPts = 101;
 
 inputs.trial_no = 22; % 21 is the first trial of 1.4 m/s
@@ -49,12 +49,12 @@ inputs.actTrackAllowErr = 0.01;       % 0.01 is the allowable error for activati
 inputs.actMinAllowErr = 0.05;             % 0.05 is the allowable error for activation minimization
 
 inputs.actTr_allow_err = 0.05;
-savefilename = "Syn" + num2str(inputs.nSynergies) + "_" + num2str(inputs.w_MTrack) + "_" + num2str(inputs.w_ActTrack) + "_" + num2str(inputs.w_ActMin) + "_" + num2str(inputs.momentTrackAllowErr) + "_" + num2str(inputs.actTrackAllowErr) + "_" + num2str(inputs.actMinAllowErr);
+savefilename = "Syn" + num2str(inputs.numSynergies) + "_" + num2str(inputs.w_MTrack) + "_" + num2str(inputs.w_ActTrack) + "_" + num2str(inputs.w_ActMin) + "_" + num2str(inputs.momentTrackAllowErr) + "_" + num2str(inputs.actTrackAllowErr) + "_" + num2str(inputs.actMinAllowErr);
 
 try
     initial_soln = load(savefilename);
 catch err
-    initial_soln.x = rand(1,2*(inputs.nSynergies/2*(inputs.nMuscles/2 + inputs.nNodes)));
+    initial_soln.x = rand(1,2*(inputs.numSynergies/2*(inputs.numMuscles/2 + inputs.numNodes)));
 end
 
 [MTL_all,MA_all,VMT_all,ID_all,MuscNames,CoordLabels,inputs] = data_parsing_WithOffset_lumbar6dof(etmData_rightleg,etmData_leftleg,etmData_lefttrunk,etmData_righttrunk,inputs.trial_no,EMGD_data,act_leftleg,inputs);
@@ -94,7 +94,7 @@ MuscNames = fixStrings(MuscNames); inputs.MuscNames = MuscNames;
 CoordLabels = fixStrings(CoordLabels); inputs.CoordLabels = CoordLabels;
 
 tic
-if 0
+if 1
     x = computeNeuralControlOptimization(x0, inputs, struct());
 else
     x = x0;
@@ -110,7 +110,7 @@ end
 %--------------------------------------------------------------------------
 function MA = MACompiler(MomentArms,inputs)
 
-MA = zeros(inputs.nPts,inputs.nMuscles,inputs.nJoints);
+MA = zeros(inputs.nPts,inputs.numMuscles,inputs.nJoints);
 for i=1:inputs.nJoints
     MA(:,:,i) = MomentArms{i}(inputs.long2short_idx,:);
 end
