@@ -35,14 +35,14 @@ inputs.numPoints = 101;
 inputs.trial_no = 22; % 21 is the first trial of 1.4 m/s
 inputs.long2short_idx = 21:121;
 
-inputs.w_MTrack = 1;
-inputs.w_ActTrack = 1;
-inputs.w_ActMin = 1;
+inputs.momentTrackingWeight = 1;
+inputs.activationTrackingWeight = 1;
+inputs.activationMinimizationWeight = 1;
 inputs.momentTrackingAllowableError = 5; % 5 Nm is the allowable error for moment tracking error
 inputs.activationTrackingAllowableError = 0.01; % 0.01 is the allowable error for activation tracking error
 inputs.activationMinimizationAllowableError = 0.05; % 0.05 is the allowable error for activation minimization
 
-savefilename = "Syn" + num2str(inputs.numSynergies) + "_" + num2str(inputs.w_MTrack) + "_" + num2str(inputs.w_ActTrack) + "_" + num2str(inputs.w_ActMin) + "_" + num2str(inputs.momentTrackingAllowableError) + "_" + num2str(inputs.activationTrackingAllowableError) + "_" + num2str(inputs.activationMinimizationAllowableError);
+savefilename = "Syn" + num2str(inputs.numSynergies) + "_" + num2str(inputs.momentTrackingWeight) + "_" + num2str(inputs.activationTrackingWeight) + "_" + num2str(inputs.activationMinimizationWeight) + "_" + num2str(inputs.momentTrackingAllowableError) + "_" + num2str(inputs.activationTrackingAllowableError) + "_" + num2str(inputs.activationMinimizationAllowableError);
 
 try
     initial_soln = load(savefilename);

@@ -30,10 +30,10 @@ end
 torqueErrors = muscleJointMoments - inputs.inverseDynamicsMoments;
 
 actTrackErr = activations(:,1:inputs.numMuscles_legs) - inputs.EMGact_all;
-actTrackErr = inputs.w_ActTrack^0.5*(actTrackErr(:)/inputs.activationTrackingAllowableError)/(inputs.numPoints*inputs.numMuscles_legs)^0.5;
-momentErr = inputs.w_MTrack^0.5*(torqueErrors(:)/inputs.momentTrackingAllowableError)/(inputs.numPoints*inputs.numJoints)^0.5;
+actTrackErr = inputs.activationTrackingWeight^0.5*(actTrackErr(:)/inputs.activationTrackingAllowableError)/(inputs.numPoints*inputs.numMuscles_legs)^0.5;
+momentErr = inputs.momentTrackingWeight^0.5*(torqueErrors(:)/inputs.momentTrackingAllowableError)/(inputs.numPoints*inputs.numJoints)^0.5;
 actMinErr = reshape(activations(:,inputs.numMuscles_legs+1:end),[inputs.numPoints*(inputs.numMuscles_trunk),1]);
-actMinErr = inputs.w_ActMin^0.5*(actMinErr/inputs.activationMinimizationAllowableError)/(inputs.numPoints*inputs.numMuscles_trunk)^0.5;
+actMinErr = inputs.activationMinimizationWeight^0.5*(actMinErr/inputs.activationMinimizationAllowableError)/(inputs.numPoints*inputs.numMuscles_trunk)^0.5;
 
-errs = 1/sqrt(inputs.w_MTrack + inputs.w_ActTrack + inputs.w_ActMin)*[momentErr; actTrackErr; actMinErr];
+errs = 1/sqrt(inputs.momentTrackingWeight + inputs.activationTrackingWeight + inputs.activationMinimizationWeight)*[momentErr; actTrackErr; actMinErr];
 end
