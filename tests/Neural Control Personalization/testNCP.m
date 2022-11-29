@@ -32,7 +32,7 @@ inputs.numNodes = 21;
 inputs.numSynergies = 12;
 inputs.numPoints = 101;
 
-inputs.trial_no = 22; % 21 is the first trial of 1.4 m/s
+trial_no = 22; % 21 is the first trial of 1.4 m/s
 inputs.long2short_idx = 21:121;
 
 inputs.momentTrackingWeight = 1;
@@ -50,7 +50,7 @@ catch err
     initial_soln.x = rand(1, 2 * (inputs.numSynergies / 2 * (inputs.numMuscles / 2 + inputs.numNodes)));
 end
 
-[MTL_all, MA_all, VMT_all, ID_all, muscleNames, coordinateNames, inputs] = data_parsing_WithOffset_lumbar6dof(etmData_rightleg, etmData_leftleg, etmData_lefttrunk, etmData_righttrunk, inputs.trial_no, EMGD_data, act_leftleg, inputs);
+[MTL_all, MA_all, VMT_all, ID_all, muscleNames, coordinateNames, inputs] = data_parsing_WithOffset_lumbar6dof(etmData_rightleg, etmData_leftleg, etmData_lefttrunk, etmData_righttrunk, trial_no, EMGD_data, act_leftleg, inputs);
 
 %%
 
