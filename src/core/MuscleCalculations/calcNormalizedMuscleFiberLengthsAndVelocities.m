@@ -10,7 +10,7 @@
 % inputData.pennationAngle - 3D matrix of (1, 1, numMuscles)
 % inputData.fMax - 3D matrix of (1, 1, numMuscles)
 % inputData.lMo - 3D matrix of (1, 1, numMuscles)
-% inputData.lTs - 3D matrix of (1, 1, numMuscles)
+% inputData.tendonSlackLength - 3D matrix of (1, 1, numMuscles)
 %
 % Outputs:
 % lMtilda - 3D matrix of (numFrames, numTrials, numMuscles)

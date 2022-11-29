@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Costs associated to joint moment tracking errors, differences in lMo 
-% values from pre-calibrated values, differences in lTs values from 
+% values from pre-calibrated values, differences in tendonSlackLength values from 
 % pre-calibrated values, and differences in the shape and mean of lMtilda 
 % from pre-calibrated. 
 %

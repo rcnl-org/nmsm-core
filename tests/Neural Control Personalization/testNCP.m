@@ -24,7 +24,7 @@ TrunkMuscParam = load('TrunkMuscleParams.mat'); TrunkMuscParam = TrunkMuscParam.
 % % Muscle Parameters
 inputs.FMo = [EMGD_data.Fmax, EMGD_data.Fmax, TrunkMuscParam.FMo, TrunkMuscParam.FMo];
 inputs.optimalFiberLength = [EMGD_data.lmoOpt, EMGD_data.lmoOpt, TrunkMuscParam.lMo, TrunkMuscParam.lMo];
-inputs.lTs = [EMGD_data.ltsOpt, EMGD_data.ltsOpt, TrunkMuscParam.lTs, TrunkMuscParam.lTs];
+inputs.tendonSlackLength = [EMGD_data.ltsOpt, EMGD_data.ltsOpt, TrunkMuscParam.lTs, TrunkMuscParam.lTs];
 inputs.alpha = [EMGD_data.alpha, EMGD_data.alpha, TrunkMuscParam.alpha, TrunkMuscParam.alpha];
 inputs.vMmax = 10*inputs.optimalFiberLength;
 
@@ -98,7 +98,7 @@ MuscNames = fixStrings(MuscNames); inputs.MuscNames = MuscNames;
 CoordLabels = fixStrings(CoordLabels); inputs.CoordLabels = CoordLabels;
 
 tic
-if 1
+if 0
     x = computeNeuralControlOptimization(x0, inputs, struct());
 else
     x = x0;
@@ -107,7 +107,7 @@ toc
 
 inputs.savefilename = savefilename;
 inputs.NCPtimePercent = linspace(0,100,nPts)';
-% reportNeuralControlPersonalizationResults(x,inputs);
+reportNeuralControlPersonalizationResults(x,inputs);
 
 % keyboard
 end
