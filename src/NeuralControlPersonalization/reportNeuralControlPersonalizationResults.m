@@ -12,7 +12,7 @@ save(fullfile(pwd, 'result', inputs.savefilename + ".mat"), 'x');
 aVals = calcActivationsFromSynergyDesignVariables(x, inputs, params);
 
 % Calculate muscle-tendon forces from optimal activations
-for i5 = 1:inputs.nPts
+for i5 = 1:inputs.numPoints
     for k2 = 1:inputs.numMuscles
         [FMTVals(i5, k2), FTPassive(i5, k2)] = calcMuscleTendonForce(aVals(i5, k2), inputs.muscleTendonLength(i5, k2), inputs.muscleTendonVelocity(i5, k2), k2, inputs);
     end
