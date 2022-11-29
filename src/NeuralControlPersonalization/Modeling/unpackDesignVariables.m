@@ -1,5 +1,5 @@
 %--------------------------------------------------------------------------
-function [commands, weights] = unpackDesignVariables(x, inputs)
+function [commands, weights] = unpackDesignVariables(x, inputs, params)
 
 % Unpack synergy quantities from design variable vector
 [commandNodes, weights] = unpackSynergyVariables(x, inputs);
