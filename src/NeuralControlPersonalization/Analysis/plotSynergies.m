@@ -79,10 +79,10 @@ for i = 1:numSynergies / 2
     %             subplot(plot_sub_no,NofSyn,i+(j-1-(kkk-1)*plot_sub_no)*NofSyn);
     set(gca, 'fontsize', 24)
 
-    plot(0:1:inputs.nPts - 1, C(:, i), 'color', colors_all(i, :), 'LineWidth', 2);
+    plot(0:1:inputs.numPoints - 1, C(:, i), 'color', colors_all(i, :), 'LineWidth', 2);
 
     set(gca, 'Ylim', [0 inf])
-    set(gca, 'Xlim', [0 inputs.nPts - 1])
+    set(gca, 'Xlim', [0 inputs.numPoints - 1])
     box on; grid off;
 
     title(['C' num2str(i) '- right']);
@@ -108,10 +108,10 @@ for i = 1:numSynergies / 2
     subplot(numSynergies / 2, 1, i)
     set(gca, 'fontsize', 24)
 
-    plot(0:1:inputs.nPts - 1, C(:, i + 6), 'color', colors_all(i + 6, :), 'LineWidth', 2);
+    plot(0:1:inputs.numPoints - 1, C(:, i + 6), 'color', colors_all(i + 6, :), 'LineWidth', 2);
 
     set(gca, 'Ylim', [0 inf])
-    set(gca, 'Xlim', [0 inputs.nPts - 1])
+    set(gca, 'Xlim', [0 inputs.numPoints - 1])
     box on; grid off;
 
     title(['C' num2str(i) '- left']);

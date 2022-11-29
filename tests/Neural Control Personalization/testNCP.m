@@ -27,10 +27,10 @@ inputs.vMmax = 10 * inputs.optimalFiberLength;
 inputs.numMuscles = 148;
 inputs.numMuscles_legs = 90;
 inputs.numMuscles_trunk = 58;
-inputs.nJoints = 15;
+inputs.numJoints = 15;
 inputs.numNodes = 21;
 inputs.numSynergies = 12;
-inputs.nPts = 101;
+inputs.numPoints = 101;
 
 inputs.trial_no = 22; % 21 is the first trial of 1.4 m/s
 inputs.long2short_idx = 21:121;
@@ -101,7 +101,7 @@ end
 toc
 
 inputs.savefilename = savefilename;
-inputs.NCPtimePercent = linspace(0, 100, inputs.nPts)';
+inputs.NCPtimePercent = linspace(0, 100, inputs.numPoints)';
 reportNeuralControlPersonalizationResults(x, inputs, struct());
 
 % keyboard
@@ -110,9 +110,9 @@ end
 %--------------------------------------------------------------------------
 function MA = MACompiler(MomentArms, inputs)
 
-MA = zeros(inputs.nPts, inputs.numMuscles, inputs.nJoints);
+MA = zeros(inputs.numPoints, inputs.numMuscles, inputs.numJoints);
 
-for i = 1:inputs.nJoints
+for i = 1:inputs.numJoints
     MA(:, :, i) = MomentArms{i}(inputs.long2short_idx, :);
 end
 
@@ -435,11 +435,11 @@ MuscNames = {'addbrev_r', 'addlong_r', 'addmagDist_r', 'addmagIsch_r', 'addmagMi
     'IO2_l', 'IO4_l', 'IO5_l', 'EO10_l', 'EO12_l', 'IL_L2_l', 'IL_L4_l', 'IL_R7_l', 'IL_R10_l', 'IL_R11_l', 'IL_R12_l', 'LTpT_T8_l', 'LTpT_T12_l', 'LTpT_R8_l', 'LTpT_R11_l', 'LTpL_L2_l', 'LTpL_L4_l', 'LTpL_L5_l', 'MF_m1t_3_l', 'MF_m2t_3_l', 'MF_m3s_l', 'MF_m4t_3_l', 'MF_m5_laminar_l', 'QL_post_I1_L3_l', 'QL_post_I2_L4_l', 'QL_post_I3_L2_l', 'QL_ant_I2_T12_l', 'QL_ant_I3_R12_I2_l', 'rect_abd_l'};
 
 %% EMG activations
-EMGact_all = [EMGD_data.a((trial_no - 1) * inputs.nPts + 1:trial_no * inputs.nPts, :), act_leftleg.activation_L.case_3];
+EMGact_all = [EMGD_data.a((trial_no - 1) * inputs.numPoints + 1:trial_no * inputs.numPoints, :), act_leftleg.activation_L.case_3];
 inputs.EMGact_all = EMGact_all;
 end
 
-function A = lumbarSurrogateModel(theta1, theta2, theta3, nPts)
-A = [ones(nPts, 1), theta1, theta2, theta3, theta1 .* theta2, theta1 .* theta3, theta2 .* theta3, ...
+function A = lumbarSurrogateModel(theta1, theta2, theta3, numPoints)
+A = [ones(numPoints, 1), theta1, theta2, theta3, theta1 .* theta2, theta1 .* theta3, theta2 .* theta3, ...
     theta1.^2, theta2.^2, theta3.^2];
 end

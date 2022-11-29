@@ -1,8 +1,8 @@
 function plotTorques(jointNames, inputs, params)
-muscleJointMoments = zeros(inputs.nPts, inputs.nJoints);
+muscleJointMoments = zeros(inputs.numPoints, inputs.numJoints);
 % net moment
-for i = 1:inputs.nPts
-    for j = 1:inputs.nJoints
+for i = 1:inputs.numPoints
+    for j = 1:inputs.numJoints
         for k = 1:inputs.numMuscles
             FMT = calcMuscleTendonForce(aVals(i, k), ...
                 inputs.muscleTendonLength(i, k), ...
@@ -13,7 +13,7 @@ for i = 1:inputs.nPts
     end
 end
 figure;
-for i = 1:inputs.nJoints
+for i = 1:inputs.numJoints
     subplot(4, 4, i)
     plot(inputs.NCPtimePercent, inputs.IDmomentVals(:, i), 'k-', ...
         inputs.NCPtimePercent, muscleJointMoments(:, i));
