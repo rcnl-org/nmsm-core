@@ -29,33 +29,94 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function reportMuscleTendonPersonalizationResults(resultsSynx, results, finalValues, experimentalData, params)
+function reportMuscleTendonPersonalizationResults(optimizedParams, ...
+    mtpInputs, precalInputs)
+if nargin < 3; precalInputs = []; end
 
-lowerBounds = makeLowerBounds(experimentalData, params);
-upperBounds = makeUpperBounds(experimentalData, params);
+[finalValues, results, resultsSynx] = getValuesToReport(mtpInputs, ...
+    precalInputs, optimizedParams);
+if ~isempty(precalInputs)
+tempValues.optimalFiberLengthScaleFactors = ...
+    mtpInputs.optimalFiberLength ./ precalInputs.optimalFiberLength;
+tempValues.tendonSlackLengthScaleFactors = ...
+    mtpInputs.tendonSlackLength ./ precalInputs.tendonSlackLength;
+precalInputs.maxIsometricForce = mtpInputs.maxIsometricForce;
+precalInputs.optimizeIsometricMaxForce = 0;
+modeledValues = calcPreCalibrationModeledValues(tempValues, precalInputs);
+plotPassiveForceData(permute(modeledValues.passiveForce, [3 1 2]), ...
+    precalInputs);
+if precalInputs.passiveMomentDataExists
+plotPassiveMomentData(permute(modeledValues.passiveModelMoments, [3 1 2]), ...
+    permute(precalInputs.passiveData.experimentalMoments, [3 1 2]))
+end
 
-Tasks = {'0pt5','0pt8'};
-nTasks = 2;
-TrialIndex = {[1 2], [3 4]};
-SynXMuscIndex = [experimentalData.synergyExtrapolation.missingEmgChannelPairs{:}];
+end
 printJointMomentMatchingError(resultsSynx.muscleJointMoments, ...
-    experimentalData.experimentalMoments);
-makeExcitationAndActivationPlots(results.muscleExcitations, ...
-    resultsSynx.muscleExcitations,...
-    results.muscleActivations, resultsSynx.muscleActivations, ...
-    experimentalData.muscleNames, Tasks, nTasks,...
-    TrialIndex, SynXMuscIndex)
-makeModelParameterPlots(finalValues.electromechanicalDelays, finalValues.emgScaleFactors,...
-    finalValues.activationTimeConstants, finalValues.activationNonlinearityConstants, ...
-    finalValues.optimalFiberLengthScaleFactors, finalValues.tendonSlackLengthScaleFactors,...
-    experimentalData.muscleNames, SynXMuscIndex, upperBounds, lowerBounds)
-makeTaskSpecificMomentMatchingPlots(permute(results.muscleJointMoments, [3 1 2]), ...
+    mtpInputs.experimentalMoments);
+makeExcitationAndActivationPlots(results, resultsSynx, mtpInputs, ...
+    mtpInputs.synergyExtrapolation);
+makeModelParameterPlots(finalValues, mtpInputs, ...
+    mtpInputs.synergyExtrapolation)
+makeTaskSpecificMomentMatchingPlots(...
+    permute(results.muscleJointMoments, [3 1 2]), ...
     permute(resultsSynx.muscleJointMoments, [3 1 2]), ...
-    permute(experimentalData.experimentalMoments, [3 1 2]), ...
-    experimentalData.coordinates, experimentalData.synergyExtrapolation)
+    permute(mtpInputs.experimentalMoments, [3 1 2]), ...
+    mtpInputs.coordinates, mtpInputs.synergyExtrapolation)
 makeTaskSpecificNormalizedFiberLengthsPlots( ...
     permute(resultsSynx.normalizedFiberLength, [3 1 2]), ...
-    experimentalData, experimentalData.synergyExtrapolation)
+    mtpInputs, mtpInputs.synergyExtrapolation)
+end
+function [finalValues, results, resultsSynx] = getValuesToReport(mtpInputs, ...
+    precalInputs, optimizedParams)
+
+finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
+resultsSynx = calcMtpSynXModeledValues(finalValues, mtpInputs, struct());
+results = calcMtpModeledValues(finalValues, mtpInputs, struct());
+results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
+    end - mtpInputs.numPaddingFrames);
+results.muscleExcitations = results.muscleExcitations(:, :, ...
+    mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
+resultsSynx.muscleExcitations = resultsSynx.muscleExcitations(:, :, ...
+    mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
+if ~isempty(precalInputs)
+finalOptimalFiberLength = ...
+    finalValues.optimalFiberLengthScaleFactors .* mtpInputs.optimalFiberLength;
+finalValues.optimalFiberLengthScaleFactors = ...
+    finalOptimalFiberLength ./ precalInputs.optimalFiberLength;
+finalTendonSlackLength = ...
+    finalValues.tendonSlackLengthScaleFactors .* mtpInputs.tendonSlackLength;
+finalValues.tendonSlackLengthScaleFactors = ...
+    finalTendonSlackLength ./ precalInputs.tendonSlackLength;
+end
+end
+function plotPassiveMomentData(modeledValue, experimentalValue)
+
+columnsWithAllZeros = all(experimentalValue == 0, 1);
+experimentalMoments = experimentalValue(repmat(~columnsWithAllZeros, ...
+    size(experimentalValue, 1), 1, 1));
+passiveModelMoments = modeledValue(repmat(~columnsWithAllZeros, ...
+    size(experimentalValue, 1), 1, 1));
+
+figure; plot(passiveModelMoments, 'r', 'LineWidth', 1.25); hold on; 
+plot(experimentalMoments, 'k', 'LineWidth', 1.75); 
+ylabel('Passive Moments [Nm]'); xlabel('Time Points'); 
+legend('Model','Experimental')
+end
+function plotPassiveForceData(modeledValue, experimentalData)
+
+figure; nplots = ceil(sqrt(experimentalData.numMuscles));
+for i = 1 : experimentalData.numMuscles
+    subplot(nplots,nplots,i)
+    hold on
+    plot(modeledValue(:,:,i),'b')
+    axis([1 size(modeledValue, 1) min(modeledValue,[],'all') max(modeledValue,[],'all')])
+    title(strrep(experimentalData.muscleNames{i}, '_', ' '))
+    if i > experimentalData.numMuscles - nplots; xlabel('Time Points'); 
+    else xticklabels(''); end
+    if ismember(i, 1 : nplots : experimentalData.numMuscles)
+        ylabel({'Passive','Force [N]'});
+    else yticklabels(''); end
+end
 end
 function printJointMomentMatchingError(muscleJointMoments, experimentalMoments)
 
@@ -74,197 +135,133 @@ fprintf(['The mean absolute errors (MAEs) between model-predicted ' ...
     'and inverse dynamic moments are: \n' ]);
 fprintf(['\n ' num2str(jointMomentsMae) ' \n']);
 end
+function makeExcitationAndActivationPlots(results, resultsSynx, ...
+    experimentalData, synergyParameters)
 
-function makeExcitationAndActivationPlots(muscleExcitations,muscleExcitationsResiduals,...
-    muscleActivations,muscleActivationsResiduals, muscLabels,Tasks, nTasks,...
-    TrialIndex,SynXMuscIndex)
+muscleLabels = getSynxMuscleNames(experimentalData.muscleNames, ...
+    synergyParameters.missingEmgChannelPairs);
 
-nMusc = size(muscleExcitations,2);
-nplot = ceil(sqrt(nMusc));
+for i = 1 : numel(synergyParameters.taskNames)
+figure('name', ['Muscle excitations/activations for ', ...
+    synergyParameters.taskNames{i}]);
 
-for i = 1 : nMusc
-    if ismember(i,SynXMuscIndex)
-        muscLabels{i} = [muscLabels{i} '(*)'];
-    else
-        muscLabels{i} = muscLabels{i};
+plotMuscleExcitationsAndActivations(...
+    results.muscleExcitations(synergyParameters.trialIndex{i}, :, :), ...
+    resultsSynx.muscleExcitations(synergyParameters.trialIndex{i}, :, :), ...
+    results.muscleActivations(synergyParameters.trialIndex{i}, :, :), ...
+    resultsSynx.muscleActivations(synergyParameters.trialIndex{i}, :, :), ...
+    muscleLabels)
+end
+end
+function plotMuscleExcitationsAndActivations(muscleExcitations, ...
+    muscleExcitationsSynx, muscleActivations, muscleActivationsSynx, ...
+    muscleLabels)
+
+meanMuscleExcitation = permute(mean(muscleExcitations, 1), [3 2 1]);
+meanMuscleExcitationSynx = permute(mean(muscleExcitationsSynx, 1), [3 2 1]);
+meanMuscleActivation = permute(mean(muscleActivations, 1), [3 2 1]);
+meanMuscleActivationSynx = permute(mean(muscleActivationsSynx, 1), [3 2 1]);
+nplot = ceil(sqrt(numel(muscleLabels)));
+for j = 1 : numel(muscleLabels)
+    subplot(nplot,nplot,j);
+    plot(meanMuscleExcitation(:,j),'b-','LineWidth',2);
+    hold on
+    plot(meanMuscleExcitationSynx(:,j),'b--','LineWidth',1);
+    plot(meanMuscleActivation(:,j),'r-','LineWidth',2);
+    plot(meanMuscleActivationSynx(:,j),'r--','LineWidth',1);
+    axis([1 size(meanMuscleExcitation, 1) 0 1])
+    title(muscleLabels{j});
+    if j == 1
+        legend ('Excitation(without residual)','Excitation(with residual)',...
+            'Activation(without residual)','Activation(with residual)');
     end
 end
-
-for i = 1:nTasks
-    figure('name', ['Muscle excitations/activations for ', Tasks{i}], 'units','normalized','outerposition',[0 0 1 1]);
-    
-    ExcitationMeans = permute(mean(muscleExcitations(TrialIndex{i},:,21:121),1),[3 2 1]);
-    ExcitationMeanswithResidual = permute(mean(muscleExcitationsResiduals(TrialIndex{i},:,21:121),1),[3 2 1]);
-    aMeans = permute(mean(muscleActivations(TrialIndex{i},:,:),1),[3 2 1]);
-    aMeanswithResidual = permute(mean(muscleActivationsResiduals(TrialIndex{i},:,:),1),[3 2 1]);
-    
-    for j = 1:nMusc
-        subplot(nplot,nplot,j), plot(0:100,ExcitationMeans(:,j),'b-','LineWidth',2);
-        hold on
-        subplot(nplot,nplot,j), plot(0:100,ExcitationMeanswithResidual(:,j),'b--','LineWidth',1);
-        subplot(nplot,nplot,j), plot(0:100,aMeans(:,j),'r-','LineWidth',2);
-        subplot(nplot,nplot,j), plot(0:100,aMeanswithResidual(:,j),'r--','LineWidth',1);
-        axis([0 100 0 1])
-        title([muscLabels{j}]);
-        if j == 1
-            legend ('Excitation(without residual)','Excitation(with residual)',...
-                'Activation(without residual)','Activation(with residual)');
-        end
-    end
-    set(gca, 'FontSize', 12)
+set(gca, 'FontSize', 12)
 end
-end
+function makeModelParameterPlots(finalValues, experimentalData, synergyParameters)
 
-function makeModelParameterPlots(timeDelay, emgScalingFactor,...
-    activationTimeConstant, activationNonlinearity, ...
-    muscleOptimalLength, tendonSlackLength,...
-    muscLabels, SynXMuscIndex, upperBoundStruct, lowerBoundStruct)
-
-nMusc = size(muscleOptimalLength,2);
-
-for i = 1 : nMusc
-    muscLabels{i} = strrep(muscLabels{i},'_r','');
-    muscLabels{i} = strrep(muscLabels{i},'_l','');
-    
-    if ismember(i,SynXMuscIndex)
-         muscLabels{i} = [muscLabels{i} '(*)'];
-    else
-         muscLabels{i} = muscLabels{i};
-    end    
-end
+muscleLabels = getSynxMuscleNames(experimentalData.muscleNames, ...
+    synergyParameters.missingEmgChannelPairs);
 
 In_width = 0.145; % witdth of each subplot
-fig = figure('units','normalized','outerposition',[0 0 1 1]);
-for iElem=1:6
-    subplot_tight(1, 6, iElem, [0.04,0.001]);
-    switch iElem 
+figure('units', 'normalized', 'outerposition', [0 0 1 1]);
+for subplotElement = 1 : 6
+    subplotTight(1, 6, subplotElement, [0.04, 0.001]);
+    switch subplotElement 
         case 1 %activationTimeConstant
-            bar(1:nMusc,activationTimeConstant,'barwidth',0.8, 'Horizontal','on','FaceAlpha',0.6); hold on
-            set(gca, 'YTick', 1:nMusc, 'yTickLabel', muscLabels);
-            set(gca, 'XTick', linspace(0,round(upperBoundStruct{2},4),2));
-            set(gca, 'Fontsize', 11);
-            title('activationTimeConstant')
-            xlim([0 upperBoundStruct{2}*1.1]);
-            ylim([0 nMusc+1]);
+            bar(1 : numel(muscleLabels), finalValues.activationTimeConstants, ...
+                'barwidth', 0.8, 'Horizontal', 'on', 'FaceAlpha', 0.6); 
+            hold on;
+            title('Activation Time Constant (cs)')
             pos_in = get(gca, 'Position');
             pos_in(3) = In_width;
-            pos_in(1) = pos_in(1)+0.05;
-            set(gca,'Position',pos_in);
-            xtickangle(45)
-            line([lowerBoundStruct{2} lowerBoundStruct{2}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
-            line([upperBoundStruct{2} upperBoundStruct{2}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);            
-            
+            pos_in(1) = pos_in(1) + 0.05;
+            set(gca, 'YTick', 1 : numel(muscleLabels), 'yTickLabel', ...
+                muscleLabels, 'Fontsize', 11, 'Position', pos_in);
         case 2 %activationNonlinearity
-            bar(activationNonlinearity, 'Horizontal','on','barwidth',0.8,'FaceAlpha',0.6);
-            set(gca, 'YTick', [], 'yTickLabel', []);
-            set(gca, 'XTick', linspace(0,round(upperBoundStruct{3},4),2));
-            title('activationNonlinearity')
-            xlim([0 upperBoundStruct{3}*1.1]);
-            ylim([0 nMusc+1]);
-            pos_in(1) = pos_in(1)+pos_in(3)+0.015;
-            set(gca,'Position',pos_in);
-            set(gca, 'Fontsize', 11);
-            xtickangle(45)
-            line([lowerBoundStruct{3} lowerBoundStruct{3}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
-            line([upperBoundStruct{3} upperBoundStruct{3}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
-                        
+            bar(finalValues.activationNonlinearityConstants, 'Horizontal', 'on', ...
+                'barwidth', 0.8, 'FaceAlpha', 0.6);
+            title('Activation Nonlinearity')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [], 'Position', pos_in, ...
+                'Fontsize', 11);
         case 3 %timeDelay
-            bar(timeDelay, 'Horizontal','on','barwidth',0.8,'FaceAlpha',0.6);
-            set(gca, 'YTick', [], 'yTickLabel', []);
-            set(gca, 'XTick', linspace(0,round(upperBoundStruct{1},4),2));
-            title('timeDelay')
-            xlim([0 upperBoundStruct{1}*1.1]);
-            ylim([0 nMusc+1]);
-            pos_in(1) = pos_in(1)+pos_in(3)+0.015;
-            set(gca,'Position',pos_in);
-            set(gca, 'Fontsize', 11);
-            xtickangle(45)
-            line([lowerBoundStruct{1} lowerBoundStruct{1}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
-            line([upperBoundStruct{1} upperBoundStruct{1}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
-                        
+            bar(finalValues.electromechanicalDelays, 'Horizontal', 'on', 'barwidth', 0.8, ...
+                'FaceAlpha', 0.6);
+            title('Electromechanical Time Delay (ds)')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [],'Position', pos_in, ...
+                'Fontsize', 11);
         case 4 % emgScalingFactor
-            bar(emgScalingFactor, 'Horizontal','on','barwidth',0.8,'FaceAlpha',0.6);
-            set(gca, 'YTick', [], 'yTickLabel', []);
-            set(gca, 'XTick', linspace(0,round(upperBoundStruct{4},4),2));
-            set(gca, 'Fontsize', 11);
-            title('emgScalingFactor')
-            xlim([0 upperBoundStruct{4}*1.1])
-            ylim([0 nMusc+1]);
-            pos_in(1) = pos_in(1)+pos_in(3)+0.015;
-            set(gca,'Position',pos_in);
-            xtickangle(45)
-            line([lowerBoundStruct{4} lowerBoundStruct{4}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
-            line([upperBoundStruct{4} upperBoundStruct{4}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
-            
+            bar(finalValues.emgScaleFactors, 'Horizontal', 'on', 'barwidth', 0.8, ...
+                'FaceAlpha', 0.6);
+            title('Emg Scaling Factor')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [],'Position', pos_in, ...
+                'Fontsize', 11);
         case 5 %muscleOptimalLength
-            bar(muscleOptimalLength, 'Horizontal','on','barwidth',0.8,'FaceAlpha',0.6);
-            set(gca, 'YTick', [], 'yTickLabel', []);
-            set(gca, 'XTick', linspace(0,round(upperBoundStruct{5},4),2));
-            set(gca, 'Fontsize', 11);
-            title('muscleOptimalLength (m)')
-            xlim([0 upperBoundStruct{5}*1.1])
-            ylim([0 nMusc+1]);
-            pos_in(1) = pos_in(1)+pos_in(3)+0.015;
-            set(gca,'Position',pos_in);
-            xtickangle(45)
-            line([lowerBoundStruct{5} lowerBoundStruct{5}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
-            line([upperBoundStruct{5} upperBoundStruct{5}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
+            bar(finalValues.optimalFiberLengthScaleFactors, 'Horizontal', 'on', 'barwidth', ...
+                0.8, 'FaceAlpha', 0.6);
+            title('Optimal Fiber Length Scaling Factor')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [],'Position', pos_in, ...
+                'Fontsize', 11);
         case 6 %tendonSlackLength            
-            bar(tendonSlackLength, 'Horizontal','on','barwidth',0.8,'FaceAlpha',0.6);
-            set(gca, 'YTick', [], 'yTickLabel', []);
-            set(gca, 'XTick', linspace(0,round(upperBoundStruct{6},4),2));
-            set(gca, 'Fontsize', 11);
-            title('tendonSlackLength (m)')
-            xlim([0 upperBoundStruct{6}*1.1])
-            ylim([0 nMusc+1]);
-            pos_in(1) = pos_in(1)+pos_in(3)+0.015;
-            set(gca,'Position',pos_in);
-            xtickangle(45)
-            line([lowerBoundStruct{6} lowerBoundStruct{6}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
-            line([upperBoundStruct{6} upperBoundStruct{6}],...
-                [0 nMusc+1],'Color',[.8 0 .4],'LineStyle','-.','LineWidth', 2);
+            bar(finalValues.tendonSlackLengthScaleFactors, 'Horizontal', 'on', 'barwidth', ...
+                0.8, 'FaceAlpha', 0.6);
+            title('Tendon Slack Length Scaling Factor')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [],'Position', pos_in, ...
+                'Fontsize', 11);
     end
 end
 end
-
-function vargout=subplot_tight(m, n, p, margins, varargin)
+function vargout=subplotTight(m, n, p, margins, varargin)
 %% Default params
 isWrapper=false;
 if (nargin<4) || isempty(margins)
-    margins=[0.04,0.04]; % default margins value- 4% of figure
+    margins=[0.04, 0.04]; % default margins value- 4% of figure
 end
 if length(margins)==1
     margins(2)=margins;
 end
 
 %note n and m are switched as Matlab indexing is column-wise, while subplot indexing is row-wise :(
-[subplot_col,subplot_row]=ind2sub([n,m],p);
+[subplot_col, subplot_row] = ind2sub([n, m], p);
 
-
-height=(1-(m+1)*margins(1))/m; % single subplot height
-width=(1-(n+1)*margins(2))/n;  % single subplot width
+height = (1 - (m + 1) * margins(1)) / m; % single subplot height
+width = (1 - (n + 1) * margins(2)) / n;  % single subplot width
 
 % note subplot suppors vector p inputs- so a merged subplot of higher dimentions will be created
-subplot_cols=1+max(subplot_col)-min(subplot_col); % number of column elements in merged subplot
-subplot_rows=1+max(subplot_row)-min(subplot_row); % number of row elements in merged subplot
+subplotColumns = 1 + max(subplot_col) - min(subplot_col); % number of column elements in merged subplot
+subplotRows = 1 + max(subplot_row) - min(subplot_row); % number of row elements in merged subplot
 
-merged_height=subplot_rows*( height+margins(1) )- margins(1);   % merged subplot height
-merged_width= subplot_cols*( width +margins(2) )- margins(2);   % merged subplot width
+mergedHeight = subplotRows * (height + margins(1)) - margins(1);   % merged subplot height
+mergedWidth = subplotColumns * (width + margins(2)) - margins(2);   % merged subplot width
 
-merged_bottom=(m-max(subplot_row))*(height+margins(1)) +margins(1); % merged subplot bottom position
-merged_left=min(subplot_col)*(width+margins(2))-width;              % merged subplot left position
-pos=[merged_left, merged_bottom, merged_width, merged_height];
+mergedBottom = (m - max(subplot_row)) * (height + margins(1)) + margins(1); % merged subplot bottom position
+mergedLeft = min(subplot_col) * (width + margins(2)) - width;              % merged subplot left position
+pos = [mergedLeft, mergedBottom, mergedWidth, mergedHeight];
 
 
 if isWrapper
@@ -273,43 +270,8 @@ else
     h=axes('Position', pos, varargin{:});
 end
 
-if nargout==1
-    vargout=h;
+if nargout == 1;vargout=h; end
 end
-end
-function lowerBounds = makeLowerBounds(inputs, params)
-if isfield(params, 'lowerBounds')
-    lowerBounds = params.lowerBounds;
-else
-    numMuscles = 1;
-    lowerBounds{1} = repmat(0.0, 1, numMuscles); % electromechanical delay
-    lowerBounds{2} = repmat(0.75, 1, numMuscles); % activation time
-    lowerBounds{3} = repmat(0.0, 1, numMuscles); % activation nonlinearity
-    lowerBounds{4} = repmat(0.05, 1, numMuscles); % EMG scale factors
-    lowerBounds{5} = repmat(0.6, 1, numMuscles); % optimal fiber length scale factor
-    lowerBounds{6} = repmat(0.6, 1, numMuscles); % tendon slack length scale factor
-    lowerBounds{7} = repmat(-100, 1, inputs.numberOfExtrapolationWeights + ...
-        inputs.numberOfResidualWeights); % synergy commands
-end
-end
-
-% (struct, struct) -> (6 x numEnabledMuscles matrix of number)
-function upperBounds = makeUpperBounds(inputs, params)
-if isfield(params, 'upperBounds')
-    upperBounds = params.upperBounds;
-else
-    numMuscles = 1;
-    upperBounds{1} = repmat(1.25, 1, numMuscles); % electromechanical delay
-    upperBounds{2} = repmat(3.5, 1, numMuscles); % activation time
-    upperBounds{3} = repmat(0.35, 1, numMuscles); % activation nonlinearity
-    upperBounds{4} = repmat(1, 1, numMuscles); % EMG scale factors
-    upperBounds{5} = repmat(1.4, 1, numMuscles); % optimal fiber length scale factor
-    upperBounds{6} = repmat(1.4, 1, numMuscles); % tendon slack length scale factor
-    upperBounds{7} = repmat(100, 1, inputs.numberOfExtrapolationWeights + ...
-        inputs.numberOfResidualWeights); % synergy commands    
-end
-end
-
 function makeTaskSpecificMomentMatchingPlots(jointMoments, jointMomentsSynx, ...
     experimentalMoments, coordinates, synergyParameters)
 

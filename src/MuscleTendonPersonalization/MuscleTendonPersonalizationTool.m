@@ -38,16 +38,14 @@ if mtpParams.performPrecalibration
     optimizedInitialGuess = PreCalibration(precalInputs);
     mtpInputs = updateMtpInitialGuess(mtpInputs, precalInputs, ...
         optimizedInitialGuess);
-%     reportPreCalibrationResults(optimizedInitialGuess, precalInputs);
 end
 optimizedParams = MuscleTendonPersonalization(mtpInputs, mtpParams);
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
-resultsSynx = calcMtpSynXModeledValues(finalValues, mtpInputs, mtpParams);
-results = calcMtpModeledValues(finalValues, mtpInputs, mtpParams);
-results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
-    end - mtpInputs.numPaddingFrames);
-reportMuscleTendonPersonalizationResults(resultsSynx, results, ...
-    finalValues, mtpInputs, mtpParams)
+if mtpParams.performPrecalibration
+    reportMuscleTendonPersonalizationResults(optimizedParams, ...
+        mtpInputs, precalInputs);
+else
+    reportMuscleTendonPersonalizationResults(optimizedParams, mtpInputs);
+end
 saveMuscleTendonPersonalizationResults(mtpInputs.model, ...
     mtpInputs.coordinates, finalValues, results, resultsDirectory);
 end
