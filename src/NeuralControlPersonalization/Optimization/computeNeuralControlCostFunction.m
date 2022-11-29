@@ -29,7 +29,7 @@ for i = 1:inputs.numPoints
 end
 torqueErrors = muscleJointMoments - inputs.inverseDynamicsMoments;
 
-actTrackErr = activations(:,1:inputs.numMuscles_legs) - inputs.EMGact_all;
+actTrackErr = activations(:,1:inputs.numMuscles_legs) - inputs.emgActivation;
 actTrackErr = inputs.activationTrackingWeight^0.5*(actTrackErr(:)/inputs.activationTrackingAllowableError)/(inputs.numPoints*inputs.numMuscles_legs)^0.5;
 momentErr = inputs.momentTrackingWeight^0.5*(torqueErrors(:)/inputs.momentTrackingAllowableError)/(inputs.numPoints*inputs.numJoints)^0.5;
 actMinErr = reshape(activations(:,inputs.numMuscles_legs+1:end),[inputs.numPoints*(inputs.numMuscles_trunk),1]);
