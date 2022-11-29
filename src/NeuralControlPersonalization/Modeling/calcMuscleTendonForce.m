@@ -1,12 +1,11 @@
-%--------------------------------------------------------------------------
-function [FMT,FMTpassive] = calcMuscleTendonForce(a,lMT,vMT,k,inputs)
+function [muscleTendonForce, passiveMuscleTendonForce] = calcMuscleTendonForce(a,lMT,vMT,k,inputs)
 
-lMtilda = (lMT - inputs.tendonSlackLength(k)) ./ (inputs.optimalFiberLength(k) .* cos(inputs.pennationAngle(k)));
-vMtilda = vMT / inputs.vMmax(k);
+normalizedFiberLength = (lMT - inputs.tendonSlackLength(k)) ./ (inputs.optimalFiberLength(k) .* cos(inputs.pennationAngle(k)));
+normalizedFiberVelocity = muscleTendonVelocity / inputs.vMmax(k);
 
-FMTpassive = (inputs.maxIsometricForce(k) .* cos(inputs.pennationAngle(k))) .* passiveForceLengthCurve(lMtilda);
-FMTactive = (inputs.maxIsometricForce(k) .* cos(inputs.pennationAngle(k))) .* activeForceLengthCurve(lMtilda) .* forceVelocityCurve(vMtilda);
-FMT = a * FMTactive + FMTpassive;
+passiveMuscleTendonForce = (inputs.maxIsometricForce(k) .* cos(inputs.pennationAngle(k))) .* passiveForceLengthCurve(normalizedFiberLength);
+activeMuscleTendonForce = (inputs.maxIsometricForce(k) .* cos(inputs.pennationAngle(k))) .* activeForceLengthCurve(normalizedFiberLength) .* forceVelocityCurve(normalizedFiberVelocity);
+muscleTendonForce = a * activeMuscleTendonForce + passiveMuscleTendonForce;
 
 end
 
