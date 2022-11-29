@@ -9,16 +9,11 @@ clear; clc; close all;
 
 % Data to load
 EMGD_data = load('results_right_NGA_1pt01234_v30_withoffset_newPrecal_5.mat');
-
 act_leftleg = load('activation_Fmax_L_4cases.mat');
-
 etmData_rightleg = load('Patient3_etmData_right_outliersRemoved_Periodic.mat');
-
 etmData_leftleg = load('Patient3_etmData_left_outliersRemoved_Periodic_1trial.mat');
-
 etmData_lefttrunk = load('Patient3_etmData_refitted_left_trunk_1trial.mat');
 etmData_righttrunk = load('Patient3_etmData_refitted_right_trunk_1trial.mat');
-
 TrunkMuscParam = load('TrunkMuscleParams.mat').TrunkMuscParam;
 
 % % Muscle Parameters
@@ -95,7 +90,9 @@ CoordLabels = fixStrings(CoordLabels); inputs.CoordLabels = CoordLabels;
 
 tic
 
-if 1
+fieldnames(inputs)
+
+if 0
     x = computeNeuralControlOptimization(x0, inputs, struct());
 else
     x = x0;
@@ -105,7 +102,7 @@ toc
 
 inputs.savefilename = savefilename;
 inputs.NCPtimePercent = linspace(0, 100, inputs.nPts)';
-% reportNeuralControlPersonalizationResults(x,inputs);
+reportNeuralControlPersonalizationResults(x, inputs, struct());
 
 % keyboard
 end
@@ -185,6 +182,7 @@ for ii = 1
     end
 
 end
+
 
 MA_leftleg{14} = MA_leftleg{7};
 
