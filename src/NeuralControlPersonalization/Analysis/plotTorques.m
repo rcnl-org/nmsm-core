@@ -15,7 +15,7 @@ end
 figure;
 for i = 1:inputs.numJoints
     subplot(4, 4, i)
-    plot(inputs.NCPtimePercent, inputs.IDmomentVals(:, i), 'k-', ...
+    plot(inputs.NCPtimePercent, inputs.inverseDynamicsMoments(:, i), 'k-', ...
         inputs.NCPtimePercent, muscleJointMoments(:, i));
     hold all
     if rem(i, 4) == 1
