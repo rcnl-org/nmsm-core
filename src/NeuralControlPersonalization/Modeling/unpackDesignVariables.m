@@ -1,17 +1,15 @@
 %--------------------------------------------------------------------------
-function [commands,weights] = unpackDesignVariables(x,params)
+function [commands, weights] = unpackDesignVariables(x, inputs)
 
-numNodes = params.numNodes; numSynergies = params.numSynergies; nPts = params.nPts;
 % Unpack synergy quantities from design variable vector
-[commandNodes,weights] = unpackSynergyVariables(x,params);
+[commandNodes, weights] = unpackSynergyVariables(x, inputs);
 
 % Spline fit command nodes to create synegy commands
-percent = linspace(0,100,nPts)';
-percentNodes = linspace(0,100,numNodes)';
+percent = linspace(0, 100, inputs.nPts)';
+percentNodes = linspace(0, 100, inputs.numNodes)';
 
-commands = zeros(nPts,numSynergies);
+commands = zeros(inputs.nPts, inputs.numSynergies);
 
-for i = 1:numSynergies
-    commands(:,i) = spline(percentNodes,commandNodes(:,i),percent);
+for i = 1:inputs.numSynergies
+    commands(:, i) = spline(percentNodes, commandNodes(:, i), percent);
 end
-
