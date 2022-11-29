@@ -1,7 +1,7 @@
 %--------------------------------------------------------------------------
 function [FMT,FMTpassive] = calcMuscleTendonForce(a,lMT,vMT,k,inputs)
 
-lMtilda = (lMT - inputs.lTs(k)) ./ (inputs.lMo(k) .* cos(inputs.alpha(k)));
+lMtilda = (lMT - inputs.lTs(k)) ./ (inputs.optimalFiberLength(k) .* cos(inputs.alpha(k)));
 vMtilda = vMT / inputs.vMmax(k);
 
 FMTpassive = (inputs.FMo(k) .* cos(inputs.alpha(k))) .* passiveForceLengthCurve(lMtilda);
