@@ -25,9 +25,7 @@ plotMuscleActivations(activations, inputs.MuscNames, inputs)
 % plotMuscleForces(FMTVals, inputs.MuscNames,inputs) % can be added
 
 % Plot joint torque results
-
-
-plotTorques(muscleJointMoments, inputs.CoordLabels, inputs)
+plotTorques(activations, inputs.CoordLabels, inputs)
 
 % plot synergy variables
 [C, W] = unpackDesignVariables(x, inputs, params);
