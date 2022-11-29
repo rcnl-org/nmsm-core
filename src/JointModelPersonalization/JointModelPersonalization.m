@@ -34,7 +34,7 @@ verifyParams(params);
 outputModel = Model(inputs.model);
 for i=1:length(inputs.tasks)
     functions = makeFunctions(inputs.tasks{i}.parameters);
-    params.markerNames = getMarkersOnJoints(outputModel, ...
+    params.markerNames = getMarkersOnumJoints(outputModel, ...
         inputs.tasks{i}.parameters);
     taskParams = mergeStructs(inputs.tasks{i}, params);
     optimizedValues = computeKinematicCalibration(inputs.model, ...
@@ -104,7 +104,7 @@ for i=1:length(parameters)
 end
 end
 
-function markerNames = getMarkersOnJoints(model, parameters)
+function markerNames = getMarkersOnumJoints(model, parameters)
 import org.opensim.modeling.*
 markerNames = {};
 jointNames = {};
