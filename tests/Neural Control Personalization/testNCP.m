@@ -57,7 +57,7 @@ end
 muscleTendonLength = MTL_all(long2short_idx, :);
 muscleTendonVelocity = VMT_all(long2short_idx, :);
 inverseDynamicsMoments = ID_all(long2short_idx, :);
-momentArms = MACompiler(MA_all, inputs); clear 'MA_all';
+momentArms = MACompiler(MA_all, inputs, long2short_idx); clear 'MA_all';
 
 if exist('x0Synergies')
     x0 = x0Synergies;
@@ -107,7 +107,7 @@ reportNeuralControlPersonalizationResults(x, inputs, struct());
 end
 
 %--------------------------------------------------------------------------
-function MA = MACompiler(MomentArms, inputs)
+function MA = MACompiler(MomentArms, inputs, long2short_idx)
 
 MA = zeros(inputs.numPoints, inputs.numMuscles, inputs.numJoints);
 
