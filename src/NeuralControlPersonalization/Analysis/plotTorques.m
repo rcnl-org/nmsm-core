@@ -1,4 +1,4 @@
-function plotTorques(jointNames, inputs, params)
+function plotTorques(activations, jointNames, inputs, params)
 muscleJointMoments = zeros(inputs.numPoints, inputs.numJoints);
 % net moment
 for i = 1:inputs.numPoints
