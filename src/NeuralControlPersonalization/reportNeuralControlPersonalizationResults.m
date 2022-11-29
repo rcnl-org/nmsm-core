@@ -1,27 +1,12 @@
-% function reportNeuralControlPersonalizationResults(settingsFileName)
-% settingsTree = xml2struct(settingsFileName);
-% [inputs, params, resultsDirectory] = ...
-%     parseNeuralControlPersonalizationSettingsTree(settingsTree);
-% optimizedParams = NeuralControlPersonalization(inputs, params);
-% %% results is a structure, report not implemented yet
-% results = calcFinalMuscleActivations(optimizedParams, inputs);
-% results = calcFinalModelMoments(results, inputs);
-% save("results.mat", "results", '-mat')
-% % reportNeuralControlPersonalization(inputs.model, results)
-% saveNeuralControlPersonalizationResults(inputs.model, ...
-%     inputs.coordinates, results, resultsDirectory);
+
 
 function reportNeuralControlPersonalizationResults(x, inputs, params)
 
-CoordLabels = inputs.CoordLabels;
-
 % Save solution
-savefilename = inputs.savefilename;
-
 if not(isfolder(fullfile(pwd, "result")))
     mkdir(fullfile(pwd, "result"))
 end
-save(fullfile(pwd, 'result', savefilename + ".mat"), 'x');
+save(fullfile(pwd, 'result', inputs.savefilename + ".mat"), 'x');
 
 % Reconstruct activation values
 aVals = calcActivationsFromSynergyDesignVariables(x, inputs, params);
@@ -54,19 +39,11 @@ for i = 1:inputs.nPts
 
 end
 
-plotTorques(muscleJointMoments, CoordLabels, inputs)
+plotTorques(muscleJointMoments, inputs.CoordLabels, inputs)
 
 % plot synergy variables
 [C, W] = unpackDesignVariables(x, inputs, params);
 plotSynergies(C, W, inputs);
 
 end
-
-%--------------------------------------------------------------------------
-
-
-%--------------------------------------------------------------------------
-
-
-%--------------------------------------------------------------------------
 
