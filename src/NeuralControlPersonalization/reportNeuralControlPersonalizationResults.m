@@ -21,11 +21,11 @@ end
 fprintf('Maximum estimated muscle activation is %f\n', max(max(activations)));
 
 % Plot activations and musce-ltendon forces
-plotMuscleActivations(activations, inputs.MuscNames, inputs)
-% plotMuscleForces(FMTVals, inputs.MuscNames,inputs) % can be added
+plotMuscleActivations(activations, inputs.muscleNames, inputs)
+% plotMuscleForces(FMTVals, inputs.muscleNames,inputs) % can be added
 
 % Plot joint torque results
-plotTorques(activations, inputs.CoordLabels, inputs)
+plotTorques(activations, inputs.coordinateNames, inputs)
 
 % plot synergy variables
 [C, W] = unpackDesignVariables(x, inputs, params);

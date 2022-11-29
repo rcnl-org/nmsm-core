@@ -26,7 +26,7 @@ for i = 1:6
     set(gca, 'XTick', 1:inputs.numMuscles / 2);
 
     if i == numSynergies / 2
-        set(gca, 'XTickLabel', inputs.MuscNames);
+        set(gca, 'XTickLabel', inputs.muscleNames);
     else
         set(gca, 'XTickLabel', []);
     end
@@ -54,7 +54,7 @@ for i = 7:12
     set(gca, 'XTick', 1:inputs.numMuscles / 2);
 
     if i == 12
-        set(gca, 'XTickLabel', inputs.MuscNames);
+        set(gca, 'XTickLabel', inputs.muscleNames);
     else
         set(gca, 'XTickLabel', []);
     end
