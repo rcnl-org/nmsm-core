@@ -38,12 +38,11 @@ inputs.long2short_idx = 21:121;
 inputs.w_MTrack = 1;
 inputs.w_ActTrack = 1;
 inputs.w_ActMin = 1;
-inputs.momentTrackAllowErr = 5; % 5 Nm is the allowable error for moment tracking error
-inputs.actTrackAllowErr = 0.01; % 0.01 is the allowable error for activation tracking error
-inputs.actMinAllowErr = 0.05; % 0.05 is the allowable error for activation minimization
+inputs.momentTrackingAllowableError = 5; % 5 Nm is the allowable error for moment tracking error
+inputs.activationTrackingAllowableError = 0.01; % 0.01 is the allowable error for activation tracking error
+inputs.activationMinimizationAllowableError = 0.05; % 0.05 is the allowable error for activation minimization
 
-inputs.actTr_allow_err = 0.05;
-savefilename = "Syn" + num2str(inputs.numSynergies) + "_" + num2str(inputs.w_MTrack) + "_" + num2str(inputs.w_ActTrack) + "_" + num2str(inputs.w_ActMin) + "_" + num2str(inputs.momentTrackAllowErr) + "_" + num2str(inputs.actTrackAllowErr) + "_" + num2str(inputs.actMinAllowErr);
+savefilename = "Syn" + num2str(inputs.numSynergies) + "_" + num2str(inputs.w_MTrack) + "_" + num2str(inputs.w_ActTrack) + "_" + num2str(inputs.w_ActMin) + "_" + num2str(inputs.momentTrackingAllowableError) + "_" + num2str(inputs.activationTrackingAllowableError) + "_" + num2str(inputs.activationMinimizationAllowableError);
 
 try
     initial_soln = load(savefilename);
@@ -57,7 +56,7 @@ end
 
 muscleTendonLength = MTL_all(inputs.long2short_idx, :);
 muscleTendonVelocity = VMT_all(inputs.long2short_idx, :);
-IDmomentVals = ID_all(inputs.long2short_idx, :);
+inverseDynamicsMoments = ID_all(inputs.long2short_idx, :);
 rVals = MACompiler(MA_all, inputs); clear 'MA_all';
 
 if exist('x0Synergies')
@@ -84,7 +83,7 @@ fprintf('Running Neural Control Personalization optimization . . .\n')
 inputs.muscleTendonLength = muscleTendonLength;
 inputs.muscleTendonVelocity = muscleTendonVelocity;
 inputs.rVals = rVals;
-inputs.IDmomentVals = IDmomentVals;
+inputs.inverseDynamicsMoments = inverseDynamicsMoments;
 muscleNames = fixStrings(muscleNames); inputs.muscleNames = muscleNames;
 coordinateNames = fixStrings(coordinateNames); inputs.coordinateNames = coordinateNames;
 
