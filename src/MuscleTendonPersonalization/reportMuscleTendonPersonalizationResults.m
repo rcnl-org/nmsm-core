@@ -33,24 +33,12 @@ function reportMuscleTendonPersonalizationResults(optimizedParams, ...
     mtpInputs, precalInputs)
 if nargin < 3; precalInputs = []; end
 
-[finalValues, results, resultsSynx] = getValuesToReport(mtpInputs, ...
-    precalInputs, optimizedParams);
+[finalValues, results, resultsSynx, resultsSynxNoResiduals] = ...
+    getValuesToReport(mtpInputs, precalInputs, optimizedParams);
 if ~isempty(precalInputs)
-tempValues.optimalFiberLengthScaleFactors = ...
-    mtpInputs.optimalFiberLength ./ precalInputs.optimalFiberLength;
-tempValues.tendonSlackLengthScaleFactors = ...
-    mtpInputs.tendonSlackLength ./ precalInputs.tendonSlackLength;
-precalInputs.maxIsometricForce = mtpInputs.maxIsometricForce;
-precalInputs.optimizeIsometricMaxForce = 0;
-modeledValues = calcPreCalibrationModeledValues(tempValues, precalInputs);
-plotPassiveForceData(permute(modeledValues.passiveForce, [3 1 2]), ...
-    precalInputs);
-if precalInputs.passiveMomentDataExists
-plotPassiveMomentData(permute(modeledValues.passiveModelMoments, [3 1 2]), ...
-    permute(precalInputs.passiveData.experimentalMoments, [3 1 2]))
+    plotPreCalibrationResults(precalInputs, mtpInputs)
 end
 
-end
 printJointMomentMatchingError(resultsSynx.muscleJointMoments, ...
     mtpInputs.experimentalMoments);
 makeExcitationAndActivationPlots(results, resultsSynx, mtpInputs, ...
@@ -58,7 +46,7 @@ makeExcitationAndActivationPlots(results, resultsSynx, mtpInputs, ...
 makeModelParameterPlots(finalValues, mtpInputs, ...
     mtpInputs.synergyExtrapolation)
 makeTaskSpecificMomentMatchingPlots(...
-    permute(results.muscleJointMoments, [3 1 2]), ...
+    permute(resultsSynxNoResiduals.muscleJointMoments, [3 1 2]), ...
     permute(resultsSynx.muscleJointMoments, [3 1 2]), ...
     permute(mtpInputs.experimentalMoments, [3 1 2]), ...
     mtpInputs.coordinates, mtpInputs.synergyExtrapolation)
@@ -66,11 +54,13 @@ makeTaskSpecificNormalizedFiberLengthsPlots( ...
     permute(resultsSynx.normalizedFiberLength, [3 1 2]), ...
     mtpInputs, mtpInputs.synergyExtrapolation)
 end
-function [finalValues, results, resultsSynx] = getValuesToReport(mtpInputs, ...
-    precalInputs, optimizedParams)
+function [finalValues, results, resultsSynx, resultsSynxNoResiduals] = ...
+    getValuesToReport(mtpInputs, precalInputs, optimizedParams)
 
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
 resultsSynx = calcMtpSynXModeledValues(finalValues, mtpInputs, struct());
+finalValues.synergyWeights(mtpInputs.numberOfExtrapolationWeights + 1 : end) = 0;
+resultsSynxNoResiduals = calcMtpSynXModeledValues(finalValues, mtpInputs, struct());
 results = calcMtpModeledValues(finalValues, mtpInputs, struct());
 results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
     end - mtpInputs.numPaddingFrames);
@@ -89,7 +79,24 @@ finalValues.tendonSlackLengthScaleFactors = ...
     finalTendonSlackLength ./ precalInputs.tendonSlackLength;
 end
 end
-function plotPassiveMomentData(modeledValue, experimentalValue)
+function plotPreCalibrationResults(precalInputs, mtpInputs)
+
+tempValues.optimalFiberLengthScaleFactors = ...
+    mtpInputs.optimalFiberLength ./ precalInputs.optimalFiberLength;
+tempValues.tendonSlackLengthScaleFactors = ...
+    mtpInputs.tendonSlackLength ./ precalInputs.tendonSlackLength;
+precalInputs.maxIsometricForce = mtpInputs.maxIsometricForce;
+precalInputs.optimizeIsometricMaxForce = 0;
+modeledValues = calcPreCalibrationModeledValues(tempValues, precalInputs);
+plotPassiveForceData(permute(modeledValues.passiveForce, [3 1 2]), ...
+    precalInputs);
+if precalInputs.passiveMomentDataExists
+plotPassiveMomentData(permute(modeledValues.passiveModelMoments, [3 1 2]), ...
+    permute(precalInputs.passiveData.experimentalMoments, [3 1 2]), ...
+    precalInputs.passivePrefixes)
+end
+end
+function plotPassiveMomentData(modeledValue, experimentalValue, titleName)
 
 columnsWithAllZeros = all(experimentalValue == 0, 1);
 experimentalMoments = experimentalValue(repmat(~columnsWithAllZeros, ...
@@ -97,25 +104,48 @@ experimentalMoments = experimentalValue(repmat(~columnsWithAllZeros, ...
 passiveModelMoments = modeledValue(repmat(~columnsWithAllZeros, ...
     size(experimentalValue, 1), 1, 1));
 
-figure; plot(passiveModelMoments, 'r', 'LineWidth', 1.25); hold on; 
-plot(experimentalMoments, 'k', 'LineWidth', 1.75); 
-ylabel('Passive Moments [Nm]'); xlabel('Time Points'); 
-legend('Model','Experimental')
+experimentalMoments = ...
+    reshape(experimentalMoments, size(modeledValue, 1), []);
+passiveModelMoments = ...
+    reshape(passiveModelMoments, size(modeledValue, 1), []);
+figure('name', 'PreCalibration Passive Moment Matching'); 
+nplot = ceil(sqrt(size(passiveModelMoments, 2)));
+for i = 1 : size(passiveModelMoments, 2)
+subplot(nplot, nplot, i)
+plot(passiveModelMoments(:, i), 'r', 'LineWidth', 1.25); hold on; 
+plot(experimentalMoments(:, i), 'k', 'LineWidth', 1.75); 
+if i == 1; ylabel('Passive Moments [Nm]'); 
+elseif i == size(passiveModelMoments, 2); legend('Model','Experimental')
+end
+axis([1 size(modeledValue, 1) min([experimentalMoments; ...
+    passiveModelMoments], [], 'all') max([experimentalMoments; ...
+    passiveModelMoments], [],'all')])
+xlabel('Time Points'); 
+title(strrep(titleName{i}, '_', ' '))
+end
 end
 function plotPassiveForceData(modeledValue, experimentalData)
 
-figure; nplots = ceil(sqrt(experimentalData.numMuscles));
-for i = 1 : experimentalData.numMuscles
-    subplot(nplots,nplots,i)
-    hold on
-    plot(modeledValue(:,:,i),'b')
-    axis([1 size(modeledValue, 1) min(modeledValue,[],'all') max(modeledValue,[],'all')])
-    title(strrep(experimentalData.muscleNames{i}, '_', ' '))
-    if i > experimentalData.numMuscles - nplots; xlabel('Time Points'); 
-    else xticklabels(''); end
-    if ismember(i, 1 : nplots : experimentalData.numMuscles)
-        ylabel({'Passive','Force [N]'});
-    else yticklabels(''); end
+meanModeledValue = squeeze(mean(modeledValue, 2));
+stdModeledValue = squeeze(std(modeledValue, [], 2));
+figure('name', 'PreCalibration Passive Forces'); 
+nplots = ceil(sqrt(experimentalData.numMuscles));
+
+t = 1 : size(meanModeledValue, 1);
+for i = 1 : size(meanModeledValue, 2)
+subplot(nplots, nplots, i);
+plot(meanModeledValue(:, i), 'LineWidth', 2); hold on
+fill([t'; flipud(t')], ...
+    [meanModeledValue(:,i) - stdModeledValue(:,i); ...
+    flipud(meanModeledValue(:, i) + stdModeledValue(:, i))], ...
+    'b', 'linestyle', 'None', 'FaceAlpha', 0.5);
+axis([1 size(modeledValue, 1) min(modeledValue,[],'all') max(modeledValue,[],'all')])
+title(strrep(experimentalData.muscleNames{i}, '_', ' '))
+if i > experimentalData.numMuscles - nplots; xlabel('Time Points'); 
+else xticklabels(''); end
+if ismember(i, 1 : nplots : experimentalData.numMuscles)
+    ylabel({'Passive','Force [N]'});
+else yticklabels(''); end
 end
 end
 function printJointMomentMatchingError(muscleJointMoments, experimentalMoments)
@@ -158,22 +188,46 @@ function plotMuscleExcitationsAndActivations(muscleExcitations, ...
     muscleLabels)
 
 meanMuscleExcitation = permute(mean(muscleExcitations, 1), [3 2 1]);
+stdMuscleExcitation = permute(std(muscleExcitations, [], 1), [3 2 1]);
 meanMuscleExcitationSynx = permute(mean(muscleExcitationsSynx, 1), [3 2 1]);
+stdMuscleExcitationSynx = permute(std(muscleExcitationsSynx, [], 1), [3 2 1]);
 meanMuscleActivation = permute(mean(muscleActivations, 1), [3 2 1]);
+stdMuscleActivation = permute(std(muscleActivations, [], 1), [3 2 1]);
 meanMuscleActivationSynx = permute(mean(muscleActivationsSynx, 1), [3 2 1]);
+stdMuscleActivationSynx = permute(std(muscleActivationsSynx, [], 1), [3 2 1]);
+
+t = 1 : size(meanMuscleExcitation, 1);
 nplot = ceil(sqrt(numel(muscleLabels)));
 for j = 1 : numel(muscleLabels)
     subplot(nplot,nplot,j);
-    plot(meanMuscleExcitation(:,j),'b-','LineWidth',2);
+    plot(meanMuscleExcitation(:, j), 'b-', 'LineWidth', 2); hold on
+    fill([t'; flipud(t')], ...
+    [meanMuscleExcitation(:, j) - stdMuscleExcitation(:, j); ...
+    flipud(meanMuscleExcitation(:, j) + stdMuscleExcitation(:, j))], ...
+    'b', 'linestyle', 'None', 'FaceAlpha', 0.5);
     hold on
-    plot(meanMuscleExcitationSynx(:,j),'b--','LineWidth',1);
-    plot(meanMuscleActivation(:,j),'r-','LineWidth',2);
-    plot(meanMuscleActivationSynx(:,j),'r--','LineWidth',1);
+    plot(meanMuscleExcitationSynx(:, j), 'b--', 'LineWidth', 2); hold on
+    fill([t'; flipud(t')], ...
+    [meanMuscleExcitationSynx(:, j) - stdMuscleExcitationSynx(:, j); ...
+    flipud(meanMuscleExcitationSynx(:, j) + stdMuscleExcitationSynx(:, j))], ...
+    'b', 'linestyle', 'None', 'FaceAlpha', 0.3);
+    plot(meanMuscleActivation(:, j), 'r-', 'LineWidth', 2); hold on
+    fill([t'; flipud(t')], ...
+    [meanMuscleActivation(:, j) - stdMuscleActivation(:, j); ...
+    flipud(meanMuscleActivation(:, j) + stdMuscleActivation(:, j))], ...
+    'r', 'linestyle', 'None', 'FaceAlpha', 0.5);
+    plot(meanMuscleActivationSynx(:, j), 'r--', 'LineWidth', 2); hold on
+    fill([t'; flipud(t')], ...
+    [meanMuscleActivationSynx(:, j) - stdMuscleActivationSynx(:, j); ...
+    flipud(meanMuscleActivationSynx(:, j) + stdMuscleActivationSynx(:, j))], ...
+    'r', 'linestyle', 'None', 'FaceAlpha', 0.3);
     axis([1 size(meanMuscleExcitation, 1) 0 1])
     title(muscleLabels{j});
     if j == 1
-        legend ('Excitation(without residual)','Excitation(with residual)',...
-            'Activation(without residual)','Activation(with residual)');
+        legend ('Excitation(without residual)', '', ...
+            'Excitation(with residual)', '', ...
+            'Activation(without residual)', '', ...
+            'Activation(with residual)', '');
     end
 end
 set(gca, 'FontSize', 12)
@@ -184,7 +238,8 @@ muscleLabels = getSynxMuscleNames(experimentalData.muscleNames, ...
     synergyParameters.missingEmgChannelPairs);
 
 In_width = 0.145; % witdth of each subplot
-figure('units', 'normalized', 'outerposition', [0 0 1 1]);
+figure('name', 'Model Parameters', 'units', 'normalized', ...
+    'outerposition', [0 0 1 1]);
 for subplotElement = 1 : 6
     subplotTight(1, 6, subplotElement, [0.04, 0.001]);
     switch subplotElement 
@@ -337,36 +392,27 @@ end
 function plotNormalizedFiberLength(normalizedFiberLengths, ...
     muscleLabels)
 
-nplot = ceil(sqrt(numel(muscleLabels)));
-subplot(nplot, nplot + 2, [1 : (nplot + 2) : (nplot + 2) * ...
-    (nplot - 1) + 1, 2 : (nplot + 2) : (nplot + 2) * (nplot - 1) + 2])
-boxplot(reshape(normalizedFiberLengths, [], numel(muscleLabels)), ...
-    'orientation', 'horizontal','Whisker', 2); hold on
-set(gca, 'YTick', 1 : numel(muscleLabels), 'yTickLabel', muscleLabels, ...
- 'XTick', 0.1 : 0.4 : 1.4, 'xTickLabel', {'0.1', '0.5', '0.9', '1.3'});
-set(gca, 'Fontsize', 11);
-title('Normalized Fiber Length'); 
-ylim([0 numel(muscleLabels) + 1]); 
-xlim([0 1.4]);
-line([1 1], [0 numel(muscleLabels) + 1], 'Color','red','LineStyle','--');
-xtickangle(45)
-for j = 1 : numel(muscleLabels)
-if mod(j, nplot)
-    subplot(nplot, nplot + 2, (nplot + 2) * floor(j / nplot) + ...
-        mod(j, nplot) + 2)
-else
-    subplot(nplot, nplot + 2, (nplot + 2) * (floor(j / nplot) - ...
-        1) + nplot + 2)
-end
-plot(0 : 100, squeeze(mean(normalizedFiberLengths(:, :, j), 2)), ...
-    'b-', 'LineWidth', 2); hold on; 
-plot([0 100], [1 1], 'r--', 'LineWidth', 1);
-axis([0 100 0 1.5]); 
-title([muscleLabels{j}]);
-if j > numel(muscleLabels) - nplot; xlabel('Time Points'); 
-else xticklabels(''); end
-if ~ismember(j, 1 : nplot : numel(muscleLabels)); yticklabels(''); end
-set(gca, 'FontSize', 10); 
+nplots = ceil(sqrt(numel(muscleLabels)));
+meanNormalizedFiberLengths = squeeze(mean(normalizedFiberLengths, 2));
+stdNormalizedFiberLengths = squeeze(std(normalizedFiberLengths, [], 2));
+t = 1 : size(normalizedFiberLengths,1);
+for i = 1 : numel(muscleLabels)
+    subplot(nplots,nplots,i)
+    hold on
+    plot(meanNormalizedFiberLengths(:, i), 'b', 'LineWidth', 2); hold on
+    fill([t'; flipud(t')], ...
+        [meanNormalizedFiberLengths(:, i) - stdNormalizedFiberLengths(:, i); ...
+        flipud(meanNormalizedFiberLengths(:, i) + stdNormalizedFiberLengths(:, i))], ...
+        'b', 'linestyle', 'None', 'FaceAlpha', 0.3);
+    plot(0.7*ones(1, size(normalizedFiberLengths, 1)),'r--','LineWidth',2)
+    plot(1*ones(1, size(normalizedFiberLengths, 1)),'r--','LineWidth',2)
+    title(muscleLabels{i})
+    axis([1 size(normalizedFiberLengths, 1) 0 1.5])
+    if i > numel(muscleLabels) - nplots; xlabel('Time Points'); 
+    else xticklabels(''); end
+    if ismember(i, 1 : nplots : numel(muscleLabels))
+        ylabel({'Normalized','Fiber Length'});
+    else yticklabels(''); end
 end
 end
 function muscleLabels = getSynxMuscleNames(muscleNames, ...
