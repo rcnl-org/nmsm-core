@@ -1,6 +1,7 @@
 %% PreCalibration Cost Function Testing
 
 load('preCalibrationCostFunctionTesting.mat')
+experimentalData.passiveMomentDataExists = 1;
 
 values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
 modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
@@ -26,6 +27,11 @@ expectedCost = load('expectedCost.mat').expectedCost;
 assertWithinRange(sum(outputCost.^2), sum(expectedCost.^2), 1e-14)
 
 %% Test individual cost function terms
+load('preCalibrationCostFunctionTesting.mat')
+experimentalData.passiveMomentDataExists = 1;
+
+values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
+modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
 
 expectedIndividualCosts = load('expectedIndividualCosts.mat').cost;
 expectedIndividualCosts.passiveMomentMatching = ...
