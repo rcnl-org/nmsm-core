@@ -46,6 +46,10 @@ if mtpParams.performPrecalibration
 else
     reportMuscleTendonPersonalizationResults(optimizedParams, mtpInputs);
 end
+finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
+results = calcMtpSynXModeledValues(finalValues, mtpInputs, mtpParams);
+results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
+    end - mtpInputs.numPaddingFrames);
 saveMuscleTendonPersonalizationResults(mtpInputs.model, ...
     mtpInputs.coordinates, finalValues, results, resultsDirectory);
 end

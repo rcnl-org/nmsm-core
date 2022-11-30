@@ -39,6 +39,7 @@ function inputs = getInputs(tree)
 import org.opensim.modeling.Storage
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 passiveInputDirectory = getFieldByName(tree, 'passive_data_input_directory').Text;
+inputs.passiveMomentDataExists = 0;
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(~isempty(inputDirectory))
     try
@@ -51,25 +52,37 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
+if (~isempty(passiveInputDirectory))
+    if isfolder(passiveInputDirectory)
+        inputs.passivePrefixes = ...
+            getPrefixes(tree, passiveInputDirectory, ...
+            'passive_trial_prefixes');
+        passiveJointMomentFileNames = ...
+            findFileListFromPrefixList(fullfile(...
+            passiveInputDirectory, "IDData"), inputs.passivePrefixes);
+        inputs.coordinates = ...
+            getStorageColumnNames(Storage(passiveJointMomentFileNames(1)));
+        inputs.passiveData.experimentalMoments = ...
+            parseMtpStandard(passiveJointMomentFileNames);
+        passiveDirectories = ...
+            findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
+            passiveInputDirectory, "MAData"), passivePrefixes);
+        inputs.passiveData.muscleTendonLength = ...
+            parseFileFromDirectories(passiveDirectories, "Length.sto");
+        inputs.passiveData.momentArms = ...
+            parseMomentArms(passiveDirectories, inputs.model);
+        inputs.passiveMomentDataExists = 1;
+    end
+end
 prefixes = getPrefixes(tree, inputDirectory, 'trial_prefixes');
-passivePrefixes = getPrefixes(tree, passiveInputDirectory, 'passive_trial_prefixes');
-passiveJointMomentFileNames = findFileListFromPrefixList(fullfile( ...
-    passiveInputDirectory, "IDData"), passivePrefixes);
-inputs.coordinates = getStorageColumnNames(Storage( ...
-    passiveJointMomentFileNames(1)));
-inputs.passiveData.experimentalMoments = parseMtpStandard(passiveJointMomentFileNames);
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
     inputDirectory, "MAData"), prefixes);
 inputs.gaitData.muscleTendonLength = parseFileFromDirectories(directories, ...
     "Length.sto");
 inputs.gaitData.momentArms = parseMomentArms(directories, inputs.model);
-passiveDirectories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    passiveInputDirectory, "MAData"), passivePrefixes);
-inputs.passiveData.muscleTendonLength = parseFileFromDirectories(passiveDirectories, ...
-    "Length.sto");
-inputs.passiveData.momentArms = parseMomentArms(passiveDirectories, inputs.model);
-inputs.numPaddingFrames = (size(inputs.passiveData.experimentalMoments, 3) - 101) / 2;
-inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
+inputs.numPaddingFrames = (size(inputs.gaitData.muscleTendonLength, 3) - 101) / 2;
+inputs = reduceDataSize(inputs, inputs.numPaddingFrames, ...
+    inputs.passiveMomentDataExists);
 inputs.tasks = getTask(tree);
 optimizeIsometricMaxForce = getFieldByName(tree, ...
     'optimize_isometric_max_force').Text;
@@ -158,16 +171,23 @@ inputs.errorCenters(end+1) = str2double(errorCenter.Text);
 end
 end
 
-function inputs = reduceDataSize(inputs, numPaddingFrames)
-inputs.passiveData.experimentalMoments = inputs.passiveData.experimentalMoments(:, :, ...
-    numPaddingFrames + 1:end-numPaddingFrames);
+function inputs = reduceDataSize(inputs, numPaddingFrames, ...
+    passiveMomentDataExists)
+
+if passiveMomentDataExists
+        inputs.passiveData.experimentalMoments = ...
+            inputs.passiveData.experimentalMoments(:, :, ...
+            numPaddingFrames + 1:end-numPaddingFrames);
+        inputs.passiveData.muscleTendonLength = ...
+            inputs.passiveData.muscleTendonLength(:, :, ...
+            numPaddingFrames + 1:end-numPaddingFrames);
+        inputs.passiveData.momentArms = ...
+            inputs.passiveData.momentArms(:, :, :, ...
+            numPaddingFrames + 1:end-numPaddingFrames);
+end
 inputs.gaitData.muscleTendonLength = inputs.gaitData.muscleTendonLength(:, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
 inputs.gaitData.momentArms = inputs.gaitData.momentArms(:, :, :, ...
-    numPaddingFrames + 1:end-numPaddingFrames);
-inputs.passiveData.muscleTendonLength = inputs.passiveData.muscleTendonLength(:, :, ...
-    numPaddingFrames + 1:end-numPaddingFrames);
-inputs.passiveData.momentArms = inputs.passiveData.momentArms(:, :, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
 end
 
@@ -239,6 +259,7 @@ inputs.optimalFiberLength = [];
 inputs.tendonSlackLength = [];
 inputs.pennationAngle = [];
 inputs.maxIsometricForce = [];
+inputs.muscleNames = '';
 model = Model(inputs.model);
 for i = 0:model.getForceSet().getMuscles().getSize()-1
     if model.getForceSet().getMuscles().get(i).get_appliesForce()
@@ -251,6 +272,8 @@ for i = 0:model.getForceSet().getMuscles().getSize()-1
             getPennationAngleAtOptimalFiberLength();
         inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
             getMuscles().get(i).getMaxIsometricForce();
+        inputs.muscleNames{end+1} = char(model.getForceSet(). ...
+            getMuscles().get(i).getName);
     end
 end
 end
