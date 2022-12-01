@@ -135,39 +135,50 @@ output.maximumMuscleStressIsIncluded = strcmp(task.(items).Text, 'true');
 end
 
 function inputs = getCostFunctionTerms(tree, inputs)
-inputs.costWeight = [];
-inputs.errorCenters = [];
-inputs.maxAllowableErrors = [];
 individualMusclesTree = getFieldByNameOrError(tree, "IndividualMuscles");
 pairedMusclesTree = getFieldByNameOrError(tree, "PairedMuscles");
 individualMuscleTerms = ["PassiveJointMoments", ...
     "OptimalMuscleFiberLength", "TendonSlackLength", ...
     "MinimumNormalizedMuscleFiberLength", ...
     "MaximumNormalizedMuscleFiberLength", "MaximumMuscleStress", ...
-    "PassiveMuscleForces", "MaxIsometricMuscleForce"];
+    "PassiveMuscleForces"];
+individualMuscleCostTermNames = ["passiveMomentTracking", ...
+    "optimalFiberLengthScaleFactorDeviation", ...
+    "tendonSlackLengthScaleFactorDeviation", ...
+    "minimumNormalizedFiberLengthDeviation", ...
+    "maximumNormalizedFiberLengthDeviation", ...
+    "maximumMuscleStressPenalty", "maximumPassiveForcePenalty"];
 for i=1:length(individualMuscleTerms)
     inputs = addCostFunctionTerms(getFieldByNameOrError(...
-        individualMusclesTree, individualMuscleTerms(i)), inputs);
+        individualMusclesTree, individualMuscleTerms(i)), ...
+        individualMuscleCostTermNames(i), inputs);
 end
 pairedMuscleTerms = ["NormalizedMuscleFiberLength", ...
     "MaximumNormalizedMuscleFiberLength"];
+pairedMuscleCostTermNames = ["normalizedFiberLengthMeanSimilarity", ...
+    "maximumNormalizedFiberLengthSimilarity"];
 for i=1:length(pairedMuscleTerms)
     inputs = addCostFunctionTerms(getFieldByNameOrError(pairedMusclesTree, ...
-        pairedMuscleTerms(i)), inputs);
+        pairedMuscleTerms(i)), pairedMuscleCostTermNames(i), inputs);
 end
 end
 
-function inputs = addCostFunctionTerms(tree, inputs)
+function inputs = addCostFunctionTerms(tree, costTermName, inputs)
 enabled = getFieldByNameOrError(tree, "is_enabled").Text;
-if(enabled == "true"); inputs.costWeight(end+1) = 1;
-else; inputs.costWeight(end+1) = 0; end
+if(enabled == "true")
+    eval(strcat("inputs.params.", costTermName, "CostWeight = 1;"));
+else
+    eval(strcat("inputs.params.", costTermName, "CostWeight = 0;"));
+end
 maxError = getFieldByNameOrError(tree, "max_allowable_error").Text;
-inputs.maxAllowableErrors(end+1) = str2double(maxError);
+eval(strcat("inputs.params.", costTermName, ...
+    "MaximumAllowableError = ", maxError, ';'));
 errorCenter = getFieldByName(tree, "error_center");
 if ~isstruct(errorCenter)
-    inputs.errorCenters(end+1) = 0;
+    eval(strcat("inputs.params.", costTermName, "ErrorCenter = 0;"));
 else
-inputs.errorCenters(end+1) = str2double(errorCenter.Text);
+    eval(strcat("inputs.params.", costTermName, "ErrorCenter = ", ...
+        errorCenter.Text, ';'));  
 end
 end
 
