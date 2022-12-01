@@ -184,6 +184,7 @@ end
 % (struct, struct) -> (struct)
 % prepare optimizer parameters for the given task
 function taskParams = makeTaskParams(taskInputs, params)
+taskParams = params;
 if(~isfield(params, 'maxIterations'))
     taskParams.maxIterations = 2e3;
 end
