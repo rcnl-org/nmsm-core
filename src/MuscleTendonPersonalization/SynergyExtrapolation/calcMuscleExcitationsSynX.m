@@ -58,7 +58,7 @@ function [muscleExcitations, muscleExcitationsNoTDelay] = ...
     calcMuscleExcitationsSynX(experimentalData, timeDelay, ...
     emgScalingFactor, synergyExtrapolationVariables, params) 
 
-experimentalData.emgDataExpanded = round(experimentalData.emgDataExpanded,4);
+experimentalData.emgDataExpanded = round(experimentalData.emgDataExpanded, 4);
 
 % Reconstruct unmeasured muscle excitations using SynX process
 unmeasuredEmgSignals = getUnmeasuredMuscleExcitations(params, ...
@@ -142,12 +142,12 @@ elseif strcmp(params.matrixFactorizationMethod,'NMF')
             params.numberOfSynergies, :, i);
     end
 end
-Excitations_Residual_cat = [];
+concatResidualExcitations = [];
 for i = 1:size(params.residualCategorizationOfTrials, 2)
-    Excitations_Residual_cat = [Excitations_Residual_cat; 
+    concatResidualExcitations = [concatResidualExcitations; 
         residualExcitations{i}];
 end
-residualExcitations = Excitations_Residual_cat;
+residualExcitations = concatResidualExcitations;
 end
 function emgData = updateEmgSignals(missingEmgChannelPairs, emgData, ...
     unmeasuredEmgSignals)
@@ -172,7 +172,7 @@ for j = 1 : size(currentEmgChannelPairs{i}, 2)
 end
 end
 residualExcitationsExpanded = reshape(residualExcitationsExpanded, ...
-    size(emgData, 3), size(emgData, 1), size(emgData,2));
+    size(emgData, 3), size(emgData, 1), size(emgData, 2));
 emgData = emgData + permute(residualExcitationsExpanded, [2 3 1]);
 end
 function emgSplines = createEmgSignals(emgData, emgTime, timeDelay)
