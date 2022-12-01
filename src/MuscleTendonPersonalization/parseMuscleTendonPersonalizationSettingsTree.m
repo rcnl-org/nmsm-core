@@ -320,7 +320,8 @@ groupToName = getMuscleNameByGroupStruct(model, ...
 for i = 1 : length(fieldnames(groupToName))
     musclesInGroup = groupToName.(inputs.emgDataColumnNames(i));
     for j = 1 : length(musclesInGroup)
-        inputs.synergyExtrapolation.currentEmgChannelPairs{i}(1, j) = find(strcmp(columnNames, musclesInGroup(j)));
+        inputs.synergyExtrapolation.currentEmgChannelPairs{i}(1, j) = ...
+            find(strcmp(columnNames, musclesInGroup(j)));
     end
 end
 [inputs.synergyWeights, inputs.numberOfExtrapolationWeights, ...
