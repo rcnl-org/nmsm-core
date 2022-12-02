@@ -2,6 +2,7 @@
 
 load('preCalibrationCostFunctionTesting.mat')
 experimentalData.passiveMomentDataExists = 1;
+experimentalData.params = [];
 
 values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
 modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
