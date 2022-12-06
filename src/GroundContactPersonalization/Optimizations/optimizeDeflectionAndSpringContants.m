@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,46 +27,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
+function inputs = optimizeDeflectionAndSpringContants(inputs, params)
 [initialValues, fieldNameOrder, inputs] = makeInitialValues(inputs, ...
     params);
 [lowerBounds, upperBounds] = makeBounds(inputs);
 optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
 % calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params);
-results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
+results = lsqnonlin(@(values) calcDeflectionAndSpringConstantsCost(values, ...
     fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
     upperBounds, optimizerOptions);
-inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, 1);
+inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, 0);
 end
 
 % (struct, struct) -> (Array of double)
 % generate initial values to be optimized from inputs, params
 function [initialValues, fieldNameOrder, inputs] = makeInitialValues( ...
     inputs, params)
-% inputs.initialRestingSpringLength = inputs.restingSpringLength;
-inputs.bSplineCoefficientsVerticalSubset = ...
-    inputs.bSplineCoefficients(:, [1:4, 6]);
-initialValues = [inputs.springConstants ];...inputs.dampingFactors];
-initialValues = [initialValues ...
-    reshape(inputs.bSplineCoefficientsVerticalSubset, 1, [])];
-% initialValues = [initialValues inputs.restingSpringLength];
-fieldNameOrder = ["springConstants", ..."dampingFactors", ...
-    "bSplineCoefficientsVerticalSubset"];..., "restingSpringLength"];
+inputs.initialRestingSpringLength = inputs.restingSpringLength;
+initialValues = [inputs.springConstants inputs.restingSpringLength];
+fieldNameOrder = ["springConstants", "restingSpringLength"];
 end
 
 % (struct) -> (Array of double, Array of double)
 % Generate lower and upper bounds for design variables from inputs
 function [lowerBounds, upperBounds] = makeBounds(inputs)
-lowerBounds = zeros(1, length(inputs.springConstants));
-% lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
-lowerBounds = [lowerBounds -Inf(1, length(reshape(...
-    inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
-% lowerBounds = [lowerBounds 0];
-upperBounds = Inf(1, length(inputs.springConstants));
-% upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
-upperBounds = [upperBounds Inf(1, length(reshape(...
-    inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
-% upperBounds = [upperBounds Inf]; % Inf for no bound
+lowerBounds = [zeros(1, length(inputs.springConstants)) -Inf];
+upperBounds = Inf(1, length(inputs.springConstants) + 1);
 end
 
 % (struct) -> (struct)
@@ -79,8 +65,8 @@ output = optimoptions('lsqnonlin', 'UseParallel', true);
 % 1e-9 tolerances for levenberg-marquardt
 % output.FunctionTolerance = valueOrAlternate(params, ...
 %     'functionTolerance', 1e-9);
-% output.StepTolerance = valueOrAlternate(params, ...
-%     'stepTolerance', 1e-9);
+output.StepTolerance = valueOrAlternate(params, ...
+    'stepTolerance', 1e-5);
 output.MaxFunctionEvaluations = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 3e6);
 output.MaxIterations = valueOrAlternate(params, ...
