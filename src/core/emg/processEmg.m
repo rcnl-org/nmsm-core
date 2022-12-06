@@ -38,8 +38,8 @@ sampleRate = length(emgTime)/(emgTime(end)-emgTime(1));
 
 % High pass filter the data
 degree = valueOrAlternate(params, "filterDegree", 4);
-highPassCutoff = valueOrAlternate(params, "highPassCutoff", 40);
-[b,a] = butter(degree, 2*highPassCutoff/sampleRate,'high');
+highPassCutoff = valueOrAlternate(params, "highPassCutoff", 10);
+[b,a] = butter(degree, 2*highPassCutoff/sampleRate, 'high');
 emgData = filtfilt(b,a,emgData);
 
 % Demean
@@ -49,7 +49,7 @@ emgData = emgData-ones(size(emgData,1),1)*mean(emgData);
 emgData = abs(emgData);
 
 % Low pass filter
-lowPassCutoff = valueOrAlternate(params, "lowPassCutoff", 10);
+lowPassCutoff = valueOrAlternate(params, "lowPassCutoff", 40);
 [b,a] = butter(degree,2*lowPassCutoff/sampleRate);
 emgData = filtfilt(b,a,emgData);
 

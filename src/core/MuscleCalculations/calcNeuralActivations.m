@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond, Spencer Williams            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,30 +30,30 @@
 % ----------------------------------------------------------------------- %
 
 function neuralActivations = calcNeuralActivations(muscleExcitation, ...
-    activationTimeConstant, time, numPaddingFrames)
-
-activationTimeConstant = permute(activationTimeConstant / 100, [1 3 2]);
-deactivationTimeConst = 4 * activationTimeConstant;
+    activationTimeConstants, emgTime, numPaddingFrames)
+activationTimeConstants = activationTimeConstants / 100;
+deactivationTimeConstants = 4 * activationTimeConstants;
 % equation 6 from Meyer 2017
-c2 = 1 ./ (ones(size(muscleExcitation, 1), size(muscleExcitation, 2), ...
-    size(muscleExcitation, 3)) .* deactivationTimeConst); 
+inverseDeactivationTimeConstants = 1 ./ deactivationTimeConstants;
 % equation 5 from Meyer 2017
-c1 = 1 ./ (ones(size(muscleExcitation, 1), size(muscleExcitation, 2), ...
-    size(muscleExcitation, 3)) .* activationTimeConstant) - c2; 
-% delta time
-dt = repmat(ones(size(muscleExcitation, 1), 1) .* mean(diff(time)), ...
-    [1 1 size(muscleExcitation, 3)]); 
-% preallocate memory
+differenceOfTimeConstants = (1 ./ activationTimeConstants) - ...
+    inverseDeactivationTimeConstants; 
+% Each emg trial could have different time interval
+trialSpecificTimeInterval = mean(diff(emgTime, 1, 2), 2); 
 neuralActivations = zeros(size(muscleExcitation));
 % equation 7 from Meyer 2017
-for j = 3:size(muscleExcitation, 1)
-    neuralActivations(j, :, :) = (2 * dt(j, :, :) .* (c1(j, :, :) .* ...
-        muscleExcitation(j, :, :) + c2(j, :, :)) .* ...
-        muscleExcitation(j, :, :) + 4 .* ...
-        neuralActivations(j - 1, :, :) - ...
-        neuralActivations(j - 2, :, :)) ./ (2 * dt(j, :, :) .* ...
-        (c1(j, :, :) .* muscleExcitation(j, :, :) + c2(j, :, :)) + 3); 
+for j = 3:size(muscleExcitation, 3)
+    finiteDifferenceTimeConstants = 2 * trialSpecificTimeInterval .* ...
+        (differenceOfTimeConstants .* muscleExcitation(:, :, j) + ...
+        inverseDeactivationTimeConstants);
+    finiteDifferenceDenominator = finiteDifferenceTimeConstants + 3;
+    finiteDifferenceNumerator = finiteDifferenceTimeConstants .* ...
+        muscleExcitation(:, :, j) + 4 * neuralActivations(:, :, j-1) - ...
+        neuralActivations(:, :, j-2);
+    neuralActivations(:, :, j) = finiteDifferenceNumerator ./ ...
+        finiteDifferenceDenominator;
 end
-neuralActivations = neuralActivations(numPaddingFrames + ...
-    1:size(time, 1) - numPaddingFrames, :, :);
+neuralActivations = neuralActivations(:, :, numPaddingFrames + ...
+    1:size(emgTime, 2) - numPaddingFrames);
+neuralActivations(neuralActivations < 0) = 0; %remove negative neural activ
 end

@@ -37,8 +37,7 @@ bSplineCoefficients = makeFullBSplineSet( ...
     valuesStruct.bSplineCoefficientsVerticalSubset, ...
     inputs.bSplineCoefficients);
 [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
-    inputs.experimentalJointPositions, ...
-    inputs.experimentalJointVelocities, inputs.jointKinematicsBSplines, ...
+    inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
     modeledJointPositions, modeledJointVelocities, [1, 1, 0, 0]);
@@ -63,25 +62,23 @@ function bSplineCoefficients = makeFullBSplineSet( ...
     valuesBSplineCoefficientsSubset, inputBSplineCoefficients)
 bSplineCoefficients = inputBSplineCoefficients;
 bSplineCoefficients(:, [1, 3, 5:7]) = reshape( ...
-    valuesBSplineCoefficientsSubset, ...
-    size(inputBSplineCoefficients, 1), []);
+    valuesBSplineCoefficientsSubset, [], 5);
 end
 
 function cost = calcCost(inputs, modeledValues, valuesStruct)
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-cost = 2 * footMarkerPositionError;
-cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 1000 * calcKinematicCurveSlopeError(inputs, modeledValues, [1, 3, 5:7])];
+cost = 2 * footMarkerPositionError(:); %270
+cost = [cost 1000 * footMarkerSlopeError(:)]; %12.8
+cost = [cost 1000 * calcKinematicCurveSlopeError(inputs, modeledValues, [1, 3, 5:7])]; %27.3
 [groundReactionForceValueError, groundReactionForceSlopeError] = ...
     calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues);
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 100 * calcSpringConstantsErrorFromMean(valuesStruct.springConstants)];
-cost = [cost 100 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
+cost = [cost groundReactionForceValueError]; %32772
+cost = [cost 1 / 100 * groundReactionForceSlopeError]; %375970
+cost = [cost 1 / 150 * calcSpringConstantsErrorFromMean(valuesStruct.springConstants)];
+cost = [cost 50 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
 cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)];
 cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)];
 cost = [cost calcSpringRestingLengthError(inputs.initialRestingSpringLength, valuesStruct.restingSpringLength)];
-cost = cost / 10;
 end
 

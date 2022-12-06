@@ -41,8 +41,8 @@ for i=1:length(springConstants)
         modeledVerticalGrf = 0;
     else
         modeledVerticalGrf = modeledVerticalGrf + (springConstants(i) * ...
-            (height-springRestingLength) * (1 + dampingFactors(i) * ...
-            verticalVelocity)); % Equation 1 from Jackson et al, 2016
+            (springRestingLength - height) * (1 + dampingFactors(i) * ...
+            verticalVelocity));  % Equation 1 from Jackson et al, 2016
     end
 end
 end
