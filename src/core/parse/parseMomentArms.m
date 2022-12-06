@@ -29,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = parseMomentArms(directories, model)
+function cells = parseMomentArms(directories, model)
 import org.opensim.modeling.Storage
 if ~isequal(class(model), 'org.opensim.modeling.Model')
     model = Model(model);
@@ -41,8 +41,6 @@ for i=2:length(directories)
     cells(i, :, :, :) = parseMuscleAnalysisCoordinates(directories(i), ...
         model);
 end
-
-output = permute(cells, [4 1 3 2]);
 end
 
 

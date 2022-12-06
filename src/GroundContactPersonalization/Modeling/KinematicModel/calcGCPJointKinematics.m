@@ -33,12 +33,13 @@
 % ----------------------------------------------------------------------- %
 
 function [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
-    experimentalJointPositions, experimentalJointVelocities, ...
-    jointKinematicsBSplines, deviationNodes)
-fittedPosition = jointKinematicsBSplines.position * deviationNodes;
-fittedVelocity = jointKinematicsBSplines.velocity * deviationNodes;
+    experimentalJointPositions, jointKinematicsBSplines, deviationNodes)
+nodes = jointKinematicsBSplines.position \ experimentalJointPositions';
+fittedNodes = nodes .* deviationNodes;
 
-modeledJointPositions = experimentalJointPositions .* fittedPosition';
-modeledJointVelocities = experimentalJointVelocities .* fittedVelocity';
+modeledJointPositions = jointKinematicsBSplines.position * fittedNodes;
+modeledJointVelocities = jointKinematicsBSplines.velocity * fittedNodes;
+modeledJointPositions = modeledJointPositions';
+modeledJointVelocities = modeledJointVelocities';
 end
 
