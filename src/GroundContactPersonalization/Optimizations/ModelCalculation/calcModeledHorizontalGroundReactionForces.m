@@ -44,11 +44,25 @@ for i=1:length(values.springConstants)
     verticalVelocity = model.getMarkerSet().get("spring_marker_" + ...
         num2str(i)).getVelocityInGround(state).get(1);
     verticalGrf = 0;
-    if (height - values.restingSpringLength)<0
-        verticalGrf = (values.springConstants(i) * ...
-            (values.restingSpringLength - height) * ...
-            (1 + values.dampingFactors(i) * verticalVelocity)); % Equation 1 from Jackson et al, 2016
-    end
+%     if (height - values.restingSpringLength)<0
+%         verticalGrf = (values.springConstants(i) * ...
+%             (values.restingSpringLength - height) * ...
+%             (1 + values.dampingFactors(i) * verticalVelocity)); % Equation 1 from Jackson et al, 2016
+%     end
+    klow = 1e-1;
+    h = 1e-3;
+    c = 5e-4;
+    ymax = 1e-2;
+    Kval = values.springConstants(i);
+    height = height - values.restingSpringLength;
+    numFrames = length(height);
+    v = ones(numFrames, 1)' .* ((Kval + klow) ./ (Kval - klow));
+    s = ones(numFrames, 1)' .* ((Kval - klow) ./ 2);
+    constant = -s .* (v .* ymax - c .* log(cosh((ymax + h) ./ c)));
+    freglyVerticalGrf = -s .* (v .* height - c .* log(cosh((height + h) ./ c))) - constant;
+    freglyVerticalGrf(isnan(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
+    freglyVerticalGrf(isinf(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
+    verticalGrf = freglyVerticalGrf;
     xVelocity = model.getMarkerSet().get("spring_marker_" + ...
         num2str(i)).getVelocityInGround(state).get(0) + beltSpeed; % adding beltSpeed may be artificial
     zVelocity = model.getMarkerSet().get("spring_marker_" + ...

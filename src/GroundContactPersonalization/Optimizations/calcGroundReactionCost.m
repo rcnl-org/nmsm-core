@@ -36,7 +36,7 @@ valuesBSplineCoefficients = ...
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     valuesBSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
-    modeledJointPositions, modeledJointVelocities, [1, 1, 1, 0]);
+    modeledJointPositions, modeledJointVelocities, [1, 1, 1, 0], 1);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
@@ -74,7 +74,7 @@ function cost = calcCost(inputs, params, modeledValues, valuesStruct)
 cost = [];
 [footMarkerPositionError, footMarkerSlopeError] = ...
     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-cost = sqrt(1 / (12 * 101)) * (1 / 0.05) * footMarkerPositionError; % Based on OpenSim IK best practices, 1-2 cm
+cost = sqrt(1 / (12 * 101)) * (1 / 0.02) * footMarkerPositionError; % Based on OpenSim IK best practices, 1-2 cm
 % cost = [cost calcFootMarkerDistanceError(inputs, params, ...
 %     footMarkerPositionError)];
 % cost = [cost 1000 * footMarkerSlopeError];
