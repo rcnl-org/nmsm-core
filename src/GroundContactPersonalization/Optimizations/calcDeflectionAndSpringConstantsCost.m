@@ -16,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,17 +30,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcVerticalGroundReactionCost(values, fieldNameOrder, ...
+function cost = calcDeflectionAndSpringConstantsCost(values, fieldNameOrder, ...
     inputs, params)
 valuesStruct = unpackValues(values, inputs, fieldNameOrder);
-bSplineCoefficients = makeFullBSplineSet( ...
-    valuesStruct.bSplineCoefficientsVerticalSubset, ...
-    inputs.bSplineCoefficients);
+bSplineCoefficients = ones(25, 7);
 [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
-    modeledJointPositions, modeledJointVelocities, [1, 1, 0, 0], 1);
+    modeledJointPositions, modeledJointVelocities, [1, 1, 0, 0], 0);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
@@ -58,34 +56,13 @@ for i=1:length(fieldNameOrder)
 end
 end
 
-function bSplineCoefficients = makeFullBSplineSet( ...
-    valuesBSplineCoefficientsSubset, inputBSplineCoefficients)
-bSplineCoefficients = inputBSplineCoefficients;
-bSplineCoefficients(:, [1:4, 6]) = reshape( ...
-    valuesBSplineCoefficientsSubset, [], 5);
-end
-
 function cost = calcCost(inputs, modeledValues, valuesStruct)
-[footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-cost = sqrt(1 / (12 * 101)) * (1 / 0.02 * footMarkerPositionError);
-% cost = [];
-% cost = [cost 1000 * footMarkerSlopeError]; %12.8
-% cost = [cost 1000 * calcKinematicCurveSlopeError(inputs, modeledValues, [1:4, 6])]; %27.3
 [groundReactionForceValueError, groundReactionForceSlopeError] = ...
     calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues);
-cost = [cost sqrt(1 / 101) * (1 / 1) * groundReactionForceValueError]; % 1 N
+cost = sqrt(1 / 101) * (1 / 1) * groundReactionForceValueError; % 1 N
 % cost = [cost 1 / 100 * groundReactionForceSlopeError]; %375970
-cost = [cost sqrt(1 / length(valuesStruct.springConstants)) * (1 / 2000) * calcSpringConstantsErrorFromMean(valuesStruct.springConstants)]; % 10 N/m, try making looser bounds
-
-% Test minimizing spring length
-% cost = [cost (1 / 0.01) * abs(valuesStruct.restingSpringLength - inputs.initialRestingSpringLength)];
-
-% cost = [cost 1 / 1e-6 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)]; % Allowable error to be determined, 1e-8?
-% cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)]; % Can remove these potentially redundant costs
-% cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)]; %
-% cost = [cost calcSpringRestingLengthError(inputs.initialRestingSpringLength, valuesStruct.restingSpringLength)]; %
-
-% cost = cost / numel(cost);
+cost = [cost sqrt(1 / length(valuesStruct.springConstants)) * ...
+    (1 / 2000) * calcSpringConstantsErrorFromMean(...
+    valuesStruct.springConstants)]; % 10 N/m, try making looser bounds
 end
 

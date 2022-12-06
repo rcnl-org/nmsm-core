@@ -30,8 +30,11 @@
 function inputs = mergeGroundContactPersonalizationRoundResults(inputs, ...
     results, stage)
 
-if ~any([1 2 3] == stage)
+if ~any([0 1 2 3] == stage)
     error("Stage value is not valid");
+end
+if stage == 0
+    inputs = mergeStageZeroResults(inputs, results);
 end
 if stage == 1
     inputs = mergeStageOneResults(inputs, results);
@@ -43,6 +46,14 @@ if stage == 3
     inputs = mergeStageThreeResults(inputs, results);
 end
 
+end
+
+function inputs = mergeStageZeroResults(inputs, results)
+index = 1;
+inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
+index = index + length(inputs.springConstants);
+
+inputs.restingSpringLength = results(index);
 end
 
 function inputs = mergeStageOneResults(inputs, results)
@@ -59,7 +70,7 @@ bSplineCoefficientsVerticalSubset = reshape(bSplineCoefficientsVerticalSubset, [
 inputs.bSplineCoefficients(:, [1:4, 6]) = bSplineCoefficientsVerticalSubset;
 index = index + bSplineCoefficientLength;
 
-inputs.restingSpringLength = results(index);
+% inputs.restingSpringLength = results(index);
 end
 
 function inputs = mergeStageTwoResults(inputs, results)
