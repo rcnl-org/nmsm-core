@@ -150,26 +150,8 @@ hold on
 scatter(testInputs.time, modeledValues.jointPositions(4, :), [], "blue")
 hold off
 
-%% Spring constant plots
+%% Spring constant plot
 
 figure(3)
 
-footModel = Model("footModel2.osim");
-springX = zeros(1, length(testInputs.springConstants));
-springZ = zeros(1, length(testInputs.springConstants));
-toesMarkers = [11 12 20 21 28 29 30 36 37];
-for i=1:length(testInputs.springConstants)
-    markerPositionOnFoot = footModel.getMarkerSet().get(...
-        "spring_marker_" + i).getPropertyByName("location").toString(...
-        ).toCharArray';
-    markerPositionOnFoot = split(markerPositionOnFoot(2:end-1));
-    springX(i) = str2double(markerPositionOnFoot{1});
-    springZ(i) = str2double(markerPositionOnFoot{3});
-    % Not general, but accounts for difference in toe/hindfoot frames
-    if any(toesMarkers == i)
-        springX(i) = springX(i) + 0.1902685;
-    end
-end
-scatter(springZ, springX, 200, testInputs.springConstants, "filled")
-colormap jet
-colorbar
+plotSpringConstants(footModel, testInputs, toesBodyName, hindfootBodyName)
