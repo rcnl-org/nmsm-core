@@ -31,11 +31,11 @@
 % ----------------------------------------------------------------------- %
 
 function emgData = parseEmgWithExpansion(model, files)
-dataFromFileOne = processEmgDatas(model, files(1));
+dataFromFileOne = expandEmgDatas(model, files(1));
 emgData = zeros([length(files) size(dataFromFileOne)]);
 cells(1, :, :) = dataFromFileOne;
 for i=2:length(files)
-    cells(i, :, :) = processEmgDatas(model, files(2));
+    cells(i, :, :) = expandEmgDatas(model, files(2));
 end
 end
 
