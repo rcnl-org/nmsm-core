@@ -5,7 +5,7 @@
 % activation files. The model is included in instances where the results
 % are relative to the original model, which is used for reference.
 %
-% (Model, struct, string, string, string) -> (None) 
+% (Model, struct, string, string, string) -> (None)
 % Saves results in the struct to the given filenames
 
 % ----------------------------------------------------------------------- %
@@ -30,18 +30,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveMuscleTendonPersonalizationResults(modelFileName, results, ...
-    resultsDirectory, muscleModelFileName, muscleMomentFileName, ...
-    muscleActivationFileName)
+function saveMuscleTendonPersonalizationResults(modelFileName, ...
+    coordinateNames, finalValues, results, resultsDirectory)
 
 model = Model(modelFileName);
-columnNames = getEnabledMusclesInOrder(model);
-for i = 1:size(results.muscleActivations, 2)
-    %% How to print out individuals file [names] for each trial
-writeToSto(columnNames, results.time(:, i, :), ...
-    results.muscleActivations(:, i, :), fullfile(resultsDirectory, ...
-    muscleActivationFileName) );
+muscleColumnNames = getEnabledMusclesInOrder(model);
+[~, name, ~] = fileparts(modelFileName);
+if ~exist(resultsDirectory, 'dir')
+    mkdir(resultsDirectory)
 end
-
+for i = 1:size(results.muscleActivations, 1)
+    % Need to figure out how to print out individuals file names for each trial
+    writeToSto(muscleColumnNames, results.time(i, :), ...
+        squeeze(results.muscleActivations(i, :, :))', fullfile(resultsDirectory, ...
+        strcat(name, "_muscleActivations_", num2str(i), ".sto")));
+    writeToSto(coordinateNames, results.time(i, :), ...
+        squeeze(results.muscleJointMoments(i, :, :))', fullfile(resultsDirectory, ...
+        strcat(name, "_modelMoments_", num2str(i), ".sto")));
+end
+writeMuscleTendonPersonalizationOsimxFile(modelFileName,...
+    finalValues, fullfile(resultsDirectory, ...
+    strcat(name, "_muscleModel.xml")));
 end
 

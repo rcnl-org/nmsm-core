@@ -33,8 +33,9 @@ function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
 optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
 % calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params);
 results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
-    fieldNameOrder, inputs, params), initialValues, [], [], optimizerOptions);
-inputs = mergeGroundContactPersonalizationRoundResults(inputs, results);
+    fieldNameOrder, inputs, params), initialValues, [], [], ...
+    optimizerOptions);
+inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, 1);
 end
 
 % (struct, struct) -> (Array of double)
@@ -56,15 +57,17 @@ end
 % Prepare params for outer optimizer for Kinematic Calibration
 function output = prepareOptimizerOptions(params)
 output = optimoptions('lsqnonlin', 'UseParallel', true);
-output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
-output.OptimalityTolerance = valueOrAlternate(params, ...
-    'optimalityTolerance', 1e-6);
-output.FunctionTolerance = valueOrAlternate(params, ...
-    'functionTolerance', 1e-6);
+% output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
+% output.OptimalityTolerance = valueOrAlternate(params, ...
+%     'optimalityTolerance', 1e-6);
+% output.FunctionTolerance = valueOrAlternate(params, ...
+%     'functionTolerance', 1e-6);
 output.StepTolerance = valueOrAlternate(params, ...
     'stepTolerance', 1e-6);
 output.MaxFunctionEvaluations = valueOrAlternate(params, ...
-    'maxFunctionEvaluations', 3e3);
+    'maxFunctionEvaluations', 3e6);
+output.MaxIterations = valueOrAlternate(params, ...
+    'MaxIterations', 1e3);
 output.Display = valueOrAlternate(params, ...
     'display','iter');
 end
