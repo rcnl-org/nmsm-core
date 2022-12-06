@@ -16,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -32,27 +32,14 @@
 
 function newPrimaryValues = updateDesignVariables(primaryValues, ...
     secondaryValues, isIncluded)
-newPrimaryValues = zeros(size(primaryValues));
+% newPrimaryValues = zeros(size(primaryValues));
 for i=1:length(isIncluded)
     if(isIncluded(i))
-        [startIndex, endIndex] = findStartAndEndIndex(secondaryValues, ...
-            isIncluded, i);
-        newPrimaryValues(i, :) = secondaryValues(startIndex:endIndex);
+        [startIndex, endIndex] = findIsIncludedStartAndEndIndex( ...
+            primaryValues, isIncluded, i);
+        newPrimaryValues{i} = secondaryValues(startIndex:endIndex);
     else
-        newPrimaryValues(i, :) = primaryValues(i, :);
-    end
-end
-end
-
-function [startIndex, endIndex] = findStartAndEndIndex(secondaryValues, ...
-    isIncluded, index)
-rows = length(secondaryValues) / sum(isIncluded);
-startIndex = 1;
-endIndex = rows;
-for i=1:index-1
-    if(isIncluded(i))
-        startIndex = startIndex + rows;
-        endIndex = endIndex + rows;
+        newPrimaryValues{i} = primaryValues{i};
     end
 end
 end
