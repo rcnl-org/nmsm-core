@@ -35,11 +35,12 @@
 % ----------------------------------------------------------------------- %
 
 function modeledValues = calcGCPModeledValues(inputs, values, ...
-    modeledJointPositions, modeledJointVelocities, isCalculated)
+    modeledJointPositions, modeledJointVelocities, isCalculated, ...
+    excludeDeflection)
 [model, state] = Model(inputs.model);
 markerNamesFields = fieldnames(inputs.markerNames);
 values.dampingFactors = inputs.dampingFactors;
-if isCalculated(3) 
+if isCalculated(3) || excludeDeflection
     values.restingSpringLength = inputs.restingSpringLength;
 end
 for i=1:length(markerNamesFields)

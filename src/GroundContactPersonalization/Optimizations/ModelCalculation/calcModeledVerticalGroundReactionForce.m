@@ -43,19 +43,32 @@ for i=1:length(springConstants)
     %             - height) * (1 + dampingFactors(i) * ...
     %             verticalVelocity)); % Equation 1 from Jackson et al, 2016
     %     end
-    lowSpringConstant = 0.1;
+    %     lowSpringConstant = 0.1;
+    %     h = 1e-3;
+    %     c = 5e-4;
+    %     v = (springConstants(i) + lowSpringConstant) / ...
+    %         (springConstants(i) - lowSpringConstant);
+    %     s = (springConstants(i) - lowSpringConstant) / 2;
+    %     restingLengthForceOffset = -s * (v * springRestingLength - c * ...
+    %         log(cosh((springRestingLength + h) / c)));
+    %     springVerticalGrf = (-s * (v * height - c * ...
+    %         log(cosh((height + h) / c))) - restingLengthForceOffset) * ...
+    %         (1 + dampingFactors(i) * verticalVelocity);
+
+    klow = 1e-1;
     h = 1e-3;
     c = 5e-4;
-    v = (springConstants(i) + lowSpringConstant) / ...
-        (springConstants(i) - lowSpringConstant);
-    s = (springConstants(i) - lowSpringConstant) / 2;
-    restingLengthForceOffset = -s * (v * springRestingLength - c * ...
-        log(cosh((springRestingLength + h) / c)));
-    springVerticalGrf = (-s * (v * height - c * ...
-        log(cosh((height + h) / c))) - restingLengthForceOffset) * ...
-        (1 + dampingFactors(i) * verticalVelocity);
-
+    ymax = 1e-2;
+    Kval = springConstants(i);
+    height = height - springRestingLength;
+    numFrames = length(height);
+    v = ones(numFrames, 1)' .* ((Kval + klow) ./ (Kval - klow));
+    s = ones(numFrames, 1)' .* ((Kval - klow) ./ 2);
+    constant = -s .* (v .* ymax - c .* log(cosh((ymax + h) ./ c)));
+    freglyVerticalGrf = -s .* (v .* height - c .* log(cosh((height + h) ./ c))) - constant;
+    freglyVerticalGrf(isnan(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
+    freglyVerticalGrf(isinf(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
+    springVerticalGrf = freglyVerticalGrf;
     modeledVerticalGrf = modeledVerticalGrf + springVerticalGrf;
 end
-disp(modeledVerticalGrf)
 end
