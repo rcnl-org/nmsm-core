@@ -29,7 +29,7 @@ function cost = calcPassiveForceCost(modeledValues, params)
 costWeight = valueOrAlternate(params, "passiveForceCostWeight", 1);
 errorCenter = valueOrAlternate(params, "passiveForceErrorCenter", 0);
 maximumAllowableError = valueOrAlternate(params, ...
-    "passiveForceMaximumAllowableError", 30);
+    "passiveForceMaximumAllowableError", 50);
 
 cost = costWeight * calcDeviationCostTerm(modeledValues.passiveForce, ...
     errorCenter, maximumAllowableError);
