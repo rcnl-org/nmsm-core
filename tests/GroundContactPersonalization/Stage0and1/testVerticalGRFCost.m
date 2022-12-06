@@ -2,7 +2,7 @@ clear
 
 import org.opensim.modeling.Storage
 
-modelFileName = "optModel_v6.osim";
+modelFileName = "optModel_v6_correct_height.osim";
 motionFileName = "motion.mot";
 grfFileName = "grf.mot";
 hindfootBodyName = "calcn_r";
