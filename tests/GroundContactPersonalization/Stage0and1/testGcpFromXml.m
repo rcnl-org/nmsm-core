@@ -20,22 +20,64 @@ if lastStage >= 2
     inputs = optimizeByGroundReactionForces(inputs, params);
 end
 
-%% Plot forces and kinematics
 
-figure(1)
+%% Report results, plot forces and kinematics
 
 [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     inputs.bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, inputs, ...
-    modeledJointPositions, modeledJointVelocities, [1, 1, 0, 0], 0);
+    modeledJointPositions, modeledJointVelocities, [1, 1, (lastStage >= 2), 0], 0);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
-scatter(inputs.time, inputs.experimentalGroundReactionForces(2, :), [], "red")
-hold on
-scatter(inputs.time, modeledValues.verticalGrf, [], "blue")
-hold off
+disp('Unweighted Vertical GRF Cost: ')
+[groundReactionForceValueError, ~] = ...
+    calcVerticalGroundReactionForceAndSlopeError(inputs, ...
+    modeledValues);
+disp(sum(groundReactionForceValueError))
+if lastStage >= 2
+    [groundReactionForceValueErrors, ~] = ...
+        calcGroundReactionForceAndSlopeError(inputs, modeledValues);
+disp('Unweighted Anterior GRF Cost: ')
+disp(sum(groundReactionForceValueErrors(1, :)))
+disp('Unweighted Lateral GRF Cost: ')
+disp(sum(groundReactionForceValueErrors(3, :)))
+end
+disp('Unweighted Marker Tracking Cost: ')
+[footMarkerPositionError, ~] = ...
+    calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
+disp(sum(footMarkerPositionError))
+
+figure(1)
+
+if lastStage < 2
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionForces(2, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.verticalGrf, [], "blue")
+    hold off
+end
+if lastStage == 2
+    subplot(1,3,1);
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionForces(2, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.verticalGrf, [], "blue")
+    hold off
+    subplot(1,3,2);
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionForces(1, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.anteriorGrf, [], "blue")
+    hold off
+    subplot(1,3,3);
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionForces(3, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.lateralGrf, [], "blue")
+    hold off
+end
 
 figure(2)
 
