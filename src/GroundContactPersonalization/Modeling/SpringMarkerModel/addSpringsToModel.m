@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+%
 %
 % (struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
@@ -28,17 +28,17 @@
 % ----------------------------------------------------------------------- %
 
 function model = addSpringsToModel(model, markerNames, gridWidth, ...
-    gridHeight, hindfootBodyName, toesBodyName, isLeftFoot)
+    gridHeight, hindfootBodyName, toesBodyName, toesJointName, isLeftFoot)
 points = makeNormalizedGrid(gridWidth, gridHeight);
 [insidePoints, ~] = splitNormalizedGridPoints(points, isLeftFoot);
 markerPositions = rotateMarkersToeToHeelVertical(findMarkerPositions( ...
     model, markerNames));
+
 normalizedMarkerPositions = removeNormalizedMarkerOffsets( ...
     normalizeMarkerPositions(markerPositions));
-[insideToes, insideHindfoot] = splitGridPointsByToeJoint(insidePoints, ...
-    normalizedMarkerPositions.medial, normalizedMarkerPositions.lateral);
 model = addSpringsToModelAtLocations(model, markerPositions, ...
-    normalizedMarkerPositions, insideToes, insideHindfoot, ...
+    normalizedMarkerPositions, insidePoints, toesJointName, ...
     hindfootBodyName, toesBodyName, markerNames.heel, isLeftFoot);
 model.finalizeConnections();
 end
+

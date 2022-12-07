@@ -45,5 +45,22 @@ for i=1:length(markers)
         model.getMarkerSet().get(markers{i}));
 end
 footModel.finalizeConnections()
+footModel = setDefaultPose(footModel, model, hindfootBody, toesBody);
 end
 
+% a function that updates the default pose of a footModel to match the default pose of the model
+function footModel = setDefaultPose(footModel, model, hindfootBody, toesBody)
+    [model, state] = Model(model);
+    footPosition = model.getBodySet().get(hindfootBody).getPositionInGround(state);
+%     footRotation = model.getBodySet().get(hindfootBody).getRotationInGround(state).convertRotationToBodyFixedXYZ()
+    
+%     for i = 0:2
+%     footModel.getCoordinateSet().get(i+1).set_default_value(footRotation.get(i))
+%     end
+%     for i = 0:2
+        footModel.getCoordinateSet().get(5).set_default_value(footPosition.get(1))
+%     end
+%     toeCoordinate = model.getCoordinateSet().get(getCoordinatesFromBodies(model, toesBody));
+%     footModel.getCoordinateSet().get(0).set_default_value(toeCoordinate.getValue(state))
+    footModel = Model(footModel);
+end
