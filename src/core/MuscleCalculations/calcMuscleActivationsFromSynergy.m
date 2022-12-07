@@ -1,12 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function loads the emg files from disk and expands the number of
-% columns of emg data to match the groups indicated in the model. The
-% number of columns of emg data should match the number of muscles used in
-% the model after this function is complete.
+% This function calculates the muscle activations given the
+% synergy activations and synergy vectors
 %
-% (2D Array of double, 1D Array of double, string, struct) -> (None)
-% parses the emg files and expands them to the correct size
+% (2D Array of number, 2D Array of number) -> (2D Array of number)
+
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Mohammad S. Shourijeh            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,12 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function emgData = parseEmgWithExpansion(model, files)
-dataFromFileOne = expandEmgDatas(model, files(1));
-emgData = zeros([length(files) size(dataFromFileOne)]);
-cells(1, :, :) = dataFromFileOne;
-for i=2:length(files)
-    cells(i, :, :) = expandEmgDatas(model, files(2));
-end
-end
+function muscleActivations = calcMuscleActivationsFromSynergy(synergyActivations, ...
+    synergyVectors)
 
+muscleActivations = synergyActivations * synergyVectors;
+end

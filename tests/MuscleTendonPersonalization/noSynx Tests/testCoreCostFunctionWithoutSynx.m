@@ -17,7 +17,7 @@ muscleExcitations = calcMuscleExcitations(experimentalData.emgTime, ...
 
 muscleExcitationsExpected = load('muscleExcitationsExpected.mat').muscleExcitationsExpected;
 muscleExcitationsExpected = permute(muscleExcitationsExpected, [2, 3, 1]);
-assertWithinRange(muscleExcitations, muscleExcitationsExpected, 1e-15)
+assertWithinRange(muscleExcitations, muscleExcitationsExpected, 1e-12)
 
 % Neural Activation Calculation
 neuralActivations = calcNeuralActivations(muscleExcitations, ...
@@ -26,7 +26,7 @@ neuralActivations = calcNeuralActivations(muscleExcitations, ...
 
 neuralActivationsExpected = load('neuralActivationsExpected.mat').neuralActivationsExpected;
 neuralActivationsExpected = permute(neuralActivationsExpected, [2, 3, 1]);
-assertWithinRange(neuralActivations, neuralActivationsExpected, 1e-15)
+assertWithinRange(neuralActivations, neuralActivationsExpected, 1e-12)
 
 % Muscle Activation Calculation
 muscleActivations = calcMuscleActivations( ...
@@ -34,7 +34,7 @@ muscleActivations = calcMuscleActivations( ...
 
 muscleActivationsExpected = load('muscleActivationsExpected.mat').muscleActivationsExpected;
 muscleActivationsExpected = permute(muscleActivationsExpected, [2, 3, 1]);
-assertWithinRange(muscleActivations, muscleActivationsExpected, 1e-15)
+assertWithinRange(muscleActivations, muscleActivationsExpected, 1e-12)
 
 % Normalized Muscle Fiber Lengths and Velocities Calculation
 [normalizedFiberLength, normalizedFiberVelocity] = ...
@@ -46,8 +46,8 @@ lMtildaExpected = load('normalizedMuscleLengthandVelocitiesExpected.mat').lMtild
 lMtildaExpected = permute(lMtildaExpected, [2, 3, 1]);
 vMtildaExpected = load('normalizedMuscleLengthandVelocitiesExpected.mat').vMtildaExpected;
 vMtildaExpected = permute(vMtildaExpected, [2, 3, 1]);
-assertWithinRange(normalizedFiberLength, lMtildaExpected, 1e-15)
-assertWithinRange(normalizedFiberVelocity, vMtildaExpected, 1e-15)
+assertWithinRange(normalizedFiberLength, lMtildaExpected, 1e-12)
+assertWithinRange(normalizedFiberVelocity, vMtildaExpected, 1e-12)
 
 % Muscle Moments and Forces
 passiveForce = calcPassiveForceLengthCurve( ...
