@@ -28,7 +28,7 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = mergeGroundContactPersonalizationRoundResults(inputs, ...
-    results, stage)
+    results, params, stage)
 
 if ~any([0 1 2 3] == stage)
     error("Stage value is not valid");
@@ -37,13 +37,13 @@ if stage == 0
     inputs = mergeStageZeroResults(inputs, results);
 end
 if stage == 1
-    inputs = mergeStageOneResults(inputs, results);
+    inputs = mergeStageOneResults(inputs, results, params);
 end
 if stage == 2
-    inputs = mergeStageTwoResults(inputs, results);
+    inputs = mergeStageTwoResults(inputs, results, params);
 end
 if stage == 3
-    inputs = mergeStageThreeResults(inputs, results);
+    inputs = mergeStageThreeResults(inputs, results, params);
 end
 
 end
@@ -56,46 +56,52 @@ index = index + length(inputs.springConstants);
 inputs.restingSpringLength = results(index);
 end
 
-function inputs = mergeStageOneResults(inputs, results)
+function inputs = mergeStageOneResults(inputs, results, params)
 index = 1;
-inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
-index = index + length(inputs.springConstants);
-% inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
-% index = index + length(inputs.dampingFactors);
-
-bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficientsVerticalSubset, 1, []));
-bSplineCoefficientsVerticalSubset = results(index : index + bSplineCoefficientLength - 1);
-bSplineCoefficientsVerticalSubset = reshape(bSplineCoefficientsVerticalSubset, [], 5);
-
-inputs.bSplineCoefficients(:, [1:4, 6]) = bSplineCoefficientsVerticalSubset;
-index = index + bSplineCoefficientLength;
-
-% inputs.restingSpringLength = results(index);
+if (params.stageOne.springConstants.isEnabled)
+    inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
+    index = index + length(inputs.springConstants);
+end
+if (params.stageOne.dampingFactors.isEnabled)
+    inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
+    index = index + length(inputs.dampingFactors);
+end
+if (params.stageOne.bSplineCoefficients.isEnabled)
+    bSplineCoefficientLength = length(reshape(...
+        inputs.bSplineCoefficientsVerticalSubset, 1, []));
+    bSplineCoefficientsVerticalSubset = results(...
+        index : index + bSplineCoefficientLength - 1);
+    bSplineCoefficientsVerticalSubset = reshape(...
+        bSplineCoefficientsVerticalSubset, [], 5);
+    inputs.bSplineCoefficients(:, [1:4, 6]) = ...
+        bSplineCoefficientsVerticalSubset;
 end
 
-function inputs = mergeStageTwoResults(inputs, results)
-index = 1;
-inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
-index = index + length(inputs.springConstants);
-% inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
-% index = index + length(inputs.dampingFactors);
-
-bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficients, 1, []));
-bSplineCoefficients = results(index : index + bSplineCoefficientLength - 1);
-bSplineCoefficients = reshape(bSplineCoefficients, [], 7);
-
-inputs.bSplineCoefficients = bSplineCoefficients;
-index = index + bSplineCoefficientLength;
-
-inputs.staticFrictionCoefficient = results(index);
-index = index + 1;
-
-inputs.dynamicFrictionCoefficient = results(index);
-index = index + 1;
-
-inputs.viscousFrictionCoefficient = results(index);
 end
 
-function inputs = mergeStageThreeResults(inputs, results)
+function inputs = mergeStageTwoResults(inputs, results, params)
+index = 1;
+if (params.stageTwo.springConstants.isEnabled)
+    inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
+    index = index + length(inputs.springConstants);
+end
+if (params.stageTwo.dampingFactors.isEnabled)
+    inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
+    index = index + length(inputs.dampingFactors);
+end
+if (params.stageTwo.bSplineCoefficients.isEnabled)
+    bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficients, 1, []));
+    bSplineCoefficients = results(index : index + bSplineCoefficientLength - 1);
+    bSplineCoefficients = reshape(bSplineCoefficients, [], 7);
+    inputs.bSplineCoefficients = bSplineCoefficients;
+    index = index + bSplineCoefficientLength;
+end
+if (params.stageTwo.dynamicFrictionCoefficient.isEnabled)
+    inputs.dynamicFrictionCoefficient = results(index);
+end
+
+end
+
+function inputs = mergeStageThreeResults(inputs, results, params)
 
 end

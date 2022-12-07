@@ -44,7 +44,7 @@ modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
-cost = calcCost(inputs, modeledValues, valuesStruct);
+cost = calcCost(inputs, modeledValues, valuesStruct, params);
 
 end
 
@@ -65,27 +65,55 @@ bSplineCoefficients(:, [1:4, 6]) = reshape( ...
     valuesBSplineCoefficientsSubset, [], 5);
 end
 
-function cost = calcCost(inputs, modeledValues, valuesStruct)
-[footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-cost = sqrt(1 / (12 * 101)) * (1 / 0.02 * footMarkerPositionError);
-% cost = [];
-% cost = [cost 1000 * footMarkerSlopeError]; %12.8
-% cost = [cost 1000 * calcKinematicCurveSlopeError(inputs, modeledValues, [1:4, 6])]; %27.3
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues);
-cost = [cost sqrt(1 / 101) * (1 / 1) * groundReactionForceValueError]; % 1 N
-% cost = [cost 1 / 100 * groundReactionForceSlopeError]; %375970
-cost = [cost sqrt(1 / length(valuesStruct.springConstants)) * (1 / 2000) * calcSpringConstantsErrorFromMean(valuesStruct.springConstants)]; % 10 N/m, try making looser bounds
-
-% Test minimizing spring length
-% cost = [cost (1 / 0.01) * abs(valuesStruct.restingSpringLength - inputs.initialRestingSpringLength)];
-
-% cost = [cost 1 / 1e-6 * calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)]; % Allowable error to be determined, 1e-8?
-% cost = [cost calcSpringConstantDeviationFromInitialValueError(inputs.springConstants, valuesStruct.springConstants)]; % Can remove these potentially redundant costs
-% cost = [cost calcDampingFactorDeviationFromInitialValueError(inputs.dampingFactors, valuesStruct.dampingFactors)]; %
-% cost = [cost calcSpringRestingLengthError(inputs.initialRestingSpringLength, valuesStruct.restingSpringLength)]; %
-
-% cost = cost / numel(cost);
+function cost = calcCost(inputs, modeledValues, valuesStruct, params)
+cost = [];
+if (params.stageOneCosts.markerPositionError.isEnabled || ...
+        params.stageOneCosts.markerSlopeError.isEnabled)
+    [footMarkerPositionError, footMarkerSlopeError] = ...
+        calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
+end
+if (params.stageOneCosts.markerPositionError.isEnabled)
+    maxAllowableError = ...
+        params.stageOneCosts.markerPositionError.maxAllowableError;
+    cost = [cost sqrt(1 / (12 * 101)) * (1 / maxAllowableError * ...
+        footMarkerPositionError)];
+end
+if (params.stageOneCosts.markerSlopeError.isEnabled)
+    maxAllowableError = ...
+        params.stageOneCosts.markerSlopeError.maxAllowableError;
+    cost = [cost sqrt(1 / (12 * 101)) * (1 / maxAllowableError * ...
+        footMarkerSlopeError)];
+end
+if (params.stageOneCosts.verticalGrfError.isEnabled || ...
+        params.stageOneCosts.verticalGrfSlopeError.isEnabled)
+    [groundReactionForceValueError, groundReactionForceSlopeError] = ...
+        calcVerticalGroundReactionForceAndSlopeError(inputs, ...
+        modeledValues);
+end
+if (params.stageOneCosts.verticalGrfError.isEnabled)
+    maxAllowableError = ...
+        params.stageOneCosts.verticalGrfError.maxAllowableError;
+    cost = [cost sqrt(1 / 101) * (1 / maxAllowableError) * ...
+        groundReactionForceValueError];
+end
+if (params.stageOneCosts.verticalGrfSlopeError.isEnabled)
+    maxAllowableError = ...
+        params.stageOneCosts.verticalGrfSlopeError.maxAllowableError;
+    cost = [cost sqrt(1 / 101) * (1 / maxAllowableError) * ...
+        groundReactionForceSlopeError];
+end
+if (params.stageOneCosts.springConstantErrorFromMean.isEnabled)
+    maxAllowableError = ...
+        params.stageOneCosts.springConstantErrorFromMean.maxAllowableError;
+    cost = [cost sqrt(1 / length(valuesStruct.springConstants)) * ...
+        (1 / maxAllowableError) * ...
+        calcSpringConstantsErrorFromMean(valuesStruct.springConstants)];
+end
+if (params.stageOneCosts.dampingFactorErrorFromMean.isEnabled)
+    maxAllowableError = ...
+        params.stageOneCosts.dampingFactorErrorFromMean.maxAllowableError;
+    cost = [cost (1 / maxAllowableError) * ...
+        calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
+end
 end
 

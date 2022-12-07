@@ -153,5 +153,5 @@ hold off
 %% Spring constant plot
 
 figure(3)
-
+footModel = Model("footModel2.osim")
 plotSpringConstants(footModel, testInputs, toesBodyName, hindfootBodyName)
