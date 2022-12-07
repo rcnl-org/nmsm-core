@@ -3,10 +3,10 @@ muscleJointMoments = zeros(inputs.numPoints, inputs.numJoints);
 % net moment
 for i = 1:inputs.numPoints
     for j = 1:inputs.numJoints
+        muscleTendonForce = calcMuscleTendonForce(activations(i, j), ...
+            inputs.muscleTendonLength(i, j), ...
+            inputs.muscleTendonVelocity(i, j), j, inputs);
         for k = 1:inputs.numMuscles
-            muscleTendonForce = calcMuscleTendonForce(activations(i, k), ...
-                inputs.muscleTendonLength(i, k), ...
-                inputs.muscleTendonVelocity(i, k), k, inputs);
             muscleJointMoments(i, j) = muscleJointMoments(i, j) + inputs.momentArms(i, k, j) * muscleTendonForce;
         end
     end
