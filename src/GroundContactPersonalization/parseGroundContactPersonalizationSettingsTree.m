@@ -40,22 +40,23 @@ end
 function inputs = getInputs(tree)
 import org.opensim.modeling.*
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
-modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
+inputs.bodyModel = getFieldByNameOrError(tree, 'input_model_file').Text;
+inputs.model = getFieldByNameOrError(tree, 'input_foot_model_file').Text;
 motionFile = getFieldByNameOrError(tree, 'input_motion_file').Text;
 grfFile = getFieldByNameOrError(tree, 'input_grf_file').Text;
 if(~isempty(inputDirectory))
     try
-        inputs.bodyModel = Model(fullfile(inputDirectory, modelFile));
+        bodyModel = Model(fullfile(inputDirectory, inputs.bodyModel));
         inputs.motionFileName = fullfile(inputDirectory, motionFile);
         inputs.grfFileName = fullfile(inputDirectory, grfFile);
     catch
-        inputs.bodyModel = Model(fullfile(pwd, inputDirectory, modelFile));
+        bodyModel = Model(fullfile(pwd, inputDirectory, inputs.bodyModel));
         inputs.motionFileName = fullfile(pwd, inputDirectory, motionFile);
         inputs.grfFileName = fullfile(pwd, inputDirectory, grfFile);
         inputDirectory = fullfile(pwd, inputDirectory);
     end
 else
-    inputs.bodyModel = Model(fullfile(pwd, modelFile));
+    bodyModel = Model(fullfile(pwd, inputs.bodyModel));
     inputs.motionFileName = fullfile(pwd, motionFile);
     inputs.grfFileName = fullfile(pwd, grfFile);
     inputDirectory = pwd;
@@ -64,6 +65,8 @@ inputs.numberCycles = str2double(getFieldByNameOrError(tree, ...
     'number_of_cycles').Text);
 inputs.nodesPerCycle = str2double(getFieldByNameOrError(tree, ...
     'nodes_per_cycle').Text);
+inputs.beltSpeed = str2double(getFieldByNameOrError(tree, ...
+    'belt_speed').Text);
 rightTree = getFieldByNameOrError(tree, 'RightFootPersonalization');
 leftTree = getFieldByNameOrError(tree, 'LeftFootPersonalization');
 inputs.right.isEnabled = strcmpi(getFieldByNameOrError(rightTree, ...
@@ -71,28 +74,25 @@ inputs.right.isEnabled = strcmpi(getFieldByNameOrError(rightTree, ...
 inputs.left.isEnabled = strcmpi(getFieldByNameOrError(leftTree, ...
     'is_enabled').Text, 'true');
 [ik.columnNames, ik.time, ik.data] = parseMotToComponents(...
-    inputs.bodyModel, Storage(inputs.grfFileName));
+    bodyModel, Storage(inputs.grfFileName));
 [~, grfTime, ~] = parseMotToComponents(...
-    inputs.bodyModel, Storage(inputs.grfFileName));
+    bodyModel, Storage(inputs.grfFileName));
 verifyTime(ik.time, grfTime);
 [inputs.left.experimentalGroundReactionForces, ...
     inputs.right.experimentalGroundReactionForces] = getGrf(...
-    inputs.bodyModel, inputs.grfFileName);
+    bodyModel, inputs.grfFileName);
 
 if inputs.right.isEnabled
-    inputs.right = getInputsForSide(inputs.right, rightTree, ik);
+    % Potentially refactor to use inputs.right if allowing multiple sides
+    inputs = getInputsForSide(inputs, rightTree, ik);
 end
 if inputs.left.isEnabled
+    inputs.isLeftFoot = true;
     inputs.left = getInputsForSide(inputs.left, leftTree, ik);
 end
-inputs.errorCenters.markerDistanceError = str2double(getFieldByNameOrError(tree, ...
-    'marker_distance_error').Text);
-inputs.errorCenters.staticFrictionCoefficient = str2double(getFieldByNameOrError(...
-    tree, 'static_friction_coefficient').Text);
-inputs.errorCenters.dynamicFrictionCoefficient = str2double(getFieldByNameOrError(...
-    tree, 'dynamic_friction_coefficient').Text);
-inputs.errorCenters.viscousFrictionCoefficient = str2double(getFieldByNameOrError(...
-    tree, 'viscous_friction_coefficient').Text);
+
+initialValuesTree = getFieldByNameOrError(tree, 'InitialValues');
+inputs = getInitialValues(inputs, initialValuesTree);
 end
 
 % (Model, string) -> (Array of double, Array of double)
@@ -136,6 +136,14 @@ end
 function inputs = getInputsForSide(inputs, tree, ik)
     inputs.toesCoordinateName = getFieldByNameOrError(tree, ...
         'toe_coordinate').Text;
+    inputs.markerNames.toe = getFieldByNameOrError(tree, ...
+        'toe_marker').Text;
+    inputs.markerNames.medial = getFieldByNameOrError(tree, ...
+        'medial_marker').Text;
+    inputs.markerNames.lateral = getFieldByNameOrError(tree, ...
+        'lateral_marker').Text;
+    inputs.markerNames.heel = getFieldByNameOrError(tree, ...
+        'heel_marker').Text;
     inputs.startTime = str2double(getFieldByNameOrError(tree, ...
         'start_time').Text);
     inputs.endTime = str2double(getFieldByNameOrError(tree, ...
@@ -144,29 +152,100 @@ function inputs = getInputsForSide(inputs, tree, ik)
     endIndex = find(ik.time <= inputs.endTime, 1, 'last');
     inputs.time = ik.time(startIndex:endIndex);
     inputs.motion = ik.data(:, startIndex:endIndex);
+    % Refactor second line to inputs.experimentalGRF if allowing multiple
+    % sides
     inputs.experimentalGroundReactionForces = ...
-        inputs.experimentalGroundReactionForces(:, startIndex:endIndex);
+        inputs.right.experimentalGroundReactionForces(:, startIndex:endIndex);
 end
 
 % (Array of double, Array of double) -> (None)
 function verifyTime(ikTime, grfTime)
     if size(ikTime) ~= size(grfTime)
-        throw(MException('', ['IK and GRF time columns have' ...
+        throw(MException('', ['IK and GRF time columns have ' ...
             'different lengths']))
     end
     if any(abs(ikTime - grfTime) > 0.005)
-        throw(MException('', ['IK and GRF time points are not equal']))
+        throw(MException('', 'IK and GRF time points are not equal'))
     end
+end
+
+% Parses initial values
+function inputs = getInitialValues(inputs, tree)
+inputs.initialRestingSpringLength = str2double(getFieldByNameOrError(...
+    tree, 'RestingSpringLength').Text);
+inputs.initialSpringConstants = str2double(getFieldByNameOrError(...
+    tree, 'SpringConstants').Text);
+inputs.initialDampingFactors = str2double(getFieldByNameOrError(...
+    tree, 'DampingFactors').Text);
+inputs.initialDynamicFrictionCoefficient = str2double(...
+    getFieldByNameOrError(tree, 'DynamicFrictionCoefficient').Text);
 end
 
 function params = getParams(tree)
 params = struct();
-maxIterations = getFieldByName(tree, 'max_iterations');
-if(isstruct(maxIterations))
-    params.maxIterations = str2double(maxIterations.Text);
+params.maxIterations = getFieldByName(tree, 'max_iterations');
+if(isstruct(params.maxIterations))
+    params.maxIterations = str2double(params.maxIterations.Text);
 end
-maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
-if(isstruct(maxFunctionEvaluations))
-    params.maxFunctionEvaluations = str2double(maxFunctionEvaluations.Text);
+params.maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
+if(isstruct(params.maxFunctionEvaluations))
+    params.maxFunctionEvaluations = str2double(params.maxFunctionEvaluations.Text);
+end
+params = getDesignVariableParams(params, tree);
+params = getCostFunctionParams(params, tree);
+end
+
+function params = getDesignVariableParams(params, tree)
+stageOneTree = getFieldByNameOrError(tree, 'Stage1DesignVariables');
+params.stageOne.springConstants.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageOneTree, ...
+    'SpringConstants'), 'is_enabled').Text, 'true');
+params.stageOne.dampingFactors.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageOneTree, ...
+    'DampingFactors'), 'is_enabled').Text, 'true');
+params.stageOne.bSplineCoefficients.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageOneTree, ...
+    'KinematicsBSplineCoefficients'), 'is_enabled').Text, 'true');
+stageTwoTree = getFieldByNameOrError(tree, 'Stage2DesignVariables');
+params.stageTwo.springConstants.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageTwoTree, ...
+    'SpringConstants'), 'is_enabled').Text, 'true');
+params.stageTwo.dampingFactors.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageTwoTree, ...
+    'DampingFactors'), 'is_enabled').Text, 'true');
+params.stageTwo.bSplineCoefficients.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageTwoTree, ...
+    'KinematicsBSplineCoefficients'), 'is_enabled').Text, 'true');
+params.stageTwo.dynamicFrictionCoefficient.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageTwoTree, ...
+    'DynamicFrictionCoefficient'), 'is_enabled').Text, 'true');
+end
+
+function params = getCostFunctionParams(params, tree)
+stageOneTree = getFieldByNameOrError(tree, 'Stage1CostFunctionTerms');
+stageOneCostTerms = ["markerPositionError", "markerSlopeError", ...
+    "verticalGrfError", "verticalGrfSlopeError", ...
+    "springConstantErrorFromMean", "dampingFactorErrorFromMean"];
+for i = 1:length(stageOneCostTerms)
+    params.stageOneCosts.(stageOneCostTerms(i)).isEnabled = strcmpi(...
+        getFieldByNameOrError(getFieldByNameOrError(stageOneTree, ...
+        stageOneCostTerms(i)), 'is_enabled').Text, 'true');
+    params.stageOneCosts.(stageOneCostTerms(i)).maxAllowableError = str2double(...
+        getFieldByNameOrError(getFieldByNameOrError(stageOneTree, ...
+        stageOneCostTerms(i)), 'max_allowable_error').Text);
+end
+
+stageTwoTree = getFieldByNameOrError(tree, 'Stage2CostFunctionTerms');
+stageTwoCostTerms = ["markerPositionError", "markerSlopeError", ...
+    "verticalGrfError", "verticalGrfSlopeError", "horizontalGrfError", ...
+    "horizontalGrfSlopeError", "springConstantErrorFromMean", ...
+    "dampingFactorErrorFromMean"];
+for i = 1:length(stageTwoCostTerms)
+    params.stageTwoCosts.(stageTwoCostTerms(i)).isEnabled = strcmpi(...
+        getFieldByNameOrError(getFieldByNameOrError(stageTwoTree, ...
+        stageTwoCostTerms(i)), 'is_enabled').Text, 'true');
+    params.stageTwoCosts.(stageTwoCostTerms(i)).maxAllowableError = str2double(...
+        getFieldByNameOrError(getFieldByNameOrError(stageTwoTree, ...
+        stageTwoCostTerms(i)), 'max_allowable_error').Text);
 end
 end

@@ -30,43 +30,58 @@
 function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
 [initialValues, fieldNameOrder, inputs] = makeInitialValues(inputs, ...
     params);
-[lowerBounds, upperBounds] = makeBounds(inputs);
+[lowerBounds, upperBounds] = makeBounds(inputs, params);
 optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
 % calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params);
 results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
     fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
     upperBounds, optimizerOptions);
-inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, 1);
+inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
+    params, 1);
 end
 
 % (struct, struct) -> (Array of double)
 % generate initial values to be optimized from inputs, params
 function [initialValues, fieldNameOrder, inputs] = makeInitialValues( ...
     inputs, params)
-% inputs.initialRestingSpringLength = inputs.restingSpringLength;
+initialValues = [];
+fieldNameOrder = [];
 inputs.bSplineCoefficientsVerticalSubset = ...
     inputs.bSplineCoefficients(:, [1:4, 6]);
-initialValues = [inputs.springConstants ];...inputs.dampingFactors];
-initialValues = [initialValues ...
-    reshape(inputs.bSplineCoefficientsVerticalSubset, 1, [])];
-% initialValues = [initialValues inputs.restingSpringLength];
-fieldNameOrder = ["springConstants", ..."dampingFactors", ...
-    "bSplineCoefficientsVerticalSubset"];..., "restingSpringLength"];
+if (params.stageOne.springConstants.isEnabled)
+    initialValues = [initialValues inputs.springConstants];
+    fieldNameOrder = [fieldNameOrder "springConstants"];
+end
+if (params.stageOne.dampingFactors.isEnabled)
+    initialValues = [initialValues inputs.dampingFactors];
+    fieldNameOrder = [fieldNameOrder "dampingFactors"];
+end
+if (params.stageOne.bSplineCoefficients.isEnabled)
+    initialValues = [initialValues ...
+        reshape(inputs.bSplineCoefficientsVerticalSubset, 1, [])];
+    fieldNameOrder = [fieldNameOrder "bSplineCoefficientsVerticalSubset"];
+end
 end
 
 % (struct) -> (Array of double, Array of double)
 % Generate lower and upper bounds for design variables from inputs
-function [lowerBounds, upperBounds] = makeBounds(inputs)
-lowerBounds = zeros(1, length(inputs.springConstants));
-% lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
-lowerBounds = [lowerBounds -Inf(1, length(reshape(...
-    inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
-% lowerBounds = [lowerBounds 0];
-upperBounds = Inf(1, length(inputs.springConstants));
-% upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
-upperBounds = [upperBounds Inf(1, length(reshape(...
-    inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
-% upperBounds = [upperBounds Inf]; % Inf for no bound
+function [lowerBounds, upperBounds] = makeBounds(inputs, params)
+lowerBounds = [];
+upperBounds = [];
+if (params.stageOne.springConstants.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.springConstants))];
+    upperBounds = [upperBounds Inf(1, length(inputs.springConstants))];
+end
+if (params.stageOne.dampingFactors.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
+    upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
+end
+if (params.stageOne.bSplineCoefficients.isEnabled)
+    lowerBounds = [lowerBounds -Inf(1, length(reshape(...
+        inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
+    upperBounds = [upperBounds Inf(1, length(reshape(...
+        inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
+end
 end
 
 % (struct) -> (struct)

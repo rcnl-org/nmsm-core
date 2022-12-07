@@ -43,7 +43,7 @@ for i=1:length(inputs.springConstants)
     markerPositionOnFoot = split(markerPositionOnFoot(2:end-1));
     springX(i) = str2double(markerPositionOnFoot{1});
     springZ(i) = str2double(markerPositionOnFoot{3});
-    if getMarkerBodyName(footModel, "spring_marker_" + i) == toesBodyName
+    if strcmp(getMarkerBodyName(footModel, "spring_marker_" + i), toesBodyName)
         springX(i) = springX(i) + calcnToToes.T.get(0);
     end
 end

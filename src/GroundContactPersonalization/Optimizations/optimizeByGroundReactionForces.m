@@ -30,45 +30,64 @@
 function inputs = optimizeByGroundReactionForces(inputs, params)
 [initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
     params);
-[lowerBounds, upperBounds] = makeBounds(inputs);
+[lowerBounds, upperBounds] = makeBounds(inputs, params);
 optimizerOptions = prepareOptimizerOptions(params);
 results = lsqnonlin(@(values) calcGroundReactionCost(values, ...
     fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
     upperBounds, optimizerOptions);
-inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, 2);
+inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
+    params, 2);
 end
 
 % (struct, struct) -> (Array of double)
 % generate initial values to be optimized from inputs, params
 function [initialValues, fieldNameOrder] = makeInitialValues( ...
     inputs, params)
-initialValues = [inputs.springConstants]; ...inputs.dampingFactors];
-initialValues = [initialValues ...
-    reshape(inputs.bSplineCoefficients, 1, [])];
-initialValues = [initialValues valueOrAlternate(params, ...
-    "staticFrictionCoefficientErrorCenter", 0.25)];
-initialValues = [initialValues valueOrAlternate(params, ...
-    "dynamicFrictionCoefficientErrorCenter", 0.2)];
-initialValues = [initialValues valueOrAlternate(params, ...
-    "viscousFrictionCoefficientErrorCenter", 0.005)];
-fieldNameOrder = ["springConstants", ..."dampingFactors", ...
-    "bSplineCoefficients", "staticFrictionCoefficient", ...
-    "dynamicFrictionCoefficient", "viscousFrictionCoefficient"];
+initialValues = [];
+fieldNameOrder = [];
+if (params.stageTwo.springConstants.isEnabled)
+    initialValues = [initialValues inputs.springConstants];
+    fieldNameOrder = [fieldNameOrder "springConstants"];
+end
+if (params.stageTwo.dampingFactors.isEnabled)
+    initialValues = [initialValues inputs.dampingFactors];
+    fieldNameOrder = [fieldNameOrder "dampingFactors"];
+end
+if (params.stageTwo.bSplineCoefficients.isEnabled)
+    initialValues = [initialValues ...
+        reshape(inputs.bSplineCoefficients, 1, [])];
+    fieldNameOrder = [fieldNameOrder "bSplineCoefficients"];
+end
+if (params.stageTwo.dynamicFrictionCoefficient.isEnabled)
+    initialValues = [initialValues valueOrAlternate(params, ...
+        "initialDynamicFrictionCoefficient", 1)];
+    fieldNameOrder = [fieldNameOrder "dynamicFrictionCoefficient"];
+end
 end
 
 % (struct) -> (Array of double, Array of double)
 % Generate lower and upper bounds for design variables from inputs
-function [lowerBounds, upperBounds] = makeBounds(inputs)
-lowerBounds = zeros(1, length(inputs.springConstants));
-% lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
-lowerBounds = [lowerBounds -Inf(1, length(reshape(...
-    inputs.bSplineCoefficients, 1, [])))];
-lowerBounds = [lowerBounds 0 0 0];
-upperBounds = Inf(1, length(inputs.springConstants));
-% upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
-upperBounds = [upperBounds Inf(1, length(reshape(...
-    inputs.bSplineCoefficients, 1, [])))];
-upperBounds = [upperBounds Inf Inf Inf];
+function [lowerBounds, upperBounds] = makeBounds(inputs, params)
+lowerBounds = [];
+upperBounds = [];
+if (params.stageTwo.springConstants.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.springConstants))];
+    upperBounds = [upperBounds Inf(1, length(inputs.springConstants))];
+end
+if (params.stageTwo.dampingFactors.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
+    upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
+end
+if (params.stageTwo.bSplineCoefficients.isEnabled)
+    lowerBounds = [lowerBounds -Inf(1, length(reshape(...
+        inputs.bSplineCoefficients, 1, [])))];
+    upperBounds = [upperBounds Inf(1, length(reshape(...
+        inputs.bSplineCoefficients, 1, [])))];
+end
+if (params.stageTwo.dynamicFrictionCoefficient.isEnabled)
+    lowerBounds = [lowerBounds 0];
+    upperBounds = [upperBounds Inf];
+end
 end
 
 % (struct) -> (struct)
