@@ -31,6 +31,7 @@
 
 function coordinatesOfInterest = findGCPFreeCoordinates(model, ...
     contactBodies)
+model = Model(model);
 bodyStructure = makeBodyTree(model);
 
 bodiesOfInterest = string([]);
