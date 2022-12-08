@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the GroundContactPersonalization function
-% such that an xml file can be passed and the resulting computation can be
-% completed according to the instructions of that file.
 %
-% (string) -> (None)
-% Run GroundContactPersonalization from settings file
+%
+% (struct, struct) -> (Array of double, Array of double)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams, Claire V. Hammond                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,11 +27,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function GroundContactPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseGroundContactPersonalizationSettingsTree(settingsTree);
-results = GroundContactPersonalization(inputs, params);
-saveGroundContactPersonalizationResults(results, resultsDirectory);
+function [valueErrors, slopeErrors] = ...
+    calcGroundReactionForceAndSlopeError(inputs, modeledValues)
+valueErrors(1, :) = inputs.experimentalGroundReactionForces(1, :) -...
+    modeledValues.anteriorGrf;
+slopeErrors(1, :) = inputs.experimentalGroundReactionForcesSlope(...
+    1, :) - calcBSplineDerivative(inputs.time, ...
+    modeledValues.anteriorGrf, 2, 25);
+valueErrors(2, :) = inputs.experimentalGroundReactionForces(2, :) -...
+    modeledValues.verticalGrf;
+slopeErrors(2, :) = inputs.experimentalGroundReactionForcesSlope(...
+    2, :) - calcBSplineDerivative(inputs.time, ...
+    modeledValues.verticalGrf, 2, 25);
+valueErrors(3, :) = inputs.experimentalGroundReactionForces(3, :) -...
+    modeledValues.lateralGrf;
+slopeErrors(3, :) = inputs.experimentalGroundReactionForcesSlope(...
+    3, :) - calcBSplineDerivative(inputs.time, ...
+    modeledValues.lateralGrf, 2, 25);
 end
 

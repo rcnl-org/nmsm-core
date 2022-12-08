@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the GroundContactPersonalization function
-% such that an xml file can be passed and the resulting computation can be
-% completed according to the instructions of that file.
+% 
 %
-% (string) -> (None)
-% Run GroundContactPersonalization from settings file
+% (Model, struct, string, string) -> (None)
+% Plot optimized spring constants from GCP.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,11 +27,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function GroundContactPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseGroundContactPersonalizationSettingsTree(settingsTree);
-results = GroundContactPersonalization(inputs, params);
-saveGroundContactPersonalizationResults(results, resultsDirectory);
-end
+function plotSpringConstants(footModel, inputs, toesBodyName, ...
+    hindfootBodyName)
 
+[footModel, state] = Model("footModel2.osim");
+calcnToToes = footModel.getBodySet().get(...
+    toesBodyName).findTransformBetween(state, ...
+    footModel.getBodySet().get(hindfootBodyName));
+springX = zeros(1, length(inputs.springConstants));
+springZ = zeros(1, length(inputs.springConstants));
+for i=1:length(inputs.springConstants)
+    markerPositionOnFoot = footModel.getMarkerSet().get(...
+        "spring_marker_" + i).getPropertyByName("location").toString(...
+        ).toCharArray';
+    markerPositionOnFoot = split(markerPositionOnFoot(2:end-1));
+    springX(i) = str2double(markerPositionOnFoot{1});
+    springZ(i) = str2double(markerPositionOnFoot{3});
+    if strcmp(getMarkerBodyName(footModel, "spring_marker_" + i), toesBodyName)
+        springX(i) = springX(i) + calcnToToes.T.get(0);
+    end
+end
+scatter(springZ, springX, 200, inputs.springConstants, "filled")
+colormap jet
+colorbar
+
+end
