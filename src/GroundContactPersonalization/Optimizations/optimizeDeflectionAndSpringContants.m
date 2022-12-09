@@ -51,6 +51,7 @@ end
 % for i = 1:length(inputs.springConstants)
 %     plot(inputs.time, springHeights(:, i))
 % end
+% plot(inputs.time, inputs.experimentalGroundReactionForces(2, :) / 1e4, 'ro')
 % hold off
 
 verticalForce = inputs.experimentalGroundReactionForces(2, 21:40)';
