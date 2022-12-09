@@ -30,39 +30,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcDeflectionAndSpringConstantsCost(values, fieldNameOrder, ...
+function cost = calcDeflectionAndSpringConstantsCost(restingSpringLength, springHeights, ...
     inputs, params)
-valuesStruct = unpackValues(values, inputs, fieldNameOrder);
-bSplineCoefficients = ones(25, 7);
-[modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
-    inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
-    bSplineCoefficients);
-modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
-    modeledJointPositions, modeledJointVelocities, [1, 1, 0, 0], 0);
-modeledValues.jointPositions = modeledJointPositions;
-modeledValues.jointVelocities = modeledJointVelocities;
 
-cost = calcCost(inputs, modeledValues, valuesStruct);
+verticalForce = inputs.experimentalGroundReactionForces(2, :)';
 
+deflectionMatrix = zeros(length(verticalForce), length(inputs.springConstants));
+for i = 1:length(verticalForce)
+    for j = 1:length(inputs.springConstants)
+        % The - 0.001 term accounts for using a different force formula
+        deflectionMatrix(i, j) = springHeights(i, j) - ...
+            restingSpringLength - 0.001;
+    end
 end
 
-function valuesStruct = unpackValues(values, inputs, fieldNameOrder)
-valuesStruct = struct();
-start = 1;
-for i=1:length(fieldNameOrder)
-    valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
-        numel(inputs.(fieldNameOrder(i))) - 1);
-    start = start + numel(inputs.(fieldNameOrder(i)));
-end
-end
+[springConstants, ~, errors] = lsqnonneg(deflectionMatrix, verticalForce);
 
-function cost = calcCost(inputs, modeledValues, valuesStruct)
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues);
-cost = sqrt(1 / 101) * (1 / 1) * groundReactionForceValueError; % 1 N
-% cost = [cost 1 / 100 * groundReactionForceSlopeError]; %375970
-cost = [cost sqrt(1 / length(valuesStruct.springConstants)) * ...
-    (1 / 2000) * calcSpringConstantsErrorFromMean(...
-    valuesStruct.springConstants)]; % 10 N/m, try making looser bounds
+cost = [];
+% Residuals from lsqnonneg are force matching errors
+cost = [cost 1 / sqrt(length(errors)) * errors'];
+% Alternatively, recalculate force and compare with experimental
+modeledForce = deflectionMatrix * springConstants;
+cost = [cost 1 / sqrt(length(errors)) * abs(modeledForce' - verticalForce')];
+cost = [cost sqrt(1 / length(springConstants)) * (1 / 2000) * ...
+    calcSpringConstantsErrorFromMean(springConstants)'];
+% Attempt to prevent spring constants being zero
+cost = [cost (1 / 2000) * abs(springConstants' - inputs.springConstants)];
+
 end
 
