@@ -28,31 +28,41 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = optimizeDeflectionAndSpringContants(inputs, params)
-[initialValues, fieldNameOrder, inputs] = makeInitialValues(inputs, ...
-    params);
-[lowerBounds, upperBounds] = makeBounds(inputs);
 optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
-results = lsqnonlin(@(values) calcDeflectionAndSpringConstantsCost(values, ...
-    fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
-    upperBounds, optimizerOptions);
-inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
-    params, 0);
+
+[modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
+    inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
+    ones(25, 7));
+springHeights = zeros(length(inputs.springConstants), ...
+    size(modeledJointPositions, 2));
+[model, state] = Model(inputs.model);
+for i=1:size(modeledJointPositions, 2)
+    [model, state] = updateModelPositionAndVelocity(model, state, ...
+        modeledJointPositions(:, i), ...
+        modeledJointVelocities(:, i));
+    for j = 1:length(inputs.springConstants)
+        springHeights(i, j) = model.getMarkerSet().get("spring_marker_" + ...
+            num2str(j)).getLocationInGround(state).get(1);
+    end
 end
 
-% (struct, struct) -> (Array of double)
-% generate initial values to be optimized from inputs, params
-function [initialValues, fieldNameOrder, inputs] = makeInitialValues( ...
-    inputs, params)
-inputs.initialRestingSpringLength = inputs.restingSpringLength;
-initialValues = [inputs.springConstants inputs.restingSpringLength];
-fieldNameOrder = ["springConstants", "restingSpringLength"];
-end
+restingSpringLength = lsqnonlin(@(restingSpringLength) calcDeflectionAndSpringConstantsCost(restingSpringLength, ...
+    springHeights, inputs, params), inputs.restingSpringLength, 0, ...
+    Inf, optimizerOptions);
 
-% (struct) -> (Array of double, Array of double)
-% Generate lower and upper bounds for design variables from inputs
-function [lowerBounds, upperBounds] = makeBounds(inputs)
-lowerBounds = [zeros(1, length(inputs.springConstants)) -Inf];
-upperBounds = Inf(1, length(inputs.springConstants) + 1);
+% Solve for K values again here
+verticalForce = inputs.experimentalGroundReactionForces(2, :)';
+deflectionMatrix = zeros(length(verticalForce), length(inputs.springConstants));
+for i = 1:length(verticalForce)
+    for j = 1:length(inputs.springConstants)
+        deflectionMatrix(i, j) = springHeights(i, j) - ...
+            restingSpringLength - 0.001;
+    end
+end
+springConstants = lsqnonneg(deflectionMatrix, verticalForce);
+
+inputs.restingSpringLength = restingSpringLength;
+inputs.springConstants = springConstants';
 end
 
 % (struct) -> (struct)
@@ -66,7 +76,7 @@ output = optimoptions('lsqnonlin', 'UseParallel', true);
 % output.FunctionTolerance = valueOrAlternate(params, ...
 %     'functionTolerance', 1e-9);
 output.StepTolerance = valueOrAlternate(params, ...
-    'stepTolerance', 1e-4);
+    'stepTolerance', 1e-6);
 output.MaxFunctionEvaluations = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 3e6);
 output.MaxIterations = valueOrAlternate(params, ...
@@ -74,4 +84,16 @@ output.MaxIterations = valueOrAlternate(params, ...
 output.Display = valueOrAlternate(params, ...
     'display','iter');
 % output.Algorithm = 'levenberg-marquardt';
+end
+
+function [model, state] = updateModelPositionAndVelocity(model, state, ...
+    jointPositions, jointVelocities)
+for j=1:size(jointPositions, 1)
+    model.getCoordinateSet().get(j-1).setValue(state, ...
+        jointPositions(j));
+    model.getCoordinateSet().get(j-1).setSpeedValue(state, ...
+        jointVelocities(j));
+end
+model.assemble(state)
+model.realizeVelocity(state)
 end
