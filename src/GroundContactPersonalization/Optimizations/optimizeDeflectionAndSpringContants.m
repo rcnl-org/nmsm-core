@@ -33,8 +33,8 @@ optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
 [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     ones(25, 7));
-springHeights = zeros(length(inputs.springConstants), ...
-    size(modeledJointPositions, 2));
+springHeights = zeros(size(modeledJointPositions, 2), ...
+    length(inputs.springConstants));
 [model, state] = Model(inputs.model);
 for i=1:size(modeledJointPositions, 2)
     [model, state] = updateModelPositionAndVelocity(model, state, ...
@@ -46,23 +46,28 @@ for i=1:size(modeledJointPositions, 2)
     end
 end
 
-restingSpringLength = lsqnonlin(@(restingSpringLength) calcDeflectionAndSpringConstantsCost(restingSpringLength, ...
-    springHeights, inputs, params), inputs.restingSpringLength, 0, ...
-    Inf, optimizerOptions);
+hold on
+for i = 1:length(inputs.springConstants)
+    plot(inputs.time, springHeights(:, i))
+end
+hold off
 
-% Solve for K values again here
 verticalForce = inputs.experimentalGroundReactionForces(2, :)';
-deflectionMatrix = zeros(length(verticalForce), length(inputs.springConstants));
+deflectionMatrix = zeros(length(verticalForce), 2);
 for i = 1:length(verticalForce)
     for j = 1:length(inputs.springConstants)
-        deflectionMatrix(i, j) = springHeights(i, j) - ...
-            restingSpringLength - 0.001;
+        deflectionMatrix(i, 1) = deflectionMatrix(i, 1) - ...
+            (springHeights(i, j) - 0.001);
     end
+    deflectionMatrix(i, 2) = 1 * length(inputs.springConstants);
 end
-springConstants = lsqnonneg(deflectionMatrix, verticalForce);
 
-inputs.restingSpringLength = restingSpringLength;
-inputs.springConstants = springConstants';
+initialGuesses = lsqlin(deflectionMatrix, verticalForce);
+% initialGuesses = deflectionMatrix\verticalForce;
+
+inputs.springConstants = ones(1, length(inputs.springConstants)) * ...
+    initialGuesses(1);
+inputs.restingSpringLength = initialGuesses(2) / initialGuesses(1);
 end
 
 % (struct) -> (struct)
