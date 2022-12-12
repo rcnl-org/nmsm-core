@@ -19,7 +19,7 @@ function [x0,y0,iout,jout] = intersections(x1,y1,x2,y2,robust)
 % version properly handles parallel and overlapping segments.
 %
 % The algorithm can return two additional vectors that indicate which
-% segment pairs contain intersections and where they are:
+% segment groups contain intersections and where they are:
 %
 %   [X0,Y0,I,J] = intersections(X1,Y1,X2,Y2,ROBUST);
 %
@@ -75,16 +75,16 @@ function [x0,y0,iout,jout] = intersections(x1,y1,x2,y2,robust)
 % whether L1 and L2 intersect.  If 0 <= t1 < 1 and 0 <= t2 < 1 then the two
 % line segments cross and we can include (x0,y0) in the output.
 %
-% In principle, we have to perform this computation on every pair of line
-% segments in the input data.  This can be quite a large number of pairs so
+% In principle, we have to perform this computation on every group of line
+% segments in the input data.  This can be quite a large number of groups so
 % we will reduce it by doing a simple preliminary check to eliminate line
-% segment pairs that could not possibly cross.  The check is to look at the
+% segment groups that could not possibly cross.  The check is to look at the
 % smallest enclosing rectangles (with sides parallel to the axes) for each
-% line segment pair and see if they overlap.  If they do then we have to
+% line segment group and see if they overlap.  If they do then we have to
 % compute t1 and t2 (via the A\B computation) to see if the line segments
 % cross, but if they don't then the line segments cannot cross.  In a
 % typical application, this technique will eliminate most of the potential
-% line segment pairs.
+% line segment groups.
 
 
 % Input checks.
@@ -212,8 +212,8 @@ else
 end
 
 
-% Find segments pairs which have at least one vertex = NaN and remove them.
-% This line is a fast way of finding such segment pairs.  We take
+% Find segments groups which have at least one vertex = NaN and remove them.
+% This line is a fast way of finding such segment groups.  We take
 % advantage of the fact that NaNs propagate through calculations, in
 % particular subtraction (in the calculation of dxy1 and dxy2, which we
 % need anyway) and addition.
@@ -241,7 +241,7 @@ B = -[x1(i) x2(j) y1(i) y2(j)].';
 
 % Loop through possibilities.  Trap singularity warning and then use
 % lastwarn to see if that plane of AA is near singular.  Process any such
-% segment pairs to determine if they are colinear (overlap) or merely
+% segment groups to determine if they are colinear (overlap) or merely
 % parallel.  That test consists of checking to see if one of the endpoints
 % of the curve 2 segment lies on the curve 1 segment.  This is done by
 % checking the cross product
@@ -250,11 +250,11 @@ B = -[x1(i) x2(j) y1(i) y2(j)].';
 %
 % If this is close to zero then the segments overlap.
 
-% If the robust option is false then we assume no two segment pairs are
+% If the robust option is false then we assume no two segment groups are
 % parallel and just go ahead and do the computation.  If A is ever singular
 % a warning will appear.  This is faster and obviously you should use it
 % only when you know you will never have overlapping or parallel segment
-% pairs.
+% groups.
 
 if robust
 	overlap = false(n,1);
@@ -281,7 +281,7 @@ if robust
 	% Find where t1 and t2 are between 0 and 1 and return the corresponding
 	% x0 and y0 values.
 	in_range = (T(1,:) >= 0 & T(2,:) >= 0 & T(1,:) <= 1 & T(2,:) <= 1).';
-	% For overlapping segment pairs the algorithm will return an
+	% For overlapping segment groups the algorithm will return an
 	% intersection point that is at the center of the overlapping region.
 	if any(overlap)
 		ia = i(overlap);

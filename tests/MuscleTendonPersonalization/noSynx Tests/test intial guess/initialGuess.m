@@ -40,11 +40,11 @@ totalCost5 = calcTendonSlackLengthDeviationCost(values, experimentalData, ...
 totalCost6 = calcEmgScaleFactorDevationCost(values, params);
 totalCost7 = calcNormalizedFiberLengthDeviationCost( modeledValues, ...
     experimentalData, params);
-totalCost8 = calcNormalizedFiberLengthPairedSimilarityCost(modeledValues, ...
+totalCost8 = calcNormalizedFiberLengthGroupedSimilarityCost(modeledValues, ...
     experimentalData, params);
-totalCost9 = calcEmgScaleFactorPairedSimilarityCost(values, ...
+totalCost9 = calcEmgScaleFactorGroupedSimilarityCost(values, ...
     experimentalData, params);
-totalCost10 = calcElectromechanicalDelayPairedSimilarityCost(values, ...
+totalCost10 = calcElectromechanicalDelayGroupedSimilarityCost(values, ...
     experimentalData, params);
 totalCost11 = calcPassiveForceCost(modeledValues, params);
 
@@ -71,14 +71,14 @@ assertWithinRange(totalCost6, emgScalePenalty,  1e-12)
 normalizedFiberLengthCost = sum(expectedCost.lMtildaPenalty .^ 2, "all");
 assertWithinRange(totalCost7, normalizedFiberLengthCost,  1e-12)
 
-lmtildaPairedSimilarity = sum(expectedCost.lmtildaPairedSimilarity .^ 2, "all");
-assertWithinRange(totalCost8, lmtildaPairedSimilarity,  1e-12)
+lmtildaGroupedSimilarity = sum(expectedCost.lmtildaGroupedSimilarity .^ 2, "all");
+assertWithinRange(totalCost8, lmtildaGroupedSimilarity,  1e-12)
 
-emgScalePairedSimilarity = sum(expectedCost.emgScalePairedSimilarity .^ 2, "all");
-assertWithinRange(totalCost9, emgScalePairedSimilarity,  1e-12)
+emgScaleGroupedSimilarity = sum(expectedCost.emgScaleGroupedSimilarity .^ 2, "all");
+assertWithinRange(totalCost9, emgScaleGroupedSimilarity,  1e-12)
 
-tdelayPairedSimilarity = sum(expectedCost.tdelayPairedSimilarity .^ 2, "all");
-assertWithinRange(totalCost10, tdelayPairedSimilarity,  1e-12)
+tdelayGroupedSimilarity = sum(expectedCost.tdelayGroupedSimilarity .^ 2, "all");
+assertWithinRange(totalCost10, tdelayGroupedSimilarity,  1e-12)
 
 minPassiveForce = sum(expectedCost.minPassiveForce .^ 2, "all");
 assertWithinRange(totalCost11, minPassiveForce,  1e-12)

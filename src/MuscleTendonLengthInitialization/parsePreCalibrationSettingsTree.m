@@ -106,8 +106,8 @@ if(isstruct(minNormalizedMuscleFiberLength))
     inputs.minNormalizedMuscleFiberLength = ...
         str2double(minNormalizedMuscleFiberLength.Text);
 end
-inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, ...
-    'PairedNormalizedMuscleFiberLengths'), inputs.model);
+inputs.normalizedFiberLengthGroups = getGroups(getFieldByNameOrError(tree, ...
+    'GroupedNormalizedMuscleFiberLengths'), inputs.model);
 inputs = getNormalizedFiberLengthSettings(inputs);
 end
 
@@ -136,7 +136,7 @@ end
 
 function inputs = getCostFunctionTerms(tree, inputs)
 individualMusclesTree = getFieldByNameOrError(tree, "IndividualMuscles");
-pairedMusclesTree = getFieldByNameOrError(tree, "PairedMuscles");
+groupedMusclesTree = getFieldByNameOrError(tree, "GroupedMuscles");
 individualMuscleTerms = ["PassiveJointMoments", ...
     "OptimalMuscleFiberLength", "TendonSlackLength", ...
     "MinimumNormalizedMuscleFiberLength", ...
@@ -153,13 +153,13 @@ for i=1:length(individualMuscleTerms)
         individualMusclesTree, individualMuscleTerms(i)), ...
         individualMuscleCostTermNames(i), inputs);
 end
-pairedMuscleTerms = ["NormalizedMuscleFiberLength", ...
+groupedMuscleTerms = ["NormalizedMuscleFiberLength", ...
     "MaximumNormalizedMuscleFiberLength"];
-pairedMuscleCostTermNames = ["normalizedFiberLengthMeanSimilarity", ...
+groupedMuscleCostTermNames = ["normalizedFiberLengthMeanSimilarity", ...
     "maximumNormalizedFiberLengthSimilarity"];
-for i=1:length(pairedMuscleTerms)
-    inputs = addCostFunctionTerms(getFieldByNameOrError(pairedMusclesTree, ...
-        pairedMuscleTerms(i)), pairedMuscleCostTermNames(i), inputs);
+for i=1:length(groupedMuscleTerms)
+    inputs = addCostFunctionTerms(getFieldByNameOrError(groupedMusclesTree, ...
+        groupedMuscleTerms(i)), groupedMuscleCostTermNames(i), inputs);
 end
 end
 
@@ -208,24 +208,24 @@ inputs.muscleVolume = (inputs.maxIsometricForce / ...
     inputs.maximumMuscleStress) .* inputs.optimalFiberLength;
 end
 
-function pairs = getPairs(tree, model)
-pairElements = getFieldByName(tree, 'musclepairs');
+function groups = getGroups(tree, model)
+groupElements = getFieldByName(tree, 'musclegroups');
 activationGroupNames = string([]);
-if isstruct(pairElements)
-    activationGroupNames(end+1) = pairElements.Text;
-elseif iscell(pairElements)
-    for i=1:length(pairElements)
-        activationGroupNames(end+1) = pairElements{i}.Text;
+if isstruct(groupElements)
+    activationGroupNames(end+1) = groupElements.Text;
+elseif iscell(groupElements)
+    for i=1:length(groupElements)
+        activationGroupNames(end+1) = groupElements{i}.Text;
     end
 else
-    pairs = {};
+    groups = {};
     return
 end
-pairs = groupNamesToPairs(activationGroupNames, model);
+groups = groupNamesToGroups(activationGroupNames, model);
 end
 
-function pairs = groupNamesToPairs(groupNames, model)
-pairs = {};
+function groups = groupNamesToGroups(groupNames, model)
+groups = {};
 model = Model(model);
 for i=1:length(groupNames)
     group = [];
@@ -241,23 +241,23 @@ for i=1:length(groupNames)
         end
         group(end+1) = count;
     end
-    pairs{end + 1} = group;
+    groups{end + 1} = group;
 end
 end
 
 function inputs = getNormalizedFiberLengthSettings(inputs)
-inputs.numMusclePairs = numel(inputs.normalizedFiberLengthPairs);
+inputs.numMuscleGroups = numel(inputs.normalizedFiberLengthGroups);
 numMuscles = getNumEnabledMuscles(inputs.model);
-for i = 1 : inputs.numMusclePairs
-for j = 1 : numel(inputs.normalizedFiberLengthPairs{i})
+for i = 1 : inputs.numMuscleGroups
+for j = 1 : numel(inputs.normalizedFiberLengthGroups{i})
     inputs.groupedMaxNormalizedFiberLength(...
-        inputs.normalizedFiberLengthPairs{i}(j)) = i;
+        inputs.normalizedFiberLengthGroups{i}(j)) = i;
 end
 end
 inputs.numMusclesIndividual = 0;
 for i = 1 :numMuscles
-if isempty(find([inputs.normalizedFiberLengthPairs{:}] == i))
-    inputs.groupedMaxNormalizedFiberLength(i) = inputs.numMusclePairs + ...
+if isempty(find([inputs.normalizedFiberLengthGroups{:}] == i))
+    inputs.groupedMaxNormalizedFiberLength(i) = inputs.numMuscleGroups + ...
         inputs.numMusclesIndividual + 1;
     inputs.numMusclesIndividual = inputs.numMusclesIndividual + 1;
 end
