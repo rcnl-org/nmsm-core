@@ -37,6 +37,6 @@ reportDistanceErrorByMarker( ...
     'Rajagopal_4.0_RCNL_markers_scaled_knee.osim', 'l_knee.trc', ...
     markerNames, 'finish.sto')
 
-% Create the plot. A value of false means each group is plotted separately,
+% Create the plot. A value of false means each pair is plotted separately,
 % a value of true means all are plotted together.
 plotMarkerDistanceErrors(["start.sto", "finish.sto"], false)
