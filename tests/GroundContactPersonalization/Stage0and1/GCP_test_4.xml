@@ -111,7 +111,7 @@
 			</verticalGrfError>
 			<verticalGrfSlopeError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
+                <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
                 <max_allowable_error>10</max_allowable_error>
 			</verticalGrfSlopeError>
@@ -150,7 +150,7 @@
 			</verticalGrfError>
 			<verticalGrfSlopeError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
+                <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
                 <max_allowable_error>10</max_allowable_error>
 			</verticalGrfSlopeError>
@@ -162,7 +162,7 @@
 			</horizontalGrfError>
 			<horizontalGrfSlopeError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
+                <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
                 <max_allowable_error>10</max_allowable_error>
 			</horizontalGrfSlopeError>

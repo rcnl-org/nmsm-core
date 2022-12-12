@@ -107,7 +107,7 @@
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
                 <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>1</max_allowable_error>
+                <max_allowable_error>0.2</max_allowable_error>
 			</verticalGrfError>
 			<verticalGrfSlopeError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
