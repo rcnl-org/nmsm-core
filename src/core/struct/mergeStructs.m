@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function merges two structures, if there is a duplicate name-value
-% pair, the struct as the first argument will take precedent.
+% group, the struct as the first argument will take precedent.
 %
 % (struct, struct) -> (struct)
 % merge two structs with arg1 getting priority with name overlap
