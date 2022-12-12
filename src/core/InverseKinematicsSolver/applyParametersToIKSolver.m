@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function applies the parameters (struct field/value pairs) such that
+% This function applies the parameters (struct field/value groups) such that
 % known field values are applied to the correct function for the IKSolver.
 %
 % (InverseKinematicSolver, struct) -> (InverseKinematicSolver)

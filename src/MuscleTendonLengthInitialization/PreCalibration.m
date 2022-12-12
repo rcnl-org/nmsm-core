@@ -44,7 +44,7 @@ function values = prepareInitialValues(inputs)
 numMuscles = getNumEnabledMuscles(inputs.model);
 values{1} = ones(1, numMuscles); % optimal fiber length scale factor
 values{2} = ones(1, numMuscles); % tendon slack length scale factor
-values{3} = ones(1, inputs.numMusclePairs + ...
+values{3} = ones(1, inputs.numMuscleGroups + ...
     inputs.numMusclesIndividual); % maximum normalized fiber length
 values{4} = ones(1, 1); % muscle specific tension
 end
@@ -54,7 +54,7 @@ function lowerBounds = makeLowerBounds(inputs)
 numMuscles = getNumEnabledMuscles(inputs.model);
 lowerBounds{1} = repmat(0.5, 1, numMuscles); % optimal fiber length scale factor
 lowerBounds{2} = repmat(0.5, 1, numMuscles); % tendon slack length scale factor
-lowerBounds{3} = repmat(1, 1, inputs.numMusclePairs + ...
+lowerBounds{3} = repmat(1, 1, inputs.numMuscleGroups + ...
     inputs.numMusclesIndividual); % maximum normalized fiber length
 lowerBounds{4} = repmat(0.6, 1, 1); % muscle specific tension
 end
@@ -64,7 +64,7 @@ function upperBounds = makeUpperBounds(inputs)
 numMuscles = getNumEnabledMuscles(inputs.model);
 upperBounds{1} = repmat(2, 1, numMuscles); % optimal fiber length scale factor
 upperBounds{2} = repmat(2, 1, numMuscles); % tendon slack length scale factor
-upperBounds{3} = repmat(1.2, 1, inputs.numMusclePairs + ...
+upperBounds{3} = repmat(1.2, 1, inputs.numMuscleGroups + ...
     inputs.numMusclesIndividual); % maximum normalized fiber length
 upperBounds{4} = repmat(2.3, 1, 1); % muscle specific tension
 end

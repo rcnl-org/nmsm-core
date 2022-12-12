@@ -6,7 +6,7 @@
 % Inputs -
 %   prefix - string name of trial
 %   fileName - string path of file
-%   timePairs - 2D array of size N x 2
+%   timeGroups - 2D array of size N x 2
 %
 % (string, string, string, string) -> (None)
 % Makes new EMG data files with columns matching the file given
@@ -33,17 +33,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function sectionDataFiles(fileNames, timePairs, numRows, prefix)
+function sectionDataFiles(fileNames, timeGroups, numRows, prefix)
 import org.opensim.modeling.Storage
 for i=1:length(fileNames)
     storage = Storage(fileNames(i));
     data = storageToDoubleMatrix(storage);
     time = findTimeColumn(storage);
     columnNames = getStorageColumnNames(storage);
-    for j=1:size(timePairs, 1)
+    for j=1:size(timeGroups, 1)
         [filepath, name, ext] = fileparts(fileNames(i));
-        [newData, newTime] = cutData(data, time, timePairs(j,1), ...
-            timePairs(j,2), numRows);
+        [newData, newTime] = cutData(data, time, timeGroups(j,1), ...
+            timeGroups(j,2), numRows);
         newFileName = insertAfter(name, prefix, "_" + num2str(j));
         writeToSto(columnNames, newTime, newData', fullfile(filepath, ...
             newFileName + ext));

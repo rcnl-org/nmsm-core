@@ -147,15 +147,15 @@ assertWithinRange(emgScalePenalty, sum(expectedCost.emgScalePenalty .^ 2, "all")
 normalizedFiberLengthCost = calcNormalizedFiberLengthDeviationCost(synxModeledValues, experimentalData, struct());
 assertWithinRange(normalizedFiberLengthCost, sum(expectedCost.lMtildaPenalty .^ 2, "all"), 1e-13)
 
-lmtildaPairedSimilarity = calcNormalizedFiberLengthPairedSimilarityCost( ...
+lmtildaGroupedSimilarity = calcNormalizedFiberLengthGroupedSimilarityCost( ...
     synxModeledValues, experimentalData, struct());
-assertWithinRange(lmtildaPairedSimilarity, sum(expectedCost.lmtildaPairedSimilarity .^ 2, "all"), 1e-13)
+assertWithinRange(lmtildaGroupedSimilarity, sum(expectedCost.lmtildaGroupedSimilarity .^ 2, "all"), 1e-13)
 
-emgScalePairedSimilarity = calcEmgScaleFactorPairedSimilarityCost(values, experimentalData, struct());
-assertWithinRange(emgScalePairedSimilarity, sum(expectedCost.emgScalePairedSimilarity .^ 2, "all"), 1e-13)
+emgScaleGroupedSimilarity = calcEmgScaleFactorGroupedSimilarityCost(values, experimentalData, struct());
+assertWithinRange(emgScaleGroupedSimilarity, sum(expectedCost.emgScaleGroupedSimilarity .^ 2, "all"), 1e-13)
 
-tdelayPairedSimilarity = calcElectromechanicalDelayPairedSimilarityCost(values, experimentalData, struct());
-assertWithinRange(tdelayPairedSimilarity, sum(expectedCost.tdelayPairedSimilarity .^ 2, "all"), 1e-13)
+tdelayGroupedSimilarity = calcElectromechanicalDelayGroupedSimilarityCost(values, experimentalData, struct());
+assertWithinRange(tdelayGroupedSimilarity, sum(expectedCost.tdelayGroupedSimilarity .^ 2, "all"), 1e-13)
 
 minPassiveForce = calcPassiveForceCost(synxModeledValues, struct());
 assertWithinRange(minPassiveForce, sum(expectedCost.minPassiveForce .^ 2, "all"), 1e-13)

@@ -95,15 +95,15 @@ assertWithinRange(emgScalePenalty, sum(expectedCost.emgScalePenalty .^ 2, "all")
 normalizedFiberLengthCost = calcNormalizedFiberLengthDeviationCost(modeledValues, inputData, struct());
 assertWithinRange(normalizedFiberLengthCost, sum(expectedCost.lMtildaPenalty .^ 2, "all"), 1e-13)
 
-lmtildaPairedSimilarity = calcNormalizedFiberLengthPairedSimilarityCost( ...
+lmtildaGroupedSimilarity = calcNormalizedFiberLengthGroupedSimilarityCost( ...
     modeledValues, experimentalData, struct());
-assertWithinRange(lmtildaPairedSimilarity, sum(expectedCost.lmtildaPairedSimilarity .^ 2, "all"), 1e-13)
+assertWithinRange(lmtildaGroupedSimilarity, sum(expectedCost.lmtildaGroupedSimilarity .^ 2, "all"), 1e-13)
 
-emgScalePairedSimilarity = calcEmgScaleFactorPairedSimilarityCost(values, experimentalData, struct());
-assertWithinRange(emgScalePairedSimilarity, sum(expectedCost.emgScalePairedSimilarity .^ 2, "all"), 1e-13)
+emgScaleGroupedSimilarity = calcEmgScaleFactorGroupedSimilarityCost(values, experimentalData, struct());
+assertWithinRange(emgScaleGroupedSimilarity, sum(expectedCost.emgScaleGroupedSimilarity .^ 2, "all"), 1e-13)
 
-tdelayPairedSimilarity = calcElectromechanicalDelayPairedSimilarityCost(values, experimentalData, struct());
-assertWithinRange(tdelayPairedSimilarity, sum(expectedCost.tdelayPairedSimilarity .^ 2, "all"), 1e-13)
+tdelayGroupedSimilarity = calcElectromechanicalDelayGroupedSimilarityCost(values, experimentalData, struct());
+assertWithinRange(tdelayGroupedSimilarity, sum(expectedCost.tdelayGroupedSimilarity .^ 2, "all"), 1e-13)
 
 minPassiveForce = calcPassiveForceCost(modeledValues, struct());
 assertWithinRange(minPassiveForce, sum(expectedCost.minPassiveForce .^ 2, "all"), 1e-13)
@@ -124,11 +124,11 @@ totalCost = totalCost + calcTendonSlackLengthDeviationCost(values, ...
 totalCost = totalCost + calcEmgScaleFactorDevationCost(values, params);
 totalCost = totalCost + calcNormalizedFiberLengthDeviationCost( ...
     modeledValues, experimentalData, params);
-totalCost = totalCost + calcNormalizedFiberLengthPairedSimilarityCost( ...
+totalCost = totalCost + calcNormalizedFiberLengthGroupedSimilarityCost( ...
     modeledValues, experimentalData, params);
-totalCost = totalCost + calcEmgScaleFactorPairedSimilarityCost( ...
+totalCost = totalCost + calcEmgScaleFactorGroupedSimilarityCost( ...
     values, experimentalData, params);
-totalCost = totalCost + calcElectromechanicalDelayPairedSimilarityCost( ...
+totalCost = totalCost + calcElectromechanicalDelayGroupedSimilarityCost( ...
     values, experimentalData, params);
 totalCost = totalCost + calcPassiveForceCost(modeledValues, params);
 
