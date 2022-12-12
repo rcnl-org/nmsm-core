@@ -11,7 +11,7 @@ params:
 	markerWeights - struct of marker names as field and weights as values
 					only include non-'one' valued marker weights
 	coordinateTasks - struct of coordinates as fields and a struct as values
-					  the inner struct has attribute field/value groups
+					  the inner struct has attribute field/value pairs
 	accuracy - number - the accuracy of the IKSolver 
 	
 example arguments:

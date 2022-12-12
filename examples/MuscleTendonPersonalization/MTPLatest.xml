@@ -186,43 +186,43 @@
         <GroupedMuscles>
             <GroupedActivationTimeConstants>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>AdductorActivationGroupL</musclegroups>
+                <muscle_group>AdductorActivationGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>BicepsFemActivationGroupL</musclegroups>
+                <muscle_group>BicepsFemActivationGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GastrocActivationGroupL</musclegroups>
+                <muscle_group>GastrocActivationGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMaxActivationGroupL</musclegroups>
+                <muscle_group>GluteusMaxActivationGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMedActivationGroupL</musclegroups>
+                <muscle_group>GluteusMedActivationGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMinActivationGroupL</musclegroups>
+                <muscle_group>GluteusMinActivationGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>IliopsoasActivationGroupL</musclegroups>
+                <muscle_group>IliopsoasActivationGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>HamstringActivationGroupL</musclegroups>
+                <muscle_group>HamstringActivationGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>QuadricepActivationGroupL</musclegroups>
+                <muscle_group>QuadricepActivationGroupL</muscle_group>
             </GroupedActivationTimeConstants>
             <GroupedNormalizedMuscleFiberLengths>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>AdductorFiberLengthGroupL</musclegroups>
+                <muscle_group>AdductorFiberLengthGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMaxFiberLengthGroupL</musclegroups>
+                <muscle_group>GluteusMaxFiberLengthGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMedFiberLengthGroupL</musclegroups>
+                <muscle_group>GluteusMedFiberLengthGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMinFiberLengthGroupL</musclegroups>
+                <muscle_group>GluteusMinFiberLengthGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>QuadricepFiberLengthGroupL</musclegroups>
+                <muscle_group>QuadricepFiberLengthGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>HamstringFiberLengthGroupL</musclegroups>
+                <muscle_group>HamstringFiberLengthGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>PeroneusFiberLengthGroupL</musclegroups>
+                <muscle_group>PeroneusFiberLengthGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>IliopsoasFiberLengthGroupL</musclegroups>
+                <muscle_group>IliopsoasFiberLengthGroupL</muscle_group>
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GastrocFiberLengthGroupL</musclegroups>
+                <muscle_group>GastrocFiberLengthGroupL</muscle_group>
             </GroupedNormalizedMuscleFiberLengths>
         </GroupedMuscles>
         <!--*Optional* The vMaxFactor to use-->

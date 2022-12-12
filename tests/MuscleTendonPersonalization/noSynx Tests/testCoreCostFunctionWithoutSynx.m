@@ -97,13 +97,13 @@ assertWithinRange(normalizedFiberLengthCost, sum(expectedCost.lMtildaPenalty .^ 
 
 lmtildaGroupedSimilarity = calcNormalizedFiberLengthGroupedSimilarityCost( ...
     modeledValues, experimentalData, struct());
-assertWithinRange(lmtildaGroupedSimilarity, sum(expectedCost.lmtildaGroupedSimilarity .^ 2, "all"), 1e-13)
+assertWithinRange(lmtildaGroupedSimilarity, sum(expectedCost.lmtildaPairedSimilarity .^ 2, "all"), 1e-13)
 
 emgScaleGroupedSimilarity = calcEmgScaleFactorGroupedSimilarityCost(values, experimentalData, struct());
-assertWithinRange(emgScaleGroupedSimilarity, sum(expectedCost.emgScaleGroupedSimilarity .^ 2, "all"), 1e-13)
+assertWithinRange(emgScaleGroupedSimilarity, sum(expectedCost.emgScalePairedSimilarity .^ 2, "all"), 1e-13)
 
 tdelayGroupedSimilarity = calcElectromechanicalDelayGroupedSimilarityCost(values, experimentalData, struct());
-assertWithinRange(tdelayGroupedSimilarity, sum(expectedCost.tdelayGroupedSimilarity .^ 2, "all"), 1e-13)
+assertWithinRange(tdelayGroupedSimilarity, sum(expectedCost.tdelayPairedSimilarity .^ 2, "all"), 1e-13)
 
 minPassiveForce = calcPassiveForceCost(modeledValues, struct());
 assertWithinRange(minPassiveForce, sum(expectedCost.minPassiveForce .^ 2, "all"), 1e-13)

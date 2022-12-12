@@ -54,7 +54,7 @@ inputs.coordinates = getCoordinateList(getFieldByNameOrError(tree, ...
     "MTPCoordinateList").Text);
 inputs.muscleTendonVelocityCutoffFrequency = getFieldByNameOrError( ...
     tree, "muscle_tendon_velocity_cutoff_frequency").Text;
-inputs.timeGroups = getTimeGroups(tree);
+inputs.timePairs = getTimePairs(tree);
 inputs.prefix = getFieldByNameOrError(tree, "MTPTrialPrefix").Text;
 end
 
@@ -65,17 +65,17 @@ if(~isempty(spaceSeparatedList))
 end
 end
 
-function timeGroups = getTimeGroups(tree)
-groups = getFieldByNameOrError(tree, "MTPTimePairList");
-timeGroups = zeros(length(groups.MTPTimePair), 2);
-for i=1:length(groups.MTPTimePair)
-    if(length(groups.MTPTimePair) == 1)
-        group = groups.MTPTimePair;
+function timePairs = getTimePairs(tree)
+pairs = getFieldByNameOrError(tree, "MTPTimePairList");
+timePairs = zeros(length(pairs.MTPTimePair), 2);
+for i=1:length(pairs.MTPTimePair)
+    if(length(pairs.MTPTimePair) == 1)
+        pair = pairs.MTPTimePair;
     else
-        group = groups.MTPTimePair{i};
+        pair = pairs.MTPTimePair{i};
     end
-    if(~isempty(group.Text))
-        timeGroups(i, :) = str2double(strsplit(group.Text, ' '));
+    if(~isempty(pair.Text))
+        timePairs(i, :) = str2double(strsplit(pair.Text, ' '));
     end
 end
 end
