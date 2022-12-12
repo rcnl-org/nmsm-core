@@ -119,7 +119,7 @@
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
                 <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>20</max_allowable_error>
+                <max_allowable_error>50</max_allowable_error>
 			</springConstantErrorFromMean>
 			<dampingFactorErrorFromMean>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -170,7 +170,7 @@
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
                 <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>20</max_allowable_error>
+                <max_allowable_error>50</max_allowable_error>
 			</springConstantErrorFromMean>
 			<dampingFactorErrorFromMean>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
