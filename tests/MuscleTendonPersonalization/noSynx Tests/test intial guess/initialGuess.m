@@ -71,13 +71,13 @@ assertWithinRange(totalCost6, emgScalePenalty,  1e-12)
 normalizedFiberLengthCost = sum(expectedCost.lMtildaPenalty .^ 2, "all");
 assertWithinRange(totalCost7, normalizedFiberLengthCost,  1e-12)
 
-lmtildaGroupedSimilarity = sum(expectedCost.lmtildaGroupedSimilarity .^ 2, "all");
+lmtildaGroupedSimilarity = sum(expectedCost.lmtildaPairedSimilarity .^ 2, "all");
 assertWithinRange(totalCost8, lmtildaGroupedSimilarity,  1e-12)
 
-emgScaleGroupedSimilarity = sum(expectedCost.emgScaleGroupedSimilarity .^ 2, "all");
+emgScaleGroupedSimilarity = sum(expectedCost.emgScalePairedSimilarity .^ 2, "all");
 assertWithinRange(totalCost9, emgScaleGroupedSimilarity,  1e-12)
 
-tdelayGroupedSimilarity = sum(expectedCost.tdelayGroupedSimilarity .^ 2, "all");
+tdelayGroupedSimilarity = sum(expectedCost.tdelayPairedSimilarity .^ 2, "all");
 assertWithinRange(totalCost10, tdelayGroupedSimilarity,  1e-12)
 
 minPassiveForce = sum(expectedCost.minPassiveForce .^ 2, "all");

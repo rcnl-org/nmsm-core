@@ -19,9 +19,9 @@
 		<MTPCoordinateList>hip_adduction_l hip_flexion_l hip_rotation_l knee_angle_l ankle_angle_l subtalar_angle_l</MTPCoordinateList>
 		<!-- The list of start and end times of trials to be used in MTP -->
 		<MTPTimePairList>
-			<!-- Space separated group of start and end times for a given trial -->
+			<!-- Space separated pair of start and end times for a given trial -->
 			<MTPTimePair>0.593 1.667</MTPTimePair>
-            <!-- Space separated group of start and end times for a given trial -->
+            <!-- Space separated pair of start and end times for a given trial -->
 			<MTPTimePair>0.793 1.867</MTPTimePair>
 		</MTPTimePairList>
 		<!-- Prefix to denote each trial (gait, squat, step_up), useful when multiple motions are used -->
