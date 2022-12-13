@@ -29,11 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modeledVerticalGrf = calcModeledVerticalGroundReactionForce( ...
-    springConstants, dampingFactors, springRestingLength, markerKinematics)
+function [modeledVerticalGrf, springForces] = ...
+    calcModeledVerticalGroundReactionForce(springConstants, ...
+    dampingFactors, springRestingLength, ...
+    markerKinematics, springForces)
 modeledVerticalGrf = 0;
 for i=1:length(springConstants)
-    springVerticalGrf = 0;
     height = markerKinematics.height(i);
     verticalVelocity = markerKinematics.yVelocity(i);
     %     if (height-springRestingLength)<0
@@ -66,8 +67,8 @@ for i=1:length(springConstants)
     freglyVerticalGrf = -s .* (v .* height - c .* log(cosh((height + h) ./ c))) - constant;
     freglyVerticalGrf(isnan(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
     freglyVerticalGrf(isinf(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
-    springVerticalGrf = freglyVerticalGrf * (1 + dampingFactors(i) * ...
+    springForces(2, i) = freglyVerticalGrf * (1 + dampingFactors(i) * ...
         verticalVelocity);
-    modeledVerticalGrf = modeledVerticalGrf + springVerticalGrf;
+    modeledVerticalGrf = modeledVerticalGrf + springForces(2, i);
 end
 end
