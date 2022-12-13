@@ -43,4 +43,6 @@ valueError = [valueError newValues];
 slopeError = [slopeError newSlope];
 end
 valueError = 1000 * valueError;
+valueError = reshape(valueError, 1, []);
+slopeError = reshape(slopeError, 1, []);
 end
