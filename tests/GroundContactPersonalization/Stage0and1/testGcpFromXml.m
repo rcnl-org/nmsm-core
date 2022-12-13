@@ -5,7 +5,7 @@ clear
 inputs = prepareInputs(inputs, params);
 
 % Latest stage of GCP to test
-lastStage = 1;
+lastStage = 2;
 
 % Stage 0
 inputs = optimizeDeflectionAndSpringContants(inputs, params);
