@@ -3,8 +3,8 @@
 % This function parses the settings tree resulting from xml2struct of the
 % Joint Model Personalization Settings XML file.
 %
-% (struct) -> (string, struct, struct)
-% returns the input values for Joint Model Personalization
+% (struct) -> (struct, struct, string)
+% returns the input values for Muscle Tendon Personalization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

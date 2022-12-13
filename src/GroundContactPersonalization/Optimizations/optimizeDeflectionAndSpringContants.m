@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,61 +27,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
+function inputs = optimizeDeflectionAndSpringContants(inputs, params)
 [initialValues, fieldNameOrder, inputs] = makeInitialValues(inputs, ...
     params);
-[lowerBounds, upperBounds] = makeBounds(inputs, params);
+[lowerBounds, upperBounds] = makeBounds(inputs);
 optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
-% calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params);
-results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
+results = lsqnonlin(@(values) calcDeflectionAndSpringConstantsCost(values, ...
     fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
     upperBounds, optimizerOptions);
 inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
-    params, 1);
+    params, 0);
 end
 
 % (struct, struct) -> (Array of double)
 % generate initial values to be optimized from inputs, params
 function [initialValues, fieldNameOrder, inputs] = makeInitialValues( ...
     inputs, params)
-initialValues = [];
-fieldNameOrder = [];
-inputs.bSplineCoefficientsVerticalSubset = ...
-    inputs.bSplineCoefficients(:, [1:4, 6]);
-if (params.stageOne.springConstants.isEnabled)
-    initialValues = [initialValues inputs.springConstants];
-    fieldNameOrder = [fieldNameOrder "springConstants"];
-end
-if (params.stageOne.dampingFactors.isEnabled)
-    initialValues = [initialValues inputs.dampingFactors];
-    fieldNameOrder = [fieldNameOrder "dampingFactors"];
-end
-if (params.stageOne.bSplineCoefficients.isEnabled)
-    initialValues = [initialValues ...
-        reshape(inputs.bSplineCoefficientsVerticalSubset, 1, [])];
-    fieldNameOrder = [fieldNameOrder "bSplineCoefficientsVerticalSubset"];
-end
+inputs.initialRestingSpringLength = inputs.restingSpringLength;
+initialValues = [inputs.springConstants inputs.restingSpringLength];
+fieldNameOrder = ["springConstants", "restingSpringLength"];
 end
 
 % (struct) -> (Array of double, Array of double)
 % Generate lower and upper bounds for design variables from inputs
-function [lowerBounds, upperBounds] = makeBounds(inputs, params)
-lowerBounds = [];
-upperBounds = [];
-if (params.stageOne.springConstants.isEnabled)
-    lowerBounds = [lowerBounds zeros(1, length(inputs.springConstants))];
-    upperBounds = [upperBounds Inf(1, length(inputs.springConstants))];
-end
-if (params.stageOne.dampingFactors.isEnabled)
-    lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
-    upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
-end
-if (params.stageOne.bSplineCoefficients.isEnabled)
-    lowerBounds = [lowerBounds -Inf(1, length(reshape(...
-        inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
-    upperBounds = [upperBounds Inf(1, length(reshape(...
-        inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
-end
+function [lowerBounds, upperBounds] = makeBounds(inputs)
+lowerBounds = [zeros(1, length(inputs.springConstants)) -Inf];
+upperBounds = Inf(1, length(inputs.springConstants) + 1);
 end
 
 % (struct) -> (struct)
@@ -95,7 +66,7 @@ output = optimoptions('lsqnonlin', 'UseParallel', true);
 % output.FunctionTolerance = valueOrAlternate(params, ...
 %     'functionTolerance', 1e-9);
 output.StepTolerance = valueOrAlternate(params, ...
-    'stepTolerance', 1e-3);
+    'stepTolerance', 1e-4);
 output.MaxFunctionEvaluations = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 3e6);
 output.MaxIterations = valueOrAlternate(params, ...
