@@ -30,8 +30,8 @@
 % ----------------------------------------------------------------------- %
 
 function [anteriorGrf, lateralGrf] = ...
-    calcModeledHorizontalGroundReactionForces(model, state, values, ...
-    beltSpeed)
+    calcModeledHorizontalGroundReactionForces(values, beltSpeed, ...
+    markerKinematics)
 % try out latching velocities, plot mu curves, does viscous matter?
 latchVelocity = 0.05; % Jackson et al, 2016 page 4 has 0.01
 slipOffset = 1e-4;
@@ -39,11 +39,8 @@ anteriorGrf = 0;
 lateralGrf = 0;
 
 for i=1:length(values.springConstants)
-    height = model.getMarkerSet().get("spring_marker_" + ...
-        num2str(i)).getLocationInGround(state).get(1);
-    verticalVelocity = model.getMarkerSet().get("spring_marker_" + ...
-        num2str(i)).getVelocityInGround(state).get(1);
-    verticalGrf = 0;
+    height = markerKinematics.height(i);
+    verticalVelocity = markerKinematics.yVelocity(i);
 %     if (height - values.restingSpringLength)<0
 %         verticalGrf = (values.springConstants(i) * ...
 %             (values.restingSpringLength - height) * ...
@@ -62,11 +59,10 @@ for i=1:length(values.springConstants)
     freglyVerticalGrf = -s .* (v .* height - c .* log(cosh((height + h) ./ c))) - constant;
     freglyVerticalGrf(isnan(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
     freglyVerticalGrf(isinf(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
-    verticalGrf = freglyVerticalGrf;
-    xVelocity = model.getMarkerSet().get("spring_marker_" + ...
-        num2str(i)).getVelocityInGround(state).get(0) + beltSpeed; % adding beltSpeed may be artificial
-    zVelocity = model.getMarkerSet().get("spring_marker_" + ...
-        num2str(i)).getVelocityInGround(state).get(2);
+    verticalGrf = freglyVerticalGrf * (1 + values.dampingFactors(i) * ...
+        verticalVelocity);
+    xVelocity = markerKinematics.xVelocity(i);
+    zVelocity = markerKinematics.zVelocity(i);
     slipVelocity = (xVelocity ^ 2 + zVelocity ^ 2) ^ 0.5;
     if slipVelocity < 1e-10
         slipVelocity = 0;
