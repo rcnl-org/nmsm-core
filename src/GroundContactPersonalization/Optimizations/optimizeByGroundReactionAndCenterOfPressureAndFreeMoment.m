@@ -30,22 +30,81 @@
 function inputs = ...
     optimizeByGroundReactionAndCenterOfPressureAndFreeMoment(inputs, ...
     params)
-
-initialValues = makeInitialValues(inputs, params);
-results = lsqnonlin(@(values) ...
-    calcGroundReactionAndCenterOfPressureAndFreeMomentCost(values, ...
-    inputs, params), initialValues);
-inputs = mergeResults(inputs, results);
+[initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
+    params);
+[lowerBounds, upperBounds] = makeBounds(inputs, params);
+optimizerOptions = prepareOptimizerOptions(params);
+results = lsqnonlin(@(values) calcGroundReactionAndCenterOfPressureAndFreeMomentCost(values, ...
+    fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
+    upperBounds, optimizerOptions);
+inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
+    params, 3);
 end
 
-% (struct, struct) -> (Array of double)
+% (struct, struct) -> (Array of double, Array of string)
 % generate initial values to be optimized from inputs, params
-function initialValues = makeInitialValues(inputs, params)
-
+function [initialValues, fieldNameOrder] = makeInitialValues( ...
+    inputs, params)
+initialValues = [];
+fieldNameOrder = [];
+if (params.stageThree.springConstants.isEnabled)
+    initialValues = [initialValues inputs.springConstants];
+    fieldNameOrder = [fieldNameOrder "springConstants"];
+end
+if (params.stageThree.dampingFactors.isEnabled)
+    initialValues = [initialValues inputs.dampingFactors];
+    fieldNameOrder = [fieldNameOrder "dampingFactors"];
+end
+if (params.stageThree.bSplineCoefficients.isEnabled)
+    initialValues = [initialValues ...
+        reshape(inputs.bSplineCoefficients, 1, [])];
+    fieldNameOrder = [fieldNameOrder "bSplineCoefficients"];
+end
+if (params.stageThree.dynamicFrictionCoefficient.isEnabled)
+    initialValues = [initialValues valueOrAlternate(params, ...
+        "initialDynamicFrictionCoefficient", 1)];
+    fieldNameOrder = [fieldNameOrder "dynamicFrictionCoefficient"];
+end
 end
 
-% (struct, Array of double) -> (struct)
-% merge the results of the optimization back into the input values
-function inputs = mergeResults(inputs, results)
+% (struct) -> (Array of double, Array of double)
+% Generate lower and upper bounds for design variables from inputs
+function [lowerBounds, upperBounds] = makeBounds(inputs, params)
+lowerBounds = [];
+upperBounds = [];
+if (params.stageThree.springConstants.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.springConstants))];
+    upperBounds = [upperBounds Inf(1, length(inputs.springConstants))];
+end
+if (params.stageThree.dampingFactors.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
+    upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
+end
+if (params.stageThree.bSplineCoefficients.isEnabled)
+    lowerBounds = [lowerBounds -Inf(1, length(reshape(...
+        inputs.bSplineCoefficients, 1, [])))];
+    upperBounds = [upperBounds Inf(1, length(reshape(...
+        inputs.bSplineCoefficients, 1, [])))];
+end
+if (params.stageThree.dynamicFrictionCoefficient.isEnabled)
+    lowerBounds = [lowerBounds 0];
+    upperBounds = [upperBounds Inf];
+end
+end
 
+% (struct) -> (struct)
+% Prepare params for outer optimizer for Kinematic Calibration
+function output = prepareOptimizerOptions(params)
+output = optimoptions('lsqnonlin', 'UseParallel', true);
+output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
+output.OptimalityTolerance = valueOrAlternate(params, ...
+    'optimalityTolerance', 1e-6);
+output.FunctionTolerance = valueOrAlternate(params, ...
+    'functionTolerance', 1e-6);
+output.StepTolerance = valueOrAlternate(params, ...
+    'stepTolerance', 1e-4);
+output.MaxFunctionEvaluations = valueOrAlternate(params, ...
+    'maxFunctionEvaluations', 3e6);
+output.Display = valueOrAlternate(params, ...
+    'display','iter');
 end
