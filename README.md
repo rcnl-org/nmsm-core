@@ -1,6 +1,6 @@
 
 # Neuromusculoskeletal Modeling Project (nmsm-core)
-![Test - Mac Intel Status](https://github.com/rcnl-org/nmsm-core/actions/workflows/matlab_tests_self_mac_intel.yml/badge.svg)
+[![Test - Mac Intel Status](https://github.com/rcnl-org/nmsm-core/actions/workflows/matlab_tests_self_mac_intel.yml/badge.svg)]()
 ![Test - Mac Intel Status](https://github.com/rcnl-org/nmsm-core/actions/workflows/matlab_tests_self_mac_m1.yml/badge.svg)
 ![Test - Mac Intel Status](https://github.com/rcnl-org/nmsm-core/actions/workflows/matlab_tests_self_windows.yml/badge.svg)
 
