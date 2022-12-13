@@ -232,10 +232,13 @@ function inputs = getInputsForSide(inputs, tree, ik)
     endIndex = find(ik.time <= inputs.endTime, 1, 'last');
     inputs.time = ik.time(startIndex:endIndex);
     inputs.motion = ik.data(:, startIndex:endIndex);
-    % Refactor second line to inputs.experimentalGRF if allowing multiple
-    % sides
+    % Refactor second lines to inputs.experimentalGRF, etc if allowing multiple sides
     inputs.experimentalGroundReactionForces = ...
         inputs.right.experimentalGroundReactionForces(:, startIndex:endIndex);
+    inputs.experimentalGroundReactionMoments = ...
+        inputs.right.experimentalGroundReactionMoments(:, startIndex:endIndex);
+    inputs.electricalCenter = ...
+        inputs.right.electricalCenter(:, startIndex:endIndex);
 end
 
 % (Array of double, Array of double) -> (None)

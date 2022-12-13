@@ -29,9 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [anteriorGrf, lateralGrf] = ...
+function [anteriorGrf, lateralGrf, springForces] = ...
     calcModeledHorizontalGroundReactionForces(values, beltSpeed, ...
-    markerKinematics)
+    markerKinematics, springForces)
 % try out latching velocities, plot mu curves, does viscous matter?
 latchVelocity = 0.05; % Jackson et al, 2016 page 4 has 0.01
 slipOffset = 1e-4;
@@ -39,28 +39,7 @@ anteriorGrf = 0;
 lateralGrf = 0;
 
 for i=1:length(values.springConstants)
-    height = markerKinematics.height(i);
-    verticalVelocity = markerKinematics.yVelocity(i);
-%     if (height - values.restingSpringLength)<0
-%         verticalGrf = (values.springConstants(i) * ...
-%             (values.restingSpringLength - height) * ...
-%             (1 + values.dampingFactors(i) * verticalVelocity)); % Equation 1 from Jackson et al, 2016
-%     end
-    klow = 1e-1;
-    h = 1e-3;
-    c = 5e-4;
-    ymax = 1e-2;
-    Kval = values.springConstants(i);
-    height = height - values.restingSpringLength;
-    numFrames = length(height);
-    v = ones(numFrames, 1)' .* ((Kval + klow) ./ (Kval - klow));
-    s = ones(numFrames, 1)' .* ((Kval - klow) ./ 2);
-    constant = -s .* (v .* ymax - c .* log(cosh((ymax + h) ./ c)));
-    freglyVerticalGrf = -s .* (v .* height - c .* log(cosh((height + h) ./ c))) - constant;
-    freglyVerticalGrf(isnan(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
-    freglyVerticalGrf(isinf(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
-    verticalGrf = freglyVerticalGrf * (1 + values.dampingFactors(i) * ...
-        verticalVelocity);
+    verticalGrf = springForces(2, i);
     xVelocity = markerKinematics.xVelocity(i);
     zVelocity = markerKinematics.zVelocity(i);
     slipVelocity = (xVelocity ^ 2 + zVelocity ^ 2) ^ 0.5;
@@ -91,10 +70,12 @@ for i=1:length(values.springConstants)
     horizontalGrfMagnitude = verticalGrf * ...
         values.dynamicFrictionCoefficient * ...
         tanh(slipVelocity / latchVelocity);
-    anteriorGrf = anteriorGrf + -xVelocity / ...
-        (slipVelocity + slipOffset) * horizontalGrfMagnitude;
-    lateralGrf = lateralGrf + -zVelocity / ...
-        (slipVelocity + slipOffset) * horizontalGrfMagnitude;
+    springForces(1, i) = -xVelocity / (slipVelocity + slipOffset) * ...
+        horizontalGrfMagnitude;
+    springForces(3, i) = -zVelocity / (slipVelocity + slipOffset) * ...
+        horizontalGrfMagnitude;
+    anteriorGrf = anteriorGrf + springForces(1, i);
+    lateralGrf = lateralGrf + springForces(3, i);
 end
 
 end
