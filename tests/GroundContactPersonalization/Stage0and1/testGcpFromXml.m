@@ -82,29 +82,13 @@ end
 
 figure(2)
 
-subplot(1,4,1);
-scatter(inputs.time, inputs.experimentalJointPositions(1, :), [], "red")
-hold on
-scatter(inputs.time, modeledValues.jointPositions(1, :), [], "blue")
-hold off
-
-subplot(1,4,2);
-scatter(inputs.time, inputs.experimentalJointPositions(2, :), [], "red")
-hold on
-scatter(inputs.time, modeledValues.jointPositions(2, :), [], "blue")
-hold off
-
-subplot(1,4,3);
-scatter(inputs.time, inputs.experimentalJointPositions(3, :), [], "red")
-hold on
-scatter(inputs.time, modeledValues.jointPositions(3, :), [], "blue")
-hold off
-
-subplot(1,4,4);
-scatter(inputs.time, inputs.experimentalJointPositions(4, :), [], "red")
-hold on
-scatter(inputs.time, modeledValues.jointPositions(4, :), [], "blue")
-hold off
+for i = 1:7
+    subplot(2,4,i)
+    scatter(inputs.time, inputs.experimentalJointPositions(i, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.jointPositions(i, :), [], "blue")
+    hold off
+end
 
 %% Spring constant plot
 
