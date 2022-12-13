@@ -2,7 +2,7 @@
 %
 %
 %
-% (Array of double, struct, struct) -> (struct)
+% (double, struct) -> (double)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -27,11 +27,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcViscousFrictionDeviationError(values, ...
-    experimentalData, params)
-
-error = (((mu_v - 0.005)/0.004).^20)*ones(38,1);
-
+function error = calcViscousFrictionDeviationError(viscousFrictionCoefficient, params)
+errorCenter = valueOrAlternate(params, ...
+    "viscousFrictionCoefficientErrorCenter", 0.005);
+maxAllowableError = valueOrAlternate(params, ...
+    "viscousFrictionCoefficientMaxAllowableError", 0.005);
+error = calcWallError(viscousFrictionCoefficient, errorCenter, ...
+    maxAllowableError, 20);
 end
 
 

@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,20 +28,81 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = optimizeByGroundReactionForces(inputs, params)
-initialValues = makeInitialValues(inputs, params);
-results = lsqnonlin(@(values) calcGroundReactionCost(values, inputs, ...
-    params), initialValues);
-inputs = mergeResults(inputs, results);
+[initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
+    params);
+[lowerBounds, upperBounds] = makeBounds(inputs, params);
+optimizerOptions = prepareOptimizerOptions(params);
+results = lsqnonlin(@(values) calcGroundReactionCost(values, ...
+    fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
+    upperBounds, optimizerOptions);
+inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
+    params, 2);
 end
 
 % (struct, struct) -> (Array of double)
 % generate initial values to be optimized from inputs, params
-function initialValues = makeInitialValues(inputs, params)
-
+function [initialValues, fieldNameOrder] = makeInitialValues( ...
+    inputs, params)
+initialValues = [];
+fieldNameOrder = [];
+if (params.stageTwo.springConstants.isEnabled)
+    initialValues = [initialValues inputs.springConstants];
+    fieldNameOrder = [fieldNameOrder "springConstants"];
+end
+if (params.stageTwo.dampingFactors.isEnabled)
+    initialValues = [initialValues inputs.dampingFactors];
+    fieldNameOrder = [fieldNameOrder "dampingFactors"];
+end
+if (params.stageTwo.bSplineCoefficients.isEnabled)
+    initialValues = [initialValues ...
+        reshape(inputs.bSplineCoefficients, 1, [])];
+    fieldNameOrder = [fieldNameOrder "bSplineCoefficients"];
+end
+if (params.stageTwo.dynamicFrictionCoefficient.isEnabled)
+    initialValues = [initialValues valueOrAlternate(params, ...
+        "initialDynamicFrictionCoefficient", 1)];
+    fieldNameOrder = [fieldNameOrder "dynamicFrictionCoefficient"];
+end
 end
 
-% (struct, Array of double) -> (struct)
-% merge the results of the optimization back into the input values
-function inputs = mergeResults(inputs, results)
+% (struct) -> (Array of double, Array of double)
+% Generate lower and upper bounds for design variables from inputs
+function [lowerBounds, upperBounds] = makeBounds(inputs, params)
+lowerBounds = [];
+upperBounds = [];
+if (params.stageTwo.springConstants.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.springConstants))];
+    upperBounds = [upperBounds Inf(1, length(inputs.springConstants))];
+end
+if (params.stageTwo.dampingFactors.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
+    upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
+end
+if (params.stageTwo.bSplineCoefficients.isEnabled)
+    lowerBounds = [lowerBounds -Inf(1, length(reshape(...
+        inputs.bSplineCoefficients, 1, [])))];
+    upperBounds = [upperBounds Inf(1, length(reshape(...
+        inputs.bSplineCoefficients, 1, [])))];
+end
+if (params.stageTwo.dynamicFrictionCoefficient.isEnabled)
+    lowerBounds = [lowerBounds 0];
+    upperBounds = [upperBounds Inf];
+end
+end
 
+% (struct) -> (struct)
+% Prepare params for outer optimizer for Kinematic Calibration
+function output = prepareOptimizerOptions(params)
+output = optimoptions('lsqnonlin', 'UseParallel', true);
+output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
+output.OptimalityTolerance = valueOrAlternate(params, ...
+    'optimalityTolerance', 1e-6);
+output.FunctionTolerance = valueOrAlternate(params, ...
+    'functionTolerance', 1e-6);
+output.StepTolerance = valueOrAlternate(params, ...
+    'stepTolerance', 1e-4);
+output.MaxFunctionEvaluations = valueOrAlternate(params, ...
+    'maxFunctionEvaluations', 3e6);
+output.Display = valueOrAlternate(params, ...
+    'display','iter');
 end
