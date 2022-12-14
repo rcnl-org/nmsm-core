@@ -1,11 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% inputs:
-%   model - Model
-%   experimentalJointKinematics - 2D Array of double
-%   coordinateColumns - 1D array of int of coordinate indexes
+% 
 %
-% (Array of double, Array of string, struct, struct) -> (struct)
+% (struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -30,32 +27,51 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcDeflectionAndSpringConstantsCost(restingSpringLength, springHeights, ...
+function inputs = initializeRestingSpringLengthAndSpringConstants(...
     inputs, params)
-
-verticalForce = inputs.experimentalGroundReactionForces(2, :)';
-
-deflectionMatrix = zeros(length(verticalForce), length(inputs.springConstants));
-for i = 1:length(verticalForce)
+[modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
+    inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
+    ones(25, 7));
+springHeights = zeros(size(modeledJointPositions, 2), ...
+    length(inputs.springConstants));
+[model, state] = Model(inputs.model);
+for i=1:size(modeledJointPositions, 2)
+    [model, state] = updateModelPositionAndVelocity(model, state, ...
+        modeledJointPositions(:, i), ...
+        modeledJointVelocities(:, i));
     for j = 1:length(inputs.springConstants)
-        % The - 0.001 term accounts for using a different force formula
-        deflectionMatrix(i, j) = springHeights(i, j) - ...
-            restingSpringLength - 0.001;
+        springHeights(i, j) = model.getMarkerSet().get("spring_marker_" + ...
+            num2str(j)).getLocationInGround(state).get(1);
     end
 end
 
-[springConstants, ~, errors] = lsqnonneg(deflectionMatrix, verticalForce);
-
-cost = [];
-% Residuals from lsqnonneg are force matching errors
-cost = [cost 1 / sqrt(length(errors)) * errors'];
-% Alternatively, recalculate force and compare with experimental
-modeledForce = deflectionMatrix * springConstants;
-cost = [cost 1 / sqrt(length(errors)) * abs(modeledForce' - verticalForce')];
-cost = [cost sqrt(1 / length(springConstants)) * (1 / 2000) * ...
-    calcSpringConstantsErrorFromMean(springConstants)'];
-% Attempt to prevent spring constants being zero
-cost = [cost (1 / 2000) * abs(springConstants' - inputs.springConstants)];
-
+% TODO: Pick frames with all springs in contact
+verticalForce = inputs.experimentalGroundReactionForces(2, 21:40)';
+deflectionMatrix = zeros(length(verticalForce), 2);
+for i = 1:length(verticalForce)
+    for j = 1:length(inputs.springConstants)
+        deflectionMatrix(i, 1) = deflectionMatrix(i, 1) - ...
+            springHeights(i+20, j) - 0.001;
+    end
+    deflectionMatrix(i, 2) = 1 * length(inputs.springConstants);
 end
 
+initialGuesses = lsqlin(deflectionMatrix, verticalForce, [], [], [], [], [10 0], [Inf Inf]);
+
+inputs.springConstants = ones(1, length(inputs.springConstants)) * ...
+    initialGuesses(1);
+inputs.restingSpringLength = initialGuesses(2) / initialGuesses(1);
+end
+
+
+function [model, state] = updateModelPositionAndVelocity(model, state, ...
+    jointPositions, jointVelocities)
+for j=1:size(jointPositions, 1)
+    model.getCoordinateSet().get(j-1).setValue(state, ...
+        jointPositions(j));
+    model.getCoordinateSet().get(j-1).setSpeedValue(state, ...
+        jointVelocities(j));
+end
+model.assemble(state)
+model.realizeVelocity(state)
+end

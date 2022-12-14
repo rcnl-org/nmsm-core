@@ -8,8 +8,7 @@ inputs = prepareGroundContactPersonalizationInputs(inputs, params);
 lastStage = 0;
 
 % Stage 0
-inputs = optimizeDeflectionAndSpringContants(inputs, params);
-% inputs.restingSpringLength = 0.04;
+inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
 
 % Stage 1
 if lastStage >= 1
