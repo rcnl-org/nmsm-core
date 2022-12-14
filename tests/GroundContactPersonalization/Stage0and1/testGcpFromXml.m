@@ -9,32 +9,29 @@ lastStage = 0;
 
 % Stage 0
 inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
-
 % Stage 1
 if lastStage >= 1
     inputs = optimizeByVerticalGroundReactionForce(inputs, params);
 end
-
 % Stage 2
 if lastStage >= 2
     inputs = optimizeByGroundReactionForces(inputs, params);
 end
-
 % Stage 3
 if lastStage == 3
     inputs = optimizeByGroundReactionForcesAndMoments(inputs, params);
 end
 
 %% Plot forces and kinematics
-
+close 1
+close 2
 figure(1)
 plotGroundReactionQuantities(inputs, lastStage)
-
 figure(2)
 plotCoordinates(inputs)
 
 %% Spring constant plot
-
+close 3
 figure(3)
 footModel = Model("footModel2.osim");
 plotSpringConstants(footModel, inputs, inputs.toesBodyName, inputs.hindfootBodyName)
