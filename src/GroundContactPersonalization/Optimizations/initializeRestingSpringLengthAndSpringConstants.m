@@ -56,7 +56,8 @@ for i = 1:length(verticalForce)
     deflectionMatrix(i, 2) = 1 * length(inputs.springConstants);
 end
 
-initialGuesses = lsqlin(deflectionMatrix, verticalForce, [], [], [], [], [10 0], [Inf Inf]);
+initialGuesses = lsqlin(deflectionMatrix, verticalForce, [], [], ...
+    [], [], [0 0], [Inf Inf]);
 
 inputs.springConstants = ones(1, length(inputs.springConstants)) * ...
     initialGuesses(1);
