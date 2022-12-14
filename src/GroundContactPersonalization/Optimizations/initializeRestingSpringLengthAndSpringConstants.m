@@ -1,11 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% inputs:
-%   model - Model
-%   experimentalJointKinematics - 2D Array of double
-%   coordinateColumns - 1D array of int of coordinate indexes
+% 
 %
-% (Array of double, Array of string, struct, struct) -> (struct)
+% (struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -30,39 +27,51 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcDeflectionAndSpringConstantsCost(values, fieldNameOrder, ...
+function inputs = initializeRestingSpringLengthAndSpringConstants(...
     inputs, params)
-valuesStruct = unpackValues(values, inputs, fieldNameOrder);
-bSplineCoefficients = ones(25, 7);
 [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
-    bSplineCoefficients);
-modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
-    modeledJointPositions, modeledJointVelocities, [1, 1, 0, 0], 0);
-modeledValues.jointPositions = modeledJointPositions;
-modeledValues.jointVelocities = modeledJointVelocities;
-
-cost = calcCost(inputs, modeledValues, valuesStruct);
-
+    ones(25, 7));
+springHeights = zeros(size(modeledJointPositions, 2), ...
+    length(inputs.springConstants));
+[model, state] = Model(inputs.model);
+for i=1:size(modeledJointPositions, 2)
+    [model, state] = updateModelPositionAndVelocity(model, state, ...
+        modeledJointPositions(:, i), ...
+        modeledJointVelocities(:, i));
+    for j = 1:length(inputs.springConstants)
+        springHeights(i, j) = model.getMarkerSet().get("spring_marker_" + ...
+            num2str(j)).getLocationInGround(state).get(1);
+    end
 end
 
-function valuesStruct = unpackValues(values, inputs, fieldNameOrder)
-valuesStruct = struct();
-start = 1;
-for i=1:length(fieldNameOrder)
-    valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
-        numel(inputs.(fieldNameOrder(i))) - 1);
-    start = start + numel(inputs.(fieldNameOrder(i)));
-end
-end
-
-function cost = calcCost(inputs, modeledValues, valuesStruct)
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcVerticalGroundReactionForceAndSlopeError(inputs, modeledValues);
-cost = sqrt(1 / 101) * (1 / 1) * groundReactionForceValueError; % 1 N
-% cost = [cost 1 / 100 * groundReactionForceSlopeError]; %375970
-cost = [cost sqrt(1 / length(valuesStruct.springConstants)) * ...
-    (1 / 2000) * calcSpringConstantsErrorFromMean(...
-    valuesStruct.springConstants)]; % 10 N/m, try making looser bounds
+% TODO: Pick frames with all springs in contact
+verticalForce = inputs.experimentalGroundReactionForces(2, 21:40)';
+deflectionMatrix = zeros(length(verticalForce), 2);
+for i = 1:length(verticalForce)
+    for j = 1:length(inputs.springConstants)
+        deflectionMatrix(i, 1) = deflectionMatrix(i, 1) - ...
+            springHeights(i+20, j) - 0.001;
+    end
+    deflectionMatrix(i, 2) = 1 * length(inputs.springConstants);
 end
 
+initialGuesses = lsqlin(deflectionMatrix, verticalForce, [], [], [], [], [10 0], [Inf Inf]);
+
+inputs.springConstants = ones(1, length(inputs.springConstants)) * ...
+    initialGuesses(1);
+inputs.restingSpringLength = initialGuesses(2) / initialGuesses(1);
+end
+
+
+function [model, state] = updateModelPositionAndVelocity(model, state, ...
+    jointPositions, jointVelocities)
+for j=1:size(jointPositions, 1)
+    model.getCoordinateSet().get(j-1).setValue(state, ...
+        jointPositions(j));
+    model.getCoordinateSet().get(j-1).setSpeedValue(state, ...
+        jointVelocities(j));
+end
+model.assemble(state)
+model.realizeVelocity(state)
+end
