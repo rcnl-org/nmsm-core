@@ -46,17 +46,21 @@ for i=1:size(modeledJointPositions, 2)
 end
 
 % TODO: Pick frames with all springs in contact
-verticalForce = inputs.experimentalGroundReactionForces(2, 21:40)';
+verticalForce = inputs.experimentalGroundReactionForces(2, :)';
+% verticalForce = verticalForce(verticalForce > 0.70 * max(verticalForce));
+verticalForce = verticalForce(21:40);
+includeOffset = find(inputs.experimentalGroundReactionForces(2, :)' == ...
+    verticalForce(1)) - 1;
 deflectionMatrix = zeros(length(verticalForce), 2);
 for i = 1:length(verticalForce)
     for j = 1:length(inputs.springConstants)
         deflectionMatrix(i, 1) = deflectionMatrix(i, 1) - ...
-            springHeights(i+20, j) - 0.001;
+            springHeights(i + includeOffset, j) - 0.001;
     end
     deflectionMatrix(i, 2) = 1 * length(inputs.springConstants);
 end
 
-initialGuesses = lsqlin(deflectionMatrix, verticalForce, [], [], ...
+initialGuesses = lsqlin(deflectionMatrix, verticalForce, [-1 10], [0], ...
     [], [], [0 0], [Inf Inf]);
 
 inputs.springConstants = ones(1, length(inputs.springConstants)) * ...
