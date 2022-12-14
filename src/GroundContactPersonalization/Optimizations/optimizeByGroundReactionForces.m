@@ -39,7 +39,7 @@ inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
     params, 2);
 end
 
-% (struct, struct) -> (Array of double)
+% (struct, struct) -> (Array of double, Array of string)
 % generate initial values to be optimized from inputs, params
 function [initialValues, fieldNameOrder] = makeInitialValues( ...
     inputs, params)

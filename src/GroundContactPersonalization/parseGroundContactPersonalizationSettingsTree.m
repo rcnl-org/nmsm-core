@@ -81,6 +81,11 @@ verifyTime(ik.time, grfTime);
 [inputs.left.experimentalGroundReactionForces, ...
     inputs.right.experimentalGroundReactionForces] = getGrf(...
     bodyModel, inputs.grfFileName);
+[inputs.left.experimentalGroundReactionMoments, ...
+    inputs.right.experimentalGroundReactionMoments] = getMoments(...
+    bodyModel, inputs.grfFileName);
+[inputs.left.electricalCenter, inputs.right.electricalCenter] = ...
+    getElectricalCenter(bodyModel, inputs.grfFileName);
 
 if inputs.right.isEnabled
     % Potentially refactor to use inputs.right if allowing multiple sides
@@ -132,6 +137,81 @@ if any([isnan(grfLeft) isnan(grfRight)])
 end
 end
 
+% (Model, string) -> (Array of double, Array of double)
+function [momentsLeft, momentsRight] = getMoments(bodyModel, grfFile)
+import org.opensim.modeling.Storage
+storage = Storage(grfFile);
+[grfColumnNames, ~, grfData] = parseMotToComponents(bodyModel, ...
+    Storage(grfFile));
+momentsLeft = NaN(3, storage.getSize());
+momentsRight = NaN(3, storage.getSize());
+for i=1:size(grfColumnNames')
+    label = grfColumnNames(i);
+    if contains(label, 'M')
+        if contains(label, '1') && contains(label, 'x')
+            momentsLeft(1, :) = grfData(i, :);
+        end
+        if contains(label, '1') && contains(label, 'y')
+            momentsLeft(2, :) = grfData(i, :);
+        end
+        if contains(label, '1') && contains(label, 'z')
+            momentsLeft(3, :) = grfData(i, :);
+        end
+        if contains(label, '2') && contains(label, 'x')
+            momentsRight(1, :) = grfData(i, :);
+        end
+        if contains(label, '2') && contains(label, 'y')
+            momentsRight(2, :) = grfData(i, :);
+        end
+        if contains(label, '2') && contains(label, 'z')
+            momentsRight(3, :) = grfData(i, :);
+        end
+    end
+end
+if any([isnan(momentsLeft) isnan(momentsRight)])
+    throw(MException('', ['Unable to parse GRF file, check that ' ...
+        'all necessary column labels are present']))
+end
+end
+
+% (Model, string) -> (Array of double, Array of double)
+function [electricalCenterLeft, electricalCenterRight] = ...
+    getElectricalCenter(bodyModel, grfFile)
+import org.opensim.modeling.Storage
+storage = Storage(grfFile);
+[grfColumnNames, ~, grfData] = parseMotToComponents(bodyModel, ...
+    Storage(grfFile));
+electricalCenterLeft = NaN(3, storage.getSize());
+electricalCenterRight = NaN(3, storage.getSize());
+for i=1:size(grfColumnNames')
+    label = grfColumnNames(i);
+    if contains(label, 'EC')
+        if contains(label, '1') && contains(label, 'x')
+            electricalCenterLeft(1, :) = grfData(i, :);
+        end
+        if contains(label, '1') && contains(label, 'y')
+            electricalCenterLeft(2, :) = grfData(i, :);
+        end
+        if contains(label, '1') && contains(label, 'z')
+            electricalCenterLeft(3, :) = grfData(i, :);
+        end
+        if contains(label, '2') && contains(label, 'x')
+            electricalCenterRight(1, :) = grfData(i, :);
+        end
+        if contains(label, '2') && contains(label, 'y')
+            electricalCenterRight(2, :) = grfData(i, :);
+        end
+        if contains(label, '2') && contains(label, 'z')
+            electricalCenterRight(3, :) = grfData(i, :);
+        end
+    end
+end
+if any([isnan(electricalCenterLeft) isnan(electricalCenterRight)])
+    throw(MException('', ['Unable to parse GRF file, check that ' ...
+        'all necessary column labels are present']))
+end
+end
+
 % (struct, struct, struct) -> (struct)
 function inputs = getInputsForSide(inputs, tree, ik)
     inputs.toesCoordinateName = getFieldByNameOrError(tree, ...
@@ -152,10 +232,13 @@ function inputs = getInputsForSide(inputs, tree, ik)
     endIndex = find(ik.time <= inputs.endTime, 1, 'last');
     inputs.time = ik.time(startIndex:endIndex);
     inputs.motion = ik.data(:, startIndex:endIndex);
-    % Refactor second line to inputs.experimentalGRF if allowing multiple
-    % sides
+    % Refactor second lines to inputs.experimentalGRF, etc if allowing multiple sides
     inputs.experimentalGroundReactionForces = ...
         inputs.right.experimentalGroundReactionForces(:, startIndex:endIndex);
+    inputs.experimentalGroundReactionMoments = ...
+        inputs.right.experimentalGroundReactionMoments(:, startIndex:endIndex);
+    inputs.electricalCenter = ...
+        inputs.right.electricalCenter(:, startIndex:endIndex);
 end
 
 % (Array of double, Array of double) -> (None)
@@ -196,6 +279,7 @@ params = getCostFunctionParams(params, tree);
 end
 
 function params = getDesignVariableParams(params, tree)
+% Stage 1 design variables
 stageOneTree = getFieldByNameOrError(tree, 'Stage1DesignVariables');
 params.stageOne.springConstants.isEnabled = strcmpi(...
     getFieldByNameOrError(getFieldByNameOrError(stageOneTree, ...
@@ -206,6 +290,7 @@ params.stageOne.dampingFactors.isEnabled = strcmpi(...
 params.stageOne.bSplineCoefficients.isEnabled = strcmpi(...
     getFieldByNameOrError(getFieldByNameOrError(stageOneTree, ...
     'KinematicsBSplineCoefficients'), 'is_enabled').Text, 'true');
+% Stage 2 design variables
 stageTwoTree = getFieldByNameOrError(tree, 'Stage2DesignVariables');
 params.stageTwo.springConstants.isEnabled = strcmpi(...
     getFieldByNameOrError(getFieldByNameOrError(stageTwoTree, ...
@@ -218,6 +303,20 @@ params.stageTwo.bSplineCoefficients.isEnabled = strcmpi(...
     'KinematicsBSplineCoefficients'), 'is_enabled').Text, 'true');
 params.stageTwo.dynamicFrictionCoefficient.isEnabled = strcmpi(...
     getFieldByNameOrError(getFieldByNameOrError(stageTwoTree, ...
+    'DynamicFrictionCoefficient'), 'is_enabled').Text, 'true');
+% Stage 3 design variables
+stageThreeTree = getFieldByNameOrError(tree, 'Stage2DesignVariables');
+params.stageThree.springConstants.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageThreeTree, ...
+    'SpringConstants'), 'is_enabled').Text, 'true');
+params.stageThree.dampingFactors.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageThreeTree, ...
+    'DampingFactors'), 'is_enabled').Text, 'true');
+params.stageThree.bSplineCoefficients.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageThreeTree, ...
+    'KinematicsBSplineCoefficients'), 'is_enabled').Text, 'true');
+params.stageThree.dynamicFrictionCoefficient.isEnabled = strcmpi(...
+    getFieldByNameOrError(getFieldByNameOrError(stageThreeTree, ...
     'DynamicFrictionCoefficient'), 'is_enabled').Text, 'true');
 end
 
@@ -249,5 +348,21 @@ for i = 1:length(stageTwoCostTerms)
     params.stageTwoCosts.(stageTwoCostTerms(i)).maxAllowableError = str2double(...
         getFieldByNameOrError(getFieldByNameOrError(stageTwoTree, ...
         stageTwoCostTerms(i)), 'max_allowable_error').Text);
+end
+
+stageThreeTree = getFieldByNameOrError(tree, 'Stage3CostFunctionTerms');
+stageThreeCostTerms = ["markerPositionError", "markerSlopeError", ...
+    "coordinateCoefficientError", "verticalGrfError", ...
+    "verticalGrfSlopeError", "horizontalGrfError", ...
+    "horizontalGrfSlopeError", "groundReactionMomentError", ...
+    "groundReactionMomentSlopeError", "springConstantErrorFromMean", ...
+    "dampingFactorErrorFromMean"];
+for i = 1:length(stageThreeCostTerms)
+    params.stageThreeCosts.(stageThreeCostTerms(i)).isEnabled = strcmpi(...
+        getFieldByNameOrError(getFieldByNameOrError(stageThreeTree, ...
+        stageThreeCostTerms(i)), 'is_enabled').Text, 'true');
+    params.stageThreeCosts.(stageThreeCostTerms(i)).maxAllowableError = str2double(...
+        getFieldByNameOrError(getFieldByNameOrError(stageThreeTree, ...
+        stageThreeCostTerms(i)), 'max_allowable_error').Text);
 end
 end

@@ -40,23 +40,6 @@ modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
-% Debug plots
-% subplot(1,3,1)
-% plot(inputs.time, modeledValues.verticalGrf)
-% hold on
-% plot(inputs.time, inputs.experimentalGroundReactionForces(2,:))
-% hold off
-% subplot(1,3,2)
-% plot(inputs.time, modeledValues.anteriorGrf)
-% hold on
-% plot(inputs.time, inputs.experimentalGroundReactionForces(1,:))
-% hold off
-% subplot(1,3,3)
-% plot(inputs.time, modeledValues.lateralGrf)
-% hold on
-% plot(inputs.time, inputs.experimentalGroundReactionForces(3,:))
-% hold off
-
 cost = calcCost(inputs, params, modeledValues, valuesStruct);
 end
 
