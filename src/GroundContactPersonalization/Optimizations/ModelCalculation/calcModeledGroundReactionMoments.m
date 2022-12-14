@@ -1,9 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% This function uses Equation 1 from Jackson et al 2016 to calculate the
+% modeled horizontal GRF forces as the summation of the forces applied by 
+% each individual spring
 %
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (Model, State, Array of double, struct, double) => (double, double)
+% Returns the sum of the modeled horizontal GRF forces at the given state
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Spencer Williams                          %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,25 +29,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function results = GroundContactPersonalization(inputs, params)
-verifyInputs(inputs); % (struct) -> (None)
-verifyParams(params); % (struct) -> (None)
-inputs = prepareGroundContactPersonalizationInputs(inputs, params);
-inputs = optimizeByVerticalGroundReactionForce(inputs, params);
-inputs = optimizeByGroundReactionForces(inputs, params);
-results = optimizeByGroundReactionAndCenterOfPressureAndFreeMoment( ...
-    inputs, params);
+function [xGrfMoment, yGrfMoment, zGrfMoment] = ...
+    calcModeledGroundReactionMoments(values, inputs, markerKinematics, ...
+    springForces)
+xGrfMoment = 0;
+yGrfMoment = 0;
+zGrfMoment = 0;
 
+for i = 1:length(values.springConstants)
+    xPosition = markerKinematics.xPosition(i);
+    yPosition = markerKinematics.height(i);
+    zPosition = markerKinematics.zPosition(i);
+    xForce = springForces(1, :);
+    yForce = springForces(2, :);
+    zForce = springForces(3, :);
+    xOffset = xPosition - inputs.electricalCenter(1, 1);
+    yOffset = yPosition - inputs.electricalCenter(2, 1);
+    zOffset = zPosition - inputs.electricalCenter(3, 1);
+
+    xGrfMoment = xGrfMoment + yOffset * zForce + zOffset * yForce;
+    yGrfMoment = yGrfMoment + xOffset * zForce + zOffset * xForce;
+    zGrfMoment = zGrfMoment + yOffset * xForce + xOffset * yForce;
 end
-
-% (struct) -> (None)
-% throws an error if any of the inputs are invalid
-function verifyInputs(inputs)
-
-end
-
-% (struct) -> (None)
-% throws an error if the parameter is included but is not of valid type
-function verifyParams(params)
 
 end

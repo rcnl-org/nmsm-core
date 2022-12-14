@@ -103,5 +103,24 @@ end
 end
 
 function inputs = mergeStageThreeResults(inputs, results, params)
+index = 1;
+if (params.stageThree.springConstants.isEnabled)
+    inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
+    index = index + length(inputs.springConstants);
+end
+if (params.stageThree.dampingFactors.isEnabled)
+    inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
+    index = index + length(inputs.dampingFactors);
+end
+if (params.stageThree.bSplineCoefficients.isEnabled)
+    bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficients, 1, []));
+    bSplineCoefficients = results(index : index + bSplineCoefficientLength - 1);
+    bSplineCoefficients = reshape(bSplineCoefficients, [], 7);
+    inputs.bSplineCoefficients = bSplineCoefficients;
+    index = index + bSplineCoefficientLength;
+end
+if (params.stageThree.dynamicFrictionCoefficient.isEnabled)
+    inputs.dynamicFrictionCoefficient = results(index);
+end
 
 end
