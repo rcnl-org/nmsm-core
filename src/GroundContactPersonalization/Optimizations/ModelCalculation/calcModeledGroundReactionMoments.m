@@ -47,8 +47,8 @@ for i = 1:length(values.springConstants)
     yOffset = yPosition - inputs.electricalCenter(2, 1);
     zOffset = zPosition - inputs.electricalCenter(3, 1);
 
-    xGrfMoment = xGrfMoment + yOffset * zForce + zOffset * yForce;
-    yGrfMoment = yGrfMoment + xOffset * zForce + zOffset * xForce;
+    xGrfMoment = xGrfMoment + -yOffset * zForce + -zOffset * yForce;
+    yGrfMoment = yGrfMoment + -xOffset * zForce + zOffset * xForce;
     zGrfMoment = zGrfMoment + yOffset * xForce + xOffset * yForce;
 end
 
