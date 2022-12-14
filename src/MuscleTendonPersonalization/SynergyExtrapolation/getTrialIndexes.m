@@ -33,10 +33,10 @@
 
 function  params = getTrialIndexes(params, nTrials, TrialNames)
 %---Identify the trial index according to the labels in 'Tasks'
-trialIndex = cell(1,length(params.taskNames));
+trialIndex = cell(1, length(params.taskNames));
 for i=1:nTrials
     for j=1:length(params.taskNames)
-        if contains(TrialNames{i},params.taskNames{j})
+        if contains(TrialNames{i}, params.taskNames{j})
             if isempty(trialIndex{j})
                 trialIndex{j} = i;
             else
@@ -45,6 +45,7 @@ for i=1:nTrials
         end
     end
 end
+params.trialIndex = trialIndex;
 params.synergyCategorizationOfTrials = getCategorizationOfTrials(...
     params.synergyExtrapolationCategorization, trialIndex, nTrials);
 params.residualCategorizationOfTrials = getCategorizationOfTrials(...
