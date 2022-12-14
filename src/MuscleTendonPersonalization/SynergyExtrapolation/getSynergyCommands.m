@@ -19,7 +19,6 @@
 %   TrialIndex - trial index for each task - cell array (nTask cells)
 %   emgData - Processed EMG signals (normalized to the maximum values over
 %                   all trials)
-%   NMF_resultFile - file that stores the results from NMF analysis - string
 %
 % returns measured synergy excitations for constructing SynX and residual 
 % muscle excitations.
@@ -51,15 +50,15 @@ function [extrapolationCommands, residualCommands] = ...
     residualCategorizationOfTrials) 
 
 %--Normalize EMGs 
-max_all_trials = max(max(emgData,[],3),[],1);
-normalizedEMG = permute(emgData./max_all_trials, [3 2 1]);
+maxEmgOverAllTrials = max(max(emgData, [], 3), [], 1);
+normalizedEMG = permute(emgData ./ maxEmgOverAllTrials, [3 2 1]);
 %--Extract synergy excitations from measured muscle excitations 
-if strcmpi(matrixFactorizationMethod,'PCA')
+if strcmpi(matrixFactorizationMethod, 'PCA')
     extrapolationCommands = getPcaCommands(normalizedEMG, numberOfSynergies, ...
         synergyCategorizationOfTrials);
     residualCommands = getPcaCommands(normalizedEMG, numberOfSynergies, ...
         residualCategorizationOfTrials);
-elseif strcmpi(matrixFactorizationMethod,'NMF')
+elseif strcmpi(matrixFactorizationMethod, 'NMF')
     options = statset('Display', 'off', 'TolX', 1e-10, 'TolFun', 1e-10);
     if  ~exist('nmfResultsSynX.mat')
         extrapolationCommands = getNmfCommands(normalizedEMG, numberOfSynergies, ...
