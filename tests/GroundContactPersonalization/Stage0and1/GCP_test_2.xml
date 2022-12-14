@@ -89,32 +89,13 @@
                 <is_enabled>true</is_enabled>
 			</DynamicFrictionCoefficient>
 		</Stage2DesignVariables>
-		<!--Settings for stage 3 design variables-->
-		<Stage3DesignVariables>
-			<SpringConstants>
-				<!--Flag indicating whether or not the term is enabled-->
-                <is_enabled>true</is_enabled>
-			</SpringConstants>
-			<DampingFactors>
-				<!--Flag indicating whether or not the term is enabled-->
-                <is_enabled>false</is_enabled>
-			</DampingFactors>
-			<KinematicsBSplineCoefficients>
-				<!--Flag indicating whether or not the term is enabled-->
-                <is_enabled>true</is_enabled>
-			</KinematicsBSplineCoefficients>
-			<DynamicFrictionCoefficient>
-				<!--Flag indicating whether or not the term is enabled-->
-                <is_enabled>true</is_enabled>
-			</DynamicFrictionCoefficient>
-		</Stage3DesignVariables>
 		<!--Settings for stage 1 cost function terms-->
 		<Stage1CostFunctionTerms>
 			<markerPositionError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
+                <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.02</max_allowable_error>
+                <max_allowable_error>0.01</max_allowable_error>
 			</markerPositionError>
 			<markerSlopeError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -122,12 +103,6 @@
                 <!--Max allowable error or deviation from indicated set point-->
                 <max_allowable_error>0.1</max_allowable_error>
 			</markerSlopeError>
-			<coordinateCoefficientError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>true</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.01</max_allowable_error>
-			</coordinateCoefficientError>
 			<verticalGrfError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
                 <is_enabled>true</is_enabled>
@@ -157,9 +132,9 @@
 		<Stage2CostFunctionTerms>
 			<markerPositionError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
+                <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.02</max_allowable_error>
+                <max_allowable_error>0.01</max_allowable_error>
 			</markerPositionError>
 			<markerSlopeError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -167,12 +142,6 @@
                 <!--Max allowable error or deviation from indicated set point-->
                 <max_allowable_error>0.1</max_allowable_error>
 			</markerSlopeError>
-			<coordinateCoefficientError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>true</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.01</max_allowable_error>
-			</coordinateCoefficientError>
 			<verticalGrfError>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
                 <is_enabled>true</is_enabled>
@@ -210,75 +179,6 @@
                 <max_allowable_error>0.001</max_allowable_error>
 			</dampingFactorErrorFromMean>
 		</Stage2CostFunctionTerms>
-		<!--Settings for stage 3 cost function terms-->
-		<Stage3CostFunctionTerms>
-			<markerPositionError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>true</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.02</max_allowable_error>
-			</markerPositionError>
-			<markerSlopeError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.1</max_allowable_error>
-			</markerSlopeError>
-			<coordinateCoefficientError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>true</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.01</max_allowable_error>
-			</coordinateCoefficientError>
-			<verticalGrfError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>true</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.2</max_allowable_error>
-			</verticalGrfError>
-			<verticalGrfSlopeError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>10</max_allowable_error>
-			</verticalGrfSlopeError>
-			<horizontalGrfError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>true</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.2</max_allowable_error>
-			</horizontalGrfError>
-			<horizontalGrfSlopeError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>10</max_allowable_error>
-			</horizontalGrfSlopeError>
-			<groundReactionMomentError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>true</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.2</max_allowable_error>
-			</groundReactionMomentError>
-			<groundReactionMomentSlopeError>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>10</max_allowable_error>
-			</groundReactionMomentSlopeError>
-			<springConstantErrorFromMean>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>true</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>20</max_allowable_error>
-			</springConstantErrorFromMean>
-			<dampingFactorErrorFromMean>
-				<!--Flag indicating whether or not the term is enabled in the cost function.-->
-                <is_enabled>false</is_enabled>
-                <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>0.001</max_allowable_error>
-			</dampingFactorErrorFromMean>
-		</Stage3CostFunctionTerms>
 		<!--Initial values of design variables-->
 		<InitialValues>
 			<RestingSpringLength>0.05</RestingSpringLength>

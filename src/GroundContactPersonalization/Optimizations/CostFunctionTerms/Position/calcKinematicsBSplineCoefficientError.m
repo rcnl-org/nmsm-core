@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a model and returns a tree struct with the ground as
-% the top element and each child body exists within the struct. It's
-% possible to use getFieldByName(bodyStructure, fieldOfInterest) to find
-% the body and children of interest.
 %
-% (Model) -> (struct)
-% Create and return a struct tree of bodies and their children
+%
+% (2D Array of double) -> (Array of double)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,22 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function bodyStructure = makeBodyTree(model)
-bodyStructure = struct();
-bodyStructure.ground = struct();
-model = Model(model);
-for i = 0 : model.getJointSet().getSize()-1
-    [parent, child] = getJointBodyNames(model, ...
-        model.getJointSet().get(i).getName().toCharArray');
-    [parentBodyInStructure, path] = getFieldByName(bodyStructure, parent);
-    if(isstruct(parentBodyInStructure))
-        temp = cellstr(path);
-        temp{end+1} = child;
-        bodyStructure = setfield(bodyStructure, temp{:}, struct());
-    else
-        bodyStructure.(parent) = struct();
-        bodyStructure.(parent).(child) = struct();
-    end
-end
-end
+function error = calcKinematicsBSplineCoefficientError(bSplineCoefficients)
+error = reshape(bSplineCoefficients - 1, 1, []);
 
+end
