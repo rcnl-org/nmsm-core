@@ -5,7 +5,7 @@ clear
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
 
 % Latest stage of GCP to test
-lastStage = 1;
+lastStage = 0;
 
 % Stage 0
 inputs = optimizeDeflectionAndSpringContants(inputs, params);
