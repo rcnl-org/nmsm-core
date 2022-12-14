@@ -39,6 +39,12 @@ for i = 1:7
     hold on
     scatter(inputs.time, modeledJointPositions(i, :), [], "blue")
     title(coordinates(i))
+    xlabel('Time')
+    if i == 1
+        ylabel('Angle (rad)')
+    elseif i == 5
+        ylabel('Translation (m)')
+    end
     hold off
 end
 end

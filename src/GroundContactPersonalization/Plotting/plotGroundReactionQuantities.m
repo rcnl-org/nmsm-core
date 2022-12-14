@@ -48,6 +48,8 @@ scatter(inputs.time, ...
 hold on
 scatter(inputs.time, modeledValues.verticalGrf, [], "blue")
 title(groundReactions(1))
+xlabel('Time')
+ylabel('Force (N)')
 hold off
 
 if lastStage >= 2
@@ -60,6 +62,7 @@ if lastStage >= 2
             scatter(inputs.time, modeledValues.(groundReactions(i)), [], ...
                 "blue")
             title(groundReactions(i))
+            xlabel('Time')
             hold off
         elseif (i == 3)
             scatter(inputs.time, ...
@@ -68,6 +71,7 @@ if lastStage >= 2
             scatter(inputs.time, modeledValues.(groundReactions(i)), [], ...
                 "blue")
             title(groundReactions(i))
+            xlabel('Time')
             hold off
         else
             scatter(inputs.time, ...
@@ -77,6 +81,10 @@ if lastStage >= 2
             scatter(inputs.time, modeledValues.(groundReactions(i)), ...
                 [], "blue")
             title(groundReactions(i))
+            xlabel('Time')
+            if i == 4
+                ylabel('Moment (N*m)')
+            end
             hold off
         end
     end

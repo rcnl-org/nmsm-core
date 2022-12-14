@@ -48,6 +48,9 @@ for i=1:length(inputs.springConstants)
     end
 end
 scatter(springZ, springX, 200, inputs.springConstants, "filled")
+title("Spring constants")
+xlabel("Z location on foot (m)")
+ylabel("X location on foot (m)")
 colormap jet
 colorbar
 
