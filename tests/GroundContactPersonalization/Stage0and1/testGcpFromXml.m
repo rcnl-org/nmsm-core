@@ -25,7 +25,21 @@ if lastStage == 3
     inputs = optimizeByGroundReactionForcesAndMoments(inputs, params);
 end
 
-%% Report results, plot forces and kinematics
+%% Plot forces and kinematics
+
+figure(1)
+plotGroundReactionQuantities(inputs, lastStage)
+
+figure(2)
+plotCoordinates(inputs)
+
+%% Spring constant plot
+
+figure(3)
+footModel = Model("footModel2.osim");
+plotSpringConstants(footModel, inputs, inputs.toesBodyName, inputs.hindfootBodyName)
+
+%% Report cost quantities
 
 [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
@@ -53,87 +67,3 @@ disp('Unweighted Marker Tracking Cost: ')
 [footMarkerPositionError, ~] = ...
     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
 disp(sum(abs(footMarkerPositionError)))
-
-figure(1)
-
-if lastStage < 2
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionForces(2, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.verticalGrf, [], "blue")
-    hold off
-end
-if lastStage == 2
-    subplot(1,3,1);
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionForces(2, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.verticalGrf, [], "blue")
-    hold off
-    subplot(1,3,2);
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionForces(1, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.anteriorGrf, [], "blue")
-    hold off
-    subplot(1,3,3);
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionForces(3, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.lateralGrf, [], "blue")
-    hold off
-end
-if lastStage ==3
-    subplot(2,3,1);
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionForces(2, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.verticalGrf, [], "blue")
-    hold off
-    subplot(2,3,2);
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionForces(1, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.anteriorGrf, [], "blue")
-    hold off
-    subplot(2,3,3);
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionForces(3, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.lateralGrf, [], "blue")
-    hold off
-    subplot(2,3,4);
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionMoments(1, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.xGrfMoment, [], "blue")
-    hold off
-    subplot(2,3,5);
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionMoments(2, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.yGrfMoment, [], "blue")
-    hold off
-    subplot(2,3,6);
-    scatter(inputs.time, ...
-        inputs.experimentalGroundReactionMoments(3, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.zGrfMoment, [], "blue")
-    hold off
-end
-
-figure(2)
-
-for i = 1:7
-    subplot(2,4,i)
-    scatter(inputs.time, inputs.experimentalJointPositions(i, :), [], "red")
-    hold on
-    scatter(inputs.time, modeledValues.jointPositions(i, :), [], "blue")
-    hold off
-end
-
-%% Spring constant plot
-
-figure(3)
-footModel = Model("footModel2.osim");
-plotSpringConstants(footModel, inputs, inputs.toesBodyName, inputs.hindfootBodyName)
