@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
 %
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+%
+% (2D Array of double) -> (Array of double)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Spencer Williams                          %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,26 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function results = GroundContactPersonalization(inputs, params)
-verifyInputs(inputs); % (struct) -> (None)
-verifyParams(params); % (struct) -> (None)
-inputs = prepareGroundContactPersonalizationInputs(inputs, params);
-inputs = optimizeByVerticalGroundReactionForce(inputs, params);
-inputs = optimizeByGroundReactionForces(inputs, params);
-results = optimizeByGroundReactionAndCenterOfPressureAndFreeMoment( ...
-    inputs, params);
+function error = calcKinematicsBSplineCoefficientError(bSplineCoefficients)
+error = reshape(bSplineCoefficients - 1, 1, []);
 
 end
-
-% (struct) -> (None)
-% throws an error if any of the inputs are invalid
-function verifyInputs(inputs)
-
-end
-
-% (struct) -> (None)
-% throws an error if the parameter is included but is not of valid type
-function verifyParams(params)
-
-end
-
