@@ -31,10 +31,10 @@ function results = GroundContactPersonalization(inputs, params)
 verifyInputs(inputs); % (struct) -> (None)
 verifyParams(params); % (struct) -> (None)
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
+inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
 inputs = optimizeByVerticalGroundReactionForce(inputs, params);
 inputs = optimizeByGroundReactionForces(inputs, params);
-results = optimizeByGroundReactionAndCenterOfPressureAndFreeMoment( ...
-    inputs, params);
+results = optimizeByGroundReactionForcesAndMoments(inputs, params);
 
 end
 

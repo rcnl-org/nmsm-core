@@ -20,6 +20,10 @@ if lastStage >= 2
     inputs = optimizeByGroundReactionForces(inputs, params);
 end
 
+% Stage 3
+if lastStage == 3
+    inputs = optimizeByGroundReactionForcesAndMoments(inputs, params);
+end
 
 %% Report results, plot forces and kinematics
 
@@ -27,7 +31,8 @@ end
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     inputs.bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, inputs, ...
-    modeledJointPositions, modeledJointVelocities, [1, 1, (lastStage >= 2), 0], 0);
+    modeledJointPositions, modeledJointVelocities, [1, 1, ...
+    (lastStage >= 2), (lastStage == 3)]);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
@@ -76,6 +81,44 @@ if lastStage == 2
         inputs.experimentalGroundReactionForces(3, :), [], "red")
     hold on
     scatter(inputs.time, modeledValues.lateralGrf, [], "blue")
+    hold off
+end
+if lastStage ==3
+    subplot(2,3,1);
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionForces(2, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.verticalGrf, [], "blue")
+    hold off
+    subplot(2,3,2);
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionForces(1, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.anteriorGrf, [], "blue")
+    hold off
+    subplot(2,3,3);
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionForces(3, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.lateralGrf, [], "blue")
+    hold off
+    subplot(2,3,4);
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionMoments(1, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.xGrfMoment, [], "blue")
+    hold off
+    subplot(2,3,5);
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionMoments(2, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.yGrfMoment, [], "blue")
+    hold off
+    subplot(2,3,6);
+    scatter(inputs.time, ...
+        inputs.experimentalGroundReactionMoments(3, :), [], "red")
+    hold on
+    scatter(inputs.time, modeledValues.zGrfMoment, [], "blue")
     hold off
 end
 
