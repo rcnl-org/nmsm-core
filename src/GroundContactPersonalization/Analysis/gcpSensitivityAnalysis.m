@@ -6,7 +6,7 @@ if stage == 1
 elseif stage == 2
     costFn = @calcGroundReactionCost;
 elseif stage == 3
-    costFn = @calcGroundReactionAndCenterOfPressureAndFreeMomentCost;
+    costFn = @calcGroundReactionForcesAndMomentsCost;
 end
 
 xPoints = linspace(upperBound, lowerBound);
