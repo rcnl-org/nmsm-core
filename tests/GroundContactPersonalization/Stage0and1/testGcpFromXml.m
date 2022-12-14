@@ -5,7 +5,7 @@ clear
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
 
 % Latest stage of GCP to test
-lastStage = 0;
+lastStage = 3;
 
 % Stage 0
 inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
@@ -23,15 +23,21 @@ if lastStage == 3
 end
 
 %% Plot forces and kinematics
-close 1
-close 2
+if exist('1', 'var')
+    close 1
+end
+if exist('2', 'var')
+    close 2
+end
 figure(1)
 plotGroundReactionQuantities(inputs, lastStage)
 figure(2)
 plotCoordinates(inputs)
 
 %% Spring constant plot
-close 3
+if exist('3', 'var')
+    close 3
+end
 figure(3)
 footModel = Model("footModel2.osim");
 plotSpringConstants(footModel, inputs, inputs.toesBodyName, inputs.hindfootBodyName)
