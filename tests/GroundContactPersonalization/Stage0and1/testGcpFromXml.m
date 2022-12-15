@@ -5,7 +5,7 @@ clear
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
 
 % Latest stage of GCP to test
-lastStage = 3;
+lastStage = 0;
 
 % Stage 0
 inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
