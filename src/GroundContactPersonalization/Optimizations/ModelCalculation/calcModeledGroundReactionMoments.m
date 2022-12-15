@@ -44,10 +44,10 @@ for i = 1:length(values.springConstants)
     force(2) = springForces(2, i);
     force(3) = springForces(3, i);
     offset(1) = xPosition - inputs.midfootSuperiorPosition(1, currentFrame);
-    offset(2) = yPosition - inputs.midfootSuperiorPosition(2, currentFrame);
+    offset(2) = yPosition;
     offset(3) = zPosition - inputs.midfootSuperiorPosition(3, currentFrame);
 
-    moments = cross(force, offset);
+    moments = cross(offset, force);
     xGrfMoment = xGrfMoment + moments(1);
     yGrfMoment = yGrfMoment + moments(2);
     zGrfMoment = zGrfMoment + moments(3);
