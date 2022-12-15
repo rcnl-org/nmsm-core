@@ -169,7 +169,7 @@ function makeExcitationAndActivationPlots(results, resultsSynx, ...
     experimentalData, synergyParameters)
 
 muscleLabels = getSynxMuscleNames(experimentalData.muscleNames, ...
-    synergyParameters.missingEmgChannelPairs);
+    synergyParameters.missingEmgChannelGroups);
 
 for i = 1 : numel(synergyParameters.taskNames)
 figure('name', ['Muscle excitations/activations for ', ...
@@ -235,7 +235,7 @@ end
 function makeModelParameterPlots(finalValues, experimentalData, synergyParameters)
 
 muscleLabels = getSynxMuscleNames(experimentalData.muscleNames, ...
-    synergyParameters.missingEmgChannelPairs);
+    synergyParameters.missingEmgChannelGroups);
 
 In_width = 0.145; % witdth of each subplot
 figure('name', 'Model Parameters', 'units', 'normalized', ...
@@ -379,7 +379,7 @@ function makeTaskSpecificNormalizedFiberLengthsPlots(...
     normalizedFiberLengths, experimentalData, synergyParameters)
 
 muscleLabels = getSynxMuscleNames(experimentalData.muscleNames, ...
-    synergyParameters.missingEmgChannelPairs);
+    synergyParameters.missingEmgChannelGroups);
 
 for i = 1 : numel(synergyParameters.taskNames)
 figure('name', ['Normalized Fiber Lengths for ', ...
@@ -416,10 +416,10 @@ for i = 1 : numel(muscleLabels)
 end
 end
 function muscleLabels = getSynxMuscleNames(muscleNames, ...
-    missingEmgChannelPairs)
+    missingEmgChannelGroups)
 
 for i = 1 : numel(muscleNames)
-    if ismember(i, [missingEmgChannelPairs{:}])
+    if ismember(i, [missingEmgChannelGroups{:}])
         muscleLabels{i} = [muscleNames{i} '(*)'];
     else
         muscleLabels{i} = muscleNames{i};
