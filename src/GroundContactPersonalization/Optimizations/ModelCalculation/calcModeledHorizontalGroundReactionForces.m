@@ -40,7 +40,7 @@ lateralGrf = 0;
 
 for i=1:length(values.springConstants)
     verticalGrf = springForces(2, i);
-    xVelocity = markerKinematics.xVelocity(i);% + beltSpeed;
+    xVelocity = markerKinematics.xVelocity(i) + beltSpeed;
     zVelocity = markerKinematics.zVelocity(i);
     slipVelocity = (xVelocity ^ 2 + zVelocity ^ 2) ^ 0.5;
     if slipVelocity < 1e-10
