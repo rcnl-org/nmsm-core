@@ -51,10 +51,7 @@ for i = 1:length(values.springConstants)
     xGrfMoment = xGrfMoment + moments(1);
     yGrfMoment = yGrfMoment + moments(2);
     zGrfMoment = zGrfMoment + moments(3);
-
-%     xGrfMoment = xGrfMoment + -offset(2) * force(3) + -offset(3) * force(2);
-%     yGrfMoment = yGrfMoment + -offset(1) * force(3) + offset(3) * force(1);
-%     zGrfMoment = zGrfMoment + offset(2) * force(1) + offset(1) * force(2);
+    
 end
 
 end
