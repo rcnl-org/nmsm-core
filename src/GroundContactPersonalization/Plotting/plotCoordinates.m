@@ -35,13 +35,22 @@ coordinates = ["Toe Angle", "X Rotation", "Y Rotation", "Z Rotation", ...
     "X Translation", "Y Translation", "Z Translation"];
 for i = 1:7
     subplot(2,4,i)
-    scatter(inputs.time, inputs.experimentalJointPositions(i, :), [], "red")
+    
+    if i <= 4
+        experimental = rad2deg(inputs.experimentalJointPositions(i, :));
+        model = rad2deg(modeledJointPositions(i, :));
+    else
+        experimental = inputs.experimentalJointPositions(i, :);
+        model = modeledJointPositions(i, :);
+    end
+
+    scatter(inputs.time, experimental, [], "red")
     hold on
-    scatter(inputs.time, modeledJointPositions(i, :), [], "blue")
+    scatter(inputs.time, model, [], "blue")
     title(coordinates(i))
     xlabel('Time')
     if i == 1
-        ylabel('Angle (rad)')
+        ylabel('Angle (deg)')
     elseif i == 5
         ylabel('Translation (m)')
     end

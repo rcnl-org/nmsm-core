@@ -36,6 +36,8 @@
 			<medial_marker>R.Toe.Medial</medial_marker>
 			<lateral_marker>R.Toe.Lateral</lateral_marker>
 			<heel_marker>R.Heel</heel_marker>
+			<!--Name of midfoot superior marker used to define ground reaction moments-->
+			<midfoot_superior_marker>R.Midfoot.Superior</midfoot_superior_marker>
 		</RightFootPersonalization>
 		<!--Settings for ground contact personalization on the right side-->
         <LeftFootPersonalization>
@@ -144,7 +146,7 @@
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
                 <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>20</max_allowable_error>
+                <max_allowable_error>2000</max_allowable_error>
 			</springConstantErrorFromMean>
 			<dampingFactorErrorFromMean>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -201,7 +203,7 @@
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
                 <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>20</max_allowable_error>
+                <max_allowable_error>2000</max_allowable_error>
 			</springConstantErrorFromMean>
 			<dampingFactorErrorFromMean>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -270,7 +272,7 @@
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
                 <is_enabled>true</is_enabled>
                 <!--Max allowable error or deviation from indicated set point-->
-                <max_allowable_error>20</max_allowable_error>
+                <max_allowable_error>2000</max_allowable_error>
 			</springConstantErrorFromMean>
 			<dampingFactorErrorFromMean>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
