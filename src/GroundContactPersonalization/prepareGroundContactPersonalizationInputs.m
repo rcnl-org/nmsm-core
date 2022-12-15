@@ -107,7 +107,7 @@ end
 
 % (struct) -> (2D Array of double)
 % Replace parsed experimental ground reaction moments about midfoot
-% superior marker
+% superior marker projected onto floor
 function replacedMoments = replaceMomentsAboutMidfootSuperior(inputs)
     replacedMoments = ...
         zeros(size(inputs.experimentalGroundReactionMoments));
