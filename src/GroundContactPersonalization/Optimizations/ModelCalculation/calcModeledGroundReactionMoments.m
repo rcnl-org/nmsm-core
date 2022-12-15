@@ -31,21 +31,22 @@
 
 function [xGrfMoment, yGrfMoment, zGrfMoment] = ...
     calcModeledGroundReactionMoments(values, inputs, markerKinematics, ...
-    springForces)
+    springForces, currentFrame)
 xGrfMoment = 0;
 yGrfMoment = 0;
 zGrfMoment = 0;
 
 for i = 1:length(values.springConstants)
+    % Transform about midfoot superior marker projected on floor, not EC
     xPosition = markerKinematics.xPosition(i);
     yPosition = markerKinematics.height(i);
     zPosition = markerKinematics.zPosition(i);
     xForce = springForces(1, i);
     yForce = springForces(2, i);
     zForce = springForces(3, i);
-    xOffset = xPosition - inputs.electricalCenter(1, 1);
-    yOffset = yPosition - inputs.electricalCenter(2, 1);
-    zOffset = zPosition - inputs.electricalCenter(3, 1);
+    xOffset = xPosition - inputs.midfootSuperiorPosition(1, currentFrame);
+    yOffset = yPosition - inputs.midfootSuperiorPosition(2, currentFrame);
+    zOffset = zPosition - inputs.midfootSuperiorPosition(3, currentFrame);
 
     xGrfMoment = xGrfMoment + -yOffset * zForce + -zOffset * yForce;
     yGrfMoment = yGrfMoment + -xOffset * zForce + zOffset * xForce;

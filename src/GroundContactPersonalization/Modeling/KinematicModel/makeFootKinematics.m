@@ -38,9 +38,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [footPosition, markerPositions] = makeFootKinematics(model, ...
-    motionFileName, coordinatesOfInterest, hindfootBodyName, ...
-    toesJointName, markerNames)
+function [footPosition, markerPositions, midfootSuperiorPosition] = ...
+    makeFootKinematics(model, motionFileName, coordinatesOfInterest, ...
+    hindfootBodyName, toesJointName, markerNames, midfootSuperiorMarker)
 
 import org.opensim.modeling.Storage
 [model, state] = Model(model);
@@ -78,6 +78,7 @@ markerNamesFields = fieldnames(markerNames);
 for i=1:length(markerNamesFields)
     markerPositions.(markerNamesFields{i}) = zeros(3, length(time));
 end
+midfootSuperiorPosition = zeros(3, length(time));
 
 for i=1:length(time)
     state.setTime(time(i));
@@ -93,6 +94,8 @@ for i=1:length(time)
             getMarkerSet().get(markerNames.(markerNamesFields{j})). ...
             getLocationInGround(state).getAsMat()';
     end
+    midfootSuperiorPosition(:, i) =  model.getMarkerSet().get(...
+        midfootSuperiorMarker).getLocationInGround(state).getAsMat()';
 end
 end
 
