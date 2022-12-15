@@ -37,20 +37,25 @@ yGrfMoment = 0;
 zGrfMoment = 0;
 
 for i = 1:length(values.springConstants)
-    % Transform about midfoot superior marker projected on floor, not EC
     xPosition = markerKinematics.xPosition(i);
     yPosition = markerKinematics.height(i);
     zPosition = markerKinematics.zPosition(i);
-    xForce = springForces(1, i);
-    yForce = springForces(2, i);
-    zForce = springForces(3, i);
-    xOffset = xPosition - inputs.midfootSuperiorPosition(1, currentFrame);
-    yOffset = yPosition - inputs.midfootSuperiorPosition(2, currentFrame);
-    zOffset = zPosition - inputs.midfootSuperiorPosition(3, currentFrame);
+    force(1) = springForces(1, i);
+    force(2) = springForces(2, i);
+    force(3) = springForces(3, i);
+    offset(1) = xPosition - inputs.midfootSuperiorPosition(1, currentFrame);
+    offset(2) = yPosition - inputs.midfootSuperiorPosition(2, currentFrame);
+    offset(3) = zPosition - inputs.midfootSuperiorPosition(3, currentFrame);
 
-    xGrfMoment = xGrfMoment + -yOffset * zForce + -zOffset * yForce;
-    yGrfMoment = yGrfMoment + -xOffset * zForce + zOffset * xForce;
-    zGrfMoment = zGrfMoment + yOffset * xForce + xOffset * yForce;
+    moments = cross(offset, force);
+%     moments = cross(force, offset);
+    xGrfMoment = xGrfMoment + moments(1);
+    yGrfMoment = yGrfMoment + moments(2);
+    zGrfMoment = zGrfMoment + moments(3);
+
+%     xGrfMoment = xGrfMoment + -offset(2) * force(3) + -offset(3) * force(2);
+%     yGrfMoment = yGrfMoment + -offset(1) * force(3) + offset(3) * force(1);
+%     zGrfMoment = zGrfMoment + offset(2) * force(1) + offset(1) * force(2);
 end
 
 end
