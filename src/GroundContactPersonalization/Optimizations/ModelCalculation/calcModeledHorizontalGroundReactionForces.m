@@ -40,7 +40,7 @@ lateralGrf = 0;
 
 for i=1:length(values.springConstants)
     verticalGrf = springForces(2, i);
-    xVelocity = markerKinematics.xVelocity(i);
+    xVelocity = markerKinematics.xVelocity(i);% + beltSpeed;
     zVelocity = markerKinematics.zVelocity(i);
     slipVelocity = (xVelocity ^ 2 + zVelocity ^ 2) ^ 0.5;
     if slipVelocity < 1e-10
@@ -70,6 +70,7 @@ for i=1:length(values.springConstants)
     horizontalGrfMagnitude = verticalGrf * ...
         values.dynamicFrictionCoefficient * ...
         tanh(slipVelocity / latchVelocity);
+    % Slip offset prevents division by zero at any time point
     springForces(1, i) = -xVelocity / (slipVelocity + slipOffset) * ...
         horizontalGrfMagnitude;
     springForces(3, i) = -zVelocity / (slipVelocity + slipOffset) * ...
