@@ -116,11 +116,12 @@ end
 function output = getTasks(tree)
 tasks = getFieldByNameOrError(tree, 'MuscleTendonPersonalizationTaskList');
 counter = 1;
-for i=1:length(tasks.MuscleTendonPersonalizationTask)
-    if(length(tasks.MuscleTendonPersonalizationTask) == 1)
-        task = tasks.MuscleTendonPersonalizationTask;
+mtpTasks = orderByIndex(tasks.MuscleTendonPersonalizationTask);
+for i=1:length(mtpTasks)
+    if(length(mtpTasks) == 1)
+        task = mtpTasks;
     else
-        task = tasks.MuscleTendonPersonalizationTask{i};
+        task = mtpTasks{i};
     end
     if(task.is_enabled.Text == 'true')
         output{counter} = getTask(task);
