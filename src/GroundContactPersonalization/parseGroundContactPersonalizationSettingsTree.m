@@ -63,8 +63,6 @@ else
 end
 inputs.numberCycles = str2double(getFieldByNameOrError(tree, ...
     'number_of_cycles').Text);
-inputs.nodesPerCycle = str2double(getFieldByNameOrError(tree, ...
-    'nodes_per_cycle').Text);
 inputs.beltSpeed = str2double(getFieldByNameOrError(tree, ...
     'belt_speed').Text);
 rightTree = getFieldByNameOrError(tree, 'RightFootPersonalization');
@@ -268,11 +266,16 @@ end
 
 function params = getParams(tree)
 params = struct();
-params.maxIterations = getFieldByName(tree, 'max_iterations');
+params.splineNodes = valueOrAlternate(tree, 'nodes_per_cycle', 25);
+if (isstruct(params.splineNodes))
+    params.splineNodes = str2double(params.splineNodes.Text);
+end
+params.maxIterations = valueOrAlternate(tree, 'max_iterations', 1000);
 if(isstruct(params.maxIterations))
     params.maxIterations = str2double(params.maxIterations.Text);
 end
-params.maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
+params.maxFunctionEvaluations = valueOrAlternate(tree, ...
+    'max_function_evaluations', 3000000);
 if(isstruct(params.maxFunctionEvaluations))
     params.maxFunctionEvaluations = str2double(params.maxFunctionEvaluations.Text);
 end
