@@ -30,7 +30,7 @@ if exist('2', 'var')
     close 2
 end
 figure(1)
-plotGroundReactionQuantities(inputs, lastStage)
+plotGroundReactionQuantities(inputs, params, lastStage)
 figure(2)
 plotCoordinates(inputs)
 
