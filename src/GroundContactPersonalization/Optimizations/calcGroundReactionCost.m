@@ -30,13 +30,16 @@
 function cost = calcGroundReactionCost(values, fieldNameOrder, inputs, ...
     params)
 valuesStruct = unpackValues(values, inputs, fieldNameOrder);
+if ~params.stageTwo.bSplineCoefficients.isEnabled
+        valuesStruct.bSplineCoefficients = inputs.bSplineCoefficients;
+end
 valuesBSplineCoefficients = ...
     reshape(valuesStruct.bSplineCoefficients, [], 7);
 [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     valuesBSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
-    modeledJointPositions, modeledJointVelocities, [1, 1, 1, 0]);
+    modeledJointPositions, modeledJointVelocities, [1, 1, 1, 0], params);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 

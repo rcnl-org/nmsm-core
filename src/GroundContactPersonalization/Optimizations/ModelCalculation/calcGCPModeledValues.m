@@ -35,10 +35,39 @@
 % ----------------------------------------------------------------------- %
 
 function modeledValues = calcGCPModeledValues(inputs, values, ...
-    modeledJointPositions, modeledJointVelocities, isCalculated)
+    modeledJointPositions, modeledJointVelocities, isCalculated, params)
 [model, state] = Model(inputs.model);
 markerNamesFields = fieldnames(inputs.markerNames);
-values.dampingFactors = inputs.dampingFactors;
+if isCalculated(4)
+    if ~params.stageThree.springConstants.isEnabled
+        values.springConstants = inputs.springConstants;
+    end
+    if ~params.stageThree.dampingFactors.isEnabled
+        values.dampingFactors = inputs.dampingFactors;
+    end
+    if ~params.stageThree.dynamicFrictionCoefficient.isEnabled
+        values.dynamicFrictionCoefficient = ...
+            inputs.dynamicFrictionCoefficient;
+    end
+elseif isCalculated(3)
+    if ~params.stageTwo.springConstants.isEnabled
+        values.springConstants = inputs.springConstants;
+    end
+    if ~params.stageTwo.dampingFactors.isEnabled
+        values.dampingFactors = inputs.dampingFactors;
+    end
+    if ~params.stageTwo.dynamicFrictionCoefficient.isEnabled
+        values.dynamicFrictionCoefficient = ...
+            inputs.dynamicFrictionCoefficient;
+    end
+else
+    if ~params.stageOne.springConstants.isEnabled
+        values.springConstants = inputs.springConstants;
+    end
+    if ~params.stageOne.dampingFactors.isEnabled
+        values.dampingFactors = inputs.dampingFactors;
+    end
+end
 for i=1:length(markerNamesFields)
     modeledValues.markerPositions.(markerNamesFields{i}) = ...
         zeros(3, size(modeledJointPositions, 2));
