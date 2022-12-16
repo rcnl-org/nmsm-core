@@ -33,7 +33,7 @@ function plotGroundReactionQuantities(inputs, lastStage)
     inputs.jointKinematicsBSplines, inputs.bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, inputs, ...
     modeledJointPositions, modeledJointVelocities, [1, 1, ...
-    (lastStage >= 2), (lastStage == 3)]);
+    (lastStage >= 2), (lastStage == 3)], params);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
