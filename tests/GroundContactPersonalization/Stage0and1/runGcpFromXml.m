@@ -61,10 +61,16 @@ disp(sum(abs(groundReactionForceValueError)))
 if lastStage >= 2
     [groundReactionForceValueErrors, ~] = ...
         calcGroundReactionForceAndSlopeError(inputs, modeledValues);
-disp('Unweighted Anterior GRF Cost: ')
-disp(sum(abs(groundReactionForceValueErrors(1, :))))
-disp('Unweighted Lateral GRF Cost: ')
-disp(sum(abs(groundReactionForceValueErrors(3, :))))
+    disp('Unweighted Anterior GRF Cost: ')
+    disp(sum(abs(groundReactionForceValueErrors(1, :))))
+    disp('Unweighted Lateral GRF Cost: ')
+    disp(sum(abs(groundReactionForceValueErrors(3, :))))
+end
+if lastStage == 3
+    [groundReactionMomentErrors, ~] = ...
+        calcGroundReactionMomentAndSlopeError(inputs, modeledValues);
+    disp('Unweighted Moment Cost: ')
+    disp(sum(abs(groundReactionMomentErrors), 'all'))
 end
 disp('Unweighted Marker Tracking Cost: ')
 [footMarkerPositionError, ~] = ...
