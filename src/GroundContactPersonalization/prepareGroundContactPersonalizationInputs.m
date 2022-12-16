@@ -33,10 +33,10 @@ inputs.gridHeight = 15;
 
 if inputs.right.isEnabled
     % Potentially refactor to use inputs.right if allowing multiple sides
-    inputs = prepareInputsForSide(inputs, inputs);
+    inputs = prepareInputsForSide(inputs, inputs, params);
 end
 if inputs.left.isEnabled
-    inputs.left = prepareInputsForSide(inputs.left, inputs);
+    inputs.left = prepareInputsForSide(inputs.left, inputs, params);
 end
 
 inputs.restingSpringLength = inputs.initialRestingSpringLength;
@@ -46,7 +46,7 @@ end
 
 % (struct, struct) -> (struct)
 % prepares optimization values specific to a side
-function inputs = prepareInputsForSide(inputs, sharedInputs)
+function inputs = prepareInputsForSide(inputs, sharedInputs, params)
 inputs.toesJointName = char(Model(sharedInputs.bodyModel ...
     ).getCoordinateSet().get(inputs.toesCoordinateName).getJoint(...
     ).getName());
@@ -62,12 +62,12 @@ inputs.coordinatesOfInterest = findGCPFreeCoordinates(...
     inputs.markerNames, inputs.midfootSuperiorMarker);
 
 footVelocity = calcBSplineDerivative(inputs.time, footPosition, ...
-    4, 21);
+    4, params.splineNodes);
 markerNamesFields = fieldnames(inputs.markerNames);
 for i=1:length(markerNamesFields)
 markerVelocities.(markerNamesFields{i}) = ...
     calcBSplineDerivative(inputs.time, markerPositions.(...
-    markerNamesFields{i}), 4, 21);
+    markerNamesFields{i}), 4, params.splineNodes);
 end
 
 % inputs.model = makeFootModel(sharedInputs.bodyModel, inputs.toesJointName);
@@ -96,12 +96,14 @@ inputs.dampingFactors = initialDampingFactors * ones(1, ...
 inputs.springRestingLength = initialSpringRestingLength;
 
 inputs.experimentalGroundReactionForcesSlope = calcBSplineDerivative( ...
-    inputs.time, inputs.experimentalGroundReactionForces, 2, 25);
+    inputs.time, inputs.experimentalGroundReactionForces, 2, ...
+    params.splineNodes);
 inputs.experimentalGroundReactionMomentsSlope = calcBSplineDerivative( ...
-    inputs.time, inputs.experimentalGroundReactionMoments, 2, 25);
+    inputs.time, inputs.experimentalGroundReactionMoments, 2, ...
+    params.splineNodes);
 inputs.jointKinematicsBSplines = makeJointKinematicsBSplines(...
-    inputs.time, 4, 25);
-inputs.bSplineCoefficients = ones(25, 7);
+    inputs.time, 4, params.splineNodes);
+inputs.bSplineCoefficients = ones(params.splineNodes, 7);
 inputs.springRestingLength = initialSpringRestingLength;
 end
 
