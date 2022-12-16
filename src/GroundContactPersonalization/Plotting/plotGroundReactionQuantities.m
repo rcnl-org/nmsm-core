@@ -27,7 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotGroundReactionQuantities(inputs, lastStage)
+function plotGroundReactionQuantities(inputs, params, lastStage)
 [modeledJointPositions, modeledJointVelocities] = ...
     calcGCPJointKinematics(inputs.experimentalJointPositions, ...
     inputs.jointKinematicsBSplines, inputs.bSplineCoefficients);
