@@ -118,6 +118,9 @@ for i=1:size(modeledJointPositions, 2)
     if isCalculated(4)
         markerKinematics.xPosition = zeros(size(values.springConstants));
         markerKinematics.zPosition = zeros(size(values.springConstants));
+        inputs.midfootSuperiorPosition(:, i) = ...
+            Model(inputs.model).getMarkerSet().get(inputs.midfootSuperiorMarker...
+            ).getLocationInGround(state).getAsMat()';
         for j = 1:length(values.springConstants)
             markerKinematics.xPosition(j) = modelMarkerPosition.get(0);
             markerKinematics.zPosition(j) = modelMarkerPosition.get(2);
