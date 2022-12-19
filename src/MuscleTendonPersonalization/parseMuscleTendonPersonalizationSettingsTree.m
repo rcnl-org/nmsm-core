@@ -32,7 +32,6 @@ function [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
-%% Will be influenced by PreCal
 inputs = getModelInputs(inputs);
 inputs = getSynergyExtrapolationInputs(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
@@ -66,6 +65,10 @@ inputs.emgData = parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGData"), prefixes));
 inputs.emgDataExpanded = parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGDataExpanded"), prefixes));
+emdDataFileNames = findFileListFromPrefixList( ...
+    fullfile(inputDirectory, "EMGData"), prefixes);
+inputs.emgDataColumnNames = getStorageColumnNames(Storage( ...
+    emdDataFileNames(1)));
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
     fullfile(inputDirectory, "EMGData"), prefixes));
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
@@ -78,14 +81,12 @@ inputs.momentArms = parseMomentArms(directories, inputs.model);
 inputs.numPaddingFrames = (size(inputs.experimentalMoments, 3) - 101) / 2;
 inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.tasks = getTasks(tree);
-inputs.activationPairs = getPairs(getFieldByNameOrError(tree, ...
-    'PairedActivationTimeConstants'), inputs.model);
-inputs.normalizedFiberLengthPairs = getPairs(getFieldByNameOrError(tree, ...
-    'PairedNormalizedMuscleFiberLengths'), inputs.model);
+inputs.activationGroups = getGroups(getFieldByNameOrError(tree, ...
+    'GroupedActivationTimeConstants'), inputs.model);
+inputs.normalizedFiberLengthGroups = getGroups(getFieldByNameOrError(tree, ...
+    'GroupedNormalizedMuscleFiberLengths'), inputs.model);
 inputs.synergyExtrapolation = getSynergyExtrapolationParameters(tree, ...
     inputs.model);
-inputs = getCostFunctionTerms(getFieldByNameOrError(tree, ...
-    'MuscleTendonCostFunctionTerms'), inputs);
 inputs.vMaxFactor = getVMaxFactor(tree);
 inputs.synergyExtrapolation = getTrialIndexes( ...
     inputs.synergyExtrapolation, size(inputs.emgData, 1), prefixes);
@@ -115,11 +116,12 @@ end
 function output = getTasks(tree)
 tasks = getFieldByNameOrError(tree, 'MuscleTendonPersonalizationTaskList');
 counter = 1;
-for i=1:length(tasks.MuscleTendonPersonalizationTask)
-    if(length(tasks.MuscleTendonPersonalizationTask) == 1)
-        task = tasks.MuscleTendonPersonalizationTask;
+mtpTasks = orderByIndex(tasks.MuscleTendonPersonalizationTask);
+for i=1:length(mtpTasks)
+    if(length(mtpTasks) == 1)
+        task = mtpTasks;
     else
-        task = tasks.MuscleTendonPersonalizationTask{i};
+        task = mtpTasks{i};
     end
     if(task.is_enabled.Text == 'true')
         output{counter} = getTask(task);
@@ -141,24 +143,24 @@ for i=1:length(items)
 end
 end
 
-function pairs = getPairs(tree, model)
-pairElements = getFieldByName(tree, 'musclepairs');
+function groups = getGroups(tree, model)
+groupElements = getFieldByName(tree, 'musclegroups');
 activationGroupNames = string([]);
-if isstruct(pairElements)
-    activationGroupNames(end+1) = pairElements.Text;
-elseif iscell(pairElements)
-    for i=1:length(pairElements)
-        activationGroupNames(end+1) = pairElements{i}.Text;
+if isstruct(groupElements)
+    activationGroupNames(end+1) = groupElements.Text;
+elseif iscell(groupElements)
+    for i=1:length(groupElements)
+        activationGroupNames(end+1) = groupElements{i}.Text;
     end
 else
-    pairs = {};
+    groups = {};
     return
 end
-pairs = groupNamesToPairs(activationGroupNames, model);
+groups = groupNamesToGroups(activationGroupNames, model);
 end
 
-function pairs = groupNamesToPairs(groupNames, model)
-pairs = {};
+function groups = groupNamesToGroups(groupNames, model)
+groups = {};
 model = Model(model);
 for i=1:length(groupNames)
     group = [];
@@ -174,7 +176,7 @@ for i=1:length(groupNames)
         end
         group(end+1) = count;
     end
-    pairs{end + 1} = group;
+    groups{end + 1} = group;
 end
 end
 
@@ -189,6 +191,11 @@ maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
 if(isstruct(maxFunctionEvaluations))
     params.maxFunctionEvaluations = str2double(maxFunctionEvaluations.Text);
 end
+performPrecalibration = getFieldByName(tree, 'perform_precalibration');
+if(performPrecalibration.Text == "true"); params.performPrecalibration = 1;
+else; params.performPrecalibration = 0; end
+params = getCostFunctionTerms(getFieldByNameOrError(tree, ...
+    'MuscleTendonCostFunctionTerms'), params);
 end
 
 function inputs = getModelInputs(inputs)
@@ -196,6 +203,7 @@ inputs.optimalFiberLength = [];
 inputs.tendonSlackLength = [];
 inputs.pennationAngle = [];
 inputs.maxIsometricForce = [];
+inputs.muscleNames = '';
 model = Model(inputs.model);
 for i = 0:model.getForceSet().getMuscles().getSize()-1
     if model.getForceSet().getMuscles().get(i).get_appliesForce()
@@ -208,52 +216,68 @@ for i = 0:model.getForceSet().getMuscles().getSize()-1
             getPennationAngleAtOptimalFiberLength();
         inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
             getMuscles().get(i).getMaxIsometricForce();
+        inputs.muscleNames{end+1} = char(model.getForceSet(). ...
+            getMuscles().get(i).getName);
     end
 end
 end
 
-function inputs = getCostFunctionTerms(tree, inputs)
-inputs.costWeight = [];
-inputs.errorCenters = [];
-inputs.maxAllowableErrors = [];
+function params = getCostFunctionTerms(tree, params)
 individualMusclesTree = getFieldByNameOrError(tree, "IndividualMuscles");
-pairedMusclesTree = getFieldByNameOrError(tree, "PairedMuscles");
-SynergyExtrapolationSettingsTree = getFieldByNameOrError(tree, ...
+groupedMusclesTree = getFieldByNameOrError(tree, "GroupedMuscles");
+synergyExtrapolationSettingsTree = getFieldByNameOrError(tree, ...
     "SynergyExtrapolationSettings");
 individualMuscleTerms = ["InverseDynamicJointMoments", ...
     "ActivationTimeConstant", "ActivationNonlinearityConstant", ...
     "OptimalMuscleFiberLength", "TendonSlackLength", "EmgScalingFactors", ...
     "NormalizedMuscleFiberLength", "PassiveMuscleForces"];
+individualMuscleCostTermNames = ["momentTracking", ...
+    "activationTimeConstantDeviation", "activationNonlinearityDeviation", ...
+    "optimalFiberLengthDeviation", "tendonSlackLengthDeviation", ...
+    "emgScaleFactorDeviation", "normalizedFiberLengthDeviation", ...
+    "passiveForce"];
 for i=1:length(individualMuscleTerms)
-    inputs = addCostFunctionTerms(getFieldByNameOrError(...
-        individualMusclesTree, individualMuscleTerms(i)), inputs);
+    params = addCostFunctionTerms(getFieldByNameOrError(...
+        individualMusclesTree, individualMuscleTerms(i)), ...
+        individualMuscleCostTermNames(i), params);
 end
-pairedMuscleTerms = ["NormalizedMuscleFiberLength", ...
+groupedMuscleTerms = ["NormalizedMuscleFiberLength", ...
     "EmgScalingFactors", "ElectromechanicalDelay"];
-for i=1:length(pairedMuscleTerms)
-    inputs = addCostFunctionTerms(getFieldByNameOrError(pairedMusclesTree, ...
-        pairedMuscleTerms(i)), inputs);
+groupedMuscleCostTermNames = ["normalizedFiberLengthGroupedSimiliarity", ...
+    "emgScaleFactorGroupedSimilarity", ...
+    "electromechanicalDelayGroupedSimilarity"];
+for i=1:length(groupedMuscleTerms)
+    params = addCostFunctionTerms(getFieldByNameOrError(groupedMusclesTree, ...
+        groupedMuscleTerms(i)), groupedMuscleCostTermNames(i), params);
 end
-SynergyExtrapolationSettingsTerms = ["MeasuredInverseDynamicJointMoments", ...
+synergyExtrapolationSettingsTerms = ["MeasuredInverseDynamicJointMoments", ...
     "ExtrapolatedMuscleActivations", "ResidualMuscleActivations"];
-for i=1:length(SynergyExtrapolationSettingsTerms)
-    inputs = addCostFunctionTerms(getFieldByNameOrError(...
-        SynergyExtrapolationSettingsTree, ...
-        SynergyExtrapolationSettingsTerms(i)), inputs);
+synergyExtrapolationCostTermNames = ["measuredMomentTracking", ...
+    "muscleActivationsFromSynergy", "muscleActivationsFromResiduals"];
+for i=1:length(synergyExtrapolationSettingsTerms)
+    params = addCostFunctionTerms(getFieldByNameOrError(...
+        synergyExtrapolationSettingsTree, ...
+        synergyExtrapolationSettingsTerms(i)), ...
+        synergyExtrapolationCostTermNames(i), params);
 end
 end
 
-function inputs = addCostFunctionTerms(tree, inputs)
+function params = addCostFunctionTerms(tree, costTermName, params)
 enabled = getFieldByNameOrError(tree, "is_enabled").Text;
-if(enabled == "true"); inputs.costWeight(end+1) = 1;
-else; inputs.costWeight(end+1) = 0; end
+if(enabled == "true")
+    eval(strcat("params.", costTermName, "CostWeight = 1;"));
+else
+    eval(strcat("params.", costTermName, "CostWeight = 0;"));
+end
 maxError = getFieldByNameOrError(tree, "max_allowable_error").Text;
-inputs.maxAllowableErrors(end+1) = str2double(maxError);
+eval(strcat("params.", costTermName, "MaximumAllowableError = ", ...
+    maxError, ';'));
 errorCenter = getFieldByName(tree, "error_center");
 if ~isstruct(errorCenter)
-    inputs.errorCenters(end+1) = 0;
+    eval(strcat("params.", costTermName, "ErrorCenter = 0;"));
 else
-inputs.errorCenters(end+1) = str2double(errorCenter.Text);
+eval(strcat("params.", costTermName, "ErrorCenter = ", ...
+    errorCenter.Text, ';'));    
 end
 end
 
@@ -279,8 +303,8 @@ end
 
 function synergyExtrapolation = ...
     getSynergyExtrapolationParameters(tree, model)
-synergyExtrapolation.missingEmgChannelPairs = ...
-    getPairs(getFieldByNameOrError(tree, 'PairedMissingEmgChannels'), ...
+synergyExtrapolation.missingEmgChannelGroups = ...
+    getGroups(getFieldByNameOrError(tree, 'GroupedMissingEmgChannels'), ...
     model);
 synergyExtrapolation.matrixFactorizationMethod = ...
     getFieldByName(tree, 'matrix_factorization_method');
@@ -304,16 +328,40 @@ synergyExtrapolation.taskNames = ...
 end
 
 function inputs = getSynergyExtrapolationInputs(inputs)
+model = Model(inputs.model);
+columnNames = getEnabledMusclesInOrder(model);
+groupToName = getMuscleNameByGroupStruct(model, ...
+    inputs.emgDataColumnNames);
+for i = 1 : length(fieldnames(groupToName))
+    musclesInGroup = groupToName.(inputs.emgDataColumnNames(i));
+    for j = 1 : length(musclesInGroup)
+        inputs.synergyExtrapolation.currentEmgChannelGroups{i}(1, j) = ...
+            find(strcmp(columnNames, musclesInGroup(j)));
+    end
+end
 [inputs.synergyWeights, inputs.numberOfExtrapolationWeights, ...
     inputs.numberOfResidualWeights] = ...
     getSynergyWeights(inputs.synergyExtrapolation, ...
     size(inputs.emgData, 1), ...
-    size(inputs.synergyExtrapolation.currentEmgChannelPairs, 2), ...
-    size(inputs.synergyExtrapolation.missingEmgChannelPairs, 2));
+    size(inputs.synergyExtrapolation.currentEmgChannelGroups, 2), ...
+    size(inputs.synergyExtrapolation.missingEmgChannelGroups, 2));
 [inputs.extrapolationCommands, inputs.residualCommands] = ...
     getSynergyCommands(inputs.emgData, ...
     inputs.synergyExtrapolation.numberOfSynergies, ...
     inputs.synergyExtrapolation.matrixFactorizationMethod, ...
     inputs.synergyExtrapolation.synergyCategorizationOfTrials, ...
     inputs.synergyExtrapolation.residualCategorizationOfTrials);
+end
+
+function groupToName = getMuscleNameByGroupStruct(model, emgDataNames)
+for i=1:length(emgDataNames) % struct group names with muscle names inside
+    groupSize = model.getForceSet().getGroup(emgDataNames(i)) ...
+        .getMembers().size();
+    groupToName.(emgDataNames(i)) = string(zeros(1,groupSize));
+    for j=0:groupSize-1
+        groupToName.(emgDataNames(i))(j+1) = model.getForceSet() ...
+            .getGroup(emgDataNames(i)).getMembers().get(j).getName() ...
+            .toCharArray';
+    end
+end
 end

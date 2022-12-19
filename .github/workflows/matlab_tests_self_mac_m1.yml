@@ -1,4 +1,4 @@
-name: MATLAB Tests (Self-Hosted, Mac, M1)
+name: Test Suite (Mac, M1)
 on: [push]
 jobs:
   my-job:
