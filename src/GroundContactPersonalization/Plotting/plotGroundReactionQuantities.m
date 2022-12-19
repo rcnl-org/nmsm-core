@@ -28,6 +28,11 @@
 % ----------------------------------------------------------------------- %
 
 function plotGroundReactionQuantities(inputs, params, lastStage)
+
+if nargin < 3
+    lastStage = 3;
+end
+
 [modeledJointPositions, modeledJointVelocities] = ...
     calcGCPJointKinematics(inputs.experimentalJointPositions, ...
     inputs.jointKinematicsBSplines, inputs.bSplineCoefficients);
