@@ -84,14 +84,18 @@ inputs.muscleTendonLength = muscleTendonLength;
 inputs.muscleTendonVelocity = muscleTendonVelocity;
 inputs.momentArms = momentArms;
 inputs.inverseDynamicsMoments = inverseDynamicsMoments;
-muscleNames = fixStrings(muscleNames); inputs.muscleNames = muscleNames;
-coordinateNames = fixStrings(coordinateNames); inputs.coordinateNames = coordinateNames;
+inputs.muscleNames = fixStrings(muscleNames);
+inputs.coordinateNames = fixStrings(coordinateNames);
 
 tic
 
-fieldnames(inputs)
-
-if 1
+inputs
+% inputs.muscleNames
+for i = 1 : length(coordinateNames)
+    writeToSto(inputs.muscleNames, linspace(0, 1, inputs.numPoints), ...
+       squeeze(inputs.momentArms(:, : , i)), "gait_1_MomentArm_" + inputs.coordinateNames(i) + ".sto")
+end
+if 0
     x = computeNeuralControlOptimization(x0, inputs, struct());
 else
     x = x0;
@@ -99,9 +103,9 @@ end
 
 toc
 
-inputs.savefilename = savefilename;
-inputs.NCPtimePercent = linspace(0, 100, inputs.numPoints)';
-reportNeuralControlPersonalizationResults(x, inputs, struct());
+% inputs.savefilename = savefilename;
+% inputs.NCPtimePercent = linspace(0, 100, inputs.numPoints)';
+% reportNeuralControlPersonalizationResults(x, inputs, struct());
 
 % keyboard
 end
@@ -118,10 +122,10 @@ end
 end
 
 %--------------------------------------------------------------------------
-function a = fixStrings(a)
-
+function b = fixStrings(a)
+b = string(zeros(1, length(a)));
 for i = 1:length(a)
-    a{i} = strrep(a{i}, '_', ' ');
+    b(i) = a{i};
 end
 
 end
@@ -415,8 +419,7 @@ muscleNames = {'addbrev_r', 'addlong_r', 'addmagDist_r', 'addmagIsch_r', 'addmag
     'IO2_l', 'IO4_l', 'IO5_l', 'EO10_l', 'EO12_l', 'IL_L2_l', 'IL_L4_l', 'IL_R7_l', 'IL_R10_l', 'IL_R11_l', 'IL_R12_l', 'LTpT_T8_l', 'LTpT_T12_l', 'LTpT_R8_l', 'LTpT_R11_l', 'LTpL_L2_l', 'LTpL_L4_l', 'LTpL_L5_l', 'MF_m1t_3_l', 'MF_m2t_3_l', 'MF_m3s_l', 'MF_m4t_3_l', 'MF_m5_laminar_l', 'QL_post_I1_L3_l', 'QL_post_I2_L4_l', 'QL_post_I3_L2_l', 'QL_ant_I2_T12_l', 'QL_ant_I3_R12_I2_l', 'rect_abd_l'};
 
 %% EMG activations
-emgActivation = [EMGD_data.a((trial_no - 1) * inputs.numPoints + 1:trial_no * inputs.numPoints, :), act_leftleg.activation_L.case_3];
-inputs.emgActivation = emgActivation;
+inputs.emgActivation = [EMGD_data.a((trial_no - 1) * inputs.numPoints + 1:trial_no * inputs.numPoints, :), act_leftleg.activation_L.case_3];
 end
 
 function A = lumbarSurrogateModel(theta1, theta2, theta3, numPoints)

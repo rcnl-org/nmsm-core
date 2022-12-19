@@ -55,7 +55,7 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-prefixes = getPrefixes(tree, inputDirectory);
+prefixes = findPrefixes(tree, inputDirectory);
 inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
     inputDirectory, "IDData"), prefixes);
 inputs.coordinates = getStorageColumnNames(Storage( ...
@@ -65,10 +65,10 @@ inputs.emgData = parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGData"), prefixes));
 inputs.emgDataExpanded = parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGDataExpanded"), prefixes));
-emdDataFileNames = findFileListFromPrefixList( ...
+emgDataFileNames = findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGData"), prefixes);
 inputs.emgDataColumnNames = getStorageColumnNames(Storage( ...
-    emdDataFileNames(1)));
+    emgDataFileNames(1)));
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
     fullfile(inputDirectory, "EMGData"), prefixes));
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
@@ -93,22 +93,6 @@ inputs.synergyExtrapolation = getTrialIndexes( ...
 
 if ~isfield(inputs, "emgSplines")
     inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
-end
-end
-
-% (struct) -> (Array of string)
-function prefixes = getPrefixes(tree, inputDirectory)
-prefixField = getFieldByName(tree, 'trial_prefixes');
-if(length(prefixField.Text) > 0)
-    prefixes = strsplit(prefixField.Text, ' ');
-else
-    files = dir(fullfile(inputDirectory, "IKData"));
-    prefixes = string([]);
-    for i=1:length(files)
-        if(~files(i).isdir)
-            prefixes(end+1) = files(i).name(1:end-4);
-        end
-    end
 end
 end
 
