@@ -31,18 +31,25 @@
 
 function MuscleTendonPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
+[mtpInputs, mtpParams, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-optimizedParams = MuscleTendonPersonalization(inputs, params);
-%% results is a structure, report not implemented yet
+if mtpParams.performPrecalibration
+    precalInputs = parsePreCalibrationSettingsTree(settingsTree);
+    optimizedInitialGuess = PreCalibration(precalInputs);
+    mtpInputs = updateMtpInitialGuess(mtpInputs, precalInputs, ...
+        optimizedInitialGuess);
+end
+optimizedParams = MuscleTendonPersonalization(mtpInputs, mtpParams);
+if mtpParams.performPrecalibration
+    reportMuscleTendonPersonalizationResults(optimizedParams, ...
+        mtpInputs, precalInputs);
+else
+    reportMuscleTendonPersonalizationResults(optimizedParams, mtpInputs);
+end
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
-results = calcMtpSynXModeledValues(finalValues, inputs, params);
-results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : end - ...
-    inputs.numPaddingFrames);
-% results = calcFinalMuscleActivations(optimizedParams, inputs);
-% results = calcFinalModelMoments(results, inputs);
-save("results.mat", "results", "finalValues", '-mat')
-% reportMuscleTendonPersonalization(inputs.model, results)
-saveMuscleTendonPersonalizationResults(inputs.model, ...
-    inputs.coordinates, finalValues, results, resultsDirectory);
+results = calcMtpSynXModeledValues(finalValues, mtpInputs, mtpParams);
+results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
+    end - mtpInputs.numPaddingFrames);
+saveMuscleTendonPersonalizationResults(mtpInputs.model, ...
+    mtpInputs.coordinates, finalValues, results, resultsDirectory);
 end

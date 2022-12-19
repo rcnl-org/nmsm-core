@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% The mean and shape of paired lmtilda curves are calculated. 
+% The mean and shape of grouped lmtilda curves are calculated. 
 %
 % (struct, array of string, struct) -> (number)
-% calculates differences between paired lmtilda curve shapes and means. 
+% calculates differences between grouped lmtilda curve shapes and means. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -31,29 +31,29 @@ function [normalizedFiberLengthMagnitudeDeviation, ...
     normalizedFiberLengthShapeDeviation] = ...
     calcChangesInNormalizedMuscleFiberLengthCurves( ...
     modeledNormalizedFiberLength, experimentalNormalizedFiberLength, ...
-    normalizedFiberLengthPairs)
+    normalizedFiberLengthGroups)
 
-% Penalize violation of lMtilda similarity between paired muscles
+% Penalize violation of lMtilda similarity between grouped muscles
 Ind = 1;
-for i = 1:length(normalizedFiberLengthPairs)
+for i = 1:length(normalizedFiberLengthGroups)
     % original distance of mean value of each lMtilda from the mean of all
     % lMtilda curves
     distMeanlmtildaOrigSimilarity = calcMeanDifference2D(mean( ...
-        compress3dMatrixTo2d(experimentalNormalizedFiberLength(:, :, normalizedFiberLengthPairs{i})), 1));
+        compress3dMatrixTo2d(experimentalNormalizedFiberLength(:, :, normalizedFiberLengthGroups{i})), 1));
     % Distance of mean value of each lMtilda from the mean of all original
     % lMtilda curves
     distMeanlmtildaSimilarity = mean(compress3dMatrixTo2d(lMtilda(:, :, ...
-        normalizedFiberLengthPairs{i})), 1) - mean(mean(compress3dMatrixTo2d( ...
-        experimentalNormalizedFiberLength(:, :, normalizedFiberLengthPairs{i}))));
+        normalizedFiberLengthGroups{i})), 1) - mean(mean(compress3dMatrixTo2d( ...
+        experimentalNormalizedFiberLength(:, :, normalizedFiberLengthGroups{i}))));
     % Penalize the change between new and original distances
-    normalizedFiberLengthMagnitudeDeviation(Ind:Ind + size(normalizedFiberLengthPairs{i}, 2) - 1) = ...
+    normalizedFiberLengthMagnitudeDeviation(Ind:Ind + size(normalizedFiberLengthGroups{i}, 2) - 1) = ...
         calcMeanDifference2D(distMeanlmtildaSimilarity - ...
         distMeanlmtildaOrigSimilarity);
     lmtildaShape = calcMeanDifference1D(compress3dMatrixTo2d(lMtilda(:, ...
-        :, normalizedFiberLengthPairs{i})));
-    normalizedFiberLengthShapeDeviation(:, Ind:Ind + size(normalizedFiberLengthPairs{i}, 2) - 1) ...
+        :, normalizedFiberLengthGroups{i})));
+    normalizedFiberLengthShapeDeviation(:, Ind:Ind + size(normalizedFiberLengthGroups{i}, 2) - 1) ...
         = calcMeanDifference2D(lmtildaShape);
-    Ind = Ind + size(normalizedFiberLengthPairs{i}, 2);
+    Ind = Ind + size(normalizedFiberLengthGroups{i}, 2);
 end
 end
 

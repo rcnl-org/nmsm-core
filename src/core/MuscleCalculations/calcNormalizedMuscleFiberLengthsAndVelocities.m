@@ -46,13 +46,20 @@ function [normalizedFiberLengths, normalizedFiberVelocities] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities(experimentalData, ...
     optimalFiberLengthScaleFactors, tendonSlackLengthScaleFactors)
 
-scaledOptimalFiberLength = experimentalData.optimalFiberLength .* optimalFiberLengthScaleFactors;
-scaledTendonSlackLength = experimentalData.tendonSlackLength .* tendonSlackLengthScaleFactors;
-
+scaledOptimalFiberLength = experimentalData.optimalFiberLength .* ...
+    optimalFiberLengthScaleFactors;
+scaledTendonSlackLength = experimentalData.tendonSlackLength .* ...
+    tendonSlackLengthScaleFactors;
 % Normalized muscle fiber length, equation 2 from Meyer 2017
-normalizedFiberLengths = (experimentalData.muscleTendonLength - scaledTendonSlackLength) ./ (scaledOptimalFiberLength .* cos(experimentalData.pennationAngle));
-
+if isfield(experimentalData, 'muscleTendonLength')
+normalizedFiberLengths = (experimentalData.muscleTendonLength - ...
+    scaledTendonSlackLength) ./ (scaledOptimalFiberLength .* ...
+    cos(experimentalData.pennationAngle));
+end
 % Normalized muscle fiber velocity, equation 3 from Meyer 2017
-normalizedFiberVelocities = (experimentalData.muscleTendonVelocity) ./ (experimentalData.vMaxFactor .* scaledOptimalFiberLength .* cos(experimentalData.pennationAngle));
-
+if isfield(experimentalData, 'muscleTendonVelocity')
+normalizedFiberVelocities = (experimentalData.muscleTendonVelocity) ./ ...
+    (experimentalData.vMaxFactor .* scaledOptimalFiberLength .* ...
+    cos(experimentalData.pennationAngle));
+end
 end
