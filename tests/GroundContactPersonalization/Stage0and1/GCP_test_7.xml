@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+    <GroundContactPersonalizationTool>
+        <!--Directory used for writing results.-->
+        <results_directory/>
+        <!--Directory for input files-->
+        <input_directory/>
+        <!--Name of the input model file (.osim) to use-->
+        <input_model_file>optModel_v6_correct_height.osim</input_model_file>
+		<!--Name of the foot model file (.osim), will be generated automatically in final version-->
+		<input_foot_model_file>footModel2.osim</input_foot_model_file>
+		<!--Name of the input motion file (.mot) to use-->
+        <input_motion_file>motion.mot</input_motion_file>
+		<!--Name of the input ground reaction forces file (.mot) to use-->
+        <input_grf_file>grf.mot</input_grf_file>
+		<!--The number of gait cycles included in the time ranges specified in the right and left personalization settings below-->
+		<number_of_cycles>1</number_of_cycles>
+		<!--*Optional* The number of nodes per gait cycle used to define motion using B-splines-->
+		<nodes_per_cycle>25</nodes_per_cycle>
+		<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
+		<belt_speed>1</belt_speed>
+		<!--Settings for ground contact personalization on the right side-->
+		<RightFootPersonalization>
+			<!--Flag indicating whether the side will be personalized-->
+            <is_enabled>true</is_enabled>
+			<!--Start time for right side gait cycles in motion and ground reaction force files-->
+			<start_time>0.55</start_time>
+			<!--End time for right side gait cycles in motion and ground reaction force files-->
+			<end_time>1.65</end_time>
+			<!--Name of the right toe angle coordinate in the model file-->
+			<toe_coordinate>mtp_angle_r</toe_coordinate>
+			<!--Name of the right toe joint in the model file-->
+			<toe_joint>mtp_r</toe_joint>
+			<!--Names of the markers used to define the foot area-->
+			<toe_marker>R.Toe</toe_marker>
+			<medial_marker>R.Toe.Medial</medial_marker>
+			<lateral_marker>R.Toe.Lateral</lateral_marker>
+			<heel_marker>R.Heel</heel_marker>
+		</RightFootPersonalization>
+		<!--Settings for ground contact personalization on the right side-->
+        <LeftFootPersonalization>
+			<!--Flag indicating whether the side will be personalized-->
+            <is_enabled>false</is_enabled>
+			<!--Start time for right side gait cycles in motion and ground reaction force files-->
+			<start_time>0.55</start_time>
+			<!--End time for right side gait cycles in motion and ground reaction force files-->
+			<end_time>1.65</end_time>
+			<!--Name of the right toe angle coordinate in the model file-->
+			<toe_coordinate>mtp_angle_l</toe_coordinate>
+			<!--Name of the right toe joint in the model file-->
+			<toe_joint>mtp_l</toe_joint>
+			<!--Names of the markers used to define the foot area-->
+			<toe_marker>L.Toe</toe_marker>
+			<medial_marker>L.Toe.Medial</medial_marker>
+			<lateral_marker>L.Toe.Lateral</lateral_marker>
+			<heel_marker>L.Heel</heel_marker>
+		</LeftFootPersonalization>
+		<!--Settings for stage 1 design variables-->
+		<Stage1DesignVariables>
+			<SpringConstants>
+				<!--Flag indicating whether or not the term is enabled-->
+                <is_enabled>true</is_enabled>
+			</SpringConstants>
+			<DampingFactors>
+				<!--Flag indicating whether or not the term is enabled-->
+                <is_enabled>false</is_enabled>
+			</DampingFactors>
+			<KinematicsBSplineCoefficients>
+				<!--Flag indicating whether or not the term is enabled-->
+                <is_enabled>true</is_enabled>
+			</KinematicsBSplineCoefficients>
+		</Stage1DesignVariables>
+		<!--Settings for stage 2 design variables-->
+		<Stage2DesignVariables>
+			<SpringConstants>
+				<!--Flag indicating whether or not the term is enabled-->
+                <is_enabled>true</is_enabled>
+			</SpringConstants>
+			<DampingFactors>
+				<!--Flag indicating whether or not the term is enabled-->
+                <is_enabled>false</is_enabled>
+			</DampingFactors>
+			<KinematicsBSplineCoefficients>
+				<!--Flag indicating whether or not the term is enabled-->
+                <is_enabled>true</is_enabled>
+			</KinematicsBSplineCoefficients>
+			<DynamicFrictionCoefficient>
+				<!--Flag indicating whether or not the term is enabled-->
+                <is_enabled>true</is_enabled>
+			</DynamicFrictionCoefficient>
+		</Stage2DesignVariables>
+		<!--Settings for stage 1 cost function terms-->
+		<Stage1CostFunctionTerms>
+			<markerPositionError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>true</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>0.02</max_allowable_error>
+			</markerPositionError>
+			<markerSlopeError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>false</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>0.1</max_allowable_error>
+			</markerSlopeError>
+			<verticalGrfError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>true</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>1</max_allowable_error>
+			</verticalGrfError>
+			<verticalGrfSlopeError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>false</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>10</max_allowable_error>
+			</verticalGrfSlopeError>
+			<springConstantErrorFromMean>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>true</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>50</max_allowable_error>
+			</springConstantErrorFromMean>
+			<dampingFactorErrorFromMean>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>false</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>0.01</max_allowable_error>
+			</dampingFactorErrorFromMean>
+		</Stage1CostFunctionTerms>
+		<!--Settings for stage 2 cost function terms-->
+		<Stage2CostFunctionTerms>
+			<markerPositionError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>true</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>0.02</max_allowable_error>
+			</markerPositionError>
+			<markerSlopeError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>false</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>0.1</max_allowable_error>
+			</markerSlopeError>
+			<verticalGrfError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>true</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>0.2</max_allowable_error>
+			</verticalGrfError>
+			<verticalGrfSlopeError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>false</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>10</max_allowable_error>
+			</verticalGrfSlopeError>
+			<horizontalGrfError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>true</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>0.2</max_allowable_error>
+			</horizontalGrfError>
+			<horizontalGrfSlopeError>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>false</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>10</max_allowable_error>
+			</horizontalGrfSlopeError>
+			<springConstantErrorFromMean>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>true</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>50</max_allowable_error>
+			</springConstantErrorFromMean>
+			<dampingFactorErrorFromMean>
+				<!--Flag indicating whether or not the term is enabled in the cost function.-->
+                <is_enabled>false</is_enabled>
+                <!--Max allowable error or deviation from indicated set point-->
+                <max_allowable_error>0.001</max_allowable_error>
+			</dampingFactorErrorFromMean>
+		</Stage2CostFunctionTerms>
+		<!--Initial values of design variables-->
+		<InitialValues>
+			<RestingSpringLength>0.05</RestingSpringLength>
+			<SpringConstants>2500</SpringConstants>
+			<DampingFactors>0.01</DampingFactors>
+			<DynamicFrictionCoefficient>1</DynamicFrictionCoefficient>
+		</InitialValues>
+        <!--*Optional* The number of random initial guesses of design parameters to try optimizing-->
+        <initial_guesses></initial_guesses>
+        <!--*Optional* The number of allowed iterations of the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
+        <max_iterations>1e3</max_iterations>
+		<!--*Optional* The number of allowed cost function calls for the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
+        <max_function_evaluations>3e6</max_function_evaluations>
+    </GroundContactPersonalizationTool>
+</OpenSimDocument>
