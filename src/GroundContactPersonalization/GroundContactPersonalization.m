@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,11 +30,11 @@
 function results = GroundContactPersonalization(inputs, params)
 verifyInputs(inputs); % (struct) -> (None)
 verifyParams(params); % (struct) -> (None)
-inputs = prepareInputs(inputs, params);
+inputs = prepareGroundContactPersonalizationInputs(inputs, params);
+inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
 inputs = optimizeByVerticalGroundReactionForce(inputs, params);
 inputs = optimizeByGroundReactionForces(inputs, params);
-results = optimizeByGroundReactionAndCenterOfPressureAndFreeMoment( ...
-    inputs, params);
+results = optimizeByGroundReactionForcesAndMoments(inputs, params);
 
 end
 
@@ -48,18 +48,4 @@ end
 % throws an error if the parameter is included but is not of valid type
 function verifyParams(params)
 
-end
-
-% (struct, struct) -> (struct)
-% prepares optimization values from inputs
-function inputs = prepareInputs(inputs, params)
-inputs.springConstants = []; % 38 vals
-inputs.dampingFactors = []; % 38 vals
-inputs.rightKinematicCurveCoefficients = []; % 25 x 7 matrix
-inputs.leftKinematicCurveCoefficients = []; % 25 x 7 matrix
-inputs.rightFootVerticalPosition = []; % 1 val
-inputs.leftFootVerticalPosition = []; % 1 val
-inputs.staticFrictionCoefficient = []; % 1 val
-inputs.dynamicFrictionCoefficient = []; % 1 val
-inputs.viscousFrictionCoefficient = []; % 1 val
 end

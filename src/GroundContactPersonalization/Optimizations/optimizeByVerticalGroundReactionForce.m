@@ -30,27 +30,58 @@
 function inputs = optimizeByVerticalGroundReactionForce(inputs, params)
 [initialValues, fieldNameOrder, inputs] = makeInitialValues(inputs, ...
     params);
+[lowerBounds, upperBounds] = makeBounds(inputs, params);
 optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
 % calcVerticalGroundReactionCost(initialValues, fieldNameOrder, inputs, params);
 results = lsqnonlin(@(values) calcVerticalGroundReactionCost(values, ...
-    fieldNameOrder, inputs, params), initialValues, [], [], ...
-    optimizerOptions);
-inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, 1);
+    fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
+    upperBounds, optimizerOptions);
+inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
+    params, 1);
 end
 
 % (struct, struct) -> (Array of double)
 % generate initial values to be optimized from inputs, params
 function [initialValues, fieldNameOrder, inputs] = makeInitialValues( ...
     inputs, params)
-inputs.initialRestingSpringLength = inputs.restingSpringLength;
+initialValues = [];
+fieldNameOrder = [];
 inputs.bSplineCoefficientsVerticalSubset = ...
-    inputs.bSplineCoefficients(:, [1, 3, 5:7]);
-initialValues = [inputs.springConstants inputs.dampingFactors];
-initialValues = [initialValues ...
-    reshape(inputs.bSplineCoefficientsVerticalSubset, 1, [])];
-initialValues = [initialValues inputs.restingSpringLength];
-fieldNameOrder = ["springConstants", "dampingFactors", ...
-    "bSplineCoefficientsVerticalSubset", "restingSpringLength"];
+    inputs.bSplineCoefficients(:, [1:4, 6]);
+if (params.stageOne.springConstants.isEnabled)
+    initialValues = [initialValues inputs.springConstants];
+    fieldNameOrder = [fieldNameOrder "springConstants"];
+end
+if (params.stageOne.dampingFactors.isEnabled)
+    initialValues = [initialValues inputs.dampingFactors];
+    fieldNameOrder = [fieldNameOrder "dampingFactors"];
+end
+if (params.stageOne.bSplineCoefficients.isEnabled)
+    initialValues = [initialValues ...
+        reshape(inputs.bSplineCoefficientsVerticalSubset, 1, [])];
+    fieldNameOrder = [fieldNameOrder "bSplineCoefficientsVerticalSubset"];
+end
+end
+
+% (struct) -> (Array of double, Array of double)
+% Generate lower and upper bounds for design variables from inputs
+function [lowerBounds, upperBounds] = makeBounds(inputs, params)
+lowerBounds = [];
+upperBounds = [];
+if (params.stageOne.springConstants.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.springConstants))];
+    upperBounds = [upperBounds Inf(1, length(inputs.springConstants))];
+end
+if (params.stageOne.dampingFactors.isEnabled)
+    lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
+    upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
+end
+if (params.stageOne.bSplineCoefficients.isEnabled)
+    lowerBounds = [lowerBounds -Inf(1, length(reshape(...
+        inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
+    upperBounds = [upperBounds Inf(1, length(reshape(...
+        inputs.bSplineCoefficientsVerticalSubset, 1, [])))];
+end
 end
 
 % (struct) -> (struct)
@@ -60,14 +91,16 @@ output = optimoptions('lsqnonlin', 'UseParallel', true);
 % output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
 % output.OptimalityTolerance = valueOrAlternate(params, ...
 %     'optimalityTolerance', 1e-6);
+% 1e-9 tolerances for levenberg-marquardt
 % output.FunctionTolerance = valueOrAlternate(params, ...
-%     'functionTolerance', 1e-6);
+%     'functionTolerance', 1e-9);
 output.StepTolerance = valueOrAlternate(params, ...
-    'stepTolerance', 1e-6);
+    'stepTolerance', 1e-3);
 output.MaxFunctionEvaluations = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 3e6);
 output.MaxIterations = valueOrAlternate(params, ...
     'MaxIterations', 1e3);
 output.Display = valueOrAlternate(params, ...
     'display','iter');
+% output.Algorithm = 'levenberg-marquardt';
 end
