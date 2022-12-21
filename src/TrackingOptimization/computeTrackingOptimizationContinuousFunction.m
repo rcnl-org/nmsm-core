@@ -37,7 +37,7 @@ inverseDynamics(params.modelName);
 %     experimentalLeftGroundReactionForces
 
 values = getTrackingOptimizationValueStruct(inputs, params);
-assignPersistentVariable(params, values.time);
+% assignPersistentVariable(params, values.time);
 phaseout = calcTrackingOptimizationModeledValues(values, params);
 phaseout.dynamics = calcTrackingOptimizationDynamicsConstraint(values, params);
 phaseout.path = calcTrackingOptimizationPathConstraint(phaseout, params);
