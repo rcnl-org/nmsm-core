@@ -7,7 +7,6 @@ for i = 1:inputs.numPoints
             inputs.muscleTendonLength(i, k), ...
             inputs.muscleTendonVelocity(i, k), k, inputs);
         for j = 1:inputs.numJoints
-
             muscleJointMoments(i, j) = muscleJointMoments(i, j) + inputs.momentArms(i, k, j) * muscleTendonForce;
         end
     end

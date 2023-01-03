@@ -16,3 +16,4 @@ end
 numDesignVars = numSynergies*(numMuscles/2 + numNodes);
 x = [commandNodes; weights'];
 x = reshape(x,numDesignVars,1);
+end
