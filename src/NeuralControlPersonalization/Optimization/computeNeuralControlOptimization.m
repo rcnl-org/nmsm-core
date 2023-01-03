@@ -9,7 +9,7 @@
 %     optimizerOptions);
 % end
 
-function x = computeNeuralControlOptimization(x0, inputs, params)
+function finalValues = computeNeuralControlOptimization(initialValues, inputs, params)
 
 % Constraints
 numDesignVars = inputs.numSynergies*(inputs.numMuscles/2 + inputs.numNodes);
@@ -27,9 +27,9 @@ ub = [];
 nonlcon = [];
 
 options = optimoptions('fmincon','Display','iter','MaxIterations',1e3,...
-    'MaxFunctionEvaluations',1e3*length(x0),'Algorithm','sqp',...
+    'MaxFunctionEvaluations',1e3*length(initialValues),'Algorithm','sqp',...
     'TypicalX',ones(numDesignVars,1),'UseParallel','always');
 
-[x, ~, exitflag, ~] = fmincon(@(x)computeNeuralControlCostFunction(x, inputs, params),...
-    x0, A, b, Aeq, beq, lb, ub, nonlcon, options);
+[finalValues, ~, exitflag, ~] = fmincon(@(values)computeNeuralControlCostFunction(values, inputs, params),...
+    initialValues, A, b, Aeq, beq, lb, ub, nonlcon, options);
 end
