@@ -1,20 +1,20 @@
 
 
-function reportNeuralControlPersonalizationResults(x, inputs, params)
+function reportNeuralControlPersonalizationResults(finalValues, inputs, params)
 
 % Save solution
 if not(isfolder(fullfile(pwd, "result")))
     mkdir(fullfile(pwd, "result"))
 end
-save(fullfile(pwd, 'result', inputs.savefilename + ".mat"), 'x');
+save(fullfile(pwd, 'result', inputs.savefilename + ".mat"), 'finalValues');
 
 % Reconstruct activation values
-activations = calcActivationsFromSynergyDesignVariables(x, inputs, params);
+activations = calcActivationsFromSynergyDesignVariables(finalValues, inputs, params);
 
 % Calculate muscle-tendon forces from optimal activations
-for i5 = 1:inputs.numPoints
-    for k2 = 1:inputs.numMuscles
-        [FMTVals(i5, k2), FTPassive(i5, k2)] = calcMuscleTendonForce(activations(i5, k2), inputs.muscleTendonLength(i5, k2), inputs.muscleTendonVelocity(i5, k2), k2, inputs);
+for i = 1:inputs.numPoints
+    for k = 1:inputs.numMuscles
+        [FMTVals(i, k), FTPassive(i, k)] = calcMuscleTendonForce(activations(i, k), inputs.muscleTendonLength(i, k), inputs.muscleTendonVelocity(i, k), k, inputs);
     end
 end
 
@@ -28,7 +28,7 @@ plotMuscleActivations(activations, inputs.muscleNames, inputs)
 plotTorques(activations, inputs.coordinateNames, inputs)
 
 % plot synergy variables
-[C, W] = unpackDesignVariables(x, inputs, params);
+[C, W] = unpackDesignVariables(finalValues, inputs, params);
 plotSynergies(C, W, inputs);
 
 end
