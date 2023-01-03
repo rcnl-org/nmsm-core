@@ -67,7 +67,7 @@ else
         load(initial_soln);
     catch err
         x0 = initial_soln;
-        try x; catch err; x0 = initial_soln.x; end
+        try finalValues; catch err; x0 = initial_soln.x; end
     end
 
 end
@@ -88,26 +88,26 @@ inputs.muscleNames = fixStrings(muscleNames);
 inputs.coordinateNames = fixStrings(coordinateNames);
 
 inputs.initialValues = x0;
-save("inputs.mat", "inputs");
+% save("inputs.mat", "inputs");
 
 tic
 
 % inputs.muscleNames
-for i = 1 : length(coordinateNames)
-    writeToSto(inputs.muscleNames, linspace(0, 1, inputs.numPoints), ...
-       squeeze(inputs.momentArms(:, : , i)), "gait_1_MomentArm_" + inputs.coordinateNames(i) + ".sto")
-end
-if 1
-    x = computeNeuralControlOptimization(x0, inputs, struct());
+% for i = 1 : length(coordinateNames)
+%     writeToSto(inputs.muscleNames, linspace(0, 1, inputs.numPoints), ...
+%        squeeze(inputs.momentArms(:, : , i)), "gait_1_MomentArm_" + inputs.coordinateNames(i) + ".sto")
+% end
+if 0
+    finalValues = computeNeuralControlOptimization(inputs.initialValues, inputs, struct());
 else
-    x = x0;
+    finalValues = inputs.initialValues;
 end
 
 toc
 
-% inputs.savefilename = savefilename;
-% inputs.NCPtimePercent = linspace(0, 100, inputs.numPoints)';
-% reportNeuralControlPersonalizationResults(x, inputs, struct());
+inputs.savefilename = savefilename;
+inputs.NCPtimePercent = linspace(0, 100, inputs.numPoints)';
+reportNeuralControlPersonalizationResults(finalValues, inputs, struct());
 
 % keyboard
 end
