@@ -29,10 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = computeNeuralControlCostFunction(x, inputs, params)
-activations = calcActivationsFromSynergyDesignVariables(x, inputs, params);
-errs = calcNcpCost(activations, inputs, params);
-cost = errs' * errs;
+function cost = computeNeuralControlCostFunction(values, inputs, params)
+activations = calcActivationsFromSynergyDesignVariables(values, inputs, params);
+cost = calcNcpCost(activations, inputs, params);
 end
 
 
