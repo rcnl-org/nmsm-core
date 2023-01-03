@@ -53,15 +53,15 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-inputs.mtpCoordinates = parseSpaceSeparatedList(tree, ...
+mtpCoordinates = parseSpaceSeparatedList(tree, ...
     "mtp_coordinate_list");
-inputs.ncpCoordinates = parseSpaceSeparatedList(tree, ...
+ncpCoordinates = parseSpaceSeparatedList(tree, ...
     "ncp_coordinate_list");
-inputs.coordinateNames = [inputs.mtpCoordinates inputs.ncpCoordinates];
+inputs.coordinateNames = string([mtpCoordinates ncpCoordinates]);
 inputs.mtpMuscles = getMusclesFromCoordinates(inputs.model, ...
-    inputs.mtpCoordinates);
+    mtpCoordinates);
 inputs.ncpMuscles = getMusclesFromCoordinates(inputs.model, ...
-    inputs.ncpCoordinates);
+    ncpCoordinates);
 inputs.muscleNames = [inputs.mtpMuscles inputs.ncpMuscles];
 inputs.numMuscles = length(inputs.muscleNames);
 inputs.numLegMuscles = length(inputs.mtpMuscles);
