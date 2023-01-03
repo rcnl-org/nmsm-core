@@ -95,7 +95,7 @@ for i = 1 : length(coordinateNames)
     writeToSto(inputs.muscleNames, linspace(0, 1, inputs.numPoints), ...
        squeeze(inputs.momentArms(:, : , i)), "gait_1_MomentArm_" + inputs.coordinateNames(i) + ".sto")
 end
-if 0
+if 1
     x = computeNeuralControlOptimization(x0, inputs, struct());
 else
     x = x0;
