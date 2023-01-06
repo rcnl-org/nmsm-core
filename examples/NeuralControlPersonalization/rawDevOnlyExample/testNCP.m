@@ -90,22 +90,22 @@ inputs.coordinateNames = fixStrings(coordinateNames);
 inputs.initialValues = x0;
 % save("inputs.mat", "inputs");
 
-inputs
+% inputs
 
-% tic
-% 
-% % inputs.muscleNames
-% % for i = 1 : length(coordinateNames)
-% %     writeToSto(inputs.muscleNames, linspace(0, 1, inputs.numPoints), ...
-% %        squeeze(inputs.momentArms(:, : , i)), "gait_1_MomentArm_" + inputs.coordinateNames(i) + ".sto")
-% % end
-% if 0
-%     finalValues = computeNeuralControlOptimization(inputs.initialValues, inputs, struct());
-% else
-%     finalValues = inputs.initialValues;
+tic
+
+% inputs.muscleNames
+% for i = 1 : length(coordinateNames)
+%     writeToSto(inputs.muscleNames, linspace(0, 1, inputs.numPoints), ...
+%        squeeze(inputs.momentArms(:, : , i)), "gait_1_MomentArm_" + inputs.coordinateNames(i) + ".sto")
 % end
-% 
-% toc
+if 1
+    finalValues = NeuralControlPersonalization(inputs, struct());
+else
+    finalValues = inputs.initialValues;
+end
+
+toc
 
 % inputs.savefilename = savefilename;
 % inputs.NCPtimePercent = linspace(0, 100, inputs.numPoints)';

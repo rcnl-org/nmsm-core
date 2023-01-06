@@ -67,6 +67,9 @@ inputs.numMuscles = length(inputs.muscleNames);
 inputs.numLegMuscles = length(mtpMuscleNames);
 inputs.numTrunkMuscles = length(ncpMuscleNames);
 inputs.numJoints = length(inputs.coordinateNames);
+inputs.synergyGroups = getSynergyGroups(tree);
+inputs.numSynergies = length(inputs.synergyGroups) * ...
+    str2num(getFieldByNameOrError(tree, "num_synergies_per_group").Text);
 prefixes = findPrefixes(tree, inputDirectory);
 inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
     inputDirectory, "IDData"), prefixes);
@@ -86,7 +89,6 @@ inputs.momentArms = parseMomentArms(directories, inputs.model);
 [inputs.maxIsometricForce, inputs.optimalFiberLength, ...
     inputs.tendonSlackLength, inputs.pennationAngle] = ...
     getMuscleInputs(inputs, inputs.muscleNames);
-inputs
 end
 
 function [maxIsometricForce, optimalFiberLength, tendonSlackLength, ...
@@ -105,5 +107,22 @@ for i = 1:length(muscles)
         .get(muscles(i)).getPennationAngleAtOptimalFiberLength();
     maxIsometricForce(i) = model.getForceSet(). ...
         getMuscles().get(muscles(i)).getMaxIsometricForce();
+end
+end
+
+function params = getParams(tree)
+params = struct();
+end
+
+function groups = getSynergyGroups(tree)
+groups = string([]);
+groupsTree = getFieldByNameOrError(tree, "NCPSynergyGroupList").group;
+for i=1:length(groupsTree)
+    if(length(groupsTree) == 1)
+        groups(end + 1) = groupsTree.Text;
+    else
+        group = groupsTree{i};
+        groups(end + 1) = group.Text;
+    end
 end
 end
