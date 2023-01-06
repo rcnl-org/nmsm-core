@@ -32,9 +32,9 @@ verifyInputs(inputs); % (struct) -> (None)
 verifyParams(params); % (struct) -> (None)
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
 inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
-inputs = optimizeByVerticalGroundReactionForce(inputs, params);
-inputs = optimizeByGroundReactionForces(inputs, params);
-results = optimizeByGroundReactionForcesAndMoments(inputs, params);
+for task = 1:length(params.tasks)
+    inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
+end
 
 end
 
