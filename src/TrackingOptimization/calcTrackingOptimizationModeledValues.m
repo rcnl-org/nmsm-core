@@ -141,30 +141,6 @@ for i = 1:params.numMuscles
     end
 end
 end
-function [muscleTendonLength, momentArms] = calcSurrogateModel( ...
-    params, jointAngles)
-
-for i = 1 : size(jointAngles, 2)
-    % Initialize symbolic thetas
-    theta = sym('theta', [1 size(jointAngles{i}, 2)]);
-    % Get A matrix
-    matrix = getDataMatrix(params.polynomialExpressionMuscleTendonLengths{i}, ...
-        params.polynomialExpressionMomentArms{i}, jointAngles{i}, theta);
-    % Caculate new muscle tendon lengths and moment arms
-    vector = matrix * params.coefficients{i};
-    muscleTendonLength(:, i) = vector(1 : size(jointAngles{i}, 1));
-    index = 1;
-    for j = 1 : size(params.dofsActuated, 1)
-        if params.dofsActuated(j, i) > params.epsilon
-            momentArms(:, j, i) = vector(size(jointAngles{i}, 1) * ...
-                index + 1 : size(jointAngles{i}, 1) * (index + 1));
-            index = index + 1;
-        else
-            momentArms(:, j, i) = zeros(size(jointAngles{i}, 1), 1);
-        end
-    end
-end
-end
 function muscleTendonVelocities = calcMuscleTendonVelocities(time, ...
     muscleTendonLength, smoothingParam)
 
