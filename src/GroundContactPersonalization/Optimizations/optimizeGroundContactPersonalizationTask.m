@@ -28,39 +28,39 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = ...
-    optimizeByGroundReactionForcesAndMoments(inputs, ...
-    params)
+    optimizeGroundContactPersonalizationTask(inputs, ...
+    params, task)
 [initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
-    params);
-[lowerBounds, upperBounds] = makeBounds(inputs, params);
+    params, task);
+[lowerBounds, upperBounds] = makeBounds(inputs, params, task);
 optimizerOptions = prepareOptimizerOptions(params);
-results = lsqnonlin(@(values) calcGroundReactionForcesAndMomentsCost(values, ...
-    fieldNameOrder, inputs, params), initialValues, lowerBounds, ...
-    upperBounds, optimizerOptions);
+results = lsqnonlin(@(values) calcGroundContactPersonalizationTaskCost( ...
+    values, fieldNameOrder, inputs, params, task), initialValues, ...
+    lowerBounds, upperBounds, optimizerOptions);
 inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
-    params, 3);
+    params, task);
 end
 
 % (struct, struct) -> (Array of double, Array of string)
 % generate initial values to be optimized from inputs, params
 function [initialValues, fieldNameOrder] = makeInitialValues( ...
-    inputs, params)
+    inputs, params, task)
 initialValues = [];
 fieldNameOrder = [];
-if (params.stageThree.springConstants.isEnabled)
+if (params.tasks{task}.designVariables(1))
     initialValues = [initialValues inputs.springConstants];
     fieldNameOrder = [fieldNameOrder "springConstants"];
 end
-if (params.stageThree.dampingFactors.isEnabled)
+if (params.tasks{task}.designVariables(2))
     initialValues = [initialValues inputs.dampingFactors];
     fieldNameOrder = [fieldNameOrder "dampingFactors"];
 end
-if (params.stageThree.bSplineCoefficients.isEnabled)
+if (params.tasks{task}.designVariables(3))
     initialValues = [initialValues ...
         reshape(inputs.bSplineCoefficients, 1, [])];
     fieldNameOrder = [fieldNameOrder "bSplineCoefficients"];
 end
-if (params.stageThree.dynamicFrictionCoefficient.isEnabled)
+if (params.tasks{task}.designVariables(4))
     initialValues = [initialValues valueOrAlternate(params, ...
         "initialDynamicFrictionCoefficient", 1)];
     fieldNameOrder = [fieldNameOrder "dynamicFrictionCoefficient"];
@@ -69,24 +69,24 @@ end
 
 % (struct) -> (Array of double, Array of double)
 % Generate lower and upper bounds for design variables from inputs
-function [lowerBounds, upperBounds] = makeBounds(inputs, params)
+function [lowerBounds, upperBounds] = makeBounds(inputs, params, task)
 lowerBounds = [];
 upperBounds = [];
-if (params.stageThree.springConstants.isEnabled)
+if (params.tasks{task}.designVariables(1))
     lowerBounds = [lowerBounds zeros(1, length(inputs.springConstants))];
     upperBounds = [upperBounds Inf(1, length(inputs.springConstants))];
 end
-if (params.stageThree.dampingFactors.isEnabled)
+if (params.tasks{task}.designVariables(2))
     lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
     upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
 end
-if (params.stageThree.bSplineCoefficients.isEnabled)
+if (params.tasks{task}.designVariables(3))
     lowerBounds = [lowerBounds -Inf(1, length(reshape(...
         inputs.bSplineCoefficients, 1, [])))];
     upperBounds = [upperBounds Inf(1, length(reshape(...
         inputs.bSplineCoefficients, 1, [])))];
 end
-if (params.stageThree.dynamicFrictionCoefficient.isEnabled)
+if (params.tasks{task}.designVariables(4))
     lowerBounds = [lowerBounds 0];
     upperBounds = [upperBounds Inf];
 end

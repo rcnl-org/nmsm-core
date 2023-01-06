@@ -35,38 +35,17 @@
 % ----------------------------------------------------------------------- %
 
 function modeledValues = calcGCPModeledValues(inputs, values, ...
-    modeledJointPositions, modeledJointVelocities, isCalculated, params)
+    modeledJointPositions, modeledJointVelocities, params, task)
 [model, state] = Model(inputs.model);
 markerNamesFields = fieldnames(inputs.markerNames);
-if isCalculated(4)
-    if ~params.stageThree.springConstants.isEnabled
-        values.springConstants = inputs.springConstants;
-    end
-    if ~params.stageThree.dampingFactors.isEnabled
-        values.dampingFactors = inputs.dampingFactors;
-    end
-    if ~params.stageThree.dynamicFrictionCoefficient.isEnabled
-        values.dynamicFrictionCoefficient = ...
-            inputs.dynamicFrictionCoefficient;
-    end
-elseif isCalculated(3)
-    if ~params.stageTwo.springConstants.isEnabled
-        values.springConstants = inputs.springConstants;
-    end
-    if ~params.stageTwo.dampingFactors.isEnabled
-        values.dampingFactors = inputs.dampingFactors;
-    end
-    if ~params.stageTwo.dynamicFrictionCoefficient.isEnabled
-        values.dynamicFrictionCoefficient = ...
-            inputs.dynamicFrictionCoefficient;
-    end
-else
-    if ~params.stageOne.springConstants.isEnabled
-        values.springConstants = inputs.springConstants;
-    end
-    if ~params.stageOne.dampingFactors.isEnabled
-        values.dampingFactors = inputs.dampingFactors;
-    end
+if ~params.tasks{task}.designVariables(1)
+    values.springConstants = inputs.springConstants;
+end
+if ~params.tasks{task}.designVariables(2)
+    values.dampingFactors = inputs.dampingFactors;
+end
+if ~params.tasks{task}.designVariables(4)
+    values.dynamicFrictionCoefficient = inputs.dynamicFrictionCoefficient;
 end
 for i=1:length(markerNamesFields)
     modeledValues.markerPositions.(markerNamesFields{i}) = ...
@@ -75,6 +54,15 @@ for i=1:length(markerNamesFields)
         zeros(3, size(modeledJointPositions, 2));
 end
 modeledValues.verticalGrf = zeros(1, size(modeledJointPositions, 2));
+isCalculated = ones(4, 1);
+if (~params.tasks{task}.costTerms.groundReactionMomentError.isEnabled && ...
+        ~params.tasks{task}.costTerms.groundReactionMomentSlopeError.isEnabled)
+    isCalculated(4) = false;
+    if (~params.tasks{task}.costTerms.horizontalGrfError.isEnabled && ...
+            ~params.tasks{task}.costTerms.horizontalGrfSlopeError.isEnabled)
+        isCalculated(3) = false;
+    end
+end
 for i=1:size(modeledJointPositions, 2)
     [model, state] = updateModelPositionAndVelocity(model, state, ...
         modeledJointPositions(:, i), ...
@@ -131,13 +119,6 @@ for i=1:size(modeledJointPositions, 2)
             inputs, markerKinematics, springForces, i);
     end
 end
-% if isCalculated(1)
-%     for i=1:length(markerNamesFields)
-%         modeledValues.markerVelocities.(markerNamesFields{i}) = ...
-%             calcBSplineDerivative(inputs.time, ...
-%             modeledValues.markerPositions.(markerNamesFields{i}), 4, 25);
-%     end
-% end
 end
 
 function [model, state] = updateModelPositionAndVelocity(model, state, ...
