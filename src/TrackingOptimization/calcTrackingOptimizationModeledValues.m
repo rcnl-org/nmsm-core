@@ -40,17 +40,14 @@ groundReactionsBody = tranferGroundReactionMoments( ...
     calcGroundReactionsLab(groundReactions);
 
 jointAngles = getMuscleActuatedDOFs(values, params);
-% [params.muscleTendonLengths, params.momentArms] = calcSurrogateModel( ...
-%     params.polynomialExpressionMuscleTendonLengths, ...
-%     params.polynomialExpressionMomentArms, params.coefficients, jointAngles);
+[params.muscleTendonLength, params.momentArms] = calcSurrogateModel( ...
+    params, jointAngles);
 params.muscleTendonVelocities = calcMuscleTendonVelocities(values.time, ...
     params.muscleTendonLength, params.smoothingParam);
 [phaseout.normalizedFiberLength, phaseout.normalizedFiberVelocity] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities(params, ...
     ones(1, params.numMuscles), ones(1, params.numMuscles));
 phaseout.muscleActivations = calcMuscleActivationFromSynergies(values, params);
-params.momentArms = reshape(cat(2, params.momentArms{:}), ...
-    length(values.time), params.numCoordinates, params.numMuscles);
 phaseout.muscleJointMoments = calcMuscleJointMoments(params, ...
     phaseout.muscleActivations, phaseout.normalizedFiberLength, ...
     phaseout.normalizedFiberVelocity);
@@ -144,22 +141,27 @@ for i = 1:params.numMuscles
     end
 end
 end
-function [muscleTendonLengths, momentArms] = calcSurrogateModel( ...
-    polynomialExpressionMuscleTendonLengths, ...
-    polynomialExpressionMomentArms, coefficients, jointAngles)
+function [muscleTendonLength, momentArms] = calcSurrogateModel( ...
+    params, jointAngles)
 
 for i = 1 : size(jointAngles, 2)
     % Initialize symbolic thetas
     theta = sym('theta', [1 size(jointAngles{i}, 2)]);
     % Get A matrix
-    matrix = getDataMatrix(polynomialExpressionMuscleTendonLengths{i}, ...
-        polynomialExpressionMomentArms{i}, jointAngles{i}, theta);
+    matrix = getDataMatrix(params.polynomialExpressionMuscleTendonLengths{i}, ...
+        params.polynomialExpressionMomentArms{i}, jointAngles{i}, theta);
     % Caculate new muscle tendon lengths and moment arms
-    vector = matrix * coefficients{i};
-    muscleTendonLengths(:,i) = vector(1 : size(jointAngles{i}, 1));
-    for j = 1 : size(jointAngles{i}, 2)
-        momentArms{i}(:, j) = vector(size(jointAngles{i}, 1) * j + ...
-            1 : size(jointAngles{i}, 1) * (j + 1));
+    vector = matrix * params.coefficients{i};
+    muscleTendonLength(:, i) = vector(1 : size(jointAngles{i}, 1));
+    index = 1;
+    for j = 1 : size(params.dofsActuated, 1)
+        if params.dofsActuated(j, i) > params.epsilon
+            momentArms(:, j, i) = vector(size(jointAngles{i}, 1) * ...
+                index + 1 : size(jointAngles{i}, 1) * (index + 1));
+            index = index + 1;
+        else
+            momentArms(:, j, i) = zeros(size(jointAngles{i}, 1), 1);
+        end
     end
 end
 end
