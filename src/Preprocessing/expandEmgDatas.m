@@ -42,21 +42,6 @@ newEmgData = expandEmgData(columnNames, emgData, ...
     groupToName);
 end
 
-% (Model, Array of string) -> (struct)
-% Get name to group relationship struct from model and group names
-function groupToName = getMuscleNameByGroupStruct(model, emgDataNames)
-for i=1:length(emgDataNames) % struct group names with muscle names inside
-    groupSize = model.getForceSet().getGroup(emgDataNames(i)) ...
-        .getMembers().size();
-    groupToName.(emgDataNames(i)) = string(zeros(1,groupSize));
-    for j=0:groupSize-1
-        groupToName.(emgDataNames(i))(j+1) = model.getForceSet() ...
-            .getGroup(emgDataNames(i)).getMembers().get(j).getName() ...
-            .toCharArray';
-    end
-end
-end
-
 function newEmgData = expandEmgData(expandedColumnNames, emgData, ...
     namesByGroup)
 % expandedData.scaleTime((emgData.getLastTime() - ... %scale time
