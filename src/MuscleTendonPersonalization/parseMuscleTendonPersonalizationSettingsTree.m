@@ -42,7 +42,7 @@ end
 
 function inputs = getInputs(tree)
 import org.opensim.modeling.Storage
-inputDirectory = getFieldByName(tree, 'input_directory').Text;
+inputDirectory = parseInputDirectory(tree);
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(~isempty(inputDirectory))
     try
@@ -61,14 +61,12 @@ inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
 inputs.coordinates = getStorageColumnNames(Storage( ...
     inverseDynamicsFileNames(1)));
 inputs.experimentalMoments = parseMtpStandard(inverseDynamicsFileNames);
-inputs.emgData = parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(inputDirectory, "EMGData"), prefixes));
-inputs.emgDataExpanded = parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(inputDirectory, "EMGDataExpanded"), prefixes));
-emdDataFileNames = findFileListFromPrefixList( ...
+emgDataFileNames = findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGData"), prefixes);
+inputs.emgData = parseMtpStandard(emgDataFileNames);
+inputs.emgDataExpanded = parseEmgWithExpansion(inputs.model, emgDataFileNames);
 inputs.emgDataColumnNames = getStorageColumnNames(Storage( ...
-    emdDataFileNames(1)));
+    emgDataFileNames(1)));
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
     fullfile(inputDirectory, "EMGData"), prefixes));
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
@@ -78,8 +76,8 @@ inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
 inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
     "Velocity.sto");
 inputs.momentArms = parseMomentArms(directories, inputs.model);
-inputs.numPaddingFrames = (size(inputs.experimentalMoments, 3) - 101) / 2;
-inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
+inputs.numPaddingFrames = (size(inputs.emgData, 3) - 101) / 2;
+inputs = reduceDataSize(inputs);
 inputs.tasks = getTasks(tree);
 inputs.activationGroups = getGroups(getFieldByNameOrError(tree, ...
     'GroupedActivationTimeConstants'), inputs.model);
@@ -265,29 +263,31 @@ end
 function params = addCostFunctionTerms(tree, costTermName, params)
 enabled = getFieldByNameOrError(tree, "is_enabled").Text;
 if(enabled == "true")
-    eval(strcat("params.", costTermName, "CostWeight = 1;"));
+    params.(strcat(costTermName, "CostWeight")) = 1;
 else
-    eval(strcat("params.", costTermName, "CostWeight = 0;"));
+    params.(strcat(costTermName, "CostWeight")) = 0;
 end
 maxError = getFieldByNameOrError(tree, "max_allowable_error").Text;
-eval(strcat("params.", costTermName, "MaximumAllowableError = ", ...
-    maxError, ';'));
+params.(strcat(costTermName, "MaximumAllowableError")) = maxError;
 errorCenter = getFieldByName(tree, "error_center");
 if ~isstruct(errorCenter)
-    eval(strcat("params.", costTermName, "ErrorCenter = 0;"));
+    params.(strcat(costTermName, "ErrorCenter")) = 0;
 else
-eval(strcat("params.", costTermName, "ErrorCenter = ", ...
-    errorCenter.Text, ';'));    
+    params.(strcat(costTermName, "ErrorCenter")) = errorCenter.Text;
 end
 end
 
-function inputs = reduceDataSize(inputs, numPaddingFrames)
+function inputs = reduceDataSize(inputs)
+numPaddingFrames = (size(inputs.experimentalMoments, 3) - 101) / 2;
 inputs.experimentalMoments = inputs.experimentalMoments(:, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
+numPaddingFrames = (size(inputs.muscleTendonLength, 3) - 101) / 2;
 inputs.muscleTendonLength = inputs.muscleTendonLength(:, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
+numPaddingFrames = (size(inputs.muscleTendonVelocity, 3) - 101) / 2;
 inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(:, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
+numPaddingFrames = (size(inputs.momentArms, 4) - 101) / 2;
 inputs.momentArms = inputs.momentArms(:, :, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
 end
@@ -351,17 +351,4 @@ end
     inputs.synergyExtrapolation.matrixFactorizationMethod, ...
     inputs.synergyExtrapolation.synergyCategorizationOfTrials, ...
     inputs.synergyExtrapolation.residualCategorizationOfTrials);
-end
-
-function groupToName = getMuscleNameByGroupStruct(model, emgDataNames)
-for i=1:length(emgDataNames) % struct group names with muscle names inside
-    groupSize = model.getForceSet().getGroup(emgDataNames(i)) ...
-        .getMembers().size();
-    groupToName.(emgDataNames(i)) = string(zeros(1,groupSize));
-    for j=0:groupSize-1
-        groupToName.(emgDataNames(i))(j+1) = model.getForceSet() ...
-            .getGroup(emgDataNames(i)).getMembers().get(j).getName() ...
-            .toCharArray';
-    end
-end
 end

@@ -209,7 +209,7 @@ inputs.muscleVolume = (inputs.maxIsometricForce / ...
 end
 
 function groups = getGroups(tree, model)
-groupElements = getFieldByName(tree, 'musclegroups');
+groupElements = getFieldByName(tree, 'musclegroups')
 activationGroupNames = string([]);
 if isstruct(groupElements)
     activationGroupNames(end+1) = groupElements.Text;
