@@ -14,6 +14,7 @@ markerNames.toe = "R.Toe";
 markerNames.medial = "R.Toe.Medial";
 markerNames.lateral = "R.Toe.Lateral";
 markerNames.heel = "R.Heel";
+markerNames.midfootSuperior = "R.Midfoot.Superior";
 
 gridWidth = 5;
 gridHeight = 11;
@@ -46,7 +47,7 @@ footModel = makeFootModel(bodyModel, toesJointName);
 % footModel = findTwoPointsOnToeJointAxis(footModel, toesJointName, hindfootBodyName);
 footModel = addSpringsToModel(footModel, markerNames, gridWidth, ...
     gridHeight, hindfootBodyName, toesBodyName, toesJointName, isLeftFoot);
-footModel.print("footModel2.osim");
+footModel.print("footModel3.osim");
 % footModel = Model("footModel.osim");
 % numSpringMarkers = findNumSpringMarkers(footModel);
 % %--------------------------------------------------------------
