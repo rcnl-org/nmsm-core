@@ -33,23 +33,23 @@ function footModel = makeFootModel(model, toeJointName)
 import org.opensim.modeling.Model
 footModel = Model();
 [hindfootBody, toesBody] = getJointBodyNames(model, toeJointName);
-footModel.upd_BodySet().adoptAndAppend(model.getBodySet().get( ...
-    hindfootBody));
-footModel.upd_BodySet().adoptAndAppend(model.getBodySet().get( ...
-    toesBody));
-footModel.upd_JointSet().adoptAndAppend(model.getJointSet().get( ...
-    toeJointName));
+footModel.addBody(model.getBodySet().get( ...
+    hindfootBody).clone());
+footModel.addBody(model.getBodySet().get( ...
+    toesBody).clone());
+footModel.addJoint(model.getJointSet().get( ...
+    toeJointName).clone());
 markers = getMarkersFromJoint(model, toeJointName);
 for i=1:length(markers)
-    footModel.upd_MarkerSet().adoptAndAppend( ...
-        model.getMarkerSet().get(markers{i}));
+    footModel.addMarker( ...
+        model.getMarkerSet().get(markers{i}).clone());
 end
 footModel.finalizeConnections()
-footModel = setDefaultPose(footModel, model, hindfootBody, toesBody);
+footModel = setDefaultPose(footModel, model, hindfootBody);
 end
 
 % a function that updates the default pose of a footModel to match the default pose of the model
-function footModel = setDefaultPose(footModel, model, hindfootBody, toesBody)
+function footModel = setDefaultPose(footModel, model, hindfootBody)
     [model, state] = Model(model);
     footPosition = model.getBodySet().get(hindfootBody).getPositionInGround(state);
 %     footRotation = model.getBodySet().get(hindfootBody).getRotationInGround(state).convertRotationToBodyFixedXYZ()
@@ -62,5 +62,5 @@ function footModel = setDefaultPose(footModel, model, hindfootBody, toesBody)
 %     end
 %     toeCoordinate = model.getCoordinateSet().get(getCoordinatesFromBodies(model, toesBody));
 %     footModel.getCoordinateSet().get(0).set_default_value(toeCoordinate.getValue(state))
-    footModel = Model(footModel);
+%     footModel = Model(footModel);
 end
