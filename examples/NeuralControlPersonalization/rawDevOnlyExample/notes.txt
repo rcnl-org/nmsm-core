@@ -60,4 +60,10 @@ Discussion Points:
   - NCPSynergyGroupList should be a single space separated list?
   - how do GroupedMuscles (GroupedActivations, GroupedSynergyWeights) fit into NeuralControlPersonalization
   - how to generate initialValues
+    - set all to 0.1
     
+printed after mtp
+mtp synx included emg data 
+mtp activations after activation dynamics - for use in NCP as emgActivation
+also change bilateral symmetry writing to file
+port over MTP activation and synergy weight similarity cost
