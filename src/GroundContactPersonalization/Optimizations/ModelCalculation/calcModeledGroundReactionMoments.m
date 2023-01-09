@@ -38,13 +38,12 @@ zGrfMoment = 0;
 
 for i = 1:length(values.springConstants)
     xPosition = markerKinematics.xPosition(i);
-    yPosition = markerKinematics.height(i);
     zPosition = markerKinematics.zPosition(i);
     force(1) = springForces(1, i);
     force(2) = springForces(2, i);
     force(3) = springForces(3, i);
     offset(1) = xPosition - inputs.midfootSuperiorPosition(1, currentFrame);
-    offset(2) = yPosition;
+    offset(2) = inputs.restingSpringLength;
     offset(3) = zPosition - inputs.midfootSuperiorPosition(3, currentFrame);
 
     moments = cross(offset, force);
