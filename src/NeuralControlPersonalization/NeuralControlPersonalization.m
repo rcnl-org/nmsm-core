@@ -41,11 +41,12 @@ function finalValues = NeuralControlPersonalization(inputs, ...
     params)
 %verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
-inputs = finalizeInputs(inputs, params);
+inputs = finalizeInputs(inputs);
+params = finalizeParams(params);
 % inputs.initialValues = prepareInitialValues(inputs, params);
-inputs
+fieldnames(inputs)
 finalValues=0;
-% finalValues = computeNeuralControlOptimization(inputs.initialValues, inputs, struct());
+finalValues = computeNeuralControlOptimization(inputs.initialValues, inputs, params);
 end
 
 % (struct) -> (None)
@@ -77,10 +78,26 @@ end
 end
 
 
-function inputs = finalizeInputs(inputs, params)
+function inputs = finalizeInputs(inputs)
 inputs.numNodes = valueOrAlternate(inputs, "numNodes", 21);
-inputs.numPoints = valueOrAlternate(inputs, "numPoints", size(inputs.muscleTendonLength, 3));
+inputs.numPoints = valueOrAlternate(inputs, "numPoints", ...
+    size(inputs.muscleTendonLength, 3));
 inputs.vMaxFactor = valueOrAlternate(inputs, "vMaxFactor", 10);
+end
+
+function params = finalizeParams(params)
+params.momentTrackingWeight = valueOrAlternate(params, ...
+    "momentTrackingWeight", 1);
+params.activationTrackingWeight = valueOrAlternate(params, ...
+    "activationTrackingWeight", 1);
+params.activationMinimizationWeight = valueOrAlternate(params, ...
+    "activationMinimizationWeight", 1);
+params.momentTrackingAllowableError = valueOrAlternate(params, ...
+    "momentTrackingAllowableError", 5);
+params.activationTrackingAllowableError = valueOrAlternate(params, ...
+    "activationTrackingAllowableError", 0.01);
+params.activationMinimizationAllowableError = valueOrAlternate(params, ...
+    "activationMinimizationAllowableError", 0.05);
 end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)

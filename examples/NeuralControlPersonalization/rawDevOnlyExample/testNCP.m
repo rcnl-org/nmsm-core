@@ -35,14 +35,14 @@ inputs.numPoints = 101;
 trial_no = 22; % 21 is the first trial of 1.4 m/s
 long2short_idx = 21:121;
 
-inputs.momentTrackingWeight = 1;
-inputs.activationTrackingWeight = 1;
-inputs.activationMinimizationWeight = 1;
-inputs.momentTrackingAllowableError = 5; % 5 Nm is the allowable error for moment tracking error
-inputs.activationTrackingAllowableError = 0.01; % 0.01 is the allowable error for activation tracking error
-inputs.activationMinimizationAllowableError = 0.05; % 0.05 is the allowable error for activation minimization
+params.momentTrackingWeight = 1;
+params.activationTrackingWeight = 1;
+params.activationMinimizationWeight = 1;
+params.momentTrackingAllowableError = 5; % 5 Nm is the allowable error for moment tracking error
+params.activationTrackingAllowableError = 0.01; % 0.01 is the allowable error for activation tracking error
+params.activationMinimizationAllowableError = 0.05; % 0.05 is the allowable error for activation minimization
 
-savefilename = "Syn" + num2str(inputs.numSynergies) + "_" + num2str(inputs.momentTrackingWeight) + "_" + num2str(inputs.activationTrackingWeight) + "_" + num2str(inputs.activationMinimizationWeight) + "_" + num2str(inputs.momentTrackingAllowableError) + "_" + num2str(inputs.activationTrackingAllowableError) + "_" + num2str(inputs.activationMinimizationAllowableError);
+savefilename = "Syn" + num2str(inputs.numSynergies) + "_" + num2str(params.momentTrackingWeight) + "_" + num2str(params.activationTrackingWeight) + "_" + num2str(params.activationMinimizationWeight) + "_" + num2str(params.momentTrackingAllowableError) + "_" + num2str(params.activationTrackingAllowableError) + "_" + num2str(params.activationMinimizationAllowableError);
 
 try
     initial_soln = load(savefilename);
@@ -90,8 +90,6 @@ inputs.coordinateNames = fixStrings(coordinateNames);
 inputs.initialValues = x0;
 % save("inputs.mat", "inputs");
 
-% inputs
-
 tic
 
 % inputs.muscleNames
@@ -100,7 +98,7 @@ tic
 %        squeeze(inputs.momentArms(:, : , i)), "gait_1_MomentArm_" + inputs.coordinateNames(i) + ".sto")
 % end
 if 1
-    finalValues = NeuralControlPersonalization(inputs, struct());
+    finalValues = NeuralControlPersonalization(inputs, params);
 else
     finalValues = inputs.initialValues;
 end
