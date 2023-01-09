@@ -25,7 +25,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function computeTrackingOptimizationContinuousFunction(inputs, params)
+function phaseout = computeTrackingOptimizationContinuousFunction(inputs, params)
 
 load('inputData.mat')
 params.modelName = 'optModel_GPOPS.osim';
