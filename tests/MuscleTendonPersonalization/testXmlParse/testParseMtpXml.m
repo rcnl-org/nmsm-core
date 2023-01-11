@@ -5,10 +5,6 @@ settingsFileName = "MTPSettingsFile.xml";
 
 MuscleTendonPersonalizationTool(settingsFileName)
 
-
-
-
-
 % import org.opensim.modeling.Storage
 % 
 % passiveData = load("thelen/passiveData.mat").passiveData;
