@@ -27,6 +27,7 @@
 
 function integralTerms = parseIntegral(integral, params)
 integralStruct.integral = integral;
+integralStruct.isEnabled = params.isEnabled;
 integralStruct.integralOptions = params.integralOptions;
 integralTerms.trackingJointAngles = findCorrectIntegralTerms(1, integralStruct);
 integralTerms.trackingJointVelocities = findCorrectIntegralTerms(2, integralStruct);
@@ -38,16 +39,21 @@ integralTerms.minimizingJointAccelerations = findCorrectIntegralTerms(7, integra
 integralTerms.minimizingJointJerk = findCorrectIntegralTerms(8, integralStruct);
 end
 function output = findCorrectIntegralTerms(index, integralStruct)
+output = [];
+if integralStruct.isEnabled(index)
 [startIndex, endIndex] = findIntegralStartAndEndIndex( ...
-    integralStruct.integralOptions, index);
+    integralStruct.isEnabled, integralStruct.integralOptions, index);
 output = integralStruct.integral(:, startIndex:endIndex);
 end
+end
 function [startIndex, endIndex] = findIntegralStartAndEndIndex( ...
-    integralOptions, index)
+    isEnabled, integralOptions, index)
 startIndex = 1;
 for i=1:index-1
-    length(integralOptions{i});
-    startIndex = startIndex + length(integralOptions{i});
+    if isEnabled(i)
+        length(integralOptions{i});
+        startIndex = startIndex + length(integralOptions{i});
+    end
 end
 endIndex = startIndex + length(integralOptions{index}) - 1;
 end

@@ -25,9 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = computeTrackingOptimizationEndpointFunction(inputs, params)
+function output = computeTrackingOptimizationEndpointFunction(inputs)
 
-output.eventgroup.event = calcTrackingOptimizationTerminalConstraint(inputs, params);
-integralTerms = parseIntegral(inputs.phase.integral, params);
-output.objective = calcTrackingOptimizationObjective(integralTerms, params);
+% output.eventgroup.event = calcTrackingOptimizationTerminalConstraint(inputs, params);
+integralTerms = parseIntegral(inputs.phase.integral, inputs.auxdata);
+output.objective = calcTrackingOptimizationObjective(integralTerms, ...
+    inputs.auxdata);
 end
