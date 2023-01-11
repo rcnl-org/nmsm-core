@@ -143,7 +143,6 @@
         </MuscleTendonCostFunctionTerms>
 		<PreCalibrationSettings>
 			<passive_data_input_directory>thelen</passive_data_input_directory>
-            <passive_trial_prefixes>Thelen_HipPassive_01 Thelen_HipPassive_02 Thelen_HipPassive_03 Thelen_HipPassive_04 Thelen_KneePassive_01 Thelen_KneePassive_02 Thelen_KneePassive_03 Thelen_KneePassive_04 Thelen_AnklePassive_01 Thelen_AnklePassive_02 Thelen_AnklePassive_03 Thelen_AnklePassive_04</passive_trial_prefixes>
 			<max_normalized_muscle_fiber_length>1</max_normalized_muscle_fiber_length>
 			<min_normalized_muscle_fiber_length>0.6</min_normalized_muscle_fiber_length>
             <optimize_maximum_muscle_stress>true</optimize_maximum_muscle_stress>

@@ -49,14 +49,14 @@ function newEmgData = expandEmgData(expandedColumnNames, emgData, ...
 %     expandedData.getFirstTime())); %shift time
 % expandedData.shiftTime(emgData.getFirstTime()-expandedData.getFirstTime());
 emgColumnNames = getTimeSeriesTableColumnNames(emgData);
-newEmgData = zeros(emgData.getNumRows(), length(expandedColumnNames));
+newEmgData = zeros(length(expandedColumnNames), emgData.getNumRows());
 for i=1:length(emgColumnNames)
     musclesInGroup = namesByGroup.(emgColumnNames(i));
     temp = stdVectorDoubleToDoubleArray( ...
         emgData.getDependentColumn(emgColumnNames(i)));
     for j=1:length(musclesInGroup)
-        newEmgData(:, find(strcmp(expandedColumnNames, ...
-            musclesInGroup(j)))) = temp;
+        newEmgData(find(strcmp(expandedColumnNames, ...
+            musclesInGroup(j))), :) = temp;
     end
 end
 end
