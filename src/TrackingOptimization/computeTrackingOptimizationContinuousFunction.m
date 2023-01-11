@@ -25,23 +25,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function phaseout = computeTrackingOptimizationContinuousFunction(inputs, params)
-
-load('inputData.mat')
-params.modelName = 'optModel_GPOPS.osim';
-pointKinematics(params.modelName);
-inverseDynamics(params.modelName);
-
+function phaseout = computeTrackingOptimizationContinuousFunction(inputs)
 % persistent experimentalJointAngles experimentalJointMoments ...
 %     experimentalMuscleActivations experimentalRightGroundReactionForces ...
 %     experimentalLeftGroundReactionForces
 
-values = getTrackingOptimizationValueStruct(inputs, params);
+values = getTrackingOptimizationValueStruct(inputs.phase, inputs.auxdata);
 % assignPersistentVariable(params, values.time);
-phaseout = calcTrackingOptimizationModeledValues(values, params);
-phaseout.dynamics = calcTrackingOptimizationDynamicsConstraint(values, params);
-phaseout.path = calcTrackingOptimizationPathConstraint(phaseout, params);
-phaseout.integrand = calcTrackingOptimizationIntegrand(values, params, ...
+phaseout = calcTrackingOptimizationModeledValues(values, inputs.auxdata);
+phaseout.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
+phaseout.path = calcTrackingOptimizationPathConstraint(phaseout, inputs.auxdata);
+phaseout.integrand = calcTrackingOptimizationIntegrand(values, inputs.auxdata, ...
     phaseout);
 end
 % function assignPersistentVariable(params, time)
