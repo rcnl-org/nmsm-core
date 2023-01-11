@@ -28,18 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs] = parsePreCalibrationSettingsTree(....
+function [inputs] = parsePreCalibrationSettingsTree( ...
     settingsTree)
 inputs = getInputs(settingsTree);
-inputs = getModelInputs(inputs);
+inputs = getMtpModelInputs(inputs);
 inputs = getMuscleVolume(inputs);
 end
 
 function inputs = getInputs(tree)
-import org.opensim.modeling.Storage
-inputDirectory = getFieldByName(tree, 'input_directory').Text;
-passiveInputDirectory = getFieldByName(tree, 'passive_data_input_directory').Text;
-inputs.passiveMomentDataExists = 0;
+inputDirectory = parseInputDirectory(tree);
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
 if(~isempty(inputDirectory))
     try
@@ -52,29 +49,8 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-if (~isempty(passiveInputDirectory))
-    if isfolder(passiveInputDirectory)
-        inputs.passivePrefixes = ...
-            getPrefixes(tree, passiveInputDirectory, ...
-            'passive_trial_prefixes');
-        passiveJointMomentFileNames = ...
-            findFileListFromPrefixList(fullfile(...
-            passiveInputDirectory, "IDData"), inputs.passivePrefixes);
-        inputs.coordinates = ...
-            getStorageColumnNames(Storage(passiveJointMomentFileNames(1)));
-        inputs.passiveData.experimentalMoments = ...
-            parseMtpStandard(passiveJointMomentFileNames);
-        passiveDirectories = ...
-            findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-            passiveInputDirectory, "MAData"), inputs.passivePrefixes);
-        inputs.passiveData.muscleTendonLength = ...
-            parseFileFromDirectories(passiveDirectories, "Length.sto");
-        inputs.passiveData.momentArms = ...
-            parseMomentArms(passiveDirectories, inputs.model);
-        inputs.passiveMomentDataExists = 1;
-    end
-end
-prefixes = getPrefixes(tree, inputDirectory, 'trial_prefixes');
+inputs = getPassiveData(getFieldByNameOrError(tree, "PreCalibrationSettings"), inputs);
+prefixes = findPrefixes(tree, inputDirectory);
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
     inputDirectory, "MAData"), prefixes);
 inputs.gaitData.muscleTendonLength = parseFileFromDirectories(directories, ...
@@ -106,23 +82,34 @@ if(isstruct(minNormalizedMuscleFiberLength))
     inputs.minNormalizedMuscleFiberLength = ...
         str2double(minNormalizedMuscleFiberLength.Text);
 end
-inputs.normalizedFiberLengthGroups = getGroups(getFieldByNameOrError(tree, ...
+inputs.normalizedFiberLengthGroups = findGroups(getFieldByNameOrError(tree, ...
     'GroupedNormalizedMuscleFiberLengths'), inputs.model);
 inputs = getNormalizedFiberLengthSettings(inputs);
 end
 
-% (struct) -> (Array of string)
-function prefixes = getPrefixes(tree, inputDirectory, fieldName)
-prefixField = getFieldByName(tree, fieldName);
-if(length(prefixField.Text) > 0)
-    prefixes = strsplit(prefixField.Text, ' ');
-else
-    files = dir(fullfile(inputDirectory, "IKData"));
-    prefixes = string([]);
-    for i=1:length(files)
-        if(~files(i).isdir)
-            prefixes(end+1) = files(i).name(1:end-4);
-        end
+function inputs = getPassiveData(tree, inputs)
+import org.opensim.modeling.Storage
+passiveInputDirectory = getFieldByName(tree, 'passive_data_input_directory').Text;
+inputs.passiveMomentDataExists = 0;
+if (~isempty(passiveInputDirectory))
+    if isfolder(passiveInputDirectory)
+        inputs.passivePrefixes = ...
+            findPrefixes(tree, passiveInputDirectory);
+        passiveJointMomentFileNames = ...
+            findFileListFromPrefixList(fullfile(...
+            passiveInputDirectory, "IDData"), inputs.passivePrefixes);
+        inputs.coordinates = ...
+            getStorageColumnNames(Storage(passiveJointMomentFileNames(1)));
+        inputs.passiveData.experimentalMoments = ...
+            parseMtpStandard(passiveJointMomentFileNames);
+        passiveDirectories = ...
+            findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
+            passiveInputDirectory, "MAData"), inputs.passivePrefixes);
+        inputs.passiveData.muscleTendonLength = ...
+            parseFileFromDirectories(passiveDirectories, "Length.sto");
+        inputs.passiveData.momentArms = ...
+            parseMomentArms(passiveDirectories, inputs.model);
+        inputs.passiveMomentDataExists = 1;
     end
 end
 end
@@ -208,43 +195,6 @@ inputs.muscleVolume = (inputs.maxIsometricForce / ...
     inputs.maximumMuscleStress) .* inputs.optimalFiberLength;
 end
 
-function groups = getGroups(tree, model)
-groupElements = getFieldByName(tree, 'musclegroups')
-activationGroupNames = string([]);
-if isstruct(groupElements)
-    activationGroupNames(end+1) = groupElements.Text;
-elseif iscell(groupElements)
-    for i=1:length(groupElements)
-        activationGroupNames(end+1) = groupElements{i}.Text;
-    end
-else
-    groups = {};
-    return
-end
-groups = groupNamesToGroups(activationGroupNames, model);
-end
-
-function groups = groupNamesToGroups(groupNames, model)
-groups = {};
-model = Model(model);
-for i=1:length(groupNames)
-    group = [];
-    for j=0:model.getForceSet().getGroup(groupNames(i)).getMembers().getSize()-1
-        count = 1;
-        for k=0:model.getForceSet().getMuscles().getSize()-1
-            if strcmp(model.getForceSet().getMuscles().get(k).getName().toCharArray', model.getForceSet().getGroup(groupNames(i)).getMembers().get(j))
-                break
-            end
-            if(model.getForceSet().getMuscles().get(k).get_appliesForce())
-                count = count + 1;
-            end
-        end
-        group(end+1) = count;
-    end
-    groups{end + 1} = group;
-end
-end
-
 function inputs = getNormalizedFiberLengthSettings(inputs)
 inputs.numMuscleGroups = numel(inputs.normalizedFiberLengthGroups);
 numMuscles = getNumEnabledMuscles(inputs.model);
@@ -264,27 +214,3 @@ end
 end
 end
 
-function inputs = getModelInputs(inputs)
-inputs.numMuscles = getNumEnabledMuscles(inputs.model);
-inputs.optimalFiberLength = [];
-inputs.tendonSlackLength = [];
-inputs.pennationAngle = [];
-inputs.maxIsometricForce = [];
-inputs.muscleNames = '';
-model = Model(inputs.model);
-for i = 0:model.getForceSet().getMuscles().getSize()-1
-    if model.getForceSet().getMuscles().get(i).get_appliesForce()
-        inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
-            getMuscles().get(i).getOptimalFiberLength();
-        inputs.tendonSlackLength(end+1) = model.getForceSet(). ...
-            getMuscles().get(i).getTendonSlackLength();
-        inputs.pennationAngle(end+1) = model.getForceSet(). ...
-            getMuscles().get(i). ...
-            getPennationAngleAtOptimalFiberLength();
-        inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
-            getMuscles().get(i).getMaxIsometricForce();
-        inputs.muscleNames{end+1} = char(model.getForceSet(). ...
-            getMuscles().get(i).getName);
-    end
-end
-end
