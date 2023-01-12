@@ -64,11 +64,12 @@ end
 function output = getTasks(model, tree, inputDirectory)
 tasks = getFieldByNameOrError(tree, 'JMPTaskList');
 counter = 1;
-for i=1:length(tasks.JMPTask)
-    if(length(tasks.JMPTask) == 1)
-        task = tasks.JMPTask;
+jmpTasks = orderByIndex(tasks.JMPTask);
+for i=1:length(jmpTasks)
+    if(length(jmpTasks) == 1)
+        task = jmpTasks;
     else
-        task = tasks.JMPTask{i};
+        task = jmpTasks{i};
     end
     if(task.is_enabled.Text == 'true')
         output{counter} = getTask(model, task, inputDirectory);

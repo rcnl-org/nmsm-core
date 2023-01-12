@@ -66,6 +66,13 @@ initialGuesses = lsqlin(deflectionMatrix, verticalForce, [-1 10], [0], ...
 inputs.springConstants = ones(1, length(inputs.springConstants)) * ...
     initialGuesses(1);
 inputs.restingSpringLength = initialGuesses(2) / initialGuesses(1);
+
+inputs.experimentalGroundReactionMoments = ...
+    replaceMomentsAboutMidfootSuperior(inputs);
+inputs.experimentalGroundReactionMomentsSlope = calcBSplineDerivative( ...
+    inputs.time, inputs.experimentalGroundReactionMoments, 2, ...
+    params.splineNodes);
+
 end
 
 
@@ -79,4 +86,21 @@ for j=1:size(jointPositions, 1)
 end
 model.assemble(state)
 model.realizeVelocity(state)
+end
+
+
+% (struct) -> (2D Array of double)
+% Replace parsed experimental ground reaction moments about midfoot
+% superior marker projected onto floor
+function replacedMoments = replaceMomentsAboutMidfootSuperior(inputs)
+    replacedMoments = ...
+        zeros(size(inputs.experimentalGroundReactionMoments));
+    for i = 1:size(replacedMoments, 2)
+        newCenter = inputs.midfootSuperiorPosition(:, i);
+        newCenter(2) = inputs.restingSpringLength;
+        replacedMoments(:, i) = ...
+            inputs.experimentalGroundReactionMoments(:, i) + ...
+            cross((inputs.electricalCenter(:, i) - newCenter), ...
+            inputs.experimentalGroundReactionForces(:, i));
+    end
 end

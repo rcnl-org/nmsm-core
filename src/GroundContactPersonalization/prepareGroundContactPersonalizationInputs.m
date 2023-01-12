@@ -83,8 +83,6 @@ inputs.experimentalMarkerVelocities = markerVelocities;
 inputs.experimentalJointPositions = footPosition;
 inputs.experimentalJointVelocities = footVelocity;
 inputs.midfootSuperiorPosition = midfootSuperiorPosition;
-inputs.experimentalGroundReactionMoments = ...
-    replaceMomentsAboutMidfootSuperior(inputs);
 
 initialSpringConstants = 2596; % Jackson et al 2016 Table 2
 initialDampingFactors = 10;
@@ -98,27 +96,8 @@ inputs.springRestingLength = initialSpringRestingLength;
 inputs.experimentalGroundReactionForcesSlope = calcBSplineDerivative( ...
     inputs.time, inputs.experimentalGroundReactionForces, 2, ...
     params.splineNodes);
-inputs.experimentalGroundReactionMomentsSlope = calcBSplineDerivative( ...
-    inputs.time, inputs.experimentalGroundReactionMoments, 2, ...
-    params.splineNodes);
 inputs.jointKinematicsBSplines = makeJointKinematicsBSplines(...
     inputs.time, 4, params.splineNodes);
 inputs.bSplineCoefficients = ones(params.splineNodes, 7);
 inputs.springRestingLength = initialSpringRestingLength;
-end
-
-% (struct) -> (2D Array of double)
-% Replace parsed experimental ground reaction moments about midfoot
-% superior marker projected onto floor
-function replacedMoments = replaceMomentsAboutMidfootSuperior(inputs)
-    replacedMoments = ...
-        zeros(size(inputs.experimentalGroundReactionMoments));
-    for i = 1:size(replacedMoments, 2)
-        newCenter = inputs.midfootSuperiorPosition(:, i);
-        newCenter(2) = 0;
-        replacedMoments(:, i) = ...
-            inputs.experimentalGroundReactionMoments(:, i) + ...
-            cross((inputs.electricalCenter(:, i) - newCenter), ...
-            inputs.experimentalGroundReactionForces(:, i));
-    end
 end
