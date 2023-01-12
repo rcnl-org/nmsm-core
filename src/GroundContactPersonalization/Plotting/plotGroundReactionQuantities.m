@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+%
 %
 % (Model, struct, string, string) -> (None)
 % Plot optimized ground reaction quantities from GCP.
@@ -27,27 +27,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotGroundReactionQuantities(inputs, params, lastStage)
+function plotGroundReactionQuantities(inputs, params, task)
 
-if nargin < 3
-    lastStage = 3;
-end
+plotParams = params;
+plotParams.tasks{task}.costTerms.verticalGrfError.isEnabled = true;
+plotParams.tasks{task}.costTerms.horizontalGrfError.isEnabled = true;
+plotParams.tasks{task}.costTerms.groundReactionMomentError.isEnabled = true;
 
 [modeledJointPositions, modeledJointVelocities] = ...
     calcGCPJointKinematics(inputs.experimentalJointPositions, ...
     inputs.jointKinematicsBSplines, inputs.bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, inputs, ...
-    modeledJointPositions, modeledJointVelocities, [1, 1, ...
-    (lastStage >= 2), (lastStage == 3)], params);
+    modeledJointPositions, modeledJointVelocities, plotParams, task);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
-
 groundReactions = ["verticalGrf", "anteriorGrf", "lateralGrf", ...
     "xGrfMoment", "yGrfMoment", "zGrfMoment"];
-if lastStage >= 2
-    subplot(lastStage - 1, 3, 1)
-end
+subplot(2, 3, 1)
 scatter(inputs.time, ...
     inputs.experimentalGroundReactionForces(2, :), [], "red")
 hold on
@@ -57,41 +54,39 @@ xlabel('Time')
 ylabel('Force (N)')
 hold off
 
-if lastStage >= 2
-    for i = 2:6
-        subplot(lastStage - 1, 3, i)
-        if (i == 2)
-            scatter(inputs.time, ...
-                inputs.experimentalGroundReactionForces(1, :), [], "red")
-            hold on
-            scatter(inputs.time, modeledValues.(groundReactions(i)), [], ...
-                "blue")
-            title(groundReactions(i))
-            xlabel('Time')
-            hold off
-        elseif (i == 3)
-            scatter(inputs.time, ...
-                inputs.experimentalGroundReactionForces(i, :), [], "red")
-            hold on
-            scatter(inputs.time, modeledValues.(groundReactions(i)), [], ...
-                "blue")
-            title(groundReactions(i))
-            xlabel('Time')
-            hold off
-        else
-            scatter(inputs.time, ...
-                inputs.experimentalGroundReactionMoments(i - 3, :), [], ...
-                "red")
-            hold on
-            scatter(inputs.time, modeledValues.(groundReactions(i)), ...
-                [], "blue")
-            title(groundReactions(i))
-            xlabel('Time')
-            if i == 4
-                ylabel('Moment (N*m)')
-            end
-            hold off
+for i = 2:6
+    subplot(2, 3, i)
+    if (i == 2)
+        scatter(inputs.time, ...
+            inputs.experimentalGroundReactionForces(1, :), [], "red")
+        hold on
+        scatter(inputs.time, modeledValues.(groundReactions(i)), [], ...
+            "blue")
+        title(groundReactions(i))
+        xlabel('Time')
+        hold off
+    elseif (i == 3)
+        scatter(inputs.time, ...
+            inputs.experimentalGroundReactionForces(i, :), [], "red")
+        hold on
+        scatter(inputs.time, modeledValues.(groundReactions(i)), [], ...
+            "blue")
+        title(groundReactions(i))
+        xlabel('Time')
+        hold off
+    else
+        scatter(inputs.time, ...
+            inputs.experimentalGroundReactionMoments(i - 3, :), [], ...
+            "red")
+        hold on
+        scatter(inputs.time, modeledValues.(groundReactions(i)), ...
+            [], "blue")
+        title(groundReactions(i))
+        xlabel('Time')
+        if i == 4
+            ylabel('Moment (N*m)')
         end
+        hold off
     end
 end
 
