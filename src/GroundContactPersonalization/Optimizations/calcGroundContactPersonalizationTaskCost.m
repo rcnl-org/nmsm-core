@@ -30,8 +30,18 @@
 function cost = calcGroundContactPersonalizationTaskCost( ...
     values, fieldNameOrder, inputs, params, task)
 valuesStruct = unpackValues(values, inputs, fieldNameOrder);
+if ~params.tasks{task}.designVariables(1)
+        valuesStruct.springConstants = inputs.springConstants;
+end
+if ~params.tasks{task}.designVariables(2)
+        valuesStruct.dampingFactors = inputs.dampingFactors;
+end
 if ~params.tasks{task}.designVariables(3)
         valuesStruct.bSplineCoefficients = inputs.bSplineCoefficients;
+end
+if ~params.tasks{task}.designVariables(4)
+        valuesStruct.dynamicFrictionCoefficient = ...
+            inputs.dynamicFrictionCoefficient;
 end
 valuesBSplineCoefficients = ...
     reshape(valuesStruct.bSplineCoefficients, [], 7);
