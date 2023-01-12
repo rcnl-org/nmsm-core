@@ -72,6 +72,56 @@
 					<!--Coefficients allowing for adjustments to kinematics during optimization-->
 					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 					<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
+					<dynamicFrictionCoefficient>false</dynamicFrictionCoefficient>
+				</DesignVariables>
+				<!--Settings for cost function terms for the task-->
+				<CostFunctionTerms>
+					<coordinateCoefficientError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>true</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>0.01</max_allowable_error>
+					</coordinateCoefficientError>
+					<verticalGrfError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>true</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>1</max_allowable_error>
+					</verticalGrfError>
+					<horizontalGrfError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>false</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>0.2</max_allowable_error>
+					</horizontalGrfError>
+					<groundReactionMomentError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>false</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>0.2</max_allowable_error>
+					</groundReactionMomentError>
+					<springConstantErrorFromMean>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>false</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>2000</max_allowable_error>
+					</springConstantErrorFromMean>
+				</CostFunctionTerms>
+			</GroundContactPersonalizationTask>
+			<GroundContactPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+				<!--Index of task used to determine order of tasks-->
+				<index>1</index>
+				<!--Settings for design variables for the task-->
+				<DesignVariables>
+					<!--Stiffness values specific to each point of contact-->
+					<springConstants>true</springConstants>
+					<!--Damping factors specific to each point of contact-->
+					<dampingFactors>false</dampingFactors>
+					<!--Coefficients allowing for adjustments to kinematics during optimization-->
+					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
+					<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
 					<dynamicFrictionCoefficient>true</dynamicFrictionCoefficient>
 				</DesignVariables>
 				<!--Settings for cost function terms for the task-->
@@ -108,9 +158,9 @@
 					</verticalGrfSlopeError>
 					<horizontalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>false</is_enabled>
+						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>20</max_allowable_error>
+						<max_allowable_error>0.2</max_allowable_error>
 					</horizontalGrfError>
 					<horizontalGrfSlopeError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -132,7 +182,7 @@
 					</groundReactionMomentSlopeError>
 					<springConstantErrorFromMean>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>2000</max_allowable_error>
 					</springConstantErrorFromMean>
