@@ -73,8 +73,6 @@ for i=1:size(modeledJointPositions, 2)
             modeledValues.markerPositions, inputs.markerNames, i);
     end
     if isCalculated(2)
-        modelMarkerPosition = zeros(3, length(values.springConstants));
-        modelMarkerVelocity = zeros(3, length(values.springConstants));
         markerKinematics.height = zeros(size(values.springConstants));
         markerKinematics.yVelocity = zeros(size(values.springConstants));
         springForces = zeros(3, length(values.springConstants));
@@ -83,8 +81,10 @@ for i=1:size(modeledJointPositions, 2)
                 "spring_marker_" + num2str(j)).getLocationInGround(state);
             modelMarkerVelocity = model.getMarkerSet().get(...
                 "spring_marker_" + num2str(j)).getVelocityInGround(state);
-            markerKinematics.height(j) = modelMarkerPosition.get(1);
-            markerKinematics.yVelocity(j) = modelMarkerVelocity.get(1);
+            modelMarkerPositions(j) = modelMarkerPosition;
+            modelMarkerVelocities(j) = modelMarkerVelocity;
+            markerKinematics.height(j) = modelMarkerPositions(j).get(1);
+            markerKinematics.yVelocity(j) = modelMarkerVelocities(j).get(1);
         end
         [modeledValues.verticalGrf(i), springForces] = ...
             calcModeledVerticalGroundReactionForce(...
@@ -95,8 +95,8 @@ for i=1:size(modeledJointPositions, 2)
         markerKinematics.xVelocity = zeros(size(values.springConstants));
         markerKinematics.zVelocity = zeros(size(values.springConstants));
         for j = 1:length(values.springConstants)
-            markerKinematics.xVelocity(j) = modelMarkerVelocity.get(0);
-            markerKinematics.zVelocity(j) = modelMarkerVelocity.get(2);
+            markerKinematics.xVelocity(j) = modelMarkerVelocities(j).get(0);
+            markerKinematics.zVelocity(j) = modelMarkerVelocities(j).get(2);
         end
         [modeledValues.anteriorGrf(i), ...
             modeledValues.lateralGrf(i), springForces] = ...
@@ -110,8 +110,8 @@ for i=1:size(modeledJointPositions, 2)
             Model(inputs.model).getMarkerSet().get(inputs.midfootSuperiorMarker...
             ).getLocationInGround(state).getAsMat()';
         for j = 1:length(values.springConstants)
-            markerKinematics.xPosition(j) = modelMarkerPosition.get(0);
-            markerKinematics.zPosition(j) = modelMarkerPosition.get(2);
+            markerKinematics.xPosition(j) = modelMarkerPositions(j).get(0);
+            markerKinematics.zPosition(j) = modelMarkerPositions(j).get(2);
         end
         [modeledValues.xGrfMoment(i), modeledValues.yGrfMoment(i), ...
             modeledValues.zGrfMoment(i)] = ...

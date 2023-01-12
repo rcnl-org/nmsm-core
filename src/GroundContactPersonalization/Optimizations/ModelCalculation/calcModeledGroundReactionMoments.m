@@ -43,7 +43,7 @@ for i = 1:length(values.springConstants)
     force(2) = springForces(2, i);
     force(3) = springForces(3, i);
     offset(1) = xPosition - inputs.midfootSuperiorPosition(1, currentFrame);
-    offset(2) = inputs.restingSpringLength;
+    offset(2) = 0;
     offset(3) = zPosition - inputs.midfootSuperiorPosition(3, currentFrame);
 
     moments = cross(offset, force);

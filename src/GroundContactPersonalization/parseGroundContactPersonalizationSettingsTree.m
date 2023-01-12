@@ -270,7 +270,7 @@ params.splineNodes = valueOrAlternate(tree, 'nodes_per_cycle', 25);
 if (isstruct(params.splineNodes))
     params.splineNodes = str2double(params.splineNodes.Text);
 end
-params.maxIterations = valueOrAlternate(tree, 'max_iterations', 1000);
+params.maxIterations = valueOrAlternate(tree, 'max_iterations', 325);
 if(isstruct(params.maxIterations))
     params.maxIterations = str2double(params.maxIterations.Text);
 end
