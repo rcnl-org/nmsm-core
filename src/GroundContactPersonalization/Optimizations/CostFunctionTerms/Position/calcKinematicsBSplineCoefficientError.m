@@ -29,5 +29,8 @@
 
 function error = calcKinematicsBSplineCoefficientError(bSplineCoefficients)
 error = reshape(bSplineCoefficients - 1, 1, []);
+% Allow more X rotation freedom
+% error(length(error) * 1 / 7 + 1:length(error) * 2 / 7) = ...
+%     0.1 * error(length(error) * 1 / 7 + 1:length(error) * 2 / 7);
 
 end
