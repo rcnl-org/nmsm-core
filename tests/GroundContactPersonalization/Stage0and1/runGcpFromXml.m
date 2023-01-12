@@ -1,25 +1,15 @@
 clear
 
 [inputs, params] = parseGroundContactPersonalizationSettingsTree(...
-    xml2struct("GCP_settings.xml"));
+    xml2struct("GCP_settings_tasklist.xml"));
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
-
-% Latest stage of GCP to test
-lastStage = 1;
 
 % Stage 0
 inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
-% Stage 1
-if lastStage >= 1
-    inputs = optimizeByVerticalGroundReactionForce(inputs, params);
-end
-% Stage 2
-if lastStage >= 2
-    inputs = optimizeByGroundReactionForces(inputs, params);
-end
-% Stage 3
-if lastStage == 3
-    inputs = optimizeByGroundReactionForcesAndMoments(inputs, params);
+
+% GCP Tasks
+for task = 1:length(params.tasks)
+    inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
 end
 
 %% Plot forces and kinematics
@@ -30,7 +20,7 @@ if exist('2', 'var')
     close 2
 end
 figure(1)
-plotGroundReactionQuantities(inputs, params, lastStage)
+plotGroundReactionQuantities(inputs, params, task)
 figure(2)
 plotCoordinates(inputs)
 
@@ -48,8 +38,7 @@ plotSpringConstants(footModel, inputs, inputs.toesBodyName, inputs.hindfootBodyN
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     inputs.bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, inputs, ...
-    modeledJointPositions, modeledJointVelocities, [1, 1, ...
-    (lastStage >= 2), (lastStage == 3)], params);
+    modeledJointPositions, modeledJointVelocities, params, task);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
