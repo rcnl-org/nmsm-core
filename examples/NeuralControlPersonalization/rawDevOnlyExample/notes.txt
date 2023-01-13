@@ -67,3 +67,11 @@ mtp synx included emg data
 mtp activations after activation dynamics - for use in NCP as emgActivation
 also change bilateral symmetry writing to file
 port over MTP activation and synergy weight similarity cost
+
+one coordinate list, find activation if it doesn't exist, if muscle in synergy group doesn't cross joint then just exclude it
+don't precal a muscle that has an activation
+SynergyGroupSet
+
+this is the max allowable value
+
+combine activations for cost term or keep separate from a weight section
