@@ -33,17 +33,7 @@ function cost = calcNcpCost(activations, inputs, params)
 % Form muscle activations from design variables
 
 % Calculate torque errors
-muscleJointMoments = zeros(inputs.numPoints, inputs.numJoints);
-% net moment
-for i = 1:inputs.numPoints
-    for k = 1:inputs.numMuscles
-        muscleTendonForce = calcMuscleTendonForce(activations(i, k), inputs.muscleTendonLength(i, k), inputs.muscleTendonVelocity(i, k), k, inputs);
-        for j = 1:inputs.numJoints
-            momentArm = inputs.momentArms(i, k, j);
-            muscleJointMoments(i, j) = muscleJointMoments(i, j) + momentArm * muscleTendonForce;
-        end
-    end
-end
+muscleJointMoments = calcMuscleJointMoments(activations, inputs, params);
 
 torqueErrors = muscleJointMoments - inputs.inverseDynamicsMoments;
 
