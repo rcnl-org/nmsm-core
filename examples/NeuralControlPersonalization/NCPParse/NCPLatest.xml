@@ -8,45 +8,39 @@
         <input_directory_MTP>MTP_results</input_directory_MTP>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>model.osim</input_model_file>
+		<synergy_group_list>right_side left_side</synergy_group_list>
+		<num_synergies_per_group>6</num_synergies_per_group>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
-		<mtp_coordinate_list>hip_adduction_r hip_flexion_r hip_rotation_r knee_angle_r ankle_angle_r subtalar_angle_r hip_adduction_l hip_flexion_l hip_rotation_l knee_angle_l ankle_angle_l subtalar_angle_l</mtp_coordinate_list>
+		<coordinate_list>hip_adduction_r hip_flexion_r hip_rotation_r knee_angle_r ankle_angle_r subtalar_angle_r hip_adduction_l hip_flexion_l hip_rotation_l knee_angle_l ankle_angle_l subtalar_angle_l</mtp_coordinate_list>
 		<!--Coordinates Neural Control Personalization tracks their joint moments. Muscles spanning these coordinates will be extracted automatically.-->
-		<ncp_coordinate_list>lumbar_extension lumbar_bending lumbar_rotation</ncp_coordinate_list>
-		<!-- This is only done for nonMTP results-->
 		<muscle_tendon_parameter_initialization>true</muscle_tendon_parameter_initialization>
 		<!--false if synergies per side are independent of each other; true if synergy vector weights are the same between left and right-->
 		<enforce_bilateral_symmetry>false</enforce_bilateral_symmetry>
-		<!--Each synergy group receives the same set of synergy activations.-->
-		<NCPSynergyGroupList>
-			<group>right_leg_muscles right_trunk_muscles</group>
-			<group>left_leg_muscles left_trunk_muscles</group>
-		</NCPSynergyGroupList>
 		<!---->
-		<num_synergies_per_group>5</num_synergies_per_group>
 		<!---->
 		<NeuralControlPersonalizationTerms>
 			<!--*Optional* Inverse dynamic joint moments -->
-			<InverseDynamicJointMomentsTracking>
+			<MomentTracking>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
 				<is_enabled>true</is_enabled>
 				<!--Max allowable error or deviation from indicated set point-->
 				<max_allowable_error>5</max_allowable_error>
-			</InverseDynamicJointMomentsTracking>
-			<EMGActivationFromMTPResultsTracking>
+			</MomentTracking>
+			<ActivationTracking>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
 				<is_enabled>true</is_enabled>
 				<!--Max allowable error or deviation from indicated set point-->
 				<max_allowable_error>0.01</max_allowable_error>
 			</EMGActivationFromMTPResultsTracking>
-			<ActivationEstimationForNonMTPMuscles>
+			<ActivationMinimization>
 				<!--Flag indicating whether or not the term is enabled in the cost function.-->
 				<is_enabled>true</is_enabled>
 				<!--Max allowable error or deviation from indicated set point-->
 				<max_allowable_error>0.05</max_allowable_error>
-			</ActivationEstimationForNonMTPMuscles>
+			</ActivationMinimization>
 			<GroupedMuscles>
 				<!--Muscle heads having similar activations-->
-				<GroupedActivations>
+				<GroupedActivationSimilarity>
 					<!--Flag indicating whether or not the term is enabled in the cost function.-->
 					<is_enabled>false</is_enabled>
 					<!--Max allowable error or deviation from indicated set point-->
@@ -88,49 +82,6 @@
 					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
 					<musclegroups>QuadricepActivationGroupL</musclegroups>
 				</GroupedActivations>
-				<!--Muscle heads having similar synergy weights-->
-				<GroupedSynergyWeights>
-					<!--Flag indicating whether or not the term is enabled in the cost function.-->
-					<is_enabled>false</is_enabled>
-					<!--Max allowable error or deviation from indicated set point-->
-					<max_allowable_error>0.1</max_allowable_error>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>AdductorActivationGroupR</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>BicepsFemActivationGroupR</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>GastrocActivationGroupR</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>GluteusMaxActivationGroupR</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>GluteusMedActivationGroupR</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>GluteusMinActivationGroupR</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>IliopsoasActivationGroupR</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>HamstringActivationGroupR</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>QuadricepActivationGroupR</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>AdductorActivationGroupL</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>BicepsFemActivationGroupL</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>GastrocActivationGroupL</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>GluteusMaxActivationGroupL</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>GluteusMedActivationGroupL</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>GluteusMinActivationGroupL</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>IliopsoasActivationGroupL</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>HamstringActivationGroupL</musclegroups>
-					<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-					<musclegroups>QuadricepActivationGroupL</musclegroups>
-				</GroupedSynergyWeights>
 			</GroupedMuscles>
 		</NeuralControlPersonalizationTerms>
 		<!--*Optional* The number of allowed iterations of the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
