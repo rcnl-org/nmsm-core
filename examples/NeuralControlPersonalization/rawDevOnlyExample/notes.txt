@@ -61,6 +61,9 @@ Discussion Points:
   - how do GroupedMuscles (GroupedActivations, GroupedSynergyWeights) fit into NeuralControlPersonalization
   - how to generate initialValues
     - set all to 0.1
+    - commands also 0.1
+    try running static optimization to get initial values
+numMuscles divided by 2 or 10
     
 printed after mtp
 mtp synx included emg data 
