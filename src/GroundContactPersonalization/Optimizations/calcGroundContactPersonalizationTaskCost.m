@@ -62,6 +62,10 @@ start = 1;
 for i=1:length(fieldNameOrder)
     valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
         numel(inputs.(fieldNameOrder(i))) - 1);
+    if fieldNameOrder(i) == "springConstants"
+        valuesStruct.(fieldNameOrder(i)) = ...
+            1000 * valuesStruct.(fieldNameOrder(i));
+    end
     start = start + numel(inputs.(fieldNameOrder(i)));
 end
 end

@@ -52,7 +52,7 @@ end
 function inputs = mergeTaskResults(inputs, results, params, task)
 index = 1;
 if (params.tasks{task}.designVariables(1))
-    inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
+    inputs.springConstants = 1000 * results(index : index + length(inputs.springConstants) - 1);
     index = index + length(inputs.springConstants);
 end
 if (params.tasks{task}.designVariables(2))
