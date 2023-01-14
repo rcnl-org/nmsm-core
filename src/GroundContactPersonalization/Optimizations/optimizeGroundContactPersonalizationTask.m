@@ -48,7 +48,7 @@ function [initialValues, fieldNameOrder] = makeInitialValues( ...
 initialValues = [];
 fieldNameOrder = [];
 if (params.tasks{task}.designVariables(1))
-    initialValues = [initialValues inputs.springConstants];
+    initialValues = [initialValues 0.001 * inputs.springConstants];
     fieldNameOrder = [fieldNameOrder "springConstants"];
 end
 if (params.tasks{task}.designVariables(2))
