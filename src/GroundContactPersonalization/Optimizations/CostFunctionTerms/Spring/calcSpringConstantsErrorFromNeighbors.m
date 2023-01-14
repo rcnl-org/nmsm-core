@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
 %
-% (Model, struct, string, string) -> (None)
-% Plot optimized spring constants from GCP.
+%
+% (Array of double, struct, struct) -> (struct)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                                             %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,32 +27,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotSpringConstants(footModel, inputs, toesBodyName, ...
-    hindfootBodyName)
-
-[footModel, state] = Model(footModel);
-calcnToToes = footModel.getBodySet().get(...
-    toesBodyName).findTransformBetween(state, ...
-    footModel.getBodySet().get(hindfootBodyName));
-springX = zeros(1, length(inputs.springConstants));
-springZ = zeros(1, length(inputs.springConstants));
-for i=1:length(inputs.springConstants)
-    markerPositionOnFoot = footModel.getMarkerSet().get(...
-        "spring_marker_" + i).getPropertyByName("location").toString(...
-        ).toCharArray';
-    markerPositionOnFoot = split(markerPositionOnFoot(2:end-1));
-    springX(i) = str2double(markerPositionOnFoot{1});
-    springZ(i) = str2double(markerPositionOnFoot{3});
-    if strcmp(getMarkerBodyName(footModel, "spring_marker_" + i), toesBodyName)
-        springX(i) = springX(i) + calcnToToes.T.get(0);
-        springZ(i) = springZ(i) + calcnToToes.T.get(2);
+function error = calcSpringConstantsErrorFromNeighbors(inputs, springConstants)
+[numSpringConstants, numNeighbors] = size(inputs.nearestSpringMarkers);
+error = [];
+for i = 1:numSpringConstants
+    for j = 1:numNeighbors
+        error = [error springConstants(i) - ...
+            springConstants(inputs.nearestSpringMarkers(i, j))];
     end
 end
-scatter(springZ, springX, 200, inputs.springConstants, "filled")
-title("Spring constants")
-xlabel("Z location on foot (m)")
-ylabel("X location on foot (m)")
-colormap jet
-colorbar
-
 end

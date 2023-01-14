@@ -2,8 +2,8 @@
 %
 % 
 %
-% (Model, struct, string, string) -> (None)
-% Plot optimized spring constants from GCP.
+% (struct, struct) -> (2D Array of double)
+% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,13 +27,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotSpringConstants(footModel, inputs, toesBodyName, ...
-    hindfootBodyName)
-
+function nearestNeighbors = findNearestSpringMarkers(footModel, inputs, ...
+    numNeighbors)
 [footModel, state] = Model(footModel);
 calcnToToes = footModel.getBodySet().get(...
-    toesBodyName).findTransformBetween(state, ...
-    footModel.getBodySet().get(hindfootBodyName));
+    inputs.toesBodyName).findTransformBetween(state, ...
+    footModel.getBodySet().get(inputs.hindfootBodyName));
 springX = zeros(1, length(inputs.springConstants));
 springZ = zeros(1, length(inputs.springConstants));
 for i=1:length(inputs.springConstants)
@@ -43,16 +42,25 @@ for i=1:length(inputs.springConstants)
     markerPositionOnFoot = split(markerPositionOnFoot(2:end-1));
     springX(i) = str2double(markerPositionOnFoot{1});
     springZ(i) = str2double(markerPositionOnFoot{3});
-    if strcmp(getMarkerBodyName(footModel, "spring_marker_" + i), toesBodyName)
+    if strcmp(getMarkerBodyName(footModel, "spring_marker_" + i), ...
+            inputs.toesBodyName)
         springX(i) = springX(i) + calcnToToes.T.get(0);
         springZ(i) = springZ(i) + calcnToToes.T.get(2);
     end
 end
-scatter(springZ, springX, 200, inputs.springConstants, "filled")
-title("Spring constants")
-xlabel("Z location on foot (m)")
-ylabel("X location on foot (m)")
-colormap jet
-colorbar
-
+% distances stores (marker #, distance from other marker #)
+distances = zeros(length(inputs.springConstants));
+for i = 1:length(inputs.springConstants)
+    distances(i, i) = Inf;
+    for j = (i + 1):length(inputs.springConstants)
+        distances(i, j) = sqrt((springX(i) - springX(j)) ^ 2 + ...
+            (springZ(i) - springZ(j)) ^ 2);
+        distances(j, i) = distances(i, j);
+    end
+end
+nearestNeighbors = zeros(length(inputs.springConstants), numNeighbors);
+for i = 1:length(inputs.springConstants)
+    [~, indices] = sort(distances(i, :));
+    nearestNeighbors(i, :) = indices(1:numNeighbors);
+end
 end

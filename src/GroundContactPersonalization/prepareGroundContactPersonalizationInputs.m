@@ -100,4 +100,7 @@ inputs.jointKinematicsBSplines = makeJointKinematicsBSplines(...
     inputs.time, 4, params.splineNodes);
 inputs.bSplineCoefficients = ones(params.splineNodes, 7);
 inputs.springRestingLength = initialSpringRestingLength;
+
+inputs.nearestSpringMarkers = findNearestSpringMarkers(inputs.model, ...
+    inputs, 4);
 end
