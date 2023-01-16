@@ -30,7 +30,7 @@
 function plotSpringConstants(footModel, inputs, toesBodyName, ...
     hindfootBodyName)
 
-[footModel, state] = Model("footModel2.osim");
+[footModel, state] = Model(footModel);
 calcnToToes = footModel.getBodySet().get(...
     toesBodyName).findTransformBetween(state, ...
     footModel.getBodySet().get(hindfootBodyName));
@@ -45,6 +45,7 @@ for i=1:length(inputs.springConstants)
     springZ(i) = str2double(markerPositionOnFoot{3});
     if strcmp(getMarkerBodyName(footModel, "spring_marker_" + i), toesBodyName)
         springX(i) = springX(i) + calcnToToes.T.get(0);
+        springZ(i) = springZ(i) + calcnToToes.T.get(2);
     end
 end
 scatter(springZ, springX, 200, inputs.springConstants, "filled")
