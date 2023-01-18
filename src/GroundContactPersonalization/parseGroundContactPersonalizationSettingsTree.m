@@ -306,7 +306,8 @@ end
 % (struct) -> (struct)
 function output = getTaskDesignVariables(tree)
 variables = ["springConstants", "dampingFactors", ...
-    "kinematicsBSplineCoefficients", "dynamicFrictionCoefficient"];
+    "kinematicsBSplineCoefficients", "dynamicFrictionCoefficient", ...
+    "restingSpringLength"];
 for i=1:length(variables)
     output.designVariables(i) = strcmpi( ...
         tree.(variables(i)).Text, 'true');
