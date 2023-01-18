@@ -68,5 +68,9 @@ if (params.tasks{task}.designVariables(3))
 end
 if (params.tasks{task}.designVariables(4))
     inputs.dynamicFrictionCoefficient = results(index);
+    index = index + 1;
+end
+if (params.tasks{task}.designVariables(5))
+    inputs.restingSpringLength = results(index);
 end
 end
