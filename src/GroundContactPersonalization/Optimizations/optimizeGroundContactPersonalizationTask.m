@@ -61,9 +61,12 @@ if (params.tasks{task}.designVariables(3))
     fieldNameOrder = [fieldNameOrder "bSplineCoefficients"];
 end
 if (params.tasks{task}.designVariables(4))
-    initialValues = [initialValues valueOrAlternate(params, ...
-        "initialDynamicFrictionCoefficient", 1)];
+    initialValues = [initialValues inputs.dynamicFrictionCoefficient];
     fieldNameOrder = [fieldNameOrder "dynamicFrictionCoefficient"];
+end
+if (params.tasks{task}.designVariables(5))
+    initialValues = [initialValues inputs.restingSpringLength];
+    fieldNameOrder = [fieldNameOrder "restingSpringLength"];
 end
 end
 
@@ -88,6 +91,10 @@ if (params.tasks{task}.designVariables(3))
 end
 if (params.tasks{task}.designVariables(4))
     lowerBounds = [lowerBounds 0];
+    upperBounds = [upperBounds Inf];
+end
+if (params.tasks{task}.designVariables(5))
+    lowerBounds = [lowerBounds -Inf];
     upperBounds = [upperBounds Inf];
 end
 end
