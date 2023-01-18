@@ -28,9 +28,11 @@
 function event = calcTrackingOptimizationTerminalConstraint(inputs, params)
 
 inputs.phase.state = [inputs.phase.initialstate; inputs.phase.finalstate];
-inputs.phasetime = [inputs.phase.initialtime; inputs.phase.finaltime];
-values = getTrackingOptimizationValueStruct(inputs, params);
-modeledValues = calcTrackingOptimizationModeledValues(values, params);
+inputs.phase.time = [inputs.phase.initialtime; inputs.phase.finaltime];
+inputs.phase.parameter = inputs.parameter;
+inputs.phase.control = ones(size(inputs.phase.time,1),length(params.minControl));
+values = getTrackingOptimizationValueStruct(inputs.phase, params);
+modeledValues = calcTrackingOptimizationTorqueBasedModeledValues(values, params);
 
 statePeriodicity = calcStatesPeriodicity(values, params);
 groundReactionsPeriodicity = calcGroundReactionsPeriodicity(...
@@ -52,12 +54,20 @@ end
 end
 function groundReactionsPeriodicity = calcGroundReactionsPeriodicity( ...
     modeledValues, params)
-isEnabled = valueOrAlternate(params, ...
-    "groundReactionsPeriodicityConstraint", 0);
+isForcesEnabled = valueOrAlternate(params, ...
+    "groundReactionForcesPeriodicityConstraint", 0);
+isMomentsEnabled = valueOrAlternate(params, ...
+    "groundReactionMomentsPeriodicityConstraint", 0);
 groundReactionsPeriodicity = [];
-if isEnabled
-    groundReactionsPeriodicity = [diff(modeledValues.rightGroundReactionsLab)
-        diff(modeledValues.leftGroundReactionsLab)];
+if isForcesEnabled
+    groundReactionsPeriodicity = [...
+        diff(modeledValues.rightGroundReactionsLab(:, 1:3)) ...
+        diff(modeledValues.leftGroundReactionsLab(:, 1:3))];
+end
+if isMomentsEnabled
+    groundReactionsPeriodicity = [groundReactionsPeriodicity ...
+        diff(modeledValues.rightGroundReactionsLab(:, 4:6)) ...
+        diff(modeledValues.leftGroundReactionsLab(:, 4:6))];
 end
 end
 function pelvisResidualsPeriodicity = calcPelvisResidualsPeriodicity( ...
@@ -75,6 +85,6 @@ isEnabled = valueOrAlternate(params, ...
     "synergyWeightsPeriodicityConstraint", 0);
 synergyWeightsPeriodicity = [];
 if isEnabled
-    synergyWeightsPeriodicity = sum(values.synergyWeights.^2, 2);
+    synergyWeightsPeriodicity = sum(values.synergyWeights.^2, 2)';
 end
 end

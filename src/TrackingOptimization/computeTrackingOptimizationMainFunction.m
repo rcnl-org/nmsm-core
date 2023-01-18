@@ -68,8 +68,8 @@ bounds.phase.control.upper = 0.5 * ones(1, length(params.minControl));
 bounds.phase.integral.lower = zeros(1, length(params.minIntegral));
 bounds.phase.integral.upper = ones(1, length(params.minIntegral));
 % % setup terminal constraint bounds
-% bounds.eventgroup.lower = params.eventgroup.lower;
-% bounds.eventgroup.upper = params.eventgroup.upper;
+bounds.eventgroup.lower = params.eventgroup.lower;
+bounds.eventgroup.upper = params.eventgroup.upper;
 % setup parameter bounds
 bounds.parameter.lower = -0.5 * ones(1, length(params.minParameter));
 bounds.parameter.upper = 0.5 * ones(1, length(params.minParameter));
