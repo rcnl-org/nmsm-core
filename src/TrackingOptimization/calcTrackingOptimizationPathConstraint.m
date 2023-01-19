@@ -27,11 +27,39 @@
 
 function path = calcTrackingOptimizationPathConstraint(phaseout, params)
 
-path = [phaseout.pelvisResiduals  ...
-    phaseout.muscleActuatedMoments - phaseout.muscleJointMoments];
+pelvisResidualsPathConstraint = calcPelvisResidualsPathConstraints( ...
+    params, phaseout.pelvisResiduals);
+muscleActuatedMomentsPathConstraint = ...
+    calcMuscleActuatedMomentsPathConstraints(params, ...
+    phaseout.muscleActuatedMoments, phaseout.muscleJointMoments);
+
+path = [pelvisResidualsPathConstraint  ...
+    muscleActuatedMomentsPathConstraint];
 path = scaleToBounds(path, params.maxPath, params.minPath);
 end
 function value = scaleToBounds(value, maximum, minimum)
 
 value = (value - (maximum + minimum) / 2) ./ (maximum - minimum);
+end
+function pelvisResidualsPathConstraint = ...
+    calcPelvisResidualsPathConstraints(params, pelvisResiduals)
+
+isEnabled = valueOrAlternate(params, ...
+    "PelvisResidualsPathConstraint", 0);
+pelvisResidualsPathConstraint = [];
+if isEnabled
+    pelvisResidualsPathConstraint = pelvisResiduals;
+end
+end
+function muscleActuatedMomentsPathConstraint = ...
+    calcMuscleActuatedMomentsPathConstraints(params, ...
+    muscleActuatedMoments, muscleJointMoments)
+
+isEnabled = valueOrAlternate(params, ...
+    "MuscleActuatedMomentsPathConstraint", 0);
+muscleActuatedMomentsPathConstraint = [];
+if isEnabled
+    muscleActuatedMomentsPathConstraint = ...
+        muscleActuatedMoments - muscleJointMoments;
+end
 end
