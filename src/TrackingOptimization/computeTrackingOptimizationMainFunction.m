@@ -25,7 +25,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function phaseout = computeTrackingOptimizationMainFunction(inputs, params)
+function output = computeTrackingOptimizationMainFunction(inputs, params)
 
 load('inputData.mat')
 params.modelName = 'optModel_GPOPS.osim';
@@ -37,12 +37,12 @@ bounds = setupProblemBounds(params);
 guess = setupInitialGuess(params);
 setup = setupSolverSettings(params, bounds, guess, params);
 output = gpops2(setup);
-solution = output.result.solution;
-save(params.solutionFileName, 'solution', 'params');
-save(params.outputFileName, 'output');
+% solution = output.result.solution;
+% save(params.solutionFileName, 'solution', 'params');
+% save(params.outputFileName, 'output');
 end
-inputs = solution.phase;
-outputContinuous = computeTrackingOptimizationContinuousFunction(inputs, params);
+% inputs = solution.phase;
+% outputContinuous = computeTrackingOptimizationContinuousFunction(inputs, params);
 % plotSolution(solution, params, outputContinuous)
 end
 function bounds = setupProblemBounds(params)
