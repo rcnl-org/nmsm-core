@@ -32,7 +32,10 @@ verifyInputs(inputs); % (struct) -> (None)
 verifyParams(params); % (struct) -> (None)
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
 inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
+params = prepareGroundContactPersonalizationParams(params);
 for task = 1:length(params.tasks)
+    taskInputs = prepareGroundContactPersonalizationInputs(inputs, params);
+    taskParams = prepareGroundContactPersonalizationParams(params);
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
 end
 
@@ -48,4 +51,10 @@ end
 % throws an error if the parameter is included but is not of valid type
 function verifyParams(params)
 
+end
+
+function params = prepareGroundContactPersonalizationParams(params)
+    for task = 1:length(params.tasks)
+        params.tasks{task}.costTerms.springConstantErrorFromNeighbors.standardDeviation = valueOrAlternate(params, 'nothere', 0.03);
+    end
 end
