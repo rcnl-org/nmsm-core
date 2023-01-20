@@ -25,17 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMuscleActivationIntegrand(...
-    experimentalMuscleActivations, muscleActivations, time, params)
+function cost = calcTrackingMuscleActivationIntegrand(muscleActivations, ...
+    time, params)
 
 enabledCost = valueOrAlternate(params, "trackingMuscleActivationEnabled", 0);
-
-if size(experimentalMuscleActivations, 1) ~= length(time)
-    experimentalMuscleActivations = ...
-        fnval(params.splineMuscleActivations, time)';
-end
-
+experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(...
     experimentalMuscleActivations, muscleActivations);
 end
-

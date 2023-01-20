@@ -25,15 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingJointAngleIntegrand(experimentalJointAngles, ...
-    statePositions, time, params)
+function cost = calcTrackingJointAngleIntegrand(statePositions, time, params)
 
 enabledCost = valueOrAlternate(params, "trackingJointAngleEnabled", 0);
-
-if size(experimentalJointAngles, 1) ~= length(statePositions)
-    experimentalJointAngles = fnval(params.splineJointAngles, time)';
-end
-
+experimentalJointAngles = fnval(params.splineJointAngles, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(experimentalJointAngles, ...
     statePositions);
 end

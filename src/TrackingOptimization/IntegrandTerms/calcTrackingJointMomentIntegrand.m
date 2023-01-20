@@ -25,15 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingJointMomentIntegrand(experimentalJointMoments, ...
-    inverseDynamicMoments, time, params)
+function cost = calcTrackingJointMomentIntegrand(inverseDynamicMoments, ...
+    time, params)
 
 enabledCost = valueOrAlternate(params, "trackingJointMomentEnabled", 0);
-
-if size(experimentalJointMoments, 1) ~= length(time)
-    experimentalJointMoments = fnval(params.splineJointMoments, time)';
-end
-
+experimentalJointMoments = fnval(params.splineJointMoments, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(experimentalJointMoments, ...
     inverseDynamicMoments);
 end

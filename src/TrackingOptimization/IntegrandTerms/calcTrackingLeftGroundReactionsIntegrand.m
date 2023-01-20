@@ -25,17 +25,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingLeftGroundReactionsIntegrand(...
-    experimentalLeftGroundReactions, leftGroundReactionsLab, time, params)
+function cost = calcTrackingLeftGroundReactionsIntegrand( ...
+    leftGroundReactionsLab, time, params)
 
 enabledCost = valueOrAlternate(params, ...
     "trackingLeftGroundReactionsEnabled", 0);
-
-if size(experimentalLeftGroundReactions, 1) ~= length(time)
-    experimentalLeftGroundReactions = ...
-        fnval(params.splineLeftGroundReactionForces, time)';
-end
-
+experimentalLeftGroundReactions = ...
+    fnval(params.splineLeftGroundReactionForces, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(...
     experimentalLeftGroundReactions, leftGroundReactionsLab);
 end

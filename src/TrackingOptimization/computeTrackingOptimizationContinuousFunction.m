@@ -26,32 +26,13 @@
 % ----------------------------------------------------------------------- %
 
 function phaseout = computeTrackingOptimizationContinuousFunction(inputs)
-% persistent experimentalJointAngles experimentalJointMoments ...
-%     experimentalMuscleActivations experimentalRightGroundReactionForces ...
-%     experimentalLeftGroundReactionForces
 
 values = getTrackingOptimizationValueStruct(inputs.phase, inputs.auxdata);
-% assignPersistentVariable(params, values.time);
 phaseout = calcTrackingOptimizationTorqueBasedModeledValues(values, inputs.auxdata);
 phaseout = calcTrackingOptimizationSynergyBasedModeledValues(values, inputs.auxdata, phaseout);
+phaseout.muscleJointMoments = ones(size(values.time,1),15);
 phaseout.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
 phaseout.path = calcTrackingOptimizationPathConstraint(phaseout, inputs.auxdata);
 phaseout.integrand = calcTrackingOptimizationIntegrand(values, inputs.auxdata, ...
     phaseout);
 end
-% function assignPersistentVariable(params, time)
-% 
-% if ~exist('experimentalJointAngles', 'var') || ...
-%         size(experimentalJointAngles, 1) ~= length(time)
-% assignin('caller', 'experimentalJointAngles', ...
-%     fnval(params.splineJointAngles, time)');
-% assignin('caller', 'experimentalJointMoments', ...
-%     fnval(params.splineJointMoments, time)');
-% assignin('caller', 'experimentalMuscleActivations', ...
-%     fnval(params.splineMuscleActivations, time)');
-% assignin('caller', 'experimentalRightGroundReactionForces', ...
-%     fnval(params.splineRightGroundReactionForces, time)');
-% assignin('caller', 'experimentalLeftGroundReactionForces', ...
-%     fnval(params.splineLeftGroundReactionForces, time)');
-% end
-% end

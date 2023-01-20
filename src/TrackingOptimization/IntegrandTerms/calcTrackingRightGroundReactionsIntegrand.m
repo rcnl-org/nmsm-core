@@ -26,16 +26,12 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTrackingRightGroundReactionsIntegrand(...
-    experimentalRightGroundReactions, rightGroundReactionsLab, time, params)
+    rightGroundReactionsLab, time, params)
 
 enabledCost = valueOrAlternate(params, ...
     "trackingRightGroundReactionsEnabled", 0);
-
-if size(experimentalRightGroundReactions, 1) ~= length(time)
-    experimentalRightGroundReactions = ...
-        fnval(params.splineRightGroundReactionForces, time)';
-end
-
+experimentalRightGroundReactions = ...
+    fnval(params.splineRightGroundReactionForces, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(...
     experimentalRightGroundReactions, rightGroundReactionsLab);
 end
