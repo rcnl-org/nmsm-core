@@ -27,13 +27,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcSpringConstantsErrorFromNeighbors(inputs, springConstants)
-[numSpringConstants, numNeighbors] = size(inputs.nearestSpringMarkers);
-error = [];
-for i = 1:numSpringConstants
-    for j = 1:numNeighbors
-        error = [error springConstants(i) - ...
-            springConstants(inputs.nearestSpringMarkers(i, j))];
+function error = calcSpringConstantsErrorFromNeighbors(springConstants, ...
+    gaussianWeights)
+error = zeros(1, size(gaussianWeights, 1) * size(gaussianWeights, 2));
+for i = 1:size(gaussianWeights, 1)
+    for j = 1:size(gaussianWeights, 2)
+        totalNeighborSpringValue = 0;
+        totalNeighborWeight = 0;
+        for k = 1:size(gaussianWeights, 3)
+            totalNeighborSpringValue = totalNeighborSpringValue + ...
+                gaussianWeights(i, j, k) * springConstants(k);
+            totalNeighborWeight = totalNeighborWeight + ...
+                gaussianWeights(i, j, k);
+        end
+        error((i - 1) * size(gaussianWeights, 2) + j) = ...
+            springConstants(j) - ...
+            (totalNeighborSpringValue / totalNeighborWeight);
     end
 end
 end

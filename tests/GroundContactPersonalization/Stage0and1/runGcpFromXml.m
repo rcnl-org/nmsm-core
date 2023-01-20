@@ -5,11 +5,18 @@ clear
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
 
 % Stage 0
-inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
+inputs = initializeRestingSpringLength(inputs, params);
+% inputs = load('1-12-hor.mat', 'inputs');
+% inputs = inputs.inputs;
+
+for task = 1:length(params.tasks)
+    params.tasks{task}.costTerms.springConstantErrorFromNeighbors.standardDeviation = valueOrAlternate(params, 'nothere', 0.03);
+end
 
 % GCP Tasks
 for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
+    save("1-15-markertracking_" + task + ".mat")
 end
 
 %% Plot forces and kinematics
@@ -34,34 +41,34 @@ plotSpringConstants(footModel, inputs, inputs.toesBodyName, inputs.hindfootBodyN
 
 %% Report cost quantities
 
-[modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
-    inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
-    inputs.bSplineCoefficients);
-modeledValues = calcGCPModeledValues(inputs, inputs, ...
-    modeledJointPositions, modeledJointVelocities, params, task);
-modeledValues.jointPositions = modeledJointPositions;
-modeledValues.jointVelocities = modeledJointVelocities;
-
-disp('Unweighted Vertical GRF Cost: ')
-[groundReactionForceValueError, ~] = ...
-    calcVerticalGroundReactionForceAndSlopeError(inputs, ...
-    modeledValues);
-disp(sum(abs(groundReactionForceValueError)))
-if lastStage >= 2
-    [groundReactionForceValueErrors, ~] = ...
-        calcGroundReactionForceAndSlopeError(inputs, modeledValues);
-    disp('Unweighted Anterior GRF Cost: ')
-    disp(sum(abs(groundReactionForceValueErrors(1, :))))
-    disp('Unweighted Lateral GRF Cost: ')
-    disp(sum(abs(groundReactionForceValueErrors(3, :))))
-end
-if lastStage == 3
-    [groundReactionMomentErrors, ~] = ...
-        calcGroundReactionMomentAndSlopeError(inputs, modeledValues);
-    disp('Unweighted Moment Cost: ')
-    disp(sum(abs(groundReactionMomentErrors), 'all'))
-end
-disp('Unweighted Marker Tracking Cost: ')
-[footMarkerPositionError, ~] = ...
-    calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-disp(sum(abs(footMarkerPositionError)))
+% [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
+%     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
+%     inputs.bSplineCoefficients);
+% modeledValues = calcGCPModeledValues(inputs, inputs, ...
+%     modeledJointPositions, modeledJointVelocities, params, task);
+% modeledValues.jointPositions = modeledJointPositions;
+% modeledValues.jointVelocities = modeledJointVelocities;
+% 
+% disp('Unweighted Vertical GRF Cost: ')
+% [groundReactionForceValueError, ~] = ...
+%     calcVerticalGroundReactionForceAndSlopeError(inputs, ...
+%     modeledValues);
+% disp(sum(abs(groundReactionForceValueError)))
+% if lastStage >= 2
+%     [groundReactionForceValueErrors, ~] = ...
+%         calcGroundReactionForceAndSlopeError(inputs, modeledValues);
+%     disp('Unweighted Anterior GRF Cost: ')
+%     disp(sum(abs(groundReactionForceValueErrors(1, :))))
+%     disp('Unweighted Lateral GRF Cost: ')
+%     disp(sum(abs(groundReactionForceValueErrors(3, :))))
+% end
+% if lastStage == 3
+%     [groundReactionMomentErrors, ~] = ...
+%         calcGroundReactionMomentAndSlopeError(inputs, modeledValues);
+%     disp('Unweighted Moment Cost: ')
+%     disp(sum(abs(groundReactionMomentErrors), 'all'))
+% end
+% disp('Unweighted Marker Tracking Cost: ')
+% [footMarkerPositionError, ~] = ...
+%     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
+% disp(sum(abs(footMarkerPositionError)))
