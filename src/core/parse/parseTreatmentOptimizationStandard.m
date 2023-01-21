@@ -25,11 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = TrackingOptimization(inputs, params)
-
-inputData = load('inputData.mat');
-params.modelName = 'optModel_GPOPS.osim';
-pointKinematics(params.modelName);
-inverseDynamics(params.modelName);
-output = computeTrackingOptimizationMainFunction(inputs, params);
+function cells = parseTreatmentOptimizationStandard(files)
+import org.opensim.modeling.Storage
+dataFromFileOne = storageToDoubleMatrix(Storage(files(1)))';
+cells = zeros([size(dataFromFileOne) length(files)]);
+cells(:, :, 1) = dataFromFileOne;
+for i=2:length(files)
+    cells(:, :, i) = storageToDoubleMatrix(Storage(files(i)));
+end
 end
