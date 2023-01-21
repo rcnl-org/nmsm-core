@@ -53,42 +53,39 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-mtpCoordinates = parseSpaceSeparatedList(tree, ...
-    "mtp_coordinate_list");
-ncpCoordinates = parseSpaceSeparatedList(tree, ...
-    "ncp_coordinate_list");
-inputs.coordinateNames = string([mtpCoordinates ncpCoordinates]);
-mtpMuscleNames = getMusclesFromCoordinates(inputs.model, ...
-    mtpCoordinates);
-ncpMuscleNames = getMusclesFromCoordinates(inputs.model, ...
-    ncpCoordinates);
-inputs.muscleNames = [mtpMuscleNames ncpMuscleNames];
-inputs.numMuscles = length(inputs.muscleNames);
-inputs.numLegMuscles = length(mtpMuscleNames);
-inputs.numTrunkMuscles = length(ncpMuscleNames);
-inputs.numJoints = length(inputs.coordinateNames);
-inputs.synergyGroups = getSynergyGroups(tree);
-inputs.numSynergies = length(inputs.synergyGroups) * ...
-    str2num(getFieldByNameOrError(tree, "num_synergies_per_group").Text);
+mtpResultsDirectory = fullfile(inputDirectory, getFieldByNameOrError( ...
+    tree, "mtp_results_input_directory").Text);
+inputs.coordinateNames = parseSpaceSeparatedList(tree, ...
+    "coordinate_list");
+inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
+    inputs.coordinateNames);
+inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
 prefixes = findPrefixes(tree, inputDirectory);
+inputs = matchMuscleNamesFromCoordinatesAndSynergyGroups(inputs);
 inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
     inputDirectory, "IDData"), prefixes);
-inputs.inverseDynamicsMoments = parseMtpStandard(inverseDynamicsFileNames);
-inputs.emgActivation = parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(inputDirectory, "EMGData"), prefixes));
-% inputs.emgActivation = parseEmgWithExpansion(inputs.model, ...
-%     findFileListFromPrefixList(fullfile(inputDirectory, "EMGData"), ...
-%     prefixes));
+[inputs.inverseDynamicsMoments, ...
+    inputs.inverseDynamicsMomentsColumnNames] = ...
+    parseMtpStandard(inverseDynamicsFileNames);
+[inputs.mtpActivation, inputs.mtpActivationColumnNames] = ...
+    parseMtpStandard(findFileListFromPrefixList( ...
+    fullfile(mtpResultsDirectory, "muscleActivations"), prefixes));
+inputs.mtpMuscleData = parseOsimxFile(fullfile(mtpResultsDirectory, ...
+    "model.osimx"));
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
     inputDirectory, "MAData"), prefixes);
-inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
-    "Length.sto");
+[inputs.muscleTendonLength, inputs.muscleTendonColumnNames] = ...
+    parseFileFromDirectories(directories, "Length.sto");
 inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
     "Velocity.sto");
 inputs.momentArms = parseMomentArms(directories, inputs.model);
+inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.maxIsometricForce, inputs.optimalFiberLength, ...
     inputs.tendonSlackLength, inputs.pennationAngle] = ...
     getMuscleInputs(inputs, inputs.muscleNames);
+[inputs.optimalFiberLengthScaleFactors, ...
+    inputs.tendonSlackLengthScaleFactors] = getMtpDataInputs( ...
+    inputs.mtpMuscleData, inputs.muscleNames);
 end
 
 function [maxIsometricForce, optimalFiberLength, tendonSlackLength, ...
@@ -114,15 +111,41 @@ function params = getParams(tree)
 params = struct();
 end
 
-function groups = getSynergyGroups(tree)
-groups = string([]);
-groupsTree = getFieldByNameOrError(tree, "NCPSynergyGroupList").group;
+function groups = getSynergyGroups(tree, model)
+synergySetTree = getFieldByNameOrError(tree, "SynergySet");
+groupsTree = getFieldByNameOrError(synergySetTree, "objects").Synergy;
+groups = {};
 for i=1:length(groupsTree)
     if(length(groupsTree) == 1)
-        groups(end + 1) = groupsTree.Text;
+        group = groupsTree;
     else
         group = groupsTree{i};
-        groups(end + 1) = group.Text;
+    end
+    groups{i}.numSynergies = ...
+        str2double(group.num_synergies.Text);
+    groupMembers = model.getForceSet().getGroup( ...
+        group.muscle_group_name.Text).getMembers();
+    muscleNames = string([]);
+    for j=0:groupMembers.getSize() - 1
+        muscleNames(end + 1) = groupMembers.get(j);
+    end
+    groups{i}.muscleNames = muscleNames;
+    groups{i}.muscleGroupName = group.muscle_group_name.Text;
+end
+end
+
+function [optimalFiberLengthScaleFactors, ...
+    tendonSlackLengthScaleFactors] = getMtpDataInputs(mtpData, muscleNames)
+optimalFiberLengthScaleFactors = zeros(1, length(muscleNames));
+tendonSlackLengthScaleFactors = zeros(1, length(muscleNames));
+mtpDataMuscleNames = fieldnames(mtpData);
+for i = 1 : length(muscleNames)
+    if ismember(muscleNames(i), mtpDataMuscleNames)
+        optimalFiberLengthScaleFactors(i) = mtpData.(muscleNames(i)).optimalFiberLengthScaleFactor;
+        tendonSlackLengthScaleFactors(i) = mtpData.(muscleNames(i)).tendonSlackLengthScaleFactor;
+    else
+        optimalFiberLengthScaleFactors(i) = 1;
+        tendonSlackLengthScaleFactors(i) = 1;
     end
 end
 end
