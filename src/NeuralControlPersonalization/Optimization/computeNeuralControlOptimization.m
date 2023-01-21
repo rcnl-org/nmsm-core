@@ -12,24 +12,25 @@
 function finalValues = computeNeuralControlOptimization(initialValues, inputs, params)
 
 % Constraints
-numDesignVars = inputs.numSynergies*(inputs.numMuscles/2 + inputs.numNodes);
-A = [];
-b = [];
-Aeq = zeros(inputs.numSynergies, numDesignVars);
+numDesignVariables = length(initialValues);
+Aeq = zeros(inputs.numSynergies, numDesignVariables);
 beq = 1*ones(inputs.numSynergies, 1);
-for i = 1:inputs.numSynergies
-    Aeq(i, (i-1) * (inputs.numNodes + inputs.numMuscles/2) + ...
-     inputs.numNodes + 1 : i * (inputs.numNodes + inputs.numMuscles ...
-      / 2)) = 1;
+column = 1; 
+row = 1; % the sum of the muscles in the previous synergy groups
+for i = 1:length(inputs.synergyGroups)
+    for j = 1: inputs.synergyGroups{i}.numSynergies
+        Aeq(column, row : ...
+            row + length(inputs.synergyGroups{i}.muscleNames) - 1) = 1;
+        column = column + 1;
+    end
+    row = row + length(inputs.synergyGroups{i}.muscleNames);
 end
-lb = zeros(numDesignVars, 1);
-ub = [];
-nonlcon = [];
+lb = zeros(numDesignVariables, 1);
 
 options = optimoptions('fmincon','Display','iter','MaxIterations',1e3,...
     'MaxFunctionEvaluations',1e3*length(initialValues),'Algorithm','sqp',...
-    'TypicalX',ones(numDesignVars,1),'UseParallel','always');
+    'TypicalX',ones(numDesignVariables,1),'UseParallel','always');
 
-[finalValues, ~, exitflag, ~] = fmincon(@(values)computeNeuralControlCostFunction(values, inputs, params),...
-    initialValues, A, b, Aeq, beq, lb, ub, nonlcon, options);
+finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, inputs, params),...
+    initialValues, [], [], Aeq, beq, lb, [], [], options);
 end

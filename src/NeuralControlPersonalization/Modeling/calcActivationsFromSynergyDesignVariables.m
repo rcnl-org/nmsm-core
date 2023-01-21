@@ -1,10 +1,45 @@
-function a = calcActivationsFromSynergyDesignVariables(x, inputs, params)
-numMuscles_leg = inputs.numLegMuscles / 2;
-% Unpack design variables
-[commands, weights] = unpackDesignVariables(x, inputs);
+function activations = calcActivationsFromSynergyDesignVariables( ...
+    values, inputs, params)
+weights = zeros(inputs.numSynergies, inputs.numMuscles);
+valuesIndex = 1;
+row = 1;
+column = 1; % the sum of the muscles in the previous synergy groups
+for i = 1:length(inputs.synergyGroups)
+    for j = 1: inputs.synergyGroups{i}.numSynergies
+        weights(row, column : ...
+            column + length(inputs.synergyGroups{i}.muscleNames) - 1) = ...
+            values(valuesIndex : ...
+            valuesIndex + length(inputs.synergyGroups{i}.muscleNames) - 1);
+        valuesIndex = valuesIndex + length(inputs.synergyGroups{i}.muscleNames);
+        row = row + 1;
+    end
+    column = column + length(inputs.synergyGroups{i}.muscleNames);
+end
+weights
+commandNodes = zeros(inputs.numTrials, inputs.numNodes, inputs.numSynergies);
+for i = 1:inputs.numTrials
+    for j = 1:inputs.numSynergies
+        commandNodes(i, :, j) = values(valuesIndex : valuesIndex + inputs.numNodes - 1);
+        valuesIndex = valuesIndex + inputs.numNodes;
+    end
+end
 
-% Form feedforward muscle activations from synergies
-a_right = commands(:, 1 : inputs.numSynergies / 2) * weights(1:inputs.numSynergies/2, :);
-a_left = commands(:, inputs.numSynergies / 2 + 1 : end) * weights(inputs.numSynergies / 2 + 1 : end, :);
-a = [a_right(:, 1 : numMuscles_leg), a_left(:, 1 : numMuscles_leg), ...
- a_right(:, numMuscles_leg + 1 : end), a_left(:, numMuscles_leg + 1 : end)];
+% Spline fit command nodes to create synegy commands
+percent = linspace(0, 100, inputs.numPoints)';
+percentNodes = linspace(0, 100, inputs.numNodes)';
+
+commands = zeros(inputs.numTrials, inputs.numPoints, inputs.numSynergies);
+
+for i = 1:inputs.numTrials
+    for j = 1:inputs.numSynergies
+        commands(i, :, j) = spline(percentNodes, commandNodes(i, :, j), percent);
+    end
+end
+
+activations = zeros(inputs.numTrials, inputs.numMuscles, inputs.numPoints);
+
+for i = 1:inputs.numTrials
+    activations(i, :, :) =  weights' * squeeze(commands(i, :, :))';
+end
+
+end

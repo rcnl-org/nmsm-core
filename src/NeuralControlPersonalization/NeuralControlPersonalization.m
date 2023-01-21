@@ -23,7 +23,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Mohammad S. Shourijeh                                            %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -39,29 +39,20 @@
 
 function finalValues = NeuralControlPersonalization(inputs, ...
     params)
-%verifyInputs(inputs); % (struct) -> (None)
+verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
-inputs = finalizeInputs(inputs);
 params = finalizeParams(params);
-% inputs.initialValues = prepareInitialValues(inputs, params);
-fieldnames(inputs)
-finalValues=0;
-finalValues = computeNeuralControlOptimization(inputs.initialValues, inputs, params);
+inputs = finalizeInputs(inputs);
+initialValues = prepareInitialValues(inputs, params);
+inputs
+finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
+    params);
 end
 
 % (struct) -> (None)
 % throws an error if any of the inputs are invalid
 function verifyInputs(inputs)
-try verifyModelArg(inputs.model); %check model args
-catch; throw(MException('','inputs.model cannot instantiate a model')); end
-try verifyMuscleTendonPersonalizationData(inputs);
-catch; throw(MException('','data is not of matching sizes')); end
-for i=1:length(inputs.tasks)
-    try verifyNumeric(inputs.tasks{i}.isIncluded);
-    catch; throw(MException('',strcat('invalid isIncluded boolean', ...
-            'array for task ', num2str(i))));
-    end
-end
+verifyNoDuplicateMusclesBetweenSynergyGroups(inputs.synergyGroups);
 end
 
 % (struct) -> (None)
@@ -83,6 +74,15 @@ inputs.numNodes = valueOrAlternate(inputs, "numNodes", 21);
 inputs.numPoints = valueOrAlternate(inputs, "numPoints", ...
     size(inputs.muscleTendonLength, 3));
 inputs.vMaxFactor = valueOrAlternate(inputs, "vMaxFactor", 10);
+inputs.numMuscles = 0;
+inputs.numSynergies = 0;
+for i = 1 : length(inputs.synergyGroups)
+    inputs.numMuscles = inputs.numMuscles + ...
+    length(inputs.synergyGroups{i}.muscleNames);
+    inputs.numSynergies = inputs.numSynergies + ...
+    inputs.synergyGroups{i}.numSynergies;
+end
+inputs.numTrials = size(inputs.momentArms, 1);
 end
 
 function params = finalizeParams(params)
@@ -103,5 +103,12 @@ end
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
 % extract initial version of optimized values from inputs/params
 function values = prepareInitialValues(inputs, params)
-
+values = [];
+for i = 1:length(inputs.synergyGroups)
+    values = [values; 0.1 * ...
+        ones(inputs.synergyGroups{i}.numSynergies * ...
+        length(inputs.synergyGroups{i}.muscleNames), 1)];
+end
+values = [values; 0.1 * ones(inputs.numSynergies * ...
+    inputs.numNodes * inputs.numTrials, 1)];
 end
