@@ -1,12 +1,12 @@
-%% PreCalibration Cost Function Testing
+%% MuscleTendonLengthInitialization Cost Function Testing
 
-load('preCalibrationCostFunctionTesting.mat')
+load('muscleTendonLengthInitializationCostFunctionTesting.mat')
 experimentalData.passiveMomentDataExists = 1;
 experimentalData.params = [];
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+values = makeMuscleTendonLengthInitializationValuesAsStruct(parameterChange, experimentalData);
+modeledValues = calcMuscleTendonLengthInitializationModeledValues(values, experimentalData);
+outputCost = calcMuscleTendonLengthInitializationCost(values, modeledValues, experimentalData);
 
 expectedNormalizedFiberLength = load('expectedNormalizedFiberLength.mat').normalizedFiberLength;
 expectedNormalizedFiberLength = permute(expectedNormalizedFiberLength, [2 3 1]);
@@ -28,11 +28,11 @@ expectedCost = load('expectedCost.mat').expectedCost;
 assertWithinRange(sum(outputCost.^2), sum(expectedCost.^2), 1e-14)
 
 %% Test individual cost function terms
-load('preCalibrationCostFunctionTesting.mat')
+load('muscleTendonLengthInitializationCostFunctionTesting.mat')
 experimentalData.passiveMomentDataExists = 1;
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
+values = makeMuscleTendonLengthInitializationValuesAsStruct(parameterChange, experimentalData);
+modeledValues = calcMuscleTendonLengthInitializationModeledValues(values, experimentalData);
 
 expectedIndividualCosts = load('expectedIndividualCosts.mat').cost;
 expectedIndividualCosts.passiveMomentMatching = ...

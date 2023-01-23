@@ -4,7 +4,7 @@
 % Muscle Tendon Personalization Settings XML file.
 %
 % (struct) -> (string, struct, struct)
-% returns the input values for Precalibration
+% returns the input values for muscle tendon length initialization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs] = parsePreCalibrationSettingsTree( ...
+function [inputs] = parseMuscleTendonLengthInitializationSettingsTree( ...
     settingsTree)
 inputs = getInputs(settingsTree);
 inputs = getMtpModelInputs(inputs);
@@ -49,7 +49,7 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-inputs = getPassiveData(getFieldByNameOrError(tree, "PreCalibrationSettings"), inputs);
+inputs = getPassiveData(getFieldByNameOrError(tree, "MuscleTendonLengthInitialization"), inputs);
 prefixes = findPrefixes(tree, inputDirectory);
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
     inputDirectory, "MAData"), prefixes);
@@ -65,7 +65,7 @@ optimizeIsometricMaxForce = getFieldByName(tree, ...
 if(optimizeIsometricMaxForce == "true"); inputs.optimizeIsometricMaxForce = 1;
 else; inputs.optimizeIsometricMaxForce = 0; end
 inputs = getCostFunctionTerms(getFieldByNameOrError(tree, ...
-    'PreCalibrationCostFunctionTerms'), inputs);
+    'MuscleTendonLengthInitializationCostFunctionTerms'), inputs);
 maximumMuscleStress = getFieldByName(tree, 'maximum_muscle_stress');
 if(isstruct(maximumMuscleStress))
     inputs.maximumMuscleStress = str2double(maximumMuscleStress.Text);
@@ -116,7 +116,7 @@ end
 
 % (integer, struct, string, struct) -> (struct)
 function output = getTask(tree)
-task = getFieldByNameOrError(tree, 'PreCalibrationSettings');
+task = getFieldByNameOrError(tree, 'MuscleTendonLengthInitialization');
 items = "optimize_maximum_muscle_stress";
 output.maximumMuscleStressIsIncluded = strcmp(task.(items).Text, 'true');
 end

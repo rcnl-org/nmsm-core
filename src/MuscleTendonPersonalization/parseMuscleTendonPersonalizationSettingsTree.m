@@ -136,9 +136,13 @@ maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
 if(isstruct(maxFunctionEvaluations))
     params.maxFunctionEvaluations = str2double(maxFunctionEvaluations.Text);
 end
-performPrecalibration = getFieldByName(tree, 'perform_precalibration');
-if(performPrecalibration.Text == "true"); params.performPrecalibration = 1;
-else; params.performPrecalibration = 0; end
+performMuscleTendonLengthInitialization = getFieldByNameOrError(tree, ...
+    'MuscleTendonLengthInitialization').is_enabled;
+if(performMuscleTendonLengthInitialization.Text == "true")
+    params.performMuscleTendonLengthInitialization = 1;
+else
+    params.performMuscleTendonLengthInitialization = 0;
+end
 params = getCostFunctionTerms(getFieldByNameOrError(tree, ...
     'MuscleTendonCostFunctionTerms'), params);
 end

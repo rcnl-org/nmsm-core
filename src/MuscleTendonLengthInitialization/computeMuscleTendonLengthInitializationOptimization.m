@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for PreCalibration optimization
+% This function runs lsqnonlin for MuscleTendonLengthInitialization with settings
+% controlled by the input params.
+%
+% (Array of number, struct, struct) -> (Array of number)
+% returns the optimized values from MuscleTendonLengthInitialization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +28,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputCost = computePreCalibrationCostFunction(parameterChange, ...
-    experimentalData)
+function optimizedValues = computeMuscleTendonLengthInitializationOptimization( ...
+    initialValues, lowerBounds, upperBounds, experimentalData, ...
+    optimizerOptions)
 
-values = makePreCalibrationValuesAsStruct(parameterChange, experimentalData);
-modeledValues = calcPreCalibrationModeledValues(values, experimentalData);
-outputCost = calcPreCalibrationCost(values, modeledValues, experimentalData);
+optimizedValues = lsqnonlin(@computeMuscleTendonLengthInitializationCostFunction, ...
+    initialValues, lowerBounds, upperBounds, optimizerOptions, ...
+    experimentalData);
 end
