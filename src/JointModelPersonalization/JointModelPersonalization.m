@@ -33,7 +33,8 @@ verifyInputs(inputs);
 verifyParams(params);
 outputModel = Model(inputs.model);
 for i=1:length(inputs.tasks)
-    functions = makeFunctions(inputs.tasks{i}.parameters);
+    functions = makeFunctions(inputs.tasks{i}.parameters, ...
+        inputs.tasks{i}.scaling, inputs.tasks{i}.markers);
     params.markerNames = getMarkersOnJoints(outputModel, ...
         inputs.tasks{i}.parameters);
     taskParams = mergeStructs(inputs.tasks{i}, params);
@@ -96,11 +97,18 @@ if(isfield(params, fieldName))
 end
 end
 
-function functions = makeFunctions(parameters)
+function functions = makeFunctions(parameters, scaling, markers)
 functions = {};
 for i=1:length(parameters)
     p = parameters{i};
     functions{i} = makeJointFunction(p{1}, p{2}, p{3}, p{4});
+end
+for i=1:length(scaling)
+    functions{end + 1} = makeScalingFunction(scaling(i));
+end
+for i=1:length(markers)
+    functions{end + 1} = makeMarkerFunction(markers(i), true);
+    functions{end + 1} = makeMarkerFunction(markers(i), false);
 end
 end
 

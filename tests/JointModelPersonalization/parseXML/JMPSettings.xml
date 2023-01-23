@@ -22,6 +22,8 @@
 				<ik_settings_file>IKSettings.xml</ik_settings_file>
 				<!--A joint that will be optimized in the task-->
 				<JMPJoint name="hip_l">
+					<scale_bodies>false</scale_bodies>
+					<optimize_marker_positions>false</optimize_marker_positions>
 					<parent_frame_transformation>
 						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
 						<translation>true true true</translation>

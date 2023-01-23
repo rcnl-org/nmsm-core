@@ -87,6 +87,8 @@ if(isstruct(timeRange))
     output.finishTime = str2double(timeRange{2});
 end
 output.parameters = getJointParameters(tree.JMPJoint);%includes all joints
+output.scaling = getScalingBodies(tree.JMPJoint, model);
+output.markers = getMarkers(tree.JMPJoint, model);
 translationBounds = getFieldByName(tree, 'translation_bounds');
 if(isstruct(translationBounds))
     translationBounds = str2double(translationBounds.Text);
@@ -95,7 +97,8 @@ orientationBounds = getFieldByName(tree, 'orientation_bounds');
 if(isstruct(orientationBounds))
     orientationBounds = str2double(orientationBounds.Text);
 end
-output.initialValues = getInitialValues(model, output.parameters);
+output.initialValues = getInitialValues(model, output.parameters, ...
+    output.scaling, output.markers);
 if(translationBounds || orientationBounds)
     [output.lowerBounds, output.upperBounds] = getBounds(...
         output.parameters, output.initialValues, ...
@@ -153,11 +156,53 @@ for i=1:length(jointTree)
 end
 end
 
-function output = getInitialValues(model, parameters)
-for i=1:length(parameters)
+function output = getScalingBodies(jointTree, model)
+output = string([]);
+for i=1:length(jointTree)
+    if(length(jointTree) == 1)
+        joint = jointTree;
+    else
+        joint = jointTree{i};
+    end
+    jointName = joint.Attributes.name;
+    scaleBodies = strcmp(getFieldByNameOrError(joint, ...
+        "scale_bodies").Text, "true");
+    if(scaleBodies)
+        [parentBody, childBody] = getJointBodyNames(model, jointName);
+        output = [output, parentBody, childBody];
+    end
+end
+end
+
+function output = getMarkers(jointTree, model)
+output = string([]);
+for i=1:length(jointTree)
+    if(length(jointTree) == 1)
+        joint = jointTree;
+    else
+        joint = jointTree{i};
+    end
+    jointName = joint.Attributes.name;
+    optimizeMarkers = strcmp(getFieldByNameOrError(joint, ...
+        "optimize_marker_positions").Text, "true");
+    if(optimizeMarkers)
+        output = [output, getMarkersFromJoint(model, jointName)];
+    end
+end
+end
+
+function output = getInitialValues(model, parameters, scaling, markers)
+for i = 1 : length(parameters)
     temp = parameters{i};
     output(i) = getFrameParameterValue(model, temp{1}, ...
         temp{2}, temp{3}, temp{4});
+end
+for i = 1 : length(scaling)
+    output(end + 1) = getScalingParameterValue(model, scaling(i));
+end
+for i = 1 : length(markers)
+    [output(end + 1), output(end + 1)] = getMarkerParameterValues( ...
+        model, markers(i));
 end
 end
 
