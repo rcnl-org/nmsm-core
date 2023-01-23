@@ -33,14 +33,14 @@ function MuscleTendonPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-if params.performPrecalibration
-    precalInputs = parsePreCalibrationSettingsTree(settingsTree);
-    optimizedInitialGuess = PreCalibration(precalInputs);
+if params.performMuscleTendonLengthInitialization
+    precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
 end
 optimizedParams = MuscleTendonPersonalization(inputs, params);
-if params.performPrecalibration
+if params.performMuscleTendonLengthInitialization
     reportMuscleTendonPersonalizationResults(optimizedParams, ...
         inputs, precalInputs);
 else

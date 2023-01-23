@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Precalibration personalizes optimal fiber length, slack tendon length, 
+% muscle tendon length initialization personalizes optimal fiber length, slack tendon length, 
 % and muscle specific tension (optional)
 %
 % (struct, struct) -> (struct)
-% Runs the PreCalibration algorithm
+% Runs the MuscleTendonLengthInitialization algorithm
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,14 +28,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function optimizedValues = PreCalibration(inputs)
+function optimizedValues = MuscleTendonLengthInitialization(inputs)
 primaryValues = prepareInitialValues(inputs);
 lowerBounds = makeLowerBounds(inputs);
 upperBounds = makeUpperBounds(inputs);
 optimizerOptions = makeOptimizerOptions(struct());
 [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
     primaryValues, inputs.tasks, lowerBounds, upperBounds);
-optimizedValues = computePreCalibrationOptimization(taskValues, ...
+optimizedValues = computeMuscleTendonLengthInitializationOptimization(taskValues, ...
     taskLowerBounds, taskUpperBounds, inputs, optimizerOptions);
 end
 

@@ -2,7 +2,7 @@
 %
 %
 % (struct, array of number) -> (array of number)
-% returns the maximum isometric force for PreCalibration
+% returns the maximum isometric force for MuscleTendonLengthInitialization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
