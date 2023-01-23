@@ -20,6 +20,8 @@
 				<marker_file_name>l_knee.trc</marker_file_name>
 				<!--A joint that will be optimized in the task-->
 				<JMPJoint name="knee_l">
+					<scale_bodies>true</scale_bodies>
+					<optimize_marker_positions>true</optimize_marker_positions>
 					<parent_frame_transformation>
 						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
 						<translation>true true false</translation>
