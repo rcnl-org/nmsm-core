@@ -16,6 +16,8 @@
 			<JMPTask name="Left Knee">
 				<!--Flag indicating whether or not the task is enabled.-->
 				<is_enabled>true</is_enabled>
+                <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>1</index>
 				<!--The markers file to use for the task-->
 				<marker_file_name>l_knee.trc</marker_file_name>
 				<!--A joint that will be optimized in the task-->

@@ -102,7 +102,8 @@ output.initialValues = getInitialValues(model, output.parameters, ...
 if(translationBounds || orientationBounds)
     [output.lowerBounds, output.upperBounds] = getBounds(...
         output.parameters, output.initialValues, ...
-        translationBounds, orientationBounds);
+        translationBounds, orientationBounds, output.scaling, ...
+        output.markers);
 end
 end
 
@@ -207,7 +208,7 @@ end
 end
 
 function [lowerBounds, upperBounds] = getBounds(parameters, ...
-    initialValues, translationBounds, orientationBounds)
+    initialValues, translationBounds, orientationBounds, scaling, markers)
 for i=1:length(parameters)
     if(parameters{i}{3})
         lowerBounds(i) = initialValues(i) - translationBounds;
@@ -216,6 +217,16 @@ for i=1:length(parameters)
         lowerBounds(i) = initialValues(i) - orientationBounds;
         upperBounds(i) = initialValues(i) + orientationBounds;
     end
+end
+for i = 1 : length(scaling)
+    lowerBounds(end + 1) = -Inf;
+    upperBounds(end + 1) = Inf;
+end
+for i = 1 : length(markers) % double values for X and Z directions
+    lowerBounds(end + 1) = -Inf;
+    lowerBounds(end + 1) = -Inf;
+    upperBounds(end + 1) = Inf;
+    upperBounds(end + 1) = Inf;
 end
 end
 
