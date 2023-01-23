@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [parentName, childName] = getJointBodyNames(model,jointName)
+function [parentName, childName] = getJointBodyNames(model, jointName)
 parentName = model.findComponent(model.getJointSet().get(jointName) ...
     .getParentFrame().getSocket('parent').getConnecteePath()) ...
     .getName().toCharArray';
