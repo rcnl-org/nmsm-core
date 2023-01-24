@@ -28,8 +28,51 @@
 function output = TrackingOptimization(inputs, params)
 
 inputData = load('inputData.mat');
-params.modelName = 'optModel_GPOPS.osim';
-pointKinematics(params.modelName);
-inverseDynamics(params.modelName);
+pointKinematics(inputs.model);
+inverseDynamics(inputs.model);
+inputs = getDesignVariableInputBounds(inputs);
 output = computeTrackingOptimizationMainFunction(inputs, params);
+end
+
+function inputs = getDesignVariableInputBounds(inputs)
+
+inputs.maxTime = max(inputs.experimentalTime);
+inputs.minTime = min(inputs.experimentalTime);
+
+maxStatePositions = max(inputs.experimentalJointAngles) + ...
+    inputs.statePositionsMultiple * range(inputs.experimentalJointAngles);
+minStatePositions = min(inputs.experimentalJointAngles) - ...
+    inputs.statePositionsMultiple * range(inputs.experimentalJointAngles);
+maxStateVelocities = max(inputs.experimentalJointVelocities) + ...
+    inputs.stateVelocitiesMultiple * range(inputs.experimentalJointVelocities);
+minStateVelocities = min(inputs.experimentalJointVelocities) - ...
+    inputs.stateVelocitiesMultiple * range(inputs.experimentalJointVelocities);
+maxStateAccelerations = max(inputs.experimentalJointAccelerations) + ...
+    inputs.stateAccelerationsMultiple * range(inputs.experimentalJointAccelerations);
+minStateAccelerations = min(inputs.experimentalJointAccelerations) - ...
+    inputs.stateAccelerationsMultiple * range(inputs.experimentalJointAccelerations);
+
+inputs.maxState = [maxStatePositions maxStateVelocities maxStateAccelerations];
+inputs.minState = [minStatePositions minStateVelocities minStateAccelerations];
+
+maxControlJerks = max(inputs.experimentalJointJerks) + ...
+    inputs.controlJerksMultiple * range(inputs.experimentalJointJerks);
+minControlJerks = min(inputs.experimentalJointJerks) - ...
+    inputs.controlJerksMultiple * range(inputs.experimentalJointJerks);
+
+maxControlNeuralCommandsRight = inputs.maxControlNeuralCommandsRight * ...
+    ones(1, inputs.numRightSynergies);
+maxControlNeuralCommandsLeft = inputs.maxControlNeuralCommandsLeft * ...
+    ones(1, inputs.numLeftSynergies);
+ 
+inputs.maxControl = [maxControlJerks maxControlNeuralCommandsRight ...
+    maxControlNeuralCommandsLeft];
+inputs.minControl = [minControlJerks zeros(1, inputs.numRightSynergies + ...
+    inputs.numLeftSynergies)];
+
+inputs.maxParameter = inputs.maxParameterSynergyWeights * ones(1, ...
+    (inputs.numRightSynergies + inputs.numLeftSynergies) * ...
+    inputs.numMuscles);
+inputs.minParameter = zeros(1, (inputs.numRightSynergies + .....
+    inputs.numLeftSynergies) * inputs.numMuscles);
 end
