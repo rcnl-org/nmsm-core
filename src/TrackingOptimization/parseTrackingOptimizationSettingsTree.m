@@ -28,14 +28,19 @@
 function [inputs, params, resultsDirectory] = ...
     parseTrackingOptimizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-params = [];
 inputs = getSplines(inputs);
-% params = getParams(settingsTree);
+params = getParams(settingsTree);
 % inputs = getModelInputs(inputs);
+inputs = getStateDerivatives(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
+
+% missing Inputs
+inputs.numRightSynergies = 6;
+inputs.numLeftSynergies = 6;
+inputs.numMuscles = 148;
 end
 
 function inputs = getInputs(tree)
@@ -68,6 +73,7 @@ inputs.jointAnglesLabels = getStorageColumnNames(Storage( ...
 inputs.experimentalJointAngles = parseTreatmentOptimizationStandard( ...
     jointAngleFileName);
 inputs.experimentalTime = parseTimeColumn(jointAngleFileName)';
+inputs.numCoordinates = length(inputs.experimentalJointAngles);
 
 muscleActivationFileName = findFileListFromPrefixList(fullfile( ...
     inputDirectory, "ActData"), prefixes);
@@ -75,20 +81,31 @@ inputs.muscleLabels = getStorageColumnNames(Storage( ...
     muscleActivationFileName(1)));
 inputs.experimentalMuscleActivations = parseTreatmentOptimizationStandard( ...
     muscleActivationFileName);
+inputs.numMuscles = length(inputs.muscleLabels);
 
 % Need to extract electrical center from here
 % inputs.experimentalGroundReactions = parseTreatmentOptimizationStandard(findFileListFromPrefixList( ...
 %     fullfile(inputDirectory, "GRFData"), prefixes));
 
+% load in NCP synergy commands and weights
+
+% load in surrogate model params
+
+% load integral options with max bounds
+% load path options with max, min bounds
+% load terminal constriaint options with max and min bounds
 inputs.numPaddingFrames = 0;
 % inputs.numPaddingFrames = (size(inputs.inverseDynamicMomentLabels, 3) - 101) / 2;
 inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.experimentalTime = inputs.experimentalTime - inputs.experimentalTime(1);
 
+inputs = getDesignVariableBounds(tree, inputs);
+
+inputs.beltSpeed = getBeltSpeed(tree);
+% load in epsilon
 inputs.vMaxFactor = getVMaxFactor(tree);
 end
 
-% (struct) -> (Array of string)
 function prefixes = getPrefixes(tree, inputDirectory)
 prefixField = getFieldByName(tree, 'trial_prefix');
 if(length(prefixField.Text) > 0)
@@ -135,11 +152,98 @@ inputs.experimentalTime = inputs.experimentalTime( ...
     numPaddingFrames + 1:end - numPaddingFrames, :);
 end
 
+function inputs = getDesignVariableBounds(tree, inputs)
+designVariableTree = getFieldByNameOrError(tree, ...
+    'TrackingOptimizationDesignVariableBounds');
+jointPositionsMultiple = getFieldByNameOrError(designVariableTree, ...
+    'joint_positions');
+if(isstruct(jointPositionsMultiple))
+    inputs.statePositionsMultiple = str2double(jointPositionsMultiple.Text);
+end
+jointVelocitiesMultiple = getFieldByNameOrError(designVariableTree, ...
+    'joint_velocities');
+if(isstruct(jointVelocitiesMultiple))
+    inputs.stateVelocitiesMultiple = str2double(jointVelocitiesMultiple.Text);
+end
+jointAccelerationsMultiple = getFieldByNameOrError(designVariableTree, ...
+    'joint_accelerations');
+if(isstruct(jointAccelerationsMultiple))
+    inputs.stateAccelerationsMultiple = ...
+        str2double(jointAccelerationsMultiple.Text);
+end
+jointJerkMultiple = getFieldByNameOrError(designVariableTree, 'joint_jerks');
+if(isstruct(jointJerkMultiple))
+    inputs.controlJerksMultiple = str2double(jointJerkMultiple.Text);
+end
+maxControlNeuralCommandsRight = getFieldByNameOrError(designVariableTree, ...
+    'synergy_commands_right');
+if(isstruct(maxControlNeuralCommandsRight))
+    inputs.maxControlNeuralCommandsRight = ...
+        str2double(maxControlNeuralCommandsRight.Text);
+end
+maxControlNeuralCommandsLeft = getFieldByNameOrError(designVariableTree, ...
+    'synergy_commands_left');
+if(isstruct(maxControlNeuralCommandsLeft))
+    inputs.maxControlNeuralCommandsLeft = ...
+        str2double(maxControlNeuralCommandsLeft.Text);
+end
+maxParameterSynergyWeights = getFieldByNameOrError(designVariableTree, ...
+    'synergy_weights');
+if(isstruct(maxParameterSynergyWeights))
+    inputs.maxParameterSynergyWeights = ...
+        str2double(maxParameterSynergyWeights.Text);
+end
+end
+
+function beltSpeed = getBeltSpeed(tree)
+beltSpeed = getFieldByNameOrError(tree, 'belt_speed');
+beltSpeed = str2double(beltSpeed.Text);
+end
+
 function vMaxFactor = getVMaxFactor(tree)
 vMaxFactor = getFieldByName(tree, 'v_max_factor');
 if(isstruct(vMaxFactor))
     vMaxFactor = str2double(vMaxFactor.Text);
 else
     vMaxFactor = 10;
+end
+end
+
+function params = getParams(tree)
+params = struct();
+params.optimizationFileName = 'trackingOptimizationOutputFile.txt';
+solveType = getFieldByNameOrError(tree, 'solver_type');
+if(isstruct(solveType))
+    params.solveType = str2double(solveType.Text);
+end
+solverTolerance = getFieldByNameOrError(tree, 'solver_tolerance');
+if(isstruct(solverTolerance))
+    params.solverTolerance = str2double(solverTolerance.Text);
+end
+stepSize = getFieldByNameOrError(tree, 'step_size');
+if(isstruct(stepSize))
+    params.stepSize = str2double(stepSize.Text);
+end
+collocationPointsMultiple = getFieldByNameOrError(tree, ...
+    'collocation_points');
+if(isstruct(collocationPointsMultiple))
+    params.collocationPointsMultiple = ...
+        str2double(collocationPointsMultiple.Text);
+end
+maxIterations = getFieldByNameOrError(tree, 'max_iterations');
+if(isstruct(maxIterations))
+    params.maxIterations = str2double(maxIterations.Text);
+end
+end
+
+function inputs = getStateDerivatives(inputs)
+
+for i = 1 : size(inputs.experimentalJointAngles, 2)
+    inputs.experimentalJointVelocities (:, i) = calcDerivative(...
+        inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
+    inputs.experimentalJointAccelerations (:, i) = calcDerivative(...
+        inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
+    inputs.experimentalJointJerks (:, i) = calcDerivative(...
+        inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
 end
 end
