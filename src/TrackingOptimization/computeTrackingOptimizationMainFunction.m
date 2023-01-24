@@ -26,105 +26,105 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeTrackingOptimizationMainFunction(inputs, params)
+% 
+% load('inputData.mat')
+% inputs.modelName = 'optModel_GPOPS.osim';
+% pointKinematics(inputs.modelName);
+% inverseDynamics(inputs.modelName);
 
-load('inputData.mat')
-params.modelName = 'optModel_GPOPS.osim';
-pointKinematics(params.modelName);
-inverseDynamics(params.modelName);
+% if params.runOptimization
+bounds = setupProblemBounds(inputs);
+guess = setupInitialGuess(inputs);
+setup = setupSolverSettings(inputs, bounds, guess, params);
+% output = gpops2(setup);
+guess.auxdata = inputs;
+guess.phase.parameter = guess.parameter;
+output = computeTrackingOptimizationContinuousFunction(guess);
 
-if params.runOptimization
-bounds = setupProblemBounds(params);
-guess = setupInitialGuess(params);
-setup = setupSolverSettings(params, bounds, guess, params);
-output = gpops2(setup);
 % solution = output.result.solution;
 % save(params.solutionFileName, 'solution', 'params');
 % save(params.outputFileName, 'output');
-end
+% end
 % inputs = solution.phase;
 % outputContinuous = computeTrackingOptimizationContinuousFunction(inputs, params);
 % plotSolution(solution, params, outputContinuous)
 end
-function bounds = setupProblemBounds(params)
+function bounds = setupProblemBounds(inputs)
 % setup time bounds
 bounds.phase.initialtime.lower = -0.5;
 bounds.phase.initialtime.upper = -0.5;
 bounds.phase.finaltime.lower = 0.5;
 bounds.phase.finaltime.upper = 0.5;
 % setup state bounds
-bounds.phase.initialstate.lower = -0.5 * ones(1, length(params.minState));
-bounds.phase.initialstate.upper = 0.5 * ones(1, length(params.minState));
-bounds.phase.finalstate.lower = -0.5 * ones(1, length(params.minState));
-bounds.phase.finalstate.upper = 0.5 * ones(1, length(params.minState));
-bounds.phase.state.lower = -0.5 * ones(1, length(params.minState));
-bounds.phase.state.upper = 0.5 * ones(1, length(params.minState));
+bounds.phase.initialstate.lower = -0.5 * ones(1, length(inputs.minState));
+bounds.phase.initialstate.upper = 0.5 * ones(1, length(inputs.minState));
+bounds.phase.finalstate.lower = -0.5 * ones(1, length(inputs.minState));
+bounds.phase.finalstate.upper = 0.5 * ones(1, length(inputs.minState));
+bounds.phase.state.lower = -0.5 * ones(1, length(inputs.minState));
+bounds.phase.state.upper = 0.5 * ones(1, length(inputs.minState));
 % setup path constraint bounds
-bounds.phase.path.lower = -0.5 * ones(1, length(params.minPath));
-bounds.phase.path.upper = 0.5 * ones(1, length(params.minPath));
+bounds.phase.path.lower = -0.5 * ones(1, length(inputs.minPath));
+bounds.phase.path.upper = 0.5 * ones(1, length(inputs.minPath));
 % setup control bounds
-bounds.phase.control.lower = -0.5 * ones(1, length(params.minControl));
-bounds.phase.control.upper = 0.5 * ones(1, length(params.minControl));
+bounds.phase.control.lower = -0.5 * ones(1, length(inputs.minControl));
+bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
 % setup integral bounds
-bounds.phase.integral.lower = zeros(1, length(params.minIntegral));
-bounds.phase.integral.upper = ones(1, length(params.minIntegral));
+bounds.phase.integral.lower = zeros(1, length(inputs.minIntegral));
+bounds.phase.integral.upper = ones(1, length(inputs.minIntegral));
 % % setup terminal constraint bounds
-bounds.eventgroup.lower = params.eventgroup.lower;
-bounds.eventgroup.upper = params.eventgroup.upper;
+bounds.eventgroup.lower = inputs.eventgroup.lower;
+bounds.eventgroup.upper = inputs.eventgroup.upper;
 % setup parameter bounds
-bounds.parameter.lower = -0.5 * ones(1, length(params.minParameter));
-bounds.parameter.upper = 0.5 * ones(1, length(params.minParameter));
+bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
+bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
 end
-function guess = setupInitialGuess(params)
+function guess = setupInitialGuess(inputs)
 
-if params.loadInitialGuess
-    load(params.initialGuessFileName)
+if ~isempty(inputs.initialGuessFileName)
+    load(inputs.initialGuessFileName)
     guess = solution;
-    if length(guess.phase.integral) ~= length(params.maxIntegral)
-        guess.phase.integral = scaleToBounds(1e1, params.maxIntegral, ...
-        params.minIntegral);
+    if length(guess.phase.integral) ~= length(inputs.maxIntegral)
+        guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
+        inputs.minIntegral);
     end
 else
-    guess.phase.time = scaleToBounds(params.time, params.maxTime, ...
-        params.minTime);
-    guess.phase.state = scaleToBounds([params.jointAngles ...
-        params.jointVelocities params.jointAcceleration], ...
-        params.maxState, params.minState);
-    guess.phase.control = scaleToBounds([params.jointJerk ...
-        params.neuralCommandsRight params.neuralCommandsLeft], ...
-        params.maxControl, params.minControl);
-    guess.phase.integral = scaleToBounds(1e1, params.maxIntegral, ...
-        params.minIntegral);
-    guess.parameter = scaleToBounds(params.synergyWeights, ...
-        params.maxParameter, params.minParameter);
+    guess.phase.time = scaleToBounds(inputs.time, inputs.maxTime, ...
+        inputs.minTime);
+    guess.phase.state = scaleToBounds([inputs.jointAngles ...
+        inputs.jointVelocities inputs.jointAcceleration], ...
+        inputs.maxState, inputs.minState);
+    guess.phase.control = scaleToBounds([inputs.jointJerk ...
+        inputs.neuralCommandsRight inputs.neuralCommandsLeft], ...
+        inputs.maxControl, inputs.minControl);
+    guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
+        inputs.minIntegral);
+    guess.parameter = scaleToBounds(inputs.synergyWeights, ...
+        inputs.maxParameter, inputs.minParameter);
 end
 end
 function scaledValue = scaleToBounds(value, maximum, minimum)
 
 scaledValue = (value - (maximum + minimum) / 2) ./ (maximum + minimum);
 end
-function setup = setupSolverSettings(params, bounds, guess, solver)
+function setup = setupSolverSettings(inputs, bounds, guess, params)
 
 setup.name = params.optimizationFileName;
 setup.functions.continuous = @computeTrackingOptimizationContinuousFunction;
 auxdata.ContinuousFunc = setup.functions.continuous;
 setup.functions.endpoint = @computeTrackingOptimizationEndpointFunction;
-setup.auxdata = params;
+setup.auxdata = inputs;
 setup.bounds = bounds;
 setup.guess = guess;
-setup.nlp.solver = solver.type;
+setup.nlp.solver = params.solverType;
 setup.nlp.ipoptoptions.linear_solver = 'ma57';
-setup.nlp.ipoptoptions.tolerance = solver.tolerance;
-setup.nlp.ipoptoptions.maxiterations = solver.maxIterations;
-setup.derivatives.stepsize1 = solver.stepSize;
+setup.nlp.ipoptoptions.tolerance = params.solverTolerance;
+setup.nlp.ipoptoptions.maxiterations = params.maxIterations;
+setup.derivatives.stepsize1 = params.stepSize;
 setup.derivatives.supplier = 'sparseCD';
 setup.derivatives.derivativelevel = 'first';
 setup.derivatives.dependencies = 'sparse';
 mesh.method = 'hp-PattersonRao';
-mesh.tolerance = solver.mesh.tolerance;
-mesh.maxiterations = solver.mesh.maxIterations;
-mesh.colpointsmin = solver.mesh.minColPoints;
-mesh.colpointsmax = solver.mesh.maxColPoints;
-N = solver.mesh.N;
+N = params.collocationPointsMultiple;
 mesh.phase.colpoints = 10*ones(1, N);
 mesh.phase.fraction = ones(1, N) / N;
 setup.method = 'RPM-integration';

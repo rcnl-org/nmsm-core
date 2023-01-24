@@ -25,11 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [dataDerivative] = calcDerivative(time, data, smoothingValue)
+function [dataDerivative] = calcDerivative(time, data)
 
 fittingType = fittype('smoothingspline');
-fittingOptions = fitoptions('method', 'SmoothingSpline', ...
-    'SmoothingParam', smoothingValue);
+fittingOptions = fitoptions('method', 'SmoothingSpline');
 fittedModel = fit(time, data, fittingType, fittingOptions);
 dataCoefficientStructure = fittedModel.p;
 % Calculate first derivative of smoothed curve
