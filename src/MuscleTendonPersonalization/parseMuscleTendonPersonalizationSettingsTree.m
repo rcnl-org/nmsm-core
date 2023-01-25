@@ -55,22 +55,22 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-prefixes = findPrefixes(tree, inputDirectory);
+inputs.prefixes = findPrefixes(tree, inputDirectory);
 inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
-    inputDirectory, "IDData"), prefixes);
+    inputDirectory, "IDData"), inputs.prefixes);
 inputs.coordinates = getStorageColumnNames(Storage( ...
     inverseDynamicsFileNames(1)));
 inputs.experimentalMoments = parseMtpStandard(inverseDynamicsFileNames);
 emgDataFileNames = findFileListFromPrefixList( ...
-    fullfile(inputDirectory, "EMGData"), prefixes);
+    fullfile(inputDirectory, "EMGData"), inputs.prefixes);
 inputs.emgData = parseMtpStandard(emgDataFileNames);
 inputs.emgDataExpanded = parseEmgWithExpansion(inputs.model, emgDataFileNames);
 inputs.emgDataColumnNames = getStorageColumnNames(Storage( ...
     emgDataFileNames(1)));
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
-    fullfile(inputDirectory, "EMGData"), prefixes));
+    fullfile(inputDirectory, "EMGData"), inputs.prefixes));
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    inputDirectory, "MAData"), prefixes);
+    inputDirectory, "MAData"), inputs.prefixes);
 inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
     "Length.sto");
 inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
@@ -87,7 +87,7 @@ inputs.synergyExtrapolation = getSynergyExtrapolationParameters(tree, ...
     inputs.model);
 inputs.vMaxFactor = getVMaxFactor(tree);
 inputs.synergyExtrapolation = getTrialIndexes( ...
-    inputs.synergyExtrapolation, size(inputs.emgData, 1), prefixes);
+    inputs.synergyExtrapolation, size(inputs.emgData, 1), inputs.prefixes);
 
 if ~isfield(inputs, "emgSplines")
     inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgDataExpanded);
