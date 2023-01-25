@@ -2,485 +2,485 @@
 <OpenSimDocument Version="40000">
    <OsimxModel name="optModel">
       <!--Full path of the associated osim model-->
-      <associated_osim_model>D:\RCNL\Repositories\nmsm-core\tests\MuscleTendonPersonalization\testXmlParse\optModel_MuscleGroups_LeftMusclesActive_NewSynx.osim</associated_osim_model>
+      <associated_osim_model>/Users/cvham/Documents/GitHub/nmsm-core/tests/MuscleTendonPersonalization/testXmlParse/optModel_MuscleGroups_LeftMusclesActive_NewSynx.osim</associated_osim_model>
       <!--Optimized muscle parameters-->
       <MTPMuscleSet>
          <objects>
             <RCNLMuscle name="addbrev_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="addlong_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="addmagDist_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="addmagIsch_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="addmagMid_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="addmagProx_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="bflh_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="bfsh_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="edl_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="fdl_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="gaslat_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="gasmed_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="glmax1_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="glmax2_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="glmax3_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="glmed1_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="glmed2_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="glmed3_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="glmin1_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="glmin2_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="glmin3_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="iliacus_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="perbrev_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="perlong_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="psoas_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="recfem_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="semimem_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="semiten_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="soleus_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="tibant_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="tibpost_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="vasint_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="vaslat_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
             <RCNLMuscle name="vasmed_l">
                <!--Optimized electronmechanical delay-->
-               <electromechanical_delay>1.25 1.25 1.25 0.88748 1.25 1.25 0.60305 0.48713 3.0844e-22 1.25 1.25 1.25 1.229 1.2113 1.25 1.25 1.25 0 0.41035 3.4234e-36 1.6305e-21 1.2463e-22 0.32192 0.04449 1.25 0 1.25 1.25 1.25 0.55638 5.1947e-22 1.25 1.25 1.25</electromechanical_delay>
+               <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
-               <activation_time_constant>1.5589 1.6293 1.1952 0.94055 1.4487 1.6496 1.1116 1.1974 0.75 1.5292 1.3018 1.2759 0.88201 0.75 1.3249 1.6445 1.78 1.3517 1.4033 1.5272 1.7202 0.75 1.553 1.583 2.8411 0.75 1.1849 1.2936 3.0198 1.5167 0.75 1.4333 0.75 1.3753</activation_time_constant>
+               <activation_time_constant>1.5</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
-               <activation_nonlinearity_constant>1.1161e-21 0.0070339 1.8239e-21 0 3.0742e-22 0.010661 5.0712e-22 0 0.023911 0.0084184 1.0343e-21 1.6781e-21 -2.351e-38 0 0 1.1256e-21 0 0.021395 4.0737e-22 6.683e-22 0 0.047347 0 6.2549e-22 8.9218e-23 0.001138 2.351e-38 2.351e-38 7.4726e-22 0 0.058441 0.024578 2.4232e-22 0.044044</activation_nonlinearity_constant>
+               <activation_nonlinearity_constant>0.05</activation_nonlinearity_constant>
                <!--Optimized EMG scaling factor-->
-               <emg_scale_factor>0.30149 0.30677 0.29243 0.2851 0.30075 0.30545 0.29999 0.29999 0.5863 0.36746 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.62098 0.37022 0.38308 0.58423 0.77165 0.3 0.3 0.3 0.3 0.49286 0.3776 0.3 0.42587</emg_scale_factor>
+               <emg_scale_factor>0.5</emg_scale_factor>
                <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>1.1725 1.2749 1.0988 1.1674 1.1009 1.1497 0.6 1.2888 0.69923 1.3849 1.4 1.4 1.0085 1.0057 1.1087 1.1112 1.3036 1.2821 0.88256 0.94027 1.0544 1.4 1.4 1.4 1.0596 1.4 0.6 0.6 1.1776 1.4 1.4 1.4 1.091 1.4</optimal_fiber_length_scale_factor>
+               <optimal_fiber_length_scale_factor>1</optimal_fiber_length_scale_factor>
                <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6 0.76303 0.828 0.86377 0.80131 0.6 1.1231 0.80848 1.062 0.91181 0.86016 0.87125 1.4 1.4 1.4 1.0982 0.95352 1.4 0.6 0.6 0.6 0.61881 0.88913 0.94583 0.92511 0.69272 1.0704 1.268 1.0101 0.86893 0.89289 0.8806 1.0312 0.87644</slack_tendon_length_scale_factor>
+               <slack_tendon_length_scale_factor>1</slack_tendon_length_scale_factor>
             </RCNLMuscle>
          </objects>
          <groups/>
