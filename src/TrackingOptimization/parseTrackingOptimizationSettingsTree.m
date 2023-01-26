@@ -38,9 +38,61 @@ if(isempty(resultsDirectory))
 end
 
 % missing Inputs
+inputData = load('inputData.mat');
 inputs.numRightSynergies = 6;
 inputs.numLeftSynergies = 6;
-inputs.numMuscles = 148;
+inputs.numMusclesPerSide = 74;
+inputs.numMusclesPerLeg = 45;
+inputs.numMusclesPerTorso = 29;
+inputs.numCoordinates = 31;
+inputs.coordinateNames = inputData.params.coordinateNames;
+inputs.minPath = inputData.params.minPath;
+inputs.maxPath = inputData.params.maxPath;
+inputs.minIntegral = inputData.params.minIntegral;
+inputs.maxIntegral = inputData.params.maxIntegral;
+inputs.minTerminal = inputData.params.eventgroup.lower;
+inputs.maxTerminal = inputData.params.eventgroup.upper;
+inputs.splineLeftGroundReactionForces = inputData.params.splineLeftGroundReactionForces;
+inputs.splineRightGroundReactionForces = inputData.params.splineRightGroundReactionForces;
+inputs.springPointsOnBody = inputData.params.springPointsOnBody;
+inputs.springBody = inputData.params.springBody;
+inputs.rightMidfootSuperiorPointOnBody = inputData.params.rightMidfootSuperiorPointOnBody;
+inputs.rightMidfootSuperiorBody = inputData.params.rightMidfootSuperiorBody;
+inputs.leftMidfootSuperiorPointOnBody = inputData.params.leftMidfootSuperiorPointOnBody;
+inputs.leftMidfootSuperiorBody = inputData.params.leftMidfootSuperiorBody;
+inputs.rightHeelPointOnBody = inputData.params.rightHeelPointOnBody;
+inputs.rightHeelBody = inputData.params.rightHeelBody;
+inputs.leftHeelPointOnBody = inputData.params.leftHeelPointOnBody;
+inputs.leftHeelBody = inputData.params.leftHeelBody;
+inputs.rightToePointOnBody = inputData.params.rightToePointOnBody;
+inputs.rightToeBody = inputData.params.rightToeBody;
+inputs.leftToePointOnBody = inputData.params.leftToePointOnBody;
+inputs.leftToeBody = inputData.params.leftToeBody;
+inputs.leftToeBody = inputData.params.leftToeBody;
+inputs.springDamping = inputData.params.springDamping;
+inputs.dynamicFriction = inputData.params.dynamicFriction;
+inputs.springStiffness = inputData.params.springStiffness;
+inputs.viscousFriction = inputData.params.viscousFriction;
+inputs.latchingVelocity = inputData.params.latchingVelocity;
+inputs.numSpringsRightHeel = inputData.params.numSpringsRightHeel;
+inputs.numSpringsLeftHeel = inputData.params.numSpringsLeftHeel;
+inputs.numSpringsRightToe = inputData.params.numSpringsRightToe;
+inputs.numSpringsLeftToe = inputData.params.numSpringsLeftToe;
+inputs.dofsActuated = inputData.params.dofsActuated;
+inputs.epsilon = inputData.params.epsilon;
+inputs.optimalFiberLength = inputData.params.optimalFiberLength;
+inputs.tendonSlackLength = inputData.params.tendonSlackLength;
+inputs.pennationAngle = inputData.params.pennationAngle;
+inputs.maxIsometricForce = inputData.params.maxIsometricForce;
+inputs.numActuators = inputData.params.numActuators;
+inputs.inverseDynamicMomentsIndex = inputData.params.inverseDynamicMomentsIndex;
+inputs.pelvisResidualsIndex = inputData.params.pelvisResidualsIndex;
+inputs.muscleActuatedMomentsIndex = inputData.params.muscleActuatedMomentsIndex;
+inputs.polynomialExpressionMomentArms = inputData.params.polynomialExpressionMomentArms;
+inputs.polynomialExpressionMuscleTendonLengths = inputData.params.polynomialExpressionMuscleTendonLengths;
+inputs.coefficients = inputData.params.coefficients;
+inputs.integralOptions = inputData.params.integralOptions;
+inputs.isEnabled = inputData.params.isEnabled;
 end
 
 function inputs = getInputs(tree)
@@ -58,6 +110,7 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
+inputs.initialGuessFileName = getFieldByName(tree, 'initial_guess_file').Text;
 prefixes = getPrefixes(tree, inputDirectory);
 inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
     inputDirectory, "IDData"), prefixes);
@@ -84,8 +137,8 @@ inputs.experimentalMuscleActivations = parseTreatmentOptimizationStandard( ...
 inputs.numMuscles = length(inputs.muscleLabels);
 
 % Need to extract electrical center from here
-% inputs.experimentalGroundReactions = parseTreatmentOptimizationStandard(findFileListFromPrefixList( ...
-%     fullfile(inputDirectory, "GRFData"), prefixes));
+experimentalGroundReactions = parseTreatmentOptimizationStandard(...
+    findFileListFromPrefixList(fullfile(inputDirectory, "GRFData"), prefixes));
 
 % load in NCP synergy commands and weights
 
@@ -100,7 +153,12 @@ inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.experimentalTime = inputs.experimentalTime - inputs.experimentalTime(1);
 
 inputs = getDesignVariableBounds(tree, inputs);
-
+inputs = getIntegralCostTerms(getFieldByNameOrError(tree, ...
+    'TrackingOptimizationIntegralTerms'), inputs);
+inputs = getPathConstraintTerms(getFieldByNameOrError(tree, ...
+    'TrackingOptimizationPathConstraints'), inputs);
+inputs = getTerminalConstraintTerms(getFieldByNameOrError(tree, ...
+    'TrackingOptimizationTerminalConstraints'), inputs);
 inputs.beltSpeed = getBeltSpeed(tree);
 % load in epsilon
 inputs.vMaxFactor = getVMaxFactor(tree);
@@ -195,6 +253,88 @@ if(isstruct(maxParameterSynergyWeights))
 end
 end
 
+function inputs = getIntegralCostTerms(tree, inputs)
+trackingIntegralTermsTree = getFieldByNameOrError(tree, 'TrackingTerms');
+minimizingIntegralTermsTree = getFieldByNameOrError(tree, 'MinimizingTerms');
+trackingIntegralTerms = {'JointAngles', 'JointMoments', ...
+    'GroundReactionForces', 'GroundReactionMoments', 'MuscleActivations'};
+trackingIntegralTermNames = {'trackingJointAngles', 'trackingJointMoments', ...
+    'trackingGroundReactionForces', 'trackingGroundReactionMoments', ...
+    'trackingMuscleActivations'};
+for i = 1 : length(trackingIntegralTerms)
+    inputs = addIntegralCostTerms(getFieldByNameOrError(...
+        trackingIntegralTermsTree, trackingIntegralTerms{i}), ...
+        trackingIntegralTermNames{i}, inputs);
+end
+minimizingIntegralTerms = {'JointJerk'};
+minimizingIntegralTermNames = {'minimizingJointJerk'};
+for i = 1 : length(minimizingIntegralTerms)
+    inputs = addIntegralCostTerms(getFieldByNameOrError(...
+        minimizingIntegralTermsTree, minimizingIntegralTerms{i}), ...
+        minimizingIntegralTermNames{i}, inputs);
+end
+end
+
+function inputs = addIntegralCostTerms(tree, ...
+    integralCostTermName, inputs)
+enabled = getFieldByNameOrError(tree, "is_enabled").Text;
+if(enabled == "true")
+    inputs.(strcat(integralCostTermName, "Enabled")) = 1;
+else
+    inputs.(strcat(integralCostTermName, "Enabled")) = 0;
+end
+% maxError = getFieldByNameOrError(tree, "max_allowable_error");
+% maxError = str2num(maxError.Text);
+end
+
+function inputs = getPathConstraintTerms(tree, inputs)
+pathConstraintTerms = {'RootSegmentResidualLoads', 'MuscleModelMomentConsistency'};
+for i = 1 : length(pathConstraintTerms)
+    inputs = addPathConstraintTerms(getFieldByNameOrError(...
+        tree, pathConstraintTerms{i}), pathConstraintTerms{i}, inputs);
+end
+end
+
+function inputs = addPathConstraintTerms(tree, ...
+    pathConstraintTermName, inputs)
+enabled = getFieldByNameOrError(tree, "is_enabled").Text;
+if(enabled == "true")
+    inputs.(strcat([lower(pathConstraintTermName(1)) ...
+        pathConstraintTermName(2:end)], "PathConstraint")) = 1;
+else
+    inputs.(strcat([lower(pathConstraintTermName(1)) ...
+        pathConstraintTermName(2:end)], "PathConstraint")) = 0;
+end
+% maxError = getFieldByNameOrError(tree, "max_allowable_error");
+% maxError = str2num(maxError.Text);
+end
+
+function inputs = getTerminalConstraintTerms(tree, inputs)
+terminalConstraintTerms = {'StatePositionPeriodicity', ...
+    'StateVelocityPeriodicity', 'RootSegmentResidualLoadPeriodicity', ...
+    'GroundReactionForcesPeriodicity', 'GroundReactionMomentsPeriodicity', ...
+    'SynergyWeightsSum'};
+for i = 1 : length(terminalConstraintTerms)
+    inputs = addTerminalConstraintTerms(getFieldByNameOrError(...
+        tree, terminalConstraintTerms{i}), terminalConstraintTerms{i}, ...
+        inputs);
+end
+end
+
+function inputs = addTerminalConstraintTerms(tree, ...
+    terminalConstraintTerms, inputs)
+enabled = getFieldByNameOrError(tree, "is_enabled").Text;
+if(enabled == "true")
+    inputs.(strcat([lower(terminalConstraintTerms(1)) ...
+        terminalConstraintTerms(2:end)], "Constraint")) = 1;
+else
+    inputs.(strcat([lower(terminalConstraintTerms(1)) ...
+        terminalConstraintTerms(2:end)], "Constraint")) = 0;
+end
+% maxError = getFieldByNameOrError(tree, "max_allowable_error");
+% maxError = str2num(maxError.Text);
+end
+
 function beltSpeed = getBeltSpeed(tree)
 beltSpeed = getFieldByNameOrError(tree, 'belt_speed');
 beltSpeed = str2double(beltSpeed.Text);
@@ -212,10 +352,7 @@ end
 function params = getParams(tree)
 params = struct();
 params.optimizationFileName = 'trackingOptimizationOutputFile.txt';
-solveType = getFieldByNameOrError(tree, 'solver_type');
-if(isstruct(solveType))
-    params.solveType = str2double(solveType.Text);
-end
+params.solverType = getFieldByNameOrError(tree, 'solver_type').Text;
 solverTolerance = getFieldByNameOrError(tree, 'solver_tolerance');
 if(isstruct(solverTolerance))
     params.solverTolerance = str2double(solverTolerance.Text);
