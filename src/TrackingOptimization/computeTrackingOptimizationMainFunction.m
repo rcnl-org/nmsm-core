@@ -26,13 +26,6 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeTrackingOptimizationMainFunction(inputs, params)
-% 
-% load('inputData.mat')
-% inputs.modelName = 'optModel_GPOPS.osim';
-% pointKinematics(inputs.modelName);
-% inverseDynamics(inputs.modelName);
-
-% if params.runOptimization
 bounds = setupProblemBounds(inputs);
 guess = setupInitialGuess(inputs);
 setup = setupSolverSettings(inputs, bounds, guess, params);
@@ -40,14 +33,9 @@ setup = setupSolverSettings(inputs, bounds, guess, params);
 guess.auxdata = inputs;
 guess.phase.parameter = guess.parameter;
 output = computeTrackingOptimizationContinuousFunction(guess);
-
 % solution = output.result.solution;
 % save(params.solutionFileName, 'solution', 'params');
 % save(params.outputFileName, 'output');
-% end
-% inputs = solution.phase;
-% outputContinuous = computeTrackingOptimizationContinuousFunction(inputs, params);
-% plotSolution(solution, params, outputContinuous)
 end
 function bounds = setupProblemBounds(inputs)
 % setup time bounds
@@ -71,9 +59,9 @@ bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
 % setup integral bounds
 bounds.phase.integral.lower = zeros(1, length(inputs.minIntegral));
 bounds.phase.integral.upper = ones(1, length(inputs.minIntegral));
-% % setup terminal constraint bounds
-bounds.eventgroup.lower = inputs.eventgroup.lower;
-bounds.eventgroup.upper = inputs.eventgroup.upper;
+% setup terminal constraint bounds
+bounds.eventgroup.lower = inputs.minTerminal;
+bounds.eventgroup.upper = inputs.maxTerminal;
 % setup parameter bounds
 bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
 bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));

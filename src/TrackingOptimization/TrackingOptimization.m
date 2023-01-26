@@ -26,8 +26,6 @@
 % ----------------------------------------------------------------------- %
 
 function output = TrackingOptimization(inputs, params)
-
-inputData = load('inputData.mat');
 pointKinematics(inputs.model);
 inverseDynamics(inputs.model);
 inputs = getDesignVariableInputBounds(inputs);
@@ -35,7 +33,6 @@ output = computeTrackingOptimizationMainFunction(inputs, params);
 end
 
 function inputs = getDesignVariableInputBounds(inputs)
-
 inputs.maxTime = max(inputs.experimentalTime);
 inputs.minTime = min(inputs.experimentalTime);
 
@@ -72,7 +69,7 @@ inputs.minControl = [minControlJerks zeros(1, inputs.numRightSynergies + ...
 
 inputs.maxParameter = inputs.maxParameterSynergyWeights * ones(1, ...
     (inputs.numRightSynergies + inputs.numLeftSynergies) * ...
-    inputs.numMuscles);
+    inputs.numMusclesPerSide);
 inputs.minParameter = zeros(1, (inputs.numRightSynergies + .....
-    inputs.numLeftSynergies) * inputs.numMuscles);
+    inputs.numLeftSynergies) * inputs.numMusclesPerSide);
 end

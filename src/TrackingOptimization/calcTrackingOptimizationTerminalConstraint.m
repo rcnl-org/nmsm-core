@@ -39,16 +39,23 @@ groundReactionsPeriodicity = calcGroundReactionsPeriodicity(...
     modeledValues, params);
 pelvisResidualsPeriodicity = calcPelvisResidualsPeriodicity(...
     modeledValues, params);
-synergyWeightsPeriodicity = calcSynergyWeightsPeriodicity( ...
+synergyWeightsPeriodicity = calcSynergyWeightsSum( ...
     values, params);
 event = [statePeriodicity groundReactionsPeriodicity ...
     pelvisResidualsPeriodicity synergyWeightsPeriodicity];
 end
 function statePeriodicity = calcStatesPeriodicity(values, params)
-isEnabled = valueOrAlternate(params, "statePeriodicityConstraint", 0);
+isPositionEnabled = valueOrAlternate(params, ...
+    "statePositionPeriodicityConstraint", 0);
+isVelocityEnabled = valueOrAlternate(params, ...
+    "stateVelocityPeriodicityConstraint", 0);
 statePeriodicity = [];
-if isEnabled
+if isPositionEnabled
     statePeriodicity = [diff(values.statePositions) ...
+        diff(values.stateVelocities)];
+end
+if isVelocityEnabled
+    statePeriodicity = [statePeriodicity diff(values.statePositions) ...
         diff(values.stateVelocities)];
 end
 end
@@ -79,12 +86,12 @@ if isEnabled
     pelvisResidualsPeriodicity = diff(modeledValues.pelvisResiduals);
 end
 end
-function synergyWeightsPeriodicity = calcSynergyWeightsPeriodicity( ...
+function synergyWeightsSum = calcSynergyWeightsSum( ...
     values, params)
 isEnabled = valueOrAlternate(params, ...
-    "synergyWeightsPeriodicityConstraint", 0);
-synergyWeightsPeriodicity = [];
+    "synergyWeightsSumConstraint", 0);
+synergyWeightsSum = [];
 if isEnabled
-    synergyWeightsPeriodicity = sum(values.synergyWeights.^2, 2)';
+    synergyWeightsSum = sum(values.synergyWeights.^2, 2)';
 end
 end
