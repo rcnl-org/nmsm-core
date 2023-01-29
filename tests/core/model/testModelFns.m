@@ -20,3 +20,10 @@ assert(getFrameParameterValue(model, 'r_elbow', 0, 1, 1)==newCoord);
 newCoord = 13;
 applyFrameParameterValue(model, newCoord, 'r_elbow', 0, 0, 1);
 assert(getFrameParameterValue(model, 'r_elbow', 0, 0, 1)==newCoord);
+
+%% Check getBodyByName
+assertNoException(getBodyByName(model, "r_humerus"))
+
+%% Check getEnabledMusclesInOrder
+assert(all(strcmp(getEnabledMusclesInOrder(model), ...
+    ["TRIlong" "TRIlat" "TRImed" "BIClong" "BICshort" "BRA"])))
