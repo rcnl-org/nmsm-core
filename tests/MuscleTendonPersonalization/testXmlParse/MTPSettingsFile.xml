@@ -91,6 +91,8 @@
             <MuscleTendonPersonalizationTask>
                 <!--Flag indicating whether or not the task is enabled.-->
                 <is_enabled>true</is_enabled>
+				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>1</index>
                 <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
                 <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
                 <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
