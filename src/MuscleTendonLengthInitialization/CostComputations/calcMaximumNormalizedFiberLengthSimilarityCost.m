@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the PreCalibration optimization
+% returns the cost for all rounds of the MuscleTendonLengthInitialization optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
