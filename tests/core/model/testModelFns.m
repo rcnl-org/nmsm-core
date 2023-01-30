@@ -31,3 +31,8 @@ assert(all(strcmp(getEnabledMusclesInOrder(model), ...
 %% Check getCoordinatesFromBodies
 assert(getCoordinatesFromBodies(model, "r_humerus") == ...
     ["r_shoulder_elev"]);
+
+%% Check makeBodyTree
+inputs = makeBodyTree(model);
+assertNoException(@()inputs.ground.base.r_humerus.r_ulna_radius_hand)
+
