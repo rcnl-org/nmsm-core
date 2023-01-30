@@ -58,5 +58,12 @@ testStruct.testField = "test";
 assertNoException(@()verifyField(testStruct, "testField"));
 assertException(@()verifyField(testStruct, "notTestField"));
 
+%% Test verifyMuscleTendonPersonalizationData
 
+inputs.jointMoment = [];
+inputs.muscleTendonLength = zeros(2, 3, 3);
+inputs.muscleTendonVelocity = zeros(2, 3, 3);
+inputs.muscleTendonMomentArm = [];
+inputs.emgData = [];
 
+verifyMuscleTendonPersonalizationData(inputs);
