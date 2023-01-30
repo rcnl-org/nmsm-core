@@ -30,7 +30,7 @@
 
 function writeMuscleTendonPersonalizationOsimxFile(modelFileName, ...
     optimizedParams, muscleModelFileName)
-
+muscleModelFileName = strrep(muscleModelFileName, 'osimx', 'xml');
 model = Model(modelFileName);
 muscleColumnNames = getEnabledMusclesInOrder(model);
 

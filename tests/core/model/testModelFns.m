@@ -27,3 +27,7 @@ assertNoException(getBodyByName(model, "r_humerus"))
 %% Check getEnabledMusclesInOrder
 assert(all(strcmp(getEnabledMusclesInOrder(model), ...
     ["TRIlong" "TRIlat" "TRImed" "BIClong" "BICshort" "BRA"])))
+
+%% Check getCoordinatesFromBodies
+assert(getCoordinatesFromBodies(model, "r_humerus") == ...
+    ["r_shoulder_elev"]);
