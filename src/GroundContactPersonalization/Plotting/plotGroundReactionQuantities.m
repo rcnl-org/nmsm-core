@@ -49,7 +49,9 @@ scatter(inputs.time, ...
     inputs.experimentalGroundReactionForces(2, :), [], "red")
 hold on
 scatter(inputs.time, modeledValues.verticalGrf, [], "blue")
-title(groundReactions(1))
+error = rms(inputs.experimentalGroundReactionForces(2, :) - ...
+    modeledValues.verticalGrf);
+title(groundReactions(1) + newline + " RMSE: " + error)
 xlabel('Time')
 ylabel('Force (N)')
 hold off
@@ -62,7 +64,9 @@ for i = 2:6
         hold on
         scatter(inputs.time, modeledValues.(groundReactions(i)), [], ...
             "blue")
-        title(groundReactions(i))
+        error = rms(inputs.experimentalGroundReactionForces(1, :) - ...
+            modeledValues.(groundReactions(i)));
+        title(groundReactions(i) + newline + " RMSE: " + error)
         xlabel('Time')
         hold off
     elseif (i == 3)
@@ -71,7 +75,9 @@ for i = 2:6
         hold on
         scatter(inputs.time, modeledValues.(groundReactions(i)), [], ...
             "blue")
-        title(groundReactions(i))
+        error = rms(inputs.experimentalGroundReactionForces(i, :) - ...
+            modeledValues.(groundReactions(i)));
+        title(groundReactions(i) + newline + " RMSE: " + error)
         xlabel('Time')
         hold off
     else
@@ -81,7 +87,9 @@ for i = 2:6
         hold on
         scatter(inputs.time, modeledValues.(groundReactions(i)), ...
             [], "blue")
-        title(groundReactions(i))
+        error = rms(inputs.experimentalGroundReactionMoments(i - 3, :) - ...
+            modeledValues.(groundReactions(i)));
+        title(groundReactions(i) + newline + " RMSE: " + error)
         xlabel('Time')
         if i == 4
             ylabel('Moment (N*m)')
