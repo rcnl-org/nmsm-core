@@ -47,7 +47,8 @@ for i = 1:7
     scatter(inputs.time, experimental, [], "red")
     hold on
     scatter(inputs.time, model, [], "blue")
-    title(coordinates(i))
+    error = rms(experimental - model);
+    title(coordinates(i) + newline + " RMSE: " + error)
     xlabel('Time')
     if i == 1
         ylabel('Angle (deg)')
