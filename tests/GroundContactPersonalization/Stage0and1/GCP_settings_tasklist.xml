@@ -8,7 +8,7 @@
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>optModel_v6_correct_height.osim</input_model_file>
 		<!--Name of the foot model file (.osim), will be generated automatically in final version-->
-		<input_foot_model_file>footModel2.osim</input_foot_model_file>
+		<input_foot_model_file>footModel.osim</input_foot_model_file>
 		<!--Name of the input motion file (.mot) to use-->
         <input_motion_file>motion.mot</input_motion_file>
 		<!--Name of the input ground reaction forces file (.mot) to use-->
@@ -80,10 +80,22 @@
 				<CostFunctionTerms>
 					<markerPositionError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>0.02</max_allowable_error>
 					</markerPositionError>
+					<rotationError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>true</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>0.5</max_allowable_error>
+					</rotationError>
+					<translationError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>true</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>0.005</max_allowable_error>
+					</translationError>
 					<coordinateCoefficientError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>false</is_enabled>
@@ -110,7 +122,7 @@
 					</groundReactionMomentError>
 					<springConstantErrorFromMean>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>2000</max_allowable_error>
 					</springConstantErrorFromMean>
@@ -118,7 +130,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>500</max_allowable_error>
+						<max_allowable_error>1000</max_allowable_error>
 					</springConstantErrorFromNeighbors>
 				</CostFunctionTerms>
 			</GroundContactPersonalizationTask>
@@ -144,10 +156,22 @@
 				<CostFunctionTerms>
 					<markerPositionError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>0.02</max_allowable_error>
 					</markerPositionError>
+					<rotationError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>true</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>0.5</max_allowable_error>
+					</rotationError>
+					<translationError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>true</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>0.005</max_allowable_error>
+					</translationError>
 					<coordinateCoefficientError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>false</is_enabled>
@@ -158,7 +182,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.2</max_allowable_error>
+						<max_allowable_error>0.5</max_allowable_error>
 					</verticalGrfError>
 					<horizontalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -174,7 +198,7 @@
 					</groundReactionMomentError>
 					<springConstantErrorFromMean>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>2000</max_allowable_error>
 					</springConstantErrorFromMean>
@@ -182,7 +206,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>500</max_allowable_error>
+						<max_allowable_error>1000</max_allowable_error>
 					</springConstantErrorFromNeighbors>
 				</CostFunctionTerms>
 			</GroundContactPersonalizationTask>
@@ -202,13 +226,13 @@
 					<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
 					<dynamicFrictionCoefficient>true</dynamicFrictionCoefficient>
 					<!--Height value at which linear springs exert force. Only recommended when primarily calibrating vertical force-->
-					<restingSpringLength>true</restingSpringLength>
+					<restingSpringLength>false</restingSpringLength>
 				</DesignVariables>
 				<!--Settings for cost function terms for the task-->
 				<CostFunctionTerms>
 					<markerPositionError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>0.02</max_allowable_error>
 					</markerPositionError>
@@ -218,17 +242,29 @@
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>0.1</max_allowable_error>
 					</markerSlopeError>
+					<rotationError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>true</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>0.5</max_allowable_error>
+					</rotationError>
+					<translationError>
+						<!--Flag indicating whether or not the term is enabled in the cost function.-->
+						<is_enabled>true</is_enabled>
+						<!--Max allowable error or deviation from indicated set point-->
+						<max_allowable_error>0.005</max_allowable_error>
+					</translationError>
 					<coordinateCoefficientError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>false</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.01</max_allowable_error>
+						<max_allowable_error>0.001</max_allowable_error>
 					</coordinateCoefficientError>
 					<verticalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.2</max_allowable_error>
+						<max_allowable_error>0.5</max_allowable_error>
 					</verticalGrfError>
 					<verticalGrfSlopeError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -252,7 +288,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.2</max_allowable_error>
+						<max_allowable_error>0.05</max_allowable_error>
 					</groundReactionMomentError>
 					<groundReactionMomentSlopeError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -262,7 +298,7 @@
 					</groundReactionMomentSlopeError>
 					<springConstantErrorFromMean>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>2000</max_allowable_error>
 					</springConstantErrorFromMean>
@@ -270,7 +306,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>500</max_allowable_error>
+						<max_allowable_error>1000</max_allowable_error>
 					</springConstantErrorFromNeighbors>
 					<dampingFactorErrorFromMean>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -285,8 +321,8 @@
 		<InitialValues>
 			<RestingSpringLength>0.05</RestingSpringLength>
 			<SpringConstants>2500</SpringConstants>
-			<DampingFactors>0.01</DampingFactors>
-			<DynamicFrictionCoefficient>1</DynamicFrictionCoefficient>
+			<DampingFactors>1e-4</DampingFactors>
+			<DynamicFrictionCoefficient>0.25</DynamicFrictionCoefficient>
 		</InitialValues>
         <!--*Optional* The number of allowed iterations of the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
         <max_iterations>1e3</max_iterations>
