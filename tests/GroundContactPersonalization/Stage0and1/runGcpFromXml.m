@@ -6,17 +6,17 @@ inputs = prepareGroundContactPersonalizationInputs(inputs, params);
 
 % Stage 0
 inputs = initializeRestingSpringLength(inputs, params);
-% inputs = load('1-12-hor.mat', 'inputs');
+% inputs = load('1-29-extramarkercol-0_1std_1000mae-1e-4damping-02moment_1', 'inputs');
 % inputs = inputs.inputs;
 
 for task = 1:length(params.tasks)
-    params.tasks{task}.costTerms.springConstantErrorFromNeighbors.standardDeviation = valueOrAlternate(params, 'nothere', 0.03);
+    params.tasks{task}.costTerms.springConstantErrorFromNeighbors.standardDeviation = valueOrAlternate(params, 'nothere', 0.05);
 end
 
 % GCP Tasks
 for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
-    save("1-15-markertracking_" + task + ".mat")
+    save("1-29-highpowerneighbor-05std_2_" + task + ".mat")
 end
 
 %% Plot forces and kinematics
@@ -36,7 +36,7 @@ if exist('3', 'var')
     close 3
 end
 figure(3)
-footModel = Model("footModel2.osim");
+footModel = Model("footModel.osim");
 plotSpringConstants(footModel, inputs, inputs.toesBodyName, inputs.hindfootBodyName)
 
 %% Report cost quantities
