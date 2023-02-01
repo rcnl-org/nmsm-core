@@ -29,7 +29,7 @@ function path = calcTrackingOptimizationPathConstraint(phaseout, params)
 
 rootSegmentResidualsPathConstraint = ...
     calcRootSegmentResidualsPathConstraints(params, ...
-    phaseout.pelvisResiduals);
+    phaseout.rootSegmentResiduals);
 muscleActuatedMomentsPathConstraint = ...
     calcMuscleActuatedMomentsPathConstraints(params, ...
     phaseout.muscleActuatedMoments, phaseout.muscleJointMoments);
@@ -43,13 +43,13 @@ function value = scaleToBounds(value, maximum, minimum)
 value = (value - (maximum + minimum) / 2) ./ (maximum - minimum);
 end
 function rootSegmentResidualsPathConstraint = ...
-    calcRootSegmentResidualsPathConstraints(params, pelvisResiduals)
+    calcRootSegmentResidualsPathConstraints(params, rootSegmentResiduals)
 
 isEnabled = valueOrAlternate(params, ...
     "rootSegmentResidualLoadsPathConstraint", 0);
 rootSegmentResidualsPathConstraint = [];
 if isEnabled
-    rootSegmentResidualsPathConstraint = pelvisResiduals;
+    rootSegmentResidualsPathConstraint = rootSegmentResiduals;
 end
 end
 function muscleActuatedMomentsPathConstraint = ...

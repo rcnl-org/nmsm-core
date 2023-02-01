@@ -25,7 +25,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = TrackingOptimization(inputs, params)
+function [output, inputs] = TrackingOptimization(inputs, params)
 pointKinematics(inputs.model);
 inverseDynamics(inputs.model);
 inputs = getDesignVariableInputBounds(inputs);
