@@ -36,7 +36,7 @@ if nargin < 3; precalInputs = []; end
 [finalValues, results, resultsSynx, resultsSynxNoResiduals] = ...
     getValuesToReport(mtpInputs, precalInputs, optimizedParams);
 if ~isempty(precalInputs)
-    plotPreCalibrationResults(precalInputs, mtpInputs)
+    plotMuscleTendonLengthInitializationResults(precalInputs, mtpInputs)
 end
 
 printJointMomentMatchingError(resultsSynx.muscleJointMoments, ...
@@ -79,7 +79,7 @@ finalValues.tendonSlackLengthScaleFactors = ...
     finalTendonSlackLength ./ precalInputs.tendonSlackLength;
 end
 end
-function plotPreCalibrationResults(precalInputs, mtpInputs)
+function plotMuscleTendonLengthInitializationResults(precalInputs, mtpInputs)
 
 tempValues.optimalFiberLengthScaleFactors = ...
     mtpInputs.optimalFiberLength ./ precalInputs.optimalFiberLength;
@@ -87,7 +87,7 @@ tempValues.tendonSlackLengthScaleFactors = ...
     mtpInputs.tendonSlackLength ./ precalInputs.tendonSlackLength;
 precalInputs.maxIsometricForce = mtpInputs.maxIsometricForce;
 precalInputs.optimizeIsometricMaxForce = 0;
-modeledValues = calcPreCalibrationModeledValues(tempValues, precalInputs);
+modeledValues = calcMuscleTendonLengthInitializationModeledValues(tempValues, precalInputs);
 plotPassiveForceData(permute(modeledValues.passiveForce, [3 1 2]), ...
     precalInputs);
 if precalInputs.passiveMomentDataExists
@@ -108,7 +108,7 @@ experimentalMoments = ...
     reshape(experimentalMoments, size(modeledValue, 1), []);
 passiveModelMoments = ...
     reshape(passiveModelMoments, size(modeledValue, 1), []);
-figure('name', 'PreCalibration Passive Moment Matching'); 
+figure('name', 'MuscleTendonLengthInitialization Passive Moment Matching'); 
 nplot = ceil(sqrt(size(passiveModelMoments, 2)));
 for i = 1 : size(passiveModelMoments, 2)
 subplot(nplot, nplot, i)
@@ -128,7 +128,7 @@ function plotPassiveForceData(modeledValue, experimentalData)
 
 meanModeledValue = squeeze(mean(modeledValue, 2));
 stdModeledValue = squeeze(std(modeledValue, [], 2));
-figure('name', 'PreCalibration Passive Forces'); 
+figure('name', 'MuscleTendonLengthInitialization Passive Forces'); 
 nplots = ceil(sqrt(experimentalData.numMuscles));
 
 t = 1 : size(meanModeledValue, 1);
