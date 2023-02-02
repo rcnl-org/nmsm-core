@@ -31,22 +31,28 @@
 % ----------------------------------------------------------------------- %
 
 function saveMuscleTendonPersonalizationResults(modelFileName, ...
-    coordinateNames, finalValues, results, resultsDirectory)
+    prefixes, coordinateNames, finalValues, results, resultsDirectory)
 
 model = Model(modelFileName);
 muscleColumnNames = getEnabledMusclesInOrder(model);
 [~, name, ~] = fileparts(modelFileName);
-if ~exist(resultsDirectory, 'dir')
-    mkdir(resultsDirectory)
+if ~exist(resultsDirectory, "dir")
+    mkdir(resultsDirectory);
+end
+if ~exist(fullfile(resultsDirectory, "muscleActivations"), "dir")
+    mkdir(fullfile(resultsDirectory, "muscleActivations"));
+end
+if ~exist(fullfile(resultsDirectory, "modelMoments"), "dir")
+    mkdir(fullfile(resultsDirectory, "modelMoments"));
 end
 for i = 1:size(results.muscleActivations, 1)
     % Need to figure out how to print out individuals file names for each trial
     writeToSto(muscleColumnNames, results.time(i, :), ...
         squeeze(results.muscleActivations(i, :, :))', fullfile(resultsDirectory, ...
-        strcat(name, "_muscleActivations_", num2str(i), ".sto")));
+        "muscleActivations", strcat(prefixes(i), "_muscleActivations", ".sto")));
     writeToSto(coordinateNames, results.time(i, :), ...
         squeeze(results.muscleJointMoments(i, :, :))', fullfile(resultsDirectory, ...
-        strcat(name, "_modelMoments_", num2str(i), ".sto")));
+        "modelMoments", strcat(prefixes(i), "_modelMoments", ".sto")));
 end
 writeMuscleTendonPersonalizationOsimxFile(modelFileName,...
     finalValues, fullfile(resultsDirectory, ...

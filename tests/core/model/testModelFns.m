@@ -20,3 +20,19 @@ assert(getFrameParameterValue(model, 'r_elbow', 0, 1, 1)==newCoord);
 newCoord = 13;
 applyFrameParameterValue(model, newCoord, 'r_elbow', 0, 0, 1);
 assert(getFrameParameterValue(model, 'r_elbow', 0, 0, 1)==newCoord);
+
+%% Check getBodyByName
+assertNoException(getBodyByName(model, "r_humerus"))
+
+%% Check getEnabledMusclesInOrder
+assert(all(strcmp(getEnabledMusclesInOrder(model), ...
+    ["TRIlong" "TRIlat" "TRImed" "BIClong" "BICshort" "BRA"])))
+
+%% Check getCoordinatesFromBodies
+assert(getCoordinatesFromBodies(model, "r_humerus") == ...
+    ["r_shoulder_elev"]);
+
+%% Check makeBodyTree
+inputs = makeBodyTree(model);
+assertNoException(@()inputs.ground.base.r_humerus.r_ulna_radius_hand)
+
