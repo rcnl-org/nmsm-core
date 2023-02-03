@@ -25,10 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [xPosition, zPosition] = getMarkerParameterValues(model, ...
-    markerName)
+function [xPosition, yPosition, zPosition] = getMarkerParameterValues( ...
+    model, markerName)
 position = model.getMarkerSet().get(markerName).get_location();
 xPosition = position.get(0);
+yPosition = position.get(1);
 zPosition = position.get(2);
 end
 

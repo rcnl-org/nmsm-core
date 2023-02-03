@@ -86,9 +86,17 @@ if(isstruct(timeRange))
     output.startTime = str2double(timeRange{1});
     output.finishTime = str2double(timeRange{2});
 end
-output.parameters = getJointParameters(tree.JMPJoint);%includes all joints
-output.scaling = getScalingBodies(tree.JMPJoint, model);
-output.markers = getMarkers(tree.JMPJoint, model);
+if(isstruct(getFieldByName(tree, "JMPJoint")))
+    output.parameters = getJointParameters(tree.JMPJoint);
+end
+output.scaling = [];
+output.markers = [];
+output.primaryBodyAxis = {};
+if(isstruct(getFieldByName(tree, "JMPBody")) || ...
+        iscell(getFieldByName(tree, "JMPBody")))
+    [output.scaling, output.markers, output.primaryBodyAxis] = ...
+        getBodyParameters(tree.JMPBody, model);
+end
 translationBounds = getFieldByName(tree, 'translation_bounds');
 if(isstruct(translationBounds))
     translationBounds = str2double(translationBounds.Text);
@@ -98,7 +106,7 @@ if(isstruct(orientationBounds))
     orientationBounds = str2double(orientationBounds.Text);
 end
 output.initialValues = getInitialValues(model, output.parameters, ...
-    output.scaling, output.markers);
+    output.scaling, output.markers, output.primaryBodyAxis);
 if(translationBounds || orientationBounds)
     [output.lowerBounds, output.upperBounds] = getBounds(...
         output.parameters, output.initialValues, ...
@@ -157,42 +165,68 @@ for i=1:length(jointTree)
 end
 end
 
-function output = getScalingBodies(jointTree, model)
+function [scaling, markers, primaryBodyAxis] = getBodyParameters( ...
+    bodyTree, model)
+scaling = getScalingBodies(bodyTree);
+markers = getMarkers(bodyTree, model);
+primaryBodyAxis = getPrimaryBodyAxis(bodyTree, model);
+end
+
+function output = getScalingBodies(bodyTree)
 output = string([]);
-for i=1:length(jointTree)
-    if(length(jointTree) == 1)
-        joint = jointTree;
+for i=1:length(bodyTree)
+    if(length(bodyTree) == 1)
+        body = bodyTree;
     else
-        joint = jointTree{i};
+        body = bodyTree{i};
     end
-    jointName = joint.Attributes.name;
-    scaleBodies = strcmp(getFieldByNameOrError(joint, ...
+    bodyName = body.Attributes.name;
+    scaleBodies = strcmp(getFieldByNameOrError(body, ...
         "scale_bodies").Text, "true");
     if(scaleBodies)
-        [parentBody, childBody] = getJointBodyNames(model, jointName);
-        output = [output, parentBody, childBody];
+        output(end + 1) = bodyName;
     end
 end
 end
 
-function output = getMarkers(jointTree, model)
+function output = getMarkers(bodyTree, model)
 output = string([]);
-for i=1:length(jointTree)
-    if(length(jointTree) == 1)
-        joint = jointTree;
+for i=1:length(bodyTree)
+    if(length(bodyTree) == 1)
+        body = bodyTree;
     else
-        joint = jointTree{i};
+        body = bodyTree{i};
     end
-    jointName = joint.Attributes.name;
-    optimizeMarkers = strcmp(getFieldByNameOrError(joint, ...
-        "optimize_marker_positions").Text, "true");
+    bodyName = body.Attributes.name;
+    optimizeMarkers = strcmp(getFieldByNameOrError(body, ...
+        "move_markers").Text, "true");
     if(optimizeMarkers)
-        output = [output, getMarkersFromJoint(model, jointName)];
+        output = [output, getMarkersFromBody(model, bodyName)];
     end
 end
 end
 
-function output = getInitialValues(model, parameters, scaling, markers)
+function output = getPrimaryBodyAxis(bodyTree, model)
+output = {};
+for i=1:length(bodyTree)
+    if(length(bodyTree) == 1)
+        body = bodyTree;
+    else
+        body = bodyTree{i};
+    end
+    bodyName = body.Attributes.name;
+    axis = getFieldByNameOrError(body, ...
+        "primary_body_axis").Text;
+    markers = getMarkersFromBody(model, bodyName);
+    for j = 1:length(markers)
+        output{end + 1} = [convertCharsToStrings(markers{j}), ...
+            convertCharsToStrings(axis)];
+    end
+end
+end
+
+function output = getInitialValues(model, parameters, scaling, markers, ...
+    primaryBodyAxis)
 for i = 1 : length(parameters)
     temp = parameters{i};
     output(i) = getFrameParameterValue(model, temp{1}, ...
@@ -202,8 +236,18 @@ for i = 1 : length(scaling)
     output(end + 1) = getScalingParameterValue(model, scaling(i));
 end
 for i = 1 : length(markers)
-    [output(end + 1), output(end + 1)] = getMarkerParameterValues( ...
+    axis = "";
+    for j = 1 : length(primaryBodyAxis)
+        pair = primaryBodyAxis{j};
+        if strcmp(pair(1), markers(i))
+            axis = pair(2);
+        end
+    end
+    [xPosition, yPosition, zPosition] = getMarkerParameterValues( ...
         model, markers(i));
+    if ~strcmp(axis, "x") output(end + 1) = xPosition; end
+    if ~strcmp(axis, "y") output(end + 1) = yPosition; end
+    if ~strcmp(axis, "z") output(end + 1) = zPosition; end
 end
 end
 
