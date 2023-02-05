@@ -29,9 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function verifyLength(obj,leng)
-if(~length(obj)==leng)
-    throw MException(obj + "is not of expected length")
+function verifyLength(obj, leng)
+if ~(length(obj) == leng)
+    throw(MException("", "object is not of expected length"))
 end
 end
 
