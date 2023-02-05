@@ -8,20 +8,43 @@
 		<!--Name of the input model file (.osim) to use-->
 		<input_model_file>Rajagopal_4.0_RCNL_markers_scaled.osim</input_model_file>
 		<!--Name of the output model file (.osim) to create.-->
-		<output_model_file>Rajagopal_4.0_RCNL_markers_scaled_knee.osim</output_model_file>
+		<output_model_file>Rajagopal_4.0_RCNL_markers_scaled_gait.osim</output_model_file>
         <!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters)-->
         <desired_error>0.01</desired_error>
 		<!--The set of <Task> to be completed by the tool, each Task is a separate optimization-->
 		<JMPTaskList>
-			<JMPTask name="Left Knee">
+			<JMPTask name="Left Leg">
 				<!--Flag indicating whether or not the task is enabled.-->
 				<is_enabled>true</is_enabled>
                 <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
                 <index>1</index>
 				<!--The markers file to use for the task-->
-				<marker_file_name>l_knee.trc</marker_file_name>
+				<marker_file_name>gait_3_strides.trc</marker_file_name>
 				<!--A joint that will be optimized in the task-->
 				<JMPJoint name="knee_l">
+					<parent_frame_transformation>
+						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
+						<translation>false false false</translation>
+						<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
+						<orientation>true true false</orientation>
+						<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
+						<translation_bounds>0.1</translation_bounds>
+						<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
+						<orientation_bounds>1.0</orientation_bounds>
+					</parent_frame_transformation>
+					<child_frame_transformation>
+						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
+						<translation>false false false</translation>
+						<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
+						<orientation>true true false</orientation>
+						<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
+						<translation_bounds>0.1</translation_bounds>
+						<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
+						<orientation_bounds>1.0</orientation_bounds>
+					</child_frame_transformation>
+                </JMPJoint>
+				<!--A joint that will be optimized in the task-->
+				<JMPJoint name="ankle_l">
 					<parent_frame_transformation>
 						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
 						<translation>true true false</translation>
@@ -34,15 +57,46 @@
 					</parent_frame_transformation>
 					<child_frame_transformation>
 						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
-						<translation>true true true</translation>
+						<translation>false false false</translation>
 						<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
-						<orientation>true true false</orientation>
+						<orientation>false false false</orientation>
 						<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
 						<translation_bounds>0.1</translation_bounds>
 						<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
 						<orientation_bounds>1.0</orientation_bounds>
 					</child_frame_transformation>
-                </JMPJoint>
+				</JMPJoint>
+				<!--A joint that will be optimized in the task-->
+				<JMPJoint name="subtalar_l">
+					<parent_frame_transformation>
+						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
+						<translation>false true true</translation>
+						<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
+						<orientation>false true false</orientation>
+						<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
+						<translation_bounds>0.1</translation_bounds>
+						<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
+						<orientation_bounds>1.0</orientation_bounds>
+					</parent_frame_transformation>
+					<child_frame_transformation>
+						<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
+						<translation>true true true</translation>
+						<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
+						<orientation>false true true</orientation>
+						<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
+						<translation_bounds>0.1</translation_bounds>
+						<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
+						<orientation_bounds>1.0</orientation_bounds>
+					</child_frame_transformation>
+				</JMPJoint>
+				<JMPBody name="pelvis">
+                    <!-- boolean value for if the body is to be scaled-->
+                    <scale_bodies>true</scale_bodies>
+                    <!-- boolean value for if the body markers are to be moved-->
+                    <move_markers>true</move_markers>
+                    <!-- 'x', 'y', or 'z' to indicate the primary axis of the body. Markers will not be moved along this axis. Leave blank to not move markers in all directions.-->
+                    <primary_body_axis>z</primary_body_axis>
+                </JMPBody>
                 <JMPBody name="femur_l">
                     <!-- boolean value for if the body is to be scaled-->
                     <scale_bodies>true</scale_bodies>
@@ -58,6 +112,14 @@
                     <move_markers>true</move_markers>
                     <!-- 'x', 'y', or 'z' to indicate the primary axis of the body. Markers will not be moved along this axis. Leave blank to not move markers in all directions.-->
                     <primary_body_axis>y</primary_body_axis>
+                </JMPBody>
+				<JMPBody name="calcn_l">
+                    <!-- boolean value for if the body is to be scaled-->
+                    <scale_bodies>true</scale_bodies>
+                    <!-- boolean value for if the body markers are to be moved-->
+                    <move_markers>true</move_markers>
+                    <!-- 'x', 'y', or 'z' to indicate the primary axis of the body. Markers will not be moved along this axis. Leave blank to not move markers in all directions.-->
+                    <primary_body_axis>x</primary_body_axis>
                 </JMPBody>
 			</JMPTask>
 		</JMPTaskList>
