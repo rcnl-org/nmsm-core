@@ -39,7 +39,5 @@ else
     timeDelayedEmg = calcEmgDataWithMuscleSpecificTimeDelay(emgTime, ...
         emgSplines, electromechanicalDelays / 10); 
 end 
-% expandedEmgScalingFactors = ones(1, size(emgScaleFactors, 2), 1);
-% expandedEmgScalingFactors(1, :, 1) = emgScaleFactors;
 muscleExcitations = timeDelayedEmg .* emgScaleFactors; 
 end

@@ -31,7 +31,7 @@
 % ----------------------------------------------------------------------- %
 
 function verifyChar(input)
-if(~ischar(input))
+if(~ischar(input) && ~isstring(input))
     throw(MException('','input is not a string'))
 end
 end
