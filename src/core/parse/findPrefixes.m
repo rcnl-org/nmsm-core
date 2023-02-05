@@ -35,7 +35,7 @@ prefixField = getFieldByName(tree, 'trial_prefixes');
 if(length(prefixField.Text) > 0)
     prefixes = strsplit(prefixField.Text, ' ');
 else
-    files = dir(fullfile(inputDirectory, "IKData"));
+    files = dir(fullfile(inputDirectory, "IDData"));
     prefixes = string([]);
     for i=1:length(files)
         if(~files(i).isdir)
