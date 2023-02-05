@@ -29,13 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-% (struct) -> (Array of string)
 function prefixes = findPrefixes(tree, inputDirectory)
 prefixField = getFieldByName(tree, 'trial_prefixes');
-if(length(prefixField.Text) > 0)
+if(isstruct(prefixField) && length(prefixField.Text) > 0)
     prefixes = strsplit(prefixField.Text, ' ');
 else
-    files = dir(fullfile(inputDirectory, "IDData"));
+    files = dir(fullfile(inputDirectory, "IKData"));
     prefixes = string([]);
     for i=1:length(files)
         if(~files(i).isdir)
