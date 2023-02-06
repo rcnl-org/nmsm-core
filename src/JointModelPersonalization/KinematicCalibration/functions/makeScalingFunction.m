@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Finds the first instance of a file with the given prefix in the given
-% directory and returns the full file path.
-%
-% (string, string) -> (string)
-% returns the full file name with the given prefix in the directory
+% This function returns the joint function representing the function
+% parameters for use as a function to be passed in the Joint Model
+% Personalization and Kinematic Calibration modules.
+% 
+% (string, boolean, boolean, integer) -> (function)
+% Returns the appropriate function for given input parameters
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,26 +29,6 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function taskList = orderByIndex(tasks)
-if length(tasks) == 1
-    if(~isfield(tasks, 'index'))
-        throw(MException('', "<index> element not included for task"))
-    end
-    taskList = tasks;
-else
-    taskIndexValues = [];
-    for i=1:length(tasks)
-        try
-            taskIndexValues(end + 1) = str2double(tasks{i}.index.Text);
-        catch
-            throw(MException('', "<index> element not included for task"))
-        end
-    end
-    [~, sortedIndexArray] = sort(taskIndexValues);
-    taskList = {};
-    for i=1:length(sortedIndexArray)
-        taskList{end + 1} = tasks{sortedIndexArray(i)};
-    end
+function fn = makeScalingFunction(bodyName)
+fn = @(value, model) adjustBodyScaling(model, bodyName, value);
 end
-end
-

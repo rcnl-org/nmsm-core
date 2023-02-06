@@ -1,10 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Finds the first instance of a file with the given prefix in the given
-% directory and returns the full file path.
 %
-% (string, string) -> (string)
-% returns the full file name with the given prefix in the directory
+%
+% (Model, string, integer, boolean, boolean) -> (number)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,26 +26,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function taskList = orderByIndex(tasks)
-if length(tasks) == 1
-    if(~isfield(tasks, 'index'))
-        throw(MException('', "<index> element not included for task"))
-    end
-    taskList = tasks;
-else
-    taskIndexValues = [];
-    for i=1:length(tasks)
-        try
-            taskIndexValues(end + 1) = str2double(tasks{i}.index.Text);
-        catch
-            throw(MException('', "<index> element not included for task"))
-        end
-    end
-    [~, sortedIndexArray] = sort(taskIndexValues);
-    taskList = {};
-    for i=1:length(sortedIndexArray)
-        taskList{end + 1} = tasks{sortedIndexArray(i)};
-    end
-end
+function value = getScalingParameterValue(model, bodyName)
+valueVec3 = model.getBodySet().get(bodyName).get_frame_geometry() ...
+    .get_scale_factors();
+value = valueVec3.get(0);
 end
 
