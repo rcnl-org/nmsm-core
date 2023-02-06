@@ -125,7 +125,7 @@ for i=1:length(markers)
 end
 end
 
-function markerNames = getMarkersOnJoints(model, parameters)
+function markerNames = getMarkersOnumJoints(model, parameters)
 import org.opensim.modeling.*
 markerNames = {};
 jointNames = {};
