@@ -23,7 +23,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Mohammad S. Shourijeh                                            %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -37,45 +37,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function primaryValues = NeuralControlPersonalization(inputs, ...
+function finalValues = NeuralControlPersonalization(inputs, ...
     params)
-%verifyInputs(inputs); % (struct) -> (None)
+verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
-% emgSplines now made in parse settings tree step
-% if ~isfield(inputs, "emgSplines")
-%     inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgData);
-% end
-primaryValues = prepareInitialValues(inputs, params);
-inputs = finalizeInputs(inputs, primaryValues, params);
-save("testData.mat", "inputs", "-mat")
-lowerBounds = makeLowerBounds(inputs, params);
-upperBounds = makeUpperBounds(inputs, params);
-optimizerOptions = makeOptimizerOptions(params);
-for i=1:length(inputs.tasks)
-    [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
-        primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
-    taskParams = makeTaskParams(inputs.tasks{i}, params);
-    optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-        primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
-        taskUpperBounds, inputs, taskParams, optimizerOptions);
-    primaryValues = updateDesignVariables(primaryValues, ...
-        optimizedValues, inputs.tasks{i}.isIncluded);
-end
+params = finalizeParams(params);
+inputs = finalizeInputs(inputs);
+initialValues = prepareInitialValues(inputs, params);
+inputs
+finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
+    params);
 end
 
 % (struct) -> (None)
 % throws an error if any of the inputs are invalid
 function verifyInputs(inputs)
-try verifyModelArg(inputs.model); %check model args
-catch; throw(MException('','inputs.model cannot instantiate a model')); end
-try verifyMuscleTendonPersonalizationData(inputs);
-catch; throw(MException('','data is not of matching sizes')); end
-for i=1:length(inputs.tasks)
-    try verifyNumeric(inputs.tasks{i}.isIncluded);
-    catch; throw(MException('',strcat('invalid isIncluded boolean', ...
-        'array for task ', num2str(i))));
-    end
-end
+verifyNoDuplicateMusclesBetweenSynergyGroups(inputs.synergyGroups);
 end
 
 % (struct) -> (None)
@@ -91,93 +68,47 @@ if(isfield(params, 'maxFunctionEvaluations'))
 end
 end
 
+
+function inputs = finalizeInputs(inputs)
+inputs.numNodes = valueOrAlternate(inputs, "numNodes", 21);
+inputs.numPoints = valueOrAlternate(inputs, "numPoints", ...
+    size(inputs.muscleTendonLength, 3));
+inputs.vMaxFactor = valueOrAlternate(inputs, "vMaxFactor", 10);
+inputs.numMuscles = 0;
+inputs.numSynergies = 0;
+for i = 1 : length(inputs.synergyGroups)
+    inputs.numMuscles = inputs.numMuscles + ...
+    length(inputs.synergyGroups{i}.muscleNames);
+    inputs.numSynergies = inputs.numSynergies + ...
+    inputs.synergyGroups{i}.numSynergies;
+end
+inputs.numTrials = size(inputs.momentArms, 1);
+end
+
+function params = finalizeParams(params)
+params.momentTrackingWeight = valueOrAlternate(params, ...
+    "momentTrackingWeight", 1);
+params.activationTrackingWeight = valueOrAlternate(params, ...
+    "activationTrackingWeight", 1);
+params.activationMinimizationWeight = valueOrAlternate(params, ...
+    "activationMinimizationWeight", 1);
+params.momentTrackingAllowableError = valueOrAlternate(params, ...
+    "momentTrackingAllowableError", 5);
+params.activationTrackingAllowableError = valueOrAlternate(params, ...
+    "activationTrackingAllowableError", 0.01);
+params.activationMinimizationAllowableError = valueOrAlternate(params, ...
+    "activationMinimizationAllowableError", 0.05);
+end
+
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
 % extract initial version of optimized values from inputs/params
 function values = prepareInitialValues(inputs, params)
-numMuscles = getNumEnabledMuscles(inputs.model);
-values = zeros(6, numMuscles);
-values(1, :) = 0.5; % electromechanical delay
-values(2, :) = 1.5; % activation time
-values(3, :) = 0.05; % activation nonlinearity
-values(4, :) = 0.5; % EMG scale factors
-values(5, :) = 1; % optimal fiber length scale factor
-values(6, :) = 1; % tendon slack length scale factor
+values = [];
+for i = 1:length(inputs.synergyGroups)
+    values = [values; 0.1 * ...
+        ones(inputs.synergyGroups{i}.numSynergies * ...
+        length(inputs.synergyGroups{i}.muscleNames), 1)];
 end
-
-function inputs = finalizeInputs(inputs, primaryValues, params)
-values = makeMtpValuesAsStruct(struct(), primaryValues, zeros(1, 6));
-modeledValues = calcMtpModeledValues(values, inputs, params);
-inputs = mergeStructs(inputs, modeledValues);
-end
-
-% (struct, struct) -> (6 x numEnabledMuscles matrix of number)
-function lowerBounds = makeLowerBounds(inputs, params)
-if isfield(params, 'lowerBounds')
-    lowerBounds = params.lowerBounds;
-else
-    numMuscles = getNumEnabledMuscles(inputs.model);
-    lowerBounds = zeros(6, numMuscles);
-    lowerBounds(1, :) = 0.0; % electromechanical delay
-    lowerBounds(2, :) = 0.75; % activation time
-    lowerBounds(3, :) = 0.0; % activation nonlinearity
-    lowerBounds(4, :) = 0.05; % EMG scale factors
-    lowerBounds(5, :) = 0.6; % lmo scale factor
-    lowerBounds(6, :) = 0.6; % lts scale factor
-end
-end
-
-% (struct, struct) -> (6 x numEnabledMuscles matrix of number)
-function upperBounds = makeUpperBounds(inputs, params)
-if isfield(params, 'upperBounds')
-    upperBounds = params.upperBounds;
-else
-    numMuscles = getNumEnabledMuscles(inputs.model);
-    upperBounds = zeros(6, numMuscles);
-    upperBounds(1,:) = 1.25; % electromechanical delay
-    upperBounds(2,:) = 3.5; % activation time
-    upperBounds(3,:) = 0.35; % activation nonlinearity
-    upperBounds(4,:) = 1; % EMG scale factors
-    upperBounds(5,:) = 1.4; % lmo scale factor
-    upperBounds(6,:) = 1.4; % lts scale factor
-end
-end
-
-% (struct) -> (struct)
-% setup optimizer options struct to pass to fmincon
-function output = makeOptimizerOptions(params)
-output = optimoptions('fmincon', 'UseParallel', true);
-output.MaxIterations = valueOrAlternate(params, 'maxIterations', 2000);
-output.MaxFunctionEvaluations = valueOrAlternate(params, ...
-    'maxFunctionEvaluations', 100000000);
-output.Algorithm = valueOrAlternate(params, 'algorithm', 'sqp');
-output.ScaleProblem = valueOrAlternate(params, 'scaleProblem', ...
-    'obj-and-constr');
-output.Display = 'iter';
-end
-
-% (struct, struct) -> (Array of number)
-% prepare values to be optimized for the given task
-function [taskValues, taskLowerBounds, taskUpperBounds] = ...
-    makeTaskValues(primaryValues, taskInputs, lowerBounds, upperBounds)
-taskValues = [];
-taskLowerBounds = [];
-taskUpperBounds = [];
-for i = 1:length(taskInputs.isIncluded)
-   if(taskInputs.isIncluded(i))
-       taskValues = [taskValues primaryValues(i, :)];
-       taskLowerBounds = [taskLowerBounds lowerBounds(i, :)];
-       taskUpperBounds = [taskUpperBounds upperBounds(i, :)];
-   end
-end
-end
-
-% (struct, struct) -> (struct)
-% prepare optimizer parameters for the given task
-function taskParams = makeTaskParams(taskInputs, params)
-if(~isfield(params, 'maxIterations'))
-    taskParams.maxIterations = 2e3;
-end
-if(isfield(params, 'maxFunctionEvaluations'))
-    taskParams.maxFunctionEvaluations = 1e8;
-end
+values = [values; 0.1 * ones(inputs.numSynergies * ...
+    inputs.numNodes * inputs.numTrials, 1)];
 end
