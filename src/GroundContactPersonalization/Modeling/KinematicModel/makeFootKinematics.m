@@ -40,12 +40,16 @@
 
 function [footPosition, markerPositions] = ...
     makeFootKinematics(model, motionFileName, coordinatesOfInterest, ...
-    hindfootBodyName, toesJointName, markerNames)
+    hindfootBodyName, toesJointName, markerNames, startTime, endTime)
 
 import org.opensim.modeling.Storage
 [model, state] = Model(model);
 [columnNames, time, jointKinematicsData] = parseMotToComponents(model, ...
     Storage(motionFileName));
+startIndex = find(time >= startTime, 1, 'first');
+endIndex = find(time <= endTime, 1, 'last');
+time = time(startIndex:endIndex);
+jointKinematicsData = jointKinematicsData(:, startIndex:endIndex);
 
 columnsOfInterest = [];
 for i=1:length(coordinatesOfInterest)
@@ -57,19 +61,19 @@ experimentalJointKinematics = jointKinematicsData(columnsOfInterest, :);
 
 functions = { % defining the 7 free coordinates to record
     @(model, state)model.getCoordinateSet().get(toesJointName). ...
-        getValue(state),
+    getValue(state),
     @(model, state)model.getBodySet().get(hindfootBodyName). ...
-        getRotationInGround(state).convertRotationToBodyFixedXYZ().get(0),
+    getRotationInGround(state).convertRotationToBodyFixedXYZ().get(0),
     @(model, state)model.getBodySet().get(hindfootBodyName). ...
-        getRotationInGround(state).convertRotationToBodyFixedXYZ().get(1),
+    getRotationInGround(state).convertRotationToBodyFixedXYZ().get(1),
     @(model, state)model.getBodySet().get(hindfootBodyName). ...
-        getRotationInGround(state).convertRotationToBodyFixedXYZ().get(2),
+    getRotationInGround(state).convertRotationToBodyFixedXYZ().get(2),
     @(model, state)model.getBodySet().get(hindfootBodyName). ...
-        getPositionInGround(state).get(0),
+    getPositionInGround(state).get(0),
     @(model, state)model.getBodySet().get(hindfootBodyName). ...
-        getPositionInGround(state).get(1),
+    getPositionInGround(state).get(1),
     @(model, state)model.getBodySet().get(hindfootBodyName). ...
-        getPositionInGround(state).get(2),
+    getPositionInGround(state).get(2),
     };
 
 footPosition = zeros(7, length(time));

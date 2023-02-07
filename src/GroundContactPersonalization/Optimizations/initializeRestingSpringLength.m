@@ -34,6 +34,10 @@ function inputs = initializeRestingSpringLength(inputs, params)
 springHeights = zeros(size(modeledJointPositions, 2), ...
     length(inputs.springConstants));
 springVelocities = springHeights;
+
+% xVel = springHeights;
+% zVel = springHeights;
+
 [model, state] = Model(inputs.model);
 for i=1:size(modeledJointPositions, 2)
     [model, state] = updateModelPositionAndVelocity(model, state, ...
@@ -44,8 +48,55 @@ for i=1:size(modeledJointPositions, 2)
             num2str(j)).getLocationInGround(state).get(1);
         springVelocities(i, j) = model.getMarkerSet().get("spring_marker_" + ...
             num2str(j)).getVelocityInGround(state).get(1);
+        
+%         xVel(i, j) = model.getMarkerSet().get("spring_marker_" + ...
+%             num2str(j)).getVelocityInGround(state).get(0) + inputs.beltSpeed;
+%         zVel(i, j) = model.getMarkerSet().get("spring_marker_" + ...
+%             num2str(j)).getVelocityInGround(state).get(2);
     end
 end
+
+% Plot spring marker heights
+% hold on
+% for i = 1:length(inputs.springConstants)
+%     style = '-';
+%     plot(inputs.time, springHeights(:, i), style)
+% end
+% plot(inputs.time, ones(1, 101) * 0.0309)
+% plot(inputs.time, ones(1, 101) * 0.0363)
+% plot(inputs.time, ones(1, 101) * 0.0509)
+% verticalForce = inputs.experimentalGroundReactionForces(2, :);
+% plot(inputs.time, verticalForce/5000)
+% hold off
+% xForce = inputs.experimentalGroundReactionForces(1, :);
+% figure(1);
+% hold on
+% for i = 1:length(inputs.springConstants)
+%     style = '-';
+%     plot(inputs.time, xVel(:, i), style)
+% end
+% hold off
+% figure(2);
+% hold on
+% for i = 1:length(inputs.springConstants)
+%     style = '-';
+%     plot(inputs.time, zVel(:, i), style)
+% end
+% hold off
+% figure(1);
+% hold on;
+% slipVel = zeros(size(xVel));
+% for i = 1:length(inputs.springConstants)
+%     slipVel(:, i) = sqrt(xVel(:, i).^2 + zVel(:, i).^2);
+%     style = '-';
+%     plot(inputs.time(4:71), slipVel(4:71, i), style)
+% end
+% plot(inputs.time(4:71), ones(1, 71 - 3) * 0.05);
+% verticalForce = inputs.experimentalGroundReactionForces(2, :);
+% plot(inputs.time(4:71), verticalForce(4:71)/500)
+% hold off;
+
+
 
 inputs.restingSpringLength = lsqnonlin( ...
     @(restingSpringLength) calcRestingSpringLengthCost( ...

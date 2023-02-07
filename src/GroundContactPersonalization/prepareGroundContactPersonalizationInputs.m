@@ -36,7 +36,7 @@ if inputs.right.isEnabled
     inputs = prepareInputsForSide(inputs, inputs, params);
 end
 if inputs.left.isEnabled
-    inputs.left = prepareInputsForSide(inputs.left, inputs, params);
+    inputs = prepareInputsForSide(inputs, inputs, params);
 end
 
 inputs.restingSpringLength = inputs.initialRestingSpringLength;
@@ -59,7 +59,7 @@ inputs.coordinatesOfInterest = findGCPFreeCoordinates(...
     makeFootKinematics(sharedInputs.bodyModel, ...
     sharedInputs.motionFileName, inputs.coordinatesOfInterest, ...
     inputs.hindfootBodyName, inputs.toesCoordinateName, ...
-    inputs.markerNames);
+    inputs.markerNames, inputs.startTime, inputs.endTime);
 
 footVelocity = calcBSplineDerivative(inputs.time, footPosition, ...
     4, params.splineNodes);
@@ -70,7 +70,7 @@ markerVelocities.(markerNamesFields{i}) = ...
     markerNamesFields{i}), 4, params.splineNodes);
 end
 
-% inputs.isLeftFoot = 0; % change isLeftFoot?
+% % inputs.isLeftFoot = true; % change isLeftFoot?
 % inputs.model = makeFootModel(Model(sharedInputs.bodyModel), ...
 %     inputs.toesJointName);
 % inputs.model = addSpringsToModel(inputs.model, inputs.markerNames, ...

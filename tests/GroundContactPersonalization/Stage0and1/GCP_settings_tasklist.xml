@@ -6,13 +6,15 @@
         <!--Directory for input files-->
         <input_directory/>
         <!--Name of the input model file (.osim) to use-->
-        <input_model_file>optModel_v6_correct_height.osim</input_model_file>
+        <input_model_file>GPOPSmodel_GCP.osim</input_model_file>
 		<!--Name of the foot model file (.osim), will be generated automatically in final version-->
 		<input_foot_model_file>footModel.osim</input_foot_model_file>
 		<!--Name of the input motion file (.mot) to use-->
-        <input_motion_file>motion.mot</input_motion_file>
+        <input_motion_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_ik.mot</input_motion_file>
 		<!--Name of the input ground reaction forces file (.mot) to use-->
-        <input_grf_file>grf.mot</input_grf_file>
+        <input_grf_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_GRF.mot</input_grf_file>
+		<!--predictedMotionFGC_kneeAddR.mot-->
+		<!--CPRIT_Patient3_NormalGait_1pt0_01_Right_75_ik.mot -->
 		<!--The number of gait cycles included in the time ranges specified in the right and left personalization settings below-->
 		<number_of_cycles>1</number_of_cycles>
 		<!--*Optional* The number of nodes per gait cycle used to define motion using B-splines-->
@@ -24,9 +26,9 @@
 			<!--Flag indicating whether the side will be personalized-->
             <is_enabled>true</is_enabled>
 			<!--Start time for right side gait cycles in motion and ground reaction force files-->
-			<start_time>0.55</start_time>
+			<start_time>81.181</start_time>
 			<!--End time for right side gait cycles in motion and ground reaction force files-->
-			<end_time>1.65</end_time>
+			<end_time>82.286</end_time>
 			<!--Name of the right toe angle coordinate in the model file-->
 			<toe_coordinate>mtp_angle_r</toe_coordinate>
 			<!--Name of the right toe joint in the model file-->
@@ -44,9 +46,9 @@
 			<!--Flag indicating whether the side will be personalized-->
             <is_enabled>false</is_enabled>
 			<!--Start time for right side gait cycles in motion and ground reaction force files-->
-			<start_time>0.55</start_time>
+			<start_time>81.181</start_time>
 			<!--End time for right side gait cycles in motion and ground reaction force files-->
-			<end_time>1.65</end_time>
+			<end_time>82.286</end_time>
 			<!--Name of the right toe angle coordinate in the model file-->
 			<toe_coordinate>mtp_angle_l</toe_coordinate>
 			<!--Name of the right toe joint in the model file-->
@@ -56,6 +58,8 @@
 			<medial_marker>L.Toe.Medial</medial_marker>
 			<lateral_marker>L.Toe.Lateral</lateral_marker>
 			<heel_marker>L.Heel</heel_marker>
+			<!--Name of midfoot superior marker used to define ground reaction moments-->
+			<midfoot_superior_marker>L.Midfoot.Superior</midfoot_superior_marker>
 		</LeftFootPersonalization>
 		<GroundContactPersonalizationTaskList>
 			<GroundContactPersonalizationTask>
@@ -88,13 +92,13 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.5</max_allowable_error>
+						<max_allowable_error>4</max_allowable_error>
 					</rotationError>
 					<translationError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.005</max_allowable_error>
+						<max_allowable_error>0.01</max_allowable_error>
 					</translationError>
 					<coordinateCoefficientError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -106,7 +110,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>1</max_allowable_error>
+						<max_allowable_error>5</max_allowable_error>
 					</verticalGrfError>
 					<horizontalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -118,7 +122,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>2</max_allowable_error>
+						<max_allowable_error>10</max_allowable_error>
 					</groundReactionMomentError>
 					<springConstantErrorFromMean>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -130,7 +134,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>1000</max_allowable_error>
+						<max_allowable_error>2000</max_allowable_error>
 					</springConstantErrorFromNeighbors>
 				</CostFunctionTerms>
 			</GroundContactPersonalizationTask>
@@ -164,13 +168,13 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.5</max_allowable_error>
+						<max_allowable_error>4</max_allowable_error>
 					</rotationError>
 					<translationError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.005</max_allowable_error>
+						<max_allowable_error>0.01</max_allowable_error>
 					</translationError>
 					<coordinateCoefficientError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -182,19 +186,19 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.5</max_allowable_error>
+						<max_allowable_error>5</max_allowable_error>
 					</verticalGrfError>
 					<horizontalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.2</max_allowable_error>
+						<max_allowable_error>5</max_allowable_error>
 					</horizontalGrfError>
 					<groundReactionMomentError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>2</max_allowable_error>
+						<max_allowable_error>10</max_allowable_error>
 					</groundReactionMomentError>
 					<springConstantErrorFromMean>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -206,7 +210,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>1000</max_allowable_error>
+						<max_allowable_error>2000</max_allowable_error>
 					</springConstantErrorFromNeighbors>
 				</CostFunctionTerms>
 			</GroundContactPersonalizationTask>
@@ -246,13 +250,13 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.5</max_allowable_error>
+						<max_allowable_error>4</max_allowable_error>
 					</rotationError>
 					<translationError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.005</max_allowable_error>
+						<max_allowable_error>0.01</max_allowable_error>
 					</translationError>
 					<coordinateCoefficientError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -264,7 +268,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.5</max_allowable_error>
+						<max_allowable_error>5</max_allowable_error>
 					</verticalGrfError>
 					<verticalGrfSlopeError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -276,7 +280,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.2</max_allowable_error>
+						<max_allowable_error>5</max_allowable_error>
 					</horizontalGrfError>
 					<horizontalGrfSlopeError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -288,7 +292,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.05</max_allowable_error>
+						<max_allowable_error>2</max_allowable_error>
 					</groundReactionMomentError>
 					<groundReactionMomentSlopeError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
@@ -306,7 +310,7 @@
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>1000</max_allowable_error>
+						<max_allowable_error>2000</max_allowable_error>
 					</springConstantErrorFromNeighbors>
 					<dampingFactorErrorFromMean>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
