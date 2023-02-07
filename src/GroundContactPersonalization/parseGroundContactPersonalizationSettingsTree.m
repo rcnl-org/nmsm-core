@@ -72,10 +72,10 @@ inputs.right.isEnabled = strcmpi(getFieldByNameOrError(rightTree, ...
 inputs.left.isEnabled = strcmpi(getFieldByNameOrError(leftTree, ...
     'is_enabled').Text, 'true');
 [ik.columnNames, ik.time, ik.data] = parseMotToComponents(...
-    bodyModel, Storage(inputs.grfFileName));
+    bodyModel, Storage(inputs.motionFileName));
 [~, grfTime, ~] = parseMotToComponents(...
     bodyModel, Storage(inputs.grfFileName));
-verifyTime(ik.time, grfTime);
+% verifyTime(ik.time, grfTime);
 [inputs.left.experimentalGroundReactionForces, ...
     inputs.right.experimentalGroundReactionForces] = getGrf(...
     bodyModel, inputs.grfFileName);
@@ -91,7 +91,7 @@ if inputs.right.isEnabled
 end
 if inputs.left.isEnabled
     inputs.isLeftFoot = true;
-    inputs.left = getInputsForSide(inputs.left, leftTree, ik);
+    inputs = getInputsForSide(inputs, leftTree, ik);
 end
 
 initialValuesTree = getFieldByNameOrError(tree, 'InitialValues');

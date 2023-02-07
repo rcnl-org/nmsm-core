@@ -44,9 +44,9 @@ for i = 1:7
         model = modeledJointPositions(i, :);
     end
 
-    scatter(inputs.time, experimental, [], "red")
+    plot(inputs.time, experimental, "red", "LineWidth", 2)
     hold on
-    scatter(inputs.time, model, [], "blue")
+    plot(inputs.time, model, "blue", "LineWidth", 2)
     error = rms(experimental - model);
     title(coordinates(i) + newline + " RMSE: " + error)
     xlabel('Time')
