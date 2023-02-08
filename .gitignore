@@ -23,3 +23,4 @@ nonTrackedScripts/*
 
 # ignore DS_Store
 *.DS_Store
+tests/GroundContactPersonalization/Stage0and1/compareCopFootMarkers.m
