@@ -28,7 +28,7 @@
 function cost = calcTrackingJointMomentIntegrand(inverseDynamicMoments, ...
     time, params)
 
-enabledCost = valueOrAlternate(params, "trackingJointMomentEnabled", 0);
+enabledCost = valueOrAlternate(params, "trackingJointMomentsEnabled", 0);
 experimentalJointMoments = fnval(params.splineJointMoments, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(experimentalJointMoments, ...
     inverseDynamicMoments);

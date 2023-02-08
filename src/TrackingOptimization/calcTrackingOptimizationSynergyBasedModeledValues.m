@@ -32,24 +32,25 @@ jointAngles = getMuscleActuatedDOFs(values, params);
 [params.muscleTendonLength, params.momentArms] = calcSurrogateModel( ...
     params, jointAngles);
 params.muscleTendonVelocity = calcMuscleTendonVelocities(values.time, ...
-    params.muscleTendonLength, params.smoothingParam);
+    params.muscleTendonLength);
 [phaseout.normalizedFiberLength, phaseout.normalizedFiberVelocity] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities(params, ...
     ones(1, params.numMuscles), ones(1, params.numMuscles));
-phaseout.muscleActivations = calcMuscleActivationFromSynergies(values, params);
+[phaseout.rightMuscleActivations, phaseout.leftMuscleActivations] = ...
+    calcMuscleActivationFromSynergies(values, params);
 phaseout.muscleJointMoments = calcMuscleJointMoments(params, ...
     phaseout.muscleActivations, phaseout.normalizedFiberLength, ...
     phaseout.normalizedFiberVelocity);
 phaseout.muscleJointMoments(:, all(~phaseout.muscleJointMoments, 1)) = [];
 end
 
-function muscleActivations = calcMuscleActivationFromSynergies(values, params)
+function [rightMuscleActivations, leftMuscleActivations] = ...
+    calcMuscleActivationFromSynergies(values, params)
 
 rightMuscleActivations = values.controlNeuralCommandsRight * ...
     values.synergyWeights(1 : params.numRightSynergies, :);
 leftMuscleActivations = values.controlNeuralCommandsLeft * ...
     values.synergyWeights(params.numRightSynergies + 1 : end, :);
-muscleActivations = [rightMuscleActivations leftMuscleActivations];
 end
 function jointAngles = getMuscleActuatedDOFs(values, params)
 
@@ -64,10 +65,10 @@ for i = 1:params.numMuscles
 end
 end
 function muscleTendonVelocities = calcMuscleTendonVelocities(time, ...
-    muscleTendonLength, smoothingParam)
+    muscleTendonLength)
 
 for i = 1 : size(muscleTendonLength, 2)
     muscleTendonVelocities(:, i) = calcDerivative(time, ...
-        muscleTendonLength(:, i), smoothingParam);
+        muscleTendonLength(:, i));
 end
 end

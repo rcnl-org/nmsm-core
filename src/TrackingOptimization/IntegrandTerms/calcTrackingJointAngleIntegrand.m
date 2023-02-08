@@ -27,7 +27,7 @@
 
 function cost = calcTrackingJointAngleIntegrand(statePositions, time, params)
 
-enabledCost = valueOrAlternate(params, "trackingJointAngleEnabled", 0);
+enabledCost = valueOrAlternate(params, "trackingJointAnglesEnabled", 0);
 experimentalJointAngles = fnval(params.splineJointAngles, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(experimentalJointAngles, ...
     statePositions);
