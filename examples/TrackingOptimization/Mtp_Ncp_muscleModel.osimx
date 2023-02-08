@@ -1,0 +1,901 @@
+<?xml version="1.0" encoding="utf-8"?>
+<OpenSimDocument Version="40000">
+   <OsimxModel name="GPOPSModel.osim">
+      <!--Full path of the associated osim model-->
+      <associated_osim_model>preprocessed\optModel_GPOPS.osim</associated_osim_model>
+      <!--Optimized muscle parameters-->
+      <NCPMuscleSet>
+         <groups/>
+         <objects>
+            <RCNLMuscle name="addbrev_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.14288</optimal_fiber_length>
+               <!--Optimized slack tendon length-->
+               <slack_tendon_length>0.014377</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addlong_r">
+			<!--Optimized optimal fiber length-->
+			<optimal_fiber_length>0.17636</optimal_fiber_length>
+			<!--Optimized slack tendon length-->
+			<slack_tendon_length>0.077951</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addmagDist_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.21922</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.035616</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addmagIsch_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.23416</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.13357</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addmagMid_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.14832</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.019951</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addmagProx_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11812</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.019626</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="bflh_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.15829</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.27803</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="bfsh_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.13647</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.10743</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="edl_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.068372</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.41346</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="ehl_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.098264</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.35121</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="fdl_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.040489</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.42763</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="fhl_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.050311</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.40014</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="gaslat_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.071754</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.41041</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="gasmed_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.076433</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.41606</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="gem_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.033422</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.042466</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmax1_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.17419</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.048905</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmax2_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.20522</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.062836</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmax3_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.23347</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.049375</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmed1_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.13633</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.0054547</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmed2_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11375</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.043983</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmed3_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.094623</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.045702</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmin1_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.08108</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.011745</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmin2_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.075697</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.019018</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmin3_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.070205</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.032997</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="grac_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.2686</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.19098</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="iliacus_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.17373</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.02681</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="pect_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.072318</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.05557</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="perbrev_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.065773</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.1533</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="perlong_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.076731</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.35189</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="piri_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.01654</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.12846</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="Ps_L1_TP_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11594</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.24034</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="Ps_L3_L4_IVD_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10999</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.18814</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="Ps_L5_TP_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10983</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.13809</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="quadfem_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.021342</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.050389</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="recfem_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.1217</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.44867</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="sart_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.42254</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.12344</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="semimem_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.1435</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.29228</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="semiten_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.20518</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.27134</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="soleus_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.095685</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.2908</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="tfl_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.047066</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.51303</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="tibant_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10185</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.24408</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="tibpost_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.033613</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.31745</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="vasint_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.081422</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.24975</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="vaslat_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.076824</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.26859</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="vasmed_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.083452</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.24039</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IO2_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.12058</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.012374</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IO4_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.1442</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.01466</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IO5_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11862</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.011983</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="EO10_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.15091</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.015544</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="EO12_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.1305</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.013635</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_L2_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.052765</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.10301</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_L4_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.038552</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.058492</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_R7_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.16515</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.16961</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_R10_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.15382</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.091962</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_R11_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.13714</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.070812</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_R12_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11269</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.057281</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpT_T8_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.128</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.19678</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpT_T12_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.098754</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.15768</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpT_R8_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11397</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.22628</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpT_R11_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11807</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.16033</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpL_L2_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.08223</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.085146</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpL_L4_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.057966</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.057556</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpL_L5_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.08536</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.0026672</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m1t_3_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10443</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.034182</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m2t_3_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10118</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.034573</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m3s_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.044974</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.019194</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m4t_3_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.090875</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.039987</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m5_laminar_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.040522</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.015739</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_post_I1_L3_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.047909</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.035312</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_post_I2_L4_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.043753</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.031466</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_post_I3_L2_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.070544</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.053546</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_ant_I2_T12_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10674</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.055446</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_ant_I3_R12_I2_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11533</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.059896</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="rect_abd_r">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.34263</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.089965</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addbrev_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.14288</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.014377</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addlong_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.17636</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.077951</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addmagDist_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.21922</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.035616</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addmagIsch_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.23416</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.13357</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addmagMid_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.14832</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.019951</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="addmagProx_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11812</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.019626</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="bflh_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.15829</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.27803</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="bfsh_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.13647</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.10743</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="edl_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.068372</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.41346</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="ehl_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.098264</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.35121</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="fdl_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.040489</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.42763</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="fhl_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.050311</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.40014</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="gaslat_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.071754</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.41041</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="gasmed_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.076433</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.41606</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="gem_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.033422</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.042466</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmax1_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.17419</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.048905</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmax2_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.20522</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.062836</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmax3_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.23347</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.049375</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmed1_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.13633</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.0054547</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmed2_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11375</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.043983</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmed3_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.094623</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.045702</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmin1_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.08108</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.011745</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmin2_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.075697</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.019018</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="glmin3_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.070205</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.032997</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="grac_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.2686</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.19098</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="iliacus_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.17373</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.02681</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="pect_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.072318</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.05557</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="perbrev_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.065773</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.1533</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="perlong_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.076731</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.35189</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="piri_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.01654</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.12846</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="Ps_L1_TP_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11594</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.24034</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="Ps_L3_L4_IVD_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10999</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.18814</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="Ps_L5_TP_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10983</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.13809</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="quadfem_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.021342</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.050389</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="recfem_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.1217</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.44867</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="sart_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.42254</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.12344</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="semimem_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.1435</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.29228</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="semiten_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.20518</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.27134</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="soleus_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.095685</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.2908</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="tfl_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.047066</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.51303</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="tibant_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10185</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.24408</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="tibpost_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.033613</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.31745</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="vasint_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.081422</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.24975</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="vaslat_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.076824</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.26859</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="vasmed_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.083452</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.24039</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IO2_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.12553</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.013127</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IO4_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.14749</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.014517</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IO5_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11859</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.011546</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="EO10_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.16103</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.016394</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="EO12_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.13148</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.013401</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_L2_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.053285</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.10199</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_L4_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.040982</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.058835</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_R7_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.16631</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.17018</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_R10_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.15424</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.091527</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_R11_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.13766</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.070218</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="IL_R12_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11305</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.056691</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpT_T8_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.12774</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.19689</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpT_T12_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.098868</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.15771</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpT_R8_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11376</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.22627</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpT_R11_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11827</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.16035</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpL_L2_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.082117</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.084349</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpL_L4_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.057418</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.056016</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="LTpL_L5_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.083953</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.0025946</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m1t_3_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10685</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.035133</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m2t_3_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10499</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.031565</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m3s_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.045418</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.019384</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m4t_3_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.091172</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.040208</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="MF_m5_laminar_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.04113</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.015905</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_post_I1_L3_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.050666</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.036702</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_post_I2_L4_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.046471</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.034541</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_post_I3_L2_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.070824</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.05424</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_ant_I2_T12_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.10984</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.056273</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="QL_ant_I3_R12_I2_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.11452</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.058865</slack_tendon_length>
+            </RCNLMuscle>
+            <RCNLMuscle name="rect_abd_l">
+				<!--Optimized optimal fiber length-->
+				<optimal_fiber_length>0.33975</optimal_fiber_length>
+				<!--Optimized slack tendon length-->
+				<slack_tendon_length>0.090555</slack_tendon_length>
+            </RCNLMuscle>
+         </objects>
+      </NCPMuscleSet>
+   </OsimxModel>
+</OpenSimDocument>

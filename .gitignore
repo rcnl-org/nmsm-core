@@ -23,3 +23,4 @@ nonTrackedScripts/*
 
 # ignore DS_Store
 *.DS_Store
+src/TrackingOptimization/preprocessed/ActData/Old.sto
