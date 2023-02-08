@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+%
 %
 % (Array of double, struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
@@ -27,36 +27,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGroundReactionAndCenterOfPressureAndFreeMomentCost( ...
-    values, inputs, params)
-[footMarkerPositionError, footMarkerSlopeError] = ...
-    calcFootMarkerPositionAndSlopeError();
-cost = 2 * footMarkerPositionError;
-cost = [cost 1000 * footMarkerSlopeError];
-cost = [cost 10000 * calcKinematicCurveSlopeError()];
-[groundReactionForceValueError, groundReactionForceSlopeError] = ...
-    calcGroundReactionForceAndSlopeError();
-cost = [cost groundReactionForceValueError];
-cost = [cost 1 / 5 * groundReactionForceSlopeError];
-cost = [cost 1 / 10 * calcSpringConstantsErrorFromMean()];
-cost = [cost 1 / 100 * calcKValueFromInitialValueError()];
-cost = [cost 100 * calcDampingFactorsErrorFromMean()];
-cost = [cost calcSpringRestingLengthError()];
-cost = [cost calcDampingFactorDeviationFromInitialValueError()];
-cost = [cost calcSpringConstantDeviationFromInitialValueError()];
-cost = [cost calcStaticFrictionDeviationError()];
-cost = [cost calcDynamicFrictionDeviationError()];
-cost = [cost calcViscousFrictionDeviationError()];
-cost = [cost 1000 * calcStaticToDynamicFrictionDeviationError()];
-[centerOfPressurePositionError, centerOfPressureSlopeError] = ...
-    calcCenterOfPressurePositionAndSlopeError();
-cost = [cost centerOfPressurePositionError];
-cost = [cost centerOfPressureSlopeError];
-[freeMomentValueError, freeMomentSlopeError] = ...
-    calcFreeMomentValueAndSlopeError();
-cost = [cost freeMomentValueError];
-cost = [cost freeMomentSlopeError];
-
-cost = cost / 250;
+function error = calcSpringConstantsErrorFromNeighbors(springConstants, ...
+    gaussianWeights)
+error = zeros(1, size(gaussianWeights, 1) * size(gaussianWeights, 2));
+for i = 1:size(gaussianWeights, 1)
+    for j = 1:size(gaussianWeights, 2)
+        totalNeighborSpringValue = 0;
+        totalNeighborWeight = 0;
+        for k = 1:size(gaussianWeights, 3)
+            totalNeighborSpringValue = totalNeighborSpringValue + ...
+                gaussianWeights(i, j, k) * springConstants(k);
+            totalNeighborWeight = totalNeighborWeight + ...
+                gaussianWeights(i, j, k);
+        end
+        error((i - 1) * size(gaussianWeights, 2) + j) = ...
+            springConstants(j) - ...
+            (totalNeighborSpringValue / totalNeighborWeight);
+    end
 end
-
+end
