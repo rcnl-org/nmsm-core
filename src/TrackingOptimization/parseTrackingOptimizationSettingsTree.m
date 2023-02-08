@@ -30,7 +30,7 @@ function [inputs, params, resultsDirectory] = ...
 inputs = getInputs(settingsTree);
 inputs = getSplines(inputs);
 params = getParams(settingsTree);
-% inputs = getModelInputs(inputs);
+inputs = getModelInputs(inputs);
 inputs = getStateDerivatives(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
@@ -39,8 +39,7 @@ end
 
 % missing Inputs
 inputData = load('inputData.mat');
-inputs.numRightSynergies = 6;
-inputs.numLeftSynergies = 6;
+
 inputs.numMusclesPerSide = 74;
 inputs.numMusclesPerLeg = 45;
 inputs.numMusclesPerTorso = 29;
@@ -52,6 +51,20 @@ inputs.minIntegral = inputData.params.minIntegral;
 inputs.maxIntegral = inputData.params.maxIntegral;
 inputs.minTerminal = inputData.params.eventgroup.lower;
 inputs.maxTerminal = inputData.params.eventgroup.upper;
+inputs.numActuators = inputData.params.numActuators;
+inputs.inverseDynamicMomentsIndex = inputData.params.inverseDynamicMomentsIndex;
+inputs.rootSegmentResidualsIndex = inputData.params.pelvisResidualsIndex;
+inputs.muscleActuatedMomentsIndex = inputData.params.muscleActuatedMomentsIndex;
+inputs.integralOptions = inputData.params.integralOptions;
+inputs.isEnabled = inputData.params.isEnabled;
+
+% missing NCP inputs
+inputs.numRightSynergies = 6;
+inputs.numLeftSynergies = 6;
+inputs.epsilon = inputData.params.epsilon;
+inputs.maxIsometricForce = inputData.params.maxIsometricForce;
+
+% missing GCP inputs
 inputs.splineLeftGroundReactionForces = inputData.params.splineLeftGroundReactionForces;
 inputs.splineRightGroundReactionForces = inputData.params.splineRightGroundReactionForces;
 inputs.springPointsOnBody = inputData.params.springPointsOnBody;
@@ -68,7 +81,6 @@ inputs.rightToePointOnBody = inputData.params.rightToePointOnBody;
 inputs.rightToeBody = inputData.params.rightToeBody;
 inputs.leftToePointOnBody = inputData.params.leftToePointOnBody;
 inputs.leftToeBody = inputData.params.leftToeBody;
-inputs.leftToeBody = inputData.params.leftToeBody;
 inputs.springDamping = inputData.params.springDamping;
 inputs.dynamicFriction = inputData.params.dynamicFriction;
 inputs.springStiffness = inputData.params.springStiffness;
@@ -79,20 +91,16 @@ inputs.numSpringsLeftHeel = inputData.params.numSpringsLeftHeel;
 inputs.numSpringsRightToe = inputData.params.numSpringsRightToe;
 inputs.numSpringsLeftToe = inputData.params.numSpringsLeftToe;
 inputs.dofsActuated = inputData.params.dofsActuated;
-inputs.epsilon = inputData.params.epsilon;
-inputs.optimalFiberLength = inputData.params.optimalFiberLength;
-inputs.tendonSlackLength = inputData.params.tendonSlackLength;
-inputs.pennationAngle = inputData.params.pennationAngle;
-inputs.maxIsometricForce = inputData.params.maxIsometricForce;
-inputs.numActuators = inputData.params.numActuators;
-inputs.inverseDynamicMomentsIndex = inputData.params.inverseDynamicMomentsIndex;
-inputs.pelvisResidualsIndex = inputData.params.pelvisResidualsIndex;
-inputs.muscleActuatedMomentsIndex = inputData.params.muscleActuatedMomentsIndex;
+
+% surrogate model inputs
 inputs.polynomialExpressionMomentArms = inputData.params.polynomialExpressionMomentArms;
 inputs.polynomialExpressionMuscleTendonLengths = inputData.params.polynomialExpressionMuscleTendonLengths;
 inputs.coefficients = inputData.params.coefficients;
-inputs.integralOptions = inputData.params.integralOptions;
-inputs.isEnabled = inputData.params.isEnabled;
+
+load("experimentalData.mat")
+inputs.experimentalRightGroundReactions = experimentalRightGroundReactions;
+inputs.experimentalLeftGroundReactions = experimentalLeftGroundReactions;
+
 end
 
 function inputs = getInputs(tree)
@@ -111,6 +119,11 @@ else
     inputDirectory = pwd;
 end
 inputs.initialGuessFileName = getFieldByName(tree, 'initial_guess_file').Text;
+
+%Add controller type conditions (synergy vs torque driven)
+inputs.osimxFile = getFieldByName(tree, 'osimx_file').Text;
+inputs.ncpDataInputs = parseNCPOsimxFile(inputs.osimxFile);
+
 prefixes = getPrefixes(tree, inputDirectory);
 inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
     inputDirectory, "IDData"), prefixes);
@@ -132,8 +145,12 @@ muscleActivationFileName = findFileListFromPrefixList(fullfile( ...
     inputDirectory, "ActData"), prefixes);
 inputs.muscleLabels = getStorageColumnNames(Storage( ...
     muscleActivationFileName(1)));
-inputs.experimentalMuscleActivations = parseTreatmentOptimizationStandard( ...
+experimentalMuscleActivations = parseTreatmentOptimizationStandard( ...
     muscleActivationFileName);
+% separate right from left
+% inputs.muscleLabels = strrep(inputs.muscleLabels,'_r','');
+inputs.experimentalRightMuscleActivations = experimentalMuscleActivations(:, 1:74);
+inputs.experimentalLeftMuscleActivations = experimentalMuscleActivations(:, 75:end);
 inputs.numMuscles = length(inputs.muscleLabels);
 
 % Need to extract electrical center from here
@@ -153,12 +170,12 @@ inputs = reduceDataSize(inputs, inputs.numPaddingFrames);
 inputs.experimentalTime = inputs.experimentalTime - inputs.experimentalTime(1);
 
 inputs = getDesignVariableBounds(tree, inputs);
-inputs = getIntegralCostTerms(getFieldByNameOrError(tree, ...
-    'TrackingOptimizationIntegralTerms'), inputs);
-inputs = getPathConstraintTerms(getFieldByNameOrError(tree, ...
-    'TrackingOptimizationPathConstraints'), inputs);
-inputs = getTerminalConstraintTerms(getFieldByNameOrError(tree, ...
-    'TrackingOptimizationTerminalConstraints'), inputs);
+% inputs = getIntegralCostTerms(getFieldByNameOrError(tree, ...
+%     'TrackingOptimizationIntegralTerms'), inputs);
+% inputs = getPathConstraintTerms(getFieldByNameOrError(tree, ...
+%     'TrackingOptimizationPathConstraints'), inputs);
+% inputs = getTerminalConstraintTerms(getFieldByNameOrError(tree, ...
+%     'TrackingOptimizationTerminalConstraints'), inputs);
 inputs.beltSpeed = getBeltSpeed(tree);
 % load in epsilon
 inputs.vMaxFactor = getVMaxFactor(tree);
@@ -184,8 +201,10 @@ inputs.splineJointAngles = spaps(inputs.experimentalTime, ...
     inputs.experimentalJointAngles', 0.0000001);
 inputs.splineJointMoments = spaps(inputs.experimentalTime, ...
     inputs.experimentalJointMoments', 0.0000001);
-inputs.splineMuscleActivations = spaps(inputs.experimentalTime, ...
-    inputs.experimentalMuscleActivations', 0.0000001);
+inputs.splineRightMuscleActivations = spaps(inputs.experimentalTime, ...
+    inputs.experimentalRightMuscleActivations', 0.0000001);
+inputs.splineLeftMuscleActivations = spaps(inputs.experimentalTime, ...
+    inputs.experimentalLeftMuscleActivations', 0.0000001);
 % inputs.splineRightGroundReactionForces = spaps(inputs.experimentalTime, ...
 %     inputs.experimentalRightGroundReactions', 0.0000001);
 % inputs.splineLeftGroundReactionForces = spaps(inputs.experimentalTime, ...
@@ -197,8 +216,11 @@ inputs.experimentalJointMoments = inputs.experimentalJointMoments(:, ...
     numPaddingFrames + 1:end - numPaddingFrames, :);
 inputs.experimentalJointAngles = inputs.experimentalJointAngles(:, ...
     numPaddingFrames + 1:end - numPaddingFrames, :);
-inputs.experimentalMuscleActivations = ...
-    inputs.experimentalMuscleActivations(:, ...
+inputs.experimentalRightMuscleActivations = ...
+    inputs.experimentalRightMuscleActivations(:, ...
+    numPaddingFrames + 1:end - numPaddingFrames, :);
+inputs.experimentalLeftMuscleActivations = ...
+    inputs.experimentalLeftMuscleActivations(:, ...
     numPaddingFrames + 1:end - numPaddingFrames, :);
 % inputs.experimentalRightGroundReactions = ...
 %     inputs.experimentalRightGroundReactions(:, ...
@@ -382,5 +404,58 @@ for i = 1 : size(inputs.experimentalJointAngles, 2)
         inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
     inputs.experimentalJointJerks (:, i) = calcDerivative(...
         inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
+end
+end
+
+function inputs = getModelInputs(inputs)
+inputs.numMuscles = getNumEnabledMuscles(inputs.model);
+inputs.optimalFiberLength = [];
+inputs.tendonSlackLength = [];
+inputs.pennationAngle = [];
+inputs.maxIsometricForce = [];
+inputs.muscleNames = '';
+model = Model(inputs.model);
+for i = 0:model.getForceSet().getMuscles().getSize()-1
+    if model.getForceSet().getMuscles().get(i).get_appliesForce()
+        inputs.muscleNames{end+1} = char(model.getForceSet(). ...
+            getMuscles().get(i).getName);
+        if isfield(inputs.ncpDataInputs, inputs.muscleNames{end})
+            inputs.optimalFiberLength(end+1) = inputs.ncpDataInputs. ...
+                (inputs.muscleNames{end}).optimalTendonLength;
+            inputs.tendonSlackLength(end+1) = inputs.ncpDataInputs. ...
+                (inputs.muscleNames{end}).tendonSlackLength;
+            if isfield(inputs.inputs.ncpDataInputs. ...
+                    (inputs.muscleNames{end}), maxIsometricForce)
+                inputs.maxIsometricForce(end+1) = inputs.ncpDataInputs. ...
+                    (inputs.muscleNames{end}).maxIsometricForce;
+            end
+        else
+            inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
+                getMuscles().get(i).getOptimalFiberLength();
+            inputs.tendonSlackLength(end+1) = model.getForceSet(). ...
+                getMuscles().get(i).getTendonSlackLength();
+        end
+        inputs.pennationAngle(end+1) = model.getForceSet(). ...
+            getMuscles().get(i). ...
+            getPennationAngleAtOptimalFiberLength();
+        inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
+            getMuscles().get(i).getMaxIsometricForce();
+        
+    end
+end
+end
+
+function data = parseNCPOsimxFile(filename)
+tree = xml2struct(filename);
+ncpMuscleSetTree = getFieldByNameOrError(tree, "NCPMuscleSet");
+musclesTree = getFieldByNameOrError(ncpMuscleSetTree, "objects").RCNLMuscle;
+for i = 1:length(musclesTree)
+    if(length(musclesTree) == 1)
+        muscle = musclesTree;
+    else
+        muscle = musclesTree{i};
+    end
+    data.(muscle.Attributes.name).optimalTendonLength = str2double(muscle.optimal_fiber_length.Text);    
+    data.(muscle.Attributes.name).tendonSlackLength = str2double(muscle.slack_tendon_length.Text);
 end
 end
