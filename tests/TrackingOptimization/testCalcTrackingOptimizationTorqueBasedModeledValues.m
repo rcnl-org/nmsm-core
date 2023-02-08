@@ -1,5 +1,7 @@
 load('trackingOptimizationInputsAndValues.mat')
 
+pointKinematics(inputs.auxdata.model)
+inverseDynamics(inputs.auxdata.model)
 phaseout = calcTrackingOptimizationTorqueBasedModeledValues(values, inputs.auxdata);
 
 expectedPhaseout = load('expectedPhaseout.mat');
