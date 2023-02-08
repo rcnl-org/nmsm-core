@@ -2,7 +2,7 @@
 %
 %
 %
-% (Array of double, struct, struct) -> (struct)
+% (double, struct) -> (double)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -29,9 +29,9 @@
 
 function error = calcStaticFrictionDeviationError(staticFrictionCoefficient, params)
 errorCenter = valueOrAlternate(params, ...
-    "staticFrictionCoefficientErrorCenter", 2);
+    "staticFrictionCoefficientErrorCenter", 0.25);
 maxAllowableError = valueOrAlternate(params, ...
-    "staticFrictionCoefficientMaxAllowableError", 1);
+    "staticFrictionCoefficientMaxAllowableError", 0.05);
 error = calcWallError(staticFrictionCoefficient, errorCenter, ...
     maxAllowableError, 10);
 end
