@@ -78,14 +78,14 @@
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>0.1</max_allowable_error>
-					</MaximumNormalizedMuscleFiberLength>				
+					</MaximumNormalizedMuscleFiberLength>
 				</GroupedMuscles>
 			</MuscleTendonLengthInitializationCostFunctionTerms>
 		</MuscleTendonLengthInitialization>
 		<!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
 		<muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
 		<!--Boolean (true, false) indicating if time activation constant values should be found individually for each muscle or all together-->
-        <muscle_specific_activation_time_constant>false</muscle_specific_activation_time_constant>																				  
+        <muscle_specific_activation_time_constant>false</muscle_specific_activation_time_constant>
         <!--The set of <MuscleTendonPersonalizationTask> to be completed by the tool, each Task is a separate optimization-->
         <MuscleTendonPersonalizationTaskList>
             <MuscleTendonPersonalizationTask>
@@ -93,6 +93,86 @@
                 <is_enabled>true</is_enabled>
 				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
                 <index>1</index>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
+                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+                <optimize_activation_time_constants>true</optimize_activation_time_constants>
+                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+                <optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
+                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+                <optimize_emg_scale_factors>false</optimize_emg_scale_factors>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_optimal_fiber_lengths>false</optimize_optimal_fiber_lengths>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_tendon_slack_lengths>false</optimize_tendon_slack_lengths>
+				<!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
+                <perform_synergy_extrapolation>true</perform_synergy_extrapolation>
+            </MuscleTendonPersonalizationTask>
+            <MuscleTendonPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>2</index>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_electromechanical_delays>false</optimize_electromechanical_delays>
+                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+                <optimize_activation_time_constants>false</optimize_activation_time_constants>
+                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+                <optimize_activation_nonlinearity_constants>false</optimize_activation_nonlinearity_constants>
+                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+                <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
+				<!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
+                <perform_synergy_extrapolation>true</perform_synergy_extrapolation>
+            </MuscleTendonPersonalizationTask>
+             <MuscleTendonPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>3</index>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
+                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+                <optimize_activation_time_constants>true</optimize_activation_time_constants>
+                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+                <optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
+                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+                <optimize_emg_scale_factors>false</optimize_emg_scale_factors>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_optimal_fiber_lengths>false</optimize_optimal_fiber_lengths>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_tendon_slack_lengths>false</optimize_tendon_slack_lengths>
+				<!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
+                <perform_synergy_extrapolation>true</perform_synergy_extrapolation>
+            </MuscleTendonPersonalizationTask>
+             <MuscleTendonPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>4</index>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_electromechanical_delays>false</optimize_electromechanical_delays>
+                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+                <optimize_activation_time_constants>false</optimize_activation_time_constants>
+                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+                <optimize_activation_nonlinearity_constants>false</optimize_activation_nonlinearity_constants>
+                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+                <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
+                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+                <optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
+				<!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
+                <perform_synergy_extrapolation>true</perform_synergy_extrapolation>
+            </MuscleTendonPersonalizationTask>
+            <MuscleTendonPersonalizationTask>
+                <!--Flag indicating whether or not the task is enabled.-->
+                <is_enabled>true</is_enabled>
+				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>5</index>
                 <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
                 <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
                 <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
@@ -214,7 +294,7 @@
                     <!--Max allowable error or deviation from indicated set point-->
                     <max_allowable_error>0.3</max_allowable_error>
                 </ResidualMuscleActivations>
-			</SynergyExtrapolationSettings>  
+			</SynergyExtrapolationSettings>
         </MuscleTendonCostFunctionTerms>
         <GroupedMuscles>
             <GroupedActivationTimeConstants>
@@ -277,7 +357,7 @@
                 <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
                 <musclegroups>VastMedMissingEmgChannelL</musclegroups>
             </GroupedMissingEmgChannels>
-        </GroupedMuscles> 
+        </GroupedMuscles>
         <!--*Optional* The vMaxFactor to use-->
         <v_max_factor>10</v_max_factor>
 		<!--*Optional* The muscle specific tension to use-->

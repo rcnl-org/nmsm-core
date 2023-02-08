@@ -38,7 +38,7 @@
 
 function value = getFrameParameterValue(model, jointName, isParent, ...
     isTranslation, coordNum)
-import org.opensim.modeling.*
+import org.opensim.modeling.PhysicalOffsetFrame
 if(isParent)
     frame = model.getJointSet().get(jointName).getParentFrame();
     offsetFrame = PhysicalOffsetFrame.safeDownCast(frame);
