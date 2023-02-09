@@ -81,12 +81,12 @@
 					<springConstants>true</springConstants>
 					<!--Damping factor-->
 					<dampingFactor>false</dampingFactor>
-					<!--Coefficients allowing for adjustments to kinematics during optimization-->
-					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 					<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
 					<dynamicFrictionCoefficient>true</dynamicFrictionCoefficient>
 					<!--Height value at which linear springs exert force. Only recommended when primarily calibrating vertical force-->
 					<restingSpringLength>true</restingSpringLength>
+					<!--Coefficients allowing for adjustments to kinematics during optimization-->
+					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 				</DesignVariables>
 				<!--Settings for cost function terms for the task-->
 				<CostFunctionTerms>
@@ -157,12 +157,12 @@
 					<springConstants>true</springConstants>
 					<!--Damping factor-->
 					<dampingFactor>false</dampingFactor>
-					<!--Coefficients allowing for adjustments to kinematics during optimization-->
-					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 					<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
 					<dynamicFrictionCoefficient>true</dynamicFrictionCoefficient>
 					<!--Height value at which linear springs exert force. Only recommended when primarily calibrating vertical force-->
 					<restingSpringLength>false</restingSpringLength>
+					<!--Coefficients allowing for adjustments to kinematics during optimization-->
+					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 				</DesignVariables>
 				<!--Settings for cost function terms for the task-->
 				<CostFunctionTerms>
@@ -233,12 +233,12 @@
 					<springConstants>true</springConstants>
 					<!--Damping factor-->
 					<dampingFactor>false</dampingFactor>
-					<!--Coefficients allowing for adjustments to kinematics during optimization-->
-					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 					<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
 					<dynamicFrictionCoefficient>true</dynamicFrictionCoefficient>
 					<!--Height value at which linear springs exert force. Only recommended when primarily calibrating vertical force-->
 					<restingSpringLength>false</restingSpringLength>
+					<!--Coefficients allowing for adjustments to kinematics during optimization-->
+					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 				</DesignVariables>
 				<!--Settings for cost function terms for the task-->
 				<CostFunctionTerms>
