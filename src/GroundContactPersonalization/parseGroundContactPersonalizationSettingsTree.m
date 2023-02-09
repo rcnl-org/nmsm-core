@@ -96,7 +96,7 @@ for i=1:length(footTasks)
                 str2double(output{counter}.splineNodes.Text);
         end
         tempFields = {'forceColumns', 'momentColumns', ...
-            'electricalCenterColumns', 'grfTime'};
+            'electricalCenterColumns', 'grfTime', 'startTime', 'endTime'};
         output{counter} = rmfield(output{counter}, tempFields);
         counter = counter + 1;
     end
@@ -166,6 +166,8 @@ end
 
 % (struct, struct, struct) -> (struct)
 function task = getFootData(tree)
+    task.isLeftFoot = strcmpi('true', ...
+        getFieldByNameOrError(tree, 'is_left_foot').Text);
     task.toesCoordinateName = getFieldByNameOrError(tree, ...
         'toe_coordinate').Text;
     task.markerNames.toe = getFieldByNameOrError(tree, ...
