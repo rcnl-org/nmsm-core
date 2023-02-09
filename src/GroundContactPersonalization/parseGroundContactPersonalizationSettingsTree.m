@@ -61,188 +61,137 @@ else
     inputs.grfFileName = fullfile(pwd, grfFile);
     inputDirectory = pwd;
 end
-inputs.numberCycles = str2double(getFieldByNameOrError(tree, ...
-    'number_of_cycles').Text);
 inputs.beltSpeed = str2double(getFieldByNameOrError(tree, ...
     'belt_speed').Text);
-rightTree = getFieldByNameOrError(tree, 'RightFootPersonalization');
-leftTree = getFieldByNameOrError(tree, 'LeftFootPersonalization');
-inputs.right.isEnabled = strcmpi(getFieldByNameOrError(rightTree, ...
-    'is_enabled').Text, 'true');
-inputs.left.isEnabled = strcmpi(getFieldByNameOrError(leftTree, ...
-    'is_enabled').Text, 'true');
-[ik.columnNames, ik.time, ik.data] = parseMotToComponents(...
-    bodyModel, Storage(inputs.motionFileName));
-[~, grfTime, ~] = parseMotToComponents(...
-    bodyModel, Storage(inputs.grfFileName));
-% verifyTime(ik.time, grfTime);
-[inputs.left.experimentalGroundReactionForces, ...
-    inputs.right.experimentalGroundReactionForces] = getGrf(...
-    bodyModel, inputs.grfFileName);
-[inputs.left.experimentalGroundReactionMoments, ...
-    inputs.right.experimentalGroundReactionMoments] = getMoments(...
-    bodyModel, inputs.grfFileName);
-[inputs.left.electricalCenter, inputs.right.electricalCenter] = ...
-    getElectricalCenter(bodyModel, inputs.grfFileName);
 
-if inputs.right.isEnabled
-    % Potentially refactor to use inputs.right if allowing multiple sides
-    inputs = getInputsForSide(inputs, rightTree, ik);
-end
-if inputs.left.isEnabled
-    inputs.isLeftFoot = true;
-    inputs = getInputsForSide(inputs, leftTree, ik);
-end
-
+% Get inputs for each foot
+inputs.tasks = getFootTasks(inputs, tree);
 initialValuesTree = getFieldByNameOrError(tree, 'InitialValues');
 inputs = getInitialValues(inputs, initialValuesTree);
 end
 
-% (Model, string) -> (Array of double, Array of double)
-function [grfLeft, grfRight] = getGrf(bodyModel, grfFile)
-import org.opensim.modeling.Storage
-storage = Storage(grfFile);
-[grfColumnNames, ~, grfData] = parseMotToComponents(bodyModel, ...
-    Storage(grfFile));
-grfLeft = NaN(3, storage.getSize());
-grfRight = NaN(3, storage.getSize());
-for i=1:size(grfColumnNames')
-    label = grfColumnNames(i);
-    if contains(label, 'F')
-        if contains(label, '1') && contains(label, 'x')
-            grfLeft(1, :) = grfData(i, :);
-        end
-        if contains(label, '1') && contains(label, 'y')
-            grfLeft(2, :) = grfData(i, :);
-        end
-        if contains(label, '1') && contains(label, 'z')
-            grfLeft(3, :) = grfData(i, :);
-        end
-        if contains(label, '2') && contains(label, 'x')
-            grfRight(1, :) = grfData(i, :);
-        end
-        if contains(label, '2') && contains(label, 'y')
-            grfRight(2, :) = grfData(i, :);
-        end
-        if contains(label, '2') && contains(label, 'z')
-            grfRight(3, :) = grfData(i, :);
-        end
+% (struct, struct) -> (struct)
+function output = getFootTasks(inputs, tree)
+tasks = getFieldByNameOrError(tree, ...
+    'FootPersonalizationTaskList');
+counter = 1;
+footTasks = orderByIndex(tasks.FootPersonalizationTask);
+for i=1:length(footTasks)
+    if(length(footTasks) == 1)
+        task = footTasks;
+    else
+        task = footTasks{i};
     end
-end
-if any([isnan(grfLeft) isnan(grfRight)])
-    throw(MException('', ['Unable to parse GRF file, check that ' ...
-        'all necessary column labels are present']))
+    if(strcmpi(task.is_enabled.Text, 'true'))
+        output{counter} = getFootData(task);
+        output{counter} = getGroundReactions(inputs.bodyModel, ...
+            inputs.grfFileName, output{counter});
+        output{counter} = getMotion(inputs.bodyModel, ...
+            inputs.motionFileName, output{counter});
+        verifyTime(output{counter}.grfTime, output{counter}.time);
+        output{counter}.splineNodes = valueOrAlternate(tree, ...
+            'nodes_per_cycle', 25);
+        if (isstruct(output{counter}.splineNodes))
+            output{counter}.splineNodes = ...
+                str2double(output{counter}.splineNodes.Text);
+        end
+        tempFields = {'forceColumns', 'momentColumns', ...
+            'electricalCenterColumns', 'grfTime'};
+        output{counter} = rmfield(output{counter}, tempFields);
+        counter = counter + 1;
+    end
 end
 end
 
-% (Model, string) -> (Array of double, Array of double)
-function [momentsLeft, momentsRight] = getMoments(bodyModel, grfFile)
+% (Model, string, struct) -> (struct)
+function task = getMotion(bodyModel, motionFile, task)
 import org.opensim.modeling.Storage
-storage = Storage(grfFile);
-[grfColumnNames, ~, grfData] = parseMotToComponents(bodyModel, ...
-    Storage(grfFile));
-momentsLeft = NaN(3, storage.getSize());
-momentsRight = NaN(3, storage.getSize());
-for i=1:size(grfColumnNames')
-    label = grfColumnNames(i);
-    if contains(label, 'M')
-        if contains(label, '1') && contains(label, 'x')
-            momentsLeft(1, :) = grfData(i, :);
-        end
-        if contains(label, '1') && contains(label, 'y')
-            momentsLeft(2, :) = grfData(i, :);
-        end
-        if contains(label, '1') && contains(label, 'z')
-            momentsLeft(3, :) = grfData(i, :);
-        end
-        if contains(label, '2') && contains(label, 'x')
-            momentsRight(1, :) = grfData(i, :);
-        end
-        if contains(label, '2') && contains(label, 'y')
-            momentsRight(2, :) = grfData(i, :);
-        end
-        if contains(label, '2') && contains(label, 'z')
-            momentsRight(3, :) = grfData(i, :);
-        end
-    end
-end
-if any([isnan(momentsLeft) isnan(momentsRight)])
-    throw(MException('', ['Unable to parse GRF file, check that ' ...
-        'all necessary column labels are present']))
-end
+[~, ikTime, ikData] = parseMotToComponents(...
+    Model(bodyModel), Storage(motionFile));
+startIndex = find(ikTime >= task.startTime, 1, 'first');
+endIndex = find(ikTime <= task.endTime, 1, 'last');
+task.time = ikTime(startIndex:endIndex);
+task.motion = ikData(:, startIndex:endIndex);
 end
 
-% (Model, string) -> (Array of double, Array of double)
-function [electricalCenterLeft, electricalCenterRight] = ...
-    getElectricalCenter(bodyModel, grfFile)
+% (Model, string, struct) -> (struct)
+function task = getGroundReactions(bodyModel, grfFile, task)
 import org.opensim.modeling.Storage
-storage = Storage(grfFile);
-[grfColumnNames, ~, grfData] = parseMotToComponents(bodyModel, ...
-    Storage(grfFile));
-electricalCenterLeft = NaN(3, storage.getSize());
-electricalCenterRight = NaN(3, storage.getSize());
+[grfColumnNames, grfTime, grfData] = parseMotToComponents(...
+    Model(bodyModel), Storage(grfFile));
+startIndex = find(grfTime >= task.startTime, 1, 'first');
+endIndex = find(grfTime <= task.endTime, 1, 'last');
+task.grfTime = grfTime(startIndex:endIndex);
+grf = NaN(3, length(task.grfTime));
+moments = NaN(3, length(task.grfTime));
+ec = NaN(3, length(task.grfTime));
 for i=1:size(grfColumnNames')
     label = grfColumnNames(i);
-    if contains(label, 'EC')
-        if contains(label, '1') && contains(label, 'x')
-            electricalCenterLeft(1, :) = grfData(i, :);
-        end
-        if contains(label, '1') && contains(label, 'y')
-            electricalCenterLeft(2, :) = grfData(i, :);
-        end
-        if contains(label, '1') && contains(label, 'z')
-            electricalCenterLeft(3, :) = grfData(i, :);
-        end
-        if contains(label, '2') && contains(label, 'x')
-            electricalCenterRight(1, :) = grfData(i, :);
-        end
-        if contains(label, '2') && contains(label, 'y')
-            electricalCenterRight(2, :) = grfData(i, :);
-        end
-        if contains(label, '2') && contains(label, 'z')
-            electricalCenterRight(3, :) = grfData(i, :);
-        end
+    if strcmpi(label, task.forceColumns(1, :))
+        grf(1, :) = grfData(i, startIndex:endIndex);
+    end
+    if strcmpi(label, task.forceColumns(2, :))
+        grf(2, :) = grfData(i, startIndex:endIndex);
+    end
+    if strcmpi(label, task.forceColumns(3, :))
+        grf(3, :) = grfData(i, startIndex:endIndex);
+    end
+    if strcmpi(label, task.momentColumns(1, :))
+        moments(1, :) = grfData(i, startIndex:endIndex);
+    end
+    if strcmpi(label, task.momentColumns(2, :))
+        moments(2, :) = grfData(i, startIndex:endIndex);
+    end
+    if strcmpi(label, task.momentColumns(3, :))
+        moments(3, :) = grfData(i, startIndex:endIndex);
+    end
+    if strcmpi(label, task.electricalCenterColumns(1, :))
+        ec(1, :) = grfData(i, startIndex:endIndex);
+    end
+    if strcmpi(label, task.electricalCenterColumns(2, :))
+        ec(2, :) = grfData(i, startIndex:endIndex);
+    end
+    if strcmpi(label, task.electricalCenterColumns(3, :))
+        ec(3, :) = grfData(i, startIndex:endIndex);
     end
 end
-if any([isnan(electricalCenterLeft) isnan(electricalCenterRight)])
+if any([isnan(grf) isnan(moments) isnan(ec)])
     throw(MException('', ['Unable to parse GRF file, check that ' ...
         'all necessary column labels are present']))
 end
+task.experimentalGroundReactionForces = grf;
+task.experimentalGroundReactionMoments = moments;
+task.electricalCenter = ec;
 end
 
 % (struct, struct, struct) -> (struct)
-function inputs = getInputsForSide(inputs, tree, ik)
-    inputs.toesCoordinateName = getFieldByNameOrError(tree, ...
+function task = getFootData(tree)
+    task.toesCoordinateName = getFieldByNameOrError(tree, ...
         'toe_coordinate').Text;
-    inputs.markerNames.toe = getFieldByNameOrError(tree, ...
+    task.markerNames.toe = getFieldByNameOrError(tree, ...
         'toe_marker').Text;
-    inputs.markerNames.medial = getFieldByNameOrError(tree, ...
+    task.markerNames.medial = getFieldByNameOrError(tree, ...
         'medial_marker').Text;
-    inputs.markerNames.lateral = getFieldByNameOrError(tree, ...
+    task.markerNames.lateral = getFieldByNameOrError(tree, ...
         'lateral_marker').Text;
-    inputs.markerNames.heel = getFieldByNameOrError(tree, ...
+    task.markerNames.heel = getFieldByNameOrError(tree, ...
         'heel_marker').Text;
-    inputs.markerNames.midfootSuperior = getFieldByNameOrError(tree, ...
+    task.markerNames.midfootSuperior = getFieldByNameOrError(tree, ...
         'midfoot_superior_marker').Text;
-    inputs.startTime = str2double(getFieldByNameOrError(tree, ...
+    task.startTime = str2double(getFieldByNameOrError(tree, ...
         'start_time').Text);
-    inputs.endTime = str2double(getFieldByNameOrError(tree, ...
+    task.endTime = str2double(getFieldByNameOrError(tree, ...
         'end_time').Text);
-    startIndex = find(ik.time >= inputs.startTime, 1, 'first');
-    endIndex = find(ik.time <= inputs.endTime, 1, 'last');
-    inputs.time = ik.time(startIndex:endIndex);
-    inputs.motion = ik.data(:, startIndex:endIndex);
-    % Refactor second lines to inputs.experimentalGRF, etc if allowing multiple sides
-    inputs.experimentalGroundReactionForces = ...
-        inputs.right.experimentalGroundReactionForces(:, startIndex:endIndex);
-    inputs.experimentalGroundReactionMoments = ...
-        inputs.right.experimentalGroundReactionMoments(:, startIndex:endIndex);
-    inputs.electricalCenter = ...
-        inputs.right.electricalCenter(:, startIndex:endIndex);
+    task.forceColumns = cell2mat(split(getFieldByNameOrError(tree, ...
+        'force_columns').Text));
+    task.momentColumns = cell2mat(split(getFieldByNameOrError(tree, ...
+        'moment_columns').Text));
+    task.electricalCenterColumns = cell2mat(split( ...
+        getFieldByNameOrError(tree, 'electrical_center_columns').Text));
 end
 
 % (Array of double, Array of double) -> (None)
-function verifyTime(ikTime, grfTime)
+function verifyTime(grfTime, ikTime)
     if size(ikTime) ~= size(grfTime)
         throw(MException('', ['IK and GRF time columns have ' ...
             'different lengths']))
@@ -266,10 +215,6 @@ end
 
 function params = getParams(tree)
 params = struct();
-params.splineNodes = valueOrAlternate(tree, 'nodes_per_cycle', 25);
-if (isstruct(params.splineNodes))
-    params.splineNodes = str2double(params.splineNodes.Text);
-end
 params.maxIterations = valueOrAlternate(tree, 'max_iterations', 325);
 if(isstruct(params.maxIterations))
     params.maxIterations = str2double(params.maxIterations.Text);
@@ -280,10 +225,10 @@ if(isstruct(params.maxFunctionEvaluations))
     params.maxFunctionEvaluations = str2double(params.maxFunctionEvaluations.Text);
 end
 
-params.tasks = getTasks(tree);
+params.tasks = getOptimizationTasks(tree);
 end
 
-function output = getTasks(tree)
+function output = getOptimizationTasks(tree)
 tasks = getFieldByNameOrError(tree, ...
     'GroundContactPersonalizationTaskList');
 counter = 1;
