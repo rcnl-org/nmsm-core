@@ -34,7 +34,7 @@ if ~params.tasks{task}.designVariables(1)
         valuesStruct.springConstants = inputs.springConstants;
 end
 if ~params.tasks{task}.designVariables(2)
-        valuesStruct.dampingFactors = inputs.dampingFactors;
+        valuesStruct.dampingFactor = inputs.dampingFactor;
 end
 if ~params.tasks{task}.designVariables(3)
         valuesStruct.bSplineCoefficients = inputs.bSplineCoefficients;
@@ -194,11 +194,5 @@ if (params.tasks{task}.costTerms.springConstantErrorFromNeighbors.isEnabled)
         ((1 / maxAllowableError) * ...
         calcSpringConstantsErrorFromNeighbors( ...
         valuesStruct.springConstants, modeledValues.gaussianWeights)) .^ 4];
-end
-if (params.tasks{task}.costTerms.dampingFactorErrorFromMean.isEnabled)
-    maxAllowableError = ...
-        params.tasks{task}.costTerms.dampingFactorErrorFromMean.maxAllowableError;
-    cost = [cost (1 / maxAllowableError) * ...
-        calcDampingFactorsErrorFromMean(valuesStruct.dampingFactors)];
 end
 end

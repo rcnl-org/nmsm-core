@@ -52,8 +52,8 @@ if (params.tasks{task}.designVariables(1))
     fieldNameOrder = [fieldNameOrder "springConstants"];
 end
 if (params.tasks{task}.designVariables(2))
-    initialValues = [initialValues inputs.dampingFactors];
-    fieldNameOrder = [fieldNameOrder "dampingFactors"];
+    initialValues = [initialValues inputs.dampingFactor];
+    fieldNameOrder = [fieldNameOrder "dampingFactor"];
 end
 if (params.tasks{task}.designVariables(3))
     initialValues = [initialValues ...
@@ -80,8 +80,8 @@ if (params.tasks{task}.designVariables(1))
     upperBounds = [upperBounds Inf(1, length(inputs.springConstants))];
 end
 if (params.tasks{task}.designVariables(2))
-    lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
-    upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
+    lowerBounds = [lowerBounds 0];
+    upperBounds = [upperBounds Inf];
 end
 if (params.tasks{task}.designVariables(3))
     lowerBounds = [lowerBounds -Inf(1, length(reshape(...

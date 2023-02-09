@@ -92,8 +92,7 @@ inputs.midfootSuperiorPosition = markerPositions.midfootSuperior;
 % initialSpringRestingLength = 0.05;
 inputs.springConstants = inputs.initialSpringConstants * ones(1, ...
     inputs.numSpringMarkers);
-inputs.dampingFactors = inputs.initialDampingFactors * ones(1, ...
-    inputs.numSpringMarkers);
+inputs.dampingFactor = inputs.initialDampingFactor;
 % inputs.springRestingLength = inputs.initialRestingSpringLength;
 
 inputs.experimentalGroundReactionForcesSlope = calcBSplineDerivative( ...
