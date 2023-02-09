@@ -6,7 +6,7 @@
         <!--Directory for input files-->
         <input_directory/>
         <!--Name of the input model file (.osim) to use-->
-        <input_model_file>GPOPSmodel_GCP.osim</input_model_file>
+        <input_model_file>optModel_v6_correct_height.osim</input_model_file>
 		<!--Name of the foot model file (.osim), will be generated automatically in final version-->
 		<input_foot_model_file>footModel.osim</input_foot_model_file>
 		<!--Name of the input motion file (.mot) to use-->
