@@ -13,8 +13,6 @@
         <input_motion_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_ik.mot</input_motion_file>
 		<!--Name of the input ground reaction forces file (.mot) to use-->
         <input_grf_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_GRF.mot</input_grf_file>
-		<!--predictedMotionFGC_kneeAddR.mot-->
-		<!--CPRIT_Patient3_NormalGait_1pt0_01_Right_75_ik.mot -->
 		<!--The number of gait cycles included in the time ranges specified in the right and left personalization settings below-->
 		<number_of_cycles>1</number_of_cycles>
 		<!--*Optional* The number of nodes per gait cycle used to define motion using B-splines-->
@@ -22,45 +20,55 @@
 		<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
 		<belt_speed>1</belt_speed>
 		<!--Settings for ground contact personalization on the right side-->
-		<RightFootPersonalization>
-			<!--Flag indicating whether the side will be personalized-->
-            <is_enabled>true</is_enabled>
-			<!--Start time for right side gait cycles in motion and ground reaction force files-->
-			<start_time>81.181</start_time>
-			<!--End time for right side gait cycles in motion and ground reaction force files-->
-			<end_time>82.286</end_time>
-			<!--Name of the right toe angle coordinate in the model file-->
-			<toe_coordinate>mtp_angle_r</toe_coordinate>
-			<!--Name of the right toe joint in the model file-->
-			<toe_joint>mtp_r</toe_joint>
-			<!--Names of the markers used to define the foot area-->
-			<toe_marker>R.Toe</toe_marker>
-			<medial_marker>R.Toe.Medial</medial_marker>
-			<lateral_marker>R.Toe.Lateral</lateral_marker>
-			<heel_marker>R.Heel</heel_marker>
-			<!--Name of midfoot superior marker used to define ground reaction moments-->
-			<midfoot_superior_marker>R.Midfoot.Superior</midfoot_superior_marker>
-		</RightFootPersonalization>
-		<!--Settings for ground contact personalization on the right side-->
-        <LeftFootPersonalization>
-			<!--Flag indicating whether the side will be personalized-->
-            <is_enabled>false</is_enabled>
-			<!--Start time for right side gait cycles in motion and ground reaction force files-->
-			<start_time>81.181</start_time>
-			<!--End time for right side gait cycles in motion and ground reaction force files-->
-			<end_time>82.286</end_time>
-			<!--Name of the right toe angle coordinate in the model file-->
-			<toe_coordinate>mtp_angle_l</toe_coordinate>
-			<!--Name of the right toe joint in the model file-->
-			<toe_joint>mtp_l</toe_joint>
-			<!--Names of the markers used to define the foot area-->
-			<toe_marker>L.Toe</toe_marker>
-			<medial_marker>L.Toe.Medial</medial_marker>
-			<lateral_marker>L.Toe.Lateral</lateral_marker>
-			<heel_marker>L.Heel</heel_marker>
-			<!--Name of midfoot superior marker used to define ground reaction moments-->
-			<midfoot_superior_marker>L.Midfoot.Superior</midfoot_superior_marker>
-		</LeftFootPersonalization>
+		<FootPersonalizationTaskSet>
+			<FootPersonalizationTask>
+				<!--Flag indicating whether the foot will be personalized-->
+				<is_enabled>true</is_enabled>
+				<!--Index of task used to determine order of tasks-->
+				<index>1</index>
+				<!--Flag indicating whether this is a left foot-->
+				<is_left_foot>false</is_left_foot>
+				<!--Start time for right side gait cycles in motion and ground reaction force files-->
+				<start_time>81.181</start_time>
+				<!--End time for motion and ground reaction force files-->
+				<end_time>82.286</end_time>
+				<!--Name of the toe angle coordinate in the model file-->
+				<toe_coordinate>mtp_angle_r</toe_coordinate>
+				<!--Name of the toe joint in the model file-->
+				<toe_joint>mtp_r</toe_joint>
+				<!--Names of the markers used to define the foot area-->
+				<toe_marker>R.Toe</toe_marker>
+				<medial_marker>R.Toe.Medial</medial_marker>
+				<lateral_marker>R.Toe.Lateral</lateral_marker>
+				<heel_marker>R.Heel</heel_marker>
+				<!--Name of midfoot superior marker used to define ground reaction moments-->
+				<midfoot_superior_marker>R.Midfoot.Superior</midfoot_superior_marker>
+			</FootPersonalizationTask>
+			<!--Settings for ground contact personalization on the right side-->
+			<FootPersonalizationTask>
+				<!--Flag indicating whether the foot will be personalized-->
+				<is_enabled>true</is_enabled>
+				<!--Index of task used to determine order of tasks-->
+				<index>2</index>
+				<!--Flag indicating whether this is a left foot-->
+				<is_left_foot>true</is_left_foot>
+				<!--Start time for motion and ground reaction force files-->
+				<start_time>81.181</start_time>
+				<!--End time for right side gait cycles in motion and ground reaction force files-->
+				<end_time>82.286</end_time>
+				<!--Name of the toe angle coordinate in the model file-->
+				<toe_coordinate>mtp_angle_l</toe_coordinate>
+				<!--Name of the toe joint in the model file-->
+				<toe_joint>mtp_l</toe_joint>
+				<!--Names of the markers used to define the foot area-->
+				<toe_marker>L.Toe</toe_marker>
+				<medial_marker>L.Toe.Medial</medial_marker>
+				<lateral_marker>L.Toe.Lateral</lateral_marker>
+				<heel_marker>L.Heel</heel_marker>
+				<!--Name of midfoot superior marker used to define ground reaction moments-->
+				<midfoot_superior_marker>L.Midfoot.Superior</midfoot_superior_marker>
+			</FootPersonalizationTask>
+		</FootPersonalizationTaskSet>
 		<GroundContactPersonalizationTaskList>
 			<GroundContactPersonalizationTask>
                 <!--Flag indicating whether or not the task is enabled.-->
@@ -71,8 +79,8 @@
 				<DesignVariables>
 					<!--Stiffness values specific to each point of contact-->
 					<springConstants>true</springConstants>
-					<!--Damping factors specific to each point of contact-->
-					<dampingFactors>false</dampingFactors>
+					<!--Damping factor-->
+					<dampingFactor>false</dampingFactor>
 					<!--Coefficients allowing for adjustments to kinematics during optimization-->
 					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 					<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
@@ -147,8 +155,8 @@
 				<DesignVariables>
 					<!--Stiffness values specific to each point of contact-->
 					<springConstants>true</springConstants>
-					<!--Damping factors specific to each point of contact-->
-					<dampingFactors>false</dampingFactors>
+					<!--Damping factor-->
+					<dampingFactor>false</dampingFactor>
 					<!--Coefficients allowing for adjustments to kinematics during optimization-->
 					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 					<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
@@ -223,8 +231,8 @@
 				<DesignVariables>
 					<!--Stiffness values specific to each point of contact-->
 					<springConstants>true</springConstants>
-					<!--Damping factors specific to each point of contact-->
-					<dampingFactors>false</dampingFactors>
+					<!--Damping factor-->
+					<dampingFactor>false</dampingFactor>
 					<!--Coefficients allowing for adjustments to kinematics during optimization-->
 					<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 					<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
@@ -312,12 +320,6 @@
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>2000</max_allowable_error>
 					</springConstantErrorFromNeighbors>
-					<dampingFactorErrorFromMean>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>false</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.001</max_allowable_error>
-					</dampingFactorErrorFromMean>
 				</CostFunctionTerms>
 			</GroundContactPersonalizationTask>
 		</GroundContactPersonalizationTaskList>
@@ -325,7 +327,7 @@
 		<InitialValues>
 			<RestingSpringLength>0.05</RestingSpringLength>
 			<SpringConstants>2500</SpringConstants>
-			<DampingFactors>1e-4</DampingFactors>
+			<DampingFactor>1e-4</DampingFactor>
 			<DynamicFrictionCoefficient>0.25</DynamicFrictionCoefficient>
 		</InitialValues>
         <!--*Optional* The number of allowed iterations of the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
