@@ -56,8 +56,8 @@ if (params.tasks{task}.designVariables(1))
     index = index + length(inputs.springConstants);
 end
 if (params.tasks{task}.designVariables(2))
-    inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
-    index = index + length(inputs.dampingFactors);
+    inputs.dampingFactor = results(index);
+    index = index + 1;
 end
 if (params.tasks{task}.designVariables(3))
     bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficients, 1, []));
