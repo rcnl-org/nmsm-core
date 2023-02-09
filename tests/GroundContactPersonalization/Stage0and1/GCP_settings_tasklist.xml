@@ -13,14 +13,12 @@
         <input_motion_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_ik.mot</input_motion_file>
 		<!--Name of the input ground reaction forces file (.mot) to use-->
         <input_grf_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_GRF.mot</input_grf_file>
-		<!--The number of gait cycles included in the time ranges specified in the right and left personalization settings below-->
-		<number_of_cycles>1</number_of_cycles>
 		<!--*Optional* The number of nodes per gait cycle used to define motion using B-splines-->
 		<nodes_per_cycle>25</nodes_per_cycle>
 		<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
 		<belt_speed>1</belt_speed>
 		<!--Settings for ground contact personalization on the right side-->
-		<FootPersonalizationTaskSet>
+		<FootPersonalizationTaskList>
 			<FootPersonalizationTask>
 				<!--Flag indicating whether the foot will be personalized-->
 				<is_enabled>true</is_enabled>
@@ -32,6 +30,12 @@
 				<start_time>81.181</start_time>
 				<!--End time for motion and ground reaction force files-->
 				<end_time>82.286</end_time>
+				<!--Names of the force columns in the grf file, ordered X, Y, Z-->
+				<force_columns>F2x F2y F2z</force_columns>
+				<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
+				<moment_columns>M2x M2y M2z</moment_columns>
+				<!--Names of the electrical center columns in the grf file, ordered X, Y, Z-->
+				<electrical_center_columns>EC2x EC2y EC2z</electrical_center_columns>
 				<!--Name of the toe angle coordinate in the model file-->
 				<toe_coordinate>mtp_angle_r</toe_coordinate>
 				<!--Name of the toe joint in the model file-->
@@ -44,7 +48,6 @@
 				<!--Name of midfoot superior marker used to define ground reaction moments-->
 				<midfoot_superior_marker>R.Midfoot.Superior</midfoot_superior_marker>
 			</FootPersonalizationTask>
-			<!--Settings for ground contact personalization on the right side-->
 			<FootPersonalizationTask>
 				<!--Flag indicating whether the foot will be personalized-->
 				<is_enabled>true</is_enabled>
@@ -56,6 +59,12 @@
 				<start_time>81.181</start_time>
 				<!--End time for right side gait cycles in motion and ground reaction force files-->
 				<end_time>82.286</end_time>
+				<!--Names of the force columns in the grf file, ordered X, Y, Z-->
+				<force_columns>F1x F1y F1z</force_columns>
+				<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
+				<moment_columns>M1x M1y M1z</moment_columns>
+				<!--Names of the electrical center columns in the grf , ordered X, Y, Z-->
+				<electrical_center_columns>EC1x EC1y EC1z</electrical_center_columns>
 				<!--Name of the toe angle coordinate in the model file-->
 				<toe_coordinate>mtp_angle_l</toe_coordinate>
 				<!--Name of the toe joint in the model file-->
@@ -68,7 +77,7 @@
 				<!--Name of midfoot superior marker used to define ground reaction moments-->
 				<midfoot_superior_marker>L.Midfoot.Superior</midfoot_superior_marker>
 			</FootPersonalizationTask>
-		</FootPersonalizationTaskSet>
+		</FootPersonalizationTaskList>
 		<GroundContactPersonalizationTaskList>
 			<GroundContactPersonalizationTask>
                 <!--Flag indicating whether or not the task is enabled.-->
