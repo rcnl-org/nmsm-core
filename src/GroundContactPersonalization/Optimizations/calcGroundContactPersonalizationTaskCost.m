@@ -37,15 +37,15 @@ if ~params.tasks{task}.designVariables(2)
         valuesStruct.dampingFactor = inputs.dampingFactor;
 end
 if ~params.tasks{task}.designVariables(3)
-        valuesStruct.bSplineCoefficients = inputs.bSplineCoefficients;
-end
-if ~params.tasks{task}.designVariables(4)
         valuesStruct.dynamicFrictionCoefficient = ...
             inputs.dynamicFrictionCoefficient;
 end
-if ~params.tasks{task}.designVariables(5)
+if ~params.tasks{task}.designVariables(4)
         valuesStruct.restingSpringLength = ...
             inputs.restingSpringLength;
+end
+if ~params.tasks{task}.designVariables(5)
+        valuesStruct.bSplineCoefficients = inputs.bSplineCoefficients;
 end
 valuesBSplineCoefficients = ...
     reshape(valuesStruct.bSplineCoefficients, [], 7);

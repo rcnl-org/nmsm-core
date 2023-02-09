@@ -44,10 +44,10 @@ end
 if ~params.tasks{task}.designVariables(2)
     values.dampingFactors = inputs.dampingFactors;
 end
-if ~params.tasks{task}.designVariables(4)
+if ~params.tasks{task}.designVariables(3)
     values.dynamicFrictionCoefficient = inputs.dynamicFrictionCoefficient;
 end
-if ~params.tasks{task}.designVariables(5)
+if ~params.tasks{task}.designVariables(4)
     values.restingSpringLength = inputs.restingSpringLength;
 end
 for i=1:length(markerNamesFields)
