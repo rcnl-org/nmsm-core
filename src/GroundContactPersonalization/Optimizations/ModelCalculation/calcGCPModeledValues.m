@@ -35,9 +35,9 @@
 % ----------------------------------------------------------------------- %
 
 function modeledValues = calcGCPModeledValues(inputs, values, ...
-    modeledJointPositions, modeledJointVelocities, params, task)
-[model, state] = Model(inputs.model);
-markerNamesFields = fieldnames(inputs.markerNames);
+    modeledJointPositions, modeledJointVelocities, params, task, foot)
+[model, state] = Model(inputs.tasks{foot}.model);
+markerNamesFields = fieldnames(inputs.tasks{foot}.markerNames);
 if ~params.tasks{task}.designVariables(1)
     values.springConstants = inputs.springConstants;
 end
@@ -77,7 +77,8 @@ for i=1:size(modeledJointPositions, 2)
     if isCalculated(1)
         [modeledValues.markerPositions, modeledValues.markerVelocities] ...
             = findModeledMarkerCoordinates(model, state, ...
-            modeledValues.markerPositions, inputs.markerNames, i);
+            modeledValues.markerPositions, ...
+            inputs.tasks{foot}.markerNames, i);
     end
     if isCalculated(2)
         markerKinematics.height = zeros(size(values.springConstants));
@@ -108,13 +109,14 @@ for i=1:size(modeledJointPositions, 2)
         [modeledValues.anteriorGrf(i), ...
             modeledValues.lateralGrf(i), springForces] = ...
             calcModeledHorizontalGroundReactionForces(values, ...
-            inputs.beltSpeed, markerKinematics, springForces);
+            inputs.tasks{foot}.beltSpeed, markerKinematics, springForces);
     end
     if isCalculated(4)
         markerKinematics.xPosition = zeros(size(values.springConstants));
         markerKinematics.zPosition = zeros(size(values.springConstants));
         inputs.midfootSuperiorPosition(:, i) = ...
-            Model(inputs.model).getMarkerSet().get(inputs.markerNames.midfootSuperior ...
+            Model(inputs.tasks{foot}.model).getMarkerSet().get(...
+            inputs.tasks{foot}.markerNames.midfootSuperior ...
             ).getLocationInGround(state).getAsMat()';
         for j = 1:length(values.springConstants)
             markerKinematics.xPosition(j) = modelMarkerPositions(j).get(0);
@@ -123,7 +125,7 @@ for i=1:size(modeledJointPositions, 2)
         [modeledValues.xGrfMoment(i), modeledValues.yGrfMoment(i), ...
             modeledValues.zGrfMoment(i)] = ...
             calcModeledGroundReactionMoments(values, ...
-            inputs, markerKinematics, springForces, i);
+            inputs.tasks{foot}, markerKinematics, springForces, i);
     end
     if params.tasks{task}.costTerms.springConstantErrorFromNeighbors.isEnabled
         for j = 1:length(inputs.springConstants)

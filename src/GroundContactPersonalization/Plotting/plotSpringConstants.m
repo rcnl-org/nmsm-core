@@ -27,10 +27,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotSpringConstants(footModel, inputs, toesBodyName, ...
-    hindfootBodyName)
+function plotSpringConstants(inputs)
+toesBodyName = inputs.toesBodyName;
+hindfootBodyName = inputs.hindfootBodyName;
 
-[footModel, state] = Model(footModel);
+[footModel, state] = Model(inputs.model);
 calcnToToes = footModel.getBodySet().get(...
     toesBodyName).findTransformBetween(state, ...
     footModel.getBodySet().get(hindfootBodyName));
