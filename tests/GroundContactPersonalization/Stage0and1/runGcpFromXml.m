@@ -32,16 +32,16 @@ end
 %% Plot forces and kinematics
 for foot = 1:length(inputs.tasks)
     figure(1 + 3 * (foot - 1))
-    plotGroundReactionQuantities(inputs.tasks{foot}, params, task)
+    plotGroundReactionQuantities(inputs, params, task, foot)
     figure(2 + 3 * (foot - 1))
     plotCoordinates(inputs.tasks{foot})
 end
 
 %% Spring constant plot
-footModel = Model("footModel.osim");
+% footModel = Model("footModel.osim");
 for foot = 1:length(inputs.tasks)
     figure(3 + 3 * (foot - 1))
-    plotSpringConstants(inputs.tasks{foot})
+    plotSpringConstants(inputs.tasks{foot}, inputs)
 end
 
 %% Replace moments
