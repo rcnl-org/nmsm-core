@@ -61,8 +61,6 @@ else
     inputs.grfFileName = fullfile(pwd, grfFile);
     inputDirectory = pwd;
 end
-inputs.beltSpeed = str2double(getFieldByNameOrError(tree, ...
-    'belt_speed').Text);
 
 % Get inputs for each foot
 inputs.tasks = getFootTasks(inputs, tree);
@@ -183,6 +181,8 @@ function task = getFootData(tree)
         'start_time').Text);
     task.endTime = str2double(getFieldByNameOrError(tree, ...
         'end_time').Text);
+    task.beltSpeed = str2double(getFieldByNameOrError(tree, ...
+        'belt_speed').Text);
     task.forceColumns = cell2mat(split(getFieldByNameOrError(tree, ...
         'force_columns').Text));
     task.momentColumns = cell2mat(split(getFieldByNameOrError(tree, ...
