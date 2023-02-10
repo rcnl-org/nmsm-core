@@ -42,7 +42,7 @@ if ~params.tasks{task}.designVariables(1)
     values.springConstants = inputs.springConstants;
 end
 if ~params.tasks{task}.designVariables(2)
-    values.dampingFactors = inputs.dampingFactors;
+    values.dampingFactor = inputs.dampingFactor;
 end
 if ~params.tasks{task}.designVariables(3)
     values.dynamicFrictionCoefficient = inputs.dynamicFrictionCoefficient;
@@ -96,7 +96,7 @@ for i=1:size(modeledJointPositions, 2)
         end
         [modeledValues.verticalGrf(i), springForces] = ...
             calcModeledVerticalGroundReactionForce(...
-            values.springConstants, values.dampingFactors, ...
+            values.springConstants, values.dampingFactor, ...
             values.restingSpringLength, markerKinematics, springForces);
     end
     if isCalculated(3)
