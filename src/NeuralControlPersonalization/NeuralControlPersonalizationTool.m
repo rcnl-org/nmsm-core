@@ -33,7 +33,16 @@ function NeuralControlPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
+
+precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+if isstruct(precalInputs)
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
+    inputs = updateNcpInitialGuess(inputs, precalInputs, ...
+        optimizedInitialGuess);
+end
+
 optimizedValues = NeuralControlPersonalization(inputs, params);
+save("results.mat", "optimizedValues", "-mat")
 %% results is a structure, report not implemented yet
 results = calcFinalMuscleActivations(optimizedValues, inputs);
 results = calcFinalModelMoments(results, inputs);
