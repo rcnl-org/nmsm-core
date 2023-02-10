@@ -138,6 +138,9 @@ for marker = 1:length(fieldnames(meanRightFootMarkerLocations))
 end
 end
 
+% (Cell Array) -> (double)
+% Confirms that all feet have the same number of spring markers and returns
+% the number of spring markers
 function numSpringMarkers = confirmNumSpringMarkers(tasks)
     counts = zeros(1, length(tasks));
     for task = 1:length(tasks)
