@@ -146,7 +146,7 @@ function numSpringMarkers = confirmNumSpringMarkers(tasks)
     for task = 1:length(tasks)
         counts(task) = tasks{task}.numSpringMarkers;
     end
-    if all (counts == counts(1))
+    if any(counts ~= counts(1))
         throw(MException('', 'Feet have an unequal number of springs'))
     end
     numSpringMarkers = counts(1);
