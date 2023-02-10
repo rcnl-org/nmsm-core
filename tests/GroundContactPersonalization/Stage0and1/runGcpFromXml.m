@@ -26,7 +26,7 @@ end
 % GCP Tasks
 for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
-    save("2-6-4deg01m_" + task + ".mat")
+    save("2-9-feetTogether_" + task + ".mat")
 end
 
 %% Plot forces and kinematics
