@@ -32,7 +32,7 @@
 function [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-params = getParams(settingsTree);
+params = getParams(settingsTree, inputs.model);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -53,12 +53,16 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-mtpResultsDirectory = fullfile(inputDirectory, getFieldByNameOrError( ...
-    tree, "mtp_results_input_directory").Text);
+mtpResultsDirectory = getFieldByNameOrError( ...
+    tree, "mtp_results_input_directory").Text;
 inputs.coordinateNames = parseSpaceSeparatedList(tree, ...
     "coordinate_list");
 inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
     inputs.coordinateNames);
+% size(inputs.muscleNames)
+% test = Model(inputs.model).getForceSet().getGroup("right_side").getMembers();
+% size(test)
+% test = Model(inputs.model).getForceSet().get("test");
 inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
 prefixes = findPrefixes(tree, inputDirectory);
 inputs = matchMuscleNamesFromCoordinatesAndSynergyGroups(inputs);
@@ -86,6 +90,7 @@ inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.optimalFiberLengthScaleFactors, ...
     inputs.tendonSlackLengthScaleFactors] = getMtpDataInputs( ...
     inputs.mtpMuscleData, inputs.muscleNames);
+
 end
 
 function [maxIsometricForce, optimalFiberLength, tendonSlackLength, ...
@@ -107,8 +112,14 @@ for i = 1:length(muscles)
 end
 end
 
-function params = getParams(tree)
+function params = getParams(tree, model)
+model = Model(model);
 params = struct();
+muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
+params.activationGroupNames = parseSpaceSeparatedList(muscleGroupTree, ...
+    'activations');
+params.activationGroups = groupNamesToGroups( ...
+    params.activationGroupNames, model);
 end
 
 function groups = getSynergyGroups(tree, model)

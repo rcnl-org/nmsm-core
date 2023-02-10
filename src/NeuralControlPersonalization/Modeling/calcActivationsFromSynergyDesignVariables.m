@@ -15,11 +15,11 @@ for i = 1:length(inputs.synergyGroups)
     end
     column = column + length(inputs.synergyGroups{i}.muscleNames);
 end
-weights
 commandNodes = zeros(inputs.numTrials, inputs.numNodes, inputs.numSynergies);
 for i = 1:inputs.numTrials
     for j = 1:inputs.numSynergies
-        commandNodes(i, :, j) = values(valuesIndex : valuesIndex + inputs.numNodes - 1);
+        commandNodes(i, :, j) = values(valuesIndex : valuesIndex + ...
+            inputs.numNodes - 1);
         valuesIndex = valuesIndex + inputs.numNodes;
     end
 end
@@ -32,7 +32,8 @@ commands = zeros(inputs.numTrials, inputs.numPoints, inputs.numSynergies);
 
 for i = 1:inputs.numTrials
     for j = 1:inputs.numSynergies
-        commands(i, :, j) = spline(percentNodes, commandNodes(i, :, j), percent);
+        commands(i, :, j) = spline(percentNodes, commandNodes(i, :, j), ...
+            percent);
     end
 end
 
