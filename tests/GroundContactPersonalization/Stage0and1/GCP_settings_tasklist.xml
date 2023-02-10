@@ -15,8 +15,6 @@
         <input_grf_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_GRF.mot</input_grf_file>
 		<!--*Optional* The number of nodes per gait cycle used to define motion using B-splines-->
 		<nodes_per_cycle>25</nodes_per_cycle>
-		<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
-		<belt_speed>1</belt_speed>
 		<!--Settings for ground contact personalization on the right side-->
 		<FootPersonalizationTaskList>
 			<FootPersonalizationTask>
@@ -30,6 +28,8 @@
 				<start_time>81.181</start_time>
 				<!--End time for motion and ground reaction force files-->
 				<end_time>82.286</end_time>
+				<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
+				<belt_speed>1</belt_speed>
 				<!--Names of the force columns in the grf file, ordered X, Y, Z-->
 				<force_columns>F2x F2y F2z</force_columns>
 				<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
@@ -59,6 +59,8 @@
 				<start_time>81.181</start_time>
 				<!--End time for right side gait cycles in motion and ground reaction force files-->
 				<end_time>82.286</end_time>
+				<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
+				<belt_speed>1</belt_speed>
 				<!--Names of the force columns in the grf file, ordered X, Y, Z-->
 				<force_columns>F1x F1y F1z</force_columns>
 				<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
