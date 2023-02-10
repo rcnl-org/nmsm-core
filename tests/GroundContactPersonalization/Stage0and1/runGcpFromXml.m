@@ -19,7 +19,8 @@ for task = 1:length(inputs.tasks)
 end
 
 for task = 1:length(params.tasks)
-    params.tasks{task}.costTerms.springConstantErrorFromNeighbors.standardDeviation = valueOrAlternate(params, 'nothere', 0.05);
+    params.tasks{task}.costTerms.springConstantErrorFromNeighbors ...
+        .standardDeviation = valueOrAlternate(params, 'nothere', 0.05);
 end
 
 % GCP Tasks
@@ -29,25 +30,19 @@ for task = 1:length(params.tasks)
 end
 
 %% Plot forces and kinematics
-if exist('1', 'var')
-    close 1
+for foot = 1:length(inputs.tasks)
+    figure(1 + 3 * (foot - 1))
+    plotGroundReactionQuantities(inputs.tasks{foot}, params, task)
+    figure(2 + 3 * (foot - 1))
+    plotCoordinates(inputs.tasks{foot})
 end
-if exist('2', 'var')
-    close 2
-end
-figure(1)
-plotGroundReactionQuantities(inputs, params, task)
-figure(2)
-plotCoordinates(inputs)
 
 %% Spring constant plot
-if exist('3', 'var')
-    close 3
-end
-figure(3)
 footModel = Model("footModel.osim");
-plotSpringConstants(footModel, inputs, inputs.toesBodyName, inputs.hindfootBodyName)
-
+for foot = 1:length(inputs.tasks)
+    figure(3 + 3 * (foot - 1))
+    plotSpringConstants(inputs.tasks{foot})
+end
 
 %% Replace moments
 
