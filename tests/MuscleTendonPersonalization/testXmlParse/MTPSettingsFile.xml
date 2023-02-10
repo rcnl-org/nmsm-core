@@ -81,6 +81,8 @@
 					</MaximumNormalizedMuscleFiberLength>
 				</GroupedMuscles>
 			</MuscleTendonLengthInitializationCostFunctionTerms>
+			<!--*Optional* The muscle specific tension to use-->
+			<maximum_muscle_stress>610e3</maximum_muscle_stress>
 		</MuscleTendonLengthInitialization>
 		<!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
 		<muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
@@ -224,8 +226,6 @@
         </GroupedMuscles>
         <!--*Optional* The vMaxFactor to use-->
         <v_max_factor>10</v_max_factor>
-		<!--*Optional* The muscle specific tension to use-->
-        <maximum_muscle_stress>610e3</maximum_muscle_stress>
         <!--*Optional* The number of allowed iterations of the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
         <max_iterations>2e3</max_iterations>
         <!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->

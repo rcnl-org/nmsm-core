@@ -74,6 +74,8 @@ inputs = getCostFunctionTerms(getFieldByNameOrError(tree, ...
 maximumMuscleStress = getFieldByName(tree, 'maximum_muscle_stress');
 if(isstruct(maximumMuscleStress))
     inputs.maximumMuscleStress = str2double(maximumMuscleStress.Text);
+else
+    inputs.maximumMuscleStress = 610e3;
 end
 maxNormalizedMuscleFiberLength = getFieldByName(tree, ...
     'max_normalized_muscle_fiber_length');
@@ -87,6 +89,7 @@ if(isstruct(minNormalizedMuscleFiberLength))
     inputs.minNormalizedMuscleFiberLength = ...
         str2double(minNormalizedMuscleFiberLength.Text);
 end
+
 muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
 groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
     "normalized_muscle_fiber_lengths");
