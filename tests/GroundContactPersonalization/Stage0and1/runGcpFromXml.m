@@ -5,9 +5,18 @@ clear
 inputs = prepareGroundContactPersonalizationInputs(inputs);
 
 % Stage 0
-inputs = initializeRestingSpringLength(inputs, params);
+inputs = initializeRestingSpringLength(inputs);
 % inputs = load('1-29-extramarkercol-0_1std_1000mae-1e-4damping-02moment_1', 'inputs');
 % inputs = inputs.inputs;
+
+for task = 1:length(inputs.tasks)
+    inputs.tasks{task}.experimentalGroundReactionMoments = ...
+        replaceMomentsAboutMidfootSuperior(inputs.tasks{task}, inputs);
+    inputs.tasks{task}.experimentalGroundReactionMomentsSlope = ...
+        calcBSplineDerivative(inputs.tasks{task}.time, ...
+        inputs.tasks{task}.experimentalGroundReactionMoments, 2, ...
+        inputs.tasks{task}.splineNodes);
+end
 
 for task = 1:length(params.tasks)
     params.tasks{task}.costTerms.springConstantErrorFromNeighbors.standardDeviation = valueOrAlternate(params, 'nothere', 0.05);
@@ -38,6 +47,25 @@ end
 figure(3)
 footModel = Model("footModel.osim");
 plotSpringConstants(footModel, inputs, inputs.toesBodyName, inputs.hindfootBodyName)
+
+
+%% Replace moments
+
+% (struct) -> (2D Array of double)
+% Replace parsed experimental ground reaction moments about midfoot
+% superior marker projected onto floor
+function replacedMoments = replaceMomentsAboutMidfootSuperior(task, inputs)
+    replacedMoments = ...
+        zeros(size(task.experimentalGroundReactionMoments));
+    for i = 1:size(replacedMoments, 2)
+        newCenter = task.midfootSuperiorPosition(:, i);
+        newCenter(2) = inputs.restingSpringLength;
+        replacedMoments(:, i) = ...
+            task.experimentalGroundReactionMoments(:, i) + ...
+            cross((task.electricalCenter(:, i) - newCenter), ...
+            task.experimentalGroundReactionForces(:, i));
+    end
+end
 
 %% Report cost quantities
 
