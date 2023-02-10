@@ -13,8 +13,8 @@
         <input_motion_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_ik.mot</input_motion_file>
 		<!--Name of the input ground reaction forces file (.mot) to use-->
         <input_grf_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_GRF.mot</input_grf_file>
-		<!--*Optional* The number of nodes per gait cycle used to define motion using B-splines-->
-		<nodes_per_cycle>25</nodes_per_cycle>
+		<!--Lowpass filter cutoff frequency for kinematic B-splines. A lower frequency may be less precise but converge more quickly.-->
+		<kinematics_filter_cutoff>4</kinematics_filter_cutoff>
 		<!--Settings for ground contact personalization on the right side-->
 		<FootPersonalizationTaskList>
 			<FootPersonalizationTask>
