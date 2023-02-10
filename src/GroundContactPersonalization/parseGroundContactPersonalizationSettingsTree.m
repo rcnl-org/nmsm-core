@@ -41,9 +41,10 @@ function inputs = getInputs(tree)
 import org.opensim.modeling.*
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 inputs.bodyModel = getFieldByNameOrError(tree, 'input_model_file').Text;
-% inputs.model = getFieldByNameOrError(tree, 'input_foot_model_file').Text;
 motionFile = getFieldByNameOrError(tree, 'input_motion_file').Text;
 grfFile = getFieldByNameOrError(tree, 'input_grf_file').Text;
+inputs.kinematicsFilterCutoff = str2double(getFieldByNameOrError(tree, ...
+    'kinematics_filter_cutoff').Text);
 if(~isempty(inputDirectory))
     try
         bodyModel = Model(fullfile(inputDirectory, inputs.bodyModel));
@@ -87,12 +88,6 @@ for i=1:length(footTasks)
         output{counter} = getMotionTime(inputs.bodyModel, ...
             inputs.motionFileName, output{counter});
         verifyTime(output{counter}.grfTime, output{counter}.time);
-        output{counter}.splineNodes = valueOrAlternate(tree, ...
-            'nodes_per_cycle', 25);
-        if (isstruct(output{counter}.splineNodes))
-            output{counter}.splineNodes = ...
-                str2double(output{counter}.splineNodes.Text);
-        end
         tempFields = {'forceColumns', 'momentColumns', ...
             'electricalCenterColumns', 'grfTime', 'startTime', 'endTime'};
         output{counter} = rmfield(output{counter}, tempFields);
