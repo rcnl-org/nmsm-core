@@ -41,7 +41,7 @@ function inputs = getInputs(tree)
 import org.opensim.modeling.*
 inputDirectory = getFieldByName(tree, 'input_directory').Text;
 inputs.bodyModel = getFieldByNameOrError(tree, 'input_model_file').Text;
-inputs.model = getFieldByNameOrError(tree, 'input_foot_model_file').Text;
+% inputs.model = getFieldByNameOrError(tree, 'input_foot_model_file').Text;
 motionFile = getFieldByNameOrError(tree, 'input_motion_file').Text;
 grfFile = getFieldByNameOrError(tree, 'input_grf_file').Text;
 if(~isempty(inputDirectory))
@@ -86,7 +86,7 @@ for i=1:length(footTasks)
         output{counter} = getFootData(task);
         output{counter} = getGroundReactions(inputs.bodyModel, ...
             inputs.grfFileName, output{counter});
-        output{counter} = getMotion(inputs.bodyModel, ...
+        output{counter} = getMotionTime(inputs.bodyModel, ...
             inputs.motionFileName, output{counter});
         verifyTime(output{counter}.grfTime, output{counter}.time);
         output{counter}.splineNodes = valueOrAlternate(tree, ...
@@ -104,14 +104,13 @@ end
 end
 
 % (Model, string, struct) -> (struct)
-function task = getMotion(bodyModel, motionFile, task)
+function task = getMotionTime(bodyModel, motionFile, task)
 import org.opensim.modeling.Storage
-[~, ikTime, ikData] = parseMotToComponents(...
+[~, ikTime, ~] = parseMotToComponents(...
     Model(bodyModel), Storage(motionFile));
 startIndex = find(ikTime >= task.startTime, 1, 'first');
 endIndex = find(ikTime <= task.endTime, 1, 'last');
 task.time = ikTime(startIndex:endIndex);
-task.motion = ikData(:, startIndex:endIndex);
 end
 
 % (Model, string, struct) -> (struct)
