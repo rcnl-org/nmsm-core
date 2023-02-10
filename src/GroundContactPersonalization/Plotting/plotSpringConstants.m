@@ -27,7 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotSpringConstants(inputs)
+function plotSpringConstants(inputs, sharedInputs)
 toesBodyName = inputs.toesBodyName;
 hindfootBodyName = inputs.hindfootBodyName;
 
@@ -35,9 +35,9 @@ hindfootBodyName = inputs.hindfootBodyName;
 calcnToToes = footModel.getBodySet().get(...
     toesBodyName).findTransformBetween(state, ...
     footModel.getBodySet().get(hindfootBodyName));
-springX = zeros(1, length(inputs.springConstants));
-springZ = zeros(1, length(inputs.springConstants));
-for i=1:length(inputs.springConstants)
+springX = zeros(1, length(sharedInputs.springConstants));
+springZ = zeros(1, length(sharedInputs.springConstants));
+for i=1:length(sharedInputs.springConstants)
     markerPositionOnFoot = footModel.getMarkerSet().get(...
         "spring_marker_" + i).getPropertyByName("location").toString(...
         ).toCharArray';
@@ -49,7 +49,7 @@ for i=1:length(inputs.springConstants)
         springZ(i) = springZ(i) + calcnToToes.T.get(2);
     end
 end
-scatter(springZ, springX, 200, inputs.springConstants, "filled")
+scatter(springZ, springX, 200, sharedInputs.springConstants, "filled")
 title("Spring constants")
 xlabel("Z location on foot (m)")
 ylabel("X location on foot (m)")
