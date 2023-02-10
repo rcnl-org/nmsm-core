@@ -2,7 +2,7 @@ clear
 
 [inputs, params] = parseGroundContactPersonalizationSettingsTree(...
     xml2struct("GCP_settings_tasklist.xml"));
-inputs = prepareGroundContactPersonalizationInputs(inputs, params);
+inputs = prepareGroundContactPersonalizationInputs(inputs);
 
 % Stage 0
 inputs = initializeRestingSpringLength(inputs, params);
