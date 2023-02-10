@@ -28,11 +28,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs] = parseMuscleTendonLengthInitializationSettingsTree( ...
+function inputs = parseMuscleTendonLengthInitializationSettingsTree( ...
     settingsTree)
-inputs = getInputs(settingsTree);
-inputs = getMtpModelInputs(inputs);
-inputs = getMuscleVolume(inputs);
+if strcmp(getFieldByNameOrError(settingsTree, ...
+        "MuscleTendonLengthInitialization").is_enabled.Text, "true")
+    inputs = getInputs(settingsTree);
+    inputs = getMtpModelInputs(inputs);
+    inputs = getMuscleVolume(inputs);
+else
+    inputs = false;
+end
 end
 
 function inputs = getInputs(tree)
@@ -82,8 +87,11 @@ if(isstruct(minNormalizedMuscleFiberLength))
     inputs.minNormalizedMuscleFiberLength = ...
         str2double(minNormalizedMuscleFiberLength.Text);
 end
-inputs.normalizedFiberLengthGroups = findGroups(getFieldByNameOrError(tree, ...
-    'GroupedNormalizedMuscleFiberLengths'), inputs.model);
+muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
+groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
+    "normalized_muscle_fiber_lengths");
+inputs.normalizedFiberLengthGroups = groupNamesToGroups( ...
+    groupNames, inputs.model);
 inputs = getNormalizedFiberLengthSettings(inputs);
 end
 

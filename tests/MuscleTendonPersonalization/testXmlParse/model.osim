@@ -10557,6 +10557,30 @@
 				<ObjectGroup name="TibialisPosteriorFiberLengthGroupL">
 					<members> tibpost_l fdl_l</members>
 				</ObjectGroup>
+				<ObjectGroup name="BicFemLongCollectedEmgChannelL">
+					<members> bflh_l bfsh_l</members>
+				</ObjectGroup>
+				<ObjectGroup name="GasMedCollectedEmgChannelL">
+					<members> gaslat_l gasmed_l</members>
+				</ObjectGroup>
+				<ObjectGroup name="GlutMaxCollectedEmgChannelL">
+					<members> glmax1_l glmax2_l glmax3_l</members>
+				</ObjectGroup>
+				<ObjectGroup name="GlutMedCollectedEmgChannelL">
+					<members> glmed1_l glmed2_l glmed3_l</members>
+				</ObjectGroup>
+				<ObjectGroup name="SemiMembCollectedEmgChannelL">
+					<members> semimem_l semiten_l</members>
+				</ObjectGroup>
+				<ObjectGroup name="SolCollectedEmgChannelL">
+					<members> soleus_l</members>
+				</ObjectGroup>
+				<ObjectGroup name="TibAntCollectedEmgChannelL">
+					<members> tibant_l</members>
+				</ObjectGroup>
+				<ObjectGroup name="VastLatCollectedEmgChannelL">
+					<members> vaslat_l</members>
+				</ObjectGroup>
 				<ObjectGroup name="AddLongMissingEmgChannelL">
 					<members> addbrev_l addlong_l addmagDist_l addmagIsch_l addmagMid_l addmagProx_l</members>
 				</ObjectGroup>
