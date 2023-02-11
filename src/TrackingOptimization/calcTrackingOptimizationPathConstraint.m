@@ -46,7 +46,7 @@ function rootSegmentResidualsPathConstraint = ...
     calcRootSegmentResidualsPathConstraints(params, rootSegmentResiduals)
 
 isEnabled = valueOrAlternate(params, ...
-    "rootSegmentResidualLoadsPathConstraint", 0);
+    "rootSegmentResidualLoadPathConstraint", 0);
 rootSegmentResidualsPathConstraint = [];
 if isEnabled
     rootSegmentResidualsPathConstraint = rootSegmentResiduals;
@@ -57,7 +57,7 @@ function muscleActuatedMomentsPathConstraint = ...
     muscleActuatedMoments, muscleJointMoments)
 
 isEnabled = valueOrAlternate(params, ...
-    "muscleModelMomentConsistencyPathConstraint", 0);
+    "muscleModelLoadPathConstraint", 0);
 muscleActuatedMomentsPathConstraint = [];
 if isEnabled
     muscleActuatedMomentsPathConstraint = ...
