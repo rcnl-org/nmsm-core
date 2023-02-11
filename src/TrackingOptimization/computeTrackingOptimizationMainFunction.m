@@ -70,13 +70,17 @@ bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
 end
 function guess = setupInitialGuess(inputs)
 
-if ~isempty(inputs.initialGuessFileName)
-    load(inputs.initialGuessFileName)
-    guess = solution;
-    if length(guess.phase.integral) ~= length(inputs.maxIntegral)
-        guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
+if ~isempty(inputs.initialGuess)
+    guess.phase.time = scaleToBounds(inputs.initialGuess.time, inputs.maxTime, ...
+        inputs.minTime);
+    guess.phase.state = scaleToBounds(inputs.initialGuess.state, ...
+        inputs.maxState, inputs.minState);
+    guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
+        inputs.maxControl, inputs.minControl);
+    guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
         inputs.minIntegral);
-    end
+    guess.parameter = scaleToBounds(reshape(inputs.initialGuess.parameter,1,[]), ...
+        inputs.maxParameter, inputs.minParameter);
 else
     guess.phase.time = scaleToBounds(inputs.time, inputs.maxTime, ...
         inputs.minTime);
