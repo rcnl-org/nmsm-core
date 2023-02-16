@@ -27,8 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingCostArrayTerm(modelValue, experimentalValue)
+function cost = calcTrackingCostArrayTerm(modelValue, experimentalValue, ...
+    trackingIndex)
 
 errorMatching = modelValue - experimentalValue;
+errorMatching = errorMatching(:, trackingIndex);
 cost = errorMatching .^ 2;
 end

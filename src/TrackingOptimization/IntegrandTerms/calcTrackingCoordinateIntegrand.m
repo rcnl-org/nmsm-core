@@ -30,5 +30,5 @@ function cost = calcTrackingCoordinateIntegrand(statePositions, time, params)
 enabledCost = valueOrAlternate(params, "trackedCoordinateEnabled", 0);
 experimentalJointAngles = fnval(params.splineJointAngles, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(experimentalJointAngles, ...
-    statePositions);
+    statePositions, params.trackedCoordinateIndex);
 end

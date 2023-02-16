@@ -31,5 +31,5 @@ function cost = calcTrackingInverseDynamicLoadsIntegrand(inverseDynamicMoments, 
 enabledCost = valueOrAlternate(params, "trackedLoadEnabled", 0);
 experimentalJointMoments = fnval(params.splineJointMoments, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(experimentalJointMoments, ...
-    inverseDynamicMoments);
+    inverseDynamicMoments, params.trackedInverseDynamicMomentsIndex);
 end

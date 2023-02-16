@@ -32,6 +32,7 @@ inputs = getSplines(inputs);
 params = getParams(settingsTree);
 inputs = getModelInputs(inputs);
 inputs = getStateDerivatives(inputs);
+inputs = checkInitialGuess(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -39,23 +40,7 @@ end
 
 %% missing Inputs
 inputData = load([cd '\inputData.mat']);
-
-inputs.coordinateNames = inputData.params.coordinateNames;
-inputs.minPath = inputData.params.minPath;
-inputs.maxPath = inputData.params.maxPath;
-inputs.minIntegral = inputData.params.minIntegral;
-inputs.maxIntegral = inputData.params.maxIntegral;
-inputs.minTerminal = inputData.params.eventgroup.lower;
-inputs.maxTerminal = inputData.params.eventgroup.upper;
-inputs.inverseDynamicMomentsIndex = inputData.params.inverseDynamicMomentsIndex;
-inputs.rootSegmentResidualsIndex = inputData.params.pelvisResidualsIndex;
-inputs.muscleActuatedMomentsIndex = inputData.params.muscleActuatedMomentsIndex;
-inputs.integralOptions = inputData.params.integralOptions;
-inputs.isEnabled = inputData.params.isEnabled;
-inputs.dofsActuated = inputData.params.dofsActuated;
-
-%% missing NCP inputs
-inputs.epsilon = inputData.params.epsilon;
+% inputs.isEnabled = inputData.params.isEnabled;
 
 %% missing GCP inputs
 inputs.splineLeftGroundReactionForces = inputData.params.splineLeftGroundReactionForces;
@@ -88,11 +73,22 @@ inputs.numSpringsLeftToe = inputData.params.numSpringsLeftToe;
 inputs.polynomialExpressionMomentArms = inputData.params.polynomialExpressionMomentArms;
 inputs.polynomialExpressionMuscleTendonLengths = inputData.params.polynomialExpressionMuscleTendonLengths;
 inputs.coefficients = inputData.params.coefficients;
+inputs.dofsActuated = inputData.params.dofsActuated;
+inputs.epsilon = inputData.params.epsilon;
 
 %%
 load([cd '\experimentalData.mat'])
 inputs.experimentalRightGroundReactions = experimentalRightGroundReactions;
+inputs.rightGroundReactionLabels = {'ground_reaction_force_x1', ...
+    'ground_reaction_force_y1', 'ground_reaction_force_z1', ...
+    'ground_reaction_moment_x1', 'ground_reaction_moment_y1', ...
+    'ground_reaction_moment_z1'};
 inputs.experimentalLeftGroundReactions = experimentalLeftGroundReactions;
+inputs.leftGroundReactionLabels = {'ground_reaction_force_x', ...
+    'ground_reaction_force_y', 'ground_reaction_force_z', ...
+    'ground_reaction_moment_x', 'ground_reaction_moment_y', ...
+    'ground_reaction_moment_z'};
+
 end
 
 function inputs = getInputs(tree)
@@ -138,8 +134,8 @@ inputs.numActuators = size(inputs.experimentalJointMoments, 2);
 
 coordinateFileName = findFileListFromPrefixList(fullfile( ...
     inputDirectory, "IKData"), prefixes);
-inputs.coordinateNames = getStorageColumnNames(Storage( ...
-    coordinateFileName(1)));
+inputs.coordinateNames = cellstr(getStorageColumnNames(Storage( ...
+    coordinateFileName(1))));
 inputs.experimentalJointAngles = parseTreatmentOptimizationStandard( ...
     coordinateFileName);
 inputs.experimentalTime = parseTimeColumn(coordinateFileName)';
@@ -290,11 +286,11 @@ end
 
 if  iscell(getFieldByName(tree, integralCostTermName))
     inputs.(integralCostTerm) = ...
-        getMaxAllowableError(tree.(integralCostTermName));
+        getAllowableError(tree.(integralCostTermName));
 end
 end
 
-function [output] = getMaxAllowableError(tree)
+function [output] = getAllowableError(tree)
 counter = 1;
 for i=1:length(tree)
     if(length(tree) == 1)
@@ -306,6 +302,10 @@ for i=1:length(tree)
         output.names{counter} = quantity.Attributes.name;
         output.maxAllowableErrors(counter) = ...
             str2double(quantity.max_allowable_error.Text);
+        if isstruct(getFieldByName(quantity, 'min_allowable_error'))
+            output.minAllowableErrors(counter) = ...
+                str2double(quantity.min_allowable_error.Text);
+        end
         if isstruct(getFieldByName(quantity, 'body'))
             output.body{counter} = quantity.body.Text;
         end
@@ -342,7 +342,7 @@ end
 
 if  iscell(getFieldByName(tree, pathConstraintTermName))
     inputs.(pathConstraintTerm) = ...
-        getMaxAllowableError(tree.(pathConstraintTermName));
+        getAllowableError(tree.(pathConstraintTermName));
 end
 end
 
@@ -386,6 +386,9 @@ end
 maxAllowableError = getFieldByNameOrError(tree, "max_allowable_error").Text;
 inputs.(strcat(terminalConstraintTerms, "MaxAllowableError")) = ...
     str2double(maxAllowableError);
+minAllowableError = getFieldByNameOrError(tree, "min_allowable_error").Text;
+inputs.(strcat(terminalConstraintTerms, "MinAllowableError")) = ...
+    str2double(minAllowableError);
 end
 
 function beltSpeed = getBeltSpeed(tree)
@@ -438,15 +441,16 @@ end
 end
 
 function inputs = getModelInputs(inputs)
-inputs.numMuscles = getNumEnabledMuscles(inputs.model);
+% inputs.numMuscles = getNumEnabledMuscles(inputs.model);
 inputs.optimalFiberLength = [];
 inputs.tendonSlackLength = [];
 inputs.pennationAngle = [];
 inputs.maxIsometricForce = [];
 inputs.muscleNames = '';
 model = Model(inputs.model);
+inputs.numMuscles =  model.getForceSet().getMuscles().getSize();
 for i = 0:model.getForceSet().getMuscles().getSize()-1
-    if model.getForceSet().getMuscles().get(i).get_appliesForce()
+%     if model.getForceSet().getMuscles().get(i).get_appliesForce()
         inputs.muscleNames{end+1} = char(model.getForceSet(). ...
             getMuscles().get(i).getName);
         if isfield(inputs.ncpDataInputs, inputs.muscleNames{end})
@@ -473,7 +477,7 @@ for i = 0:model.getForceSet().getMuscles().getSize()-1
         inputs.pennationAngle(end+1) = model.getForceSet(). ...
             getMuscles().get(i). ...
             getPennationAngleAtOptimalFiberLength();
-    end
+%     end
 end
 end
 
@@ -499,16 +503,60 @@ end
 end
 
 function initialGuess = getTrackingOptimizationInitialGuess(tree)
+import org.opensim.modeling.Storage
 if isstruct(tree.states_file) && isstruct(tree.control_file) && ...
         isstruct(tree.parameter_file)
     initialGuess.time = parseTimeColumn({tree.states_file.Text})';
+    initialGuess.stateLabels = getStorageColumnNames(Storage( ...
+        {tree.states_file.Text}));
     initialGuess.state = parseTreatmentOptimizationStandard(...
         {tree.states_file.Text});
+    initialGuess.controlLabels = getStorageColumnNames(Storage( ...
+        {tree.control_file.Text}));
     initialGuess.control = parseTreatmentOptimizationStandard(...
         {tree.control_file.Text});
+    initialGuess.parameterLabels = getStorageColumnNames(Storage( ...
+        {tree.parameter_file.Text}));
     initialGuess.parameter = parseTreatmentOptimizationStandard(...
         {tree.parameter_file.Text});
 else 
     initialGuess = [];
 end
+end
+
+function inputs = checkInitialGuess(inputs)
+for i = 1 : inputs.numCoordinates
+    for j = 1 : length(inputs.initialGuess.stateLabels)
+        if strcmpi(inputs.coordinateNames(i), inputs.initialGuess.stateLabels(j))
+            stateIndex(i) = j;
+        end
+    end 
+    for k = 1 : length(inputs.initialGuess.controlLabels)
+        if strcmpi(inputs.coordinateNames(i), inputs.initialGuess.controlLabels(k))
+            controlIndex(i) = k;
+        end
+    end 
+end
+inputs.initialGuess.state = inputs.initialGuess.state(:, [stateIndex ...
+    stateIndex + inputs.numCoordinates stateIndex + inputs.numCoordinates * 2]);
+inputs.initialGuess.control(:, 1:inputs.numCoordinates) = inputs.initialGuess.control(:, controlIndex);
+
+parameterIndex = zeros(length(inputs.synergyGroups), inputs.numMuscles);
+for i = 1 : length(inputs.synergyGroups)
+    for j = 1 : inputs.numMuscles
+        for k = 1 : length(inputs.synergyGroups{i}.muscleNames)
+            if strcmpi(inputs.muscleNames(j), inputs.synergyGroups{i}.muscleNames(k))
+                parameterIndex(i, j) = k;
+            end
+        end
+    end 
+end
+parameterTemp = [];
+for j = 1 : length(inputs.synergyGroups)
+    parameterTemp = cat(2, parameterTemp, ...
+        reshape(inputs.initialGuess.parameter(1 : ...
+        inputs.synergyGroups{j}.numSynergies, ...
+        nonzeros(parameterIndex(j, :)))', 1, []));
+end
+inputs.initialGuess.parameter = parameterTemp;
 end
