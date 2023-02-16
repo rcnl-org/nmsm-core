@@ -216,7 +216,7 @@ for j = 1 : numel(inputs.normalizedFiberLengthGroups{i})
 end
 end
 inputs.numMusclesIndividual = 0;
-for i = 1 :numMuscles
+for i = 1 : numMuscles
 if isempty(find([inputs.normalizedFiberLengthGroups{:}] == i))
     inputs.groupedMaxNormalizedFiberLength(i) = inputs.numMuscleGroups + ...
         inputs.numMusclesIndividual + 1;
