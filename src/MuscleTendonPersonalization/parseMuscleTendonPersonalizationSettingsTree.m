@@ -64,7 +64,8 @@ inputs.experimentalMoments = parseMtpStandard(inverseDynamicsFileNames);
 emgDataFileNames = findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGData"), inputs.prefixes);
 inputs.emgData = parseMtpStandard(emgDataFileNames);
-inputs.emgDataExpanded = parseEmgWithExpansion(inputs.model, emgDataFileNames);
+inputs.emgDataExpanded = parseEmgWithExpansion(inputs.model, ...
+    emgDataFileNames);
 inputs.emgDataColumnNames = getStorageColumnNames(Storage( ...
     emgDataFileNames(1)));
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
@@ -95,7 +96,8 @@ inputs.synergyExtrapolation = getTrialIndexes( ...
     inputs.synergyExtrapolation, size(inputs.emgData, 1), inputs.prefixes);
 
 if ~isfield(inputs, "emgSplines")
-    inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgDataExpanded);
+    inputs.emgSplines = makeEmgSplines(inputs.emgTime, ...
+        inputs.emgDataExpanded);
 end
 end
 
@@ -139,7 +141,8 @@ if(isstruct(maxIterations))
 end
 maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
 if(isstruct(maxFunctionEvaluations))
-    params.maxFunctionEvaluations = str2double(maxFunctionEvaluations.Text);
+    params.maxFunctionEvaluations = str2double( ...
+        maxFunctionEvaluations.Text);
 end
 performMuscleTendonLengthInitialization = getFieldByNameOrError(tree, ...
     'MuscleTendonLengthInitialization').is_enabled;
