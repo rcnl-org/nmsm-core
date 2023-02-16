@@ -41,13 +41,10 @@ if isstruct(precalInputs)
         optimizedInitialGuess);
 end
 
-optimizedValues = NeuralControlPersonalization(inputs, params);
-save("results.mat", "optimizedValues", "-mat")
+[optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
 %% results is a structure, report not implemented yet
-results = calcFinalMuscleActivations(optimizedValues, inputs);
-results = calcFinalModelMoments(results, inputs);
-save("results.mat", "results", '-mat')
-reportNeuralControlPersonalizationResults(optimizedValues, inputs, params)
-saveNeuralControlPersonalizationResults(inputs.model, ...
-    inputs.coordinates, results, resultsDirectory);
+activations = calcActivationsFromSynergyDesignVariables(optimizedValues, inputs, params);
+synergyWeights = findSynergyWeightsAndCommands(optimizedValues, inputs, params);
+saveNeuralControlPersonalizationResults(activations, synergyWeights, ...
+    inputs, resultsDirectory);
 end
