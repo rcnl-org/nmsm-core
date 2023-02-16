@@ -69,7 +69,7 @@
 						<!-- -->
 						<max_allowable_error>0.1</max_allowable_error>
 					</TrackedCoordinate>
-					<TrackedCoordinate name = "knee_flexion_r">
+					<TrackedCoordinate name = "knee_angle_r">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
@@ -111,7 +111,7 @@
 						<!-- -->
 						<max_allowable_error>0.1</max_allowable_error>
 					</TrackedCoordinate>
-					<TrackedCoordinate name = "knee_flexion_l">
+					<TrackedCoordinate name = "knee_angle_l">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
@@ -226,7 +226,7 @@
 						<!-- -->
 						<max_allowable_error>0.1</max_allowable_error>
 					</TrackedLoad>
-					<TrackedLoad name = "knee_flexion_r_moment">
+					<TrackedLoad name = "knee_angle_r_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
@@ -268,7 +268,7 @@
 						<!-- -->
 						<max_allowable_error>0.1</max_allowable_error>
 					</TrackedLoad>
-					<TrackedLoad name = "knee_flexion_l_moment">
+					<TrackedLoad name = "knee_angle_l_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
@@ -436,6 +436,8 @@
                     <is_enabled>true</is_enabled>
 					<!-- -->
 					<cost_weight>1</cost_weight>
+					<!-- -->
+					<max_allowable_error>2</max_allowable_error>						
 				</MinimizeJointJerk>
 			</MinimizingTerms>
         </TrackingOptimizationIntegralTerms>
@@ -446,40 +448,52 @@
 				<is_enabled>true</is_enabled>
 				<!--List of coordinate names associated to max allowable error-->
 				<RootSegmentResidualLoad name = "pelvis_tilt_moment">
-						<!-- -->
-						<is_enabled>true</is_enabled>
-						<!-- -->
-						<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<is_enabled>true</is_enabled>
+					<!-- -->
+					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</RootSegmentResidualLoad>
 				<RootSegmentResidualLoad name = "pelvis_list_moment">
-						<!-- -->
-						<is_enabled>true</is_enabled>
-						<!-- -->
-						<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<is_enabled>true</is_enabled>
+					<!-- -->
+					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</RootSegmentResidualLoad>
 				<RootSegmentResidualLoad name = "pelvis_rotation_moment">
-						<!-- -->
-						<is_enabled>true</is_enabled>
-						<!-- -->
-						<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<is_enabled>true</is_enabled>
+					<!-- -->
+					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</RootSegmentResidualLoad>
-				<RootSegmentResidualLoad name = "pelvis_tx_moment">
-						<!-- -->
-						<is_enabled>true</is_enabled>
-						<!-- -->
-						<max_allowable_error>1</max_allowable_error>
+				<RootSegmentResidualLoad name = "pelvis_tx_force">
+					<!-- -->
+					<is_enabled>true</is_enabled>
+					<!-- -->
+					<max_allowable_error>1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-1</min_allowable_error>
 				</RootSegmentResidualLoad>
-				<RootSegmentResidualLoad name = "pelvis_ty_moment">
-						<!-- -->
-						<is_enabled>true</is_enabled>
-						<!-- -->
-						<max_allowable_error>1</max_allowable_error>
+				<RootSegmentResidualLoad name = "pelvis_ty_force">
+					<!-- -->
+					<is_enabled>true</is_enabled>
+					<!-- -->
+					<max_allowable_error>1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-1</min_allowable_error>
 				</RootSegmentResidualLoad>
-				<RootSegmentResidualLoad name = "pelvis_tz_moment">
-						<!-- -->
-						<is_enabled>true</is_enabled>
-						<!-- -->
-						<max_allowable_error>1</max_allowable_error>
+				<RootSegmentResidualLoad name = "pelvis_tz_force">
+					<!-- -->
+					<is_enabled>true</is_enabled>
+					<!-- -->
+					<max_allowable_error>1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-1</min_allowable_error>
 				</RootSegmentResidualLoad>
 			</RootSegmentResidualLoads>
 			<MuscleModelMomentConsistency>
@@ -491,90 +505,120 @@
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "hip_adduction_r_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "hip_rotation_r_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
-				<MuscleModelLoad name = "knee_flexion_r_moment">
+				<MuscleModelLoad name = "knee_angle_r_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "ankle_angle_r_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "subtalar_angle_r_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "hip_flexion_l_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "hip_adduction_l_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "hip_rotation_l_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
-				<MuscleModelLoad name = "knee_flexion_l_moment">
+				<MuscleModelLoad name = "knee_angle_l_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "ankle_angle_l_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "subtalar_angle_l_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "lumbar_extension_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "lumbar_bending_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 				<MuscleModelLoad name = "lumbar_rotation_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
 					<!-- -->
 					<max_allowable_error>0.1</max_allowable_error>
+					<!-- -->
+					<min_allowable_error>-0.1</min_allowable_error>
 				</MuscleModelLoad>
 			</MuscleModelMomentConsistency>
         </TrackingOptimizationPathConstraintTerms>
@@ -584,37 +628,49 @@
 				<!--Flag indicating whether or not the term is enabled in the integral.-->
 				<is_enabled>true</is_enabled>
 				<!-- -->
-				<max_allowable_error>0.1</max_allowable_error>
+				<max_allowable_error>0.0087</max_allowable_error>
+				<!-- -->
+				<min_allowable_error>-0.0087</min_allowable_error>
 			</StatePositionPeriodicity>		
 			<StateVelocityPeriodicity>
 				<!--Flag indicating whether or not the term is enabled in the integral.-->
 				<is_enabled>true</is_enabled>
 				<!-- -->
-				<max_allowable_error>0.1</max_allowable_error>
+				<max_allowable_error>0.0175</max_allowable_error>
+				<!-- -->
+				<min_allowable_error>-0.0175</min_allowable_error>
 			</StateVelocityPeriodicity>
 			<RootSegmentResidualLoadPeriodicity>
 				<!--Flag indicating whether or not the term is enabled in the integral.-->
 				<is_enabled>true</is_enabled>
 				<!-- -->
 				<max_allowable_error>0.1</max_allowable_error>
+				<!-- -->
+				<min_allowable_error>-0.1</min_allowable_error>
 			</RootSegmentResidualLoadPeriodicity>
 			<ExternalForcePeriodicity>
 				<!--Flag indicating whether or not the term is enabled in the integral.-->
 				<is_enabled>true</is_enabled>
 				<!-- -->
-				<max_allowable_error>0.1</max_allowable_error>
+				<max_allowable_error>20</max_allowable_error>
+				<!-- -->
+				<min_allowable_error>-20</min_allowable_error>
 			</ExternalForcePeriodicity>
 			<ExternalMomentPeriodicity>
 				<!--Flag indicating whether or not the term is enabled in the integral.-->
 				<is_enabled>false</is_enabled>
 				<!-- -->
 				<max_allowable_error>0.1</max_allowable_error>
+				<!-- -->
+				<min_allowable_error>-0.1</min_allowable_error>
 			</ExternalMomentPeriodicity>
 			<SynergyWeightsSum>
 				<!--Flag indicating whether or not the term is enabled in the integral.-->
 				<is_enabled>true</is_enabled>
 				<!-- -->
 				<max_allowable_error>1</max_allowable_error>
+				<!-- -->
+				<min_allowable_error>-1</min_allowable_error>
 			</SynergyWeightsSum>
         </TrackingOptimizationTerminalConstraintTerms>
 		<!-- -->

@@ -6341,43 +6341,10 @@
 			<groups />
 		</ControllerSet>
 		<!--Constraints in the model.-->
-		<ConstraintSet name="constraintset">
-			<objects>
-				<CoordinateCouplerConstraint name="patellofemoral_knee_angle_r_con">
-					<!--Flag indicating whether the constraint is enforced or not.Enforced means that the constraint is active in subsequent dynamics realizations. NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant the constraint was not being enforced. Thus, if 'isDisabled' is'true', then 'isEnforced' is false.-->
-					<isEnforced>true</isEnforced>
-					<!--Constraint function of generalized coordinates (to be specified) used to evaluate the constraint errors and their derivatives, and must valid to at least 2nd order. Constraint function must evaluate to zero when coordinates satisfy the constraint.-->
-					<coupled_coordinates_function>
-						<LinearFunction>
-							<coefficients> 1 0</coefficients>
-						</LinearFunction>
-					</coupled_coordinates_function>
-					<!--List of names of the right hand side (independent) coordinates. Note the constraint function above, must be able to handle multiple coordinate values if more than one coordinate name is provided.-->
-					<independent_coordinate_names>knee_angle_r</independent_coordinate_names>
-					<!--Name of the left-hand side (dependent) coordinate of the constraint coupling function.-->
-					<dependent_coordinate_name>knee_angle_r_beta</dependent_coordinate_name>
-					<!--Scale factor for the coupling function.-->
-					<scale_factor>1</scale_factor>
-				</CoordinateCouplerConstraint>
-				<CoordinateCouplerConstraint name="patellofemoral_knee_angle_l_con">
-					<!--Flag indicating whether the constraint is enforced or not.Enforced means that the constraint is active in subsequent dynamics realizations. NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant the constraint was not being enforced. Thus, if 'isDisabled' is'true', then 'isEnforced' is false.-->
-					<isEnforced>true</isEnforced>
-					<!--Constraint function of generalized coordinates (to be specified) used to evaluate the constraint errors and their derivatives, and must valid to at least 2nd order. Constraint function must evaluate to zero when coordinates satisfy the constraint.-->
-					<coupled_coordinates_function>
-						<LinearFunction>
-							<coefficients> 1 0</coefficients>
-						</LinearFunction>
-					</coupled_coordinates_function>
-					<!--List of names of the right hand side (independent) coordinates. Note the constraint function above, must be able to handle multiple coordinate values if more than one coordinate name is provided.-->
-					<independent_coordinate_names>knee_angle_l</independent_coordinate_names>
-					<!--Name of the left-hand side (dependent) coordinate of the constraint coupling function.-->
-					<dependent_coordinate_name>knee_angle_l_beta</dependent_coordinate_name>
-					<!--Scale factor for the coupling function.-->
-					<scale_factor>1</scale_factor>
-				</CoordinateCouplerConstraint>
-			</objects>
+		<ControllerSet name="controllerset">
+			<objects />
 			<groups />
-		</ConstraintSet>
+		</ControllerSet>
 		<!--Forces in the model (includes Actuators).-->
 		<ForceSet name="forceset">
 			<objects>
@@ -6424,6 +6391,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>625.81967213114797</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6523,6 +6491,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>916.79999999999995</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6622,6 +6591,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6721,6 +6691,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6820,6 +6791,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6919,6 +6891,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7015,6 +6988,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1313.18360655738</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7114,6 +7088,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>557.11475409835998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7228,6 +7203,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>603.49815560000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7354,6 +7330,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>285.86754739999998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7480,6 +7457,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>423.17704918032803</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7600,6 +7578,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>907.83934426229405</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7707,6 +7686,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1575.0590163934401</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7814,6 +7794,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>3115.5147540983598</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7904,6 +7885,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>170.40000000000001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8015,6 +7997,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>983.78360655737799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8126,6 +8109,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1406.0459016393499</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8237,6 +8221,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>947.75409836065603</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8327,6 +8312,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1093.4667688</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8417,6 +8403,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>765.09166159999995</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8507,6 +8494,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>871.19926420000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8597,6 +8585,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>374.04590163934398</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8687,6 +8676,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>394.81967213114802</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8777,6 +8767,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>446.77377049180399</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8882,6 +8873,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>281.31147540983602</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8993,6 +8985,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1021.14098360656</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9092,6 +9085,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>319.60000000000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9200,6 +9194,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>521.20159880000006</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9320,6 +9315,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1115.3714213999999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9416,6 +9412,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1029.7868852459001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9527,6 +9524,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>492.91237339999998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9638,6 +9636,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>541.09764619999999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9749,6 +9748,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>394.07103740000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9839,6 +9839,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>397</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9956,6 +9957,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2191.7409836065599</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10064,6 +10066,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>249.41311475409799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10163,6 +10166,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2200.9868852458999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10268,6 +10272,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>591.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10358,6 +10363,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>6194.8426229508204</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10460,6 +10466,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>411.20655737704999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10562,6 +10569,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1227.4524590163901</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10664,6 +10672,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1730.1540983606501</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10781,6 +10790,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1697.36065573771</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10898,6 +10908,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>5148.7672131147601</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11015,6 +11026,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2747.82295081966</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11105,6 +11117,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>525.01372159945299</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11195,6 +11208,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>232.96404987340699</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11285,6 +11299,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>390.79539784282099</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11375,6 +11390,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>171.53040763290701</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11465,6 +11481,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>290.23298796836298</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11555,6 +11572,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>467.11101558015298</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11645,6 +11663,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>504.75942433211299</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11759,6 +11778,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>390.81055752570302</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11855,6 +11875,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>197.20052699144199</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11951,6 +11972,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>235.18057219606999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12041,6 +12063,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>206.17322776527899</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12149,6 +12172,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>343.93922590279999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12257,6 +12281,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>320.746677047297</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12377,6 +12402,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>321.20852284236202</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12485,6 +12511,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>320.930254549773</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12575,6 +12602,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>326.71411506909999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12665,6 +12693,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>151.840933627358</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12755,6 +12784,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>157.79548004411799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12845,6 +12875,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>199.30892894241001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12935,6 +12966,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>237.33759117910699</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13025,6 +13057,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>303.88770335143602</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13115,6 +13148,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>406.75359165518199</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13205,6 +13239,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>314.522864206039</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13295,6 +13330,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>86.271224595398493</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13385,6 +13421,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>211.294864415956</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13475,6 +13512,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>261.45567591195697</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13565,6 +13603,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>137.96265127945</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13655,6 +13694,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>155.74201877711201</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13757,6 +13797,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>662.21226338231304</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13856,6 +13897,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>625.81967213114797</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13955,6 +13997,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>916.79999999999995</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14054,6 +14097,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14153,6 +14197,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14252,6 +14297,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14351,6 +14397,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14447,6 +14494,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1313.18360655738</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14546,6 +14594,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>557.11475409835998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14660,6 +14709,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>603.49815560000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14786,6 +14836,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>285.86754739999998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14912,6 +14963,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>423.17704918032803</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15032,6 +15084,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>907.83934426229405</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15139,6 +15192,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1575.0590163934401</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15246,6 +15300,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>3115.5147540983598</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15336,6 +15391,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>170.40000000000001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15447,6 +15503,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>983.78360655737799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15558,6 +15615,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1406.0459016393499</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15669,6 +15727,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>947.75409836065603</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15759,6 +15818,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1093.4667688</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15849,6 +15909,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>765.09166159999995</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15939,6 +16000,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>871.19926420000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16029,6 +16091,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>374.04590163934398</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16119,6 +16182,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>394.81967213114802</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16209,6 +16273,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>446.77377049180399</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16314,6 +16379,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>281.31147540983602</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16425,6 +16491,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1021.14098360656</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16524,6 +16591,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>319.60000000000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16632,6 +16700,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>521.20159880000006</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16752,6 +16821,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1115.3714213999999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16848,6 +16918,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1029.7868852459001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16959,6 +17030,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>492.91237339999998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17070,6 +17142,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>541.09764619999999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17181,6 +17254,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>394.07103740000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17271,6 +17345,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>397</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17388,6 +17463,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2191.7409836065599</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17496,6 +17572,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>249.41311475409799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17595,6 +17672,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2200.9868852458999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17700,6 +17778,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>591.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17790,6 +17869,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>6194.8426229508204</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17892,6 +17972,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>411.20655737704999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -17994,6 +18075,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1227.4524590163901</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18096,6 +18178,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1730.1540983606501</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18213,6 +18296,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1697.36065573771</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18330,6 +18414,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>5148.7672131147601</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18447,6 +18532,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2747.82295081966</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18537,6 +18623,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>525.01372159945299</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18627,6 +18714,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>232.96404987340699</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18717,6 +18805,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>390.79539784282099</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18807,6 +18896,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>171.53040763290701</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18897,6 +18987,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>290.23298796836298</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -18987,6 +19078,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>467.11101558015298</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -19077,6 +19169,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>504.75942433211299</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -19191,6 +19284,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>390.81055752570302</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -19287,6 +19381,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>197.20052699144199</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -19383,6 +19478,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>235.180577704592</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -19473,6 +19569,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>206.17322776527899</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -19581,6 +19678,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>343.93922590279999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -19689,6 +19787,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>320.746677047297</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -19809,6 +19908,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>321.20852284236202</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -19917,6 +20017,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>320.930254549773</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20007,6 +20108,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>326.71411506909999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20097,6 +20199,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>151.840933627358</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20187,6 +20290,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>157.79548004411799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20277,6 +20381,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>199.30892894241001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20367,6 +20472,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>237.33759117910699</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20457,6 +20563,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>303.88770335143602</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20547,6 +20654,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>406.75359165518199</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20637,6 +20745,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>314.522864206039</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20727,6 +20836,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>86.271224595398493</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20817,6 +20927,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>211.294864415956</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20907,6 +21018,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>261.45567591195697</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -20997,6 +21109,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>				
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>137.96265127945</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -21087,6 +21200,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>155.74201877711201</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -21189,6 +21303,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
+					<appliesForce>false</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>662.21236151127198</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -21245,146 +21360,414 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
-				<CoordinateActuator name="shoulder_flex_r">
+				<PointActuator name="calcn_r_Fx">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>arm_flex_r</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="shoulder_add_r">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>calcn_r</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>1 0 0</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="calcn_r_Fy">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>arm_add_r</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="shoulder_rot_r">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>calcn_r</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>0 1 0</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="calcn_r_Fz">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>arm_rot_r</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="elbow_flex_r">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>calcn_r</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>0 0 1</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="toes_r_Fx">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>elbow_flex_r</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="pro_sup_r">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>toes_r</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>1 0 0</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="toes_r_Fy">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>pro_sup_r</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="wrist_flex_r">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>toes_r</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>0 1 0</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="toes_r_Fz">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>wrist_flex_r</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="wrist_dev_r">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>toes_r</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>0 0 1</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="calcn_l_Fx">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>wrist_dev_r</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="shoulder_flex_l">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>calcn_l</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>1 0 0</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="calcn_l_Fy">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>arm_flex_l</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="shoulder_add_l">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>calcn_l</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>0 1 0</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="calcn_l_Fz">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>arm_add_l</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="shoulder_rot_l">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>calcn_l</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>0 0 1</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="toes_l_Fx">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>arm_rot_l</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="elbow_flex_l">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>toes_l</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>1 0 0</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="toes_l_Fy">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>elbow_flex_l</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="pro_sup_l">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>toes_l</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>0 1 0</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<PointActuator name="toes_l_Fz">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>pro_sup_l</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="wrist_flex_l">
+					<!--Name of Body to which this actuator is applied.-->
+					<body>toes_l</body>
+					<!--Location of application point; in body frame unless point_is_global=true-->
+					<point>0 0 0</point>
+					<!--Interpret point in Ground frame if true; otherwise, body frame.-->
+					<point_is_global>false</point_is_global>
+					<!--Force application direction; in body frame unless force_is_global=true.-->
+					<direction>0 0 1</direction>
+					<!--Interpret direction in Ground frame if true; otherwise, body frame.-->
+					<force_is_global>true</force_is_global>
+					<!--The maximum force produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</PointActuator>
+				<TorqueActuator name="calcn_r_Mx">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>wrist_flex_l</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
-				<CoordinateActuator name="wrist_dev_l">
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>calcn_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>1 0 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="calcn_r_My">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
 					<max_control>Inf</max_control>
-					<!--Name of the generalized coordinate to which the actuator applies.-->
-					<coordinate>wrist_dev_l</coordinate>
-					<!--The maximum generalized force produced by this actuator.-->
-					<optimal_force>10</optimal_force>
-				</CoordinateActuator>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>calcn_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 1 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="calcn_r_Mz">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>calcn_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 0 1</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="toes_r_Mx">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>toes_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>1 0 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="toes_r_My">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>toes_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 1 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="toes_r_Mz">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>toes_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 0 1</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="calcn_l_Mx">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>calcn_l</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>1 0 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="calcn_l_My">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>calcn_l</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 1 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="calcn_l_Mz">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>calcn_l</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 0 1</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="toes_l_Mx">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>toes_l</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>1 0 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="toes_l_My">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>toes_l</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 1 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="toes_l_Mz">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>toes_l</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 0 1</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
 			</objects>
 			<groups>
 				<ObjectGroup name="group1">
