@@ -48,6 +48,7 @@ for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
 end
 
+results = inputs;
 end
 
 % (struct) -> (None)

@@ -3,13 +3,13 @@ function nNodes = calcNumBsplNodesFromCutoffFreq(time, data, params)
 close all
 
 % Define non-adjusted parameters
-allowError = 10; % in percent - 10% used in Schleicher and Biloti (2008)
+allowError = 1; % in percent - 10% used in Schleicher and Biloti (2008)
 fourierDegree = 1; % add a linear polynomial to the Fourier fitting process
     % to create a periodic function artificially
 nNodes = 10; % starting guess - should work well for >= one movement cycle
 
 % Reshape time series data
-time = time';
+time = time'; 
 curves = data';
 
 % Extract relevant parameters

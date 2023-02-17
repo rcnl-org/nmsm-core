@@ -7,14 +7,12 @@
         <input_directory/>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>optModel_v6_correct_height.osim</input_model_file>
-		<!--Name of the foot model file (.osim), will be generated automatically in final version-->
-		<input_foot_model_file>footModel.osim</input_foot_model_file>
 		<!--Name of the input motion file (.mot) to use-->
         <input_motion_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_ik.mot</input_motion_file>
 		<!--Name of the input ground reaction forces file (.mot) to use-->
         <input_grf_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_GRF.mot</input_grf_file>
 		<!--Lowpass filter cutoff frequency for kinematic B-splines. A lower frequency may be less precise but converge more quickly.-->
-		<kinematics_filter_cutoff>4</kinematics_filter_cutoff>
+		<kinematics_filter_cutoff>6</kinematics_filter_cutoff>
 		<!--Settings for ground contact personalization on the right side-->
 		<FootPersonalizationTaskList>
 			<FootPersonalizationTask>

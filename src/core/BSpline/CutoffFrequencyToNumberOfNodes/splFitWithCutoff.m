@@ -6,7 +6,7 @@ function nNodes = splFitWithCutoff(time, data, fCutoff, splineDegree, task)
 % Extract relevant parameters
 params.fCutoff = fCutoff;
 params.splineDegree = splineDegree;
-params.plotFlag = 1; % plot comparison curves when finished
+params.plotFlag = 0; % plot comparison curves when finished
 
 % Calculate number of B-spline nodes required to match the specific cutoff
 % frequently for all curves
