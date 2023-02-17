@@ -211,6 +211,12 @@ end
 
 function params = getParams(tree)
 params = struct();
+params.restingSpringLengthInitialization = getFieldByNameOrError(tree, ...
+    'resting_spring_length_initialization_is_enabled');
+if (isstruct(params.restingSpringLengthInitialization))
+    params.restingSpringLengthInitialization = ...
+        strcmpi(params.restingSpringLengthInitialization.Text, 'true');
+end
 params.maxIterations = valueOrAlternate(tree, 'max_iterations', 325);
 if(isstruct(params.maxIterations))
     params.maxIterations = str2double(params.maxIterations.Text);
@@ -279,5 +285,14 @@ for i = 1:length(costTermNames)
     end
     taskStruct.costTerms.(costTermNames(i)).maxAllowableError = ...
         str2double(allowableError);
+    if costTermNames(i) == "springConstantErrorFromNeighbors"
+        standardDeviation = valueOrAlternate(valueOrAlternate(tree, ...
+            costTermNames(i), 'none'), 'standard_deviation', '0.05');
+        if (isstruct(standardDeviation))
+            standardDeviation = standardDeviation.Text;
+        end
+        taskStruct.costTerms.(costTermNames(i)).standardDeviation = ...
+            str2double(standardDeviation);
+    end
 end
 end
