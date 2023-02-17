@@ -6,7 +6,9 @@ clear
 inputs = prepareGroundContactPersonalizationInputs(inputs);
 
 % Stage 0
-inputs = initializeRestingSpringLength(inputs);
+if params.restingSpringLengthInitialization
+    inputs = initializeRestingSpringLength(inputs);
+end
 % inputs = load('1-29-extramarkercol-0_1std_1000mae-1e-4damping-02moment_1', 'inputs');
 % inputs = inputs.inputs;
 
@@ -17,11 +19,6 @@ for task = 1:length(inputs.tasks)
         calcBSplineDerivative(inputs.tasks{task}.time, ...
         inputs.tasks{task}.experimentalGroundReactionMoments, 2, ...
         inputs.tasks{task}.splineNodes);
-end
-
-for task = 1:length(params.tasks)
-    params.tasks{task}.costTerms.springConstantErrorFromNeighbors ...
-        .standardDeviation = valueOrAlternate(params, 'nothere', 0.05);
 end
 
 % GCP Tasks

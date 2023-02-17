@@ -31,7 +31,9 @@ function results = GroundContactPersonalization(inputs, params)
 verifyInputs(inputs); % (struct) -> (None)
 verifyParams(params); % (struct) -> (None)
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
-inputs = initializeRestingSpringLengthAndSpringConstants(inputs);
+if params.restingSpringLengthInitialization
+    inputs = initializeRestingSpringLengthAndSpringConstants(inputs);
+end
 for task = 1:length(inputs.tasks)
     inputs.tasks{task}.experimentalGroundReactionMoments = ...
         replaceMomentsAboutMidfootSuperior(inputs.tasks{task}, inputs);
@@ -64,9 +66,7 @@ function verifyParams(params)
 end
 
 function params = prepareGroundContactPersonalizationParams(params)
-    for task = 1:length(params.tasks)
-        params.tasks{task}.costTerms.springConstantErrorFromNeighbors.standardDeviation = valueOrAlternate(params, 'nothere', 0.03);
-    end
+
 end
 
 % (struct) -> (2D Array of double)
