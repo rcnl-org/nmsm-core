@@ -1,6 +1,7 @@
 clear
 
-[inputs, params] = parseGroundContactPersonalizationSettingsTree(...
+[inputs, params, resultsDirectory] = ...
+    parseGroundContactPersonalizationSettingsTree(...
     xml2struct("GCP_settings_tasklist.xml"));
 inputs = prepareGroundContactPersonalizationInputs(inputs);
 
@@ -28,6 +29,9 @@ for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
     save("2-9-feetTogether_" + task + ".mat")
 end
+
+%% Save results to osimx
+saveGroundContactPersonalizationResults(inputs, pwd)
 
 %% Plot forces and kinematics
 for foot = 1:length(inputs.tasks)
