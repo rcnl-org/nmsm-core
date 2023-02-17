@@ -28,6 +28,6 @@
 function objectiveCost = calcMinimizingJointJerkObjective(...
     objectiveTerm, params)
 
-costWeight = valueOrAlternate(params, "minimizingJointJerkCostWeight", 1);
+costWeight = valueOrAlternate(params, "minimizedCoordinateCostWeight", 1);
 objectiveCost = costWeight * sum(objectiveTerm);
 end

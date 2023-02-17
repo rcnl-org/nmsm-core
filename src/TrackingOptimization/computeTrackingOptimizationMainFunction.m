@@ -30,14 +30,16 @@ bounds = setupProblemBounds(inputs);
 guess = setupInitialGuess(inputs);
 setup = setupSolverSettings(inputs, bounds, guess, params);
 % solution = gpops2(setup);
-guess.auxdata = inputs;
-guess.phase.parameter = guess.parameter;
-solution = guess;
-output = computeTrackingOptimizationContinuousFunction(solution);
+% guess.auxdata = inputs;
+% guess.phase.parameter = guess.parameter;
+% solution = guess;
+% output = computeTrackingOptimizationContinuousFunction(solution);
 output.solution = solution;
-% solution = output.result.solution;
-% save(params.solutionFileName, 'solution', 'params');
-% save(params.outputFileName, 'output');
+% guess.auxdata = inputs;
+% guess.phase.parameter = guess.parameter;
+% solution = guess;
+% output = computeTrackingOptimizationContinuousFunction(solution);
+% output.solution = solution;
 end
 function bounds = setupProblemBounds(inputs)
 % setup time bounds

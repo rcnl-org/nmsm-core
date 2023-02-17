@@ -25,9 +25,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function objectiveCost = calcTrackingJointMomentObjective(...
+function objectiveCost = calcTrackingCoordinateObjective(...
     objectiveTerm, params)
 
-costWeight = valueOrAlternate(params, "trackingJointMomentCostWeight", 1);
+costWeight = valueOrAlternate(params, "trackedCoordinateCostWeight", 1);
 objectiveCost = costWeight * sum(objectiveTerm);
 end

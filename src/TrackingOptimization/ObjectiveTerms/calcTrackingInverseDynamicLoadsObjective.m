@@ -25,10 +25,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function objectiveCost = calcTrackingLeftGroundReactionsObjective(...
+function objectiveCost = calcTrackingInverseDynamicLoadsObjective(...
     objectiveTerm, params)
 
-costWeight = valueOrAlternate(params, ...
-    "trackingLeftGroundReactionsCostWeight", 1);
+costWeight = valueOrAlternate(params, "trackedLoadCostWeight", 1);
 objectiveCost = costWeight * sum(objectiveTerm);
 end

@@ -25,11 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function objectiveCost = calcTrackingRightGroundReactionsObjective(...
+function objectiveCost = calcTrackingExternalForcesObjective(...
     objectiveTerm, params)
 
 costWeight = valueOrAlternate(params, ...
-    "trackingRightGroundReactionsCostWeight", 0);
-
+    "trackedExternalForceCostWeight", 1);
 objectiveCost = costWeight * sum(objectiveTerm);
 end

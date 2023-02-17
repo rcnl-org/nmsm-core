@@ -25,10 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function objectiveCost = calcMinimizingJointAccelerationObjective(...
+function objectiveCost = calcTrackingExternalMomentsObjective(...
     objectiveTerm, params)
 
 costWeight = valueOrAlternate(params, ...
-    "minimizingJointAccelerationCostWeight", 0);
+    "trackedExternalMomentCostWeight", 0);
+
 objectiveCost = costWeight * sum(objectiveTerm);
 end
