@@ -29,6 +29,12 @@
 
 function cost = calcGroundContactPersonalizationTaskCost( ...
     values, fieldNameOrder, inputs, params, task)
+persistent models;
+for foot = 1:length(inputs.tasks)
+    if ~isfield(models, "model_" + foot)
+        models.("model_" + foot) = Model(inputs.tasks{foot}.model);
+    end
+end
 valuesStruct = unpackValues(values, inputs, fieldNameOrder);
 if ~params.tasks{task}.designVariables(1)
         valuesStruct.springConstants = inputs.springConstants;
@@ -60,7 +66,8 @@ for foot = 1:length(inputs.tasks)
         .experimentalJointPositions, inputs.tasks{foot} ...
         .jointKinematicsBSplines, valuesBSplineCoefficients);
     modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
-        modeledJointPositions, modeledJointVelocities, params, task, foot);
+        modeledJointPositions, modeledJointVelocities, params, task, ...
+        foot, models);
     modeledValues.jointPositions = modeledJointPositions;
     modeledValues.jointVelocities = modeledJointVelocities;
 

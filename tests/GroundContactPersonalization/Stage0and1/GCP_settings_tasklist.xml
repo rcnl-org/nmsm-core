@@ -50,7 +50,7 @@
 			</FootPersonalizationTask>
 			<FootPersonalizationTask>
 				<!--Flag indicating whether the foot will be personalized-->
-				<is_enabled>false</is_enabled>
+				<is_enabled>true</is_enabled>
 				<!--Index of task used to determine order of tasks-->
 				<index>2</index>
 				<!--Flag indicating whether this is a left foot-->
