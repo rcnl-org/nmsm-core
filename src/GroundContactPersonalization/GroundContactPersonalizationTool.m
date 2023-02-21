@@ -32,7 +32,7 @@
 function GroundContactPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 [inputs, params, resultsDirectory] = ...
-    parseGroundContactPersonalizationTool(settingsTree);
+    parseGroundContactPersonalizationSettingsTree(settingsTree);
 results = GroundContactPersonalization(inputs, params);
 saveGroundContactPersonalizationResults(results, resultsDirectory);
 end
