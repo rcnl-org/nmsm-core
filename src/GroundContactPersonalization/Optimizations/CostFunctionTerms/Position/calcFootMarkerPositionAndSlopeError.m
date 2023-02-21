@@ -28,19 +28,21 @@
 % ----------------------------------------------------------------------- %
 
 function [valueError, slopeError] = ...
-    calcFootMarkerPositionAndSlopeError(inputs, modeledValues)
-markerFieldNames = fieldnames(inputs.markerNames);
+    calcFootMarkerPositionAndSlopeError(task, modeledValues)
+markerFieldNames = fieldnames(task.markerNames);
 valueError = [];
 slopeError = [];
 for i=1:length(markerFieldNames)
-newValues = abs(inputs.experimentalMarkerPositions. ...
+newValues = abs(task.experimentalMarkerPositions. ...
     (markerFieldNames{i}) - modeledValues.markerPositions. ...
     (markerFieldNames{i}));
-newSlope = abs(inputs.experimentalMarkerVelocities. ...
+newSlope = abs(task.experimentalMarkerVelocities. ...
     (markerFieldNames{i}) - modeledValues.markerVelocities. ...
     (markerFieldNames{i}));
 valueError = [valueError newValues];
 slopeError = [slopeError newSlope];
 end
 valueError = 1000 * valueError;
+valueError = reshape(valueError, 1, []);
+slopeError = reshape(slopeError, 1, []);
 end
