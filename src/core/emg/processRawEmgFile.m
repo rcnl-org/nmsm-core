@@ -1,11 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% RCNL's protocol for turning a matrix of double of EMG data into processed
-% EMG data that is filtered, demeaned, and rectified as necessary. Default
-% values are used if missing from params struct.
-%
-% params:
-%   - highPassFilterCutoff
+% Produce a new processed EMG file using RCNL's protocol for turning a
+% matrix of double of EMG data into processed EMG data.
 %
 % (2D Array of double, 1D Array of double, string, struct) -> (None)
 % Processes the input EMG data by RCNL's protocol
@@ -32,31 +28,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function processedEmgData = processEmg(emgData, emgTime, params)
+function processRawEmgFile(emgFilename, filterOrder, highPassCutoff, ...
+    lowPassCutoff, processedEmgFileName)
+emgStorage = org.opensim.modeling.Storage(emgFilename);
+timePoints = findTimeColumn(emgStorage);
+rawData = storageToDoubleMatrix(emgStorage);
 
-sampleRate = length(emgTime) / (emgTime(end) - emgTime(1));
+processEmg( ...
+    rawData, ...
+    timePoints, ...
+    struct( ...
+        "filterOrder", filterOrder, ...
+        "highPassCutoff", highPassCutoff, ...
+        "lowPassCutoff", lowPassCutoff ...
+        ))
 
-% High pass filter the data
-order = valueOrAlternate(params, "filterOrder", 4);
-highPassCutoff = valueOrAlternate(params, "highPassCutoff", 10);
-[b,a] = butter(order, 2 * highPassCutoff/sampleRate, 'high');
-emgData = filtfilt(b, a, emgData);
-
-% Demean
-emgData = emgData-ones(size(emgData, 1), 1) * mean(emgData);
-
-% Rectify
-emgData = abs(emgData);
-
-% Low pass filter
-lowPassCutoff = valueOrAlternate(params, "lowPassCutoff", 40);
-[b,a] = butter(order, 2 * lowPassCutoff / sampleRate);
-emgData = filtfilt(b, a, emgData);
-
-% Remove any negative EMG values that may still exist
-emgData(emgData < 0) = 0;
-
-processedEmgData = emgData;
-
+writeToSto(columnNames, timePoints, processedData, processedEmgFileName);
 end
 
