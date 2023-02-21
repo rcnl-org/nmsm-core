@@ -32,7 +32,7 @@
 
 function output = getFieldByNameOrAlternate(struct, field, alternative)
 output = getFieldByName(struct, field);
-if ~isnumeric(output)
+if ~isnumeric(output) && ~isstruct(output)
     if output == 0
         output = alternative;
     end
