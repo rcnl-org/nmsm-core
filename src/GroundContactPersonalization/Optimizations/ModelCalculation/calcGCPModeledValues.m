@@ -35,8 +35,11 @@
 % ----------------------------------------------------------------------- %
 
 function modeledValues = calcGCPModeledValues(inputs, values, ...
-    modeledJointPositions, modeledJointVelocities, params, task, foot)
-[model, state] = Model(inputs.tasks{foot}.model);
+    modeledJointPositions, modeledJointVelocities, params, task, foot, ...
+    models)
+% [model, state] = Model(inputs.tasks{foot}.model);
+model = models.("model_" + foot);
+state = model.initSystem();
 markerNamesFields = fieldnames(inputs.tasks{foot}.markerNames);
 if ~params.tasks{task}.designVariables(1)
     values.springConstants = inputs.springConstants;
@@ -115,7 +118,7 @@ for i=1:size(modeledJointPositions, 2)
         markerKinematics.xPosition = zeros(size(values.springConstants));
         markerKinematics.zPosition = zeros(size(values.springConstants));
         inputs.midfootSuperiorPosition(:, i) = ...
-            Model(inputs.tasks{foot}.model).getMarkerSet().get(...
+            model.getMarkerSet().get(...
             inputs.tasks{foot}.markerNames.midfootSuperior ...
             ).getLocationInGround(state).getAsMat()';
         for j = 1:length(values.springConstants)
