@@ -39,12 +39,13 @@ end
 
 function inputs = getInputs(tree)
 import org.opensim.modeling.*
-inputDirectory = getFieldByName(tree, 'input_directory').Text;
+inputDirectory = getTextFromField(getFieldByNameOrAlternate(tree, ...
+    'input_directory', pwd));
 inputs.bodyModel = getFieldByNameOrError(tree, 'input_model_file').Text;
 motionFile = getFieldByNameOrError(tree, 'input_motion_file').Text;
 grfFile = getFieldByNameOrError(tree, 'input_grf_file').Text;
-inputs.kinematicsFilterCutoff = str2double(getFieldByNameOrError(tree, ...
-    'kinematics_filter_cutoff').Text);
+inputs.kinematicsFilterCutoff = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'kinematics_filter_cutoff', '6')));
 if(~isempty(inputDirectory))
     try
         bodyModel = Model(fullfile(inputDirectory, inputs.bodyModel));
@@ -70,8 +71,7 @@ end
 
 % (struct, struct) -> (struct)
 function output = getFootTasks(inputs, tree)
-tasks = getFieldByNameOrError(tree, ...
-    'FootPersonalizationTaskList');
+tasks = getFieldByNameOrError(tree, 'FootPersonalizationTaskList');
 counter = 1;
 footTasks = orderByIndex(tasks.FootPersonalizationTask);
 for i=1:length(footTasks)
@@ -118,32 +118,16 @@ moments = NaN(3, length(task.grfTime));
 ec = NaN(3, length(task.grfTime));
 for i=1:size(grfColumnNames')
     label = grfColumnNames(i);
-    if strcmpi(label, task.forceColumns(1, :))
-        grf(1, :) = grfData(i, startIndex:endIndex);
-    end
-    if strcmpi(label, task.forceColumns(2, :))
-        grf(2, :) = grfData(i, startIndex:endIndex);
-    end
-    if strcmpi(label, task.forceColumns(3, :))
-        grf(3, :) = grfData(i, startIndex:endIndex);
-    end
-    if strcmpi(label, task.momentColumns(1, :))
-        moments(1, :) = grfData(i, startIndex:endIndex);
-    end
-    if strcmpi(label, task.momentColumns(2, :))
-        moments(2, :) = grfData(i, startIndex:endIndex);
-    end
-    if strcmpi(label, task.momentColumns(3, :))
-        moments(3, :) = grfData(i, startIndex:endIndex);
-    end
-    if strcmpi(label, task.electricalCenterColumns(1, :))
-        ec(1, :) = grfData(i, startIndex:endIndex);
-    end
-    if strcmpi(label, task.electricalCenterColumns(2, :))
-        ec(2, :) = grfData(i, startIndex:endIndex);
-    end
-    if strcmpi(label, task.electricalCenterColumns(3, :))
-        ec(3, :) = grfData(i, startIndex:endIndex);
+    for j = 1:3
+        if strcmpi(label, task.forceColumns(j, :))
+            grf(j, :) = grfData(i, startIndex:endIndex);
+        end
+        if strcmpi(label, task.momentColumns(j, :))
+            moments(j, :) = grfData(i, startIndex:endIndex);
+        end
+        if strcmpi(label, task.electricalCenterColumns(j, :))
+            ec(j, :) = grfData(i, startIndex:endIndex);
+        end
     end
 end
 if any([isnan(grf) isnan(moments) isnan(ec)])
@@ -198,35 +182,28 @@ end
 
 % Parses initial values
 function inputs = getInitialValues(inputs, tree)
-inputs.initialRestingSpringLength = str2double(getFieldByNameOrError(...
-    tree, 'initial_resting_spring_length').Text);
-inputs.initialSpringConstants = str2double(getFieldByNameOrError(...
-    tree, 'initial_spring_constant').Text);
-inputs.initialDampingFactor = str2double(getFieldByNameOrError(...
-    tree, 'initial_damping_factor').Text);
-inputs.initialDynamicFrictionCoefficient = str2double(...
-    getFieldByNameOrError(tree, 'initial_dynamic_friction_coefficient') ...
-    .Text);
+inputs.initialRestingSpringLength = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'initial_resting_spring_length', ...
+    '0.05')));
+inputs.initialSpringConstants = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'initial_spring_constant', '2500')));
+inputs.initialDampingFactor = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'initial_damping_factor', '1e-4')));
+inputs.initialDynamicFrictionCoefficient = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, ...
+    'initial_dynamic_friction_coefficient', '0.25')));
 end
 
 function params = getParams(tree)
 params = struct();
-params.restingSpringLengthInitialization = getFieldByNameOrError(tree, ...
-    'resting_spring_length_initialization_is_enabled');
-if (isstruct(params.restingSpringLengthInitialization))
-    params.restingSpringLengthInitialization = ...
-        strcmpi(params.restingSpringLengthInitialization.Text, 'true');
-end
-params.maxIterations = valueOrAlternate(tree, 'max_iterations', 325);
-if(isstruct(params.maxIterations))
-    params.maxIterations = str2double(params.maxIterations.Text);
-end
-params.maxFunctionEvaluations = valueOrAlternate(tree, ...
-    'max_function_evaluations', 3000000);
-if(isstruct(params.maxFunctionEvaluations))
-    params.maxFunctionEvaluations = str2double(params.maxFunctionEvaluations.Text);
-end
-
+params.restingSpringLengthInitialization = strcmpi(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, ...
+    'resting_spring_length_initialization_is_enabled', 'true')), 'true');
+params.maxIterations = str2double(getTextFromField(...
+    getFieldByValueOrAlternate(tree, 'max_iterations', '400')));
+params.maxIterations = str2double(getTextFromField(...
+    getFieldByValueOrAlternate(tree, 'max_function_evaluations', ...
+    '3000000')));
 params.tasks = getOptimizationTasks(tree);
 end
 
