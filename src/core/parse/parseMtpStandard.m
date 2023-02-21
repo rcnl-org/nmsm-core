@@ -29,9 +29,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cells = parseMtpStandard(files)
+function [cells, columnNames] = parseMtpStandard(files)
 import org.opensim.modeling.Storage
-dataFromFileOne = storageToDoubleMatrix(Storage(files(1)));
+file = Storage(files(1));
+dataFromFileOne = storageToDoubleMatrix(file);
+columnNames = getStorageColumnNames(file);
 cells = zeros([length(files) ...
     size(dataFromFileOne)]);
 cells(1, :, :) = dataFromFileOne;

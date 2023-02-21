@@ -30,7 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function [xGrfMoment, yGrfMoment, zGrfMoment] = ...
-    calcModeledGroundReactionMoments(values, inputs, markerKinematics, ...
+    calcModeledGroundReactionMoments(values, task, markerKinematics, ...
     springForces, currentFrame)
 xGrfMoment = 0;
 yGrfMoment = 0;
@@ -42,9 +42,9 @@ for i = 1:length(values.springConstants)
     force(1) = springForces(1, i);
     force(2) = springForces(2, i);
     force(3) = springForces(3, i);
-    offset(1) = xPosition - inputs.midfootSuperiorPosition(1, currentFrame);
+    offset(1) = xPosition - task.midfootSuperiorPosition(1, currentFrame);
     offset(2) = 0;
-    offset(3) = zPosition - inputs.midfootSuperiorPosition(3, currentFrame);
+    offset(3) = zPosition - task.midfootSuperiorPosition(3, currentFrame);
 
     moments = cross(offset, force);
     xGrfMoment = xGrfMoment + moments(1);

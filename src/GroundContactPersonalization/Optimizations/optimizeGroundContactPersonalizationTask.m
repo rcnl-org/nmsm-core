@@ -52,21 +52,23 @@ if (params.tasks{task}.designVariables(1))
     fieldNameOrder = [fieldNameOrder "springConstants"];
 end
 if (params.tasks{task}.designVariables(2))
-    initialValues = [initialValues inputs.dampingFactors];
-    fieldNameOrder = [fieldNameOrder "dampingFactors"];
+    initialValues = [initialValues inputs.dampingFactor];
+    fieldNameOrder = [fieldNameOrder "dampingFactor"];
 end
 if (params.tasks{task}.designVariables(3))
-    initialValues = [initialValues ...
-        reshape(inputs.bSplineCoefficients, 1, [])];
-    fieldNameOrder = [fieldNameOrder "bSplineCoefficients"];
-end
-if (params.tasks{task}.designVariables(4))
     initialValues = [initialValues inputs.dynamicFrictionCoefficient];
     fieldNameOrder = [fieldNameOrder "dynamicFrictionCoefficient"];
 end
-if (params.tasks{task}.designVariables(5))
+if (params.tasks{task}.designVariables(4))
     initialValues = [initialValues inputs.restingSpringLength];
     fieldNameOrder = [fieldNameOrder "restingSpringLength"];
+end
+if (params.tasks{task}.designVariables(5))
+    for foot = 1:length(inputs.tasks)
+        initialValues = [initialValues ...
+            reshape(inputs.tasks{foot}.bSplineCoefficients, 1, [])];
+        fieldNameOrder = [fieldNameOrder ("bSplineCoefficients" + foot)];
+    end
 end
 end
 
@@ -80,22 +82,24 @@ if (params.tasks{task}.designVariables(1))
     upperBounds = [upperBounds Inf(1, length(inputs.springConstants))];
 end
 if (params.tasks{task}.designVariables(2))
-    lowerBounds = [lowerBounds zeros(1, length(inputs.dampingFactors))];
-    upperBounds = [upperBounds Inf(1, length(inputs.dampingFactors))];
-end
-if (params.tasks{task}.designVariables(3))
-    lowerBounds = [lowerBounds -Inf(1, length(reshape(...
-        inputs.bSplineCoefficients, 1, [])))];
-    upperBounds = [upperBounds Inf(1, length(reshape(...
-        inputs.bSplineCoefficients, 1, [])))];
-end
-if (params.tasks{task}.designVariables(4))
     lowerBounds = [lowerBounds 0];
     upperBounds = [upperBounds Inf];
 end
-if (params.tasks{task}.designVariables(5))
+if (params.tasks{task}.designVariables(3))
+    lowerBounds = [lowerBounds 0];
+    upperBounds = [upperBounds Inf];
+end
+if (params.tasks{task}.designVariables(4))
     lowerBounds = [lowerBounds -Inf];
     upperBounds = [upperBounds Inf];
+end
+if (params.tasks{task}.designVariables(5))
+    for foot = 1:length(inputs.tasks)
+        lowerBounds = [lowerBounds -Inf(1, length(reshape(...
+            inputs.tasks{foot}.bSplineCoefficients, 1, [])))];
+        upperBounds = [upperBounds Inf(1, length(reshape(...
+            inputs.tasks{foot}.bSplineCoefficients, 1, [])))];
+    end
 end
 end
 

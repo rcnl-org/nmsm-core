@@ -1,0 +1,6 @@
+function fn = makeMarkerFunction(markerName, ...
+    axis)
+fn = @(value, model) adjustMarkerPosition(model, markerName, value, ...
+    axis);
+end
+
