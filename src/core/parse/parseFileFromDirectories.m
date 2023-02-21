@@ -29,23 +29,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cells = parseFileFromDirectories(directories, suffix)
+function [cells, columnNames] = parseFileFromDirectories(directories, suffix)
 import org.opensim.modeling.Storage
-firstTrial = parseFileInDirectory(directories(1), suffix);
+[firstTrial, columnNames] = parseFileInDirectory(directories(1), ...
+    suffix, true);
 cells = zeros([length(directories) size(firstTrial)]);
 cells(1, :, :) = firstTrial;
 for i=2:length(directories)
-    cells(i, :, :) = parseFileInDirectory(directories(i), suffix);
+    cells(i, :, :) = parseFileInDirectory(directories(i), suffix, false);
 end
 end
 
-function data = parseFileInDirectory(inputDirectory, suffix)
+function [data, columnNames] = parseFileInDirectory(inputDirectory, ...
+    suffix, findColumnNames)
 import org.opensim.modeling.Storage
 data = '';
 files = findDirectoryFileNames(inputDirectory);
 for i=1:length(files)
     if(contains(files(i), suffix))
         data = storageToDoubleMatrix(Storage(files(i)));
+        if(findColumnNames)
+            columnNames = getStorageColumnNames(Storage(files(i)));
+            findColumnNames = false;
+        end
         break;
     end
 end

@@ -30,9 +30,8 @@
 
 function cost = calcDeviationCostTerm(value, ...
     errorCenter, maxAllowableError)
-
 cost = ((value - errorCenter) ./ maxAllowableError) .^ 2 ./ ...
     numel(value);
-cost(isnan(cost))=0;
+cost(isnan(cost)) = 0;
 cost = sum(cost, 'all');
 end

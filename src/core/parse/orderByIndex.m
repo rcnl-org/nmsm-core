@@ -30,6 +30,9 @@
 
 function taskList = orderByIndex(tasks)
 if length(tasks) == 1
+    if(~isfield(tasks, 'index'))
+        throw(MException('', "<index> element not included for task"))
+    end
     taskList = tasks;
 else
     taskIndexValues = [];

@@ -31,14 +31,26 @@ function results = GroundContactPersonalization(inputs, params)
 verifyInputs(inputs); % (struct) -> (None)
 verifyParams(params); % (struct) -> (None)
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
-inputs = initializeRestingSpringLengthAndSpringConstants(inputs, params);
+if params.restingSpringLengthInitialization
+    inputs = initializeRestingSpringLengthAndSpringConstants(inputs);
+end
+for task = 1:length(inputs.tasks)
+    inputs.tasks{task}.experimentalGroundReactionMoments = ...
+        replaceMomentsAboutMidfootSuperior(inputs.tasks{task}, inputs);
+    inputs.tasks{task}.experimentalGroundReactionMomentsSlope = ...
+        calcBSplineDerivative(inputs.tasks{task}.time, ...
+        inputs.tasks{task}.experimentalGroundReactionMoments, 2, ...
+        inputs.tasks{task}.splineNodes);
+end
 params = prepareGroundContactPersonalizationParams(params);
+
 for task = 1:length(params.tasks)
     taskInputs = prepareGroundContactPersonalizationInputs(inputs, params);
     taskParams = prepareGroundContactPersonalizationParams(params);
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
 end
 
+results = inputs;
 end
 
 % (struct) -> (None)
@@ -54,7 +66,21 @@ function verifyParams(params)
 end
 
 function params = prepareGroundContactPersonalizationParams(params)
-    for task = 1:length(params.tasks)
-        params.tasks{task}.costTerms.springConstantErrorFromNeighbors.standardDeviation = valueOrAlternate(params, 'nothere', 0.03);
+
+end
+
+% (struct) -> (2D Array of double)
+% Replace parsed experimental ground reaction moments about midfoot
+% superior marker projected onto floor
+function replacedMoments = replaceMomentsAboutMidfootSuperior(task, inputs)
+    replacedMoments = ...
+        zeros(size(task.experimentalGroundReactionMoments));
+    for i = 1:size(replacedMoments, 2)
+        newCenter = task.midfootSuperiorPosition(:, i);
+        newCenter(2) = inputs.restingSpringLength;
+        replacedMoments(:, i) = ...
+            task.experimentalGroundReactionMoments(:, i) + ...
+            cross((task.electricalCenter(:, i) - newCenter), ...
+            task.experimentalGroundReactionForces(:, i));
     end
 end

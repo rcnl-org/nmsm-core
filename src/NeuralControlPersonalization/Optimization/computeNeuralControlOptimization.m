@@ -9,40 +9,28 @@
 %     optimizerOptions);
 % end
 
-function x = computeNeuralControlOptimization(x0,params)
+function finalValues = computeNeuralControlOptimization(initialValues, inputs, params)
 
 % Constraints
-nSynergies = params.nSynergies;
-nMuscles = params.nMuscles;
-nNodes = params.nNodes;
-nDesignVars = nSynergies*(nMuscles/2 + nNodes);
-A = [];
-b = [];
-Aeq = zeros(nSynergies,nDesignVars);
-beq = 1*ones(nSynergies,1);
-for i4 = 1:nSynergies
-    Aeq(i4,(i4-1)*(nNodes+nMuscles/2)+nNodes+1:i4*(nNodes+nMuscles/2)) = 1;
+numDesignVariables = length(initialValues);
+Aeq = zeros(inputs.numSynergies, numDesignVariables);
+beq = 1*ones(inputs.numSynergies, 1);
+column = 1; 
+row = 1; % the sum of the muscles in the previous synergy groups
+for i = 1:length(inputs.synergyGroups)
+    for j = 1: inputs.synergyGroups{i}.numSynergies
+        Aeq(column, row : ...
+            row + length(inputs.synergyGroups{i}.muscleNames) - 1) = 1;
+        column = column + 1;
+    end
+    row = row + length(inputs.synergyGroups{i}.muscleNames);
 end
-lb = zeros(nDesignVars,1);
-ub = [];
-nonlcon = [];
-
+lb = zeros(numDesignVariables, 1);
 
 options = optimoptions('fmincon','Display','iter','MaxIterations',1e3,...
-    'MaxFunctionEvaluations',1e3*length(x0),'Algorithm','sqp',...
-    'TypicalX',ones(nDesignVars,1),'UseParallel','always');
+    'MaxFunctionEvaluations',1e3*length(initialValues),'Algorithm','sqp',...
+    'TypicalX',ones(numDesignVariables,1),'UseParallel','always');
 
-% NcpOptimSettings.A = A;
-% NcpOptimSettings.b = b;
-% NcpOptimSettings.Aeq = Aeq;
-% NcpOptimSettings.beq = beq;
-% NcpOptimSettings.lb = lb;
-% NcpOptimSettings.ub = ub;
-% NcpOptimSettings.nonlcon = nonlcon;
-% NcpOptimSettings.options = options;
-
-%         [x,~,exitflag,~] = fmincon(@(x)calculateCost(x,lMTVals,vMTVals,rVals,IDmomentVals,params),...
-%             x0,A,b,Aeq,beq,lb,ub,nonlcon,options);
-[x,~,exitflag,~] = fmincon(@(x)computeNeuralControlCostFunction(x,params),...
-    x0,A,b,Aeq,beq,lb,ub,nonlcon,options);
+finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, inputs, params),...
+    initialValues, [], [], Aeq, beq, lb, [], [], options);
 end

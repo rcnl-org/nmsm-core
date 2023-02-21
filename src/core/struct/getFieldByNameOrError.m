@@ -33,7 +33,7 @@
 function output = getFieldByNameOrError(deepStruct, field)
 output = getFieldByName(deepStruct, field);
 if(~isstruct(output) && ~output)
-    throw(MException('', strcat(field, " is not in the struct")))
+    throw(MException('', strcat(field, " was not found in the struct")))
 end
 end
 
