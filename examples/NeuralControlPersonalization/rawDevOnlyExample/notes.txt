@@ -1,0 +1,80 @@
+Required Inputs for NeuralControlPersonalization(inputs, params)
+
+  20×1 cell array
+
+    {'maxIsometricForce'                   }
+    {'optimalFiberLength'                  }
+    {'tendonSlackLength'                   }
+    {'pennationAngle'                      }
+    {'vMaxFactor'                          }
+    {'numMuscles'                          }
+    {'numLegMuscles'                       }
+    {'numTrunkMuscles'                     }
+    {'numJoints'                           }
+    {'numNodes'                            }
+    {'numSynergies'                        }
+    {'numPoints'                           }
+    {'emgActivation'                       }
+    {'muscleTendonLength'                  }
+    {'muscleTendonVelocity'                }
+    {'momentArms'                          }
+    {'inverseDynamicsMoments'              }
+    {'muscleNames'                         }
+    {'coordinateNames'                     }
+    {'initialValues'                       }
+
+Current Inputs 
+
+  21×1 cell array
+
+    {'maxIsometricForce'     }
+    {'optimalFiberLength'    }
+    {'tendonSlackLength'     }
+    {'pennationAngle'        }
+    {'vMaxFactor'            }
+    {'numMuscles'            }
+    {'numLegMuscles'         }
+    {'numTrunkMuscles'       }
+    {'numJoints'             }
+    {'numNodes'              }
+    {'numSynergies'          }
+    {'numPoints'             }
+    {'emgActivation'         }
+    {'muscleTendonLength'    }
+    {'muscleTendonVelocity'  }
+    {'momentArms'            }
+    {'inverseDynamicsMoments'}
+    {'muscleNames'           }
+    {'coordinateNames'       }
+-- missing initialValues
+
+extra:
+    {'model'                 }
+    {'synergyGroups'         }
+    
+Discussion Points:
+  - how MTP results fit into NeuralControlPersonalization
+  - how precal fits into NeuralControlPersonalization
+    - do we need precal settings?
+  - how bilateral symmetry fits into NeuralControlPersonalization
+  - NCPSynergyGroupList should be a single space separated list?
+  - how do GroupedMuscles (GroupedActivations, GroupedSynergyWeights) fit into NeuralControlPersonalization
+  - how to generate initialValues
+    - set all to 0.1
+    - commands also 0.1
+    try running static optimization to get initial values
+numMuscles divided by 2 or 10
+    
+printed after mtp
+mtp synx included emg data 
+mtp activations after activation dynamics - for use in NCP as emgActivation
+also change bilateral symmetry writing to file
+port over MTP activation and synergy weight similarity cost
+
+one coordinate list, find activation if it doesn't exist, if muscle in synergy group doesn't cross joint then just exclude it
+don't precal a muscle that has an activation
+SynergyGroupSet
+
+this is the max allowable value
+
+combine activations for cost term or keep separate from a weight section

@@ -23,5 +23,3 @@ runner.addPlugin(coverage)
 
 results = run(runner, suites);
 results.assertSuccess()
-
-

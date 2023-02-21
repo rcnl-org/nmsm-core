@@ -29,48 +29,32 @@
 
 function inputs = mergeGroundContactPersonalizationRoundResults(inputs, ...
     results, params, task)
-
-if nargin < 4
-    task = 1;
-end
-if task == 0
-    inputs = mergeStageZeroResults(inputs, results);
-else
-    inputs = mergeTaskResults(inputs, results, params, task);
-end
-
-end
-
-function inputs = mergeStageZeroResults(inputs, results)
-index = 1;
-inputs.springConstants = results(index : index + length(inputs.springConstants) - 1);
-index = index + length(inputs.springConstants);
-
-inputs.restingSpringLength = results(index);
-end
-
-function inputs = mergeTaskResults(inputs, results, params, task)
 index = 1;
 if (params.tasks{task}.designVariables(1))
-    inputs.springConstants = 1000 * results(index : index + length(inputs.springConstants) - 1);
+    inputs.springConstants = 1000 * results(index : index + ...
+        length(inputs.springConstants) - 1);
     index = index + length(inputs.springConstants);
 end
 if (params.tasks{task}.designVariables(2))
-    inputs.dampingFactors = results(index : index + length(inputs.dampingFactors) - 1);
-    index = index + length(inputs.dampingFactors);
+    inputs.dampingFactor = results(index);
+    index = index + 1;
 end
 if (params.tasks{task}.designVariables(3))
-    bSplineCoefficientLength = length(reshape(inputs.bSplineCoefficients, 1, []));
-    bSplineCoefficients = results(index : index + bSplineCoefficientLength - 1);
-    bSplineCoefficients = reshape(bSplineCoefficients, [], 7);
-    inputs.bSplineCoefficients = bSplineCoefficients;
-    index = index + bSplineCoefficientLength;
-end
-if (params.tasks{task}.designVariables(4))
     inputs.dynamicFrictionCoefficient = results(index);
     index = index + 1;
 end
-if (params.tasks{task}.designVariables(5))
+if (params.tasks{task}.designVariables(4))
     inputs.restingSpringLength = results(index);
+end
+if (params.tasks{task}.designVariables(5))
+    for foot = 1:length(inputs.tasks)
+        bSplineCoefficientLength = length(reshape(inputs.tasks{foot} ...
+            .bSplineCoefficients, 1, []));
+        bSplineCoefficients = results(index : index + ...
+            bSplineCoefficientLength - 1);
+        bSplineCoefficients = reshape(bSplineCoefficients, [], 7);
+        inputs.tasks{foot}.bSplineCoefficients = bSplineCoefficients;
+        index = index + bSplineCoefficientLength;
+    end
 end
 end

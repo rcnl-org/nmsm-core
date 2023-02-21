@@ -27,82 +27,130 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = prepareGroundContactPersonalizationInputs(inputs, params)
+function inputs = prepareGroundContactPersonalizationInputs(inputs)
 inputs.gridWidth = 5;
 inputs.gridHeight = 15;
 
-if inputs.right.isEnabled
-    % Potentially refactor to use inputs.right if allowing multiple sides
-    inputs = prepareInputsForSide(inputs, inputs, params);
-end
-if inputs.left.isEnabled
-    inputs = prepareInputsForSide(inputs, inputs, params);
-end
+meanRightFootMarkerLocations = getMeanFootMarkerLocations(inputs);
 
-inputs.restingSpringLength = inputs.initialRestingSpringLength;
+for task = 1:length(inputs.tasks)
+    inputs.tasks{task} = prepareInputsForFoot(inputs.tasks{task}, ...
+        inputs, meanRightFootMarkerLocations, task);
+end
+inputs.numSpringMarkers = confirmNumSpringMarkers(inputs.tasks);
+
+inputs.springConstants = inputs.initialSpringConstants * ones(1, ...
+    inputs.numSpringMarkers);
+inputs.dampingFactor = inputs.initialDampingFactor;
 inputs.dynamicFrictionCoefficient = ...
     inputs.initialDynamicFrictionCoefficient;
+inputs.restingSpringLength = inputs.initialRestingSpringLength;
 end
 
 % (struct, struct) -> (struct)
-% prepares optimization values specific to a side
-function inputs = prepareInputsForSide(inputs, sharedInputs, params)
-inputs.toesJointName = char(Model(sharedInputs.bodyModel ...
-    ).getCoordinateSet().get(inputs.toesCoordinateName).getJoint(...
+% Prepares optimization values specific to a foot
+function task = prepareInputsForFoot(task, inputs, meanMarkerLocations, ...
+    taskNumber)
+task.toesJointName = char(Model(inputs.bodyModel ...
+    ).getCoordinateSet().get(task.toesCoordinateName).getJoint(...
     ).getName());
-[inputs.hindfootBodyName, inputs.toesBodyName] = ...
-    getJointBodyNames(Model(sharedInputs.bodyModel), inputs.toesJointName);
-inputs.coordinatesOfInterest = findGCPFreeCoordinates(...
-    Model(sharedInputs.bodyModel), string(inputs.toesBodyName));
+[task.hindfootBodyName, task.toesBodyName] = ...
+    getJointBodyNames(Model(inputs.bodyModel), task.toesJointName);
+task.coordinatesOfInterest = findGCPFreeCoordinates(...
+    Model(inputs.bodyModel), string(task.toesBodyName));
 
 [footPosition, markerPositions] = ...
-    makeFootKinematics(sharedInputs.bodyModel, ...
-    sharedInputs.motionFileName, inputs.coordinatesOfInterest, ...
-    inputs.hindfootBodyName, inputs.toesCoordinateName, ...
-    inputs.markerNames, inputs.startTime, inputs.endTime);
+    makeFootKinematics(inputs.bodyModel, ...
+    inputs.motionFileName, task.coordinatesOfInterest, ...
+    task.hindfootBodyName, task.toesCoordinateName, ...
+    task.markerNames, task.time(1), task.time(end));
 
-footVelocity = calcBSplineDerivative(inputs.time, footPosition, ...
-    4, params.splineNodes);
-markerNamesFields = fieldnames(inputs.markerNames);
+task.splineNodes = splFitWithCutoff(task.time, footPosition, ... 
+    inputs.kinematicsFilterCutoff, 4, taskNumber);
+
+footVelocity = calcBSplineDerivative(task.time, footPosition, ...
+    4, task.splineNodes);
+markerNamesFields = fieldnames(task.markerNames);
 for i=1:length(markerNamesFields)
 markerVelocities.(markerNamesFields{i}) = ...
-    calcBSplineDerivative(inputs.time, markerPositions.(...
-    markerNamesFields{i}), 4, params.splineNodes);
+    calcBSplineDerivative(task.time, markerPositions.(...
+    markerNamesFields{i}), 4, task.splineNodes);
 end
 
-% % inputs.isLeftFoot = true; % change isLeftFoot?
-% inputs.model = makeFootModel(Model(sharedInputs.bodyModel), ...
-%     inputs.toesJointName);
-% inputs.model = addSpringsToModel(inputs.model, inputs.markerNames, ...
-%     sharedInputs.gridWidth, sharedInputs.gridHeight, ...
-%     inputs.hindfootBodyName, inputs.toesBodyName, inputs.toesJointName, ...
-%     inputs.isLeftFoot); % change isLeftFoot?
-% inputs.model.print("footModel.osim");
-% inputs.model = Model("footModel.osim");
-inputs.numSpringMarkers = findNumSpringMarkers(inputs.model);
+taskFootModel = makeFootModel(Model(inputs.bodyModel), ...
+    task.toesJointName);
+taskFootModel = addSpringsToModel(taskFootModel, task.markerNames, ...
+    inputs.gridWidth, inputs.gridHeight, ...
+    task.hindfootBodyName, task.toesBodyName, task.toesJointName, ...
+    task.isLeftFoot, meanMarkerLocations); 
+task.model = "footModel_" + taskNumber + ".osim";
+taskFootModel.print(task.model);
+task.numSpringMarkers = findNumSpringMarkers(task.model);
 
-inputs.experimentalMarkerPositions = markerPositions;
-inputs.experimentalMarkerVelocities = markerVelocities;
-inputs.experimentalJointPositions = footPosition;
-inputs.experimentalJointVelocities = footVelocity;
-inputs.midfootSuperiorPosition = markerPositions.midfootSuperior;
+task.experimentalMarkerPositions = markerPositions;
+task.experimentalMarkerVelocities = markerVelocities;
+task.experimentalJointPositions = footPosition;
+task.experimentalJointVelocities = footVelocity;
+task.midfootSuperiorPosition = markerPositions.midfootSuperior;
 
-% initialSpringConstants = 2596; % Jackson et al 2016 Table 2
-% initialDampingFactors = 1e-4;
-% initialSpringRestingLength = 0.05;
-inputs.springConstants = inputs.initialSpringConstants * ones(1, ...
-    inputs.numSpringMarkers);
-inputs.dampingFactors = inputs.initialDampingFactors * ones(1, ...
-    inputs.numSpringMarkers);
-% inputs.springRestingLength = inputs.initialRestingSpringLength;
 
-inputs.experimentalGroundReactionForcesSlope = calcBSplineDerivative( ...
-    inputs.time, inputs.experimentalGroundReactionForces, 2, ...
-    params.splineNodes);
-inputs.jointKinematicsBSplines = makeJointKinematicsBSplines(...
-    inputs.time, 4, params.splineNodes);
-inputs.bSplineCoefficients = ones(params.splineNodes, 7);
+task.experimentalGroundReactionForcesSlope = calcBSplineDerivative( ...
+    task.time, task.experimentalGroundReactionForces, 2, ...
+    task.splineNodes);
+task.jointKinematicsBSplines = makeJointKinematicsBSplines(...
+    task.time, 4, task.splineNodes);
+task.bSplineCoefficients = ones(task.splineNodes, 7);
+end
 
-inputs.nearestSpringMarkers = findNearestSpringMarkers(inputs.model, ...
-    inputs, 4);
+% (struct) -> (struct)
+% Determines average foot marker locations to ensure the model for each
+% foot includes the same number of spring markers at the same relative
+% positions. Left foot marker Z positions are negated to be comparable. 
+function meanRightFootMarkerLocations = getMeanFootMarkerLocations(inputs)
+bodyModel = Model(inputs.bodyModel);
+for task = 1:length(inputs.tasks)
+    footMarkerLocations(task) = findMarkerPositions(bodyModel, ...
+        inputs.tasks{task}.markerNames);
+    if inputs.tasks{task}.isLeftFoot
+        for marker = 1:length(fieldnames(footMarkerLocations(task)))
+            fieldNames = fieldnames(footMarkerLocations(task));
+            currentMarker = footMarkerLocations(task).(fieldNames{marker});
+            currentMarker(2) = -1 * currentMarker(2);
+            footMarkerLocations(task).(fieldNames{marker}) = currentMarker;
+        end
+    end
+end
+meanRightFootMarkerLocations = footMarkerLocations(1);
+for marker = 1:length(fieldnames(meanRightFootMarkerLocations))
+    fieldNames = fieldnames(meanRightFootMarkerLocations);
+    meanRightFootMarkerLocations.(fieldNames{marker}) = [0 0];
+end
+for task = 1:length(inputs.tasks)
+    for marker = 1:length(fieldnames(footMarkerLocations(task)))
+        fieldNames = fieldnames(footMarkerLocations(task));
+        meanRightFootMarkerLocations.(fieldNames{marker}) = ...
+            meanRightFootMarkerLocations.(fieldNames{marker}) + ...
+            footMarkerLocations(task).(fieldNames{marker});
+    end
+end
+for marker = 1:length(fieldnames(meanRightFootMarkerLocations))
+    fieldNames = fieldnames(meanRightFootMarkerLocations);
+    meanRightFootMarkerLocations.(fieldNames{marker}) = ...
+        meanRightFootMarkerLocations.(fieldNames{marker}) ./ ...
+        length(inputs.tasks);
+end
+end
+
+% (Cell Array) -> (double)
+% Confirms that all feet have the same number of spring markers and returns
+% the number of spring markers
+function numSpringMarkers = confirmNumSpringMarkers(tasks)
+    counts = zeros(1, length(tasks));
+    for task = 1:length(tasks)
+        counts(task) = tasks{task}.numSpringMarkers;
+    end
+    if any(counts ~= counts(1))
+        throw(MException('', 'Feet have an unequal number of springs'))
+    end
+    numSpringMarkers = counts(1);
 end
