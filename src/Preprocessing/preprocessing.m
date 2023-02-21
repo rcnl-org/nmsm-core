@@ -1,7 +1,35 @@
+% This function is part of the NMSM Pipeline, see file for full license.
+%
+% Use this script to process your EMG, IK, ID, and MuscleAnalysis data in
+% preparation for the other NMSM Pipeline tools. This script is intended to
+% be used after Joint Model Personalization and the IK, ID, and
+% MuscleAnalysis data for this script should be generated through the 
+% OpenSim GUI tools. 
+%
+% Modify the script below with your own filenames and preferred settings.
 
-processEmgData(emgDirectory, filterDegrees, highPassCutoff, lowPassCutoff, )
+%% Preprocessing Script
 
-createMuscleTendonVelocity()
+% All values required
+rawEmgFileName = "rawEmg.mot";
+filterOrder = 4;
+highPassCutoff = 10;
+lowPassCutoff = 50;
+processedEmgFileName = "processedEmg.sto";
+
+processRawEmgFile(emgFileName, filterOrder, highPassCutoff, ...
+    lowPassCutoff, processedEmgFileName);
+
+
+%% Create Muscle Tendon Velocity
+% Calculates muscle-tendon velocity using B-splines and MuscleAnalysis's
+% muscle-tendon length. The file is written in the same directory as the
+% muscle-tendon length file.
+
+muscleTendonLengthFileName = ...
+    "MuscleAnalysis/model_MuscleAnalysis_Length.sto";
+cutoffFrequency = 10;
+createMuscleTendonVelocity(muscleTendonLengthFileName, cutoffFrequency);
 
 %% Split OpenSim data into trials by time pairs
 
@@ -15,6 +43,7 @@ trialTimePairs = [
 % All values optional: files and directories of data to be split
 inputSettings.ikFileName = "ik.mot";
 inputSettings.idFileName = "id.mot";
+% The emgFileName should be the name of the *processed* emg data file
 % inputSettings.emgFileName = "emg.mot";
 inputSettings.maDirectory = "MuscleAnalysis";
 
