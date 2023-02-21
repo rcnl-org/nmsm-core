@@ -29,20 +29,46 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modeledVerticalGrf = calcModeledVerticalGroundReactionForce( ...
-    model, state, springConstants, dampingFactors, springRestingLength)
+function [modeledVerticalGrf, springForces] = ...
+    calcModeledVerticalGroundReactionForce(springConstants, ...
+    dampingFactor, springRestingLength, ...
+    markerKinematics, springForces)
 modeledVerticalGrf = 0;
 for i=1:length(springConstants)
-    height = model.getMarkerSet().get("spring_marker_" + ...
-        num2str(i)).getLocationInGround(state).get(1);
-    verticalVelocity = model.getMarkerSet().get("spring_marker_" + ...
-        num2str(i)).getVelocityInGround(state).get(1);
-    if (height-springRestingLength)>0
-        modeledVerticalGrf = 0;
-    else
-        modeledVerticalGrf = modeledVerticalGrf + (springConstants(i) * ...
-            (springRestingLength - height) * (1 + dampingFactors(i) * ...
-            verticalVelocity));  % Equation 1 from Jackson et al, 2016
-    end
+    height = markerKinematics.height(i);
+    verticalVelocity = markerKinematics.yVelocity(i);
+    %     if (height-springRestingLength)<0
+    %         springVerticalGrf = (springConstants(i) * (springRestingLength ...
+    %             - height) * (1 + dampingFactor * ...
+    %             verticalVelocity)); % Equation 1 from Jackson et al, 2016
+    %     end
+    %     lowSpringConstant = 0.1;
+    %     h = 1e-3;
+    %     c = 5e-4;
+    %     v = (springConstants(i) + lowSpringConstant) / ...
+    %         (springConstants(i) - lowSpringConstant);
+    %     s = (springConstants(i) - lowSpringConstant) / 2;
+    %     restingLengthForceOffset = -s * (v * springRestingLength - c * ...
+    %         log(cosh((springRestingLength + h) / c)));
+    %     springVerticalGrf = (-s * (v * height - c * ...
+    %         log(cosh((height + h) / c))) - restingLengthForceOffset) * ...
+    %         (1 + dampingFactor * verticalVelocity);
+
+    klow = 1e-1;
+    h = 1e-3;
+    c = 5e-4;
+    ymax = 1e-2;
+    Kval = springConstants(i);
+    height = height - springRestingLength;
+    numFrames = length(height);
+    v = ones(numFrames, 1)' .* ((Kval + klow) ./ (Kval - klow));
+    s = ones(numFrames, 1)' .* ((Kval - klow) ./ 2);
+    constant = -s .* (v .* ymax - c .* log(cosh((ymax + h) ./ c)));
+    freglyVerticalGrf = -s .* (v .* height - c .* log(cosh((height + h) ./ c))) - constant;
+    freglyVerticalGrf(isnan(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
+    freglyVerticalGrf(isinf(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
+    springForces(2, i) = freglyVerticalGrf * (1 + dampingFactor * ...
+        verticalVelocity);
+    modeledVerticalGrf = modeledVerticalGrf + springForces(2, i);
 end
 end

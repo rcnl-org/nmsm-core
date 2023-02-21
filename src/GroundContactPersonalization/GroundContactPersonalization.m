@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,12 +30,27 @@
 function results = GroundContactPersonalization(inputs, params)
 verifyInputs(inputs); % (struct) -> (None)
 verifyParams(params); % (struct) -> (None)
-inputs = prepareInputs(inputs, params);
-inputs = optimizeByVerticalGroundReactionForce(inputs, params);
-inputs = optimizeByGroundReactionForces(inputs, params);
-results = optimizeByGroundReactionAndCenterOfPressureAndFreeMoment( ...
-    inputs, params);
+inputs = prepareGroundContactPersonalizationInputs(inputs, params);
+if params.restingSpringLengthInitialization
+    inputs = initializeRestingSpringLengthAndSpringConstants(inputs);
+end
+for task = 1:length(inputs.tasks)
+    inputs.tasks{task}.experimentalGroundReactionMoments = ...
+        replaceMomentsAboutMidfootSuperior(inputs.tasks{task}, inputs);
+    inputs.tasks{task}.experimentalGroundReactionMomentsSlope = ...
+        calcBSplineDerivative(inputs.tasks{task}.time, ...
+        inputs.tasks{task}.experimentalGroundReactionMoments, 2, ...
+        inputs.tasks{task}.splineNodes);
+end
+params = prepareGroundContactPersonalizationParams(params);
 
+for task = 1:length(params.tasks)
+    taskInputs = prepareGroundContactPersonalizationInputs(inputs, params);
+    taskParams = prepareGroundContactPersonalizationParams(params);
+    inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
+end
+
+results = inputs;
 end
 
 % (struct) -> (None)
@@ -50,16 +65,22 @@ function verifyParams(params)
 
 end
 
-% (struct, struct) -> (struct)
-% prepares optimization values from inputs
-function inputs = prepareInputs(inputs, params)
-inputs.springConstants = []; % 38 vals
-inputs.dampingFactors = []; % 38 vals
-inputs.rightKinematicCurveCoefficients = []; % 25 x 7 matrix
-inputs.leftKinematicCurveCoefficients = []; % 25 x 7 matrix
-inputs.rightFootVerticalPosition = []; % 1 val
-inputs.leftFootVerticalPosition = []; % 1 val
-inputs.staticFrictionCoefficient = []; % 1 val
-inputs.dynamicFrictionCoefficient = []; % 1 val
-inputs.viscousFrictionCoefficient = []; % 1 val
+function params = prepareGroundContactPersonalizationParams(params)
+
+end
+
+% (struct) -> (2D Array of double)
+% Replace parsed experimental ground reaction moments about midfoot
+% superior marker projected onto floor
+function replacedMoments = replaceMomentsAboutMidfootSuperior(task, inputs)
+    replacedMoments = ...
+        zeros(size(task.experimentalGroundReactionMoments));
+    for i = 1:size(replacedMoments, 2)
+        newCenter = task.midfootSuperiorPosition(:, i);
+        newCenter(2) = inputs.restingSpringLength;
+        replacedMoments(:, i) = ...
+            task.experimentalGroundReactionMoments(:, i) + ...
+            cross((task.electricalCenter(:, i) - newCenter), ...
+            task.experimentalGroundReactionForces(:, i));
+    end
 end
