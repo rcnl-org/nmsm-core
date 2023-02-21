@@ -125,18 +125,18 @@ if plotFlag
         [curveSpl,~,~] = BsplineFit(time,curve,splineDegree,nNodes);
         
         % Plot original, Fourier+linear, B-spline, and filtered curves
-%         plot(time,curve,'k-','LineWidth',2)
-%         title(sprintf('Curve %d', i))
-%         xlabel('time')
-%         ylabel('quantity')
-%         hold on
-%         plot(time,curveFou,'r-','LineWidth',2)
-%         plot(time,curveFlt,'g-','LineWidth',2)
-%         plot(time,curveSpl,'b-','LineWidth',2)
-%         legend('Original','Fourier','Filter','Bspline')
-%         pause
-%         
-%         close all
+        plot(time,curve,'k-','LineWidth',2)
+        title(sprintf('Curve %d', i))
+        xlabel('time')
+        ylabel('quantity')
+        hold on
+        plot(time,curveFou,'r-','LineWidth',2)
+        plot(time,curveFlt,'g-','LineWidth',2)
+        plot(time,curveSpl,'b-','LineWidth',2)
+        legend('Original','Fourier','Filter','Bspline')
+        pause
+        
+        close all
         
     end
     
