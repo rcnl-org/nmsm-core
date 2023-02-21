@@ -65,8 +65,7 @@ end
 
 % Get inputs for each foot
 inputs.tasks = getFootTasks(inputs, tree);
-initialValuesTree = getFieldByNameOrError(tree, 'InitialValues');
-inputs = getInitialValues(inputs, initialValuesTree);
+inputs = getInitialValues(inputs, tree);
 end
 
 % (struct, struct) -> (struct)
@@ -200,13 +199,14 @@ end
 % Parses initial values
 function inputs = getInitialValues(inputs, tree)
 inputs.initialRestingSpringLength = str2double(getFieldByNameOrError(...
-    tree, 'RestingSpringLength').Text);
+    tree, 'initial_resting_spring_length').Text);
 inputs.initialSpringConstants = str2double(getFieldByNameOrError(...
-    tree, 'SpringConstants').Text);
+    tree, 'initial_spring_constant').Text);
 inputs.initialDampingFactor = str2double(getFieldByNameOrError(...
-    tree, 'DampingFactor').Text);
+    tree, 'initial_damping_factor').Text);
 inputs.initialDynamicFrictionCoefficient = str2double(...
-    getFieldByNameOrError(tree, 'DynamicFrictionCoefficient').Text);
+    getFieldByNameOrError(tree, 'initial_dynamic_friction_coefficient') ...
+    .Text);
 end
 
 function params = getParams(tree)
@@ -242,7 +242,7 @@ for i=1:length(gcpTasks)
         task = gcpTasks{i};
     end
     if(strcmpi(task.is_enabled.Text, 'true'))
-        output{counter} = getTaskDesignVariables(task.DesignVariables);
+        output{counter} = getTaskDesignVariables(task);
         output{counter} = getTaskCostTerms(task.CostFunctionTerms, ...
             output{counter});
         counter = counter + 1;
