@@ -81,6 +81,8 @@
 					</MaximumNormalizedMuscleFiberLength>
 				</GroupedMuscles>
 			</MuscleTendonLengthInitializationCostFunctionTerms>
+			<!--*Optional* The muscle specific tension to use-->
+			<maximum_muscle_stress>610e3</maximum_muscle_stress>
 		</MuscleTendonLengthInitialization>
 		<!--Boolean (true, false) indicating if delay values should be found individually for each muscle or all together-->
 		<muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
@@ -93,86 +95,6 @@
                 <is_enabled>true</is_enabled>
 				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
                 <index>1</index>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
-                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
-                <optimize_activation_time_constants>true</optimize_activation_time_constants>
-                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
-                <optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
-                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
-                <optimize_emg_scale_factors>false</optimize_emg_scale_factors>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_optimal_fiber_lengths>false</optimize_optimal_fiber_lengths>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_tendon_slack_lengths>false</optimize_tendon_slack_lengths>
-				<!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
-                <perform_synergy_extrapolation>true</perform_synergy_extrapolation>
-            </MuscleTendonPersonalizationTask>
-            <MuscleTendonPersonalizationTask>
-                <!--Flag indicating whether or not the task is enabled.-->
-                <is_enabled>true</is_enabled>
-				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
-                <index>2</index>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_electromechanical_delays>false</optimize_electromechanical_delays>
-                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
-                <optimize_activation_time_constants>false</optimize_activation_time_constants>
-                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
-                <optimize_activation_nonlinearity_constants>false</optimize_activation_nonlinearity_constants>
-                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
-                <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
-				<!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
-                <perform_synergy_extrapolation>true</perform_synergy_extrapolation>
-            </MuscleTendonPersonalizationTask>
-             <MuscleTendonPersonalizationTask>
-                <!--Flag indicating whether or not the task is enabled.-->
-                <is_enabled>true</is_enabled>
-				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
-                <index>3</index>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
-                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
-                <optimize_activation_time_constants>true</optimize_activation_time_constants>
-                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
-                <optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
-                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
-                <optimize_emg_scale_factors>false</optimize_emg_scale_factors>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_optimal_fiber_lengths>false</optimize_optimal_fiber_lengths>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_tendon_slack_lengths>false</optimize_tendon_slack_lengths>
-				<!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
-                <perform_synergy_extrapolation>true</perform_synergy_extrapolation>
-            </MuscleTendonPersonalizationTask>
-             <MuscleTendonPersonalizationTask>
-                <!--Flag indicating whether or not the task is enabled.-->
-                <is_enabled>true</is_enabled>
-				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
-                <index>4</index>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_electromechanical_delays>false</optimize_electromechanical_delays>
-                <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
-                <optimize_activation_time_constants>false</optimize_activation_time_constants>
-                <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
-                <optimize_activation_nonlinearity_constants>false</optimize_activation_nonlinearity_constants>
-                <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
-                <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
-                <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-                <optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
-				<!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
-                <perform_synergy_extrapolation>true</perform_synergy_extrapolation>
-            </MuscleTendonPersonalizationTask>
-            <MuscleTendonPersonalizationTask>
-                <!--Flag indicating whether or not the task is enabled.-->
-                <is_enabled>true</is_enabled>
-				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
-                <index>5</index>
                 <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
                 <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
                 <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
@@ -297,71 +219,13 @@
 			</SynergyExtrapolationSettings>
         </MuscleTendonCostFunctionTerms>
         <GroupedMuscles>
-            <GroupedActivationTimeConstants>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>AdductorActivationGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMaxActivationGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMedActivationGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMinActivationGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>IliopsoasActivationGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>HamstringActivationGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>BicepsFemActivationGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>PeroneusActivationGroupL</musclegroups>
-            </GroupedActivationTimeConstants>
-            <GroupedNormalizedMuscleFiberLengths>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>AdductorFiberLengthGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMaxFiberLengthGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMedFiberLengthGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GluteusMinFiberLengthGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>QuadricepFiberLengthGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>HamstringFiberLengthGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>PeroneusFiberLengthGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>IliopsoasFiberLengthGroupL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>GastrocFiberLengthGroupL</musclegroups>
-				<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>TibialisAnteriorFiberLengthGroupL</musclegroups>
-				<!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>TibialisPosteriorFiberLengthGroupL</musclegroups>
-            </GroupedNormalizedMuscleFiberLengths>
-			<GroupedMissingEmgChannels>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>AddLongMissingEmgChannelL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>ExtDigLongMissingEmgChannelL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>FlexDigLongMissingEmgChannelL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>IliopsoasMissingEmgChannelL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>PeroneusLongMissingEmgChannelL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>RecFemMissingEmgChannelL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>TibPostMissingEmgChannelL</musclegroups>
-                <!--Name of muscle group defined in the <group> element in the ForceSet of the .osim file-->
-                <musclegroups>VastMedMissingEmgChannelL</musclegroups>
-            </GroupedMissingEmgChannels>
+		      <electromechanical_delays> AdductorActivationGroupL GluteusMaxActivationGroupL GluteusMedActivationGroupL GluteusMinActivationGroupL IliopsoasActivationGroupL HamstringActivationGroupL BicepsFemActivationGroupL PeroneusActivationGroupL</electromechanical_delays>
+              <normalized_muscle_fiber_lengths> AdductorFiberLengthGroupL GluteusMaxFiberLengthGroupL GluteusMedFiberLengthGroupL GluteusMinFiberLengthGroupL QuadricepFiberLengthGroupL HamstringFiberLengthGroupL PeroneusFiberLengthGroupL IliopsoasFiberLengthGroupL GastrocFiberLengthGroupL TibialisAnteriorFiberLengthGroupL TibialisPosteriorFiberLengthGroupL</normalized_muscle_fiber_lengths>
+              <collected_emg_channels> BicFemLongCollectedEmgChannelL GasMedCollectedEmgChannelL GlutMaxCollectedEmgChannelL GlutMedCollectedEmgChannelL SemiMembCollectedEmgChannelL SolCollectedEmgChannelL TibAntCollectedEmgChannelL VastLatCollectedEmgChannelL</collected_emg_channels>
+              <missing_emg_channels> AddLongMissingEmgChannelL ExtDigLongMissingEmgChannelL FlexDigLongMissingEmgChannelL IliopsoasMissingEmgChannelL PeroneusLongMissingEmgChannelL RecFemMissingEmgChannelL TibPostMissingEmgChannelL VastMedMissingEmgChannelL</missing_emg_channels>
         </GroupedMuscles>
         <!--*Optional* The vMaxFactor to use-->
         <v_max_factor>10</v_max_factor>
-		<!--*Optional* The muscle specific tension to use-->
-        <maximum_muscle_stress>610e3</maximum_muscle_stress>
         <!--*Optional* The number of allowed iterations of the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
         <max_iterations>2e3</max_iterations>
         <!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
