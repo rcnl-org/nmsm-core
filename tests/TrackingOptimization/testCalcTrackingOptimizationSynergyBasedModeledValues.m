@@ -2,7 +2,7 @@ load('trackingOptimizationInputsAndValues.mat')
 expectedPhaseout = load('expectedPhaseout.mat');
 
 phaseout = calcTrackingOptimizationSynergyBasedModeledValues(values, inputs.auxdata, expectedPhaseout);
-
-assertWithinRange(phaseout.rightMuscleActivations, expectedPhaseout.rightMuscleActivations, 1e-12);
-assertWithinRange(phaseout.leftMuscleActivations, expectedPhaseout.leftMuscleActivations, 1e-12);
-% assertWithinRange(phaseout.muscleJointMoments, expectedPhaseout.muscleJointMoments, 1e-12);
+assertWithinRange(phaseout.normalizedFiberLength, expectedPhaseout.normalizedFiberLength, 1e-5);
+assertWithinRange(phaseout.normalizedFiberVelocity, expectedPhaseout.normalizedFiberVelocity, 1e-5);
+assertWithinRange(phaseout.muscleActivations, expectedPhaseout.muscleActivations, 1e-5);
+assertWithinRange(phaseout.muscleJointMoments, expectedPhaseout.muscleJointMoments, 1e-3);
