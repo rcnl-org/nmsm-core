@@ -32,5 +32,5 @@ function cost = calcTrackingCostArrayTerm(modelValue, experimentalValue, ...
 
 errorMatching = modelValue - experimentalValue;
 errorMatching = errorMatching(:, trackingIndex);
-cost = errorMatching .^ 2;
+cost = errorMatching;
 end

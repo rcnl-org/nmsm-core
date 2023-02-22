@@ -30,5 +30,5 @@
 function cost = calcMinimizingCostArrayTerm(modelValue)
 
 minimizingError = modelValue;
-cost = minimizingError .^ 2;
+cost = minimizingError;
 end
