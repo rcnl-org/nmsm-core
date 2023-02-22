@@ -38,11 +38,9 @@ if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
 
-%% missing Inputs
-inputData = load([cd '\inputData.mat']);
-% inputs.isEnabled = inputData.params.isEnabled;
 
 %% missing GCP inputs
+inputData = load([cd '\inputData.mat']);
 inputs.splineLeftGroundReactionForces = inputData.params.splineLeftGroundReactionForces;
 inputs.splineRightGroundReactionForces = inputData.params.splineRightGroundReactionForces;
 inputs.springPointsOnBody = inputData.params.springPointsOnBody;
@@ -74,6 +72,18 @@ inputs.polynomialExpressionMomentArms = inputData.params.polynomialExpressionMom
 inputs.polynomialExpressionMuscleTendonLengths = inputData.params.polynomialExpressionMuscleTendonLengths;
 inputs.coefficients = inputData.params.coefficients;
 inputs.dofsActuated = inputData.params.dofsActuated;
+inputs.dofsActuatedLabels = {'pelvis_tilt_moment' 'pelvis_list_moment' ...
+    'pelvis_rotation_moment' 'pelvis_tx_force' 'pelvis_ty_force' ....
+    'pelvis_tz_force' 'hip_flexion_r_moment' 'hip_adduction_r_moment' ...
+    'hip_rotation_r_moment' 'knee_angle_r_moment' 'ankle_angle_r_moment' ...
+    'subtalar_angle_r_moment' 'mtp_angle_r_moment' 'hip_flexion_l_moment' ...
+    'hip_adduction_l_moment' 'hip_rotation_l_moment' 'knee_angle_l_moment' ...
+    'ankle_angle_l_moment' 'subtalar_angle_l_moment' 'mtp_angle_l_moment' ...
+    'lumbar_extension_moment' 'lumbar_bending_moment' ...
+    'lumbar_rotation_moment' 'arm_flex_r_moment' 'arm_add_r_moment'	...
+    'arm_rot_r_moment' 'elbow_flex_r_moment' 'arm_flex_l_moment' ...
+    'arm_add_l_moment' 'arm_rot_l_moment' 'elbow_flex_l_moment'};
+
 inputs.epsilon = inputData.params.epsilon;
 
 %%
@@ -434,9 +444,9 @@ for i = 1 : size(inputs.experimentalJointAngles, 2)
     inputs.experimentalJointVelocities (:, i) = calcDerivative(...
         inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
     inputs.experimentalJointAccelerations (:, i) = calcDerivative(...
-        inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
+        inputs.experimentalTime, inputs.experimentalJointVelocities(:, i));
     inputs.experimentalJointJerks (:, i) = calcDerivative(...
-        inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
+        inputs.experimentalTime, inputs.experimentalJointAccelerations(:, i));
 end
 end
 
@@ -546,7 +556,11 @@ for i = 1 : length(inputs.synergyGroups)
     for j = 1 : inputs.numMuscles
         for k = 1 : length(inputs.synergyGroups{i}.muscleNames)
             if strcmpi(inputs.muscleNames(j), inputs.synergyGroups{i}.muscleNames(k))
-                parameterIndex(i, j) = k;
+                if i <= 1 
+                    parameterIndex(i, k) = j;
+                else
+                    parameterIndex(i, k + length(inputs.synergyGroups{i}.muscleNames)) = j;
+                end
             end
         end
     end 

@@ -182,6 +182,13 @@ if muscleModelLoadPathConstraint
         inputs.muscleModelLoad, inputs.inverseDynamicMomentLabels);
     inputs.minPath = cat(2, inputs.minPath, ...
         nonzeros(minAllowablePathError)');
+    for i = 1 : length(inputs.dofsActuatedLabels)
+        for j = 1 : length(inputs.inverseDynamicMomentLabels)
+            if strcmpi(inputs.dofsActuatedLabels{i}, inputs.inverseDynamicMomentLabels(j))
+                inputs.dofsActuatedIndex(i) = j;
+            end
+        end 
+    end
 end
 end
 function inputs = getTerminalConstraintBounds(inputs)
@@ -241,9 +248,8 @@ if synergyWeightsSumConstraint
     inputs.maxTerminal = cat(2, inputs.maxTerminal, ...
         inputs.synergyWeightsSumMaxAllowableError * ...
         ones(1, inputs.numSynergies));
-    inputs.minTerminal = cat(2, inputs.maxTerminal, ...
+    inputs.minTerminal = cat(2, inputs.minTerminal, ...
         inputs.synergyWeightsSumMinAllowableError * ...
         ones(1, inputs.numSynergies));
 end
-inputs.minTerminal = - inputs.maxTerminal;
 end

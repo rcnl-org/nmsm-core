@@ -45,6 +45,10 @@ integrand = [integrand ...
 integrand = [integrand ...
     calcMinimizingJointJerkIntegrand(values.controlJerks, params)];
 
-integrand = params.maxTime / values.time(end) * (integrand) ./ ...
-    (params.maxIntegral - params.minIntegral);
+integrand = scaleToBounds(integrand, params.maxIntegral, params.minIntegral);
+integrand = integrand .^ 2;
+end
+function value = scaleToBounds(value, maximum, minimum)
+
+value = (value - (maximum + minimum) / 2) ./ (maximum - minimum);
 end
