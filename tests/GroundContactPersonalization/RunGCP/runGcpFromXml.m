@@ -1,5 +1,6 @@
 clear
 
+tic
 [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(...
     xml2struct("GCP_settings_tasklist.xml"));
@@ -26,6 +27,7 @@ for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
     save("2-9-feetTogether_" + task + ".mat")
 end
+toc
 
 %% Save results to osimx
 saveGroundContactPersonalizationResults(inputs, pwd)
@@ -62,37 +64,3 @@ function replacedMoments = replaceMomentsAboutMidfootSuperior(task, inputs)
             task.experimentalGroundReactionForces(:, i));
     end
 end
-
-%% Report cost quantities
-
-% [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
-%     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
-%     inputs.bSplineCoefficients);
-% modeledValues = calcGCPModeledValues(inputs, inputs, ...
-%     modeledJointPositions, modeledJointVelocities, params, task);
-% modeledValues.jointPositions = modeledJointPositions;
-% modeledValues.jointVelocities = modeledJointVelocities;
-% 
-% disp('Unweighted Vertical GRF Cost: ')
-% [groundReactionForceValueError, ~] = ...
-%     calcVerticalGroundReactionForceAndSlopeError(inputs, ...
-%     modeledValues);
-% disp(sum(abs(groundReactionForceValueError)))
-% if lastStage >= 2
-%     [groundReactionForceValueErrors, ~] = ...
-%         calcGroundReactionForceAndSlopeError(inputs, modeledValues);
-%     disp('Unweighted Anterior GRF Cost: ')
-%     disp(sum(abs(groundReactionForceValueErrors(1, :))))
-%     disp('Unweighted Lateral GRF Cost: ')
-%     disp(sum(abs(groundReactionForceValueErrors(3, :))))
-% end
-% if lastStage == 3
-%     [groundReactionMomentErrors, ~] = ...
-%         calcGroundReactionMomentAndSlopeError(inputs, modeledValues);
-%     disp('Unweighted Moment Cost: ')
-%     disp(sum(abs(groundReactionMomentErrors), 'all'))
-% end
-% disp('Unweighted Marker Tracking Cost: ')
-% [footMarkerPositionError, ~] = ...
-%     calcFootMarkerPositionAndSlopeError(inputs, modeledValues);
-% disp(sum(abs(footMarkerPositionError)))

@@ -60,10 +60,14 @@ if (params.tasks{task}.designVariables(3))
     fieldNameOrder = [fieldNameOrder "dynamicFrictionCoefficient"];
 end
 if (params.tasks{task}.designVariables(4))
+    initialValues = [initialValues inputs.viscousFrictionCoefficient];
+    fieldNameOrder = [fieldNameOrder "viscousFrictionCoefficient"];
+end
+if (params.tasks{task}.designVariables(5))
     initialValues = [initialValues inputs.restingSpringLength];
     fieldNameOrder = [fieldNameOrder "restingSpringLength"];
 end
-if (params.tasks{task}.designVariables(5))
+if (params.tasks{task}.designVariables(6))
     for foot = 1:length(inputs.tasks)
         initialValues = [initialValues ...
             reshape(inputs.tasks{foot}.bSplineCoefficients, 1, [])];
@@ -90,10 +94,14 @@ if (params.tasks{task}.designVariables(3))
     upperBounds = [upperBounds Inf];
 end
 if (params.tasks{task}.designVariables(4))
-    lowerBounds = [lowerBounds -Inf];
+    lowerBounds = [lowerBounds 0];
     upperBounds = [upperBounds Inf];
 end
 if (params.tasks{task}.designVariables(5))
+    lowerBounds = [lowerBounds -Inf];
+    upperBounds = [upperBounds Inf];
+end
+if (params.tasks{task}.designVariables(6))
     for foot = 1:length(inputs.tasks)
         lowerBounds = [lowerBounds -Inf(1, length(reshape(...
             inputs.tasks{foot}.bSplineCoefficients, 1, [])))];

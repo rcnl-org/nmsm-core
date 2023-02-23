@@ -47,10 +47,14 @@ if ~params.tasks{task}.designVariables(3)
             inputs.dynamicFrictionCoefficient;
 end
 if ~params.tasks{task}.designVariables(4)
+        valuesStruct.viscousFrictionCoefficient = ...
+            inputs.viscousFrictionCoefficient;
+end
+if ~params.tasks{task}.designVariables(5)
         valuesStruct.restingSpringLength = ...
             inputs.restingSpringLength;
 end
-if ~params.tasks{task}.designVariables(5)
+if ~params.tasks{task}.designVariables(6)
     for foot = 1:length(inputs.tasks)
         field = "bSplineCoefficients" + foot;
         valuesStruct.(field) = inputs.tasks{foot}.bSplineCoefficients;

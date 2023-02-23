@@ -2,8 +2,8 @@
 %
 % 
 %
-% (struct) -> (None)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct, Array of double, int in [1, 2, 3]) -> (struct)
+% merge the results of the optimization back into the input values
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,12 +27,38 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveGroundContactPersonalizationResults(inputs, resultsDirectory)
-[~, name, ~] = fileparts(inputs.bodyModel);
-if ~exist(resultsDirectory, "dir")
-    mkdir(resultsDirectory);
+function inputs = mergeGroundContactPersonalizationRoundResults(inputs, ...
+    results, params, task)
+index = 1;
+if (params.tasks{task}.designVariables(1))
+    inputs.springConstants = 1000 * results(index : index + ...
+        length(inputs.springConstants) - 1);
+    index = index + length(inputs.springConstants);
 end
-writeGroundContactPersonalizationOsimxFile(inputs,...
-    fullfile(resultsDirectory, strcat(name, "_groundContactModel.xml")));
+if (params.tasks{task}.designVariables(2))
+    inputs.dampingFactor = results(index);
+    index = index + 1;
 end
-
+if (params.tasks{task}.designVariables(3))
+    inputs.dynamicFrictionCoefficient = results(index);
+    index = index + 1;
+end
+if (params.tasks{task}.designVariables(4))
+    inputs.viscousFrictionCoefficient = results(index);
+    index = index + 1;
+end
+if (params.tasks{task}.designVariables(5))
+    inputs.restingSpringLength = results(index);
+end
+if (params.tasks{task}.designVariables(6))
+    for foot = 1:length(inputs.tasks)
+        bSplineCoefficientLength = length(reshape(inputs.tasks{foot} ...
+            .bSplineCoefficients, 1, []));
+        bSplineCoefficients = results(index : index + ...
+            bSplineCoefficientLength - 1);
+        bSplineCoefficients = reshape(bSplineCoefficients, [], 7);
+        inputs.tasks{foot}.bSplineCoefficients = bSplineCoefficients;
+        index = index + bSplineCoefficientLength;
+    end
+end
+end
