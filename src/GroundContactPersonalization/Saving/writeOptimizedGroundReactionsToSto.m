@@ -2,7 +2,7 @@
 %
 % 
 %
-% (struct) -> (None)
+% (struct, struct, string, string) -> (None)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
