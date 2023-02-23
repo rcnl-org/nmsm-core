@@ -1,5 +1,5 @@
 % break up tests to different functions
-load('trackingOptimizationInputs.mat')
+load('trackingOptimizationContinuousInputs.mat')
 pointKinematics('exampleModel.osim');
 inverseDynamics('exampleModel.osim');
 

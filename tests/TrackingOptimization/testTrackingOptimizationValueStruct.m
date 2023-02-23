@@ -1,4 +1,4 @@
-load('trackingOptimizationInputs.mat')
+load('trackingOptimizationContinuousInputsAndValues.mat')
 
 values = getTrackingOptimizationValueStruct(inputs.phase, inputs.auxdata);
 

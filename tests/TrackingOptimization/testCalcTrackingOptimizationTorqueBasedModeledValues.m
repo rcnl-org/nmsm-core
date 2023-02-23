@@ -1,4 +1,4 @@
-load('trackingOptimizationInputsAndValues.mat')
+load('trackingOptimizationContinuousInputsAndValues.mat')
 
 pointKinematics('exampleModel.osim');
 inverseDynamics('exampleModel.osim');

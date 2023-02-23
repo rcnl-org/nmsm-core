@@ -1,4 +1,4 @@
-load('trackingOptimizationInputsAndValues.mat')
+load('trackingOptimizationContinuousInputsAndValues.mat')
 expectedPhaseout = load('expectedPhaseout.mat');
 
 phaseout = calcTrackingOptimizationSynergyBasedModeledValues(values, inputs.auxdata, expectedPhaseout);

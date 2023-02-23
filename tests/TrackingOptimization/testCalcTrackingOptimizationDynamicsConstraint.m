@@ -1,4 +1,4 @@
-load('trackingOptimizationInputsAndValues.mat')
+load('trackingOptimizationContinuousInputsAndValues.mat')
 
 phaseout.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
 

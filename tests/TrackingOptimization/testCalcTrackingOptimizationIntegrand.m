@@ -1,4 +1,4 @@
-load('trackingOptimizationInputsAndValues.mat')
+load('trackingOptimizationContinuousInputsAndValues.mat')
 phaseout = load('expectedPhaseout.mat');
 
 phaseout.integrand = calcTrackingOptimizationIntegrand(values, inputs.auxdata, ...
