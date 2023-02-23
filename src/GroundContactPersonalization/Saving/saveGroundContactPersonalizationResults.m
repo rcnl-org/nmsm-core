@@ -27,20 +27,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveGroundContactPersonalizationResults(inputs, resultsDirectory)
+function saveGroundContactPersonalizationResults(inputs, params, ...
+    resultsDirectory)
 [~, name, ~] = fileparts(inputs.bodyModel);
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
-writeExperimentalFootKinematicsToSto(inputs, fullfile(resultsDirectory, ...
-    strcat(name, "_experimentalFootKinematics.sto")));
-writeOptimizedFootKinematicsToSto(inputs, fullfile(resultsDirectory, ...
-    strcat(name, "_optimizedFootKinematics.sto")));
+writeExperimentalFootKinematicsToSto(inputs, resultsDirectory, name);
+writeOptimizedFootKinematicsToSto(inputs, resultsDirectory, name);
 writeReplacedExperimentalGroundReactionsToSto(inputs, ... 
-    fullfile(reusltsDirectory, strcat(name, ...
-    "_experimentalGroundReactions.sto")));
-writeOptimizedGroundReactionsToSto(inputs, fullfile(reusltsDirectory, ...
-    strcat(name, "_optimizedGroundReactions.sto")));
+    resultsDirectory, name);
+writeOptimizedGroundReactionsToSto(inputs, params, resultsDirectory, name);
 writeGroundContactPersonalizationOsimxFile(inputs,...
     fullfile(resultsDirectory, strcat(name, "_groundContactModel.xml")));
 end

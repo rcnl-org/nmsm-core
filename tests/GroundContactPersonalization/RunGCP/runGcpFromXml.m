@@ -30,7 +30,7 @@ end
 toc
 
 %% Save results to osimx
-saveGroundContactPersonalizationResults(inputs, pwd)
+saveGroundContactPersonalizationResults(inputs, params, pwd)
 
 %% Plot forces and kinematics
 for foot = 1:length(inputs.tasks)
