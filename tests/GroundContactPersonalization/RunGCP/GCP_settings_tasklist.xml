@@ -50,7 +50,7 @@
 			</FootPersonalizationTask>
 			<FootPersonalizationTask>
 				<!--Flag indicating whether the foot will be personalized-->
-				<is_enabled>true</is_enabled>
+				<is_enabled>false</is_enabled>
 				<!--Index of task used to determine order of tasks-->
 				<index>2</index>
 				<!--Flag indicating whether this is a left foot-->
@@ -93,7 +93,9 @@
 				<!--Damping factor-->
 				<dampingFactor>false</dampingFactor>
 				<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
-				<dynamicFrictionCoefficient>true</dynamicFrictionCoefficient>
+				<dynamicFrictionCoefficient>false</dynamicFrictionCoefficient>
+				<!--Viscous friction coefficient used in calculating horizontal ground reaction forces-->
+				<viscousFrictionCoefficient>true</viscousFrictionCoefficient>
 				<!--Height value at which linear springs exert force. Only recommended when primarily calibrating vertical force-->
 				<restingSpringLength>true</restingSpringLength>
 				<!--Coefficients allowing for adjustments to kinematics during optimization-->
@@ -151,7 +153,9 @@
 				<!--Damping factor-->
 				<dampingFactor>false</dampingFactor>
 				<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
-				<dynamicFrictionCoefficient>true</dynamicFrictionCoefficient>
+				<dynamicFrictionCoefficient>false</dynamicFrictionCoefficient>
+				<!--Viscous friction coefficient used in calculating horizontal ground reaction forces-->
+				<viscousFrictionCoefficient>true</viscousFrictionCoefficient>
 				<!--Height value at which linear springs exert force. Only recommended when primarily calibrating vertical force-->
 				<restingSpringLength>false</restingSpringLength>
 				<!--Coefficients allowing for adjustments to kinematics during optimization-->
@@ -209,7 +213,9 @@
 				<!--Damping factor-->
 				<dampingFactor>false</dampingFactor>
 				<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces-->
-				<dynamicFrictionCoefficient>true</dynamicFrictionCoefficient>
+				<dynamicFrictionCoefficient>false</dynamicFrictionCoefficient>
+				<!--Viscous friction coefficient used in calculating horizontal ground reaction forces-->
+				<viscousFrictionCoefficient>true</viscousFrictionCoefficient>
 				<!--Height value at which linear springs exert force. Only recommended when primarily calibrating vertical force-->
 				<restingSpringLength>false</restingSpringLength>
 				<!--Coefficients allowing for adjustments to kinematics during optimization-->
@@ -261,7 +267,10 @@
 		<initial_resting_spring_length>0.05</initial_resting_spring_length>
 		<initial_spring_constant>2500</initial_spring_constant>
 		<initial_damping_factor>1e-4</initial_damping_factor>
-		<initial_dynamic_friction_coefficient>0.25</initial_dynamic_friction_coefficient>
+		<initial_dynamic_friction_coefficient>0</initial_dynamic_friction_coefficient>
+		<initial_viscous_friction_coefficient>5</initial_viscous_friction_coefficient>
+		<!--Latching velocity used to calculate dynamic friction-->
+		<latching_velocity>0.05</latching_velocity>
         <!--*Optional* The number of allowed iterations of the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
         <max_iterations>1e3</max_iterations>
 		<!--*Optional* The number of allowed cost function calls for the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->

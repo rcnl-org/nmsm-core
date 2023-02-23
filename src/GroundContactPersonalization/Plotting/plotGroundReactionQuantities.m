@@ -34,11 +34,15 @@ plotParams.tasks{task}.costTerms.verticalGrfError.isEnabled = true;
 plotParams.tasks{task}.costTerms.horizontalGrfError.isEnabled = true;
 plotParams.tasks{task}.costTerms.groundReactionMomentError.isEnabled = true;
 
+for i = 1:length(inputs.tasks)
+    models.("model_" + i) = Model(inputs.tasks{foot}.model);
+end
 [modeledJointPositions, modeledJointVelocities] = ...
     calcGCPJointKinematics(inputs.tasks{foot}.experimentalJointPositions, ...
     inputs.tasks{foot}.jointKinematicsBSplines, inputs.tasks{foot}.bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, inputs, ...
-    modeledJointPositions, modeledJointVelocities, plotParams, task, foot);
+    modeledJointPositions, modeledJointVelocities, plotParams, task, ...
+    foot, models);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 
