@@ -2,7 +2,7 @@
 %
 %
 %
-% (Array of double, struct, struct) -> (struct)
+% (double, double) -> (double)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -27,10 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = calcStaticToDynamicFrictionDeviationError(values, ...
-    experimentalData, params)
+function error = calcStaticToDynamicFrictionDeviationError(...
+    staticFrictionCoefficient, dynamicFrictionCoefficient)
 
-error = (((mu_s - mu_d) - 0.06)/0.04).^10;
+error = (((staticFrictionCoefficient - dynamicFrictionCoefficient) - 0.06)/0.06).^10;
 
 end
 
