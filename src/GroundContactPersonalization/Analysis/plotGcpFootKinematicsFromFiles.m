@@ -2,8 +2,9 @@
 %
 % 
 %
-% (struct, string, string) -> (None)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (string, string, double) -> (None)
+% Plot experimental and optimized foot kinematics from Ground Contact
+% Personalization results. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,24 +28,41 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function writeReplacedExperimentalGroundReactionsToSto(inputs, ...
-    resultsDirectory, modelName)
-columnLabels = ["Fx" "Fy" "Fz" "Mx" "My" "Mz" "ECx" "ECy" "ECz"];
-for foot = 1:length(inputs.tasks)
-    data = inputs.tasks{foot}.experimentalGroundReactionForces';
-    data = [data inputs.tasks{foot}.experimentalGroundReactionMoments'];
-    [~, markerPositions] = ...
-        makeFootKinematics(inputs.bodyModel, ...
-        inputs.motionFileName, inputs.tasks{foot}.coordinatesOfInterest,...
-        inputs.tasks{foot}.hindfootBodyName, ...
-        inputs.tasks{foot}.toesCoordinateName, ...
-        inputs.tasks{foot}.markerNames, ...
-        inputs.tasks{foot}.time(1), inputs.tasks{foot}.time(end));
-    markerPositions.midfootSuperior(2, :) = inputs.restingSpringLength;
-    data = [data markerPositions.midfootSuperior'];
-    writeToSto(columnLabels, inputs.tasks{foot}.time, data, ...
-        fullfile(resultsDirectory, strcat(modelName, "_Foot_", ...
-            num2str(foot), "_replacedExperimentalGroundReactions.sto")));
+function plotGcpFootKinematicsFromFiles(experimentalKinematicsFileName, ...
+    optimizedKinematicsFileName, plotNumber)
+if nargin < 3
+    plotNumber = 1;
+end
+coordinates = ["Toe Angle", "X Rotation", "Y Rotation", "Z Rotation", ...
+    "X Translation", "Y Translation", "Z Translation"];
+import org.opensim.modeling.Storage
+experimentalKinematics = ...
+    storageToDoubleMatrix(Storage(experimentalKinematicsFileName));
+modeledKinematics = ...
+    storageToDoubleMatrix(Storage(optimizedKinematicsFileName));
+time = findTimeColumn(Storage(experimentalKinematicsFileName));
+figure(plotNumber)
+for i = 1:7
+    subplot(2, 4, i)
+    if i <= 4
+        experimental = rad2deg(experimentalKinematics(i, :));
+        model = rad2deg(modeledKinematics(i, :));
+    else
+        experimental = experimentalKinematics(i, :);
+        model = modeledKinematics(i, :);
+    end
+    plot(time, experimental, "red", "LineWidth", 2)
+    hold on
+    plot(time, model, "blue", "LineWidth", 2)
+    error = rms(experimental - model);
+    title(coordinates(i) + newline + " RMSE: " + error)
+    xlabel('Time')
+    if i == 1
+        ylabel('Angle (deg)')
+    elseif i == 5
+        ylabel('Translation (m)')
+    end
+    hold off
 end
 end
 

@@ -2,8 +2,10 @@
 %
 % 
 %
-% (struct, string, string) -> (None)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (string, string, double) -> (None)
+% Plot experimental and optimized ground reactions from Ground Contact
+% Personalization results. Moments are calculated about the midfoot 
+% superior marker projected down to the resting spring length. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,24 +29,37 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function writeReplacedExperimentalGroundReactionsToSto(inputs, ...
-    resultsDirectory, modelName)
-columnLabels = ["Fx" "Fy" "Fz" "Mx" "My" "Mz" "ECx" "ECy" "ECz"];
-for foot = 1:length(inputs.tasks)
-    data = inputs.tasks{foot}.experimentalGroundReactionForces';
-    data = [data inputs.tasks{foot}.experimentalGroundReactionMoments'];
-    [~, markerPositions] = ...
-        makeFootKinematics(inputs.bodyModel, ...
-        inputs.motionFileName, inputs.tasks{foot}.coordinatesOfInterest,...
-        inputs.tasks{foot}.hindfootBodyName, ...
-        inputs.tasks{foot}.toesCoordinateName, ...
-        inputs.tasks{foot}.markerNames, ...
-        inputs.tasks{foot}.time(1), inputs.tasks{foot}.time(end));
-    markerPositions.midfootSuperior(2, :) = inputs.restingSpringLength;
-    data = [data markerPositions.midfootSuperior'];
-    writeToSto(columnLabels, inputs.tasks{foot}.time, data, ...
-        fullfile(resultsDirectory, strcat(modelName, "_Foot_", ...
-            num2str(foot), "_replacedExperimentalGroundReactions.sto")));
+function plotGcpGroundReactionsFromFiles( ...
+    experimentalGroundReactionsFileName, ...
+    optimizedGroundReactionsFileName, plotNumber)
+if nargin < 3
+    plotNumber = 1;
+end
+titles = ["Anterior GRF" "Vertical GRF" "Lateral GRF" "X Moment" ...
+    "Y Moment" "Z Moment"];
+import org.opensim.modeling.Storage
+experimentalGroundReactions = ...
+    storageToDoubleMatrix(Storage(experimentalGroundReactionsFileName));
+modeledGroundReactions = ...
+    storageToDoubleMatrix(Storage(optimizedGroundReactionsFileName));
+time = findTimeColumn(Storage(experimentalGroundReactionsFileName));
+figure(plotNumber)
+for i = 1:6
+    subplot(2, 3, i);
+    experimental = experimentalGroundReactions(i, :);
+    model = modeledGroundReactions(i, :);
+    plot(time, experimental, "red", "LineWidth", 2)
+    hold on
+    plot(time, model, "blue", "LineWidth", 2)
+    error = rms(experimental - model);
+    title(titles(i) + newline + " RMSE: " + error)
+    xlabel('Time')
+    if i == 1
+        ylabel('Force (N)')
+    else if i == 4
+        ylabel('Moment (N*m)')
+    end
+    hold off
 end
 end
 
