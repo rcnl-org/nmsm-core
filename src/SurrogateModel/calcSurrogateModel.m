@@ -42,10 +42,11 @@ function [newMuscleTendonLengths, newMomentArms] = calcSurrogateModel( ...
 
 for i = 1 : size(jointAngles, 2)
     % Initialize symbolic thetas
-    theta = sym('theta', [1 size(jointAngles{i}, 2)]);
+%     theta = sym('theta', [1 size(jointAngles{i}, 2)]);
     % Get A matrix
-    matrix = getDataMatrix(params.polynomialExpressionMuscleTendonLengths{i}, ...
-        params.polynomialExpressionMomentArms{i}, jointAngles{i}, theta);
+    matrix = PatientSpecificSurrogateModel(jointAngles{i},i);
+%     matrix = getDataMatrixEqn(params.polynomialExpressionMuscleTendonLengths{i}, ...
+%         params.polynomialExpressionMomentArms{i}, jointAngles{i}, theta);
     % Caculate new muscle tendon lengths and moment arms
     vector = matrix * params.coefficients{i};
     newMuscleTendonLengths(:, i) = vector(1 : size(jointAngles{i}, 1));
