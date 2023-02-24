@@ -38,10 +38,6 @@ path = [rootSegmentResidualsPathConstraint  ...
     muscleActuatedMomentsPathConstraint];
 path = scaleToBounds(path, params.maxPath, params.minPath);
 end
-function value = scaleToBounds(value, maximum, minimum)
-
-value = (value - (maximum + minimum) / 2) ./ (maximum - minimum);
-end
 function rootSegmentResidualsPathConstraint = ...
     calcRootSegmentResidualsPathConstraints(params, rootSegmentResiduals)
 

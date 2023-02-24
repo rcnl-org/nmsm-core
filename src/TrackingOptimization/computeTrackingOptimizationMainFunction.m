@@ -29,11 +29,11 @@ function output = computeTrackingOptimizationMainFunction(inputs, params)
 bounds = setupProblemBounds(inputs);
 guess = setupInitialGuess(inputs);
 setup = setupSolverSettings(inputs, bounds, guess, params);
-% solution = gpops2(setup);
-% guess.auxdata = inputs;
-% guess.phase.parameter = guess.parameter;
-% solution = guess;
-% output = computeTrackingOptimizationContinuousFunction(solution);
+solution = gpops2(setup);
+% % guess.auxdata = inputs;
+% % guess.phase.parameter = guess.parameter;
+% % solution = guess;
+% % output = computeTrackingOptimizationContinuousFunction(solution);
 output.solution = solution;
 % guess.auxdata = inputs;
 % guess.phase.parameter = guess.parameter;
@@ -97,10 +97,6 @@ else
     guess.parameter = scaleToBounds(inputs.synergyWeights, ...
         inputs.maxParameter, inputs.minParameter);
 end
-end
-function scaledValue = scaleToBounds(value, maximum, minimum)
-
-scaledValue = (value - (maximum + minimum) / 2) ./ (maximum - minimum);
 end
 function setup = setupSolverSettings(inputs, bounds, guess, params)
 
