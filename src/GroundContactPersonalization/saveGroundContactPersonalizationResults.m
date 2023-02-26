@@ -27,7 +27,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveGroundContactPersonalizationResults(results, resultsDirectory)
-
+function saveGroundContactPersonalizationResults(inputs, resultsDirectory)
+[~, name, ~] = fileparts(inputs.bodyModel);
+if ~exist(resultsDirectory, "dir")
+    mkdir(resultsDirectory);
+end
+writeGroundContactPersonalizationOsimxFile(inputs,...
+    fullfile(resultsDirectory, strcat(name, "_groundContactModel.xml")));
 end
 

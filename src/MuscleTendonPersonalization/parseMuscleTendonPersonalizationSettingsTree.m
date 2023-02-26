@@ -3,8 +3,8 @@
 % This function parses the settings tree resulting from xml2struct of the
 % Joint Model Personalization Settings XML file.
 %
-% (struct) -> (string, struct, struct)
-% returns the input values for Joint Model Personalization
+% (struct) -> (struct, struct, string)
+% returns the input values for Muscle Tendon Personalization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -64,7 +64,8 @@ inputs.experimentalMoments = parseMtpStandard(inverseDynamicsFileNames);
 emgDataFileNames = findFileListFromPrefixList( ...
     fullfile(inputDirectory, "EMGData"), inputs.prefixes);
 inputs.emgData = parseMtpStandard(emgDataFileNames);
-inputs.emgDataExpanded = parseEmgWithExpansion(inputs.model, emgDataFileNames);
+inputs.emgDataExpanded = parseEmgWithExpansion(inputs.model, ...
+    emgDataFileNames);
 inputs.emgDataColumnNames = getStorageColumnNames(Storage( ...
     emgDataFileNames(1)));
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
@@ -79,10 +80,15 @@ inputs.momentArms = parseMomentArms(directories, inputs.model);
 inputs.numPaddingFrames = (size(inputs.emgData, 3) - 101) / 2;
 inputs = reduceDataSize(inputs);
 inputs.tasks = getTasks(tree);
-inputs.activationGroups = findGroups(getFieldByNameOrError(tree, ...
-    'GroupedActivationTimeConstants'), inputs.model);
-inputs.normalizedFiberLengthGroups = findGroups(getFieldByNameOrError(tree, ...
-    'GroupedNormalizedMuscleFiberLengths'), inputs.model);
+muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
+groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
+    'electromechanical_delays');
+inputs.electromechanicalDelayGroups = groupNamesToGroups(groupNames, ...
+    inputs.model);
+groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
+    "normalized_muscle_fiber_lengths");
+inputs.normalizedFiberLengthGroups = groupNamesToGroups(groupNames, ...
+    inputs.model);
 inputs.synergyExtrapolation = getSynergyExtrapolationParameters(tree, ...
     inputs.model);
 inputs.vMaxFactor = getVMaxFactor(tree);
@@ -90,7 +96,8 @@ inputs.synergyExtrapolation = getTrialIndexes( ...
     inputs.synergyExtrapolation, size(inputs.emgData, 1), inputs.prefixes);
 
 if ~isfield(inputs, "emgSplines")
-    inputs.emgSplines = makeEmgSplines(inputs.emgTime, inputs.emgDataExpanded);
+    inputs.emgSplines = makeEmgSplines(inputs.emgTime, ...
+        inputs.emgDataExpanded);
 end
 end
 
@@ -134,7 +141,8 @@ if(isstruct(maxIterations))
 end
 maxFunctionEvaluations = getFieldByName(tree, 'max_function_evaluations');
 if(isstruct(maxFunctionEvaluations))
-    params.maxFunctionEvaluations = str2double(maxFunctionEvaluations.Text);
+    params.maxFunctionEvaluations = str2double( ...
+        maxFunctionEvaluations.Text);
 end
 performMuscleTendonLengthInitialization = getFieldByNameOrError(tree, ...
     'MuscleTendonLengthInitialization').is_enabled;
@@ -230,9 +238,11 @@ end
 
 function synergyExtrapolation = ...
     getSynergyExtrapolationParameters(tree, model)
-synergyExtrapolation.missingEmgChannelGroups = ...
-    findGroups(getFieldByNameOrError(tree, 'GroupedMissingEmgChannels'), ...
-    model);
+muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
+groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
+    "missing_emg_channels");
+synergyExtrapolation.missingEmgChannelGroups = groupNamesToGroups( ...
+    groupNames, model);
 synergyExtrapolation.matrixFactorizationMethod = ...
     getFieldByName(tree, 'matrix_factorization_method');
 synergyExtrapolation.matrixFactorizationMethod = ...

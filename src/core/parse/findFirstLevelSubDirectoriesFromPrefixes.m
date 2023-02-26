@@ -37,6 +37,7 @@ for i=1:length(prefixes)
         index = strfind(listings(j).name, prefixes(i));
         if(length(index)==1)
             dirs(end+1) = fullfile(inputDirectory, listings(j).name);
+            break
         end
     end
 end
