@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+%
 %
 % (struct, struct) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
@@ -28,17 +28,26 @@
 % ----------------------------------------------------------------------- %
 
 function model = addSpringsToModel(model, markerNames, gridWidth, ...
-    gridHeight, hindfootBodyName, toesBodyName, isLeftFoot)
-points = makeNormalizedGrid(gridWidth, gridHeight);
+    gridHeight, hindfootBodyName, toesBodyName, toesJointName, ...
+    isLeftFoot, meanMarkerLocations)
+points = makeNormalizedGrid(gridWidth, gridHeight, isLeftFoot);
 [insidePoints, ~] = splitNormalizedGridPoints(points, isLeftFoot);
-markerPositions = rotateMarkersToeToHeelVertical(findMarkerPositions( ...
-    model, markerNames));
+
+if isLeftFoot
+    for marker = 1:length(fieldnames(meanMarkerLocations))
+        fieldNames = fieldnames(meanMarkerLocations);
+        currentMarker = meanMarkerLocations.(fieldNames{marker});
+        currentMarker(2) = -1 * currentMarker(2);
+        meanMarkerLocations.(fieldNames{marker}) = currentMarker;
+    end
+end
+
+markerPositions = rotateMarkersToeToHeelVertical(meanMarkerLocations);
 normalizedMarkerPositions = removeNormalizedMarkerOffsets( ...
     normalizeMarkerPositions(markerPositions));
-[insideToes, insideHindfoot] = splitGridPointsByToeJoint(insidePoints, ...
-    normalizedMarkerPositions.medial, normalizedMarkerPositions.lateral);
 model = addSpringsToModelAtLocations(model, markerPositions, ...
-    normalizedMarkerPositions, insideToes, insideHindfoot, ...
+    normalizedMarkerPositions, insidePoints, toesJointName, ...
     hindfootBodyName, toesBodyName, markerNames.heel, isLeftFoot);
 model.finalizeConnections();
 end
+

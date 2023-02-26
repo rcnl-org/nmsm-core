@@ -28,11 +28,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs] = parseMuscleTendonLengthInitializationSettingsTree( ...
+function inputs = parseMuscleTendonLengthInitializationSettingsTree( ...
     settingsTree)
-inputs = getInputs(settingsTree);
-inputs = getMtpModelInputs(inputs);
-inputs = getMuscleVolume(inputs);
+if strcmp(getFieldByNameOrError(settingsTree, ...
+        "MuscleTendonLengthInitialization").is_enabled.Text, "true")
+    inputs = getInputs(settingsTree);
+    inputs = getMtpModelInputs(inputs);
+    inputs = getMuscleVolume(inputs);
+else
+    inputs = false;
+end
 end
 
 function inputs = getInputs(tree)
@@ -69,6 +74,8 @@ inputs = getCostFunctionTerms(getFieldByNameOrError(tree, ...
 maximumMuscleStress = getFieldByName(tree, 'maximum_muscle_stress');
 if(isstruct(maximumMuscleStress))
     inputs.maximumMuscleStress = str2double(maximumMuscleStress.Text);
+else
+    inputs.maximumMuscleStress = 610e3;
 end
 maxNormalizedMuscleFiberLength = getFieldByName(tree, ...
     'max_normalized_muscle_fiber_length');
@@ -82,8 +89,12 @@ if(isstruct(minNormalizedMuscleFiberLength))
     inputs.minNormalizedMuscleFiberLength = ...
         str2double(minNormalizedMuscleFiberLength.Text);
 end
-inputs.normalizedFiberLengthGroups = findGroups(getFieldByNameOrError(tree, ...
-    'GroupedNormalizedMuscleFiberLengths'), inputs.model);
+
+muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
+groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
+    "normalized_muscle_fiber_lengths");
+inputs.normalizedFiberLengthGroups = groupNamesToGroups( ...
+    groupNames, inputs.model);
 inputs = getNormalizedFiberLengthSettings(inputs);
 end
 
@@ -205,7 +216,7 @@ for j = 1 : numel(inputs.normalizedFiberLengthGroups{i})
 end
 end
 inputs.numMusclesIndividual = 0;
-for i = 1 :numMuscles
+for i = 1 : numMuscles
 if isempty(find([inputs.normalizedFiberLengthGroups{:}] == i))
     inputs.groupedMaxNormalizedFiberLength(i) = inputs.numMuscleGroups + ...
         inputs.numMusclesIndividual + 1;

@@ -33,7 +33,7 @@
 function bodyStructure = makeBodyTree(model)
 bodyStructure = struct();
 bodyStructure.ground = struct();
-
+model = Model(model);
 for i = 0 : model.getJointSet().getSize()-1
     [parent, child] = getJointBodyNames(model, ...
         model.getJointSet().get(i).getName().toCharArray');

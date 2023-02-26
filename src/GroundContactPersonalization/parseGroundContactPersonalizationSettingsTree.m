@@ -2,8 +2,8 @@
 %
 % 
 %
-% (Array of double, struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct) -> (struct, struct, string)
+% returns the input values for Ground Contact Personalization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -12,8 +12,8 @@
 % NMSM Pipeline is developed at Rice University and supported by the US   %
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
-% Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Copyright (c) 2022 Rice University and the Authors                      %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -37,10 +37,239 @@ if(isempty(resultsDirectory))
 end
 end
 
-function getInputs(tree)
-
+function inputs = getInputs(tree)
+import org.opensim.modeling.*
+inputDirectory = getTextFromField(getFieldByNameOrAlternate(tree, ...
+    'input_directory', pwd));
+inputs.bodyModel = getFieldByNameOrError(tree, 'input_model_file').Text;
+motionFile = getFieldByNameOrError(tree, 'input_motion_file').Text;
+grfFile = getFieldByNameOrError(tree, 'input_grf_file').Text;
+inputs.kinematicsFilterCutoff = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'kinematics_filter_cutoff', '6')));
+if(~isempty(inputDirectory))
+    try
+        bodyModel = Model(fullfile(inputDirectory, inputs.bodyModel));
+        inputs.motionFileName = fullfile(inputDirectory, motionFile);
+        inputs.grfFileName = fullfile(inputDirectory, grfFile);
+    catch
+        bodyModel = Model(fullfile(pwd, inputDirectory, inputs.bodyModel));
+        inputs.motionFileName = fullfile(pwd, inputDirectory, motionFile);
+        inputs.grfFileName = fullfile(pwd, inputDirectory, grfFile);
+        inputDirectory = fullfile(pwd, inputDirectory);
+    end
+else
+    bodyModel = Model(fullfile(pwd, inputs.bodyModel));
+    inputs.motionFileName = fullfile(pwd, motionFile);
+    inputs.grfFileName = fullfile(pwd, grfFile);
+    inputDirectory = pwd;
 end
 
-function getParams(tree)
+% Get inputs for each foot
+inputs.tasks = getFootTasks(inputs, tree);
+inputs = getInitialValues(inputs, tree);
+end
 
+% (struct, struct) -> (struct)
+function output = getFootTasks(inputs, tree)
+tasks = getFieldByNameOrError(tree, 'FootPersonalizationTaskList');
+counter = 1;
+footTasks = orderByIndex(tasks.FootPersonalizationTask);
+for i=1:length(footTasks)
+    if(length(footTasks) == 1)
+        task = footTasks;
+    else
+        task = footTasks{i};
+    end
+    if(strcmpi(task.is_enabled.Text, 'true'))
+        output{counter} = getFootData(task);
+        output{counter} = getGroundReactions(inputs.bodyModel, ...
+            inputs.grfFileName, output{counter});
+        output{counter} = getMotionTime(inputs.bodyModel, ...
+            inputs.motionFileName, output{counter});
+        verifyTime(output{counter}.grfTime, output{counter}.time);
+        tempFields = {'forceColumns', 'momentColumns', ...
+            'electricalCenterColumns', 'grfTime', 'startTime', 'endTime'};
+        output{counter} = rmfield(output{counter}, tempFields);
+        counter = counter + 1;
+    end
+end
+end
+
+% (Model, string, struct) -> (struct)
+function task = getMotionTime(bodyModel, motionFile, task)
+import org.opensim.modeling.Storage
+[~, ikTime, ~] = parseMotToComponents(...
+    Model(bodyModel), Storage(motionFile));
+startIndex = find(ikTime >= task.startTime, 1, 'first');
+endIndex = find(ikTime <= task.endTime, 1, 'last');
+task.time = ikTime(startIndex:endIndex);
+end
+
+% (Model, string, struct) -> (struct)
+function task = getGroundReactions(bodyModel, grfFile, task)
+import org.opensim.modeling.Storage
+[grfColumnNames, grfTime, grfData] = parseMotToComponents(...
+    Model(bodyModel), Storage(grfFile));
+startIndex = find(grfTime >= task.startTime, 1, 'first');
+endIndex = find(grfTime <= task.endTime, 1, 'last');
+task.grfTime = grfTime(startIndex:endIndex);
+grf = NaN(3, length(task.grfTime));
+moments = NaN(3, length(task.grfTime));
+ec = NaN(3, length(task.grfTime));
+for i=1:size(grfColumnNames')
+    label = grfColumnNames(i);
+    for j = 1:3
+        if strcmpi(label, task.forceColumns(j, :))
+            grf(j, :) = grfData(i, startIndex:endIndex);
+        end
+        if strcmpi(label, task.momentColumns(j, :))
+            moments(j, :) = grfData(i, startIndex:endIndex);
+        end
+        if strcmpi(label, task.electricalCenterColumns(j, :))
+            ec(j, :) = grfData(i, startIndex:endIndex);
+        end
+    end
+end
+if any([isnan(grf) isnan(moments) isnan(ec)])
+    throw(MException('', ['Unable to parse GRF file, check that ' ...
+        'all necessary column labels are present']))
+end
+task.experimentalGroundReactionForces = grf;
+task.experimentalGroundReactionMoments = moments;
+task.electricalCenter = ec;
+end
+
+% (struct, struct, struct) -> (struct)
+function task = getFootData(tree)
+    task.isLeftFoot = strcmpi('true', ...
+        getFieldByNameOrError(tree, 'is_left_foot').Text);
+    task.toesCoordinateName = getFieldByNameOrError(tree, ...
+        'toe_coordinate').Text;
+    task.markerNames.toe = getFieldByNameOrError(tree, ...
+        'toe_marker').Text;
+    task.markerNames.medial = getFieldByNameOrError(tree, ...
+        'medial_marker').Text;
+    task.markerNames.lateral = getFieldByNameOrError(tree, ...
+        'lateral_marker').Text;
+    task.markerNames.heel = getFieldByNameOrError(tree, ...
+        'heel_marker').Text;
+    task.markerNames.midfootSuperior = getFieldByNameOrError(tree, ...
+        'midfoot_superior_marker').Text;
+    task.startTime = str2double(getFieldByNameOrError(tree, ...
+        'start_time').Text);
+    task.endTime = str2double(getFieldByNameOrError(tree, ...
+        'end_time').Text);
+    task.beltSpeed = str2double(getFieldByNameOrError(tree, ...
+        'belt_speed').Text);
+    task.forceColumns = cell2mat(split(getFieldByNameOrError(tree, ...
+        'force_columns').Text));
+    task.momentColumns = cell2mat(split(getFieldByNameOrError(tree, ...
+        'moment_columns').Text));
+    task.electricalCenterColumns = cell2mat(split( ...
+        getFieldByNameOrError(tree, 'electrical_center_columns').Text));
+end
+
+% (Array of double, Array of double) -> (None)
+function verifyTime(grfTime, ikTime)
+    if size(ikTime) ~= size(grfTime)
+        throw(MException('', ['IK and GRF time columns have ' ...
+            'different lengths']))
+    end
+    if any(abs(ikTime - grfTime) > 0.005)
+        throw(MException('', 'IK and GRF time points are not equal'))
+    end
+end
+
+% Parses initial values
+function inputs = getInitialValues(inputs, tree)
+inputs.initialRestingSpringLength = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'initial_resting_spring_length', ...
+    '0.05')));
+inputs.initialSpringConstants = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'initial_spring_constant', '2500')));
+inputs.initialDampingFactor = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'initial_damping_factor', '1e-4')));
+inputs.initialDynamicFrictionCoefficient = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, ...
+    'initial_dynamic_friction_coefficient', '0.25')));
+end
+
+function params = getParams(tree)
+params = struct();
+params.restingSpringLengthInitialization = strcmpi(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, ...
+    'resting_spring_length_initialization_is_enabled', 'true')), 'true');
+params.maxIterations = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'max_iterations', '400')));
+params.maxFunctionEvaluations = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'max_function_evaluations', ...
+    '3000000')));
+params.tasks = getOptimizationTasks(tree);
+end
+
+function output = getOptimizationTasks(tree)
+tasks = getFieldByNameOrError(tree, ...
+    'GroundContactPersonalizationTaskList');
+counter = 1;
+gcpTasks = orderByIndex(tasks.GroundContactPersonalizationTask);
+for i=1:length(gcpTasks)
+    if(length(gcpTasks) == 1)
+        task = gcpTasks;
+    else
+        task = gcpTasks{i};
+    end
+    if(strcmpi(task.is_enabled.Text, 'true'))
+        output{counter} = getTaskDesignVariables(task);
+        output{counter} = getTaskCostTerms(task.CostFunctionTerms, ...
+            output{counter});
+        counter = counter + 1;
+    end
+end
+end
+
+% (struct) -> (struct)
+function output = getTaskDesignVariables(tree)
+variables = ["springConstants", "dampingFactor", ...
+    "dynamicFrictionCoefficient", "restingSpringLength", ...
+    "kinematicsBSplineCoefficients"];
+for i=1:length(variables)
+    output.designVariables(i) = strcmpi( ...
+        tree.(variables(i)).Text, 'true');
+end
+end
+
+% (struct, struct) -> (struct)
+function taskStruct = getTaskCostTerms(tree, taskStruct)
+costTermNames = ["markerPositionError", "markerSlopeError", ...
+    "rotationError", "translationError", ...
+    "coordinateCoefficientError", "verticalGrfError", ...
+    "verticalGrfSlopeError", "horizontalGrfError", ...
+    "horizontalGrfSlopeError", "groundReactionMomentError", ...
+    "groundReactionMomentSlopeError", "springConstantErrorFromMean", ...
+    "springConstantErrorFromNeighbors"];
+for i = 1:length(costTermNames)
+    enabled = valueOrAlternate(valueOrAlternate(tree, costTermNames(i), ...
+        'none'), 'is_enabled', 'false');
+    if (isstruct(enabled))
+        enabled = enabled.Text;
+    end
+    taskStruct.costTerms.(costTermNames(i)).isEnabled = strcmpi(...
+        enabled, 'true');
+    allowableError = valueOrAlternate(valueOrAlternate(tree, ...
+        costTermNames(i), 'none'), 'max_allowable_error', '1');
+    if (isstruct(allowableError))
+        allowableError = allowableError.Text;
+    end
+    taskStruct.costTerms.(costTermNames(i)).maxAllowableError = ...
+        str2double(allowableError);
+    if costTermNames(i) == "springConstantErrorFromNeighbors"
+        standardDeviation = valueOrAlternate(valueOrAlternate(tree, ...
+            costTermNames(i), 'none'), 'standard_deviation', '0.05');
+        if (isstruct(standardDeviation))
+            standardDeviation = standardDeviation.Text;
+        end
+        taskStruct.costTerms.(costTermNames(i)).standardDeviation = ...
+            str2double(standardDeviation);
+    end
+end
 end
