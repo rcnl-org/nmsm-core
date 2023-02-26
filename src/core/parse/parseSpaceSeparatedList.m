@@ -39,5 +39,3 @@ if(length(prefixField.Text) > 0)
 else
     prefixes = string([]);
 end
-
-<>group1 group2</>
