@@ -32,6 +32,9 @@
 function prefixes = parseSpaceSeparatedList(tree, element)
 prefixField = getFieldByName(tree, element);
 if(length(prefixField.Text) > 0)
+    if(strcmp(prefixField.Text(1), ' '))
+        prefixField.Text = prefixField.Text(2:end);
+    end
     prefixes = strsplit(prefixField.Text, ' ');
 else
     prefixes = string([]);

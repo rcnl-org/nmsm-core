@@ -27,11 +27,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function points = makeNormalizedGrid(cellsWide, cellsLong)
+function points = makeNormalizedGrid(cellsWide, cellsLong, isLeftFoot)
 points = zeros(cellsWide * cellsLong, 2);
 for i=1:cellsWide
+    i_side = i;
+    if isLeftFoot
+        i_side = cellsWide + 1 - i_side;
+    end
     for j=1:cellsLong
-        x = (i)/(cellsWide) - (1/(2*cellsWide));
+        x = (i_side)/(cellsWide) - (1/(2*cellsWide));
         y = (j-1)/(cellsLong-1);
         points((i-1)*cellsLong + j, :) = [x y];
     end

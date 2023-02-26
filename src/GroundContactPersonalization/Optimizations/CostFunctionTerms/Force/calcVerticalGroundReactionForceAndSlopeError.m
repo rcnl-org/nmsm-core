@@ -2,7 +2,7 @@
 %
 %
 %
-% (Array of double, struct, struct) -> (struct)
+% (struct, struct) -> (double, double)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
