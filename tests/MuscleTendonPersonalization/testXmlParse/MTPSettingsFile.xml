@@ -7,9 +7,11 @@
         <data_directory></data_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>optModel_MuscleGroups_LeftMusclesActive_NewSynx.osim</input_model_file>
+		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
+		<coordinate_list>hip_flexion_l hip_adduction_l hip_rotation_l knee_angle_l ankle_angle_l subtalar_angle_l</coordinate_list>
 		<MuscleTendonLengthInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization-->
-			<is_enabled>true</is_enabled>
+			<is_enabled>false</is_enabled>
 			<passive_data_input_directory>thelen</passive_data_input_directory>
 			<max_normalized_muscle_fiber_length>1</max_normalized_muscle_fiber_length>
 			<min_normalized_muscle_fiber_length>0.6</min_normalized_muscle_fiber_length>

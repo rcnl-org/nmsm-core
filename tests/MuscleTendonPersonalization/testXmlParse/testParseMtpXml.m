@@ -1,5 +1,5 @@
 
-settingsFileName = "MTPSettingsFile.xml";
+settingsFileName = "newMTPSettingsFile.xml";
 % settingsTree = xml2struct(settingsFileName);
 % [inputs, params, resultsDirectory] = parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 
@@ -11,7 +11,7 @@ MuscleTendonPersonalizationTool(settingsFileName)
 % 
 % size(passiveData.momentArms)
 % 
-% size(passiveData.experimentalMoments)
+% size(passiveData.inverseDynamicsMoments)
 % 
 % 
 % 

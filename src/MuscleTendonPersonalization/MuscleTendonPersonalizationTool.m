@@ -51,5 +51,5 @@ results = calcMtpSynXModeledValues(finalValues, inputs, params);
 results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
     end - inputs.numPaddingFrames);
 saveMuscleTendonPersonalizationResults(inputs.model, inputs.prefixes, ...
-    inputs.coordinates, finalValues, results, resultsDirectory);
+    inputs.coordinateNames, finalValues, results, resultsDirectory);
 end
