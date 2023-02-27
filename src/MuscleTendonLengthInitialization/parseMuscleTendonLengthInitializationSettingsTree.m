@@ -41,23 +41,23 @@ end
 end
 
 function inputs = getInputs(tree)
-inputDirectory = parseInputDirectory(tree);
+dataDirectory = parseDataDirectory(tree);
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
-if(~isempty(inputDirectory))
+if(~isempty(dataDirectory))
     try
-        inputs.model = fullfile(inputDirectory, modelFile);
+        inputs.model = fullfile(dataDirectory, modelFile);
     catch
-        inputs.model = fullfile(pwd, inputDirectory, modelFile);
-        inputDirectory = fullfile(pwd, inputDirectory);
+        inputs.model = fullfile(pwd, dataDirectory, modelFile);
+        dataDirectory = fullfile(pwd, dataDirectory);
     end
 else
     inputs.model = fullfile(pwd, modelFile);
-    inputDirectory = pwd;
+    dataDirectory = pwd;
 end
 inputs = getPassiveData(getFieldByNameOrError(tree, "MuscleTendonLengthInitialization"), inputs);
-prefixes = findPrefixes(tree, inputDirectory);
+prefixes = findPrefixes(tree, dataDirectory);
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    inputDirectory, "MAData"), prefixes);
+    dataDirectory, "MAData"), prefixes);
 inputs.gaitData.muscleTendonLength = parseFileFromDirectories(directories, ...
     "Length.sto");
 inputs.gaitData.momentArms = parseMomentArms(directories, inputs.model);
@@ -90,9 +90,8 @@ if(isstruct(minNormalizedMuscleFiberLength))
         str2double(minNormalizedMuscleFiberLength.Text);
 end
 
-muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
-groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
-    "normalized_muscle_fiber_lengths");
+groupNames = parseSpaceSeparatedList(tree, ...
+    "normalized_fiber_length_muscle_groups");
 inputs.normalizedFiberLengthGroups = groupNamesToGroups( ...
     groupNames, inputs.model);
 inputs = getNormalizedFiberLengthSettings(inputs);
