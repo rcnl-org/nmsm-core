@@ -101,46 +101,46 @@
 				<!--Coefficients allowing for adjustments to kinematics during optimization-->
 				<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 				<!--Settings for cost function terms for the task-->
-				<CostFunctionTerms>
-					<rotationError>
+				<GroundContactCostFunctionTerms>
+					<RotationError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>4</max_allowable_error>
-					</rotationError>
-					<translationError>
+					</RotationError>
+					<TranslationError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>0.01</max_allowable_error>
-					</translationError>
-					<verticalGrfError>
+					</TranslationError>
+					<VerticalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>5</max_allowable_error>
-					</verticalGrfError>
-					<horizontalGrfError>
+					</VerticalGrfError>
+					<HorizontalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>20</max_allowable_error>
-					</horizontalGrfError>
-					<groundReactionMomentError>
+					</HorizontalGrfError>
+					<GroundReactionMomentError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>10</max_allowable_error>
-					</groundReactionMomentError>
-					<springConstantErrorFromNeighbors>
+					</GroundReactionMomentError>
+					<SpringConstantErrorFromNeighbors>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>2000</max_allowable_error>
 						<!--Standard deviation of Gaussian weighting function. A larger value indicates that stiffness should be more similar over a greater distance-->
 						<standard_deviation>0.05</standard_deviation>
-					</springConstantErrorFromNeighbors>
-				</CostFunctionTerms>
+					</SpringConstantErrorFromNeighbors>
+				</GroundContactCostFunctionTerms>
 			</GroundContactPersonalizationTask>
 			<GroundContactPersonalizationTask>
                 <!--Flag indicating whether or not the task is enabled.-->
@@ -161,46 +161,46 @@
 				<!--Coefficients allowing for adjustments to kinematics during optimization-->
 				<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 				<!--Settings for cost function terms for the task-->
-				<CostFunctionTerms>
-					<rotationError>
+				<GroundContactCostFunctionTerms>
+					<RotationError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>4</max_allowable_error>
-					</rotationError>
-					<translationError>
+					</RotationError>
+					<TranslationError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>0.01</max_allowable_error>
-					</translationError>
-					<verticalGrfError>
+					</TranslationError>
+					<VerticalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>5</max_allowable_error>
-					</verticalGrfError>
-					<horizontalGrfError>
+					</VerticalGrfError>
+					<HorizontalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>5</max_allowable_error>
-					</horizontalGrfError>
-					<groundReactionMomentError>
+					</HorizontalGrfError>
+					<GroundReactionMomentError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>10</max_allowable_error>
-					</groundReactionMomentError>
-					<springConstantErrorFromNeighbors>
+					</GroundReactionMomentError>
+					<SpringConstantErrorFromNeighbors>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>2000</max_allowable_error>
 						<!--Standard deviation of Gaussian weighting function. A larger value indicates that stiffness should be more similar over a greater distance-->
 						<standard_deviation>0.05</standard_deviation>
-					</springConstantErrorFromNeighbors>
-				</CostFunctionTerms>
+					</SpringConstantErrorFromNeighbors>
+				</GroundContactCostFunctionTerms>
 			</GroundContactPersonalizationTask>
 			<GroundContactPersonalizationTask>
                 <!--Flag indicating whether or not the task is enabled.-->
@@ -221,46 +221,46 @@
 				<!--Coefficients allowing for adjustments to kinematics during optimization-->
 				<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
 				<!--Settings for cost function terms for the task-->
-				<CostFunctionTerms>
-					<rotationError>
+				<GroundContactCostFunctionTerms>
+					<RotationError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>4</max_allowable_error>
-					</rotationError>
-					<translationError>
+					</RotationError>
+					<TranslationError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>0.01</max_allowable_error>
-					</translationError>
-					<verticalGrfError>
+					</TranslationError>
+					<VerticalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>5</max_allowable_error>
-					</verticalGrfError>
-					<horizontalGrfError>
+					</VerticalGrfError>
+					<HorizontalGrfError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>5</max_allowable_error>
-					</horizontalGrfError>
-					<groundReactionMomentError>
+					</HorizontalGrfError>
+					<GroundReactionMomentError>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>2</max_allowable_error>
-					</groundReactionMomentError>
-					<springConstantErrorFromNeighbors>
+					</GroundReactionMomentError>
+					<SpringConstantErrorFromNeighbors>
 						<!--Flag indicating whether or not the term is enabled in the cost function.-->
 						<is_enabled>true</is_enabled>
 						<!--Max allowable error or deviation from indicated set point-->
 						<max_allowable_error>2000</max_allowable_error>
 						<!--Standard deviation of Gaussian weighting function. A larger value indicates that stiffness should be more similar over a greater distance-->
 						<standard_deviation>0.05</standard_deviation>
-					</springConstantErrorFromNeighbors>
-				</CostFunctionTerms>
+					</SpringConstantErrorFromNeighbors>
+				</GroundContactCostFunctionTerms>
 			</GroundContactPersonalizationTask>
 		</GroundContactPersonalizationTaskList>
 		<!--Initial values of design variables-->
