@@ -13,9 +13,9 @@
         <!--*Optional* The vMaxFactor to use-->
         <v_max_factor>10</v_max_factor>
         <!--A space-separated list of the activation muscle groups. -->
-        <activation_muscle_groups>LeftMusclesActive</activation_muscle_groups>
+        <activation_muscle_groups> AdductorActivationGroupL GluteusMaxActivationGroupL GluteusMedActivationGroupL GluteusMinActivationGroupL IliopsoasActivationGroupL HamstringActivationGroupL BicepsFemActivationGroupL PeroneusActivationGroupL</activation_muscle_groups>
         <!--A space-separated list of the normalized fiber length muscle groups. -->
-        <normalized_fiber_length_muscle_groups>LeftMusclesActive</normalized_fiber_length_muscle_groups>
+        <normalized_fiber_length_muscle_groups> AdductorFiberLengthGroupL GluteusMaxFiberLengthGroupL GluteusMedFiberLengthGroupL GluteusMinFiberLengthGroupL QuadricepFiberLengthGroupL HamstringFiberLengthGroupL PeroneusFiberLengthGroupL IliopsoasFiberLengthGroupL GastrocFiberLengthGroupL TibialisAnteriorFiberLengthGroupL TibialisPosteriorFiberLengthGroupL</normalized_fiber_length_muscle_groups>
 		<!--*Optional* space-separated list of prefixes to use for data files, if left blank, use all prefixes fron IK folder-->
 		<trial_prefixes></trial_prefixes>
         <!--*Optional* The number of allowed iterations of the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
@@ -102,29 +102,31 @@
         <!-- END OF MTP AND NCP SHARED SETTINGS-->
         <!--MTP SPECIFIC SETTINGS-->
         <!--A space-separated list of missing EMG channel names.-->
-        <missing_emg_channel_muscle_groups>LeftMusclesActive</missing_emg_channel_muscle_groups>
+        <missing_emg_channel_muscle_groups> AddLongMissingEmgChannelL ExtDigLongMissingEmgChannelL FlexDigLongMissingEmgChannelL IliopsoasMissingEmgChannelL PeroneusLongMissingEmgChannelL RecFemMissingEmgChannelL TibPostMissingEmgChannelL VastMedMissingEmgChannelL</missing_emg_channel_muscle_groups>
         <!--A space-separated list of collected EMG channel names.-->
-        <collected_emg_channel_muscle_groups>LeftMusclesActive</collected_emg_channel_muscle_groups>
-        <MuscleTendonPersonalizationTask>
-            <!--Flag indicating whether or not the task is enabled.-->
-            <is_enabled>true</is_enabled>
-            <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
-            <index>4</index>
-            <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-            <optimize_electromechanical_delays>true</optimize_electromechanical_delays>
-            <!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
-            <optimize_activation_time_constants>true</optimize_activation_time_constants>
-            <!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
-            <optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
-            <!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
-            <optimize_emg_scale_factors>true</optimize_emg_scale_factors>
-            <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-            <optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
-            <!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
-            <optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
-            <!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
-            <perform_synergy_extrapolation>true</perform_synergy_extrapolation>
-        </MuscleTendonPersonalizationTask>
+        <collected_emg_channel_muscle_groups> BicFemLongCollectedEmgChannelL GasMedCollectedEmgChannelL GlutMaxCollectedEmgChannelL GlutMedCollectedEmgChannelL SemiMembCollectedEmgChannelL SolCollectedEmgChannelL TibAntCollectedEmgChannelL VastLatCollectedEmgChannelL</collected_emg_channel_muscle_groups>
+		<MuscleTendonPersonalizationTaskList>
+			<MuscleTendonPersonalizationTask>
+				<!--Flag indicating whether or not the task is enabled.-->
+				<is_enabled>true</is_enabled>
+				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+				<index>4</index>
+				<!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+				<optimize_electromechanical_delays>true</optimize_electromechanical_delays>
+				<!--Boolean (true, false) indicating if activation time constants should be optimized for this task-->
+				<optimize_activation_time_constants>true</optimize_activation_time_constants>
+				<!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task-->
+				<optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
+				<!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task-->
+				<optimize_emg_scale_factors>true</optimize_emg_scale_factors>
+				<!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+				<optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
+				<!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task-->
+				<optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
+				<!--Boolean (true, false) indicating if synergy extrapolation should be performed during this task-->
+				<perform_synergy_extrapolation>true</perform_synergy_extrapolation>
+			</MuscleTendonPersonalizationTask>
+		</MuscleTendonPersonalizationTaskList>
         <MuscleTendonCostFunctionTerms>
             <IndividualMuscles>
                 <!--*Optional* Inverse dynamic joint moments -->
@@ -203,8 +205,7 @@
                     <muscle_specific_electromechanical_delays>false</muscle_specific_electromechanical_delays>
                 </ElectromechanicalDelay>
             </GroupedMuscles>
-        </MuscleTendonCostFunctionTerms>
-        <SynergyExtrapolationSettings>
+			<SynergyExtrapolationSettings>
             <!--*Optional* space-separated list of prefixes that indicate different speeds or tasks, one speed or task will be assumed for all trials-->
             <task_prefixes>speed1 speed2</task_prefixes>
             <!--Specify the matrix factorization approach for MSA; PCA or NMF.-->
@@ -234,6 +235,7 @@
                 <max_allowable_error>0.3</max_allowable_error>
             </ResidualMuscleActivations>
         </SynergyExtrapolationSettings>
+        </MuscleTendonCostFunctionTerms>
         <!--END MTP SPECIFIC SETTINGS-->
     </MuscleTendonPersonalizationTool>
 </OpenSimDocument>
