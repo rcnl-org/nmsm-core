@@ -11,6 +11,7 @@ elements = elementStringOrStringArray;
       else
         textOrAlternate = getFieldByNameOrError(tree, elements(i)).Text;
       end
+    end
     catch
       textOrAlternate = alternate;
     end

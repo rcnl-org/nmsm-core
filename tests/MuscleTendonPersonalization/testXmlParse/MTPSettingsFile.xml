@@ -4,7 +4,7 @@
         <!--Directory used for writing results.-->
         <results_directory>results</results_directory>
         <!--Directory for input files-->
-        <input_directory></input_directory>
+        <data_directory></data_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>optModel_MuscleGroups_LeftMusclesActive_NewSynx.osim</input_model_file>
 		<MuscleTendonLengthInitialization>
@@ -218,12 +218,10 @@
                 </ResidualMuscleActivations>
 			</SynergyExtrapolationSettings>
         </MuscleTendonCostFunctionTerms>
-        <GroupedMuscles>
-		      <electromechanical_delays> AdductorActivationGroupL GluteusMaxActivationGroupL GluteusMedActivationGroupL GluteusMinActivationGroupL IliopsoasActivationGroupL HamstringActivationGroupL BicepsFemActivationGroupL PeroneusActivationGroupL</electromechanical_delays>
-              <normalized_muscle_fiber_lengths> AdductorFiberLengthGroupL GluteusMaxFiberLengthGroupL GluteusMedFiberLengthGroupL GluteusMinFiberLengthGroupL QuadricepFiberLengthGroupL HamstringFiberLengthGroupL PeroneusFiberLengthGroupL IliopsoasFiberLengthGroupL GastrocFiberLengthGroupL TibialisAnteriorFiberLengthGroupL TibialisPosteriorFiberLengthGroupL</normalized_muscle_fiber_lengths>
-              <collected_emg_channels> BicFemLongCollectedEmgChannelL GasMedCollectedEmgChannelL GlutMaxCollectedEmgChannelL GlutMedCollectedEmgChannelL SemiMembCollectedEmgChannelL SolCollectedEmgChannelL TibAntCollectedEmgChannelL VastLatCollectedEmgChannelL</collected_emg_channels>
-              <missing_emg_channels> AddLongMissingEmgChannelL ExtDigLongMissingEmgChannelL FlexDigLongMissingEmgChannelL IliopsoasMissingEmgChannelL PeroneusLongMissingEmgChannelL RecFemMissingEmgChannelL TibPostMissingEmgChannelL VastMedMissingEmgChannelL</missing_emg_channels>
-        </GroupedMuscles>
+		<activation_muscle_groups> AdductorActivationGroupL GluteusMaxActivationGroupL GluteusMedActivationGroupL GluteusMinActivationGroupL IliopsoasActivationGroupL HamstringActivationGroupL BicepsFemActivationGroupL PeroneusActivationGroupL</activation_muscle_groups>
+		<normalized_fiber_length_muscle_groups> AdductorFiberLengthGroupL GluteusMaxFiberLengthGroupL GluteusMedFiberLengthGroupL GluteusMinFiberLengthGroupL QuadricepFiberLengthGroupL HamstringFiberLengthGroupL PeroneusFiberLengthGroupL IliopsoasFiberLengthGroupL GastrocFiberLengthGroupL TibialisAnteriorFiberLengthGroupL TibialisPosteriorFiberLengthGroupL</normalized_fiber_length_muscle_groups>
+		<collected_emg_channel_muscle_groups> BicFemLongCollectedEmgChannelL GasMedCollectedEmgChannelL GlutMaxCollectedEmgChannelL GlutMedCollectedEmgChannelL SemiMembCollectedEmgChannelL SolCollectedEmgChannelL TibAntCollectedEmgChannelL VastLatCollectedEmgChannelL</collected_emg_channel_muscle_groups>
+		<missing_emg_channel_muscle_groups> AddLongMissingEmgChannelL ExtDigLongMissingEmgChannelL FlexDigLongMissingEmgChannelL IliopsoasMissingEmgChannelL PeroneusLongMissingEmgChannelL RecFemMissingEmgChannelL TibPostMissingEmgChannelL VastMedMissingEmgChannelL</missing_emg_channel_muscle_groups>
         <!--*Optional* The vMaxFactor to use-->
         <v_max_factor>10</v_max_factor>
         <!--*Optional* The number of allowed iterations of the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
@@ -231,7 +229,7 @@
         <!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
         <max_function_evaluations>1e8</max_function_evaluations>
         <!--*Optional* space-separated list of prefixes to use for data files, if left blank, use all prefixes fron IK folder-->
-        <trial_prefixes>speed1_gait_1 speed1_gait_2 speed2_squat_1 speed2_squat_2</trial_prefixes>
+        <trial_prefixes></trial_prefixes>
         <!--*Optional* space-separated list of prefixes that indicate different speeds or tasks, one speed or task will be assumed for all trials-->
         <task_prefixes>speed1 speed2</task_prefixes>
     </MuscleTendonPersonalizationTool>
