@@ -28,11 +28,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputDirectory = parseInputDirectory(tree)
-inputDirectoryElement = getFieldByNameOrError(tree, 'input_directory');
-inputDirectory = inputDirectoryElement.Text;
-if isempty(inputDirectory)
-    inputDirectory = pwd;
+function dataDirectory = parseDataDirectory(tree)
+dataDirectoryElement = getFieldByNameOrError(tree, 'data_directory');
+dataDirectory = dataDirectoryElement.Text;
+if isempty(dataDirectory)
+    dataDirectory = pwd;
 end
 end
 

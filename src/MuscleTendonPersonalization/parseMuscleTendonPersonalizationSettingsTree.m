@@ -42,36 +42,37 @@ end
 
 function inputs = getInputs(tree)
 import org.opensim.modeling.Storage
-inputDirectory = parseInputDirectory(tree);
+dataDirectory = parseDataDirectory(tree);
 modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
-if(~isempty(inputDirectory))
+if(~isempty(dataDirectory))
     try
-        inputs.model = fullfile(inputDirectory, modelFile);
+        inputs.model = fullfile(dataDirectory, modelFile);
     catch
-        inputs.model = fullfile(pwd, inputDirectory, modelFile);
-        inputDirectory = fullfile(pwd, inputDirectory);
+        inputs.model = fullfile(pwd, dataDirectory, modelFile);
+        dataDirectory = fullfile(pwd, dataDirectory);
     end
 else
     inputs.model = fullfile(pwd, modelFile);
-    inputDirectory = pwd;
+    dataDirectory = pwd;
 end
-inputs.prefixes = findPrefixes(tree, inputDirectory);
+inputs.prefixes = findPrefixes(tree, dataDirectory);
 inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
-    inputDirectory, "IDData"), inputs.prefixes);
+    dataDirectory, "IDData"), inputs.prefixes);
 inputs.coordinates = getStorageColumnNames(Storage( ...
     inverseDynamicsFileNames(1)));
 inputs.experimentalMoments = parseMtpStandard(inverseDynamicsFileNames);
 emgDataFileNames = findFileListFromPrefixList( ...
-    fullfile(inputDirectory, "EMGData"), inputs.prefixes);
-inputs.emgData = parseMtpStandard(emgDataFileNames);
+    fullfile(dataDirectory, "EMGData"), inputs.prefixes);
+collectedEmgGroupNames = parseSpaceSeparatedList(tree, "collected_emg_channel_muscle_groups");
+[inputs.emgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
 inputs.emgDataExpanded = parseEmgWithExpansion(inputs.model, ...
     emgDataFileNames);
 inputs.emgDataColumnNames = getStorageColumnNames(Storage( ...
     emgDataFileNames(1)));
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
-    fullfile(inputDirectory, "EMGData"), inputs.prefixes));
+    fullfile(dataDirectory, "EMGData"), inputs.prefixes));
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    inputDirectory, "MAData"), inputs.prefixes);
+    dataDirectory, "MAData"), inputs.prefixes);
 inputs.muscleTendonLength = parseFileFromDirectories(directories, ...
     "Length.sto");
 inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
@@ -80,13 +81,12 @@ inputs.momentArms = parseMomentArms(directories, inputs.model);
 inputs.numPaddingFrames = (size(inputs.emgData, 3) - 101) / 2;
 inputs = reduceDataSize(inputs);
 inputs.tasks = getTasks(tree);
-muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
-groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
-    'electromechanical_delays');
+groupNames = parseSpaceSeparatedList(tree, ...
+    'activation_muscle_groups');
 inputs.electromechanicalDelayGroups = groupNamesToGroups(groupNames, ...
     inputs.model);
-groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
-    "normalized_muscle_fiber_lengths");
+groupNames = parseSpaceSeparatedList(tree, ...
+    "normalized_fiber_length_muscle_groups");
 inputs.normalizedFiberLengthGroups = groupNamesToGroups(groupNames, ...
     inputs.model);
 inputs.synergyExtrapolation = getSynergyExtrapolationParameters(tree, ...
@@ -240,7 +240,7 @@ function synergyExtrapolation = ...
     getSynergyExtrapolationParameters(tree, model)
 muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
 groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
-    "missing_emg_channels");
+    "missing_emg_channel_muscle_groups");
 synergyExtrapolation.missingEmgChannelGroups = groupNamesToGroups( ...
     groupNames, model);
 synergyExtrapolation.matrixFactorizationMethod = ...
