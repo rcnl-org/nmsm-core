@@ -271,9 +271,17 @@
 		<initial_viscous_friction_coefficient>5</initial_viscous_friction_coefficient>
 		<!--Latching velocity used to calculate dynamic friction-->
 		<latching_velocity>0.05</latching_velocity>
-        <!--*Optional* The number of allowed iterations of the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
-        <max_iterations>1e3</max_iterations>
+		<!--*Optional* The minimum step of the least squares algorithm. Default is 1e-6.-->
+		<diff_min_change>1e-6</diff_min_change>
+		<!--*Optional* The step tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-6-->
+		<step_tolerance>1e-6</step_tolerance>
+		<!--*Optional* The optimality tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-6-->
+		<optimality_tolerance>1e-6</optimality_tolerance>
+		<!--*Optional* The function tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-6-->
+		<function_tolerance>1e-6</function_tolerance>
+		<!--*Optional* The number of allowed iterations of the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge. Default is 400-->
+        <max_iterations>400</max_iterations>
 		<!--*Optional* The number of allowed cost function calls for the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
-        <max_function_evaluations>3e6</max_function_evaluations>
+        <max_function_evaluations>3e5</max_function_evaluations>
     </GroundContactPersonalizationTool>
 </OpenSimDocument>
