@@ -225,8 +225,8 @@ for i=1:length(gcpTasks)
     end
     if(strcmpi(task.is_enabled.Text, 'true'))
         output{counter} = getTaskDesignVariables(task);
-        output{counter} = getTaskCostTerms(task.CostFunctionTerms, ...
-            output{counter});
+        output{counter} = getTaskCostTerms( ...
+            task.GroundContactCostFunctionTerms, output{counter});
         counter = counter + 1;
     end
 end
@@ -253,7 +253,10 @@ costTermNames = ["markerPositionError", "markerSlopeError", ...
     "groundReactionMomentSlopeError", "springConstantErrorFromMean", ...
     "springConstantErrorFromNeighbors"];
 for i = 1:length(costTermNames)
-    enabled = valueOrAlternate(valueOrAlternate(tree, costTermNames(i), ...
+    costTermClassName = convertStringsToChars(costTermNames(i));
+    costTermClassName = [upper(costTermClassName(1)) ...
+        costTermClassName(2:end)];
+    enabled = valueOrAlternate(valueOrAlternate(tree, costTermClassName, ...
         'none'), 'is_enabled', 'false');
     if (isstruct(enabled))
         enabled = enabled.Text;
@@ -261,7 +264,7 @@ for i = 1:length(costTermNames)
     taskStruct.costTerms.(costTermNames(i)).isEnabled = strcmpi(...
         enabled, 'true');
     allowableError = valueOrAlternate(valueOrAlternate(tree, ...
-        costTermNames(i), 'none'), 'max_allowable_error', '1');
+        costTermClassName, 'none'), 'max_allowable_error', '1');
     if (isstruct(allowableError))
         allowableError = allowableError.Text;
     end
@@ -269,7 +272,7 @@ for i = 1:length(costTermNames)
         str2double(allowableError);
     if costTermNames(i) == "springConstantErrorFromNeighbors"
         standardDeviation = valueOrAlternate(valueOrAlternate(tree, ...
-            costTermNames(i), 'none'), 'standard_deviation', '0.05');
+            costTermClassName, 'none'), 'standard_deviation', '0.05');
         if (isstruct(standardDeviation))
             standardDeviation = standardDeviation.Text;
         end

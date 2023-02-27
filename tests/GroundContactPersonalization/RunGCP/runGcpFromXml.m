@@ -3,7 +3,7 @@ clear
 tic
 [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(...
-    xml2struct("GCP_settings_tasklist.xml"));
+    xml2struct("GCP_settings.xml"));
 inputs = prepareGroundContactPersonalizationInputs(inputs);
 
 % Stage 0
