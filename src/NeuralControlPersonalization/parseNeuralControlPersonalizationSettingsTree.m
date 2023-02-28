@@ -51,7 +51,6 @@ inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.optimalFiberLengthScaleFactors, ...
     inputs.tendonSlackLengthScaleFactors] = getMtpDataInputs( ...
     inputs.mtpMuscleData, inputs.muscleNames);
-
 end
 
 function inputs = loadMtpData(tree, inputs)
