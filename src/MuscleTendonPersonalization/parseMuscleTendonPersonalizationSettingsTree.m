@@ -43,27 +43,9 @@ end
 function inputs = getInputs(tree)
 inputs = parseMtpNcpSharedInputs(tree);
 dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
-emgDataFileNames = findFileListFromPrefixList( ...
-    fullfile(dataDirectory, "EMGData"), inputs.prefixes);
-collectedEmgGroupNames = parseSpaceSeparatedList(tree, "collected_emg_channel_muscle_groups");
-[inputs.emgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
-inputs.emgDataExpanded = parseEmgWithExpansion(inputs.model, ...
-    emgDataFileNames);
-inputs.emgDataColumnNames = getStorageColumnNames(org.opensim.modeling.Storage( ...
-    emgDataFileNames(1)));
-inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
-    fullfile(dataDirectory, "EMGData"), inputs.prefixes));
-inputs.numPaddingFrames = (size(inputs.emgData, 3) - 101) / 2;
+inputs = parseEmgData(tree, inputs, dataDirectory);
 inputs = reduceDataSize(inputs);
 inputs.tasks = getTasks(tree);
-groupNames = parseSpaceSeparatedList(tree, ...
-    'activation_muscle_groups');
-inputs.activationGroups = groupNamesToGroups(groupNames, ...
-    inputs.model);
-groupNames = parseSpaceSeparatedList(tree, ...
-    "normalized_fiber_length_muscle_groups");
-inputs.normalizedFiberLengthGroups = groupNamesToGroups(groupNames, ...
-    inputs.model);
 inputs.synergyExtrapolation = getSynergyExtrapolationParameters(tree, ...
     inputs.model);
 inputs.vMaxFactor = getVMaxFactor(tree);
@@ -74,6 +56,23 @@ if ~isfield(inputs, "emgSplines")
     inputs.emgSplines = makeEmgSplines(inputs.emgTime, ...
         inputs.emgDataExpanded);
 end
+end
+
+function inputs = parseEmgData(tree, inputs, dataDirectory)
+emgDataFileNames = findFileListFromPrefixList( ...
+    fullfile(dataDirectory, "EMGData"), inputs.prefixes);
+collectedEmgGroupNames = parseSpaceSeparatedList(tree, "collected_emg_channel_muscle_groups");
+[inputs.emgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
+collectedEmgGroupNamesMembers = ismember(inputs.emgDataColumnNames, collectedEmgGroupNames);
+inputs.emgData = inputs.emgData(:, collectedEmgGroupNamesMembers, :);
+inputs.emgDataExpanded = expandEmgDatas(inputs.model, inputs.emgData(1, :, :), collectedEmgGroupNames);
+for i = 2 : size(inputs.emgData, 1)
+    inputs.emgDataExpanded(end+1, :, :) = ...
+        expandEmgDatas(inputs.model, inputs.emgData(i, :, :), collectedEmgGroupNamesMembers);
+end
+inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
+    fullfile(dataDirectory, "EMGData"), inputs.prefixes));
+inputs.numPaddingFrames = (size(inputs.emgData, 3) - 101) / 2;
 end
 
 % (struct, string, struct) -> (struct)
