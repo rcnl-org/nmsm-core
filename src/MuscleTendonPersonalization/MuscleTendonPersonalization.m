@@ -56,9 +56,8 @@ for i=1:length(inputs.tasks)
     [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
         primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
     taskParams = makeTaskParams(inputs.tasks{i}, params);
-    numMuscles = getNumEnabledMuscles(inputs.model);
     [A, b] = getLinearInequalityConstraints(inputs.synergyExtrapolation, ...
-        6 * numMuscles, inputs.extrapolationCommands, ...
+        6 * length(inputs.muscleNames), inputs.extrapolationCommands, ...
         permute(inputs.emgData, [3 1 2]));
     optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
         primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
@@ -99,7 +98,7 @@ end
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
 % extract initial version of optimized values from inputs/params
 function values = prepareInitialValues(inputs, params)
-numMuscles = getNumEnabledMuscles(inputs.model);
+numMuscles = length(inputs.muscleNames);
 values{1} = repmat(0.5, 1, numMuscles); % electromechanical delay
 values{2} = repmat(1.5, 1, numMuscles); % activation time
 values{3} = repmat(0.05, 1, numMuscles); % activation nonlinearity
