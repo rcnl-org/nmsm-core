@@ -44,14 +44,13 @@ function inputs = getInputs(tree)
 inputs = parseMtpNcpSharedInputs(tree);
 dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
 inputs = parseEmgData(tree, inputs, dataDirectory);
-inputs = reduceDataSize(inputs);
 inputs.tasks = getTasks(tree);
 inputs.synergyExtrapolation = getSynergyExtrapolationParameters(tree, ...
     inputs.model);
-inputs.vMaxFactor = getVMaxFactor(tree);
 inputs.synergyExtrapolation = getTrialIndexes( ...
     inputs.synergyExtrapolation, size(inputs.emgData, 1), inputs.prefixes);
-
+size(inputs.muscleNames)
+inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 if ~isfield(inputs, "emgSplines")
     inputs.emgSplines = makeEmgSplines(inputs.emgTime, ...
         inputs.emgDataExpanded);
@@ -62,13 +61,15 @@ function inputs = parseEmgData(tree, inputs, dataDirectory)
 emgDataFileNames = findFileListFromPrefixList( ...
     fullfile(dataDirectory, "EMGData"), inputs.prefixes);
 collectedEmgGroupNames = parseSpaceSeparatedList(tree, "collected_emg_channel_muscle_groups");
-[inputs.emgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
+[inputs.fullEmgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
 collectedEmgGroupNamesMembers = ismember(inputs.emgDataColumnNames, collectedEmgGroupNames);
-inputs.emgData = inputs.emgData(:, collectedEmgGroupNamesMembers, :);
-inputs.emgDataExpanded = expandEmgDatas(inputs.model, inputs.emgData(1, :, :), collectedEmgGroupNames);
+inputs.emgData = inputs.fullEmgData(:, collectedEmgGroupNamesMembers, :);
+firstEmgDataExpanded = expandEmgDatas(inputs.model, squeeze(inputs.emgData(1, :, :)), collectedEmgGroupNames, inputs.muscleNames);
+inputs.emgDataExpanded = zeros(size(inputs.emgData, 1), size(firstEmgDataExpanded, 1), size(firstEmgDataExpanded, 2));
+inputs.emgDataExpanded(1, :, :) = firstEmgDataExpanded;
 for i = 2 : size(inputs.emgData, 1)
-    inputs.emgDataExpanded(end+1, :, :) = ...
-        expandEmgDatas(inputs.model, inputs.emgData(i, :, :), collectedEmgGroupNamesMembers);
+    inputs.emgDataExpanded(i, :, :) = ...
+        expandEmgDatas(inputs.model, squeeze(inputs.emgData(i, :, :)), collectedEmgGroupNames, inputs.muscleNames);
 end
 inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
     fullfile(dataDirectory, "EMGData"), inputs.prefixes));
@@ -202,15 +203,6 @@ inputs.muscleTendonVelocity = inputs.muscleTendonVelocity(:, :, ...
 numPaddingFrames = (size(inputs.momentArms, 4) - 101) / 2;
 inputs.momentArms = inputs.momentArms(:, :, :, ...
     numPaddingFrames + 1:end-numPaddingFrames);
-end
-
-function vMaxFactor = getVMaxFactor(tree)
-vMaxFactor = getFieldByName(tree, 'v_max_factor');
-if(isstruct(vMaxFactor))
-    vMaxFactor = str2double(vMaxFactor.Text);
-else
-    vMaxFactor = 10;
-end
 end
 
 function synergyExtrapolation = ...
