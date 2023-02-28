@@ -35,22 +35,22 @@
 function newEmgData = expandEmgDatas(model, emgData, groupColumnNames, ...
     muscleNames)
 model = Model(model);
-columnNames = getEnabledMusclesInOrder(model);
 groupToName = getMuscleNameByGroupStruct(model, groupColumnNames);
-newEmgData = expandEmgData(columnNames, emgData, ...
+newEmgData = expandEmgData(muscleNames, emgData, ...
     groupToName, groupColumnNames);
 end
 
 function newEmgData = expandEmgData(expandedColumnNames, emgData, ...
     namesByGroup, emgColumnNames)
 newEmgData = zeros(length(expandedColumnNames), size(emgData, 2));
-size(newEmgData)
 for i=1:length(emgColumnNames)
     musclesInGroup = namesByGroup.(emgColumnNames(i));
     temp = emgData(i, :);
     for j=1:length(musclesInGroup)
-        newEmgData(find(strcmp(expandedColumnNames, ...
-            musclesInGroup(j))), :) = temp;
+        test = newEmgData(ismember(expandedColumnNames, ...
+            musclesInGroup(j)), :);
+        newEmgData(ismember(expandedColumnNames, ...
+            musclesInGroup(j)), :) = temp;
     end
 end
 end

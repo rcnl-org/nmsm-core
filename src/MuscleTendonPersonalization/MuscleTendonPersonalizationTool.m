@@ -33,7 +33,7 @@ function MuscleTendonPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-
+inputs
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
