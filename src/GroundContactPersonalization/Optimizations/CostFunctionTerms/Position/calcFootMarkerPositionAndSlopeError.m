@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% Calculate error between experimental and modeled foot marker positions.
+% This function returns position and velocity errors. 
 %
-%
-% (Array of double, struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct, struct) -> (Array of double, Array of double)
+% Calculate error between experimental and modeled foot marker positions.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -42,7 +43,6 @@ newSlope = abs(task.experimentalMarkerVelocities. ...
 valueError = [valueError newValues];
 slopeError = [slopeError newSlope];
 end
-valueError = 1000 * valueError;
 valueError = reshape(valueError, 1, []);
 slopeError = reshape(slopeError, 1, []);
 end

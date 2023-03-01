@@ -2,8 +2,8 @@
 %
 % 
 %
-% (struct, Array of double, int in [1, 2, 3]) -> (struct)
-% merge the results of the optimization back into the input values
+% (struct, Array of double, struct, double) -> (struct)
+% Merge the results of an optimization back into the input values.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -51,6 +51,8 @@ if (params.tasks{task}.designVariables(5))
     inputs.restingSpringLength = results(index);
 end
 if (params.tasks{task}.designVariables(6))
+    % Other design variables are shared between feet, but kinematic
+    % B-spline coefficients are specific to a foot. 
     for foot = 1:length(inputs.tasks)
         bSplineCoefficientLength = length(reshape(inputs.tasks{foot} ...
             .bSplineCoefficients, 1, []));

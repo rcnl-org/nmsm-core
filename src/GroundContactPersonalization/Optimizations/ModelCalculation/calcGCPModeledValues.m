@@ -2,15 +2,18 @@
 %
 % This function steps through each modeledJointKinematics position and
 % calculates the necessary values based on the true values in the
-% isCalculated boolean array.
+% isCalculated boolean array, determined using included costs in the
+% current stage. 
 %
 % isCalculated indices (in order);
-%   -
-%   -
-%   -
+%   - Marker positions and velocities
+%   - Vertical ground reaction force
+%   - Horizontal ground reaction force
+%   - Ground reaction moments
 %
-% (Model, 2D array of double, struct, array of boolean) -> (struct)
-% calculate modeled values for the GCP cost function
+% (struct, struct, Array of double, Array of double, struct, struct, 
+% double, struct) -> (struct)
+% Calculate modeled values for the GCP cost function.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -37,10 +40,12 @@
 function modeledValues = calcGCPModeledValues(inputs, values, ...
     modeledJointPositions, modeledJointVelocities, params, task, foot, ...
     models)
-% [model, state] = Model(inputs.tasks{foot}.model);
 model = models.("model_" + foot);
 state = model.initSystem();
 markerNamesFields = fieldnames(inputs.tasks{foot}.markerNames);
+% If a design variable is not included, its static value from the inputs
+% struct is temporarily placed in values so it can be used to calculate
+% modeled values.
 if ~params.tasks{task}.designVariables(1)
     values.springConstants = inputs.springConstants;
 end
@@ -63,33 +68,42 @@ for i=1:length(markerNamesFields)
         zeros(3, size(modeledJointPositions, 2));
 end
 modeledValues.verticalGrf = zeros(1, size(modeledJointPositions, 2));
+
+% Determine which modeled values to calculate based on included cost terms.
 isCalculated = ones(4, 1);
-if (~params.tasks{task}.costTerms.groundReactionMomentError.isEnabled && ...
-        ~params.tasks{task}.costTerms.groundReactionMomentSlopeError.isEnabled)
+if (~params.tasks{task}.costTerms.groundReactionMomentError.isEnabled  ...
+        && ~params.tasks{task}.costTerms.groundReactionMomentSlopeError ...
+        .isEnabled)
     isCalculated(4) = false;
-    if (~params.tasks{task}.costTerms.horizontalGrfError.isEnabled && ...
-            ~params.tasks{task}.costTerms.horizontalGrfSlopeError.isEnabled)
+    if (~params.tasks{task}.costTerms.horizontalGrfError.isEnabled ...
+            && ~params.tasks{task}.costTerms.horizontalGrfSlopeError ...
+            .isEnabled)
         isCalculated(3) = false;
     end
 end
+
 if params.tasks{task}.costTerms.springConstantErrorFromNeighbors.isEnabled
-    modeledValues.gaussianWeights = zeros(size(modeledJointPositions, 2), ...
+    modeledValues.gaussianWeights = zeros(size(modeledJointPositions, 2),...
         length(inputs.springConstants), length(inputs.springConstants));
 end
+% Calculate modeled values
 for i=1:size(modeledJointPositions, 2)
     [model, state] = updateModelPositionAndVelocity(model, state, ...
         modeledJointPositions(:, i), ...
         modeledJointVelocities(:, i));
+    % Foot marker positions and velocities
     if isCalculated(1)
         [modeledValues.markerPositions, modeledValues.markerVelocities] ...
             = findModeledMarkerCoordinates(model, state, ...
             modeledValues.markerPositions, ...
             inputs.tasks{foot}.markerNames, i);
     end
+    % Vertical ground reaction force
     if isCalculated(2)
         markerKinematics.height = zeros(size(values.springConstants));
         markerKinematics.yVelocity = zeros(size(values.springConstants));
         springForces = zeros(3, length(values.springConstants));
+        % Get position and velocity for each spring marker
         for j = 1:length(values.springConstants)
             modelMarkerPosition = model.getMarkerSet().get(...
                 "spring_marker_" + num2str(j)).getLocationInGround(state);
@@ -98,19 +112,23 @@ for i=1:size(modeledJointPositions, 2)
             modelMarkerPositions(j) = modelMarkerPosition;
             modelMarkerVelocities(j) = modelMarkerVelocity;
             markerKinematics.height(j) = modelMarkerPositions(j).get(1);
-            markerKinematics.yVelocity(j) = modelMarkerVelocities(j).get(1);
+            markerKinematics.yVelocity(j) = modelMarkerVelocities(j) ...
+                .get(1);
         end
         [modeledValues.verticalGrf(i), springForces] = ...
             calcModeledVerticalGroundReactionForce(...
             values.springConstants, values.dampingFactor, ...
             values.restingSpringLength, markerKinematics, springForces);
     end
+    % Horizontal ground reaction force
     if isCalculated(3)
         markerKinematics.xVelocity = zeros(size(values.springConstants));
         markerKinematics.zVelocity = zeros(size(values.springConstants));
         for j = 1:length(values.springConstants)
-            markerKinematics.xVelocity(j) = modelMarkerVelocities(j).get(0);
-            markerKinematics.zVelocity(j) = modelMarkerVelocities(j).get(2);
+            markerKinematics.xVelocity(j) = modelMarkerVelocities(j) ...
+                .get(0);
+            markerKinematics.zVelocity(j) = modelMarkerVelocities(j) ...
+                .get(2);
         end
         [modeledValues.anteriorGrf(i), ...
             modeledValues.lateralGrf(i), springForces] = ...
@@ -118,6 +136,7 @@ for i=1:size(modeledJointPositions, 2)
             inputs.tasks{foot}.beltSpeed, inputs.latchingVelocity, ...
             markerKinematics, springForces);
     end
+    % Ground reaction moments
     if isCalculated(4)
         markerKinematics.xPosition = zeros(size(values.springConstants));
         markerKinematics.zPosition = zeros(size(values.springConstants));
@@ -134,7 +153,10 @@ for i=1:size(modeledJointPositions, 2)
             calcModeledGroundReactionMoments(values, ...
             inputs.tasks{foot}, markerKinematics, springForces, i);
     end
-    if params.tasks{task}.costTerms.springConstantErrorFromNeighbors.isEnabled
+    % Calculate marker- and time-specific Gaussian weights for stiffness
+    % deviation from neighbors cost. 
+    if params.tasks{task}.costTerms.springConstantErrorFromNeighbors ...
+            .isEnabled
         for j = 1:length(inputs.springConstants)
             for k = j:length(inputs.springConstants)
                 if j ~= k
@@ -159,6 +181,7 @@ for i=1:size(modeledJointPositions, 2)
 end
 end
 
+% Updates model at each time point
 function [model, state] = updateModelPositionAndVelocity(model, state, ...
     jointPositions, jointVelocities)
 for j=1:size(jointPositions, 1)
@@ -171,6 +194,7 @@ model.assemble(state)
 model.realizeVelocity(state)
 end
 
+% Calculates a 3D Gaussian weight
 function gaussianWeight = calcGaussianWeight(xDistance, yDistance, ...
     zDistance, standardDeviation)
 gaussianWeight = exp(-1 / (2 * standardDeviation ^ 2) * ...

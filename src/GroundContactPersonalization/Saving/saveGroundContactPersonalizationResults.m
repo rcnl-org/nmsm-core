@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% Saves a ground contact .osimx model and experimental and modeled
+% kinematics and ground reactions for each foot. 
 %
-% (struct) -> (None)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct, struct, string) -> (None)
+% Save final Ground Contact Personalization results. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %

@@ -2,8 +2,8 @@
 %
 % 
 %
-% (Model, struct, string, string) -> (None)
-% Plot optimized kinematic coordinates from GCP.
+% (struct) -> (None)
+% Plot optimized kinematic coordinates from GCP from workspace data.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
