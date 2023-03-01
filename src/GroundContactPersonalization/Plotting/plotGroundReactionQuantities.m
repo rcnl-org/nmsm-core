@@ -2,8 +2,8 @@
 %
 %
 %
-% (Model, struct, string, string) -> (None)
-% Plot optimized ground reaction quantities from GCP.
+% (struct, struct, double, double) -> (None)
+% Plot optimized ground reaction quantities from GCP from workspace data.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

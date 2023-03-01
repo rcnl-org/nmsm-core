@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% Parses XML settings for Ground contact personalization to determine
+% intial inputs and parameters for optimization. 
 %
 % (struct) -> (struct, struct, string)
-% returns the input values for Ground Contact Personalization
+% Returns the input values for Ground Contact Personalization.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -72,6 +73,8 @@ inputs = getInitialValues(inputs, tree);
 end
 
 % (struct, struct) -> (struct)
+% Gets inputs specific to each foot, such as experimental kinematics and
+% ground reactions and foot marker names. 
 function output = getFootTasks(inputs, tree)
 tasks = getFieldByNameOrError(tree, 'FootPersonalizationTaskList');
 counter = 1;
@@ -98,6 +101,8 @@ end
 end
 
 % (Model, string, struct) -> (struct)
+% Determines the first and last included time point based on the input
+% kinematics motion file and start and end times given for the foot. 
 function task = getMotionTime(bodyModel, motionFile, task)
 import org.opensim.modeling.Storage
 [~, ikTime, ~] = parseMotToComponents(...
@@ -108,6 +113,8 @@ task.time = ikTime(startIndex:endIndex);
 end
 
 % (Model, string, struct) -> (struct)
+% Parses ground reaction data from a file. This will throw an exception if
+% any needed column is missing. 
 function task = getGroundReactions(bodyModel, grfFile, task)
 import org.opensim.modeling.Storage
 [grfColumnNames, grfTime, grfData] = parseMotToComponents(...
@@ -142,6 +149,8 @@ task.electricalCenter = ec;
 end
 
 % (struct, struct, struct) -> (struct)
+% Gets foot-specific options directly included in XML file, including
+% names of markers and ground reaction columns. 
 function task = getFootData(tree)
     task.isLeftFoot = strcmpi('true', ...
         getFieldByNameOrError(tree, 'is_left_foot').Text);
@@ -172,6 +181,8 @@ function task = getFootData(tree)
 end
 
 % (Array of double, Array of double) -> (None)
+% Confirms that the time points from ground reaction and kinematics data
+% match in length and value. 
 function verifyTime(grfTime, ikTime)
     if size(ikTime) ~= size(grfTime)
         throw(MException('', ['IK and GRF time columns have ' ...
@@ -182,7 +193,7 @@ function verifyTime(grfTime, ikTime)
     end
 end
 
-% Parses initial values
+% Parses initial values.
 function inputs = getInitialValues(inputs, tree)
 inputs.initialRestingSpringLength = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'initial_resting_spring_length', ...
@@ -199,6 +210,7 @@ inputs.initialViscousFrictionCoefficient = str2double(getTextFromField( ...
     'initial_viscous_friction_coefficient', '5')));
 end
 
+% Gets single-value params.
 function params = getParams(tree)
 params = struct();
 params.restingSpringLengthInitialization = strcmpi(getTextFromField( ...
@@ -220,6 +232,7 @@ params.maxFunctionEvaluations = str2double(getTextFromField(...
 params.tasks = getOptimizationTasks(tree);
 end
 
+% Gets cost terms and design variables included in each task.
 function output = getOptimizationTasks(tree)
 tasks = getFieldByNameOrError(tree, ...
     'GroundContactPersonalizationTaskList');
@@ -264,6 +277,8 @@ for i = 1:length(costTermNames)
     costTermClassName = convertStringsToChars(costTermNames(i));
     costTermClassName = [upper(costTermClassName(1)) ...
         costTermClassName(2:end)];
+    % If a cost term is not found in the XML file, assume it is not
+    % enabled.
     enabled = valueOrAlternate(valueOrAlternate(tree, costTermClassName, ...
         'none'), 'is_enabled', 'false');
     if (isstruct(enabled))
@@ -278,6 +293,8 @@ for i = 1:length(costTermNames)
     end
     taskStruct.costTerms.(costTermNames(i)).maxAllowableError = ...
         str2double(allowableError);
+    % Only the term springConstantErrorFromNeighbors should have a standard
+    % deviation element. 
     if costTermNames(i) == "springConstantErrorFromNeighbors"
         standardDeviation = valueOrAlternate(valueOrAlternate(tree, ...
             costTermClassName, 'none'), 'standard_deviation', '0.05');

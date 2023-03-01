@@ -2,8 +2,8 @@
 %
 % 
 %
-% (struct) -> (None)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct, string) -> (None)
+% Write calibrated ground contact model parameters to an .osimx file. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

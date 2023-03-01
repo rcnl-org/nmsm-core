@@ -2,7 +2,7 @@
 %
 % 
 %
-% (struct, struct) -> (struct)
+% (struct, struct, double) -> (struct)
 % Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
@@ -41,7 +41,9 @@ inputs = mergeGroundContactPersonalizationRoundResults(inputs, results, ...
 end
 
 % (struct, struct) -> (Array of double, Array of string)
-% generate initial values to be optimized from inputs, params
+% Generate initial values to be optimized from inputs and params. The
+% fieldNameOrder allows tracking of included design variables for
+% rebuilding a struct of design variables inside the cost function. 
 function [initialValues, fieldNameOrder] = makeInitialValues( ...
     inputs, params, task)
 initialValues = [];
@@ -111,7 +113,7 @@ end
 end
 
 % (struct) -> (struct)
-% Prepare params for outer optimizer for Kinematic Calibration
+% Prepare optimizer options for lsqnonlin. 
 function output = prepareOptimizerOptions(params)
 output = optimoptions('lsqnonlin', 'UseParallel', true);
 output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);

@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% Calculate error between experimental and modeled ground reaction force.
+% This function returns the value errors and slope errors. 
 %
 % (struct, struct) -> (Array of double, Array of double)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% Calculate error between experimental and modeled ground reaction force. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
