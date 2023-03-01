@@ -34,14 +34,14 @@ lowerBounds = makeLowerBounds(inputs);
 upperBounds = makeUpperBounds(inputs);
 optimizerOptions = makeOptimizerOptions(struct());
 [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
-    primaryValues, inputs.tasks, lowerBounds, upperBounds);
+    primaryValues, inputs, lowerBounds, upperBounds);
 optimizedValues = computeMuscleTendonLengthInitializationOptimization(taskValues, ...
     taskLowerBounds, taskUpperBounds, inputs, optimizerOptions);
 end
 
 % extract initial version of optimized values from inputs/params
 function values = prepareInitialValues(inputs)
-numMuscles = getNumEnabledMuscles(inputs.model);
+numMuscles = length(inputs.muscleNames);
 values{1} = ones(1, numMuscles); % optimal fiber length scale factor
 values{2} = ones(1, numMuscles); % tendon slack length scale factor
 values{3} = ones(1, inputs.numMuscleGroups + ...
@@ -51,7 +51,7 @@ end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
 function lowerBounds = makeLowerBounds(inputs)
-numMuscles = getNumEnabledMuscles(inputs.model);
+numMuscles = length(inputs.muscleNames);
 lowerBounds{1} = repmat(0.5, 1, numMuscles); % optimal fiber length scale factor
 lowerBounds{2} = repmat(0.5, 1, numMuscles); % tendon slack length scale factor
 lowerBounds{3} = repmat(1, 1, inputs.numMuscleGroups + ...
@@ -61,7 +61,7 @@ end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
 function upperBounds = makeUpperBounds(inputs)
-numMuscles = getNumEnabledMuscles(inputs.model);
+numMuscles = length(inputs.muscleNames);
 upperBounds{1} = repmat(2, 1, numMuscles); % optimal fiber length scale factor
 upperBounds{2} = repmat(2, 1, numMuscles); % tendon slack length scale factor
 upperBounds{3} = repmat(1.2, 1, inputs.numMuscleGroups + ...
