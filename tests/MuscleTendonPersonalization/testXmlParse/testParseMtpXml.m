@@ -9,7 +9,7 @@ MuscleTendonPersonalizationTool(settingsFileName)
 % 
 % passiveData = load("thelen/passiveData.mat").passiveData;
 % 
-% size(passiveData.momentArms)
+% size(passiveMomentsArms)
 % 
 % size(passiveData.inverseDynamicsMoments)
 % 
@@ -26,11 +26,11 @@ MuscleTendonPersonalizationTool(settingsFileName)
 %     end
 %     for j=1:length(momentNames)
 %         writeToSto(muscleNames, linspace(0,1,101), ...
-%             squeeze(passiveData.momentArms(i, j, :, :))', ...
+%             squeeze(passiveMomentsArms(i, j, :, :))', ...
 %             fullfile(pwd, "thelen", "MAData", prefixes(i), prefixes(i) + "_MomentArm_" + momentNames(j) + ".sto"))
 %     end
 %     writeToSto(muscleNames, linspace(0,1,101), ...
-%             squeeze(passiveData.muscleTendonLength(i, :, :))', ...
+%             squeeze(passiveMuscleTendonLength(i, :, :))', ...
 %             fullfile(pwd, "thelen", "MAData", prefixes(i), prefixes(i) + "_Length.sto"))
 % end
 
