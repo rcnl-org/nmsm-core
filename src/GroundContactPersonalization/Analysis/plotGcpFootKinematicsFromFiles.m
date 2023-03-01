@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% Plot experimental and optimized foot kinematics from Ground Contact
+% Personalization results files. 
 %
 % (string, string, double) -> (None)
-% Plot experimental and optimized foot kinematics from Ground Contact
-% Personalization results. 
+% Plot experimental and optimized foot kinematics.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,6 +30,8 @@
 
 function plotGcpFootKinematicsFromFiles(experimentalKinematicsFileName, ...
     optimizedKinematicsFileName, plotNumber)
+% The optional plot number argument allows users to generate multiple plots
+% without overwriting previous plots. By default, figure 1 is used. 
 if nargin < 3
     plotNumber = 1;
 end
@@ -41,9 +43,11 @@ experimentalKinematics = ...
 modeledKinematics = ...
     storageToDoubleMatrix(Storage(optimizedKinematicsFileName));
 time = findTimeColumn(Storage(experimentalKinematicsFileName));
+
 figure(plotNumber)
 for i = 1:7
     subplot(2, 4, i)
+    % Rotational coordinate data are converted to degrees. 
     if i <= 4
         experimental = rad2deg(experimentalKinematics(i, :));
         model = rad2deg(modeledKinematics(i, :));

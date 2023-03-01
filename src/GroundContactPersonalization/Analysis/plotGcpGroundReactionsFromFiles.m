@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% Plot experimental and optimized ground reactions from Ground Contact
+% Personalization results files. Moments are calculated about the midfoot 
+% superior marker projected down to the resting spring length.
 %
 % (string, string, double) -> (None)
-% Plot experimental and optimized ground reactions from Ground Contact
-% Personalization results. Moments are calculated about the midfoot 
-% superior marker projected down to the resting spring length. 
+% Plot experimental and modeled ground reactions. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,6 +32,8 @@
 function plotGcpGroundReactionsFromFiles( ...
     experimentalGroundReactionsFileName, ...
     optimizedGroundReactionsFileName, plotNumber)
+% The optional plot number argument allows users to generate multiple plots
+% without overwriting previous plots. By default, figure 1 is used. 
 if nargin < 3
     plotNumber = 1;
 end
@@ -43,6 +45,7 @@ experimentalGroundReactions = ...
 modeledGroundReactions = ...
     storageToDoubleMatrix(Storage(optimizedGroundReactionsFileName));
 time = findTimeColumn(Storage(experimentalGroundReactionsFileName));
+
 figure(plotNumber)
 for i = 1:6
     subplot(2, 3, i);

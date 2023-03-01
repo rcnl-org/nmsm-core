@@ -3,7 +3,7 @@
 % 
 %
 % (struct, struct, string, string) -> (None)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% Write modeled ground reactions to an OpenSim Storage file.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
