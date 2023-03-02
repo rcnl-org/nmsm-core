@@ -12,8 +12,8 @@
 % markerPositions is a struct of arrays of double with the same fields as
 % markerNames
 %
-% (Model, string, Array of string, string, string, struct) -> ...
-% (2D Array of double)
+% (Model, string, Array of string, string, string, struct, double, double) 
+% -> (2D Array of double)
 % Create an array of coordinate names connecting the bodies to ground
 
 % ----------------------------------------------------------------------- %
