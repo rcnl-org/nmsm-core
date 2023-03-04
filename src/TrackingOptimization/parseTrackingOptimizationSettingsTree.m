@@ -38,7 +38,7 @@ if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
 
-
+inputs.synergyWeights = inputs.initialGuess.parameter;
 %% missing GCP inputs
 inputData = load([cd '\inputData.mat']);
 inputs.splineLeftGroundReactionForces = inputData.params.splineLeftGroundReactionForces;
@@ -132,6 +132,15 @@ end
 
 inputs.initialGuess = getTrackingOptimizationInitialGuess( ...
     getFieldByNameOrError(tree, 'InitialGuessSet'));
+
+optimizeSynergyVectors = getFieldByName(tree, 'optimize_synergy_vectors');
+if(isstruct(optimizeSynergyVectors))
+    if strcmpi(optimizeSynergyVectors.Text, 'true')
+        inputs.optimizeSynergyVectors = 1;
+    else 
+        inputs.optimizeSynergyVectors = 0;
+    end
+end
 
 prefixes = getPrefixes(tree, inputDirectory);
 inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...

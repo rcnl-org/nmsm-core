@@ -2,7 +2,7 @@
 <OpenSimDocument Version="40000">
     <TrackingOptimizationTool>
         <!--Directory used for writing results.-->
-        <results_directory>C:\Users\ma86\Documents\GitHub\nmsm-core\examples\TrackingOptimization\LegsExample</results_directory>
+        <results_directory>C:\Users\marle\Documents\GitHub\nmsm-core\examples\TrackingOptimization\LegsExample</results_directory>
         <!--Directory for input files-->
         <input_directory>preprocessed</input_directory>
         <!--Name of the input model file (.osim) to use-->
@@ -15,6 +15,8 @@
 		</InitialGuessSet>
 		<!--synergy driven or torque driven--> 
 		<type_of_controller>synergy_driven</type_of_controller>
+		<!--allow synergy vectors to change-->
+		<optimize_synergy_vectors>false</optimize_synergy_vectors>
 		<!--*Optional* NCP or MTP inputs-->
 		<osimx_file>Mtp_Ncp_muscleModel.osimx</osimx_file>
 		<!-- -->

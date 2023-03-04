@@ -25,16 +25,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTrackingOptimizationValueStruct(input, params)
+function values = getTrackingOptimizationValueStruct(inputs, params)
 
-values.time = scaleToOriginal(input.time, params.maxTime, ...
+values.time = scaleToOriginal(inputs.time, params.maxTime, ...
     params.minTime);
-values.synergyWeights = scaleToOriginal(input.parameter(1,:), ...
-    params.maxParameter, params.minParameter);
-values.synergyWeights = getSynergyWeightsFromGroups(values, params);
-state = scaleToOriginal(input.state, ones(length(values.time), 1) .* ...
+if params.optimizeSynergyVectors
+    values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
+        params.maxParameter, params.minParameter);
+    values.synergyWeights = getSynergyWeightsFromGroups(values.synergyWeights, params);
+else
+    values.synergyWeights = getSynergyWeightsFromGroups(params.synergyWeights, params);
+end
+state = scaleToOriginal(inputs.state, ones(length(values.time), 1) .* ...
     params.maxState, ones(length(values.time), 1) .* params.minState);
-control = scaleToOriginal(input.control, ones(length(values.time), 1) .* ...
+control = scaleToOriginal(inputs.control, ones(length(values.time), 1) .* ...
     params.maxControl, ones(length(values.time), 1) .* params.minControl);
 values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
 values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
