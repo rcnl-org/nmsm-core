@@ -70,8 +70,8 @@ inputs.numSpringsLeftToe = inputData.params.numSpringsLeftToe;
 %% surrogate model inputs
 inputs.polynomialExpressionMomentArms = inputData.params.polynomialExpressionMomentArms;
 inputs.polynomialExpressionMuscleTendonLengths = inputData.params.polynomialExpressionMuscleTendonLengths;
-inputs.coefficients = inputData.params.coefficients;
-inputs.dofsActuated = inputData.params.dofsActuated;
+inputs.coefficients = [inputData.params.coefficients(1:45) inputData.params.coefficients(75:119)];
+inputs.dofsActuated = [inputData.params.dofsActuated(:,1:45) inputData.params.dofsActuated(:,75:119)] ;
 inputs.dofsActuatedLabels = {'pelvis_tilt_moment' 'pelvis_list_moment' ...
     'pelvis_rotation_moment' 'pelvis_tx_force' 'pelvis_ty_force' ....
     'pelvis_tz_force' 'hip_flexion_r_moment' 'hip_adduction_r_moment' ...
@@ -83,7 +83,6 @@ inputs.dofsActuatedLabels = {'pelvis_tilt_moment' 'pelvis_list_moment' ...
     'lumbar_rotation_moment' 'arm_flex_r_moment' 'arm_add_r_moment'	...
     'arm_rot_r_moment' 'elbow_flex_r_moment' 'arm_flex_l_moment' ...
     'arm_add_l_moment' 'arm_rot_l_moment' 'elbow_flex_l_moment'};
-
 inputs.epsilon = inputData.params.epsilon;
 
 %%
@@ -116,8 +115,6 @@ else
     inputs.model = fullfile(pwd, modelFile);
     inputDirectory = pwd;
 end
-inputs.initialGuess = getTrackingOptimizationInitialGuess( ...
-    getFieldByNameOrError(tree, 'InitialGuessSet'));
 
 %Add controller type conditions (synergy vs torque driven)
 inputs.osimxFile = getFieldByName(tree, 'osimx_file').Text;
@@ -132,6 +129,9 @@ for i = 1 : length(inputs.synergyGroups)
         length(inputs.synergyGroups{i}.muscleNames) * ...
         inputs.synergyGroups{i}.numSynergies;
 end
+
+inputs.initialGuess = getTrackingOptimizationInitialGuess( ...
+    getFieldByNameOrError(tree, 'InitialGuessSet'));
 
 prefixes = getPrefixes(tree, inputDirectory);
 inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
@@ -566,11 +566,13 @@ for i = 1 : length(inputs.synergyGroups)
     end 
 end
 parameterTemp = [];
+numSynergiesIndex = 0;
 for j = 1 : length(inputs.synergyGroups)
     parameterTemp = cat(2, parameterTemp, ...
-        reshape(inputs.initialGuess.parameter(1 : ...
-        inputs.synergyGroups{j}.numSynergies, ...
+        reshape(inputs.initialGuess.parameter(1 + numSynergiesIndex: ...
+        inputs.synergyGroups{j}.numSynergies + numSynergiesIndex, ...
         nonzeros(parameterIndex(j, :)))', 1, []));
+    numSynergiesIndex = numSynergiesIndex + inputs.synergyGroups{j}.numSynergies;
 end
 inputs.initialGuess.parameter = parameterTemp;
 end

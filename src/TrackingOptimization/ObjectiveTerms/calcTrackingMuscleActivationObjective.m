@@ -29,7 +29,7 @@ function objectiveCost = calcTrackingMuscleActivationObjective(...
     objectiveTerm, params)
 
 costWeight = valueOrAlternate(params, ...
-    "trackingMuscleActivationCostWeight", 1);
+    "trackedMuscleActivationCostWeight", 1);
 
 objectiveCost = costWeight * sum(objectiveTerm);
 end
