@@ -36,33 +36,18 @@ params.muscleTendonVelocity = calcMuscleTendonVelocities(values.time, ...
 [phaseout.normalizedFiberLength, phaseout.normalizedFiberVelocity] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities(params, ...
     ones(1, params.numMuscles), ones(1, params.numMuscles));
-phaseout.muscleActivations = calcMuscleActivationFromSynergies(values, ...
-    params);
+phaseout.muscleActivations = calcMuscleActivationFromSynergies(values);
 phaseout.muscleJointMoments = zeros(length(values.time), length(params.inverseDynamicMomentLabels));
 muscleJointMoments = calcMuscleJointMoments(params, ...
     phaseout.muscleActivations, phaseout.normalizedFiberLength, ...
     phaseout.normalizedFiberVelocity);
 phaseout.muscleJointMoments(:, params.dofsActuatedIndex) = muscleJointMoments;
 phaseout.muscleJointMoments(:, all(~phaseout.muscleJointMoments, 1)) = [];
+phaseout.muscleJointMoments(:, 7:9) = []; %%temp
 end
 
-function muscleActivations = calcMuscleActivationFromSynergies(values, params)
-synergyWeights = zeros(params.numSynergies, params.numMuscles);
-valuesIndex = 1;
-row = 1;
-column = 1; % the sum of the muscles in the previous synergy groups
-for i = 1:length(params.synergyGroups)
-    for j = 1: params.synergyGroups{i}.numSynergies
-        synergyWeights(row, column : ...
-            column + length(params.synergyGroups{i}.muscleNames) - 1) = ...
-            values.synergyWeights(valuesIndex : ...
-            valuesIndex + length(params.synergyGroups{i}.muscleNames) - 1);
-        valuesIndex = valuesIndex + length(params.synergyGroups{i}.muscleNames);
-        row = row + 1;
-    end
-    column = column + length(params.synergyGroups{i}.muscleNames);
-end
-muscleActivations = values.controlNeuralCommands * synergyWeights;
+function muscleActivations = calcMuscleActivationFromSynergies(values)
+muscleActivations = values.controlNeuralCommands * values.synergyWeights;
 end
 function jointAngles = getMuscleActuatedDOFs(values, params)
 

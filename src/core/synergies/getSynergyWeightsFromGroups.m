@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,31 +25,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTrackingOptimizationValueStruct(input, params)
-
-values.time = scaleToOriginal(input.time, params.maxTime, ...
-    params.minTime);
-values.synergyWeights = scaleToOriginal(input.parameter(1,:), ...
-    params.maxParameter, params.minParameter);
-values.synergyWeights = getSynergyWeightsFromGroups(values, params);
-state = scaleToOriginal(input.state, ones(length(values.time), 1) .* ...
-    params.maxState, ones(length(values.time), 1) .* params.minState);
-control = scaleToOriginal(input.control, ones(length(values.time), 1) .* ...
-    params.maxControl, ones(length(values.time), 1) .* params.minControl);
-values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
-values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
-values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
-values.controlJerks = control(:, 1 : params.numCoordinates);
-values.controlNeuralCommands = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numSynergies);
+function synergyWeights = getSynergyWeightsFromGroups(values, params)
+synergyWeights = zeros(params.numSynergies, params.numMuscles);
+valuesIndex = 1;
+row = 1;
+column = 1; % the sum of the muscles in the previous synergy groups
+for i = 1:length(params.synergyGroups)
+    for j = 1: params.synergyGroups{i}.numSynergies
+        synergyWeights(row, column : ...
+            column + length(params.synergyGroups{i}.muscleNames) - 1) = ...
+            values.synergyWeights(valuesIndex : ...
+            valuesIndex + length(params.synergyGroups{i}.muscleNames) - 1);
+        valuesIndex = valuesIndex + length(params.synergyGroups{i}.muscleNames);
+        row = row + 1;
+    end
+    column = column + length(params.synergyGroups{i}.muscleNames);
 end
-function output = getCorrectStates(state, index, numCoordinates)
-
-startIndex = (numCoordinates * (index - 1)) + 1;
-endIndex = numCoordinates * index;
-output = state(:, startIndex:endIndex);
-end
-function value = scaleToOriginal(value, maximum, minimum)
-
-value = value .* (maximum - minimum) + (maximum + minimum) / 2;
 end
