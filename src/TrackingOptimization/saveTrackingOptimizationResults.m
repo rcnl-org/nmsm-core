@@ -1,11 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% TrackingOptimization module and saves the results correctly for
-% use in the OpenSim GUI.
-%
-% (string) -> (None)
-% Run TrackingOptimization from settings file
+% () -> ()
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,11 +25,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function TrackingOptimizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseTrackingOptimizationSettingsTree(settingsTree);
-[outputs, inputs] = TrackingOptimization(inputs, params);
-reportTrackingOptimizationResults(outputs, inputs);
-saveTrackingOptimizationResults(outputs, inputs, resultsDirectory);
+function saveTrackingOptimizationResults(solution, inputs, resultsDirectory)
+
+values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
+stateLabels = inputs.coordinateNames;
+for i = 1 : length(inputs.coordinateNames)
+stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
+end
+for i = 1 : length(inputs.coordinateNames)
+stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
+end
+writeToSto(stateLabels, values.time, ...
+        [values.statePositions values.stateVelocities values.stateAccelerations], fullfile(resultsDirectory, ...
+        "statesSolution.sto"));
+controlLabels = inputs.coordinateNames;
+for i = 1 : inputs.numSynergies
+controlLabels{end + 1} = strcat('command', num2str(i));
+end
+writeToSto(controlLabels, values.time, ...
+        [values.controlJerks values.controlNeuralCommands], fullfile(resultsDirectory, ...
+        "controlSolution.sto"));
+writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, inputs.numSynergies), ...
+        [values.synergyWeights], fullfile(resultsDirectory, ...
+        "parameterSolution.sto"));
 end
