@@ -29,8 +29,10 @@ function event = calcTrackingOptimizationTerminalConstraint(inputs, params)
 
 inputs.phase.state = [inputs.phase.initialstate; inputs.phase.finalstate];
 inputs.phase.time = [inputs.phase.initialtime; inputs.phase.finaltime];
-inputs.phase.parameter = inputs.parameter;
 inputs.phase.control = ones(size(inputs.phase.time,1),length(params.minControl));
+if inputs.auxdata.optimizeSynergyVectors
+    inputs.phase.parameter = inputs.parameter;
+end
 values = getTrackingOptimizationValueStruct(inputs.phase, params);
 modeledValues = calcTrackingOptimizationTorqueBasedModeledValues(values, params);
 

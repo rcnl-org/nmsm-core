@@ -30,16 +30,11 @@ bounds = setupProblemBounds(inputs);
 guess = setupInitialGuess(inputs);
 setup = setupSolverSettings(inputs, bounds, guess, params);
 solution = gpops2(setup);
-% % guess.auxdata = inputs;
-% % guess.phase.parameter = guess.parameter;
-% % solution = guess;
-% % output = computeTrackingOptimizationContinuousFunction(solution);
-output.solution = solution;
 % guess.auxdata = inputs;
 % guess.phase.parameter = guess.parameter;
 % solution = guess;
 % output = computeTrackingOptimizationContinuousFunction(solution);
-% output.solution = solution;
+output.solution = solution;
 end
 function bounds = setupProblemBounds(inputs)
 % setup time bounds
@@ -67,8 +62,10 @@ bounds.phase.integral.upper = ones(1, length(inputs.minIntegral));
 bounds.eventgroup.lower = inputs.minTerminal;
 bounds.eventgroup.upper = inputs.maxTerminal;
 % setup parameter bounds
-bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
-bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
+if inputs.optimizeSynergyVectors
+    bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
+    bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
+end
 end
 function guess = setupInitialGuess(inputs)
 
