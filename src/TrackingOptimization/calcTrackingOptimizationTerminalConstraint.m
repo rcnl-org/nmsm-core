@@ -105,21 +105,17 @@ isEnabled = valueOrAlternate(params, ...
     "synergyWeightsSumConstraint", 0);
 synergyWeightsSum = [];
 if isEnabled
-    synergyWeights = zeros(params.numSynergies, params.numMuscles);
-    valuesIndex = 1;
-    row = 1;
-    column = 1; % the sum of the muscles in the previous synergy groups
-    for i = 1:length(params.synergyGroups)
-        for j = 1: params.synergyGroups{i}.numSynergies
-            synergyWeights(row, column : ...
-                column + length(params.synergyGroups{i}.muscleNames) - 1) = ...
-                values.synergyWeights(valuesIndex : ...
-                valuesIndex + length(params.synergyGroups{i}.muscleNames) - 1);
-            valuesIndex = valuesIndex + length(params.synergyGroups{i}.muscleNames);
-            row = row + 1;
-        end
-        column = column + length(params.synergyGroups{i}.muscleNames);
-    end
-    synergyWeightsSum = sum(synergyWeights, 2)';
+numSynergiesIndex(1) = 0;
+numMusclesIndex(1) = 0;
+for j = 1 : length(params.synergyGroups)
+    numSynergiesIndex(end+1) = numSynergiesIndex(end) + ...
+        params.synergyGroups{j}.numSynergies;
+    numMusclesIndex(end+1) = numMusclesIndex(end) + ...
+        size(params.synergyGroups{j}.muscleNames, 2);
+    synergyWeightsSum = cat(2, synergyWeightsSum, ...
+        sum(values.synergyWeights(1 + numSynergiesIndex(end-1): ...
+        numSynergiesIndex(end), 1 + numMusclesIndex(end-1) : ...
+        numMusclesIndex(end)), 2)');
+end
 end
 end
