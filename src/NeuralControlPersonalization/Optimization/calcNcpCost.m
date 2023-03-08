@@ -72,5 +72,6 @@ groupedNormalizedFiberLengthError = params.normalizedFiberLengthGroupsWeight ^ 0
 error = [momentTrackingError; activationTrackingError; ...
     activationMinimizationError; groupedActivationError; ...
     groupedNormalizedFiberLengthError];
+
 cost = error' * error;
 end
