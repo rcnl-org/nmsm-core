@@ -44,7 +44,7 @@ end
 [optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
 %% results is a structure, report not implemented yet
 activations = calcActivationsFromSynergyDesignVariables(optimizedValues, inputs, params);
-synergyWeights = findSynergyWeightsAndCommands(optimizedValues, inputs, params);
+[synergyWeights, synergyCommands] = findSynergyWeightsAndCommands(optimizedValues, inputs, params);
 saveNeuralControlPersonalizationResults(activations, synergyWeights, ...
     inputs, resultsDirectory);
 end

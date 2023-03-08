@@ -23,7 +23,7 @@ for i = 1:inputs.numTrials
         valuesIndex = valuesIndex + inputs.numNodes;
     end
 end
-% Spline fit command nodes to create synegy commands
+% Spline fit command nodes to create synergy commands
 percent = linspace(0, 100, inputs.numPoints)';
 percentNodes = linspace(0, 100, inputs.numNodes)';
 
