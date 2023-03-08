@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a parsed settings tree (xml2struct) and finds the
-% <input_directory> element or deduces the correct input directory
+% Produce a new processed EMG file using RCNL's protocol for turning a
+% matrix of double of EMG data into processed EMG data.
 %
-% (struct) -> (string)
-% returns the input directory for the given settings tree
+% (2D Array of double, 1D Array of double, string, struct) -> (None)
+% Processes the input EMG data by RCNL's protocol
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,11 +28,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputDirectory = parseInputDirectory(tree)
-inputDirectoryElement = getFieldByNameOrError(tree, 'input_directory');
-inputDirectory = inputDirectoryElement.Text;
-if isempty(inputDirectory)
-    inputDirectory = pwd;
-end
+function processRawEmgFile(emgFilename, filterOrder, highPassCutoff, ...
+    lowPassCutoff, processedEmgFileName)
+emgStorage = org.opensim.modeling.Storage(emgFilename);
+timePoints = findTimeColumn(emgStorage);
+rawData = storageToDoubleMatrix(emgStorage);
+
+processEmg( ...
+    rawData, ...
+    timePoints, ...
+    struct( ...
+        "filterOrder", filterOrder, ...
+        "highPassCutoff", highPassCutoff, ...
+        "lowPassCutoff", lowPassCutoff ...
+        ))
+
+writeToSto(columnNames, timePoints, processedData, processedEmgFileName);
 end
 

@@ -20,7 +20,7 @@ MuscleTendonPersonalizationPreprocessingTool("preprocessingTest.xml")
 % inputs.idResultsFileName = fullfile(pwd, "id.mot");
 % inputs.maResultsDir = fullfile(pwd, "MuscleAnalysis");
 % inputs.emgFileName = fullfile(pwd, "processedEMGLeft.mot");
-% inputs.coordinates = ["hip_adduction_l", "hip_flexion_l", "hip_rotation_l", "knee_angle_l", "ankle_angle_l", "subtalar_angle_l"];
+% inputs.coordinateNames = ["hip_adduction_l", "hip_flexion_l", "hip_rotation_l", "knee_angle_l", "ankle_angle_l", "subtalar_angle_l"];
 % inputs.model = "CPRIT_Patient3_MuscleGroups.osim";
 % inputs.timePairs = [
 %     0.593, 1.667;
