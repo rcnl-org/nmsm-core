@@ -1,8 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function takes a parsed settings tree (xml2struct) and finds the
+% <input_directory> element or deduces the correct input directory
 %
-% (Array of number, struct) -> (struct)
-% Gather optimization values into a struct for use in cost function
+% (struct) -> (string)
+% returns the input directory for the given settings tree
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -12,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -26,22 +28,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = makeMuscleTendonLengthInitializationValuesAsStruct(parameterChange, ...
-    experimentalData)
+function dataDirectory = parseDataDirectory(tree)
+dataDirectoryElement = getFieldByNameOrError(tree, 'data_directory');
+dataDirectory = dataDirectoryElement.Text;
+if isempty(dataDirectory)
+    dataDirectory = pwd;
+end
+end
 
-values.optimalFiberLengthScaleFactors = parameterChange(:, 1 : ...
-    length(experimentalData.muscleNames));
-values.tendonSlackLengthScaleFactors = ...
-    parameterChange(:, length(experimentalData.muscleNames) + 1 : 2 * ...
-    length(experimentalData.muscleNames));
-values.maxNormalizedFiberLength = ...
-    parameterChange(:, 2 * length(experimentalData.muscleNames) + 1 : 2 * ...
-    length(experimentalData.muscleNames) + ...
-    experimentalData.numMuscleGroups + ...
-    experimentalData.numMusclesIndividual);
-if experimentalData.maximumMuscleStressIsIncluded
-    values.maximumMuscleStressScaleFactor = parameterChange(:, end);
-else
-    values.maximumMuscleStressScaleFactor = 1;
-end
-end

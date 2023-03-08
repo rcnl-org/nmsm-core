@@ -1,17 +1,17 @@
 
-settingsFileName = "MTPSettingsFile.xml";
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = parseMuscleTendonPersonalizationSettingsTree(settingsTree);
+settingsFileName = "newMTPSettingsFile.xml";
+% settingsTree = xml2struct(settingsFileName);
+% [inputs, params, resultsDirectory] = parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 
-% MuscleTendonPersonalizationTool(settingsFileName)
+MuscleTendonPersonalizationTool(settingsFileName)
 
 % import org.opensim.modeling.Storage
 % 
 % passiveData = load("thelen/passiveData.mat").passiveData;
 % 
-% size(passiveData.momentArms)
+% size(passiveMomentsArms)
 % 
-% size(passiveData.experimentalMoments)
+% size(passiveData.inverseDynamicsMoments)
 % 
 % 
 % 
@@ -26,11 +26,11 @@ settingsTree = xml2struct(settingsFileName);
 %     end
 %     for j=1:length(momentNames)
 %         writeToSto(muscleNames, linspace(0,1,101), ...
-%             squeeze(passiveData.momentArms(i, j, :, :))', ...
+%             squeeze(passiveMomentsArms(i, j, :, :))', ...
 %             fullfile(pwd, "thelen", "MAData", prefixes(i), prefixes(i) + "_MomentArm_" + momentNames(j) + ".sto"))
 %     end
 %     writeToSto(muscleNames, linspace(0,1,101), ...
-%             squeeze(passiveData.muscleTendonLength(i, :, :))', ...
+%             squeeze(passiveMuscleTendonLength(i, :, :))', ...
 %             fullfile(pwd, "thelen", "MAData", prefixes(i), prefixes(i) + "_Length.sto"))
 % end
 
