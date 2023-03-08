@@ -41,61 +41,12 @@ end
 end
 
 function inputs = getInputs(tree)
-inputDirectory = parseInputDirectory(tree);
-modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
-if(~isempty(inputDirectory))
-    try
-        inputs.model = fullfile(inputDirectory, modelFile);
-    catch
-        inputs.model = fullfile(pwd, inputDirectory, modelFile);
-        inputDirectory = fullfile(pwd, inputDirectory);
-    end
-else
-    inputs.model = fullfile(pwd, modelFile);
-    inputDirectory = pwd;
-end
+inputs = parseMtpNcpSharedInputs(tree);
 inputs = getPassiveData(getFieldByNameOrError(tree, "MuscleTendonLengthInitialization"), inputs);
-prefixes = findPrefixes(tree, inputDirectory);
-directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    inputDirectory, "MAData"), prefixes);
-inputs.gaitData.muscleTendonLength = parseFileFromDirectories(directories, ...
-    "Length.sto");
-inputs.gaitData.momentArms = parseMomentArms(directories, inputs.model);
-inputs.numPaddingFrames = (size(inputs.gaitData.muscleTendonLength, 3) - 101) / 2;
-inputs = reduceDataSize(inputs, inputs.numPaddingFrames, ...
-    inputs.passiveMomentDataExists);
-inputs.tasks = getTask(tree);
-optimizeIsometricMaxForce = getFieldByName(tree, ...
-    'optimize_isometric_max_force').Text;
-if(optimizeIsometricMaxForce == "true"); inputs.optimizeIsometricMaxForce = 1;
-else; inputs.optimizeIsometricMaxForce = 0; end
-inputs = getCostFunctionTerms(getFieldByNameOrError(tree, ...
-    'MuscleTendonLengthInitializationCostFunctionTerms'), inputs);
-maximumMuscleStress = getFieldByName(tree, 'maximum_muscle_stress');
-if(isstruct(maximumMuscleStress))
-    inputs.maximumMuscleStress = str2double(maximumMuscleStress.Text);
-else
-    inputs.maximumMuscleStress = 610e3;
-end
-maxNormalizedMuscleFiberLength = getFieldByName(tree, ...
-    'max_normalized_muscle_fiber_length');
-if(isstruct(maxNormalizedMuscleFiberLength))
-    inputs.maxNormalizedMuscleFiberLength = ...
-    str2double(maxNormalizedMuscleFiberLength.Text);
-end
-minNormalizedMuscleFiberLength = getFieldByName(tree, ...
-    'min_normalized_muscle_fiber_length');
-if(isstruct(minNormalizedMuscleFiberLength))
-    inputs.minNormalizedMuscleFiberLength = ...
-        str2double(minNormalizedMuscleFiberLength.Text);
-end
+inputs = getTask(tree, inputs);
 
-muscleGroupTree = getFieldByNameOrError(tree, 'GroupedMuscles');
-groupNames = parseSpaceSeparatedList(muscleGroupTree, ...
-    "normalized_muscle_fiber_lengths");
-inputs.normalizedFiberLengthGroups = groupNamesToGroups( ...
-    groupNames, inputs.model);
-inputs = getNormalizedFiberLengthSettings(inputs);
+inputs = getNormalizedFiberLengthSettings(tree, inputs);
+inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 end
 
 function inputs = getPassiveData(tree, inputs)
@@ -109,16 +60,21 @@ if (~isempty(passiveInputDirectory))
         passiveJointMomentFileNames = ...
             findFileListFromPrefixList(fullfile(...
             passiveInputDirectory, "IDData"), inputs.passivePrefixes);
-        inputs.coordinates = ...
+        inputs.coordinateNames = ...
             getStorageColumnNames(Storage(passiveJointMomentFileNames(1)));
-        inputs.passiveData.experimentalMoments = ...
+        inputs.passiveData.inverseDynamicsMoments = ...
             parseMtpStandard(passiveJointMomentFileNames);
         passiveDirectories = ...
             findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
             passiveInputDirectory, "MAData"), inputs.passivePrefixes);
-        inputs.passiveData.muscleTendonLength = ...
+        [inputs.passiveMuscleTendonLength, ...
+        inputs.passiveMuscleTendonLengthColumnNames] = ...
             parseFileFromDirectories(passiveDirectories, "Length.sto");
-        inputs.passiveData.momentArms = ...
+        if ~(length(inputs.passiveMuscleTendonLengthColumnNames) == length(inputs.muscleNames) && ...
+            all(inputs.passiveMuscleTendonLengthColumnNames == inputs.muscleNames))
+            throw(MException('', 'Muscle names in passive data do not match muscle names from coordinates.'))
+        end
+        inputs.passiveMomentsArms = ...
             parseMomentArms(passiveDirectories, inputs.model);
         inputs.passiveMomentDataExists = 1;
     end
@@ -126,10 +82,40 @@ end
 end
 
 % (integer, struct, string, struct) -> (struct)
-function output = getTask(tree)
-task = getFieldByNameOrError(tree, 'MuscleTendonLengthInitialization');
-items = "optimize_maximum_muscle_stress";
-output.maximumMuscleStressIsIncluded = strcmp(task.(items).Text, 'true');
+function inputs = getTask(tree, inputs)
+inputs.maximumMuscleStressIsIncluded = strcmp( ...
+    getFieldByNameOrError( ...
+        tree, ...
+        'optimize_maximum_muscle_stress' ...
+        ).Text, ...
+    'true');
+
+optimizeIsometricMaxForce = getFieldByName(tree, ...
+    'optimize_isometric_max_force').Text;
+inputs.optimizeIsometricMaxForce = 0;
+if(optimizeIsometricMaxForce == "true")
+    inputs.optimizeIsometricMaxForce = 1;
+end
+inputs = getCostFunctionTerms(getFieldByNameOrError(tree, ...
+    'MuscleTendonLengthInitializationCostFunctionTerms'), inputs);
+maximumMuscleStress = getFieldByName(tree, 'maximum_muscle_stress');
+if(isstruct(maximumMuscleStress))
+    inputs.maximumMuscleStress = str2double(maximumMuscleStress.Text);
+else
+    inputs.maximumMuscleStress = 610e3;
+end
+maxNormalizedMuscleFiberLength = getFieldByName(tree, ...
+    'max_normalized_muscle_fiber_length');
+if(isstruct(maxNormalizedMuscleFiberLength))
+    inputs.maxNormalizedMuscleFiberLength = ...
+        str2double(maxNormalizedMuscleFiberLength.Text);
+end
+minNormalizedMuscleFiberLength = getFieldByName(tree, ...
+    'min_normalized_muscle_fiber_length');
+if(isstruct(minNormalizedMuscleFiberLength))
+    inputs.minNormalizedMuscleFiberLength = ...
+        str2double(minNormalizedMuscleFiberLength.Text);
+end
 end
 
 function inputs = getCostFunctionTerms(tree, inputs)
@@ -176,28 +162,8 @@ if ~isstruct(errorCenter)
     eval(strcat("inputs.params.", costTermName, "ErrorCenter = 0;"));
 else
     eval(strcat("inputs.params.", costTermName, "ErrorCenter = ", ...
-        errorCenter.Text, ';'));  
+        errorCenter.Text, ';'));
 end
-end
-
-function inputs = reduceDataSize(inputs, numPaddingFrames, ...
-    passiveMomentDataExists)
-
-if passiveMomentDataExists
-        inputs.passiveData.experimentalMoments = ...
-            inputs.passiveData.experimentalMoments(:, :, ...
-            numPaddingFrames + 1:end-numPaddingFrames);
-        inputs.passiveData.muscleTendonLength = ...
-            inputs.passiveData.muscleTendonLength(:, :, ...
-            numPaddingFrames + 1:end-numPaddingFrames);
-        inputs.passiveData.momentArms = ...
-            inputs.passiveData.momentArms(:, :, :, ...
-            numPaddingFrames + 1:end-numPaddingFrames);
-end
-inputs.gaitData.muscleTendonLength = inputs.gaitData.muscleTendonLength(:, :, ...
-    numPaddingFrames + 1:end-numPaddingFrames);
-inputs.gaitData.momentArms = inputs.gaitData.momentArms(:, :, :, ...
-    numPaddingFrames + 1:end-numPaddingFrames);
 end
 
 function inputs = getMuscleVolume(inputs)
@@ -206,22 +172,26 @@ inputs.muscleVolume = (inputs.maxIsometricForce / ...
     inputs.maximumMuscleStress) .* inputs.optimalFiberLength;
 end
 
-function inputs = getNormalizedFiberLengthSettings(inputs)
+function inputs = getNormalizedFiberLengthSettings(tree, inputs)
+normalizedFiberLengthGroupNames = parseSpaceSeparatedList(tree, ...
+    "normalized_fiber_length_muscle_groups");
+inputs.normalizedFiberLengthGroups = groupNamesToGroups( ...
+    normalizedFiberLengthGroupNames, inputs.model);
 inputs.numMuscleGroups = numel(inputs.normalizedFiberLengthGroups);
-numMuscles = getNumEnabledMuscles(inputs.model);
+numMuscles = length(inputs.muscleNames);
 for i = 1 : inputs.numMuscleGroups
-for j = 1 : numel(inputs.normalizedFiberLengthGroups{i})
-    inputs.groupedMaxNormalizedFiberLength(...
-        inputs.normalizedFiberLengthGroups{i}(j)) = i;
-end
+    for j = 1 : numel(inputs.normalizedFiberLengthGroups{i})
+        inputs.groupedMaxNormalizedFiberLength(...
+            inputs.normalizedFiberLengthGroups{i}(j)) = i;
+    end
 end
 inputs.numMusclesIndividual = 0;
 for i = 1 : numMuscles
-if isempty(find([inputs.normalizedFiberLengthGroups{:}] == i))
-    inputs.groupedMaxNormalizedFiberLength(i) = inputs.numMuscleGroups + ...
-        inputs.numMusclesIndividual + 1;
-    inputs.numMusclesIndividual = inputs.numMusclesIndividual + 1;
-end
+    if isempty(find([inputs.normalizedFiberLengthGroups{:}] == i, 1))
+        inputs.groupedMaxNormalizedFiberLength(i) = inputs.numMuscleGroups + ...
+            inputs.numMusclesIndividual + 1;
+        inputs.numMusclesIndividual = inputs.numMusclesIndividual + 1;
+    end
 end
 end
 

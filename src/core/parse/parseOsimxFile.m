@@ -17,4 +17,3 @@ for i = 1:length(musclesTree)
     data.(muscle.Attributes.name).tendonSlackLengthScaleFactor = str2double(muscle.tendon_slack_length_scale_factor.Text);
 end
 end
-

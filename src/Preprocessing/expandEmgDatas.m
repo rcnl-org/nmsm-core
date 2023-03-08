@@ -32,31 +32,25 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newEmgData = expandEmgDatas(modelFileName, emgFileName)
-emgData = org.opensim.modeling.TimeSeriesTable(emgFileName);
-model = Model(modelFileName);
-columnNames = getEnabledMusclesInOrder(model);
-groupToName = getMuscleNameByGroupStruct(model, ...
-    getTimeSeriesTableColumnNames(emgData));
-newEmgData = expandEmgData(columnNames, emgData, ...
-    groupToName);
+function newEmgData = expandEmgDatas(model, emgData, groupColumnNames, ...
+    muscleNames)
+model = Model(model);
+groupToName = getMuscleNameByGroupStruct(model, groupColumnNames);
+newEmgData = expandEmgData(muscleNames, emgData, ...
+    groupToName, groupColumnNames);
 end
 
 function newEmgData = expandEmgData(expandedColumnNames, emgData, ...
-    namesByGroup)
-% expandedData.scaleTime((emgData.getLastTime() - ... %scale time
-%     emgData.getFirstTime()) / (expandedData.getLastTime() - ...
-%     expandedData.getFirstTime())); %shift time
-% expandedData.shiftTime(emgData.getFirstTime()-expandedData.getFirstTime());
-emgColumnNames = getTimeSeriesTableColumnNames(emgData);
-newEmgData = zeros(length(expandedColumnNames), emgData.getNumRows());
+    namesByGroup, emgColumnNames)
+newEmgData = zeros(length(expandedColumnNames), size(emgData, 2));
 for i=1:length(emgColumnNames)
     musclesInGroup = namesByGroup.(emgColumnNames(i));
-    temp = stdVectorDoubleToDoubleArray( ...
-        emgData.getDependentColumn(emgColumnNames(i)));
+    temp = emgData(i, :);
     for j=1:length(musclesInGroup)
-        newEmgData(find(strcmp(expandedColumnNames, ...
-            musclesInGroup(j))), :) = temp;
+        test = newEmgData(ismember(expandedColumnNames, ...
+            musclesInGroup(j)), :);
+        newEmgData(ismember(expandedColumnNames, ...
+            musclesInGroup(j)), :) = temp;
     end
 end
 end
