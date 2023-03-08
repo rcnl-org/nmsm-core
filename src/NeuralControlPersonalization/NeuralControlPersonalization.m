@@ -43,7 +43,8 @@ verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
 params = finalizeParams(params);
 inputs = finalizeInputs(inputs);
-initialValues = prepareInitialValues(inputs, params);
+initialValues = prepareGenericInitialValues(inputs, params);
+% initialValues = prepareNonNegativeMatrixFactorizationInitialValues();
 finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
     params);
 end
@@ -113,7 +114,7 @@ end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
 % extract initial version of optimized values from inputs/params
-function values = prepareInitialValues(inputs, params)
+function values = prepareGenericInitialValues(inputs, params)
 values = [];
 for i = 1:length(inputs.synergyGroups)
     values = [values; 0.1 * ...
