@@ -4,15 +4,15 @@
         <!--Directory used for writing results.-->
         <results_directory>C:\Users\marle\Documents\GitHub\nmsm-core\examples\TrackingOptimization\LegsExample</results_directory>
         <!--Directory for input files-->
-        <input_directory>preprocessed</input_directory>
+        <data_directory>preprocessed</data_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>exampleModel.osim</input_model_file>
 		<!-- -->
-		<InitialGuessSet>
-			<states_file>states.sto</states_file>
-			<control_file>control.sto</control_file>
-			<parameter_file>parameter.sto</parameter_file>
-		</InitialGuessSet>
+		<initial_states_file>states.sto</initial_states_file>
+		<!-- -->
+		<initial_controls_file>control.sto</initial_controls_file>
+		<!-- -->
+		<initial_parameters_file>parameter.sto</initial_parameters_file>
 		<!--synergy driven or torque driven--> 
 		<type_of_controller>synergy_driven</type_of_controller>
 		<!--allow synergy vectors to change-->
@@ -33,7 +33,6 @@
 			</objects>
 			<groups />
 		</SynergySet>
-		<!--NCP synergies, muscle activations-->
 		<!--GCP inputs-->
 		<!--Bounds-->
 		<TrackingOptimizationDesignVariableBounds>
@@ -51,7 +50,7 @@
 					<!--Flag indicating whether or not the term is enabled in the integral.-->
                     <is_enabled>true</is_enabled>
 					<!-- -->
-					<cost_weight>1</cost_weight>
+					<cost_weight>0.0001</cost_weight>
 					<!--List of coordinate names associated to max allowable error-->					
 					<TrackedCoordinate name = "pelvis_tilt">
 						<!-- -->
@@ -244,164 +243,164 @@
 					<!--Flag indicating whether or not the term is enabled in the integral.-->
                     <is_enabled>true</is_enabled>
 					<!-- -->
-					<cost_weight>1</cost_weight>
+					<cost_weight>0.1</cost_weight>
 					<!--List of coordinate names associated to max allowable error-->	
 					<TrackedLoad name = "hip_flexion_r_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "hip_adduction_r_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "hip_rotation_r_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "knee_angle_r_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "ankle_angle_r_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "subtalar_angle_r_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "mtp_angle_r_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>5</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "hip_flexion_l_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "hip_adduction_l_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "hip_rotation_l_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "knee_angle_l_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "ankle_angle_l_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "subtalar_angle_l_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "mtp_angle_l_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>5</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "lumbar_extension_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>5</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "lumbar_bending_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>5</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "lumbar_rotation_moment">
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
-						<max_allowable_error>5</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "arm_flex_r_moment">
 						<!-- -->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "arm_add_r_moment">
 						<!-- -->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "arm_rot_r_moment">
 						<!-- -->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "elbow_flex_r_moment">
 						<!-- -->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "arm_flex_l_moment">
 						<!-- -->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "arm_add_l_moment">
 						<!-- -->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "arm_rot_l_moment">
 						<!-- -->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 					<TrackedLoad name = "elbow_flex_l_moment">
 						<!-- -->
-						<is_enabled>true</is_enabled>
+						<is_enabled>false</is_enabled>
 						<!-- -->
-						<max_allowable_error>10</max_allowable_error>
+						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
 				</TrackedInverseDynamicLoadsList>
 				<TrackedExternalForceList>
 					<!--Flag indicating whether or not the term is enabled in the integral.-->
                     <is_enabled>true</is_enabled>
 					<!-- -->
-					<cost_weight>1</cost_weight>
+					<cost_weight>0.01</cost_weight>
 					<!--List of coordinate names associated to max allowable error-->
 					<TrackedExternalForce name = "ground_reaction_force_x">
 						<!-- -->
@@ -468,7 +467,7 @@
 					<!--Flag indicating whether or not the term is enabled in the integral.-->
                     <is_enabled>true</is_enabled>
 					<!-- -->
-					<cost_weight>1</cost_weight>					
+					<cost_weight>0.1</cost_weight>					
 					<!--List of coordinate names associated to max allowable error-->
 					<TrackedExternalMoment name = "ground_reaction_moment_x">
 						<!-- -->
@@ -511,9 +510,9 @@
 					<!--Flag indicating whether or not the term is enabled in the integral.-->
                     <is_enabled>true</is_enabled>
 					<!-- -->
-					<cost_weight>1</cost_weight>
+					<cost_weight>0.001</cost_weight>
 					<!-- -->
-					<max_allowable_error>0.1</max_allowable_error>
+					<max_allowable_error>0.25</max_allowable_error>
 				</TrackedMuscleActivations>
             </TrackingTerms>
 			<MinimizingTerms>
@@ -521,7 +520,7 @@
 					<!--Flag indicating whether or not the term is enabled in the integral.-->
                     <is_enabled>true</is_enabled>
 					<!-- -->
-					<cost_weight>1</cost_weight>
+					<cost_weight>0.0001</cost_weight>
 					<!-- -->
 					<max_allowable_error>2</max_allowable_error>						
 				</MinimizeJointJerk>
@@ -728,7 +727,7 @@
 			</ExternalMomentPeriodicity>
 			<SynergyWeightsSum>
 				<!--Flag indicating whether or not the term is enabled in the integral.-->
-				<is_enabled>true</is_enabled>
+				<is_enabled>false</is_enabled>
 				<!-- -->
 				<max_allowable_error>1</max_allowable_error>
 				<!-- -->
@@ -736,19 +735,11 @@
 			</SynergyWeightsSum>
         </TrackingOptimizationTerminalConstraintTerms>
 		<!-- -->
+		<optimal_control_settings_file>gpopsSettings.xml</optimal_control_settings_file>
+		<!-- -->
 		<belt_speed>1.4</belt_speed>
   		<!--*Optional* The vMaxFactor to use-->
         <v_max_factor>10</v_max_factor>
-		<!-- -->
-		<solver_type>ipopt</solver_type>
-		<!-- -->
-		<solver_tolerance>1e-3</solver_tolerance>
-		<!-- -->
-		<step_size>1e-8</step_size>
-		<!--Multiples of 10-->
-		<collocation_points>5</collocation_points>
-		<!--*Optional* The number of allowed iterations for GPOPS-->
-        <max_iterations>2e4</max_iterations>
 		<!--*Optional* list prefix of the data file, if left blank, use prefix from IK folder-->
 		<trial_prefix></trial_prefix>
     </TrackingOptimizationTool>
