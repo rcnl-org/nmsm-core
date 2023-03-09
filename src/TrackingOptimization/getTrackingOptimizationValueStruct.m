@@ -36,10 +36,10 @@ if params.optimizeSynergyVectors
 else
     values.synergyWeights = getSynergyWeightsFromGroups(params.synergyWeights, params);
 end
-state = scaleToOriginal(inputs.state, ones(length(values.time), 1) .* ...
-    params.maxState, ones(length(values.time), 1) .* params.minState);
-control = scaleToOriginal(inputs.control, ones(length(values.time), 1) .* ...
-    params.maxControl, ones(length(values.time), 1) .* params.minControl);
+state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
+    params.maxState, ones(size(inputs.state, 1), 1) .* params.minState);
+control = scaleToOriginal(inputs.control, ones(size(inputs.control, 1), 1) .* ...
+    params.maxControl, ones(size(inputs.control, 1), 1) .* params.minControl);
 values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
 values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
 values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);

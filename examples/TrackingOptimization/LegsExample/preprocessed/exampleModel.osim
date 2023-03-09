@@ -6341,10 +6341,43 @@
 			<groups />
 		</ControllerSet>
 		<!--Constraints in the model.-->
-		<ControllerSet name="controllerset">
-			<objects />
+		<ConstraintSet name="constraintset">
+			<objects>
+				<CoordinateCouplerConstraint name="patellofemoral_knee_angle_r_con">
+					<!--Flag indicating whether the constraint is enforced or not.Enforced means that the constraint is active in subsequent dynamics realizations. NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant the constraint was not being enforced. Thus, if 'isDisabled' is'true', then 'isEnforced' is false.-->
+					<isEnforced>true</isEnforced>
+					<!--Constraint function of generalized coordinates (to be specified) used to evaluate the constraint errors and their derivatives, and must valid to at least 2nd order. Constraint function must evaluate to zero when coordinates satisfy the constraint.-->
+					<coupled_coordinates_function>
+						<LinearFunction>
+							<coefficients> 1 0</coefficients>
+						</LinearFunction>
+					</coupled_coordinates_function>
+					<!--List of names of the right hand side (independent) coordinates. Note the constraint function above, must be able to handle multiple coordinate values if more than one coordinate name is provided.-->
+					<independent_coordinate_names>knee_angle_r</independent_coordinate_names>
+					<!--Name of the left-hand side (dependent) coordinate of the constraint coupling function.-->
+					<dependent_coordinate_name>knee_angle_r_beta</dependent_coordinate_name>
+					<!--Scale factor for the coupling function.-->
+					<scale_factor>1</scale_factor>
+				</CoordinateCouplerConstraint>
+				<CoordinateCouplerConstraint name="patellofemoral_knee_angle_l_con">
+					<!--Flag indicating whether the constraint is enforced or not.Enforced means that the constraint is active in subsequent dynamics realizations. NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant the constraint was not being enforced. Thus, if 'isDisabled' is'true', then 'isEnforced' is false.-->
+					<isEnforced>true</isEnforced>
+					<!--Constraint function of generalized coordinates (to be specified) used to evaluate the constraint errors and their derivatives, and must valid to at least 2nd order. Constraint function must evaluate to zero when coordinates satisfy the constraint.-->
+					<coupled_coordinates_function>
+						<LinearFunction>
+							<coefficients> 1 0</coefficients>
+						</LinearFunction>
+					</coupled_coordinates_function>
+					<!--List of names of the right hand side (independent) coordinates. Note the constraint function above, must be able to handle multiple coordinate values if more than one coordinate name is provided.-->
+					<independent_coordinate_names>knee_angle_l</independent_coordinate_names>
+					<!--Name of the left-hand side (dependent) coordinate of the constraint coupling function.-->
+					<dependent_coordinate_name>knee_angle_l_beta</dependent_coordinate_name>
+					<!--Scale factor for the coupling function.-->
+					<scale_factor>1</scale_factor>
+				</CoordinateCouplerConstraint>
+			</objects>
 			<groups />
-		</ControllerSet>
+		</ConstraintSet>
 		<!--Forces in the model (includes Actuators).-->
 		<ForceSet name="forceset">
 			<objects>
@@ -6391,7 +6424,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>
+					<appliesForce>true</appliesForce>
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>625.81967213114797</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6491,7 +6524,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>916.79999999999995</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6591,7 +6624,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6691,7 +6724,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6791,7 +6824,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6891,7 +6924,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -6988,7 +7021,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1313.18360655738</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7088,7 +7121,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>557.11475409835998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7203,7 +7236,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>603.49815560000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7330,7 +7363,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>285.86754739999998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7457,7 +7490,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>423.17704918032803</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7578,7 +7611,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>907.83934426229405</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7686,7 +7719,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1575.0590163934401</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7794,7 +7827,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>3115.5147540983598</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7885,7 +7918,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>170.40000000000001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -7997,7 +8030,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>983.78360655737799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8109,7 +8142,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1406.0459016393499</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8221,7 +8254,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>947.75409836065603</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8312,7 +8345,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1093.4667688</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8403,7 +8436,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>765.09166159999995</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8494,7 +8527,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>871.19926420000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8585,7 +8618,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>374.04590163934398</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8676,7 +8709,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>394.81967213114802</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8767,7 +8800,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>446.77377049180399</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8873,7 +8906,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>281.31147540983602</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -8985,7 +9018,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1021.14098360656</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9085,7 +9118,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>319.60000000000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9194,7 +9227,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>521.20159880000006</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9315,7 +9348,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1115.3714213999999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9412,7 +9445,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1029.7868852459001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9524,7 +9557,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>492.91237339999998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9636,7 +9669,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>541.09764619999999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9748,7 +9781,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>394.07103740000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9839,7 +9872,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>397</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -9957,7 +9990,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2191.7409836065599</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10066,7 +10099,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>249.41311475409799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10166,7 +10199,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2200.9868852458999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10272,7 +10305,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>591.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10363,7 +10396,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>6194.8426229508204</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10466,7 +10499,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>411.20655737704999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10569,7 +10602,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1227.4524590163901</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10672,7 +10705,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1730.1540983606501</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10790,7 +10823,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1697.36065573771</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -10908,7 +10941,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>5148.7672131147601</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11026,7 +11059,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2747.82295081966</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11126,7 +11159,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>625.81967213114797</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11226,7 +11259,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>916.79999999999995</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11326,7 +11359,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11426,7 +11459,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11526,7 +11559,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11626,7 +11659,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>597.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11723,7 +11756,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1313.18360655738</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11823,7 +11856,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>557.11475409835998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -11938,7 +11971,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>603.49815560000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12065,7 +12098,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>285.86754739999998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12192,7 +12225,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>423.17704918032803</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12313,7 +12346,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>907.83934426229405</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12421,7 +12454,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1575.0590163934401</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12529,7 +12562,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>3115.5147540983598</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12620,7 +12653,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>170.40000000000001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12732,7 +12765,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>983.78360655737799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12844,7 +12877,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1406.0459016393499</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -12956,7 +12989,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>947.75409836065603</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13047,7 +13080,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1093.4667688</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13138,7 +13171,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>765.09166159999995</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13229,7 +13262,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>871.19926420000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13320,7 +13353,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>374.04590163934398</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13411,7 +13444,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>394.81967213114802</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13502,7 +13535,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>446.77377049180399</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13608,7 +13641,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>281.31147540983602</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13720,7 +13753,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1021.14098360656</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13820,7 +13853,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>319.60000000000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -13929,7 +13962,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>521.20159880000006</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14050,7 +14083,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1115.3714213999999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14147,7 +14180,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1029.7868852459001</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14259,7 +14292,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>492.91237339999998</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14371,7 +14404,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>541.09764619999999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14483,7 +14516,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>394.07103740000002</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14574,7 +14607,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>397</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14692,7 +14725,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2191.7409836065599</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14801,7 +14834,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>249.41311475409799</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -14901,7 +14934,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2200.9868852458999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15007,7 +15040,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>591.29508196721395</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15098,7 +15131,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>6194.8426229508204</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15201,7 +15234,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>411.20655737704999</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15304,7 +15337,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1227.4524590163901</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15407,7 +15440,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1730.1540983606501</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15525,7 +15558,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1697.36065573771</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15643,7 +15676,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>5148.7672131147601</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -15761,7 +15794,7 @@
 							<color>0.80000000000000004 0.10000000000000001 0.10000000000000001</color>
 						</Appearance>
 					</GeometryPath>
-					<appliesForce>false</appliesForce>					
+					<appliesForce>true</appliesForce>					
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>2747.82295081966</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
@@ -16239,6 +16272,134 @@
 		<!--Markers in the model.-->
 		<MarkerSet name="markerset">
 			<objects>
+				<Marker name="R.Shoulder">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/torso_upper_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.010801790500000002 0.0047277500000000305 0.15701174749999999</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Shoulder">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/torso_upper_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.0081448885000000009 0.0056857499999999894 -0.15579525250000001</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="Neck">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/torso_upper_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.073137860499999999 0.027963750000000009 -0.0043241324999999994</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="Sternum">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/torso_upper_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.092084539499999993 -0.038377249999999974 0.0031076375000000009</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Elbow">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/humerus_r_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.09162025 -0.20191940000000003 0.11029915</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Wrist">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/radius_r_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.063155753333333328 -0.14559464666666666 0.082438893333333332</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Wrist">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/radius_l_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.061010533333333325 -0.13346516666666666 0.072454633333333324</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Asis">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/pelvis_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.058303866666666662 0.0042060599999999976 0.13095131333333335</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Asis">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/pelvis_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.056581266666666657 -0.0088809200000000022 -0.13376168666666666</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Thigh.Superior">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/femur_r_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.03967933333333333 0.053141999999999967 -0.011825266666666667</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Thigh.Inferior">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/femur_r_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.01219043333333332 -0.059389000000000053 -0.031521266666666665</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Thigh.Lateral">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/femur_r_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.051869766666666678 0.0062469999999999748 0.043346533333333333</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Patella">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/patella_r_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.00089994666666666674 0.013309253333333331 -0.012409306666666668</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Shank.Superior">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/tibia_r_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.026719766666666665 0.075135799999999989 -0.015843466666666663</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Shank.Inferior">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/tibia_r_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.024042066666666667 -0.10204240000000001 -0.022199866666666662</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Shank.Lateral">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/tibia_r_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.050761833333333332 0.026906599999999975 0.038043333333333332</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
 				<Marker name="R.Heel">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 					<socket_parent_frame>/bodyset/calcn_r_markerPlate</socket_parent_frame>
@@ -16252,6 +16413,62 @@
 					<socket_parent_frame>/bodyset/toes_r_markerPlate</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.043675933333333333 -0.016936066666666669 -0.026739866666666667</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Thigh.Superior">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/femur_l_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.044706533333333326 0.064202666666666658 0.013639833333333334</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Thigh.Inferior">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/femur_l_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.0094561333333333247 -0.058286333333333357 0.029267033333333331</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Thigh.Lateral">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/femur_l_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.054162666666666671 -0.0059163333333333568 -0.042906866666666661</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Patella">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/patella_l_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.0022938166666666687 0.012518183333333332 -0.010224366666666668</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Shank.Superior">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/tibia_l_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.026346533333333332 0.072739866666666667 0.016124500000000003</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Shank.Inferior">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/tibia_l_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.027459433333333332 -0.083424933333333312 0.021418700000000002</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Shank.Lateral">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/tibia_l_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.053805966666666663 0.010685066666666659 -0.037543199999999999</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>false</fixed>
 				</Marker>
@@ -16271,6 +16488,14 @@
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>false</fixed>
 				</Marker>
+				<Marker name="Sacral">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/pelvis_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.11488513333333333 0.0046748599999999994 0.0028103733333333289</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
 				<Marker name="R.Midfoot.Superior">
 					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
 					<socket_parent_frame>/bodyset/calcn_r_markerPlate</socket_parent_frame>
@@ -16284,6 +16509,14 @@
 					<socket_parent_frame>/bodyset/calcn_l_markerPlate</socket_parent_frame>
 					<!--The fixed location of the station expressed in its parent frame.-->
 					<location>0.090648300000000001 0.032831530000000005 0.0076140566666666656</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="L.Elbow">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame>/bodyset/humerus_l_markerPlate</socket_parent_frame>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.084403146333333331 -0.19042925366666669 0.10602610733333333</location>
 					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
 					<fixed>false</fixed>
 				</Marker>

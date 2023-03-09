@@ -26,15 +26,27 @@
 % ----------------------------------------------------------------------- %
 
 function [output, inputs] = TrackingOptimization(inputs, params)
-pointKinematics(inputs.model);
-inverseDynamics(inputs.model);
+pointKinematics(inputs.mexModel);
+inverseDynamics(inputs.mexModel);
+inputs = getMuscleSynergiesInitialGuess(inputs);
 inputs = getDesignVariableInputBounds(inputs);
 inputs = getIntegralBounds(inputs);
 inputs = getPathConstraintBounds(inputs);
 inputs = getTerminalConstraintBounds(inputs); 
 output = computeTrackingOptimizationMainFunction(inputs, params);
 end
-
+function inputs = getMuscleSynergiesInitialGuess(inputs)
+if isfield(inputs.initialGuess,"parameter") 
+    synergyWeights = getSynergyWeightsFromGroups(inputs.initialGuess.parameter, inputs);
+    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
+else
+    inputs.mtpActivationsColumnNames = inputs.muscleLabels;
+    inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 1 2]);
+    values = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs);
+    inputs.parameterGuess = getSynergyWeightsFromGroups(values, inputs);
+    inputs.commandsGuess = inputs.experimentalMuscleActivations / inputs.parameterGuess;
+end
+end
 function inputs = getDesignVariableInputBounds(inputs)
 inputs.maxTime = max(inputs.experimentalTime);
 inputs.minTime = min(inputs.experimentalTime);

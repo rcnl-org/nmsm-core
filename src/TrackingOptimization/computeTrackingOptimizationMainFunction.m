@@ -29,11 +29,11 @@ function output = computeTrackingOptimizationMainFunction(inputs, params)
 bounds = setupProblemBounds(inputs);
 guess = setupInitialGuess(inputs);
 setup = setupSolverSettings(inputs, bounds, guess, params);
-solution = gpops2(setup);
-% guess.auxdata = inputs;
+% solution = gpops2(setup);
+guess.auxdata = inputs;
 % guess.phase.parameter = guess.parameter;
-% solution = guess;
-% output = computeTrackingOptimizationContinuousFunction(solution);
+solution = guess;
+output = computeTrackingOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
 function bounds = setupProblemBounds(inputs)
@@ -69,53 +69,65 @@ end
 end
 function guess = setupInitialGuess(inputs)
 
-if ~isempty(inputs.initialGuess)
+if isfield(inputs.initialGuess, 'time')
     guess.phase.time = scaleToBounds(inputs.initialGuess.time, inputs.maxTime, ...
         inputs.minTime);
+else
+    guess.phase.time = scaleToBounds(inputs.experimentalTime, inputs.maxTime, ...
+        inputs.minTime);
+end
+if isfield(inputs.initialGuess, 'state')
     guess.phase.state = scaleToBounds(inputs.initialGuess.state, ...
         inputs.maxState, inputs.minState);
+else
+    guess.phase.state = scaleToBounds([inputs.experimentalJointAngles ...
+        inputs.experimentalJointVelocities ...
+        inputs.experimentalJointAccelerations], inputs.maxState, ...
+        inputs.minState);
+end
+if isfield(inputs.initialGuess, 'control')
     guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
         inputs.maxControl, inputs.minControl);
-    guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
-        inputs.minIntegral);
-    guess.parameter = scaleToBounds(reshape(inputs.initialGuess.parameter,1,[]), ...
+else
+    guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
+        inputs.commandsGuess], inputs.maxControl, inputs.minControl);
+end
+if isfield(inputs.initialGuess, 'parameter')
+    guess.phase.parameter = scaleToBounds(inputs.initialGuess.parameter, ...
         inputs.maxParameter, inputs.minParameter);
 else
-    guess.phase.time = scaleToBounds(inputs.time, inputs.maxTime, ...
-        inputs.minTime);
-    guess.phase.state = scaleToBounds([inputs.jointAngles ...
-        inputs.jointVelocities inputs.jointAcceleration], ...
-        inputs.maxState, inputs.minState);
-    guess.phase.control = scaleToBounds([inputs.jointJerk ...
-        inputs.neuralCommandsRight inputs.neuralCommandsLeft], ...
-        inputs.maxControl, inputs.minControl);
-    guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
-        inputs.minIntegral);
-    guess.parameter = scaleToBounds(inputs.synergyWeights, ...
+    guess.phase.parameter = scaleToBounds(inputs.parameterGuess, ...
         inputs.maxParameter, inputs.minParameter);
 end
+guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
+    inputs.minIntegral);
 end
 function setup = setupSolverSettings(inputs, bounds, guess, params)
 
-setup.name = params.optimizationFileName;
+setup.name = params.solverSettings.optimizationFileName;
 setup.functions.continuous = @computeTrackingOptimizationContinuousFunction;
 auxdata.ContinuousFunc = setup.functions.continuous;
 setup.functions.endpoint = @computeTrackingOptimizationEndpointFunction;
 setup.auxdata = inputs;
 setup.bounds = bounds;
 setup.guess = guess;
-setup.nlp.solver = params.solverType;
-setup.nlp.ipoptoptions.linear_solver = 'ma57';
-setup.nlp.ipoptoptions.tolerance = params.solverTolerance;
-setup.nlp.ipoptoptions.maxiterations = params.maxIterations;
-setup.derivatives.stepsize1 = params.stepSize;
-setup.derivatives.supplier = 'sparseCD';
-setup.derivatives.derivativelevel = 'first';
-setup.derivatives.dependencies = 'sparse';
-mesh.method = 'hp-PattersonRao';
-N = params.collocationPointsMultiple;
+setup.nlp.solver = params.solverSettings.solverType;
+setup.nlp.ipoptoptions.linear_solver = params.solverSettings.linearSolverType;
+setup.nlp.ipoptoptions.tolerance = params.solverSettings.solverTolerance;
+setup.nlp.ipoptoptions.maxiterations = params.solverSettings.maxIterations;
+setup.nlp.snoptoptions.linear_solver = params.solverSettings.linearSolverType;
+setup.nlp.snoptoptions.tolerance = params.solverSettings.solverTolerance;
+setup.nlp.snoptoptions.maxiterations = params.solverSettings.maxIterations;
+setup.derivatives.stepsize1 = params.solverSettings.stepSize;
+setup.derivatives.supplier = params.solverSettings.derivativeApproximation;
+setup.derivatives.derivativelevel = params.solverSettings.derivativeOrder;
+setup.derivatives.dependencies = params.solverSettings.derivativeDependencies;
+mesh.method = params.solverSettings.meshMethod;
+mesh.tolerance = params.solverSettings.meshTolerance;
+mesh.maxiterations = params.solverSettings.meshMaxIterations;
+N = params.solverSettings.collocationPoints;
 mesh.phase.colpoints = 10*ones(1, N);
 mesh.phase.fraction = ones(1, N) / N;
-setup.method = 'RPM-integration';
+setup.method = params.solverSettings.method;
 setup.mesh = mesh;
 end
