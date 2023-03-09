@@ -116,12 +116,15 @@ for i=1:length(markers)
             axis = pair(2);
         end
     end
-    if ~strcmp(axis, "x") functions{end + 1} = ...
-            makeMarkerFunction(markers(i), "x"); end
-    if ~strcmp(axis, "y") functions{end + 1} = ...
-            makeMarkerFunction(markers(i), "y"); end
-    if ~strcmp(axis, "z") functions{end + 1} = ...
-            makeMarkerFunction(markers(i), "z"); end
+    if ~strcmp(axis, "x") 
+        functions{end + 1} = makeMarkerFunction(markers(i), "x");
+    end
+    if ~strcmp(axis, "y") 
+        functions{end + 1} = makeMarkerFunction(markers(i), "y");
+    end
+    if ~strcmp(axis, "z") 
+        functions{end + 1} = makeMarkerFunction(markers(i), "z");
+    end
 end
 end
 

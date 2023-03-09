@@ -22,7 +22,16 @@
 
 % Make sure the nmsm-core project is open by double-clicking Project.prj in
 % the nmsm-core repository.
-JointModelPersonalizationTool('IsolatedReinboltKneeExample.xml')
+settingsFileName = 'IsolatedReinboltKneeExample.xml';
+settingsTree = xml2struct(settingsFileName);
+[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
+
+printJmpValues(inputs.model, inputs.tasks{1});
+
+newModel = JointModelPersonalization(inputs, params);
+newModel.print(outputFile);
+
+printJmpValues(newModel, inputs.tasks{1});
 
 jointArray = {"knee_l"};
 markerFile = "l_knee.trc";
@@ -38,3 +47,13 @@ final = sqrt(calculateJointError('Rajagopal_4.0_RCNL_markers_scaled_knee.osim', 
 improvement = (final - start) / start
 
 % use plotBeforeAndAfterMarkerError.m example to visualize difference
+
+function printJmpValues(model, task)
+[taskDescriptions, values] = ...
+    reportJointModelPersonalizationValues(model, task);
+
+for i = 1 : length(taskDescriptions)
+    disp(taskDescriptions(i));
+    disp(values{i});
+end
+end
