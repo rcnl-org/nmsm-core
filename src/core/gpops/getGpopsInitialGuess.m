@@ -25,28 +25,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveTrackingOptimizationResults(solution, inputs, resultsDirectory)
-
-values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
-stateLabels = inputs.coordinateNames;
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
+function initialGuess = getGpopsInitialGuess(tree)
+import org.opensim.modeling.Storage
+initialGuess = [];
+statesFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
+    'initial_states_file', ''));
+if ~isempty(statesFileName)
+    initialGuess.time = parseTimeColumn({statesFileName})';
+    initialGuess.stateLabels = getStorageColumnNames(Storage({statesFileName}));
+    initialGuess.state = parseTreatmentOptimizationStandard({statesFileName});
 end
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
+controlsFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
+    'initial_controls_file', ''));
+if ~isempty(controlsFileName)
+    initialGuess.controlLabels = getStorageColumnNames(Storage({controlsFileName}));
+    initialGuess.control = parseTreatmentOptimizationStandard({controlsFileName});
 end
-writeToSto(stateLabels, values.time, ...
-        [values.statePositions values.stateVelocities values.stateAccelerations], fullfile(resultsDirectory, ...
-        "statesSolution.sto"));
-controlLabels = inputs.coordinateNames;
-for i = 1 : inputs.numSynergies
-controlLabels{end + 1} = strcat('command', num2str(i));
+parametersFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
+    'initial_parameters_file', ''));
+if ~isempty(parametersFileName)
+    initialGuess.parameterLabels = getStorageColumnNames(Storage({parametersFileName}));
+    initialGuess.parameter = parseTreatmentOptimizationStandard({parametersFileName});
 end
-writeToSto(controlLabels, values.time, ...
-        [values.controlJerks values.controlNeuralCommands], fullfile(resultsDirectory, ...
-        "controlSolution.sto"));
-writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, inputs.numSynergies), ...
-        [values.synergyWeights], fullfile(resultsDirectory, ...
-        "parameterSolution.sto"));
-delete(inputs.mexModel);
 end

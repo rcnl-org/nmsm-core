@@ -69,14 +69,9 @@ end
 end
 function guess = setupInitialGuess(inputs)
 
-if isfield(inputs.initialGuess, 'time')
+if isfield(inputs.initialGuess, 'state')
     guess.phase.time = scaleToBounds(inputs.initialGuess.time, inputs.maxTime, ...
         inputs.minTime);
-else
-    guess.phase.time = scaleToBounds(inputs.experimentalTime, inputs.maxTime, ...
-        inputs.minTime);
-end
-if isfield(inputs.initialGuess, 'state')
     guess.phase.state = scaleToBounds(inputs.initialGuess.state, ...
         inputs.maxState, inputs.minState);
 else
@@ -84,6 +79,8 @@ else
         inputs.experimentalJointVelocities ...
         inputs.experimentalJointAccelerations], inputs.maxState, ...
         inputs.minState);
+    guess.phase.time = scaleToBounds(inputs.experimentalTime, inputs.maxTime, ...
+        inputs.minTime);
 end
 if isfield(inputs.initialGuess, 'control')
     guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
@@ -92,12 +89,14 @@ else
     guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
         inputs.commandsGuess], inputs.maxControl, inputs.minControl);
 end
-if isfield(inputs.initialGuess, 'parameter')
-    guess.phase.parameter = scaleToBounds(inputs.initialGuess.parameter, ...
-        inputs.maxParameter, inputs.minParameter);
-else
-    guess.phase.parameter = scaleToBounds(inputs.parameterGuess, ...
-        inputs.maxParameter, inputs.minParameter);
+if inputs.optimizeSynergyVectors
+%     if isfield(inputs.initialGuess, 'parameter')
+%         guess.phase.parameter = scaleToBounds(inputs.initialGuess.parameter, ...
+%             inputs.maxParameter, inputs.minParameter);
+%     else
+        guess.phase.parameter = scaleToBounds(inputs.parameterGuess, ...
+            inputs.maxParameter, inputs.minParameter);
+%     end
 end
 guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
     inputs.minIntegral);

@@ -25,28 +25,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveTrackingOptimizationResults(solution, inputs, resultsDirectory)
-
-values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
-stateLabels = inputs.coordinateNames;
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
+function inputs = addTerminalConstraintTerms(tree, ...
+    terminalConstraintTerms, inputs)
+enabled = getFieldByNameOrError(tree, "is_enabled").Text;
+if(enabled == "true")
+    inputs.(strcat([lower(terminalConstraintTerms(1)) ...
+        terminalConstraintTerms(2:end)], "Constraint")) = 1;
+else
+    inputs.(strcat([lower(terminalConstraintTerms(1)) ...
+        terminalConstraintTerms(2:end)], "Constraint")) = 0;
 end
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
-end
-writeToSto(stateLabels, values.time, ...
-        [values.statePositions values.stateVelocities values.stateAccelerations], fullfile(resultsDirectory, ...
-        "statesSolution.sto"));
-controlLabels = inputs.coordinateNames;
-for i = 1 : inputs.numSynergies
-controlLabels{end + 1} = strcat('command', num2str(i));
-end
-writeToSto(controlLabels, values.time, ...
-        [values.controlJerks values.controlNeuralCommands], fullfile(resultsDirectory, ...
-        "controlSolution.sto"));
-writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, inputs.numSynergies), ...
-        [values.synergyWeights], fullfile(resultsDirectory, ...
-        "parameterSolution.sto"));
-delete(inputs.mexModel);
+maxAllowableError = getFieldByNameOrError(tree, "max_allowable_error").Text;
+inputs.(strcat(terminalConstraintTerms, "MaxAllowableError")) = ...
+    str2double(maxAllowableError);
+minAllowableError = getFieldByNameOrError(tree, "min_allowable_error").Text;
+inputs.(strcat(terminalConstraintTerms, "MinAllowableError")) = ...
+    str2double(minAllowableError);
 end

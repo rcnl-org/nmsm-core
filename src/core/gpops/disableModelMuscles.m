@@ -25,28 +25,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveTrackingOptimizationResults(solution, inputs, resultsDirectory)
-
-values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
-stateLabels = inputs.coordinateNames;
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
+function inputs = disableModelMuscles(inputs)
+if ~isa(inputs.model, 'org.opensim.modeling.Model')
+    model = Model(inputs.model);
 end
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
+inputs.numTotalMuscles = model.getForceSet().getMuscles().getSize();
+for i = 0:model.getForceSet().getMuscles().getSize()-1
+    if model.getForceSet().getMuscles().get(i).get_appliesForce()
+        model.getForceSet().getMuscles().get(i).set_appliesForce(0);
+    end
 end
-writeToSto(stateLabels, values.time, ...
-        [values.statePositions values.stateVelocities values.stateAccelerations], fullfile(resultsDirectory, ...
-        "statesSolution.sto"));
-controlLabels = inputs.coordinateNames;
-for i = 1 : inputs.numSynergies
-controlLabels{end + 1} = strcat('command', num2str(i));
-end
-writeToSto(controlLabels, values.time, ...
-        [values.controlJerks values.controlNeuralCommands], fullfile(resultsDirectory, ...
-        "controlSolution.sto"));
-writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, inputs.numSynergies), ...
-        [values.synergyWeights], fullfile(resultsDirectory, ...
-        "parameterSolution.sto"));
-delete(inputs.mexModel);
+inputs.mexModel = strcat(strrep(inputs.model,'.osim',''), '_inactiveMuscles.osim');
+model.print(inputs.mexModel);
 end

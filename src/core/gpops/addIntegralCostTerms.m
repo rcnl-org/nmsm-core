@@ -25,28 +25,25 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveTrackingOptimizationResults(solution, inputs, resultsDirectory)
-
-values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
-stateLabels = inputs.coordinateNames;
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
+function inputs = addIntegralCostTerms(tree, integralCostTerm, inputs)
+integralCostTermName = integralCostTerm;
+integralCostTermName(1) = upper(integralCostTermName(1));
+enabled = getFieldByNameOrError(tree, "is_enabled").Text;
+if(enabled == "true")
+    inputs.(strcat(integralCostTerm, "Enabled")) = 1;
+else
+    inputs.(strcat(integralCostTerm, "Enabled")) = 0;
 end
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
+costWeight = getFieldByNameOrError(tree, "cost_weight").Text;
+inputs.(strcat(integralCostTerm, "CostWeight")) = str2double(costWeight);
+if isstruct(getFieldByName(tree, 'max_allowable_error'))
+    maxAllowableError = ... 
+        getFieldByNameOrError(tree, "max_allowable_error").Text;
+    inputs.(strcat(integralCostTerm, "MaxAllowableError")) = ...
+        str2double(maxAllowableError);
 end
-writeToSto(stateLabels, values.time, ...
-        [values.statePositions values.stateVelocities values.stateAccelerations], fullfile(resultsDirectory, ...
-        "statesSolution.sto"));
-controlLabels = inputs.coordinateNames;
-for i = 1 : inputs.numSynergies
-controlLabels{end + 1} = strcat('command', num2str(i));
+if  iscell(getFieldByName(tree, integralCostTermName))
+    inputs.(integralCostTerm) = ...
+        getAllowableError(tree.(integralCostTermName));
 end
-writeToSto(controlLabels, values.time, ...
-        [values.controlJerks values.controlNeuralCommands], fullfile(resultsDirectory, ...
-        "controlSolution.sto"));
-writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, inputs.numSynergies), ...
-        [values.synergyWeights], fullfile(resultsDirectory, ...
-        "parameterSolution.sto"));
-delete(inputs.mexModel);
 end

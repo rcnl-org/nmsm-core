@@ -37,14 +37,15 @@ output = computeTrackingOptimizationMainFunction(inputs, params);
 end
 function inputs = getMuscleSynergiesInitialGuess(inputs)
 if isfield(inputs.initialGuess,"parameter") 
-    synergyWeights = getSynergyWeightsFromGroups(inputs.initialGuess.parameter, inputs);
+    inputs.parameterGuess = inputs.initialGuess.parameter;
+    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
     inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
 else
     inputs.mtpActivationsColumnNames = inputs.muscleLabels;
-    inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 1 2]);
-    values = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs);
-    inputs.parameterGuess = getSynergyWeightsFromGroups(values, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / inputs.parameterGuess;
+    inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 2 1]);
+    inputs.parameterGuess = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs)';
+    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
+    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
 end
 end
 function inputs = getDesignVariableInputBounds(inputs)

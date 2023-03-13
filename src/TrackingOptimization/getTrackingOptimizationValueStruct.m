@@ -34,7 +34,7 @@ if params.optimizeSynergyVectors
         params.maxParameter, params.minParameter);
     values.synergyWeights = getSynergyWeightsFromGroups(values.synergyWeights, params);
 else
-    values.synergyWeights = getSynergyWeightsFromGroups(params.synergyWeights, params);
+    values.synergyWeights = getSynergyWeightsFromGroups(params.parameterGuess, params);
 end
 state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
     params.maxState, ones(size(inputs.state, 1), 1) .* params.minState);

@@ -25,28 +25,30 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveTrackingOptimizationResults(solution, inputs, resultsDirectory)
-
-values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
-stateLabels = inputs.coordinateNames;
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
+function [output] = getAllowableError(tree)
+counter = 1;
+for i=1:length(tree)
+    if(length(tree) == 1)
+        quantity = tree;
+    else
+        quantity = tree{i};
+    end
+    if (quantity.is_enabled.Text == "true")
+        output.names{counter} = quantity.Attributes.name;
+        output.maxAllowableErrors(counter) = ...
+            str2double(quantity.max_allowable_error.Text);
+        if isstruct(getFieldByName(quantity, 'min_allowable_error'))
+            output.minAllowableErrors(counter) = ...
+                str2double(quantity.min_allowable_error.Text);
+        end
+        if isstruct(getFieldByName(quantity, 'body'))
+            output.body{counter} = quantity.body.Text;
+        end
+        if isstruct(getFieldByName(quantity, 'point'))
+            output.point(counter, :) = ...
+                str2double(regexp(quantity.point.Text,'\S*','match'));
+        end
+        counter = counter + 1;
+    end
 end
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
-end
-writeToSto(stateLabels, values.time, ...
-        [values.statePositions values.stateVelocities values.stateAccelerations], fullfile(resultsDirectory, ...
-        "statesSolution.sto"));
-controlLabels = inputs.coordinateNames;
-for i = 1 : inputs.numSynergies
-controlLabels{end + 1} = strcat('command', num2str(i));
-end
-writeToSto(controlLabels, values.time, ...
-        [values.controlJerks values.controlNeuralCommands], fullfile(resultsDirectory, ...
-        "controlSolution.sto"));
-writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, inputs.numSynergies), ...
-        [values.synergyWeights], fullfile(resultsDirectory, ...
-        "parameterSolution.sto"));
-delete(inputs.mexModel);
 end

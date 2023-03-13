@@ -25,28 +25,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveTrackingOptimizationResults(solution, inputs, resultsDirectory)
-
-values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
-stateLabels = inputs.coordinateNames;
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
+function inputs = getStateDerivatives(inputs)
+for i = 1 : size(inputs.experimentalJointAngles, 2)
+    inputs.experimentalJointVelocities (:, i) = calcDerivative(...
+        inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
+    inputs.experimentalJointAccelerations (:, i) = calcDerivative(...
+        inputs.experimentalTime, inputs.experimentalJointVelocities(:, i));
+    inputs.experimentalJointJerks (:, i) = calcDerivative(...
+        inputs.experimentalTime, inputs.experimentalJointAccelerations(:, i));
 end
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
-end
-writeToSto(stateLabels, values.time, ...
-        [values.statePositions values.stateVelocities values.stateAccelerations], fullfile(resultsDirectory, ...
-        "statesSolution.sto"));
-controlLabels = inputs.coordinateNames;
-for i = 1 : inputs.numSynergies
-controlLabels{end + 1} = strcat('command', num2str(i));
-end
-writeToSto(controlLabels, values.time, ...
-        [values.controlJerks values.controlNeuralCommands], fullfile(resultsDirectory, ...
-        "controlSolution.sto"));
-writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, inputs.numSynergies), ...
-        [values.synergyWeights], fullfile(resultsDirectory, ...
-        "parameterSolution.sto"));
-delete(inputs.mexModel);
 end

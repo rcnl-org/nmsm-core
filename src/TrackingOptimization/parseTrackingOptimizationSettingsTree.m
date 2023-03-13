@@ -30,8 +30,8 @@ function [inputs, params, resultsDirectory] = ...
 inputs = getInputs(settingsTree);
 inputs = getSplines(inputs);
 params = getParams(settingsTree);
-inputs = getModelInputs(inputs);
-inputs = updateModel(inputs);
+inputs = getModelOrOsimxInputs(inputs);
+inputs = disableModelMuscles(inputs);
 inputs = getStateDerivatives(inputs);
 inputs = checkInitialGuess(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
@@ -39,7 +39,6 @@ if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
 
-inputs.synergyWeights = inputs.initialGuess.parameter;
 %% missing GCP inputs
 inputData = load([cd '\inputData.mat']);
 inputs.splineLeftGroundReactionForces = inputData.params.splineLeftGroundReactionForces;
@@ -102,80 +101,17 @@ inputs.leftGroundReactionLabels = {'ground_reaction_force_x', ...
 end
 
 function inputs = getInputs(tree)
-import org.opensim.modeling.Storage
-dataDirectory = getFieldByName(tree, 'data_directory').Text;
-modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
-if(~isempty(dataDirectory))
-    try
-        inputs.model = fullfile(dataDirectory, modelFile);
-    catch
-        inputs.model = fullfile(pwd, dataDirectory, modelFile);
-        dataDirectory = fullfile(pwd, dataDirectory);
-    end
-else
-    inputs.model = fullfile(pwd, modelFile);
-    dataDirectory = pwd;
-end
-
+inputs = parseTrackingOptimizationDataDirectory(tree);
+inputs.model = parseModel(tree);
 inputs.controllerType = getFieldByNameOrError(tree, 'type_of_controller').Text;
-inputs.osimxFile = getFieldByName(tree, 'osimx_file').Text;
-inputs.ncpDataInputs = parseNCPOsimxFile(inputs.osimxFile);
+osimxFile = getTextFromField(getFieldByNameOrAlternate(tree, 'osimx_file'));
+inputs.ncpDataInputs = parseNCPOsimxFile(osimxFile);
 inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
-inputs.numSynergies = 0;
-inputs.numSynergyWeights = 0;
-for i = 1 : length(inputs.synergyGroups)
-    inputs.numSynergies = inputs.numSynergies + ...
-    inputs.synergyGroups{i}.numSynergies;
-    inputs.numSynergyWeights = inputs.numSynergyWeights + ...
-        length(inputs.synergyGroups{i}.muscleNames) * ...
-        inputs.synergyGroups{i}.numSynergies;
-end
-
-inputs.initialGuess = getTrackingOptimizationInitialGuess(tree);
-
-optimizeSynergyVectors = getFieldByName(tree, 'optimize_synergy_vectors');
-if(isstruct(optimizeSynergyVectors))
-    if strcmpi(optimizeSynergyVectors.Text, 'true')
-        inputs.optimizeSynergyVectors = 1;
-    else 
-        inputs.optimizeSynergyVectors = 0;
-    end
-end
-
-prefixes = getPrefixes(tree, dataDirectory);
-inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
-    dataDirectory, "IDData"), prefixes);
-inputs.inverseDynamicMomentLabels = getStorageColumnNames(Storage( ...
-    inverseDynamicsFileNames(1)));
-inputs.experimentalJointMoments = parseTreatmentOptimizationStandard( ...
-    inverseDynamicsFileNames);
-inputs.numActuators = size(inputs.experimentalJointMoments, 2);
-
-coordinateFileName = findFileListFromPrefixList(fullfile( ...
-    dataDirectory, "IKData"), prefixes);
-inputs.coordinateNames = cellstr(getStorageColumnNames(Storage( ...
-    coordinateFileName(1))));
-inputs.experimentalJointAngles = parseTreatmentOptimizationStandard( ...
-    coordinateFileName);
-inputs.experimentalTime = parseTimeColumn(coordinateFileName)';
-inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
-
-muscleActivationFileName = findFileListFromPrefixList(fullfile( ...
-    dataDirectory, "ActData"), prefixes);
-inputs.muscleLabels = getStorageColumnNames(Storage( ...
-    muscleActivationFileName(1)));
-inputs.experimentalMuscleActivations = parseTreatmentOptimizationStandard( ...
-    muscleActivationFileName);
-inputs.numMuscles = length(inputs.muscleLabels);
-
-% Need to extract electrical center from here
-experimentalGroundReactions = parseTreatmentOptimizationStandard(...
-    findFileListFromPrefixList(fullfile(dataDirectory, "GRFData"), prefixes));
-
-
-% load in surrogate model params
-inputs.experimentalTime = inputs.experimentalTime - inputs.experimentalTime(1);
-
+inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
+inputs.numSynergyWeights = getNumSynergyWeights(inputs.synergyGroups);
+inputs.initialGuess = getGpopsInitialGuess(tree);
+inputs.optimizeSynergyVectors = getBooleanLogicFromField( ...
+    getFieldByName(tree, 'optimize_synergy_vectors'));
 inputs = getDesignVariableBounds(tree, inputs);
 inputs = getIntegralCostTerms(getFieldByNameOrError(tree, ...
     'TrackingOptimizationIntegralTerms'), inputs);
@@ -183,56 +119,39 @@ inputs = getPathConstraintTerms(getFieldByNameOrError(tree, ...
     'TrackingOptimizationPathConstraintTerms'), inputs);
 inputs = getTerminalConstraintTerms(getFieldByNameOrError(tree, ...
     'TrackingOptimizationTerminalConstraintTerms'), inputs);
-inputs.beltSpeed = getBeltSpeed(tree);
-% load in epsilon
-inputs.vMaxFactor = getVMaxFactor(tree);
+inputs.beltSpeed = getDoubleFromField(getFieldByName(tree, 'belt_speed'));
+inputs.epsilon = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "epsilon", "1e-3"));
+inputs.vMaxFactor = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "v_max_factor", "10"));
 end
 
-function prefixes = getPrefixes(tree, inputDirectory)
-prefixField = getFieldByName(tree, 'trial_prefix');
-if(length(prefixField.Text) > 0)
-    prefixes = strsplit(prefixField.Text, ' ');
-else
-    files = dir(fullfile(inputDirectory, "IKData"));
-    prefixes = string([]);
-    for i=1:length(files)
-        if(~files(i).isdir)
-            prefixes(end+1) = files(i).name(1:end-4);
-        end
-    end
-end
-end
+function inputs = parseTrackingOptimizationDataDirectory(tree)
+dataDirectory = parseDataDirectory(tree);
+prefix = findPrefixes(tree, dataDirectory);
 
-function solverSettings = getOptimalControlSolverSettings(settingsFileName)
-solverSettingsTree = xml2struct(settingsFileName);
+directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IDData");
+[inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
+    parseTreatmentOptimizationData(directory, prefix);
+inputs.numActuators = size(inputs.experimentalJointMoments, 2);
 
-solverSettings.optimizationFileName = 'trackingOptimizationOutputFile.txt';
-solverSettings.solverType = getTextFromField(getFieldByNameOrAlternate( ...
-    solverSettingsTree, 'solver_type', 'ipopt'));
-solverSettings.linearSolverType = getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'linear_solver_type', 'ma57'));
-solverSettings.solverTolerance = str2double(getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'solver_tolerance', '1e-3')));
-solverSettings.stepSize = str2double(getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'step_size', '1e-8')));
-solverSettings.maxIterations = str2double(getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'max_iterations', '2e4')));
-solverSettings.derivativeApproximation = getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'derivative_approximation', 'sparseCD'));
-solverSettings.derivativeOrder = getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'derivative_order', 'first'));
-solverSettings.derivativeDependencies = getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'derivative_dependencies', 'sparse'));
-solverSettings.meshMethod = getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'mesh_method', ''));
-solverSettings.meshTolerance = getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'mesh_tolerance', ''));
-solverSettings.meshMaxIterations = str2double(getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'mesh_max_iterations', '0')));
-solverSettings.method = getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'method', ''));
-solverSettings.collocationPoints = str2double(getTextFromField( ...
-    getFieldByNameOrAlternate(solverSettingsTree, 'collocation_points', '5')));
+directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IKData");
+[inputs.experimentalJointAngles, inputs.coordinateNames] = ...
+    parseTreatmentOptimizationData(directory, prefix);
+inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
+
+directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
+[inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
+    parseTreatmentOptimizationData(directory, prefix);
+inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
+
+experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
+    fullfile(dataDirectory, "IKData"), prefix))';
+inputs.experimentalTime = experimentalTime - experimentalTime(1);
+
+directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "GRFData");
+[inputs.experimentalGroundReactions, inputs.groundReactionLabels] = ...
+    parseTreatmentOptimizationData(directory, prefix);
 end
 
 function inputs = getSplines(inputs)
@@ -254,34 +173,34 @@ designVariableTree = getFieldByNameOrError(tree, ...
 jointPositionsMultiple = getFieldByNameOrError(designVariableTree, ...
     'joint_positions');
 if(isstruct(jointPositionsMultiple))
-    inputs.statePositionsMultiple = str2double(jointPositionsMultiple.Text);
+    inputs.statePositionsMultiple = getDoubleFromField(jointPositionsMultiple);
 end
 jointVelocitiesMultiple = getFieldByNameOrError(designVariableTree, ...
     'joint_velocities');
 if(isstruct(jointVelocitiesMultiple))
-    inputs.stateVelocitiesMultiple = str2double(jointVelocitiesMultiple.Text);
+    inputs.stateVelocitiesMultiple = getDoubleFromField(jointVelocitiesMultiple);
 end
 jointAccelerationsMultiple = getFieldByNameOrError(designVariableTree, ...
     'joint_accelerations');
 if(isstruct(jointAccelerationsMultiple))
     inputs.stateAccelerationsMultiple = ...
-        str2double(jointAccelerationsMultiple.Text);
+        getDoubleFromField(jointAccelerationsMultiple);
 end
 jointJerkMultiple = getFieldByNameOrError(designVariableTree, 'joint_jerks');
 if(isstruct(jointJerkMultiple))
-    inputs.controlJerksMultiple = str2double(jointJerkMultiple.Text);
+    inputs.controlJerksMultiple = getDoubleFromField(jointJerkMultiple);
 end
 maxControlNeuralCommands = getFieldByNameOrError(designVariableTree, ...
     'synergy_commands');
 if(isstruct(maxControlNeuralCommands))
     inputs.maxControlNeuralCommands = ...
-        str2double(maxControlNeuralCommands.Text);
+        getDoubleFromField(maxControlNeuralCommands);
 end
 maxParameterSynergyWeights = getFieldByNameOrError(designVariableTree, ...
     'synergy_weights');
 if(isstruct(maxParameterSynergyWeights))
     inputs.maxParameterSynergyWeights = ...
-        str2double(maxParameterSynergyWeights.Text);
+        getDoubleFromField(maxParameterSynergyWeights);
 end
 end
 
@@ -315,60 +234,6 @@ inputs = addIntegralCostTerms(minimizingJerkTree, ...
         'minimizedCoordinate', inputs);
 end
 
-function inputs = addIntegralCostTerms(tree, ...
-    integralCostTerm, inputs)
-integralCostTermName = integralCostTerm;
-integralCostTermName(1) = upper(integralCostTermName(1));
-enabled = getFieldByNameOrError(tree, "is_enabled").Text;
-if(enabled == "true")
-    inputs.(strcat(integralCostTerm, "Enabled")) = 1;
-else
-    inputs.(strcat(integralCostTerm, "Enabled")) = 0;
-end
-costWeight = getFieldByNameOrError(tree, "cost_weight").Text;
-inputs.(strcat(integralCostTerm, "CostWeight")) = str2double(costWeight);
-
-if isstruct(getFieldByName(tree, 'max_allowable_error'))
-    maxAllowableError = ... 
-        getFieldByNameOrError(tree, "max_allowable_error").Text;
-    inputs.(strcat(integralCostTerm, "MaxAllowableError")) = ...
-        str2double(maxAllowableError);
-end
-
-if  iscell(getFieldByName(tree, integralCostTermName))
-    inputs.(integralCostTerm) = ...
-        getAllowableError(tree.(integralCostTermName));
-end
-end
-
-function [output] = getAllowableError(tree)
-counter = 1;
-for i=1:length(tree)
-    if(length(tree) == 1)
-        quantity = tree;
-    else
-        quantity = tree{i};
-    end
-    if (quantity.is_enabled.Text == "true")
-        output.names{counter} = quantity.Attributes.name;
-        output.maxAllowableErrors(counter) = ...
-            str2double(quantity.max_allowable_error.Text);
-        if isstruct(getFieldByName(quantity, 'min_allowable_error'))
-            output.minAllowableErrors(counter) = ...
-                str2double(quantity.min_allowable_error.Text);
-        end
-        if isstruct(getFieldByName(quantity, 'body'))
-            output.body{counter} = quantity.body.Text;
-        end
-        if isstruct(getFieldByName(quantity, 'point'))
-            output.point(counter, :) = ...
-                str2double(regexp(quantity.point.Text,'\S*','match'));
-        end
-        counter = counter + 1;
-    end
-end
-end
-
 function inputs = getPathConstraintTerms(tree, inputs)
 rootSegmentResidualLoadsTree = getFieldByNameOrError(tree, ...
     'RootSegmentResidualLoads');
@@ -378,23 +243,6 @@ muscleModelMomentConsistencyTree = getFieldByNameOrError(tree, ...
     'MuscleModelMomentConsistency');
 inputs = addPathConstraintTerms(muscleModelMomentConsistencyTree, ...
         'muscleModelLoad', inputs);
-end
-
-function inputs = addPathConstraintTerms(tree, ...
-    pathConstraintTerm, inputs)
-pathConstraintTermName = pathConstraintTerm;
-pathConstraintTermName(1) = upper(pathConstraintTermName(1));
-enabled = getFieldByNameOrError(tree, "is_enabled").Text;
-if(enabled == "true")
-    inputs.(strcat(pathConstraintTerm, "PathConstraint")) = 1;
-else
-    inputs.(strcat(pathConstraintTerm, "PathConstraint")) = 0;
-end
-
-if  iscell(getFieldByName(tree, pathConstraintTermName))
-    inputs.(pathConstraintTerm) = ...
-        getAllowableError(tree.(pathConstraintTermName));
-end
 end
 
 function inputs = getTerminalConstraintTerms(tree, inputs)
@@ -424,159 +272,14 @@ inputs = addTerminalConstraintTerms(synergyWeightsSumTree, ...
         'synergyWeightsSum', inputs);
 end
 
-function inputs = addTerminalConstraintTerms(tree, ...
-    terminalConstraintTerms, inputs)
-enabled = getFieldByNameOrError(tree, "is_enabled").Text;
-if(enabled == "true")
-    inputs.(strcat([lower(terminalConstraintTerms(1)) ...
-        terminalConstraintTerms(2:end)], "Constraint")) = 1;
-else
-    inputs.(strcat([lower(terminalConstraintTerms(1)) ...
-        terminalConstraintTerms(2:end)], "Constraint")) = 0;
-end
-maxAllowableError = getFieldByNameOrError(tree, "max_allowable_error").Text;
-inputs.(strcat(terminalConstraintTerms, "MaxAllowableError")) = ...
-    str2double(maxAllowableError);
-minAllowableError = getFieldByNameOrError(tree, "min_allowable_error").Text;
-inputs.(strcat(terminalConstraintTerms, "MinAllowableError")) = ...
-    str2double(minAllowableError);
-end
-
-function beltSpeed = getBeltSpeed(tree)
-beltSpeed = getFieldByNameOrError(tree, 'belt_speed');
-beltSpeed = str2double(beltSpeed.Text);
-end
-
-function vMaxFactor = getVMaxFactor(tree)
-vMaxFactor = getFieldByName(tree, 'v_max_factor');
-if(isstruct(vMaxFactor))
-    vMaxFactor = str2double(vMaxFactor.Text);
-else
-    vMaxFactor = 10;
-end
-end
-
 function params = getParams(tree)
 
 params.solverSettings = getOptimalControlSolverSettings(...
     getTextFromField(getFieldByName(tree, 'optimal_control_settings_file')));
 end
 
-function inputs = getStateDerivatives(inputs)
-for i = 1 : size(inputs.experimentalJointAngles, 2)
-    inputs.experimentalJointVelocities (:, i) = calcDerivative(...
-        inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
-    inputs.experimentalJointAccelerations (:, i) = calcDerivative(...
-        inputs.experimentalTime, inputs.experimentalJointVelocities(:, i));
-    inputs.experimentalJointJerks (:, i) = calcDerivative(...
-        inputs.experimentalTime, inputs.experimentalJointAccelerations(:, i));
-end
-end
-
-function inputs = getModelInputs(inputs)
-if ~isa(inputs.model, 'org.opensim.modeling.Model')
-    model = Model(inputs.model);
-end
-inputs.numMuscles = getNumEnabledMuscles(inputs.model);
-inputs.optimalFiberLength = [];
-inputs.tendonSlackLength = [];
-inputs.pennationAngle = [];
-inputs.maxIsometricForce = [];
-inputs.muscleNames = '';
-for i = 0:model.getForceSet().getMuscles().getSize()-1
-    if model.getForceSet().getMuscles().get(i).get_appliesForce()
-        inputs.muscleNames{end+1} = char(model.getForceSet(). ...
-            getMuscles().get(i).getName);
-        if isfield(inputs.ncpDataInputs, inputs.muscleNames{end})
-            inputs.optimalFiberLength(end+1) = inputs.ncpDataInputs. ...
-                (inputs.muscleNames{end}).optimalTendonLength;
-            inputs.tendonSlackLength(end+1) = inputs.ncpDataInputs. ...
-                (inputs.muscleNames{end}).tendonSlackLength;
-            if isfield(inputs.ncpDataInputs. ...
-                    (inputs.muscleNames{end}), 'maxIsometricForce')
-                inputs.maxIsometricForce(end+1) = inputs.ncpDataInputs. ...
-                    (inputs.muscleNames{end}).maxIsometricForce;
-            else
-                inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
-                    getMuscles().get(i).getMaxIsometricForce();
-            end
-        else
-            inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
-                getMuscles().get(i).getOptimalFiberLength();
-            inputs.tendonSlackLength(end+1) = model.getForceSet(). ...
-                getMuscles().get(i).getTendonSlackLength();
-            inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
-                getMuscles().get(i).getMaxIsometricForce();
-        end
-        inputs.pennationAngle(end+1) = model.getForceSet(). ...
-            getMuscles().get(i). ...
-            getPennationAngleAtOptimalFiberLength();
-    end
-end
-end
-
-function inputs = updateModel(inputs)
-if ~isa(inputs.model, 'org.opensim.modeling.Model')
-    model = Model(inputs.model);
-end
-inputs.numTotalMuscles = model.getForceSet().getMuscles().getSize();
-for i = 0:model.getForceSet().getMuscles().getSize()-1
-    if model.getForceSet().getMuscles().get(i).get_appliesForce()
-        model.getForceSet().getMuscles().get(i).set_appliesForce(0);
-    end
-end
-inputs.mexModel = strcat(strrep(inputs.model,'.osim',''), '_inactiveMuscles.osim');
-model.print(inputs.mexModel);
-end
-
-function data = parseNCPOsimxFile(filename)
-tree = xml2struct(filename);
-ncpMuscleSetTree = getFieldByNameOrError(tree, "NCPMuscleSet");
-musclesTree = getFieldByNameOrError(ncpMuscleSetTree, "objects").RCNLMuscle;
-for i = 1:length(musclesTree)
-    if(length(musclesTree) == 1)
-        muscle = musclesTree;
-    else
-        muscle = musclesTree{i};
-    end
-    data.(muscle.Attributes.name).optimalTendonLength = ...
-        str2double(muscle.optimal_fiber_length.Text);    
-    data.(muscle.Attributes.name).tendonSlackLength = ...
-        str2double(muscle.slack_tendon_length.Text);
-    if isfield(muscle,'max_isometric_force')
-        data.(muscle.Attributes.name).maxIsometricForce = ...
-            str2double(muscle.max_isometric_force.Text);
-    end
-end
-end
-
-function initialGuess = getTrackingOptimizationInitialGuess(tree)
-import org.opensim.modeling.Storage
-initialGuess = [];
-
-stateFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
-    'initial_states_file', ''));
-if ~isempty(stateFileName)
-    initialGuess.time = parseTimeColumn({stateFileName})';
-    initialGuess.stateLabels = getStorageColumnNames(Storage({stateFileName}));
-    initialGuess.state = parseTreatmentOptimizationStandard({stateFileName});
-end
-controlFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
-    'initial_controls_file', ''));
-if ~isempty(controlFileName)
-    initialGuess.controlLabels = getStorageColumnNames(Storage({controlFileName}));
-    initialGuess.control = parseTreatmentOptimizationStandard({controlFileName});
-end
-parameterFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
-    'initial_parameters_file', ''));
-if ~isempty(parameterFileName)
-    initialGuess.parameterLabels = getStorageColumnNames(Storage({parameterFileName}));
-    initialGuess.parameter = parseTreatmentOptimizationStandard({parameterFileName});
-end
-end
-
 function inputs = checkInitialGuess(inputs)
-if isfield(inputs.initialGuess,'state')
+if isfield(inputs.initialGuess, 'state')
     for i = 1 : inputs.numCoordinates
         for j = 1 : length(inputs.initialGuess.stateLabels)
             if strcmpi(inputs.coordinateNames(i), inputs.initialGuess.stateLabels(j))
@@ -587,7 +290,7 @@ if isfield(inputs.initialGuess,'state')
     inputs.initialGuess.state = inputs.initialGuess.state(:, [stateIndex ...
     stateIndex + inputs.numCoordinates stateIndex + inputs.numCoordinates * 2]);
 end
-if isfield(inputs.initialGuess,'control')
+if isfield(inputs.initialGuess, 'control')
     for i = 1 : inputs.numCoordinates
         for k = 1 : length(inputs.initialGuess.controlLabels)
             if strcmpi(inputs.coordinateNames(i), inputs.initialGuess.controlLabels(k))
@@ -598,7 +301,7 @@ if isfield(inputs.initialGuess,'control')
     inputs.initialGuess.control(:, 1:inputs.numCoordinates) = ...
         inputs.initialGuess.control(:, controlIndex);
 end
-if isfield(inputs.initialGuess,'parameter')
+if isfield(inputs.initialGuess, 'parameter')
     parameterIndex = zeros(length(inputs.synergyGroups), inputs.numMuscles);
     for i = 1 : length(inputs.synergyGroups)
         for j = 1 : inputs.numMuscles

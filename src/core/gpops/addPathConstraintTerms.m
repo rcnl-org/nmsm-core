@@ -25,28 +25,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveTrackingOptimizationResults(solution, inputs, resultsDirectory)
+function inputs = addPathConstraintTerms(tree, ...
+    pathConstraintTerm, inputs)
+pathConstraintTermName = pathConstraintTerm;
+pathConstraintTermName(1) = upper(pathConstraintTermName(1));
+enabled = getFieldByNameOrError(tree, "is_enabled").Text;
+if(enabled == "true")
+    inputs.(strcat(pathConstraintTerm, "PathConstraint")) = 1;
+else
+    inputs.(strcat(pathConstraintTerm, "PathConstraint")) = 0;
+end
 
-values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
-stateLabels = inputs.coordinateNames;
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
+if  iscell(getFieldByName(tree, pathConstraintTermName))
+    inputs.(pathConstraintTerm) = ...
+        getAllowableError(tree.(pathConstraintTermName));
 end
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
-end
-writeToSto(stateLabels, values.time, ...
-        [values.statePositions values.stateVelocities values.stateAccelerations], fullfile(resultsDirectory, ...
-        "statesSolution.sto"));
-controlLabels = inputs.coordinateNames;
-for i = 1 : inputs.numSynergies
-controlLabels{end + 1} = strcat('command', num2str(i));
-end
-writeToSto(controlLabels, values.time, ...
-        [values.controlJerks values.controlNeuralCommands], fullfile(resultsDirectory, ...
-        "controlSolution.sto"));
-writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, inputs.numSynergies), ...
-        [values.synergyWeights], fullfile(resultsDirectory, ...
-        "parameterSolution.sto"));
-delete(inputs.mexModel);
 end
