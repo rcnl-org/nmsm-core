@@ -101,14 +101,16 @@ inputs.leftGroundReactionLabels = {'ground_reaction_force_x', ...
 end
 
 function inputs = getInputs(tree)
-inputs = parseTrackingOptimizationDataDirectory(tree);
-inputs.model = parseModel(tree);
 inputs.controllerType = getFieldByNameOrError(tree, 'type_of_controller').Text;
-osimxFile = getTextFromField(getFieldByNameOrAlternate(tree, 'osimx_file'));
+inputs = parseTrackingOptimizationDataDirectory(tree, inputs);
+inputs.model = parseModel(tree);
+if strcmp(inputs.controllerType, 'synergy_driven')
+osimxFile = getTextFromField(getFieldByName(tree, 'osimx_file'));
 inputs.ncpDataInputs = parseNCPOsimxFile(osimxFile);
 inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
 inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
 inputs.numSynergyWeights = getNumSynergyWeights(inputs.synergyGroups);
+end
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs.optimizeSynergyVectors = getBooleanLogicFromField( ...
     getFieldByName(tree, 'optimize_synergy_vectors'));
@@ -126,7 +128,7 @@ inputs.vMaxFactor = str2double(parseElementTextByNameOrAlternate(tree, ...
     "v_max_factor", "10"));
 end
 
-function inputs = parseTrackingOptimizationDataDirectory(tree)
+function inputs = parseTrackingOptimizationDataDirectory(tree, inputs)
 dataDirectory = parseDataDirectory(tree);
 prefix = findPrefixes(tree, dataDirectory);
 
@@ -140,10 +142,11 @@ directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IKData");
     parseTreatmentOptimizationData(directory, prefix);
 inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
 
+if strcmp(inputs.controllerType, 'synergy_driven')
 directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
 [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
     parseTreatmentOptimizationData(directory, prefix);
-inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
+end
 
 experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
     fullfile(dataDirectory, "IKData"), prefix))';
@@ -159,12 +162,14 @@ inputs.splineJointAngles = spaps(inputs.experimentalTime, ...
     inputs.experimentalJointAngles', 0.0000001);
 inputs.splineJointMoments = spaps(inputs.experimentalTime, ...
     inputs.experimentalJointMoments', 0.0000001);
-inputs.splineMuscleActivations = spaps(inputs.experimentalTime, ...
-    inputs.experimentalMuscleActivations', 0.0000001);
 % inputs.splineRightGroundReactionForces = spaps(inputs.experimentalTime, ...
 %     inputs.experimentalRightGroundReactions', 0.0000001);
 % inputs.splineLeftGroundReactionForces = spaps(inputs.experimentalTime, ...
 %     inputs.experimentalLeftGroundReactions', 0.0000001);
+if strcmp(inputs.controllerType, 'synergy_driven')
+inputs.splineMuscleActivations = spaps(inputs.experimentalTime, ...
+    inputs.experimentalMuscleActivations', 0.0000001);
+end
 end
 
 function inputs = getDesignVariableBounds(tree, inputs)
@@ -190,6 +195,7 @@ jointJerkMultiple = getFieldByNameOrError(designVariableTree, 'joint_jerks');
 if(isstruct(jointJerkMultiple))
     inputs.controlJerksMultiple = getDoubleFromField(jointJerkMultiple);
 end
+if strcmp(inputs.controllerType, 'synergy_driven')
 maxControlNeuralCommands = getFieldByNameOrError(designVariableTree, ...
     'synergy_commands');
 if(isstruct(maxControlNeuralCommands))
@@ -201,6 +207,13 @@ maxParameterSynergyWeights = getFieldByNameOrError(designVariableTree, ...
 if(isstruct(maxParameterSynergyWeights))
     inputs.maxParameterSynergyWeights = ...
         getDoubleFromField(maxParameterSynergyWeights);
+end
+else 
+maxControlTorques = getFieldByNameOrError(designVariableTree, ...
+    'torque_controls');
+if(isstruct(maxControlTorques))
+    inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
+end
 end
 end
 
@@ -222,10 +235,12 @@ trackingExternalMomentsTree = getFieldByNameOrError(trackingIntegralTermsTree, .
     'TrackedExternalMomentList');
 inputs = addIntegralCostTerms(trackingExternalMomentsTree, ...
         'trackedExternalMoment', inputs);
-trackingMuscleActivationsTree = getFieldByNameOrError(trackingIntegralTermsTree, ...
+if strcmp(inputs.controllerType, 'synergy_driven')
+trackingMuscleActivationsTree = getFieldByName(trackingIntegralTermsTree, ...
     'TrackedMuscleActivations');
 inputs = addIntegralCostTerms(trackingMuscleActivationsTree, ...
         'trackedMuscleActivation', inputs);
+end
 
 minimizingIntegralTermsTree = getFieldByNameOrError(tree, 'MinimizingTerms');
 minimizingJerkTree = getFieldByNameOrError(minimizingIntegralTermsTree, ...
@@ -239,10 +254,18 @@ rootSegmentResidualLoadsTree = getFieldByNameOrError(tree, ...
     'RootSegmentResidualLoads');
 inputs = addPathConstraintTerms(rootSegmentResidualLoadsTree, ...
         'rootSegmentResidualLoad', inputs);
+if strcmp(inputs.controllerType, 'synergy_driven')
 muscleModelMomentConsistencyTree = getFieldByNameOrError(tree, ...
     'MuscleModelMomentConsistency');
 inputs = addPathConstraintTerms(muscleModelMomentConsistencyTree, ...
         'muscleModelLoad', inputs);
+elseif strcmp(inputs.controllerType, 'torque_driven')
+controllerModelMomentConsistencyTree = getFieldByNameOrError(tree, ...
+    'ControllerModelMomentConsistency');
+inputs = addPathConstraintTerms(controllerModelMomentConsistencyTree, ...
+        'controllerModelLoad', inputs);
+inputs.numTorqueControls = length(inputs.controllerModelLoad.names);
+end
 end
 
 function inputs = getTerminalConstraintTerms(tree, inputs)
@@ -266,10 +289,12 @@ externalMomentPeriodicityTree = getFieldByNameOrError(tree, ...
     'ExternalMomentPeriodicity');
 inputs = addTerminalConstraintTerms(externalMomentPeriodicityTree, ...
         'externalMomentPeriodicity', inputs);
+if strcmp(inputs.controllerType, 'synergy_driven')
 synergyWeightsSumTree = getFieldByNameOrError(tree, ...
     'SynergyWeightsSum');
 inputs = addTerminalConstraintTerms(synergyWeightsSumTree, ...
         'synergyWeightsSum', inputs);
+end
 end
 
 function params = getParams(tree)

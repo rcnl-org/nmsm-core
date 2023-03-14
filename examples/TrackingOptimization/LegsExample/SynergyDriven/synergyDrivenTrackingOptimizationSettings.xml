@@ -2,11 +2,11 @@
 <OpenSimDocument Version="40000">
     <TrackingOptimizationTool>
         <!--Directory used for writing results.-->
-        <results_directory>C:\Users\marle\Documents\GitHub\nmsm-core\examples\TrackingOptimization\LegsExample</results_directory>
+        <results_directory>C:\Users\marle\Documents\GitHub\nmsm-core\examples\TrackingOptimization\LegsExample\SynergyDriven</results_directory>
         <!--Directory for input files-->
         <data_directory>preprocessed</data_directory>
         <!--Name of the input model file (.osim) to use-->
-        <input_model_file>exampleModel.osim</input_model_file>
+        <input_model_file>preprocessed\exampleModel.osim</input_model_file>
 		<!-- -->
 		<initial_states_file>states.sto</initial_states_file>
 		<!-- -->
@@ -736,6 +736,8 @@
         </TrackingOptimizationTerminalConstraintTerms>
 		<!-- -->
 		<optimal_control_settings_file>gpopsSettings.xml</optimal_control_settings_file>
+		<!-- -->
+		<epsilon>1e-3</epsilon>
 		<!-- -->
 		<belt_speed>1.4</belt_speed>
   		<!--*Optional* The vMaxFactor to use-->

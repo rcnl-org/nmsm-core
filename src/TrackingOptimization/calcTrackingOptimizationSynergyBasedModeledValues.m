@@ -27,7 +27,7 @@
 
 function phaseout = calcTrackingOptimizationSynergyBasedModeledValues(...
     values, params, phaseout)
-
+if strcmp(params.controllerType, 'synergy_driven') 
 jointAngles = getMuscleActuatedDOFs(values, params);
 [params.muscleTendonLength, params.momentArms] = calcSurrogateModel( ...
     params, jointAngles);
@@ -43,6 +43,7 @@ muscleJointMoments = calcMuscleJointMoments(params, ...
     phaseout.normalizedFiberVelocity);
 phaseout.muscleJointMoments(:, params.dofsActuatedIndex) = muscleJointMoments;
 phaseout.muscleJointMoments(:, all(~phaseout.muscleJointMoments, 1)) = [];
+end
 end
 
 function muscleActivations = calcMuscleActivationFromSynergies(values)

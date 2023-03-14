@@ -28,22 +28,19 @@
 function inputs = addIntegralCostTerms(tree, integralCostTerm, inputs)
 integralCostTermName = integralCostTerm;
 integralCostTermName(1) = upper(integralCostTermName(1));
-enabled = getFieldByNameOrError(tree, "is_enabled").Text;
+enabled = getTextFromField(getFieldByNameOrError(tree, "is_enabled"));
 if(enabled == "true")
     inputs.(strcat(integralCostTerm, "Enabled")) = 1;
 else
     inputs.(strcat(integralCostTerm, "Enabled")) = 0;
 end
-costWeight = getFieldByNameOrError(tree, "cost_weight").Text;
-inputs.(strcat(integralCostTerm, "CostWeight")) = str2double(costWeight);
+inputs.(strcat(integralCostTerm, "CostWeight")) = ...
+    getDoubleFromField(getFieldByNameOrError(tree, "cost_weight"));
 if isstruct(getFieldByName(tree, 'max_allowable_error'))
-    maxAllowableError = ... 
-        getFieldByNameOrError(tree, "max_allowable_error").Text;
     inputs.(strcat(integralCostTerm, "MaxAllowableError")) = ...
-        str2double(maxAllowableError);
+        getDoubleFromField(getFieldByNameOrError(tree, "max_allowable_error"));
 end
 if  iscell(getFieldByName(tree, integralCostTermName))
-    inputs.(integralCostTerm) = ...
-        getAllowableError(tree.(integralCostTermName));
+    inputs.(integralCostTerm) = getAllowableError(tree.(integralCostTermName));
 end
 end

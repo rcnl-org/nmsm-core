@@ -28,25 +28,11 @@
 function [output, inputs] = TrackingOptimization(inputs, params)
 pointKinematics(inputs.mexModel);
 inverseDynamics(inputs.mexModel);
-inputs = getMuscleSynergiesInitialGuess(inputs);
-inputs = getDesignVariableInputBounds(inputs);
 inputs = getIntegralBounds(inputs);
 inputs = getPathConstraintBounds(inputs);
 inputs = getTerminalConstraintBounds(inputs); 
+inputs = getDesignVariableInputBounds(inputs);
 output = computeTrackingOptimizationMainFunction(inputs, params);
-end
-function inputs = getMuscleSynergiesInitialGuess(inputs)
-if isfield(inputs.initialGuess,"parameter") 
-    inputs.parameterGuess = inputs.initialGuess.parameter;
-    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
-else
-    inputs.mtpActivationsColumnNames = inputs.muscleLabels;
-    inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 2 1]);
-    inputs.parameterGuess = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs)';
-    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
-end
 end
 function inputs = getDesignVariableInputBounds(inputs)
 inputs.maxTime = max(inputs.experimentalTime);
@@ -73,6 +59,7 @@ maxControlJerks = max(inputs.experimentalJointJerks) + ...
 minControlJerks = min(inputs.experimentalJointJerks) - ...
     inputs.controlJerksMultiple * range(inputs.experimentalJointJerks);
 
+if strcmp(inputs.controllerType, 'synergy_driven') 
 maxControlNeuralCommands = inputs.maxControlNeuralCommands * ...
     ones(1, inputs.numSynergies);
 inputs.maxControl = [maxControlJerks maxControlNeuralCommands];
@@ -81,6 +68,16 @@ inputs.minControl = [minControlJerks zeros(1, inputs.numSynergies)];
 inputs.maxParameter = inputs.maxParameterSynergyWeights * ...
     ones(1, inputs.numSynergyWeights);
 inputs.minParameter = zeros(1, inputs.numSynergyWeights);
+elseif strcmp(inputs.controllerType, 'torque_driven') 
+maxControlTorques = max(inputs.experimentalJointMoments(:, ...
+    inputs.torqueActuatedMomentsIndex)) + inputs.maxControlTorquesMultiple * ...
+    range(inputs.experimentalJointMoments(:, inputs.torqueActuatedMomentsIndex));
+minControlTorques = min(inputs.experimentalJointMoments(:, ...
+    inputs.torqueActuatedMomentsIndex)) - inputs.maxControlTorquesMultiple * ...
+    range(inputs.experimentalJointMoments(:, inputs.torqueActuatedMomentsIndex));
+inputs.maxControl = [maxControlJerks maxControlTorques];
+inputs.minControl = [minControlJerks minControlTorques];
+end
 end
 function inputs = getIntegralBounds(inputs)
 inputs.integralOptions = {};
@@ -140,7 +137,6 @@ inputs.minIntegral = zeros(1, length(inputs.maxIntegral));
 end
 function [integralOptions, maxIntegral, trackedQuantityIndex] = ...
     getIntegralSettings(trackedQuantity, modelComponentNames, tempMaxIntegral)
-
 integralOptions = getMaximumAllowableErrors( ...
     trackedQuantity, modelComponentNames);
 maxIntegral = cat(2, tempMaxIntegral, nonzeros(integralOptions)');
@@ -202,6 +198,19 @@ if muscleModelLoadPathConstraint
             end
         end 
     end
+end
+controllerModelLoadPathConstraint = valueOrAlternate(inputs, ...
+    "controllerModelLoadPathConstraint", 0);
+if controllerModelLoadPathConstraint
+    maxAllowablePathError = getMaximumAllowableErrors( ...
+        inputs.controllerModelLoad, inputs.inverseDynamicMomentLabels);
+    inputs.maxPath = cat(2, inputs.maxPath, ...
+        nonzeros(maxAllowablePathError)');
+    inputs.torqueActuatedMomentsIndex = find(maxAllowablePathError);
+    minAllowablePathError = getMinimumAllowableErrors( ...
+        inputs.controllerModelLoad, inputs.inverseDynamicMomentLabels);
+    inputs.minPath = cat(2, inputs.minPath, ...
+        nonzeros(minAllowablePathError)');
 end
 end
 function inputs = getTerminalConstraintBounds(inputs)

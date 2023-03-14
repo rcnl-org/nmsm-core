@@ -110,6 +110,11 @@ function phaseout = parseInverseDynamicMoments(phaseout, params)
 
 phaseout.rootSegmentResiduals = ...
     phaseout.inverseDynamicMoments(:, params.rootSegmentResidualsIndex);
+if strcmp(params.controllerType, 'synergy_driven') 
 phaseout.muscleActuatedMoments = ...
     phaseout.inverseDynamicMoments(:, params.muscleActuatedMomentsIndex);
+elseif strcmp(params.controllerType, 'torque_driven') 
+phaseout.torqueActuatedMoments = ...
+    phaseout.inverseDynamicMoments(:, params.torqueActuatedMomentsIndex);
+end
 end

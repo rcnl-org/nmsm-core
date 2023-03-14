@@ -26,6 +26,7 @@
 % ----------------------------------------------------------------------- %
 
 function data = parseNCPOsimxFile(filename)
+if filename
 tree = xml2struct(filename);
 ncpMuscleSetTree = getFieldByNameOrError(tree, "NCPMuscleSet");
 musclesTree = getFieldByNameOrError(ncpMuscleSetTree, "objects").RCNLMuscle;
@@ -43,5 +44,8 @@ for i = 1:length(musclesTree)
         data.(muscle.Attributes.name).maxIsometricForce = ...
             str2double(muscle.max_isometric_force.Text);
     end
+end
+else
+    data = [];
 end
 end
