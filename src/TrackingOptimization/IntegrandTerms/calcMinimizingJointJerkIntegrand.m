@@ -27,5 +27,7 @@
 
 function cost = calcMinimizingJointJerkIntegrand(jointJerks, params)
 enabledCost = valueOrAlternate(params, "minimizedCoordinateEnabled", 0);
+if enabledCost
 cost = enabledCost * calcMinimizingCostArrayTerm(jointJerks);
+end
 end

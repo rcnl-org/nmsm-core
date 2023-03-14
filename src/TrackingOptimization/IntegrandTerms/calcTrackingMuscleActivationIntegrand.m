@@ -29,8 +29,10 @@ function cost = calcTrackingMuscleActivationIntegrand(muscleActivations, ...
     time, params)
 
 enabledCost = valueOrAlternate(params, "trackedMuscleActivationEnabled", 0);
+if enabledCost
 experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
 cost = enabledCost * calcTrackingCostArrayTerm(...
     experimentalMuscleActivations, muscleActivations, linspace(1, ...
     params.numMuscles, params.numMuscles));
+end
 end
