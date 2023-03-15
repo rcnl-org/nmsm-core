@@ -29,8 +29,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function footModel = makeFootModel(model, toeJointName)
-import org.opensim.modeling.Model
+function footModel = makeFootModel(model, toeJointName, isLeftFoot)
+import org.opensim.modeling.*
 footModel = Model();
 [hindfootBody, toesBody] = getJointBodyNames(model, toeJointName);
 footModel.addBody(model.getBodySet().get(hindfootBody).clone());
@@ -40,8 +40,30 @@ markers = getMarkersFromJoint(model, toeJointName);
 for i=1:length(markers)
     footModel.addMarker(model.getMarkerSet().get(markers{i}).clone());
 end
+
+transform = SpatialTransform();
+if isLeftFoot
+    axis = TransformAxis(transform.get_rotation1().getCoordinateNamesInArray(), Vec3(0, -1, 0));
+%     axis.setAxis(Vec3(0, -1, 0));
+    transform.set_rotation1(axis);
+    axis = TransformAxis(transform.get_rotation1().getCoordinateNamesInArray(), Vec3(-1, 0, 0));
+%     axis.setAxis(Vec3(-1, 0, 0));
+    transform.set_rotation2(axis);
+else
+    axis = TransformAxis(transform.get_rotation1().getCoordinateNamesInArray(), Vec3(0, 1, 0));
+%     axis.setAxis(Vec3(0, 1, 0));
+    axis.setCoordinateNames(transform.get_rotation1().getCoordinateNamesInArray());
+    transform.set_rotation1(axis);
+    axis = TransformAxis(transform.get_rotation1().getCoordinateNamesInArray(), Vec3(1, 0, 0));
+%     axis.setAxis(Vec3(1, 0, 0));
+    transform.set_rotation2(axis);
+end
+groundJoint = CustomJoint("ground_hindfoot", footModel.getGround(), ...
+    footModel.getBodySet().get(hindfootBody), transform);
+footModel.addJoint(groundJoint);
+
 footModel.finalizeConnections()
-footModel = setDefaultPose(footModel, model, hindfootBody);
+% footModel = setDefaultPose(footModel, model, hindfootBody);
 end
 
 % Updates the default pose of a footModel to match the default of the model

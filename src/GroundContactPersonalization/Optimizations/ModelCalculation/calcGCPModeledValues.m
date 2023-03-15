@@ -185,19 +185,10 @@ end
 function [model, state] = updateModelPositionAndVelocity(model, state, ...
     jointPositions, jointVelocities, foot)
 for j=1:size(jointPositions, 1)
-    if j == 2 || j == 3
-        if foot.isLeftFoot
-            model.getCoordinateSet().get(j-1).setValue(state, ...
-                -jointPositions(j));
-            model.getCoordinateSet().get(j-1).setSpeedValue(state, ...
-                -jointVelocities(j));
-        end
-    else
-        model.getCoordinateSet().get(j-1).setValue(state, ...
-            jointPositions(j));
-        model.getCoordinateSet().get(j-1).setSpeedValue(state, ...
-            jointVelocities(j));
-    end
+    model.getCoordinateSet().get(j-1).setValue(state, ...
+        jointPositions(j));
+    model.getCoordinateSet().get(j-1).setSpeedValue(state, ...
+        jointVelocities(j));
 end
 model.assemble(state)
 model.realizeVelocity(state)
