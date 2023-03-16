@@ -40,30 +40,68 @@ markers = getMarkersFromJoint(model, toeJointName);
 for i=1:length(markers)
     footModel.addMarker(model.getMarkerSet().get(markers{i}).clone());
 end
+groundJoint = makeCustomJoint(footModel, hindfootBody, isLeftFoot);
+footModel.addJoint(groundJoint);
+footModel.finalizeConnections()
+footModel = setDefaultPose(footModel, model, hindfootBody);
+end
 
+% Create custom joint to define rotation sequence
+function groundJoint = makeCustomJoint(footModel, hindfootBody, isLeftFoot)
+import org.opensim.modeling.*
 transform = SpatialTransform();
 if isLeftFoot
-    axis = TransformAxis(transform.get_rotation1().getCoordinateNamesInArray(), Vec3(0, -1, 0));
-%     axis.setAxis(Vec3(0, -1, 0));
-    transform.set_rotation1(axis);
-    axis = TransformAxis(transform.get_rotation1().getCoordinateNamesInArray(), Vec3(-1, 0, 0));
-%     axis.setAxis(Vec3(-1, 0, 0));
-    transform.set_rotation2(axis);
+    nameArrayStr = ArrayStr();
+    nameArrayStr.append("Rotation1");
+    rotation1 = TransformAxis(nameArrayStr, Vec3(0, -1, 0));
+    rotation1.set_function(LinearFunction(1, 0));
+    transform.set_rotation1(rotation1);
+
+    nameArrayStr = ArrayStr();
+    nameArrayStr.append("Rotation2");
+    rotation2 = TransformAxis(nameArrayStr, Vec3(-1, 0, 0));
+    rotation2.set_function(LinearFunction(1, 0));
+    transform.set_rotation2(rotation2);
 else
-    axis = TransformAxis(transform.get_rotation1().getCoordinateNamesInArray(), Vec3(0, 1, 0));
-%     axis.setAxis(Vec3(0, 1, 0));
-    axis.setCoordinateNames(transform.get_rotation1().getCoordinateNamesInArray());
-    transform.set_rotation1(axis);
-    axis = TransformAxis(transform.get_rotation1().getCoordinateNamesInArray(), Vec3(1, 0, 0));
-%     axis.setAxis(Vec3(1, 0, 0));
-    transform.set_rotation2(axis);
+    nameArrayStr = ArrayStr();
+    nameArrayStr.append("Rotation1");
+    rotation1 = TransformAxis(nameArrayStr, Vec3(0, 1, 0));
+    rotation1.set_function(LinearFunction(1, 0));
+    transform.set_rotation1(rotation1);
+
+    nameArrayStr = ArrayStr();
+    nameArrayStr.append("Rotation2");
+    rotation2 = TransformAxis(nameArrayStr, Vec3(1, 0, 0));
+    rotation2.set_function(LinearFunction(1, 0));
+    transform.set_rotation2(rotation2);
 end
+
+nameArrayStr = ArrayStr();
+nameArrayStr.append("Rotation3");
+rotation3 = TransformAxis(nameArrayStr, Vec3(0, 0, 1));
+rotation3.set_function(LinearFunction(1, 0));
+transform.set_rotation3(rotation3);
+
+nameArrayStr = ArrayStr();
+nameArrayStr.append("Translation1");
+translation1 = TransformAxis(nameArrayStr, Vec3(1, 0, 0));
+translation1.set_function(LinearFunction(1, 0));
+transform.set_translation1(translation1);
+
+nameArrayStr = ArrayStr();
+nameArrayStr.append("Translation2");
+translation2 = TransformAxis(nameArrayStr, Vec3(0, 1, 0));
+translation2.set_function(LinearFunction(1, 0));
+transform.set_translation2(translation2);
+
+nameArrayStr = ArrayStr();
+nameArrayStr.append("Translation3");
+translation3 = TransformAxis(nameArrayStr, Vec3(0, 0, 1));
+translation3.set_function(LinearFunction(1, 0));
+transform.set_translation3(translation3);
+
 groundJoint = CustomJoint("ground_hindfoot", footModel.getGround(), ...
     footModel.getBodySet().get(hindfootBody), transform);
-footModel.addJoint(groundJoint);
-
-footModel.finalizeConnections()
-% footModel = setDefaultPose(footModel, model, hindfootBody);
 end
 
 % Updates the default pose of a footModel to match the default of the model
