@@ -33,8 +33,12 @@ integralTerms.trackingCoordinates = findCorrectIntegralTerms(1, integralStruct);
 integralTerms.trackingInverseDynamicLoads = findCorrectIntegralTerms(2, integralStruct);
 integralTerms.trackingExternalForces = findCorrectIntegralTerms(3, integralStruct);
 integralTerms.trackingExternalMoments = findCorrectIntegralTerms(4, integralStruct);
+if strcmp(params.controllerType, 'synergy_driven')
 integralTerms.trackingMuscleActivations = findCorrectIntegralTerms(5, integralStruct);
 integralTerms.minimizingJointJerk = findCorrectIntegralTerms(6, integralStruct);
+elseif strcmp(params.controllerType, 'torque_driven')
+integralTerms.minimizingJointJerk = findCorrectIntegralTerms(5, integralStruct);
+end
 end
 function output = findCorrectIntegralTerms(index, integralStruct)
 output = [];

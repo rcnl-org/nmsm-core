@@ -8,11 +8,13 @@
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>preprocessed\exampleModel.osim</input_model_file>
 		<!-- -->
-		<initial_states_file>states.sto</initial_states_file>
+		<initial_states_file></initial_states_file>
 		<!-- -->
-		<initial_controls_file>control.sto</initial_controls_file>
+		<initial_controls_file></initial_controls_file>
 		<!--synergy driven or torque driven--> 
 		<type_of_controller>torque_driven</type_of_controller>
+		<!--GCP inputs-->
+		<gcp_osimx_file>groundContactModel.osimx</gcp_osimx_file>
 		<!--Bounds-->
 		<TrackingOptimizationDesignVariableBounds>
 			<joint_positions>2</joint_positions>
