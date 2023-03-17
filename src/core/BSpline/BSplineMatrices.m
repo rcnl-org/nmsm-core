@@ -1,5 +1,5 @@
-function [N_matrix, Np_matrix, Npp_matrix] = BSplineMatrices(Degree, Nodes, Frames, Interval)
-
+% This function is part of the NMSM Pipeline, see file for full license.
+%
 % BSPLINEMATRICES generates the matrices necessary to create a B-spline
 %    curve and its first and second time derivative.
 %
@@ -7,12 +7,34 @@ function [N_matrix, Np_matrix, Npp_matrix] = BSplineMatrices(Degree, Nodes, Fram
 %    N coefficent matrix and its first and second time derivatives (NP and
 %    NPP) given the B-spline degree, number of nodes, number of output time
 %    frames, and sampling interval.
-% 
+%
 %    Example
 %        [N, Np, Npp] = BSplineMatrices(5, 20, 101, 0.01);
+% (number, number, number, number) => (2d matrix, 2d matrix, 2d matrix)
 
-% -------------------------------------------------------------------------
+% ----------------------------------------------------------------------- %
+% The NMSM Pipeline is a toolkit for model personalization and treatment  %
+% optimization of neuromusculoskeletal models through OpenSim. See        %
+% nmsm.rice.edu and the NOTICE file for more information. The             %
+% NMSM Pipeline is developed at Rice University and supported by the US   %
+% National Institutes of Health (R01 EB030520).                           %
+%                                                                         %
+% Copyright (c) 2021 Rice University and the Authors                      %
+% Author(s): Benjamin J. Fregly                                           %
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         %
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
 
+function [N_matrix, Np_matrix, Npp_matrix] = BSplineMatrices(Degree, Nodes, Frames, Interval)
 % Check to see which input arguments should be set to default values.
 if nargin ~= 4
     fprintf('Error in function BSplineMatrices: Too few input arguments.\n')
@@ -90,7 +112,7 @@ for u = u_range
 
             % Loop through each parametric knot (or knot values).
             tol = 1e-12; % Original default was 1e-8
-            
+
             for i = 1:numberPoints
 
                 % Calculate the first order basis functions.
@@ -104,7 +126,7 @@ for u = u_range
 
             end	% End loop through each parametric knot (or knot values).
 
-        % Otherwise if the normalized polynomial degree in u is not equal 
+        % Otherwise if the normalized polynomial degree in u is not equal
         % to one.
         else
 
