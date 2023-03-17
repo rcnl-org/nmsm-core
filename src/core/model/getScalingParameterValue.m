@@ -1,8 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function returns the scaling parameter value for a given body.
 %
-%
-% (Model, string, integer, boolean, boolean) -> (number)
+% (model, string) -> double
+% returns the scale factor for the given body
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
