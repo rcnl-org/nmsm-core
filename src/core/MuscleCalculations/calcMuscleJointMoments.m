@@ -2,9 +2,8 @@
 %
 % This function calculates the model Joint moments for each muscle%
 %
-% (Cell, Struct, Array of number) -> (Array of number, Array of number, 
-% Array of number, Array of number)
-% returns muscle moments, forces, and lengths 
+% (Cell, Struct, num array) -> (num array, num array, num array, num array)
+% returns muscle moments, forces, and lengths
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
