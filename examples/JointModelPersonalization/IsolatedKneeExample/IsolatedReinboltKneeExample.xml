@@ -46,13 +46,13 @@
                 <JMPBody name="femur_l">
                     <!-- boolean value for if the body is to be scaled-->
                     <scale_body>true</scale_body>
-                    <!-- boolean value for if the body markers are to be moved-->
+                    <!--Three boolean values (separated by spaces) for which axes the markers should be free to move in (x, y, z) order-->
                     <move_markers>true false true</move_markers>
                 </JMPBody>
                 <JMPBody name="tibia_l">
                     <!-- boolean value for if the body is to be scaled-->
                     <scale_body>true</scale_body>
-                    <!-- boolean value for if the body markers are to be moved-->
+                    <!--Three boolean values (separated by spaces) for which axes the markers should be free to move in (x, y, z) order-->
                     <move_markers>true false true</move_markers>
                 </JMPBody>
 			</JMPTask>
