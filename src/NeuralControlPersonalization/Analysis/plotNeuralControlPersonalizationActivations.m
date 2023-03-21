@@ -53,7 +53,7 @@ if isstring(mtpActivationsFile) || ischar(mtpActivationsFile)
     mtpMuscleNames = getStorageColumnNames(mtpStorage);
     mtpActivations = storageToDoubleMatrix(mtpStorage);
 else
-    mtpMuscleNames = [];
+    mtpMuscleNames = "";
 end
 
 figureNumber = 1;
