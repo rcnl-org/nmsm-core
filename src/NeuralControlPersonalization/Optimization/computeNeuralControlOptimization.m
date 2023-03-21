@@ -16,14 +16,13 @@ numDesignVariables = length(initialValues);
 Aeq = zeros(inputs.numSynergies, numDesignVariables);
 beq = 1*ones(inputs.numSynergies, 1);
 column = 1; 
-row = 1; % the sum of the muscles in the previous synergy groups
 for i = 1:length(inputs.synergyGroups)
     for j = 1: inputs.synergyGroups{i}.numSynergies
-        Aeq(column, row : ...
-            row + length(inputs.synergyGroups{i}.muscleNames) - 1) = 1;
+        Aeq(column, (column - 1) * ...
+            length(inputs.synergyGroups{i}.muscleNames) + 1 : ...
+            column * length(inputs.synergyGroups{i}.muscleNames)) = 1;
         column = column + 1;
     end
-    row = row + length(inputs.synergyGroups{i}.muscleNames);
 end
 lb = zeros(numDesignVariables, 1);
 
