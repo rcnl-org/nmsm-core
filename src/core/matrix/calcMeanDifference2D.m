@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% Calculates the second dimension mean difference of an input 2D array.
 %
 % (2D array of number) -> (2D array of number)
 % calculates the cost of differences in EMG groups

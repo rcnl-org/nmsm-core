@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function uses GCVSplines from OpenSim to calculate the derivative of
+% This function uses BSplines to calculate the derivative of
 % each column and returns an array of the same shape as provided.
 %
-% (Array of double, 2D array of double) => (2D array of double)
+% (double array, 2D double array, integer, integer) => (2D array of double)
 % Returns the derivative of each column provided
 
 % ----------------------------------------------------------------------- %
