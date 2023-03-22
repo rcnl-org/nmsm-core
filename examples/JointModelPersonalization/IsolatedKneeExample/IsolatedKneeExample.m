@@ -22,7 +22,10 @@
 
 % Make sure the nmsm-core project is open by double-clicking Project.prj in
 % the nmsm-core repository.
-JointModelPersonalizationTool('IsolatedReinboltKneeExample.xml')
+settingsFileName = 'IsolatedReinboltKneeExample.xml';
+settingsTree = xml2struct(settingsFileName);
+[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
+JointModelPersonalization(inputs, params);
 
 jointArray = {"knee_l"};
 markerFile = "l_knee.trc";
