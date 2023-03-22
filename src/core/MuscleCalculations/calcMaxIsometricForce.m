@@ -2,8 +2,7 @@
 %
 % This function calculates the maximum isometric force
 %
-% (Array of numbers, Array of numbers, number) -> 
-% (Array numbers)
+% (Array of numbers, Array of numbers, number) -> (Array numbers)
 % returns the max isometric force
 
 % ----------------------------------------------------------------------- %

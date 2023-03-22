@@ -13,6 +13,7 @@
 %   coordinate value, false if you want orientation.
 %
 % (Model, string, integer, boolean, boolean) -> (number)
+% returns frame parameter value
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
