@@ -1,9 +1,18 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the normalized passive force
+% This function calculates the passive force of a muscle fiber based on
+% the normalized fiber length and the maximum isometric force.
 %
-% (Array of number) -> (Array of number)
-% returns normalized passive force  
+% Inputs:
+%   normalizedFiberLength: 3d mat (1, numMuscles, 1) of normalized fiber
+%   maxIsometricForce: 3d mat (1, numMuscles, 1) of maximum isometric force
+%   pennationAngle: 3d mat (1, numMuscles, 1) of pennation angle
+%
+% Outputs:
+%   passiveForce: 3d mat (1, numMuscles, 1) of passive passiveForce
+%
+% (3d mat, 3d mat, 3d mat) -> 3d mat
+% returns normalized passive force
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

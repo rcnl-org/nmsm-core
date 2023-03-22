@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function returns the x, y, and z coordinates of a marker in a model.
 %
-% (Model, string, integer, boolean, boolean) -> (number)
+% (Model, string) -> (number, number, number)
+% gets the x, y, and z coordinates of a marker in a model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
