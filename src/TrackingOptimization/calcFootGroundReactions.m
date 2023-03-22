@@ -28,35 +28,22 @@
 function groundReactions = calcFootGroundReactions(springPositions, ...
     springVelocities, params, bodyLocations)
 
-Rhsprings = 1:params.numSpringsRightHeel;
-Rtsprings = params.numSpringsRightHeel+1:params.numSpringsRightHeel+params.numSpringsRightToe;
-Lhsprings = params.numSpringsRightHeel+params.numSpringsRightToe+1:params.numSpringsRightHeel+params.numSpringsRightToe+params.numSpringsLeftHeel;
-Ltsprings = params.numSpringsRightHeel+params.numSpringsRightToe+params.numSpringsLeftHeel+1:params.numSpringsRightHeel+params.numSpringsRightToe+params.numSpringsLeftHeel+params.numSpringsLeftToe;
+for i = 1:size(springPositions.rightHeel, 1)
+markerKinematics.xPosition = squeeze(springPositions.rightHeel(i, 1, :))';
+markerKinematics.height = squeeze(springPositions.rightHeel(i, 2, :))';
+markerKinematics.zPosition = squeeze(springPositions.rightHeel(i, 3, :))';
+markerKinematics.xVelocity = squeeze(springVelocities.rightHeel(i, 1, :))';
+markerKinematics.yVelocity = squeeze(springVelocities.rightHeel(i, 2, :))';
+markerKinematics.zVelocity = squeeze(springVelocities.rightHeel(i, 3, :))';
 
-for i = 1:101
-%%
-markerKinematics.xPosition = springPositions(i,1:3:end);
-markerKinematics.height = springPositions(i,2:3:end);
-markerKinematics.zPosition = springPositions(i,3:3:end);
-markerKinematics.xVelocity = springVelocities(i,1:3:end);
-markerKinematics.yVelocity = springVelocities(i,2:3:end);
-markerKinematics.zVelocity = springVelocities(i,3:3:end);
-
-markerKinematics.xPosition = markerKinematics.xPosition(Rhsprings);
-markerKinematics.height = markerKinematics.height(Rhsprings);
-markerKinematics.zPosition = markerKinematics.zPosition(Rhsprings);
-markerKinematics.xVelocity = markerKinematics.xVelocity(Rhsprings);
-markerKinematics.yVelocity = markerKinematics.yVelocity(Rhsprings);
-markerKinematics.zVelocity = markerKinematics.zVelocity(Rhsprings);
-
-springForces = zeros(3, length(Rhsprings));
+springForces = zeros(3, size(springPositions.rightHeel, 1));
 
 [groundReactions.rightHeelForce(i, 2), springForces] = ...
-    calcModeledVerticalGroundReactionForce(params.springStiffness(Rhsprings), ...
+    calcModeledVerticalGroundReactionForce(params.springStiffness.rightHeel, ...
     params.springDamping, params.restingSpringLength, ...
     markerKinematics, springForces);
 
-values.springConstants = params.springStiffness(Rhsprings);
+values.springConstants = params.springStiffness.rightHeel;
 values.dynamicFrictionCoefficient = params.dynamicFriction;
 
 [groundReactions.rightHeelForce(i, 1), ...
@@ -71,28 +58,21 @@ task.midfootSuperiorPosition = bodyLocations.rightMidfootSuperior';
     task, markerKinematics, springForces, i);
 
 %%
-markerKinematics.xPosition = springPositions(i,1:3:end);
-markerKinematics.height = springPositions(i,2:3:end);
-markerKinematics.zPosition = springPositions(i,3:3:end);
-markerKinematics.xVelocity = springVelocities(i,1:3:end);
-markerKinematics.yVelocity = springVelocities(i,2:3:end);
-markerKinematics.zVelocity = springVelocities(i,3:3:end);
+markerKinematics.xPosition = squeeze(springPositions.rightToe(i, 1, :))';
+markerKinematics.height = squeeze(springPositions.rightToe(i, 2, :))';
+markerKinematics.zPosition = squeeze(springPositions.rightToe(i, 3, :))';
+markerKinematics.xVelocity = squeeze(springVelocities.rightToe(i, 1, :))';
+markerKinematics.yVelocity = squeeze(springVelocities.rightToe(i, 2, :))';
+markerKinematics.zVelocity = squeeze(springVelocities.rightToe(i, 3, :))';
 
-markerKinematics.xPosition = markerKinematics.xPosition(Rtsprings);
-markerKinematics.height = markerKinematics.height(Rtsprings);
-markerKinematics.zPosition = markerKinematics.zPosition(Rtsprings);
-markerKinematics.xVelocity = markerKinematics.xVelocity(Rtsprings);
-markerKinematics.yVelocity = markerKinematics.yVelocity(Rtsprings);
-markerKinematics.zVelocity = markerKinematics.zVelocity(Rtsprings);
-
-springForces = zeros(3, length(Rtsprings));
+springForces = zeros(3, size(springPositions.rightToe, 1));
 
 [groundReactions.rightToeForce(i, 2), springForces] = ...
-    calcModeledVerticalGroundReactionForce(params.springStiffness(Rtsprings), ...
+    calcModeledVerticalGroundReactionForce(params.springStiffness.rightToe, ...
     params.springDamping, params.restingSpringLength, ...
     markerKinematics, springForces);
 
-values.springConstants = params.springStiffness(Rtsprings);
+values.springConstants = params.springStiffness.rightToe;
 values.dynamicFrictionCoefficient = params.dynamicFriction;
 
 [groundReactions.rightToeForce(i, 1), ...
@@ -107,28 +87,21 @@ task.midfootSuperiorPosition = bodyLocations.rightMidfootSuperior';
     task, markerKinematics, springForces, i);
 
 %%
-markerKinematics.xPosition = springPositions(i,1:3:end);
-markerKinematics.height = springPositions(i,2:3:end);
-markerKinematics.zPosition = springPositions(i,3:3:end);
-markerKinematics.xVelocity = springVelocities(i,1:3:end);
-markerKinematics.yVelocity = springVelocities(i,2:3:end);
-markerKinematics.zVelocity = springVelocities(i,3:3:end);
+markerKinematics.xPosition = squeeze(springPositions.leftHeel(i, 1, :))';
+markerKinematics.height = squeeze(springPositions.leftHeel(i, 2, :))';
+markerKinematics.zPosition = squeeze(springPositions.leftHeel(i, 3, :))';
+markerKinematics.xVelocity = squeeze(springVelocities.leftHeel(i, 1, :))';
+markerKinematics.yVelocity = squeeze(springVelocities.leftHeel(i, 2, :))';
+markerKinematics.zVelocity = squeeze(springVelocities.leftHeel(i, 3, :))';
 
-markerKinematics.xPosition = markerKinematics.xPosition(Lhsprings);
-markerKinematics.height = markerKinematics.height(Lhsprings);
-markerKinematics.zPosition = markerKinematics.zPosition(Lhsprings);
-markerKinematics.xVelocity = markerKinematics.xVelocity(Lhsprings);
-markerKinematics.yVelocity = markerKinematics.yVelocity(Lhsprings);
-markerKinematics.zVelocity = markerKinematics.zVelocity(Lhsprings);
-
-springForces = zeros(3, length(Lhsprings));
+springForces = zeros(3, size(springPositions.leftHeel, 1));
 
 [groundReactions.leftHeelForce(i, 2), springForces] = ...
-    calcModeledVerticalGroundReactionForce(params.springStiffness(Lhsprings), ...
+    calcModeledVerticalGroundReactionForce(params.springStiffness.leftHeel, ...
     params.springDamping, params.restingSpringLength, ...
     markerKinematics, springForces);
 
-values.springConstants = params.springStiffness(Lhsprings);
+values.springConstants = params.springStiffness.leftHeel;
 values.dynamicFrictionCoefficient = params.dynamicFriction;
 
 [groundReactions.leftHeelForce(i, 1), ...
@@ -143,28 +116,21 @@ task.midfootSuperiorPosition = bodyLocations.leftMidfootSuperior';
     task, markerKinematics, springForces, i);
 
 %%
-markerKinematics.xPosition = springPositions(i,1:3:end);
-markerKinematics.height = springPositions(i,2:3:end);
-markerKinematics.zPosition = springPositions(i,3:3:end);
-markerKinematics.xVelocity = springVelocities(i,1:3:end);
-markerKinematics.yVelocity = springVelocities(i,2:3:end);
-markerKinematics.zVelocity = springVelocities(i,3:3:end);
+markerKinematics.xPosition = squeeze(springPositions.leftToe(i, 1, :))';
+markerKinematics.height = squeeze(springPositions.leftToe(i, 2, :))';
+markerKinematics.zPosition = squeeze(springPositions.leftToe(i, 3, :))';
+markerKinematics.xVelocity = squeeze(springVelocities.leftToe(i, 1, :))';
+markerKinematics.yVelocity = squeeze(springVelocities.leftToe(i, 2, :))';
+markerKinematics.zVelocity = squeeze(springVelocities.leftToe(i, 3, :))';
 
-markerKinematics.xPosition = markerKinematics.xPosition(Ltsprings);
-markerKinematics.height = markerKinematics.height(Ltsprings);
-markerKinematics.zPosition = markerKinematics.zPosition(Ltsprings);
-markerKinematics.xVelocity = markerKinematics.xVelocity(Ltsprings);
-markerKinematics.yVelocity = markerKinematics.yVelocity(Ltsprings);
-markerKinematics.zVelocity = markerKinematics.zVelocity(Ltsprings);
-
-springForces = zeros(3, length(Ltsprings));
+springForces = zeros(3, size(springPositions.leftHeel, 1));
 
 [groundReactions.leftToeForce(i, 2), springForces] = ...
-    calcModeledVerticalGroundReactionForce(params.springStiffness(Ltsprings), ...
+    calcModeledVerticalGroundReactionForce(params.springStiffness.leftToe, ...
     params.springDamping, params.restingSpringLength, ...
     markerKinematics, springForces);
 
-values.springConstants = params.springStiffness(Ltsprings);
+values.springConstants = params.springStiffness.leftToe;
 values.dynamicFrictionCoefficient = params.dynamicFriction;
 
 [groundReactions.leftToeForce(i, 1), ...
