@@ -27,7 +27,7 @@
 % ----------------------------------------------------------------------- %
 
 function value = getScalingParameterValue(model, bodyName)
-valueVec3 = model.getBodySet().get(bodyName).get_frame_geometry() ...
+valueVec3 = model.getBodySet().get(bodyName).get_attached_geometry(0) ...
     .get_scale_factors();
 value = valueVec3.get(0);
 end
