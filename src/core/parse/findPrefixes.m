@@ -16,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -36,6 +36,10 @@ if(isstruct(prefixField) && length(prefixField.Text) > 0)
     prefixes = strsplit(prefixField.Text, ' ');
 else
     files = dir(fullfile(inputDirectory, "IDData"));
+    if isempty(files)
+        files = dir(fullfile(inputDirectory, "IKData"));
+    end
+
     prefixes = string([]);
     for i=1:length(files)
         if(~files(i).isdir)
