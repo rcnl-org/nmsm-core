@@ -25,41 +25,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cells = parseSelectMomentArms(directories, coordinateNames, muscleNames)
-import org.opensim.modeling.Storage
-firstTrial = parseSpecificMuscleAnalysisCoordinates(directories(1), ...
-    coordinateNames, muscleNames);
-cells = zeros([length(directories) size(firstTrial)]);
-cells(1, :, :, :) = firstTrial;
-for i=2:length(directories)
-    cells(i, :, :, :) = parseSpecificMuscleAnalysisCoordinates(directories(i), ...
-        coordinateNames, muscleNames);
-end
-end
-
-function cells = parseSpecificMuscleAnalysisCoordinates(inputDirectory, ...
-    coordinateNames, muscleNames)
-import org.opensim.modeling.Storage
-coordFileNames = findSpecificMuscleAnalysisCoordinateFiles(inputDirectory, coordinateNames);
-firstFile = storageToDoubleMatrix(Storage(coordFileNames(1)));
-columnNames = getStorageColumnNames(Storage(coordFileNames(1)));
-cells = zeros([length(coordFileNames) size(firstFile)]);
-cells(1, :, :) = firstFile;
-for i=2:length(coordFileNames)
-    cells(i, :, :) = storageToDoubleMatrix(Storage(coordFileNames(i)));
-end
-cells = findSpecificMusclesInData(cells, columnNames, muscleNames);
-end
-
-function names = findSpecificMuscleAnalysisCoordinateFiles(directory, coordinateNames)
-files = dir(directory);
-names = string([]);
-for i=1:length(coordinateNames)
-    for j=1:length(files)
-        if(contains(files(j).name, strcat("MomentArm_", ...
-                coordinateNames(i)', ".sto")))
-            names(end+1) = fullfile(directory, files(j).name);
+function cells = findSpecificMusclesInData(cells, columnNames, muscleNames)
+muscleNamesIndex = [];
+for i = 1:length(columnNames)
+    for j = 1:length(muscleNames)
+        if strcmpi(columnNames(i), muscleNames(j))
+            muscleNamesIndex(end+1) = i;
         end
     end
 end
+cells = cells(:, muscleNamesIndex, :);
 end
