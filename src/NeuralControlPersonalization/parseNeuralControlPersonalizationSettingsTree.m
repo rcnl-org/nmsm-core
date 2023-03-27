@@ -32,7 +32,7 @@
 function [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-params = getParams(settingsTree, inputs.model);
+params = getParams(settingsTree, inputs.model, inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -51,9 +51,6 @@ inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.optimalFiberLengthScaleFactors, ...
     inputs.tendonSlackLengthScaleFactors] = getMtpDataInputs( ...
     inputs.mtpMuscleData, inputs.muscleTendonColumnNames);
-inputs.enforceBilateralSymmetry = strcmpi(getTextFromField( ...
-    getFieldByNameOrAlternate(tree, 'enforce_bilateral_symmetry', ...
-    'false')), 'true');
 end
 
 function inputs = loadMtpData(tree, inputs)
@@ -91,7 +88,7 @@ for i = 1:length(muscles)
 end
 end
 
-function params = getParams(tree, model)
+function params = getParams(tree, model, inputs)
 model = Model(model);
 params = struct();
 params.activationGroupNames = parseSpaceSeparatedList(tree, ...
@@ -102,6 +99,9 @@ params.normalizedFiberLengthGroupNames = parseSpaceSeparatedList(tree, ...
     'normalized_fiber_length_muscle_groups');
 params.normalizedFiberLengthGroups = groupNamesToGroups( ...
     params.normalizedFiberLengthGroupNames, model);
+params.enforceBilateralSymmetry = strcmpi(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'enforce_bilateral_symmetry', ...
+    'false')), 'true') && length(inputs.synergyGroups) == 2;
 end
 
 function groups = getSynergyGroups(tree, model)
