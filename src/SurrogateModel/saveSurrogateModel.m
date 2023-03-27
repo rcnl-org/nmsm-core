@@ -1,12 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function finds the prefixes of the trials to be used in the
-% personalization process. If the trial_prefixes field is present in the
-% config file, the prefixes are taken from there. Otherwise, the prefixes
-% are taken from the names of the files in the IDData folder.
-%
-% (struct, string) -> (None)
-% finds the prefixes of the trials to be used in the personalization
+% () -> ()
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Marleny Vega                              %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,21 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function prefixes = findPrefixes(tree, inputDirectory)
-prefixField = getFieldByName(tree, 'trial_prefixes');
-if(isstruct(prefixField) && length(prefixField.Text) > 0)
-    prefixes = strsplit(prefixField.Text, ' ');
-else
-    files = dir(fullfile(inputDirectory, "IDData"));
-    if isempty(files)
-        files = dir(fullfile(inputDirectory, "IKData"));
-    end
+function saveSurrogateModel(inputs)
 
-    prefixes = string([]);
-    for i=1:length(files)
-        if(~files(i).isdir)
-            prefixes(end+1) = files(i).name(1:end-4);
-        end
-    end
-end
+printSurrogateModel(inputs.numMuscles, ...
+    inputs.polynomialExpressionMuscleTendonLengths, ...
+    inputs.polynomialExpressionMomentArms, ...
+    inputs.muscleSpecificJointAngles, inputs.resultsDirectory);
 end
