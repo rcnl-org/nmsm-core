@@ -49,7 +49,7 @@ if ismember(i, 1 : nplots : inputs.numMuscles)
     ylabel({'Muscle','Tendon Lengths'});
 else yticklabels(''); end
 if i == inputs.numMuscles
-    legend('Original', 'Predicted', 'Cropped Range'); 
+    legend('Original', 'Predicted'); 
 end
 end
 
