@@ -29,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcNcpCost(activations, inputs, params)
+function cost = calcNcpCost(activations, inputs, params, values)
 [normalizedFiberLengths, normalizedFiberVelocities] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities(inputs, ...
     inputs.optimalFiberLengthScaleFactors, ...
@@ -69,9 +69,17 @@ groupedNormalizedFiberLengthError = params.normalizedFiberLengthGroupsWeight ^ 0
     (groupedNormalizedFiberLengths(:) / params.normalizedFiberLengthGroupsAllowableError) / ...
     numel(groupedNormalizedFiberLengths) ^ 0.5;
 
+intergroupSimilarityError = 0;
+if params.intergroupSimilarityWeight
+    weights = findSynergyWeightsByGroup(values, inputs);
+    intergroupSimilarity = weights(1, :) - weights(2, :);
+    intergroupSimilarityError = intergroupSimilarity(:) / 1e-3 / ...
+        numel(intergroupSimilarity) ^ 0.5;
+end
+
 error = [momentTrackingError; activationTrackingError; ...
     activationMinimizationError; groupedActivationError; ...
-    groupedNormalizedFiberLengthError];
+    groupedNormalizedFiberLengthError; intergroupSimilarityError];
 
 cost = error' * error;
 end

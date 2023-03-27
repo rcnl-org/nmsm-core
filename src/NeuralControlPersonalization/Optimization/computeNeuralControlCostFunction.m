@@ -31,5 +31,5 @@
 
 function cost = computeNeuralControlCostFunction(values, inputs, params)
 activations = calcActivationsFromSynergyDesignVariables(values, inputs, params);
-cost = calcNcpCost(activations, inputs, params);
+cost = calcNcpCost(activations, inputs, params, values);
 end
