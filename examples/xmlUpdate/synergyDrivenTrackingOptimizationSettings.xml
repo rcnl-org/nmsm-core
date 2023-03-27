@@ -44,6 +44,14 @@
 			<synergy_weights>0.15</synergy_weights>
 		</TrackingOptimizationDesignVariableBounds>
 		<!--Integral terms.-->
+		<use_integral_terms>true</use_integral_terms>
+		<coordinates_cost_weight>0.0001</coordinate_terms_cost_weight>
+		<dynamic_loads_cost_weight>0.0001</coordinate_terms_cost_weight>
+		<coordinate_terms_cost_weight>0.0001</coordinate_terms_cost_weight>
+		<coordinate_terms_cost_weight>0.0001</coordinate_terms_cost_weight>
+		<coordinate_terms_cost_weight>0.0001</coordinate_terms_cost_weight>
+		<coordinate_terms_cost_weight>0.0001</coordinate_terms_cost_weight>
+		
         <TrackingOptimizationIntegralTerms>
             <TrackingTerms>
 				<TrackedCoordinateList>
@@ -389,14 +397,17 @@
 						<!-- -->
 						<max_allowable_error>20</max_allowable_error>
 					</TrackedLoad>
-					<TrackedLoad name = "elbow_flex_l_moment">
+
+				</TrackedInverseDynamicLoadsList>
+				<RCNLCostTermSet>
+					<RCNLCostTerm>
+						<type>tracked_load</type>
+						<id>elbow_flex_l_moment</id>
 						<!-- -->
 						<is_enabled>false</is_enabled>
 						<!-- -->
 						<max_allowable_error>20</max_allowable_error>
-					</TrackedLoad>
-				</TrackedInverseDynamicLoadsList>
-				<TrackedExternalForceList>
+					</RCNLCostTerm>
 					<!--Flag indicating whether or not the term is enabled in the integral.-->
                     <is_enabled>true</is_enabled>
 					<!-- -->
@@ -452,7 +463,11 @@
 						<!-- -->
 						<point>0.0893    0.0316   -0.0128</point>
 					</TrackedExternalForce>
-					<TrackedExternalForce name = "ground_reaction_force_z1">
+					<RCNLCostTerm>
+						<!-- -->
+						<type>TrackedExternalForce</type>
+						<!-- -->
+						<id>ground_reaction_force_z1</id>
 						<!-- -->
 						<is_enabled>true</is_enabled>
 						<!-- -->
@@ -461,7 +476,7 @@
 						<body>calcn_r</body>
 						<!-- -->
 						<point>0.0893    0.0316   -0.0128</point>
-					</TrackedExternalForce>
+					</RCNLCostTerm>
 				</TrackedExternalForceList>
                 <TrackedExternalMomentList>
 					<!--Flag indicating whether or not the term is enabled in the integral.-->
@@ -526,20 +541,33 @@
 				</MinimizeJointJerk>
 			</MinimizingTerms>
         </TrackingOptimizationIntegralTerms>
-		<!--Path terms.-->
-		<TrackingOptimizationPathConstraintTerms>
-			<RootSegmentResidualLoads>
-				<!--Flag indicating whether or not the term is enabled in the integral.-->
-				<is_enabled>true</is_enabled>
-				<!--List of coordinate names associated to max allowable error-->
-				<RootSegmentResidualLoad name = "pelvis_tilt_moment">
-					<!-- -->
-					<is_enabled>true</is_enabled>
-					<!-- -->
-					<max_allowable_error>0.1</max_allowable_error>
-					<!-- -->
-					<min_allowable_error>-0.1</min_allowable_error>
-				</RootSegmentResidualLoad>
+		
+		<TrackingCostTerms>
+			<RCNLCostTermSet>
+			
+		<MinimizationCostTerms>
+			<RCNLCostTermSet>
+			
+		<PathConstraintTerms>
+			<!--Path terms.-->
+			<RCNLConstraintTermSet>
+				<objects>
+					<!--List of coordinate names associated to max allowable error-->
+					<RCNLConstraintTerm>
+						<!-- -->
+						<type>root_segment_residual_load_terminal_constraint</type>
+						<!-- -->
+						<id>pelvis_tilt_moment</id>
+						<!-- -->
+						<is_enabled>true</is_enabled>
+						<!-- -->
+						<max_allowable_error>0.1</max_allowable_error>
+						<!-- -->
+						<min_allowable_error>-0.1</min_allowable_error>
+					</RCNLConstraintTerm>
+				</objects>
+				
+				
 				<RootSegmentResidualLoad name = "pelvis_list_moment">
 					<!-- -->
 					<is_enabled>true</is_enabled>
@@ -684,7 +712,7 @@
 			</MuscleModelMomentConsistency>
         </TrackingOptimizationPathConstraintTerms>
 		<!--Terminal terms.-->
-        <TrackingOptimizationTerminalConstraintTerms>
+        <TerminalConstraintTermSet>
 			<StatePositionPeriodicity>
 				<!--Flag indicating whether or not the term is enabled in the integral.-->
 				<is_enabled>true</is_enabled>
