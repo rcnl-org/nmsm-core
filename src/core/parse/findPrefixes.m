@@ -1,11 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% This function finds the prefixes of the trials to be used in the
+% personalization process. If the trial_prefixes field is present in the
+% config file, the prefixes are taken from there. Otherwise, the prefixes
+% are taken from the names of the files in the IDData folder.
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
+% (struct, string) -> (None)
+% finds the prefixes of the trials to be used in the personalization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -35,6 +36,10 @@ if(isstruct(prefixField) && length(prefixField.Text) > 0)
     prefixes = strsplit(prefixField.Text, ' ');
 else
     files = dir(fullfile(inputDirectory, "IDData"));
+    if isempty(files)
+        files = dir(fullfile(inputDirectory, "IKData"));
+    end
+
     prefixes = string([]);
     for i=1:length(files)
         if(~files(i).isdir)
