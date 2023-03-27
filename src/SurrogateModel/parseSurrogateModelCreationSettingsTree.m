@@ -25,40 +25,72 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params, resultsDirectory] = ...
-    parseSurrogateModelCreationSettingsTree(settingsTree)
+function inputs = parseSurrogateModelCreationSettingsTree(settingsTree)
 
 inputs = getInputs(settingsTree);
-params = getParams(settingsTree);
-resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
-if(isempty(resultsDirectory))
-    resultsDirectory = pwd;
-end
 end
 function inputs = getInputs(tree)
 
 inputs.model = parseModel(tree);
 dataDirectory = parseDataDirectory(tree);
 prefixes = findPrefixes(tree, dataDirectory);
-inputs.coordinateNames = parseSpaceSeparatedList(tree, "coordinate_list");
+inputs.surrogateModelCoordinateNames = parseSpaceSeparatedList(tree, ...
+    "coordinate_list");
 inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
-    inputs.coordinateNames);
+    inputs.surrogateModelCoordinateNames);
+inputs.numMuscles = length(inputs.muscleNames);
 
-inverseKinematicsFileNames = findFileListFromPrefixList(fullfile(dataDirectory, ...
-    "IKData"), prefixes);
-[inputs.inverseKinematicsJointAngles, inputs.inverseKinematicsColumnNames] = ...
-    parseMtpStandard(inverseKinematicsFileNames);
+inverseKinematicsFileNames = ...
+    findFileListFromPrefixList(fullfile(dataDirectory, "IKData"), prefixes);
+[inputs.inverseKinematicsJointAngles, inputs.coordinateNames] = ...
+    parseInverseKinematicsFile(inverseKinematicsFileNames, inputs.model);
+inputs.inverseKinematicsJointAngles =  ...
+    reshape(permute(inputs.inverseKinematicsJointAngles, [1 3 2]), [], ...
+    length(inputs.coordinateNames));
 
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
     dataDirectory, "MAData"), prefixes);
-[inputs.muscleTendonLength, inputs.muscleTendonColumnNames] = ...
+[inputs.muscleTendonLengths, inputs.muscleTendonColumnNames] = ...
     parseFileFromDirectories(directories, "Length.sto");
+inputs.muscleTendonLengths = findSpecificMusclesInData( ...
+    inputs.muscleTendonLengths, inputs.muscleTendonColumnNames, ...
+    inputs.muscleNames);
+inputs.muscleTendonLengths = reshape(permute(inputs.muscleTendonLengths, ...
+    [1 3 2]), [], length(inputs.muscleNames));
 inputs.momentArms = parseSelectMomentArms(directories, ...
-    inputs.coordinateNames, inputs.muscleNames);
+    inputs.surrogateModelCoordinateNames, inputs.muscleNames);
+inputs.momentArms = reshape(permute(inputs.momentArms, [1 4 2 3]), [], ...
+    length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
+inputs.epsilon = getDoubleFromField(getFieldByName(tree, 'epsilon'));
+inputs.polynomialDegree = getDoubleFromField(getFieldByName(tree, ...
+    'polynomial_degree'));
+inputs.performLatinHyperCubeSampling = getBooleanLogicFromField( ...
+    getFieldByName(tree, 'perform_latin_hypercube_sampling'));
+inputs.lhsRangeMultiplier = getDoubleFromField(getFieldByName(tree, ...
+    'latin_hypercube_sampling_range'));
+inputs.lhsNumPoints = getDoubleFromField(getFieldByName(tree, ...
+    'latin_hypercube_sampling_points'));
+inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
+    'results_directory'));
+if(isempty(inputs.resultsDirectory))
+    inputs.resultsDirectory = pwd;
 end
-function params = getParams(tree)
-
-params.epsilon = getDoubleFromField(getFieldByName(tree, 'epsilon'));
-params.polynomialDegree = getDoubleFromField(getFieldByName(tree, 'polynomial_degree'));
-params.performLatinHyperCubeSampling = getBooleanLogicFromField(getFieldByName(tree, 'perform_latin_hypercube_sampling'));
+end
+function [cells, columnNames] = parseInverseKinematicsFile(files, model)
+import org.opensim.modeling.*
+file = Storage(files(1));
+dataFromFileOne = storageToDoubleMatrix(file);
+columnNames = getStorageColumnNames(file);
+cells = zeros([length(files) ...
+    size(dataFromFileOne)]);
+cells(1, :, :) = dataFromFileOne;
+for i=2:length(files)
+    cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
+end
+osimModel = Model(model);
+for i = 1:length(columnNames)
+    if strcmp(osimModel.getCoordinateSet.get(columnNames(i)).getMotionType(), 'Rotational')
+        cells(:, i, :) = cells(:, i, :) * pi/180;
+    end
+end
 end
