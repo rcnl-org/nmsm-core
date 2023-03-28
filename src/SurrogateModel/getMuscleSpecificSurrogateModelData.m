@@ -36,7 +36,7 @@ for i = 1:inputs.numMuscles
                     inputs.surrogateModelLabels{i}(counter) = ...
                         inputs.coordinateNames(j);
                     inputs.muscleSpecificJointAngles{i}(:,counter) = ...
-                        inputs.inverseKinematicsJointAngles(:,j);
+                        inputs.experimentalJointAngles(:,j);
                     inputs.muscleSpecificMomentArms{i}(:,counter) = ...
                         inputs.momentArms(:,k,i);
                     counter = counter + 1;
@@ -45,4 +45,11 @@ for i = 1:inputs.numMuscles
         end
     end
 end
+
+inputs.surrogateModelLabels{31} = {'hip_flexion_r','hip_adduction_r','hip_rotation_r','lumbar_extension','lumbar_bending','lumbar_rotation'};
+inputs.surrogateModelLabels{32} = {'hip_flexion_r','hip_adduction_r','hip_rotation_r','lumbar_extension','lumbar_bending','lumbar_rotation'};
+inputs.surrogateModelLabels{33} = {'hip_flexion_r','hip_adduction_r','hip_rotation_r','lumbar_extension','lumbar_bending','lumbar_rotation'};
+inputs.surrogateModelLabels{76} = {'hip_flexion_l','hip_adduction_l','hip_rotation_l','lumbar_extension','lumbar_bending','lumbar_rotation'};
+inputs.surrogateModelLabels{77} = {'hip_flexion_l','hip_adduction_l','hip_rotation_l','lumbar_extension','lumbar_bending','lumbar_rotation'};
+inputs.surrogateModelLabels{78} = {'hip_flexion_l','hip_adduction_l','hip_rotation_l','lumbar_extension','lumbar_bending','lumbar_rotation'};
 end

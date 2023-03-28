@@ -29,7 +29,7 @@ function [inputs] = SurrogateModelCreation(inputs)
 
 if inputs.performLatinHyperCubeSampling
     [inputs.muscleTendonLengths, inputs.momentArms, ... 
-        inputs.inverseKinematicsJointAngles] = performLhsSampling(inputs);
+        inputs.experimentalJointAngles] = performLhsSampling(inputs);
 end
 inputs = getMuscleSpecificSurrogateModelData(inputs);
 [inputs.polynomialExpressionMuscleTendonLengths, ...
@@ -40,16 +40,16 @@ inputs = getMuscleSpecificSurrogateModelData(inputs);
 end
 
 function [muscleTendonLengths, momentArms, ...
-    inverseKinematicsJointAngles] = performLhsSampling(inputs)
+    experimentalJointAngles] = performLhsSampling(inputs)
 
-offset = mean(inputs.inverseKinematicsJointAngles);
-dataPoints = round(linspace(1, size(inputs.inverseKinematicsJointAngles, ...
+offset = mean(inputs.experimentalJointAngles);
+dataPoints = round(linspace(1, size(inputs.experimentalJointAngles, ...
     1), inputs.lhsNumPoints));
-inverseKinematicsJointAngles = inputs.inverseKinematicsJointAngles - offset;
-lhsUpperBound = inverseKinematicsJointAngles + ...
-    range(inverseKinematicsJointAngles) * inputs.lhsRangeMultiplier;
-lhsLowerBound = inverseKinematicsJointAngles - ...
-    range(inverseKinematicsJointAngles) * inputs.lhsRangeMultiplier;
+experimentalJointAngles = inputs.experimentalJointAngles - offset;
+lhsUpperBound = experimentalJointAngles + ...
+    range(experimentalJointAngles) * inputs.lhsRangeMultiplier;
+lhsLowerBound = experimentalJointAngles - ...
+    range(experimentalJointAngles) * inputs.lhsRangeMultiplier;
 lhsData = lhsdesign(inputs.lhsNumPoints, ...
     length(inputs.coordinateNames)) .* (lhsUpperBound(dataPoints, :));
 lhsData = cat(1, lhsData, lhsdesign(inputs.lhsNumPoints, ...
@@ -75,5 +75,5 @@ for i = 1 : inputs.numMuscles
 end
 muscleTendonLengths = cat(1, inputs.muscleTendonLengths, muscleTendonLengthsLhs);
 momentArms = cat(1, inputs.momentArms, momentArmsLhs);
-inverseKinematicsJointAngles = cat(1, inputs.inverseKinematicsJointAngles, lhsData);
+experimentalJointAngles = cat(1, inputs.experimentalJointAngles, lhsData);
 end
