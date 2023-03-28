@@ -43,47 +43,45 @@ end
 inputData = load([cd '\inputData.mat']);
 inputs.splineLeftGroundReactionForces = inputData.params.splineLeftGroundReactionForces;
 inputs.splineRightGroundReactionForces = inputData.params.splineRightGroundReactionForces;
-inputs.springPointsOnBody = inputData.params.springPointsOnBody;
-inputs.springBody = inputData.params.springBody;
+inputs.restingSpringLength = 0.0023; %0.0023;% 0.0144;%0.0123; % GCP OsimX
 inputs.rightMidfootSuperiorPointOnBody = inputData.params.rightMidfootSuperiorPointOnBody;
 inputs.rightMidfootSuperiorBody = inputData.params.rightMidfootSuperiorBody;
 inputs.leftMidfootSuperiorPointOnBody = inputData.params.leftMidfootSuperiorPointOnBody;
 inputs.leftMidfootSuperiorBody = inputData.params.leftMidfootSuperiorBody;
-inputs.rightHeelPointOnBody = inputData.params.rightHeelPointOnBody;
-inputs.rightHeelBody = inputData.params.rightHeelBody;
-inputs.leftHeelPointOnBody = inputData.params.leftHeelPointOnBody;
-inputs.leftHeelBody = inputData.params.leftHeelBody;
-inputs.rightToePointOnBody = inputData.params.rightToePointOnBody;
-inputs.rightToeBody = inputData.params.rightToeBody;
-inputs.leftToePointOnBody = inputData.params.leftToePointOnBody;
-inputs.leftToeBody = inputData.params.leftToeBody;
-inputs.springDamping = inputData.params.springDamping;
-inputs.dynamicFriction = inputData.params.dynamicFriction;
-inputs.springStiffness = inputData.params.springStiffness;
-inputs.viscousFriction = inputData.params.viscousFriction;
-inputs.latchingVelocity = inputData.params.latchingVelocity;
-inputs.numSpringsRightHeel = inputData.params.numSpringsRightHeel;
-inputs.numSpringsLeftHeel = inputData.params.numSpringsLeftHeel;
-inputs.numSpringsRightToe = inputData.params.numSpringsRightToe;
-inputs.numSpringsLeftToe = inputData.params.numSpringsLeftToe;
+inputs.rightHeelBody = inputData.params.rightHeelBody;% GCP OsimX
+inputs.leftHeelBody = inputData.params.leftHeelBody; % GCP OsimX
+inputs.rightToeBody = inputData.params.rightToeBody; % GCP OsimX
+inputs.leftToeBody = inputData.params.leftToeBody; % GCP OsimX
+inputs.springDamping = inputData.params.springDamping(1); % GCP OsimX
+inputs.dynamicFriction = inputData.params.dynamicFriction; % GCP OsimX
+inputs.viscousFriction = inputData.params.viscousFriction; % GCP OsimX
+inputs.latchingVelocity = inputData.params.latchingVelocity; % GCP OsimX
+numSpringsRightHeel = inputData.params.numSpringsRightHeel;
+numSpringsLeftHeel = inputData.params.numSpringsLeftHeel;
+numSpringsRightToe = inputData.params.numSpringsRightToe;
+numSpringsLeftToe = inputData.params.numSpringsLeftToe;
 
-%% surrogate model inputs
-inputs.polynomialExpressionMomentArms = inputData.params.polynomialExpressionMomentArms;
-inputs.polynomialExpressionMuscleTendonLengths = inputData.params.polynomialExpressionMuscleTendonLengths;
-inputs.coefficients = [inputData.params.coefficients(1:45) inputData.params.coefficients(75:119)];
-inputs.dofsActuated = [inputData.params.dofsActuated(:,1:45) inputData.params.dofsActuated(:,75:119)] ;
-inputs.dofsActuatedLabels = {'pelvis_tilt_moment' 'pelvis_list_moment' ...
-    'pelvis_rotation_moment' 'pelvis_tx_force' 'pelvis_ty_force' ....
-    'pelvis_tz_force' 'hip_flexion_r_moment' 'hip_adduction_r_moment' ...
-    'hip_rotation_r_moment' 'knee_angle_r_moment' 'ankle_angle_r_moment' ...
-    'subtalar_angle_r_moment' 'mtp_angle_r_moment' 'hip_flexion_l_moment' ...
-    'hip_adduction_l_moment' 'hip_rotation_l_moment' 'knee_angle_l_moment' ...
-    'ankle_angle_l_moment' 'subtalar_angle_l_moment' 'mtp_angle_l_moment' ...
-    'lumbar_extension_moment' 'lumbar_bending_moment' ...
-    'lumbar_rotation_moment' 'arm_flex_r_moment' 'arm_add_r_moment'	...
-    'arm_rot_r_moment' 'elbow_flex_r_moment' 'arm_flex_l_moment' ...
-    'arm_add_l_moment' 'arm_rot_l_moment' 'elbow_flex_l_moment'};
-inputs.epsilon = inputData.params.epsilon;
+Rhsprings = 1:numSpringsRightHeel;
+Rtsprings = numSpringsRightHeel+1:numSpringsRightHeel+numSpringsRightToe;
+Lhsprings = numSpringsRightHeel+numSpringsRightToe+1:numSpringsRightHeel+numSpringsRightToe+numSpringsLeftHeel;
+Ltsprings = numSpringsRightHeel+numSpringsRightToe+numSpringsLeftHeel+1:numSpringsRightHeel+numSpringsRightToe+numSpringsLeftHeel+numSpringsLeftToe;
+inputs.springStiffness.rightHeel = inputData.params.springStiffness(Rhsprings);
+inputs.springStiffness.rightToe = inputData.params.springStiffness(Rtsprings);
+inputs.springStiffness.leftHeel = inputData.params.springStiffness(Lhsprings);
+inputs.springStiffness.leftToe = inputData.params.springStiffness(Ltsprings);
+
+springPointsOnBody = inputData.params.springPointsOnBody;% GCP OsimX
+springPointsOnBody(:,2) = springPointsOnBody(:,2) + inputs.restingSpringLength; % GCP OsimX
+
+inputs.rightHeelSpringPositionOnBody = springPointsOnBody(Rhsprings,:);
+inputs.rightToeSpringPositionOnBody = springPointsOnBody(Rtsprings,:);
+inputs.leftHeelSpringPositionOnBody = springPointsOnBody(Lhsprings,:);
+inputs.leftToeSpringPositionOnBody = springPointsOnBody(Ltsprings,:);
+
+inputs.rightHeelBody = 24;% GCP OsimX
+inputs.rightToeBody = 37; % GCP OsimX
+inputs.leftHeelBody = 23; % GCP OsimX
+inputs.leftToeBody = 36; % GCP OsimX
 
 %%
 load([cd '\experimentalData.mat'])
@@ -102,18 +100,31 @@ end
 
 function inputs = getInputs(tree)
 inputs.controllerType = getFieldByNameOrError(tree, 'type_of_controller').Text;
-inputs = parseTrackingOptimizationDataDirectory(tree, inputs);
 inputs.model = parseModel(tree);
+osimxFile = getTextFromField(getFieldByName(tree, 'gcp_osimx_file'));
+% % inputs = parseGcpOsimxFile(osimxFile);
 if strcmp(inputs.controllerType, 'synergy_driven')
-osimxFile = getTextFromField(getFieldByName(tree, 'osimx_file'));
-inputs.ncpDataInputs = parseNCPOsimxFile(osimxFile);
+osimxFile = getTextFromField(getFieldByName(tree, 'ncp_osimx_file'));
+inputs.ncpDataInputs = parseNcpOsimxFile(osimxFile);
 inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
 inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
 inputs.numSynergyWeights = getNumSynergyWeights(inputs.synergyGroups);
-end
-inputs.initialGuess = getGpopsInitialGuess(tree);
+inputs.surrogateModelCoordinateNames = parseSpaceSeparatedList(tree, ...
+    "coordinate_list");
+inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
+    inputs.surrogateModelCoordinateNames);
+inputs.numMuscles = length(inputs.muscleNames);
+inputs.epsilon = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "epsilon", "1e-4"));
+inputs.vMaxFactor = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "v_max_factor", "10"));
+surrogateModelCoefficients = load(getTextFromField(getFieldByName(tree, 'surrogate_model_coefficients')));
+inputs.coefficients = surrogateModelCoefficients.coefficients;
 inputs.optimizeSynergyVectors = getBooleanLogicFromField( ...
     getFieldByName(tree, 'optimize_synergy_vectors'));
+end
+inputs = parseTrackingOptimizationDataDirectory(tree, inputs);
+inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs = getDesignVariableBounds(tree, inputs);
 inputs = getIntegralCostTerms(getFieldByNameOrError(tree, ...
     'TrackingOptimizationIntegralTerms'), inputs);
@@ -122,10 +133,6 @@ inputs = getPathConstraintTerms(getFieldByNameOrError(tree, ...
 inputs = getTerminalConstraintTerms(getFieldByNameOrError(tree, ...
     'TrackingOptimizationTerminalConstraintTerms'), inputs);
 inputs.beltSpeed = getDoubleFromField(getFieldByName(tree, 'belt_speed'));
-inputs.epsilon = str2double(parseElementTextByNameOrAlternate(tree, ...
-    "epsilon", "1e-3"));
-inputs.vMaxFactor = str2double(parseElementTextByNameOrAlternate(tree, ...
-    "v_max_factor", "10"));
 end
 
 function inputs = parseTrackingOptimizationDataDirectory(tree, inputs)
@@ -146,6 +153,13 @@ if strcmp(inputs.controllerType, 'synergy_driven')
 directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
 [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
     parseTreatmentOptimizationData(directory, prefix);
+directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
+    dataDirectory, "MAData"), prefix);
+inputs.momentArms = parseSelectMomentArms(directories, ...
+    inputs.surrogateModelCoordinateNames, inputs.muscleNames);
+inputs.momentArms = reshape(permute(inputs.momentArms, [1 4 2 3]), [], ...
+    length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
+inputs = getMuscleSpecificSurrogateModelData(inputs);
 end
 
 experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
@@ -351,5 +365,21 @@ if isfield(inputs.initialGuess, 'parameter')
         numSynergiesIndex = numSynergiesIndex + inputs.synergyGroups{j}.numSynergies;
     end
     inputs.initialGuess.parameter = parameterTemp;
+end
+if strcmp(inputs.controllerType, 'synergy_driven') 
+    inputs = getMuscleSynergiesInitialGuess(inputs);
+end
+end
+function inputs = getMuscleSynergiesInitialGuess(inputs)
+if isfield(inputs.initialGuess,"parameter") 
+    inputs.parameterGuess = inputs.initialGuess.parameter;
+    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
+    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
+else
+    inputs.mtpActivationsColumnNames = inputs.muscleLabels;
+    inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 2 1]);
+    inputs.parameterGuess = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs)';
+    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
+    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
 end
 end
