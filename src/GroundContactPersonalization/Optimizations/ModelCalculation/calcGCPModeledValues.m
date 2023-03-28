@@ -90,7 +90,7 @@ end
 for i=1:size(modeledJointPositions, 2)
     [model, state] = updateModelPositionAndVelocity(model, state, ...
         modeledJointPositions(:, i), ...
-        modeledJointVelocities(:, i));
+        modeledJointVelocities(:, i), inputs.tasks{foot});
     % Foot marker positions and velocities
     if isCalculated(1)
         [modeledValues.markerPositions, modeledValues.markerVelocities] ...
@@ -183,7 +183,7 @@ end
 
 % Updates model at each time point
 function [model, state] = updateModelPositionAndVelocity(model, state, ...
-    jointPositions, jointVelocities)
+    jointPositions, jointVelocities, foot)
 for j=1:size(jointPositions, 1)
     model.getCoordinateSet().get(j-1).setValue(state, ...
         jointPositions(j));

@@ -25,7 +25,7 @@ end
 % GCP Tasks
 for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
-    save("2-9-feetTogether_" + task + ".mat")
+    save("3-15-YXZ_" + task + ".mat")
 end
 toc
 
