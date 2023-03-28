@@ -1,4 +1,4 @@
-function NameLevelStuct = unfold_modified(SC,varargin)
+function NameLevelStuct = unfold(SC,varargin)
 %UNFOLD Unfolds a structure.
 %   UNFOLD(SC) displays the content of a variable. If SC is a structure it
 %   recursively shows the name of SC and the fieldnames of SC and their
@@ -56,7 +56,7 @@ if isstruct(SC)
         for i=1:NF
             Namei = [Name '.' F{i}];
             if isstruct(SC(h).(F{i}))
-                NameLevelStuct = unfold_modified(SC(h).(F{i}),Namei,show,NameLevelStuct);
+                NameLevelStuct = unfold(SC(h).(F{i}),Namei,show,NameLevelStuct);
             else
                 if iscell(SC(h).(F{i}))
                     siz = size(SC(h).(F{i}));
@@ -82,7 +82,7 @@ if isstruct(SC)
                             Nameji = [Namej '.' Fn{ji}];
 
                             if isstruct(SC(h).(F{i}){j}.(Fn{ji}))
-                                NameLevelStuct = unfold_modified(SC(h).(F{i}){j}.(Fn{ji}),Nameji,show,NameLevelStuct);
+                                NameLevelStuct = unfold(SC(h).(F{i}){j}.(Fn{ji}),Nameji,show,NameLevelStuct);
                             else
                                 if ~isempty(strfind(Nameji,'Attributes'))
                                     NameLevelStuct = [NameLevelStuct; {Nameji num2str(length(strfind(Nameji,'.'))-3)}];
@@ -113,7 +113,7 @@ elseif iscell(SC)
     siz = size(SC);
     for i=1:numel(SC)
         Namei = [Name '{' ind2str(siz,i) '}'];
-        NameLevelStuct = unfold_modified(SC{i},Namei,show,NameLevelStuct);
+        NameLevelStuct = unfold(SC{i},Namei,show,NameLevelStuct);
     end
 else
 %     disp(Name)

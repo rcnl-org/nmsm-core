@@ -80,7 +80,7 @@ for i = 1:size(muscleColumnNames, 2)
         optimizedParams.tendonSlackLengthScaleFactors(i));
 end
 MTP.OpenSimDocument.OsimxModel.MTPMuscleSet.groups = '';
-struct2xml_modified(MTP, muscleModelFileName)
+struct2xml(MTP, muscleModelFileName)
 copyfile(muscleModelFileName, fullfile(strrep(muscleModelFileName, ...
     'xml','osimx')))
 delete(muscleModelFileName) 

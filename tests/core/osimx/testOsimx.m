@@ -1,4 +1,4 @@
-%% Check struct2xml_modified
+%% Check struct2xml
 
 x.XmlDocument.Attributes.Version = 'Version';
 x.XmlDocument.XmlName.Attributes.name = 'Attribute Name';
@@ -10,7 +10,7 @@ x.XmlDocument.XmlName.Element{1}.element_name.Text = 'Some Text';
 x.XmlDocument.XmlName.Element{2}.Attributes.name = 'Attribute Name';
 x.XmlDocument.XmlName.Element{2}.element_name.Comment = 'Some Comment';
 x.XmlDocument.XmlName.Element{2}.element_name.Text = 'Some Text';
-assertNoException(struct2xml_modified(x, "test.xml"));
+assertNoException(struct2xml(x, "test.xml"));
 
 %% Check osimx save
 
