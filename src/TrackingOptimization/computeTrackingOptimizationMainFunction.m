@@ -86,7 +86,6 @@ else
         inputs.minTime);
 end
 if strcmp(inputs.controllerType, 'synergy_driven') 
-inputs = getMuscleSynergiesInitialGuess(inputs);
 if isfield(inputs.initialGuess, 'control')
     guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
         inputs.maxControl, inputs.minControl);
@@ -110,19 +109,6 @@ end
 end
 guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
     inputs.minIntegral);
-end
-function inputs = getMuscleSynergiesInitialGuess(inputs)
-if isfield(inputs.initialGuess,"parameter") 
-    inputs.parameterGuess = inputs.initialGuess.parameter;
-    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
-else
-    inputs.mtpActivationsColumnNames = inputs.muscleLabels;
-    inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 2 1]);
-    inputs.parameterGuess = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs)';
-    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
-end
 end
 function setup = setupSolverSettings(inputs, bounds, guess, params)
 

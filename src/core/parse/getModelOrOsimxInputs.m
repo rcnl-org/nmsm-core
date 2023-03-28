@@ -25,44 +25,38 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getModelorOsimxInputs(inputs)
+function inputs = getModelOrOsimxInputs(inputs)
 if ~isa(inputs.model, 'org.opensim.modeling.Model')
     model = Model(inputs.model);
 end
-inputs.numMuscles = getNumEnabledMuscles(inputs.model);
 inputs.optimalFiberLength = [];
 inputs.tendonSlackLength = [];
 inputs.pennationAngle = [];
 inputs.maxIsometricForce = [];
-inputs.muscleNames = '';
-for i = 0:model.getForceSet().getMuscles().getSize()-1
-    if model.getForceSet().getMuscles().get(i).get_appliesForce()
-        inputs.muscleNames{end+1} = char(model.getForceSet(). ...
-            getMuscles().get(i).getName);
-        if isfield(inputs.ncpDataInputs, inputs.muscleNames{end})
-            inputs.optimalFiberLength(end+1) = inputs.ncpDataInputs. ...
-                (inputs.muscleNames{end}).optimalTendonLength;
-            inputs.tendonSlackLength(end+1) = inputs.ncpDataInputs. ...
-                (inputs.muscleNames{end}).tendonSlackLength;
-            if isfield(inputs.ncpDataInputs. ...
-                    (inputs.muscleNames{end}), 'maxIsometricForce')
-                inputs.maxIsometricForce(end+1) = inputs.ncpDataInputs. ...
-                    (inputs.muscleNames{end}).maxIsometricForce;
-            else
-                inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
-                    getMuscles().get(i).getMaxIsometricForce();
-            end
+for i = 1 : inputs.numMuscles
+    if isfield(inputs.ncpDataInputs, inputs.muscleNames(i))
+        inputs.optimalFiberLength(end+1) = inputs.ncpDataInputs. ...
+            (inputs.muscleNames(i)).optimalTendonLength;
+        inputs.tendonSlackLength(end+1) = inputs.ncpDataInputs. ...
+            (inputs.muscleNames(i)).tendonSlackLength;
+        if isfield(inputs.ncpDataInputs. ...
+                (inputs.muscleNames(i)), 'maxIsometricForce')
+            inputs.maxIsometricForce(end+1) = inputs.ncpDataInputs. ...
+                (inputs.muscleNames(i)).maxIsometricForce;
         else
-            inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
-                getMuscles().get(i).getOptimalFiberLength();
-            inputs.tendonSlackLength(end+1) = model.getForceSet(). ...
-                getMuscles().get(i).getTendonSlackLength();
             inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
-                getMuscles().get(i).getMaxIsometricForce();
+                getMuscles().get(i-1).getMaxIsometricForce();
         end
-        inputs.pennationAngle(end+1) = model.getForceSet(). ...
-            getMuscles().get(i). ...
-            getPennationAngleAtOptimalFiberLength();
+    else
+        inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
+            getMuscles().get(i-1).getOptimalFiberLength();
+        inputs.tendonSlackLength(end+1) = model.getForceSet(). ...
+            getMuscles().get(i-1).getTendonSlackLength();
+        inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
+            getMuscles().get(i-1).getMaxIsometricForce();
     end
+    inputs.pennationAngle(end+1) = model.getForceSet(). ...
+        getMuscles().get(i-1). ...
+        getPennationAngleAtOptimalFiberLength();
 end
 end
