@@ -191,10 +191,10 @@ if muscleModelLoadPathConstraint
         inputs.muscleModelLoad, inputs.inverseDynamicMomentLabels);
     inputs.minPath = cat(2, inputs.minPath, ...
         nonzeros(minAllowablePathError)');
-    for i = 1 : length(inputs.dofsActuatedLabels)
-        for j = 1 : length(inputs.inverseDynamicMomentLabels)
-            if strcmpi(inputs.dofsActuatedLabels{i}, inputs.inverseDynamicMomentLabels(j))
-                inputs.dofsActuatedIndex(i) = j;
+    for i = 1 : length(inputs.coordinateNames)
+        for j = 1 : length(inputs.surrogateModelCoordinateNames)
+            if contains(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
+                inputs.dofsActuatedIndex(j) = i;
             end
         end 
     end

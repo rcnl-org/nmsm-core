@@ -37,12 +37,10 @@ params.muscleTendonVelocity = calcMuscleTendonVelocities(values.time, ...
     calcNormalizedMuscleFiberLengthsAndVelocities(params, ...
     ones(1, params.numMuscles), ones(1, params.numMuscles));
 phaseout.muscleActivations = calcMuscleActivationFromSynergies(values);
-phaseout.muscleJointMoments = zeros(length(values.time), length(params.inverseDynamicMomentLabels));
 muscleJointMoments = calcMuscleJointMoments(params, ...
     phaseout.muscleActivations, phaseout.normalizedFiberLength, ...
     phaseout.normalizedFiberVelocity);
-phaseout.muscleJointMoments(:, params.dofsActuatedIndex) = muscleJointMoments;
-phaseout.muscleJointMoments(:, all(~phaseout.muscleJointMoments, 1)) = [];
+phaseout.muscleJointMoments = muscleJointMoments(:, params.dofsActuatedIndex);
 end
 end
 
@@ -52,11 +50,13 @@ end
 function jointAngles = getMuscleActuatedDOFs(values, params)
 
 for i = 1:params.numMuscles
-    index = 1;
-    for j = 1:size(params.dofsActuated, 1)
-        if params.dofsActuated(j, i) > params.epsilon
-            jointAngles{i}(:, index) = values.statePositions(:, j);
-            index = index + 1;
+    counter = 1;
+    for j = 1:length(params.coordinateNames)
+        for k = 1:length(params.surrogateModelLabels{i})
+            if strcmp(params.coordinateNames(j), params.surrogateModelLabels{i}{k})
+                jointAngles{i}(:,counter) = values.statePositions(:,j);
+                counter = counter + 1;
+            end
         end
     end
 end
