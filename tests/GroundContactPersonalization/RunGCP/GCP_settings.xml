@@ -49,7 +49,7 @@
 				</GCPContactSurface>
 				<GCPContactSurface>
 					<!--Flag indicating whether the foot will be personalized-->
-					<is_enabled>true</is_enabled>
+					<is_enabled>false</is_enabled>
 					<!--Flag indicating whether this is a left foot-->
 					<is_left_foot>true</is_left_foot>
 					<!--Start time for motion and ground reaction force files-->
