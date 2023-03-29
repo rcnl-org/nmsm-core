@@ -29,38 +29,86 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function footModel = makeFootModel(model, toeJointName)
-import org.opensim.modeling.Model
+function footModel = makeFootModel(model, toeJointName, isLeftFoot)
+import org.opensim.modeling.*
 footModel = Model();
 [hindfootBody, toesBody] = getJointBodyNames(model, toeJointName);
-footModel.addBody(model.getBodySet().get( ...
-    hindfootBody).clone());
-footModel.addBody(model.getBodySet().get( ...
-    toesBody).clone());
-footModel.addJoint(model.getJointSet().get( ...
-    toeJointName).clone());
+footModel.addBody(model.getBodySet().get(hindfootBody).clone());
+footModel.addBody(model.getBodySet().get(toesBody).clone());
+footModel.addJoint(model.getJointSet().get(toeJointName).clone());
 markers = getMarkersFromJoint(model, toeJointName);
 for i=1:length(markers)
-    footModel.addMarker( ...
-        model.getMarkerSet().get(markers{i}).clone());
+    footModel.addMarker(model.getMarkerSet().get(markers{i}).clone());
 end
+groundJoint = makeCustomJoint(footModel, hindfootBody, isLeftFoot);
+footModel.addJoint(groundJoint);
 footModel.finalizeConnections()
 footModel = setDefaultPose(footModel, model, hindfootBody);
 end
 
-% a function that updates the default pose of a footModel to match the default pose of the model
+% Create custom joint to define rotation sequence
+function groundJoint = makeCustomJoint(footModel, hindfootBody, isLeftFoot)
+import org.opensim.modeling.*
+transform = SpatialTransform();
+if isLeftFoot
+    nameArrayStr = ArrayStr();
+    nameArrayStr.append("Rotation1");
+    rotation1 = TransformAxis(nameArrayStr, Vec3(0, -1, 0));
+    rotation1.set_function(LinearFunction(1, 0));
+    transform.set_rotation1(rotation1);
+
+    nameArrayStr = ArrayStr();
+    nameArrayStr.append("Rotation2");
+    rotation2 = TransformAxis(nameArrayStr, Vec3(-1, 0, 0));
+    rotation2.set_function(LinearFunction(1, 0));
+    transform.set_rotation2(rotation2);
+else
+    nameArrayStr = ArrayStr();
+    nameArrayStr.append("Rotation1");
+    rotation1 = TransformAxis(nameArrayStr, Vec3(0, 1, 0));
+    rotation1.set_function(LinearFunction(1, 0));
+    transform.set_rotation1(rotation1);
+
+    nameArrayStr = ArrayStr();
+    nameArrayStr.append("Rotation2");
+    rotation2 = TransformAxis(nameArrayStr, Vec3(1, 0, 0));
+    rotation2.set_function(LinearFunction(1, 0));
+    transform.set_rotation2(rotation2);
+end
+
+nameArrayStr = ArrayStr();
+nameArrayStr.append("Rotation3");
+rotation3 = TransformAxis(nameArrayStr, Vec3(0, 0, 1));
+rotation3.set_function(LinearFunction(1, 0));
+transform.set_rotation3(rotation3);
+
+nameArrayStr = ArrayStr();
+nameArrayStr.append("Translation1");
+translation1 = TransformAxis(nameArrayStr, Vec3(1, 0, 0));
+translation1.set_function(LinearFunction(1, 0));
+transform.set_translation1(translation1);
+
+nameArrayStr = ArrayStr();
+nameArrayStr.append("Translation2");
+translation2 = TransformAxis(nameArrayStr, Vec3(0, 1, 0));
+translation2.set_function(LinearFunction(1, 0));
+transform.set_translation2(translation2);
+
+nameArrayStr = ArrayStr();
+nameArrayStr.append("Translation3");
+translation3 = TransformAxis(nameArrayStr, Vec3(0, 0, 1));
+translation3.set_function(LinearFunction(1, 0));
+transform.set_translation3(translation3);
+
+groundJoint = CustomJoint("ground_hindfoot", footModel.getGround(), ...
+    footModel.getBodySet().get(hindfootBody), transform);
+end
+
+% Updates the default pose of a footModel to match the default of the model
 function footModel = setDefaultPose(footModel, model, hindfootBody)
     [model, state] = Model(model);
-    footPosition = model.getBodySet().get(hindfootBody).getPositionInGround(state);
-%     footRotation = model.getBodySet().get(hindfootBody).getRotationInGround(state).convertRotationToBodyFixedXYZ()
-    
-%     for i = 0:2
-%     footModel.getCoordinateSet().get(i+1).set_default_value(footRotation.get(i))
-%     end
-%     for i = 0:2
-        footModel.getCoordinateSet().get(5).set_default_value(footPosition.get(1))
-%     end
-%     toeCoordinate = model.getCoordinateSet().get(getCoordinatesFromBodies(model, toesBody));
-%     footModel.getCoordinateSet().get(0).set_default_value(toeCoordinate.getValue(state))
-%     footModel = Model(footModel);
+    footPosition = model.getBodySet().get(hindfootBody) ...
+        .getPositionInGround(state);
+    footModel.getCoordinateSet().get(5) ...
+        .set_default_value(footPosition.get(1))
 end

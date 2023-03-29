@@ -1,9 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% This optimization determines the ideal resting spring length for the 
+% initial spring constants and experimental kinematics to match the 
+% experimental vertical ground reaction force. This will not match well on 
+% its own, but it will improve the performance of the next Ground Contact 
+% Personalization stages. 
 %
 % (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% Initializes the resting spring length for Ground Contact Personalization.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -38,6 +42,8 @@ for task = 1:length(inputs.tasks)
     modeledValues{task}.springVelocities = ...
         modeledValues{task}.springHeights;
 
+    % As this optimization only calibrates the resting spring length,
+    % marker positions cannot change. 
     [model, state] = Model(inputs.tasks{task}.model);
     for i=1:size(modeledJointPositions, 2)
         [model, state] = updateModelPositionAndVelocity(model, state, ...
@@ -59,6 +65,7 @@ inputs.restingSpringLength = lsqnonlin( ...
     inputs.initialRestingSpringLength, [], []);
 end
 
+% Cost only depends on vertical ground reaction force tracking.
 function cost = calcRestingSpringLengthCost(restingSpringLength, ...
     inputs, modeledValues)
 cost = [];
@@ -68,6 +75,11 @@ for task = 1:length(inputs.tasks)
     modeledVerticalGrf = zeros(size(verticalForce));
     for i = 1:length(modeledVerticalGrf)
         for j = 1:length(inputs.springConstants)
+            % The freglyVerticalGrf model closely approximates a linear 
+            % spring during contact while allowing a small force with a 
+            % small slope to exist for spring markers out of contact. This 
+            % can help the optimization algorithm find a better search 
+            % direction when springs are incorrectly out of contact.
             height = modeledValues{task}.springHeights(i, j);
             velocity = modeledValues{task}.springVelocities(i, j);
             klow = 1e-1;
