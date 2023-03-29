@@ -3,7 +3,7 @@
 % 
 %
 % (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% Runs all Ground Contact Personalization stages from inputs and params.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,11 +28,10 @@
 % ----------------------------------------------------------------------- %
 
 function results = GroundContactPersonalization(inputs, params)
-verifyInputs(inputs); % (struct) -> (None)
-verifyParams(params); % (struct) -> (None)
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
+% Optionally initializes the resting spring length.
 if params.restingSpringLengthInitialization
-    inputs = initializeRestingSpringLengthAndSpringConstants(inputs);
+    inputs = initializeRestingSpringLength(inputs);
 end
 for task = 1:length(inputs.tasks)
     inputs.tasks{task}.experimentalGroundReactionMoments = ...
@@ -42,31 +41,13 @@ for task = 1:length(inputs.tasks)
         inputs.tasks{task}.experimentalGroundReactionMoments, 2, ...
         inputs.tasks{task}.splineNodes);
 end
-params = prepareGroundContactPersonalizationParams(params);
-
+% Run each task as outlined in XML settings file. 
 for task = 1:length(params.tasks)
-    taskInputs = prepareGroundContactPersonalizationInputs(inputs, params);
-    taskParams = prepareGroundContactPersonalizationParams(params);
-    inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
+    inputs = optimizeGroundContactPersonalizationTask(inputs, params, ...
+        task);
 end
 
 results = inputs;
-end
-
-% (struct) -> (None)
-% throws an error if any of the inputs are invalid
-function verifyInputs(inputs)
-
-end
-
-% (struct) -> (None)
-% throws an error if the parameter is included but is not of valid type
-function verifyParams(params)
-
-end
-
-function params = prepareGroundContactPersonalizationParams(params)
-
 end
 
 % (struct) -> (2D Array of double)
