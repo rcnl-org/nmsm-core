@@ -1,9 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% Prepare calculated inputs from parsed Ground Contact Personalization 
+% inputs. Calculated inputs are inputs not given in input files but derived
+% without optimizations, such as B-spline representations of kinematics and
+% the isolated foot models. 
 %
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct) -> (struct)
+% Prepare calculated inputs from parsed GCP inputs.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -31,6 +34,8 @@ function inputs = prepareGroundContactPersonalizationInputs(inputs)
 inputs.gridWidth = 5;
 inputs.gridHeight = 15;
 
+% Mean marker locations are used to ensure any included feet have the same 
+% number of spring markers. 
 meanRightFootMarkerLocations = getMeanFootMarkerLocations(inputs);
 
 for task = 1:length(inputs.tasks)
@@ -39,16 +44,19 @@ for task = 1:length(inputs.tasks)
 end
 inputs.numSpringMarkers = confirmNumSpringMarkers(inputs.tasks);
 
+% Initialize potential design variables from parsed initial values.
 inputs.springConstants = inputs.initialSpringConstants * ones(1, ...
     inputs.numSpringMarkers);
 inputs.dampingFactor = inputs.initialDampingFactor;
 inputs.dynamicFrictionCoefficient = ...
     inputs.initialDynamicFrictionCoefficient;
+inputs.viscousFrictionCoefficient = ...
+    inputs.initialViscousFrictionCoefficient;
 inputs.restingSpringLength = inputs.initialRestingSpringLength;
 end
 
-% (struct, struct) -> (struct)
-% Prepares optimization values specific to a foot
+% (struct, struct, struct, double) -> (struct)
+% Prepares optimization values specific to a foot.
 function task = prepareInputsForFoot(task, inputs, meanMarkerLocations, ...
     taskNumber)
 task.toesJointName = char(Model(inputs.bodyModel ...
@@ -63,8 +71,10 @@ task.coordinatesOfInterest = findGCPFreeCoordinates(...
     makeFootKinematics(inputs.bodyModel, ...
     inputs.motionFileName, task.coordinatesOfInterest, ...
     task.hindfootBodyName, task.toesCoordinateName, ...
-    task.markerNames, task.time(1), task.time(end));
+    task.markerNames, task.time(1), task.time(end), task.isLeftFoot);
 
+% Use a user-defined cutoff frequency to determine the number of B-spline
+% nodes needed to represent kinematics. 
 task.splineNodes = splFitWithCutoff(task.time, footPosition, ... 
     inputs.kinematicsFilterCutoff, 4, taskNumber);
 
@@ -78,7 +88,7 @@ markerVelocities.(markerNamesFields{i}) = ...
 end
 
 taskFootModel = makeFootModel(Model(inputs.bodyModel), ...
-    task.toesJointName);
+    task.toesJointName, task.isLeftFoot);
 taskFootModel = addSpringsToModel(taskFootModel, task.markerNames, ...
     inputs.gridWidth, inputs.gridHeight, ...
     task.hindfootBodyName, task.toesBodyName, task.toesJointName, ...
@@ -92,7 +102,6 @@ task.experimentalMarkerVelocities = markerVelocities;
 task.experimentalJointPositions = footPosition;
 task.experimentalJointVelocities = footVelocity;
 task.midfootSuperiorPosition = markerPositions.midfootSuperior;
-
 
 task.experimentalGroundReactionForcesSlope = calcBSplineDerivative( ...
     task.time, task.experimentalGroundReactionForces, 2, ...
@@ -143,7 +152,7 @@ end
 
 % (Cell Array) -> (double)
 % Confirms that all feet have the same number of spring markers and returns
-% the number of spring markers
+% the number of spring markers.
 function numSpringMarkers = confirmNumSpringMarkers(tasks)
     counts = zeros(1, length(tasks));
     for task = 1:length(tasks)

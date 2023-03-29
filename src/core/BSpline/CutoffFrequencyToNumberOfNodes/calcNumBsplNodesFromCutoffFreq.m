@@ -28,7 +28,7 @@ nFrames = length(time);
 if nFrames > 100
     fSample = round(1/(time(11,1)-time(1,1)))*10;
 else
-    fSample = round(10/(time(101,1)-time(1,1)))*10;
+    fSample = round(10/(time(end,1)-time(1,1)))*10;
 end
 
 % Recalculate time vector based on correct sampling frequency to

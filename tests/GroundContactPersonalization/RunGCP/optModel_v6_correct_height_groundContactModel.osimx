@@ -6,7 +6,11 @@
       <!--Resting spring length-->
       <resting_spring_length>0.033348</resting_spring_length>
       <!--Dynamic friction coefficient-->
-      <dynamic_friction_coefficient>0.10366</dynamic_friction_coefficient>
+      <dynamic_friction_coefficient>0</dynamic_friction_coefficient>
+      <!--Viscous friction coefficient-->
+      <viscous_friction_coefficient>2.0732</viscous_friction_coefficient>
+      <!--Latching velocity-->
+      <latching_velocity>0.05</latching_velocity>
       <!--Damping factor-->
       <damping_factor>0.0001</damping_factor>
       <!--Optimized foot-specific parameters-->
@@ -15,7 +19,7 @@
             <!--Index of foot-->
             <index>1</index>
             <!--Flag indicating whether this is a left foot-->
-            <is_left_foot>0</is_left_foot>
+            <is_left_foot>false</is_left_foot>
             <!--Name of the toe angle coordinate in the model file-->
             <toe_coordinate>mtp_angle_r</toe_coordinate>
             <!--Name of the toe joint in the model file-->
@@ -471,7 +475,7 @@
          <!--Index of foot-->
          <index>2</index>
             <!--Flag indicating whether this is a left foot-->
-            <is_left_foot>1</is_left_foot>
+            <is_left_foot>true</is_left_foot>
             <!--Name of the toe angle coordinate in the model file-->
             <toe_coordinate>mtp_angle_l</toe_coordinate>
             <!--Name of the toe joint in the model file-->
