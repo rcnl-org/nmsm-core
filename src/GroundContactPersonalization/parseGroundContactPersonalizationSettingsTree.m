@@ -68,25 +68,21 @@ else
 end
 
 % Get inputs for each foot
-inputs.tasks = getFootTasks(inputs, tree);
+inputs.surfaces = getContactSurfaces(inputs, tree);
 inputs = getInitialValues(inputs, tree);
 end
 
 % (struct, struct) -> (struct)
 % Gets inputs specific to each foot, such as experimental kinematics and
 % ground reactions and foot marker names. 
-function output = getFootTasks(inputs, tree)
-tasks = getFieldByNameOrError(tree, 'FootPersonalizationTaskList');
+function output = getContactSurfaces(inputs, tree)
+contactSurfaces = getFieldByNameOrError(tree, 'GCPContactSurfaceSet') ...
+    .objects.GCPContactSurface;
 counter = 1;
-footTasks = orderByIndex(tasks.FootPersonalizationTask);
-for i=1:length(footTasks)
-    if(length(footTasks) == 1)
-        task = footTasks;
-    else
-        task = footTasks{i};
-    end
-    if(strcmpi(task.is_enabled.Text, 'true'))
-        output{counter} = getFootData(task);
+for i=1:length(contactSurfaces)
+    surface = contactSurfaces{i};
+    if(strcmpi(surface.is_enabled.Text, 'true'))
+        output{counter} = getFootData(surface);
         output{counter} = getGroundReactions(inputs.bodyModel, ...
             inputs.grfFileName, output{counter});
         output{counter} = getMotionTime(inputs.bodyModel, ...
