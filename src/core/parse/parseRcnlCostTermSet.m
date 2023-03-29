@@ -7,7 +7,7 @@
 % added to the struct with default settings and the isEnabled flag set to
 % false.
 %
-% (struct) -> (struct, struct, string)
+% (struct, struct, Array of string, Array of string) -> (struct)
 % Parses settings from a RCNLCostTermSet.
 
 % ----------------------------------------------------------------------- %
