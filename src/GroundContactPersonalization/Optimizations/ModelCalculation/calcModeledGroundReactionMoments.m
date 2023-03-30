@@ -1,11 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function uses Equation 1 from Jackson et al 2016 to calculate the
-% modeled horizontal GRF forces as the summation of the forces applied by 
-% each individual spring
+% This function uses ground reaction forces calculated at each spring
+% marker to calculate ground reaction moments about the midfoot superior
+% marker projected onto the floor at the given state. 
 %
-% (Model, State, Array of double, struct, double) => (double, double)
-% Returns the sum of the modeled horizontal GRF forces at the given state
+% (struct, struct, Array of double, Array of double, double) 
+% -> (double, double, double)
+% Returns the modeled ground reaction moments at the given state.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -42,6 +43,8 @@ for i = 1:length(values.springConstants)
     force(1) = springForces(1, i);
     force(2) = springForces(2, i);
     force(3) = springForces(3, i);
+    % Project midfoot superior marker onto floor. For calculating moments, 
+    % we assume rigid bodies do not intersect. 
     offset(1) = xPosition - task.midfootSuperiorPosition(1, currentFrame);
     offset(2) = 0;
     offset(3) = zPosition - task.midfootSuperiorPosition(3, currentFrame);
@@ -50,7 +53,5 @@ for i = 1:length(values.springConstants)
     xGrfMoment = xGrfMoment + moments(1);
     yGrfMoment = yGrfMoment + moments(2);
     zGrfMoment = zGrfMoment + moments(3);
-    
 end
-
 end

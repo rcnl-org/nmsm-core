@@ -2,8 +2,9 @@
 %
 % 
 %
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (Array of double, Array of double, Array of double, Array of double) 
+% -> (logical)
+% Use intersections() to check for intersections between lines.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
