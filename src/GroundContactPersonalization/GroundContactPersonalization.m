@@ -3,7 +3,7 @@
 % 
 %
 % (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% Runs all Ground Contact Personalization stages from inputs and params.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,59 +28,42 @@
 % ----------------------------------------------------------------------- %
 
 function results = GroundContactPersonalization(inputs, params)
-verifyInputs(inputs); % (struct) -> (None)
-verifyParams(params); % (struct) -> (None)
 inputs = prepareGroundContactPersonalizationInputs(inputs, params);
+% Optionally initializes the resting spring length.
 if params.restingSpringLengthInitialization
-    inputs = initializeRestingSpringLengthAndSpringConstants(inputs);
+    inputs = initializeRestingSpringLength(inputs);
 end
-for task = 1:length(inputs.tasks)
-    inputs.tasks{task}.experimentalGroundReactionMoments = ...
-        replaceMomentsAboutMidfootSuperior(inputs.tasks{task}, inputs);
-    inputs.tasks{task}.experimentalGroundReactionMomentsSlope = ...
-        calcBSplineDerivative(inputs.tasks{task}.time, ...
-        inputs.tasks{task}.experimentalGroundReactionMoments, 2, ...
-        inputs.tasks{task}.splineNodes);
+for surface = 1:length(inputs.surfaces)
+    inputs.surfaces{surface}.experimentalGroundReactionMoments = ...
+        replaceMomentsAboutMidfootSuperior(inputs.surfaces{surface}, ...
+        inputs);
+    inputs.surfaces{surface}.experimentalGroundReactionMomentsSlope = ...
+        calcBSplineDerivative(inputs.surfaces{surface}.time, ...
+        inputs.surfaces{surface}.experimentalGroundReactionMoments, 2, ...
+        inputs.surfaces{surface}.splineNodes);
 end
-params = prepareGroundContactPersonalizationParams(params);
-
+% Run each task as outlined in XML settings file. 
 for task = 1:length(params.tasks)
-    taskInputs = prepareGroundContactPersonalizationInputs(inputs, params);
-    taskParams = prepareGroundContactPersonalizationParams(params);
-    inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
+    inputs = optimizeGroundContactPersonalizationTask(inputs, params, ...
+        task);
 end
 
 results = inputs;
 end
 
-% (struct) -> (None)
-% throws an error if any of the inputs are invalid
-function verifyInputs(inputs)
-
-end
-
-% (struct) -> (None)
-% throws an error if the parameter is included but is not of valid type
-function verifyParams(params)
-
-end
-
-function params = prepareGroundContactPersonalizationParams(params)
-
-end
-
-% (struct) -> (2D Array of double)
+% (struct, struct) -> (2D Array of double)
 % Replace parsed experimental ground reaction moments about midfoot
 % superior marker projected onto floor
-function replacedMoments = replaceMomentsAboutMidfootSuperior(task, inputs)
+function replacedMoments = replaceMomentsAboutMidfootSuperior(surface, ...
+    inputs)
     replacedMoments = ...
-        zeros(size(task.experimentalGroundReactionMoments));
+        zeros(size(surface.experimentalGroundReactionMoments));
     for i = 1:size(replacedMoments, 2)
-        newCenter = task.midfootSuperiorPosition(:, i);
+        newCenter = surface.midfootSuperiorPosition(:, i);
         newCenter(2) = inputs.restingSpringLength;
         replacedMoments(:, i) = ...
-            task.experimentalGroundReactionMoments(:, i) + ...
-            cross((task.electricalCenter(:, i) - newCenter), ...
-            task.experimentalGroundReactionForces(:, i));
+            surface.experimentalGroundReactionMoments(:, i) + ...
+            cross((surface.electricalCenter(:, i) - newCenter), ...
+            surface.experimentalGroundReactionForces(:, i));
     end
 end

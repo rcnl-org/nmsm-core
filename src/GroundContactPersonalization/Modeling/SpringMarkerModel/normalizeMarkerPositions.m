@@ -2,8 +2,8 @@
 %
 % 
 %
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct) -> (struct)
+% Calculates normalized positions for foot markers. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,7 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function normalizedMarkerPositions = normalizeMarkerPositions(markerPositions)
+function normalizedMarkerPositions = normalizeMarkerPositions( ...
+    markerPositions)
 markerNamesList = fieldnames(markerPositions);
 normalizedFootHeight = abs(markerPositions.toe(1) - ...
     markerPositions.heel(1));
