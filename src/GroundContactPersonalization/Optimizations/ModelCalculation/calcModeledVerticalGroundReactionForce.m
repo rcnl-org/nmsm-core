@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function uses Equation 1 from Jackson et al 2016 to calculate the
-% modeled vertical GRF force as the summation of the forces applied by each
+% This function uses a spring model with damping to calculate the modeled 
+% vertical GRF force as the summation of the forces applied by each
 % individual spring
 %
-% (Model, State, Array of double, Array of double, double) => (double)
+% (Array of double, double, double, struct, Array of double) 
+% -> (double, Array of double)
 % Returns the sum of the modeled vertical GRF forces at the given state
 
 % ----------------------------------------------------------------------- %
@@ -15,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -37,23 +38,11 @@ modeledVerticalGrf = 0;
 for i=1:length(springConstants)
     height = markerKinematics.height(i);
     verticalVelocity = markerKinematics.yVelocity(i);
-    %     if (height-springRestingLength)<0
-    %         springVerticalGrf = (springConstants(i) * (springRestingLength ...
-    %             - height) * (1 + dampingFactor * ...
-    %             verticalVelocity)); % Equation 1 from Jackson et al, 2016
-    %     end
-    %     lowSpringConstant = 0.1;
-    %     h = 1e-3;
-    %     c = 5e-4;
-    %     v = (springConstants(i) + lowSpringConstant) / ...
-    %         (springConstants(i) - lowSpringConstant);
-    %     s = (springConstants(i) - lowSpringConstant) / 2;
-    %     restingLengthForceOffset = -s * (v * springRestingLength - c * ...
-    %         log(cosh((springRestingLength + h) / c)));
-    %     springVerticalGrf = (-s * (v * height - c * ...
-    %         log(cosh((height + h) / c))) - restingLengthForceOffset) * ...
-    %         (1 + dampingFactor * verticalVelocity);
-
+    % The freglyVerticalGrf model closely approximates a linear spring
+    % during contact while allowing a small force with a small slope to
+    % exist for spring markers out of contact. This can help the
+    % optimization algorithm find a better search direction when springs
+    % are incorrectly out of contact. 
     klow = 1e-1;
     h = 1e-3;
     c = 5e-4;
@@ -64,9 +53,13 @@ for i=1:length(springConstants)
     v = ones(numFrames, 1)' .* ((Kval + klow) ./ (Kval - klow));
     s = ones(numFrames, 1)' .* ((Kval - klow) ./ 2);
     constant = -s .* (v .* ymax - c .* log(cosh((ymax + h) ./ c)));
-    freglyVerticalGrf = -s .* (v .* height - c .* log(cosh((height + h) ./ c))) - constant;
-    freglyVerticalGrf(isnan(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
-    freglyVerticalGrf(isinf(freglyVerticalGrf)) = min(min(freglyVerticalGrf));
+    freglyVerticalGrf = -s .* (v .* height - c .* ...
+        log(cosh((height + h) ./ c))) - constant;
+    % Account for potential errors in force model
+    freglyVerticalGrf(isnan(freglyVerticalGrf)) = ...
+        min(min(freglyVerticalGrf));
+    freglyVerticalGrf(isinf(freglyVerticalGrf)) = ...
+        min(min(freglyVerticalGrf));
     springForces(2, i) = freglyVerticalGrf * (1 + dampingFactor * ...
         verticalVelocity);
     modeledVerticalGrf = modeledVerticalGrf + springForces(2, i);

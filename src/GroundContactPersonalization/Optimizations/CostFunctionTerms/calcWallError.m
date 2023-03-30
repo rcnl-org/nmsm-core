@@ -1,9 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% Calculate a generic walled error cost. This is generally used for a cost
+% with a high penalty outside an allowable error region and low cost
+% within it. 
 %
 % (Array of double, double, double, double) -> (Array of double)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% Calculate a generic walled error cost.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

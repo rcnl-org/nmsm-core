@@ -2,8 +2,9 @@
 %
 % 
 %
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (Array of double, Array of double, Array of double) 
+% -> (Array of double, Array of double)
+% Separates included spring marker points into hindfoot and toes portions.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
