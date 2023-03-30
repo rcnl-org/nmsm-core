@@ -1,9 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% This optimization determines the ideal resting spring length for the 
+% initial spring constants and experimental kinematics to match the 
+% experimental vertical ground reaction force. This will not match well on 
+% its own, but it will improve the performance of the next Ground Contact 
+% Personalization stages. 
 %
 % (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% Initializes the resting spring length for Ground Contact Personalization.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,25 +32,28 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = initializeRestingSpringLength(inputs)
-for task = 1:length(inputs.tasks)
-    [modeledJointPositions, modeledJointVelocities] = calcGCPJointKinematics( ...
-        inputs.tasks{task}.experimentalJointPositions, ...
-        inputs.tasks{task}.jointKinematicsBSplines, ...
-        inputs.tasks{task}.bSplineCoefficients);
-    modeledValues{task}.springHeights = zeros(size(...
+for surface = 1:length(inputs.surfaces)
+    [modeledJointPositions, modeledJointVelocities] = ...
+        calcGCPJointKinematics( ...
+        inputs.surfaces{surface}.experimentalJointPositions, ...
+        inputs.surfaces{surface}.jointKinematicsBSplines, ...
+        inputs.surfaces{surface}.bSplineCoefficients);
+    modeledValues{surface}.springHeights = zeros(size(...
         modeledJointPositions, 2), length(inputs.springConstants));
-    modeledValues{task}.springVelocities = ...
-        modeledValues{task}.springHeights;
+    modeledValues{surface}.springVelocities = ...
+        modeledValues{surface}.springHeights;
 
-    [model, state] = Model(inputs.tasks{task}.model);
+    % As this optimization only calibrates the resting spring length,
+    % marker positions cannot change. 
+    [model, state] = Model(inputs.surfaces{surface}.model);
     for i=1:size(modeledJointPositions, 2)
         [model, state] = updateModelPositionAndVelocity(model, state, ...
             modeledJointPositions(:, i), modeledJointVelocities(:, i));
         for j = 1:length(inputs.springConstants)
-            modeledValues{task}.springHeights(i, j) = ...
+            modeledValues{surface}.springHeights(i, j) = ...
                 model.getMarkerSet().get("spring_marker_" + num2str(j)) ...
                 .getLocationInGround(state).get(1);
-            modeledValues{task}.springVelocities(i, j) = ...
+            modeledValues{surface}.springVelocities(i, j) = ...
                 model.getMarkerSet().get("spring_marker_" + num2str(j)) ...
                 .getVelocityInGround(state).get(1);
         end
@@ -59,17 +66,23 @@ inputs.restingSpringLength = lsqnonlin( ...
     inputs.initialRestingSpringLength, [], []);
 end
 
+% Cost only depends on vertical ground reaction force tracking.
 function cost = calcRestingSpringLengthCost(restingSpringLength, ...
     inputs, modeledValues)
 cost = [];
-for task = 1:length(inputs.tasks)
+for surface = 1:length(inputs.surfaces)
     verticalForce = ...
-        inputs.tasks{task}.experimentalGroundReactionForces(2, :);
+        inputs.surfaces{surface}.experimentalGroundReactionForces(2, :);
     modeledVerticalGrf = zeros(size(verticalForce));
     for i = 1:length(modeledVerticalGrf)
         for j = 1:length(inputs.springConstants)
-            height = modeledValues{task}.springHeights(i, j);
-            velocity = modeledValues{task}.springVelocities(i, j);
+            % The freglyVerticalGrf model closely approximates a linear 
+            % spring during contact while allowing a small force with a 
+            % small slope to exist for spring markers out of contact. This 
+            % can help the optimization algorithm find a better search 
+            % direction when springs are incorrectly out of contact.
+            height = modeledValues{surface}.springHeights(i, j);
+            velocity = modeledValues{surface}.springVelocities(i, j);
             klow = 1e-1;
             h = 1e-3;
             c = 5e-4;

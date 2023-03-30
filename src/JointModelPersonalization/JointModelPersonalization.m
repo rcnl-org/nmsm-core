@@ -34,8 +34,7 @@ verifyParams(params);
 outputModel = Model(inputs.model);
 for i=1:length(inputs.tasks)
     functions = makeFunctions(inputs.tasks{i}.parameters, ...
-        inputs.tasks{i}.scaling, inputs.tasks{i}.markers, ...
-        inputs.tasks{i}.primaryBodyAxis);
+        inputs.tasks{i}.scaling, inputs.tasks{i}.markers);
     params.markerNames = getMarkersOnJoints(outputModel, ...
         inputs.tasks{i}.parameters);
     taskParams = mergeStructs(inputs.tasks{i}, params);
@@ -109,19 +108,18 @@ for i=1:length(scaling)
     functions{end + 1} = makeScalingFunction(scaling(i));
 end
 for i=1:length(markers)
-    axis = "";
-    for j = 1 : length(primaryBodyAxis)
-        pair = primaryBodyAxis{j};
-        if strcmp(pair(1), markers(i))
-            axis = pair(2);
-        end
+    marker = markers{i};
+    name = marker(1);
+    axis = marker(2);
+    if ~strcmp(axis, "x") 
+        functions{end + 1} = makeMarkerFunction(name, "x");
     end
-    if ~strcmp(axis, "x") functions{end + 1} = ...
-            makeMarkerFunction(markers(i), "x"); end
-    if ~strcmp(axis, "y") functions{end + 1} = ...
-            makeMarkerFunction(markers(i), "y"); end
-    if ~strcmp(axis, "z") functions{end + 1} = ...
-            makeMarkerFunction(markers(i), "z"); end
+    if ~strcmp(axis, "y") 
+        functions{end + 1} = makeMarkerFunction(name, "y");
+    end
+    if ~strcmp(axis, "z") 
+        functions{end + 1} = makeMarkerFunction(name, "z");
+    end
 end
 end
 
