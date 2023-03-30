@@ -1,9 +1,20 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the passive model moment
+% This function calculates the passive muscle moments for a given set of
+% experimental data, maximum isometric force, and normalized fiber length.
 %
-% (Array of number) -> (Array of number)
-% returns passive model moment  
+% Inputs:
+%   experimentalData: struct containing the following fields
+%       momentArms: 3d matrix of moment arms
+%       pennationAngle: 3d array of (1, numMuscles, 1)
+%   maxIsometricForce: 3d array of (1, numMuscles, 1)
+%   normalizedFiberLength: 3d array of (1, numMuscles, 1)
+%
+% Outputs:
+%   passiveModelMoments: 3d array of moments
+%
+% (struct, 3d mat, 3d mat) -> 3d mat
+% returns passive model moment
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

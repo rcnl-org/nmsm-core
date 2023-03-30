@@ -32,7 +32,7 @@
 function [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-params = getParams(settingsTree);
+params = getParams(settingsTree, inputs.model);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -40,45 +40,10 @@ end
 end
 
 function inputs = getInputs(tree)
-inputDirectory = getFieldByName(tree, 'input_directory').Text;
-modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
-if(~isempty(inputDirectory))
-    try
-        inputs.model = fullfile(inputDirectory, modelFile);
-    catch
-        inputs.model = fullfile(pwd, inputDirectory, modelFile);
-        inputDirectory = fullfile(pwd, inputDirectory);
-    end
-else
-    inputs.model = fullfile(pwd, modelFile);
-    inputDirectory = pwd;
-end
-mtpResultsDirectory = fullfile(inputDirectory, getFieldByNameOrError( ...
-    tree, "mtp_results_input_directory").Text);
-inputs.coordinateNames = parseSpaceSeparatedList(tree, ...
-    "coordinate_list");
-inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
-    inputs.coordinateNames);
+inputs = parseMtpNcpSharedInputs(tree);
 inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
-prefixes = findPrefixes(tree, inputDirectory);
 inputs = matchMuscleNamesFromCoordinatesAndSynergyGroups(inputs);
-inverseDynamicsFileNames = findFileListFromPrefixList(fullfile( ...
-    inputDirectory, "IDData"), prefixes);
-[inputs.inverseDynamicsMoments, ...
-    inputs.inverseDynamicsMomentsColumnNames] = ...
-    parseMtpStandard(inverseDynamicsFileNames);
-[inputs.mtpActivation, inputs.mtpActivationColumnNames] = ...
-    parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(mtpResultsDirectory, "muscleActivations"), prefixes));
-inputs.mtpMuscleData = parseOsimxFile(fullfile(mtpResultsDirectory, ...
-    "model.osimx"));
-directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    inputDirectory, "MAData"), prefixes);
-[inputs.muscleTendonLength, inputs.muscleTendonColumnNames] = ...
-    parseFileFromDirectories(directories, "Length.sto");
-inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
-    "Velocity.sto");
-inputs.momentArms = parseMomentArms(directories, inputs.model);
+inputs = loadMtpData(tree, inputs);
 inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.maxIsometricForce, inputs.optimalFiberLength, ...
     inputs.tendonSlackLength, inputs.pennationAngle] = ...
@@ -86,6 +51,22 @@ inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.optimalFiberLengthScaleFactors, ...
     inputs.tendonSlackLengthScaleFactors] = getMtpDataInputs( ...
     inputs.mtpMuscleData, inputs.muscleNames);
+end
+
+function inputs = loadMtpData(tree, inputs)
+mtpResultsDirectory = getFieldByNameOrError( ...
+    tree, "mtp_results_directory_1").Text;
+[inputs.mtpActivations, inputs.mtpActivationsColumnNames] = ...
+    parseMtpStandard(findFileListFromPrefixList( ...
+    fullfile(mtpResultsDirectory, "muscleActivations"), inputs.prefixes));
+inputs.mtpMuscleData = parseOsimxFile(fullfile(mtpResultsDirectory, ...
+    "model.osimx"));
+% Remove activations of muscles from coordinates not included
+includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
+    inputs.muscleTendonColumnNames);
+inputs.mtpActivationsColumnNames = ...
+    inputs.mtpActivationsColumnNames(includedSubset);
+inputs.mtpActivations = inputs.mtpActivations(:, includedSubset, :);
 end
 
 function [maxIsometricForce, optimalFiberLength, tendonSlackLength, ...
@@ -107,8 +88,17 @@ for i = 1:length(muscles)
 end
 end
 
-function params = getParams(tree)
+function params = getParams(tree, model)
+model = Model(model);
 params = struct();
+params.activationGroupNames = parseSpaceSeparatedList(tree, ...
+    'activation_muscle_groups');
+params.activationGroups = groupNamesToGroups( ...
+    params.activationGroupNames, model);
+params.normalizedFiberLengthGroupNames = parseSpaceSeparatedList(tree, ...
+    'normalized_fiber_length_muscle_groups');
+params.normalizedFiberLengthGroups = groupNamesToGroups( ...
+    params.normalizedFiberLengthGroupNames, model);
 end
 
 function groups = getSynergyGroups(tree, model)

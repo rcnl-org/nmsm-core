@@ -4,20 +4,23 @@
 % velocities
 %
 % Inputs:
-% inputData.lMt - 3D matrix of (numFrames, numTrials, numMuscles)
-% inputData.vMT - 3D matric of (numFrames, numTrials, numMuscles)
-% inputData.vMaxFactor - number
-% inputData.pennationAngle - 3D matrix of (1, 1, numMuscles)
-% inputData.fMax - 3D matrix of (1, 1, numMuscles)
-% inputData.lMo - 3D matrix of (1, 1, numMuscles)
-% inputData.tendonSlackLength - 3D matrix of (1, 1, numMuscles)
+% In the experimentalData struct:
+% muscleTendonLength - 3d mat (numFrames, numTrials, numMuscles)
+% muscleTendonVelocity - 3D mat (numFrames, numTrials, numMuscles)
+% vMaxFactor - number
+% pennationAngle - 3D mat (1, 1, numMuscles)
+% optimalFiberLength - 3D mat (1, 1, numMuscles)
+% tendonSlackLength - 3D mat (1, 1, numMuscles)
+%
+% Other inputs:
+% optimalFiberLengthScaleFactors - 3D mat (1, 1, numMuscles)
+% tendonSlackLengthScaleFactors - 3D mat (1, 1, numMuscles)
 %
 % Outputs:
-% lMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
-% vMtilda - 3D matrix of (numFrames, numTrials, numMuscles)
+% normalizedFiberLengths - 3D mat (numFrames, numTrials, numMuscles)
+% normalizedFiberVelocities - 3D mat (numFrames, numTrials, numMuscles)
 %
-% (Struct, Array of number, Array of number) ->
-% (3D Array of number, 3D Array of number)
+% (struct, num array, num array) => (3D num array, 3D num array)
 % returns computed muscle fiber lengths and velocities with scale factor
 
 % ----------------------------------------------------------------------- %
@@ -45,7 +48,6 @@
 function [normalizedFiberLengths, normalizedFiberVelocities] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities(experimentalData, ...
     optimalFiberLengthScaleFactors, tendonSlackLengthScaleFactors)
-
 scaledOptimalFiberLength = experimentalData.optimalFiberLength .* ...
     optimalFiberLengthScaleFactors;
 scaledTendonSlackLength = experimentalData.tendonSlackLength .* ...

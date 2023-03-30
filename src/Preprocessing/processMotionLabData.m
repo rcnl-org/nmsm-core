@@ -90,7 +90,7 @@ end
 
 function preprocessMuscleAnalysisData(inputs, params, maResultsDir)
 moveMuscleAnalysis(fullfile(inputs.resultsDir, maResultsDir), ...
-    inputs.maResultsDir, inputs.coordinates, inputs.prefix);
+    inputs.maResultsDir, inputs.coordinateNames, inputs.prefix);
 end
 
 function preprocessEmgData(inputs, params, emgResultsDir)
@@ -106,8 +106,6 @@ else
 copyfile(inputs.emgFileName, fullfile(inputs.resultsDir, ...
     emgResultsDir, inputs.prefix + ".sto"))
 end
-% expandEmgDatas(inputs.model, inputs.emgFileName, ...
-%     fullfile(inputs.resultsDir, emgResultsDir), inputs.prefix, params);
 end
 
 function filesToSection= makeFilesToSection(inputs, ikResultsDir, ...
@@ -121,9 +119,9 @@ filesToSection = [ ...
     fullfile(inputs.resultsDir, ikResultsDir, inputs.prefix + ".sto"), ...
     fullfile(inputs.resultsDir, idResultsDir, inputs.prefix + ".sto")
     ];
-for i=1:length(inputs.coordinates)
+for i=1:length(inputs.coordinateNames)
     filesToSection(end+1) = fullfile(inputs.resultsDir, maResultsDir, ...
-        inputs.prefix + "_MomentArm_" + inputs.coordinates(i) + ".sto");
+        inputs.prefix + "_MomentArm_" + inputs.coordinateNames(i) + ".sto");
 end
 end
 

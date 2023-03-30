@@ -33,12 +33,18 @@ function NeuralControlPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
-optimizedValues = NeuralControlPersonalization(inputs, params);
+
+precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+if isstruct(precalInputs)
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
+    inputs = updateNcpInitialGuess(inputs, precalInputs, ...
+        optimizedInitialGuess);
+end
+
+[optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
 %% results is a structure, report not implemented yet
-results = calcFinalMuscleActivations(optimizedValues, inputs);
-results = calcFinalModelMoments(results, inputs);
-save("results.mat", "results", '-mat')
-reportNeuralControlPersonalizationResults(optimizedValues, inputs, params)
-saveNeuralControlPersonalizationResults(inputs.model, ...
-    inputs.coordinates, results, resultsDirectory);
+activations = calcActivationsFromSynergyDesignVariables(optimizedValues, inputs, params);
+[synergyWeights, synergyCommands] = findSynergyWeightsAndCommands(optimizedValues, inputs, params);
+saveNeuralControlPersonalizationResults(activations, synergyWeights, ...
+    inputs, resultsDirectory);
 end

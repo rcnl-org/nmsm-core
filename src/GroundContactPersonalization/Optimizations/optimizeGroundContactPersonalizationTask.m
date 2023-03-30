@@ -70,9 +70,9 @@ if (params.tasks{task}.designVariables(5))
     fieldNameOrder = [fieldNameOrder "restingSpringLength"];
 end
 if (params.tasks{task}.designVariables(6))
-    for foot = 1:length(inputs.tasks)
+    for foot = 1:length(inputs.surfaces)
         initialValues = [initialValues ...
-            reshape(inputs.tasks{foot}.bSplineCoefficients, 1, [])];
+            reshape(inputs.surfaces{foot}.bSplineCoefficients, 1, [])];
         fieldNameOrder = [fieldNameOrder ("bSplineCoefficients" + foot)];
     end
 end
@@ -104,11 +104,11 @@ if (params.tasks{task}.designVariables(5))
     upperBounds = [upperBounds Inf];
 end
 if (params.tasks{task}.designVariables(6))
-    for foot = 1:length(inputs.tasks)
+    for foot = 1:length(inputs.surfaces)
         lowerBounds = [lowerBounds -Inf(1, length(reshape(...
-            inputs.tasks{foot}.bSplineCoefficients, 1, [])))];
+            inputs.surfaces{foot}.bSplineCoefficients, 1, [])))];
         upperBounds = [upperBounds Inf(1, length(reshape(...
-            inputs.tasks{foot}.bSplineCoefficients, 1, [])))];
+            inputs.surfaces{foot}.bSplineCoefficients, 1, [])))];
     end
 end
 end

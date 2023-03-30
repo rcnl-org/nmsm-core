@@ -3,8 +3,7 @@
 % This function calculates the scaled muscle excitations given the
 % processed EMG signals
 %
-% (Array of numbers, 2D cell, Array of numbers, Array of numbers) -> 
-% (3D matrix of numbers)
+% (Array of num, 2D cell, Array of num, Array of num) -> (3D matrix of num)
 % returns the muscle excitations with time padding
 
 % ----------------------------------------------------------------------- %
@@ -30,14 +29,14 @@
 % ----------------------------------------------------------------------- %
 
 function muscleExcitations = calcMuscleExcitations(emgTime, ...
-    emgSplines, electromechanicalDelays, emgScaleFactors)      
+    emgSplines, electromechanicalDelays, emgScaleFactors)
 
 if length(electromechanicalDelays) == 1
     timeDelayedEmg = calcEmgDataWithCommonTimeDelay(emgTime, ...
         emgSplines, electromechanicalDelays / 10);
 else
     timeDelayedEmg = calcEmgDataWithMuscleSpecificTimeDelay(emgTime, ...
-        emgSplines, electromechanicalDelays / 10); 
-end 
-muscleExcitations = timeDelayedEmg .* emgScaleFactors; 
+        emgSplines, electromechanicalDelays / 10);
+end
+muscleExcitations = timeDelayedEmg .* emgScaleFactors;
 end
