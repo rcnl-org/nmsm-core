@@ -68,25 +68,21 @@ else
 end
 
 % Get inputs for each foot
-inputs.tasks = getFootTasks(inputs, tree);
+inputs.surfaces = getContactSurfaces(inputs, tree);
 inputs = getInitialValues(inputs, tree);
 end
 
 % (struct, struct) -> (struct)
 % Gets inputs specific to each foot, such as experimental kinematics and
 % ground reactions and foot marker names. 
-function output = getFootTasks(inputs, tree)
-tasks = getFieldByNameOrError(tree, 'FootPersonalizationTaskList');
+function output = getContactSurfaces(inputs, tree)
+contactSurfaces = getFieldByNameOrError(tree, 'GCPContactSurfaceSet') ...
+    .objects.GCPContactSurface;
 counter = 1;
-footTasks = orderByIndex(tasks.FootPersonalizationTask);
-for i=1:length(footTasks)
-    if(length(footTasks) == 1)
-        task = footTasks;
-    else
-        task = footTasks{i};
-    end
-    if(strcmpi(task.is_enabled.Text, 'true'))
-        output{counter} = getFootData(task);
+for i=1:length(contactSurfaces)
+    surface = contactSurfaces{i};
+    if(strcmpi(surface.is_enabled.Text, 'true'))
+        output{counter} = getFootData(surface);
         output{counter} = getGroundReactions(inputs.bodyModel, ...
             inputs.grfFileName, output{counter});
         output{counter} = getMotionTime(inputs.bodyModel, ...
@@ -234,10 +230,9 @@ end
 
 % Gets cost terms and design variables included in each task.
 function output = getOptimizationTasks(tree)
-tasks = getFieldByNameOrError(tree, ...
-    'GroundContactPersonalizationTaskList');
+tasks = getFieldByNameOrError(tree, 'GCPTaskList');
 counter = 1;
-gcpTasks = orderByIndex(tasks.GroundContactPersonalizationTask);
+gcpTasks = orderByIndex(tasks.GCPTask);
 for i=1:length(gcpTasks)
     if(length(gcpTasks) == 1)
         task = gcpTasks;
@@ -247,7 +242,11 @@ for i=1:length(gcpTasks)
     if(strcmpi(task.is_enabled.Text, 'true'))
         output{counter} = getTaskDesignVariables(task);
         output{counter} = getTaskCostTerms( ...
-            task.GroundContactCostFunctionTerms, output{counter});
+            task.RCNLCostTermSet.objects.RCNLCostTerm, output{counter});
+        output{counter}.costTerms.springConstantErrorFromNeighbors ...
+            .standardDeviation = str2double(getTextFromField( ...
+            getFieldByNameOrAlternate(task, ...
+            'neighborStandardDeviation', '0.05')));
         counter = counter + 1;
     end
 end
@@ -266,43 +265,19 @@ end
 
 % (struct, struct) -> (struct)
 function taskStruct = getTaskCostTerms(tree, taskStruct)
-costTermNames = ["markerPositionError", "markerSlopeError", ...
+costTermFieldNames = ["markerPositionError", "markerSlopeError", ...
     "rotationError", "translationError", ...
     "coordinateCoefficientError", "verticalGrfError", ...
     "verticalGrfSlopeError", "horizontalGrfError", ...
     "horizontalGrfSlopeError", "groundReactionMomentError", ...
     "groundReactionMomentSlopeError", "springConstantErrorFromMean", ...
     "springConstantErrorFromNeighbors"];
-for i = 1:length(costTermNames)
-    costTermClassName = convertStringsToChars(costTermNames(i));
-    costTermClassName = [upper(costTermClassName(1)) ...
-        costTermClassName(2:end)];
-    % If a cost term is not found in the XML file, assume it is not
-    % enabled.
-    enabled = valueOrAlternate(valueOrAlternate(tree, costTermClassName, ...
-        'none'), 'is_enabled', 'false');
-    if (isstruct(enabled))
-        enabled = enabled.Text;
-    end
-    taskStruct.costTerms.(costTermNames(i)).isEnabled = strcmpi(...
-        enabled, 'true');
-    allowableError = valueOrAlternate(valueOrAlternate(tree, ...
-        costTermClassName, 'none'), 'max_allowable_error', '1');
-    if (isstruct(allowableError))
-        allowableError = allowableError.Text;
-    end
-    taskStruct.costTerms.(costTermNames(i)).maxAllowableError = ...
-        str2double(allowableError);
-    % Only the term springConstantErrorFromNeighbors should have a standard
-    % deviation element. 
-    if costTermNames(i) == "springConstantErrorFromNeighbors"
-        standardDeviation = valueOrAlternate(valueOrAlternate(tree, ...
-            costTermClassName, 'none'), 'standard_deviation', '0.05');
-        if (isstruct(standardDeviation))
-            standardDeviation = standardDeviation.Text;
-        end
-        taskStruct.costTerms.(costTermNames(i)).standardDeviation = ...
-            str2double(standardDeviation);
-    end
-end
+costTermTypes = ["marker_position", "marker_slope", "rotation", ...
+    "translation", "coordinate_coefficient", "vertical_grf", ...
+    "vertical_grf_slope", "horizontal_grf", "horizontal_grf_slope", ...
+    "ground_reaction_moment", "ground_reaction_moment_slope", ...
+    "spring_constant_mean", "neighbor_spring_constant"];
+
+taskStruct = parseRcnlCostTermSet(tree, taskStruct, costTermFieldNames, ...
+    costTermTypes);
 end

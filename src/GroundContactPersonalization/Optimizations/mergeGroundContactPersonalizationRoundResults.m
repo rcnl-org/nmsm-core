@@ -53,13 +53,13 @@ end
 if (params.tasks{task}.designVariables(6))
     % Other design variables are shared between feet, but kinematic
     % B-spline coefficients are specific to a foot. 
-    for foot = 1:length(inputs.tasks)
-        bSplineCoefficientLength = length(reshape(inputs.tasks{foot} ...
+    for foot = 1:length(inputs.surfaces)
+        bSplineCoefficientLength = length(reshape(inputs.surfaces{foot} ...
             .bSplineCoefficients, 1, []));
         bSplineCoefficients = results(index : index + ...
             bSplineCoefficientLength - 1);
         bSplineCoefficients = reshape(bSplineCoefficients, [], 7);
-        inputs.tasks{foot}.bSplineCoefficients = bSplineCoefficients;
+        inputs.surfaces{foot}.bSplineCoefficients = bSplineCoefficients;
         index = index + bSplineCoefficientLength;
     end
 end

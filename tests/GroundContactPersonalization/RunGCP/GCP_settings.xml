@@ -16,73 +16,72 @@
 		<!--Flag indicating whether the initial resting spring length will be calibrated before optimization rounds. Recommended true unless the chosen initial value is desired-->
 		<resting_spring_length_initialization_is_enabled>true</resting_spring_length_initialization_is_enabled>
 		<!--Settings for ground contact personalization on the right side-->
-		<FootPersonalizationTaskList>
-			<FootPersonalizationTask>
-				<!--Flag indicating whether the foot will be personalized-->
-				<is_enabled>true</is_enabled>
-				<!--Index of task used to determine order of tasks-->
-				<index>1</index>
-				<!--Flag indicating whether this is a left foot-->
-				<is_left_foot>false</is_left_foot>
-				<!--Start time for right side gait cycles in motion and ground reaction force files-->
-				<start_time>81.181</start_time>
-				<!--End time for motion and ground reaction force files-->
-				<end_time>82.286</end_time>
-				<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
-				<belt_speed>1</belt_speed>
-				<!--Names of the force columns in the grf file, ordered X, Y, Z-->
-				<force_columns>F2x F2y F2z</force_columns>
-				<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
-				<moment_columns>M2x M2y M2z</moment_columns>
-				<!--Names of the electrical center columns in the grf file, ordered X, Y, Z-->
-				<electrical_center_columns>EC2x EC2y EC2z</electrical_center_columns>
-				<!--Name of the toe angle coordinate in the model file-->
-				<toe_coordinate>mtp_angle_r</toe_coordinate>
-				<!--Name of the toe joint in the model file-->
-				<toe_joint>mtp_r</toe_joint>
-				<!--Names of the markers used to define the foot area-->
-				<toe_marker>R.Toe</toe_marker>
-				<medial_marker>R.Toe.Medial</medial_marker>
-				<lateral_marker>R.Toe.Lateral</lateral_marker>
-				<heel_marker>R.Heel</heel_marker>
-				<!--Name of midfoot superior marker used to define ground reaction moments-->
-				<midfoot_superior_marker>R.Midfoot.Superior</midfoot_superior_marker>
-			</FootPersonalizationTask>
-			<FootPersonalizationTask>
-				<!--Flag indicating whether the foot will be personalized-->
-				<is_enabled>true</is_enabled>
-				<!--Index of task used to determine order of tasks-->
-				<index>2</index>
-				<!--Flag indicating whether this is a left foot-->
-				<is_left_foot>true</is_left_foot>
-				<!--Start time for motion and ground reaction force files-->
-				<start_time>81.181</start_time>
-				<!--End time for right side gait cycles in motion and ground reaction force files-->
-				<end_time>82.286</end_time>
-				<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
-				<belt_speed>1</belt_speed>
-				<!--Names of the force columns in the grf file, ordered X, Y, Z-->
-				<force_columns>F1x F1y F1z</force_columns>
-				<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
-				<moment_columns>M1x M1y M1z</moment_columns>
-				<!--Names of the electrical center columns in the grf , ordered X, Y, Z-->
-				<electrical_center_columns>EC1x EC1y EC1z</electrical_center_columns>
-				<!--Name of the toe angle coordinate in the model file-->
-				<toe_coordinate>mtp_angle_l</toe_coordinate>
-				<!--Name of the toe joint in the model file-->
-				<toe_joint>mtp_l</toe_joint>
-				<!--Names of the markers used to define the foot area-->
-				<toe_marker>L.Toe</toe_marker>
-				<medial_marker>L.Toe.Medial</medial_marker>
-				<lateral_marker>L.Toe.Lateral</lateral_marker>
-				<heel_marker>L.Heel</heel_marker>
-				<!--Name of midfoot superior marker used to define ground reaction moments-->
-				<midfoot_superior_marker>L.Midfoot.Superior</midfoot_superior_marker>
-			</FootPersonalizationTask>
-		</FootPersonalizationTaskList>
+		<GCPContactSurfaceSet>
+			<objects>
+				<GCPContactSurface>
+					<!--Flag indicating whether the foot will be personalized-->
+					<is_enabled>true</is_enabled>
+					<!--Flag indicating whether foot model should be mirrored-->
+					<is_left_foot>false</is_left_foot>
+					<!--Start time for right side gait cycles in motion and ground reaction force files-->
+					<start_time>81.181</start_time>
+					<!--End time for motion and ground reaction force files-->
+					<end_time>82.286</end_time>
+					<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
+					<belt_speed>1</belt_speed>
+					<!--Names of the force columns in the grf file, ordered X, Y, Z-->
+					<force_columns>F2x F2y F2z</force_columns>
+					<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
+					<moment_columns>M2x M2y M2z</moment_columns>
+					<!--Names of the electrical center columns in the grf file, ordered X, Y, Z-->
+					<electrical_center_columns>EC2x EC2y EC2z</electrical_center_columns>
+					<!--Name of the toe angle coordinate in the model file-->
+					<toe_coordinate>mtp_angle_r</toe_coordinate>
+					<!--Name of the toe joint in the model file-->
+					<toe_joint>mtp_r</toe_joint>
+					<!--Names of the markers used to define the foot area-->
+					<toe_marker>R.Toe</toe_marker>
+					<medial_marker>R.Toe.Medial</medial_marker>
+					<lateral_marker>R.Toe.Lateral</lateral_marker>
+					<heel_marker>R.Heel</heel_marker>
+					<!--Name of midfoot superior marker used to define ground reaction moments-->
+					<midfoot_superior_marker>R.Midfoot.Superior</midfoot_superior_marker>
+				</GCPContactSurface>
+				<GCPContactSurface>
+					<!--Flag indicating whether the foot will be personalized-->
+					<is_enabled>false</is_enabled>
+					<!--Flag indicating whether this is a left foot-->
+					<is_left_foot>true</is_left_foot>
+					<!--Start time for motion and ground reaction force files-->
+					<start_time>81.181</start_time>
+					<!--End time for right side gait cycles in motion and ground reaction force files-->
+					<end_time>82.286</end_time>
+					<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable-->
+					<belt_speed>1</belt_speed>
+					<!--Names of the force columns in the grf file, ordered X, Y, Z-->
+					<force_columns>F1x F1y F1z</force_columns>
+					<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
+					<moment_columns>M1x M1y M1z</moment_columns>
+					<!--Names of the electrical center columns in the grf , ordered X, Y, Z-->
+					<electrical_center_columns>EC1x EC1y EC1z</electrical_center_columns>
+					<!--Name of the toe angle coordinate in the model file-->
+					<toe_coordinate>mtp_angle_l</toe_coordinate>
+					<!--Name of the toe joint in the model file-->
+					<toe_joint>mtp_l</toe_joint>
+					<!--Names of the markers used to define the foot area-->
+					<toe_marker>L.Toe</toe_marker>
+					<medial_marker>L.Toe.Medial</medial_marker>
+					<lateral_marker>L.Toe.Lateral</lateral_marker>
+					<heel_marker>L.Heel</heel_marker>
+					<!--Name of midfoot superior marker used to define ground reaction moments-->
+					<midfoot_superior_marker>L.Midfoot.Superior</midfoot_superior_marker>
+				</GCPContactSurface>
+			</objects>
+			<groups />
+		</GCPContactSurfaceSet>
 		<!--Task list defining rounds of GCP optimization-->
-		<GroundContactPersonalizationTaskList>
-			<GroundContactPersonalizationTask>
+		<GCPTaskList>
+			<GCPTask>
                 <!--Flag indicating whether or not the task is enabled.-->
                 <is_enabled>true</is_enabled>
 				<!--Index of task used to determine order of tasks-->
@@ -100,49 +99,46 @@
 				<restingSpringLength>true</restingSpringLength>
 				<!--Coefficients allowing for adjustments to kinematics during optimization-->
 				<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
+                <!--Standard deviation of the gaussian distribution used to generate the neighbor spring constant term-->
+                <neighborStandardDeviation>0.05</neighborStandardDeviation>
 				<!--Settings for cost function terms for the task-->
-				<GroundContactCostFunctionTerms>
-					<RotationError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>4</max_allowable_error>
-					</RotationError>
-					<TranslationError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.01</max_allowable_error>
-					</TranslationError>
-					<VerticalGrfError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>5</max_allowable_error>
-					</VerticalGrfError>
-					<HorizontalGrfError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>20</max_allowable_error>
-					</HorizontalGrfError>
-					<GroundReactionMomentError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>10</max_allowable_error>
-					</GroundReactionMomentError>
-					<SpringConstantErrorFromNeighbors>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>2000</max_allowable_error>
-						<!--Standard deviation of Gaussian weighting function. A larger value indicates that stiffness should be more similar over a greater distance-->
-						<standard_deviation>0.05</standard_deviation>
-					</SpringConstantErrorFromNeighbors>
-				</GroundContactCostFunctionTerms>
-			</GroundContactPersonalizationTask>
-			<GroundContactPersonalizationTask>
+                <RCNLCostTermSet>
+                    <objects>
+					    <RCNLCostTerm>
+					    	<type>rotation</type>
+                            <is_enabled>true</is_enabled>
+					    	<max_allowable_error>4</max_allowable_error>
+					    </RCNLCostTerm>
+					    <RCNLCostTerm>
+					    	<type>translation</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>0.01</max_allowable_error>
+					    </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>vertical_grf</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>5</max_allowable_error>
+                        </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>horizontal_grf</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>20</max_allowable_error>
+                        </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>ground_reaction_moment</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>10</max_allowable_error>
+                        </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>neighbor_spring_constant</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>2000</max_allowable_error>
+                        </RCNLCostTerm>
+                    </objects>
+                    <groups />
+				</RCNLCostTermSet>
+			</GCPTask>
+			<GCPTask>
                 <!--Flag indicating whether or not the task is enabled.-->
                 <is_enabled>true</is_enabled>
 				<!--Index of task used to determine order of tasks-->
@@ -160,49 +156,46 @@
 				<restingSpringLength>false</restingSpringLength>
 				<!--Coefficients allowing for adjustments to kinematics during optimization-->
 				<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
+                <!--Standard deviation of the gaussian distribution used to generate the neighbor spring constant term-->
+                <neighborStandardDeviation>0.05</neighborStandardDeviation>
 				<!--Settings for cost function terms for the task-->
-				<GroundContactCostFunctionTerms>
-					<RotationError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>4</max_allowable_error>
-					</RotationError>
-					<TranslationError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.01</max_allowable_error>
-					</TranslationError>
-					<VerticalGrfError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>5</max_allowable_error>
-					</VerticalGrfError>
-					<HorizontalGrfError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>5</max_allowable_error>
-					</HorizontalGrfError>
-					<GroundReactionMomentError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>10</max_allowable_error>
-					</GroundReactionMomentError>
-					<SpringConstantErrorFromNeighbors>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>2000</max_allowable_error>
-						<!--Standard deviation of Gaussian weighting function. A larger value indicates that stiffness should be more similar over a greater distance-->
-						<standard_deviation>0.05</standard_deviation>
-					</SpringConstantErrorFromNeighbors>
-				</GroundContactCostFunctionTerms>
-			</GroundContactPersonalizationTask>
-			<GroundContactPersonalizationTask>
+                <RCNLCostTermSet>
+                    <objects>
+					    <RCNLCostTerm>
+					    	<type>rotation</type>
+                            <is_enabled>true</is_enabled>
+					    	<max_allowable_error>4</max_allowable_error>
+					    </RCNLCostTerm>
+					    <RCNLCostTerm>
+					    	<type>translation</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>0.01</max_allowable_error>
+					    </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>vertical_grf</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>5</max_allowable_error>
+                        </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>horizontal_grf</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>5</max_allowable_error>
+                        </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>ground_reaction_moment</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>10</max_allowable_error>
+                        </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>neighbor_spring_constant</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>2000</max_allowable_error>
+                        </RCNLCostTerm>
+                    </objects>
+                    <groups />
+				</RCNLCostTermSet>
+			</GCPTask>
+			<GCPTask>
                 <!--Flag indicating whether or not the task is enabled.-->
                 <is_enabled>true</is_enabled>
 				<!--Index of task used to determine order of tasks-->
@@ -220,49 +213,46 @@
 				<restingSpringLength>false</restingSpringLength>
 				<!--Coefficients allowing for adjustments to kinematics during optimization-->
 				<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
+                <!--Standard deviation of the gaussian distribution used to generate the neighbor spring constant term-->
+                <neighborStandardDeviation>0.05</neighborStandardDeviation>
 				<!--Settings for cost function terms for the task-->
-				<GroundContactCostFunctionTerms>
-					<RotationError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>4</max_allowable_error>
-					</RotationError>
-					<TranslationError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>0.01</max_allowable_error>
-					</TranslationError>
-					<VerticalGrfError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>5</max_allowable_error>
-					</VerticalGrfError>
-					<HorizontalGrfError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>5</max_allowable_error>
-					</HorizontalGrfError>
-					<GroundReactionMomentError>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>2</max_allowable_error>
-					</GroundReactionMomentError>
-					<SpringConstantErrorFromNeighbors>
-						<!--Flag indicating whether or not the term is enabled in the cost function.-->
-						<is_enabled>true</is_enabled>
-						<!--Max allowable error or deviation from indicated set point-->
-						<max_allowable_error>2000</max_allowable_error>
-						<!--Standard deviation of Gaussian weighting function. A larger value indicates that stiffness should be more similar over a greater distance-->
-						<standard_deviation>0.05</standard_deviation>
-					</SpringConstantErrorFromNeighbors>
-				</GroundContactCostFunctionTerms>
-			</GroundContactPersonalizationTask>
-		</GroundContactPersonalizationTaskList>
+                <RCNLCostTermSet>
+                    <objects>
+					    <RCNLCostTerm>
+					    	<type>rotation</type>
+                            <is_enabled>true</is_enabled>
+					    	<max_allowable_error>4</max_allowable_error>
+					    </RCNLCostTerm>
+					    <RCNLCostTerm>
+					    	<type>translation</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>0.01</max_allowable_error>
+					    </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>vertical_grf</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>5</max_allowable_error>
+                        </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>horizontal_grf</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>5</max_allowable_error>
+                        </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>ground_reaction_moment</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>2</max_allowable_error>
+                        </RCNLCostTerm>
+                        <RCNLCostTerm>
+                            <type>neighbor_spring_constant</type>
+                            <is_enabled>true</is_enabled>
+                            <max_allowable_error>2000</max_allowable_error>
+                        </RCNLCostTerm>
+                    </objects>
+                    <groups />
+				</RCNLCostTermSet>
+			</GCPTask>
+		</GCPTaskList>
 		<!--Initial values of design variables-->
 		<initial_resting_spring_length>0.05</initial_resting_spring_length>
 		<initial_spring_constant>2500</initial_spring_constant>

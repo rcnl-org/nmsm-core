@@ -3,7 +3,7 @@
 % This function looks in the given directory for all subdirectories and
 % returns their names as a string array
 %
-% (string) -> (Array of string)
+% (string, Array of string) -> (Array of string)
 % returns a 3D matrix of the loaded muscle tendon length data
 
 % ----------------------------------------------------------------------- %
@@ -37,6 +37,7 @@ for i=1:length(prefixes)
         index = strfind(listings(j).name, prefixes(i));
         if(length(index)==1)
             dirs(end+1) = fullfile(inputDirectory, listings(j).name);
+            break
         end
     end
 end

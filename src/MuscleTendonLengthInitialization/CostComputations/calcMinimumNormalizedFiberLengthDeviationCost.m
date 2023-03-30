@@ -35,8 +35,8 @@ maximumAllowableError = valueOrAlternate(params, ...
     "minimumNormalizedFiberLengthDeviationMaximumAllowableError", 0.3);
 
 minNormalizedFiberLength = min(modeledValues.normalizedFiberLength, [], 3);
-for i = 1 : size(experimentalData.gaitData.muscleTendonLength,1)
-for ii = 1 : experimentalData.numMuscles
+for i = 1 : size(experimentalData.muscleTendonLength,1)
+for ii = 1 : length(experimentalData.muscleNames)
     if minNormalizedFiberLength(i, ii) < experimentalData.minNormalizedMuscleFiberLength 
         minNormalizedFiberLengthError(i, ii) = ...
             minNormalizedFiberLength(i, ii) - ...

@@ -29,11 +29,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function prefixes = parseSpaceSeparatedList(tree, element)
-prefixField = getFieldByName(tree, element);
+function prefixes = parseSpaceSeparatedList(tree, elementName)
+prefixField = getFieldByName(tree, elementName);
 if(length(prefixField.Text) > 0)
-    prefixes = strsplit(prefixField.Text, ' ');
+    if(strcmp(prefixField.Text(1), ' '))
+        prefixField.Text = prefixField.Text(2:end);
+    end
+    prefixes = string(strsplit(prefixField.Text, ' '));
 else
     prefixes = string([]);
 end
-

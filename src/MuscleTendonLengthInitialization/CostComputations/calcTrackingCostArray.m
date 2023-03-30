@@ -29,7 +29,6 @@
 
 function cost = calcTrackingCostArray(modelValue, ...
     experimentalValue, errorCenter, maxAllowableError)
-
 errorMatching = modelValue - experimentalValue;
 cost = ((errorMatching(:) - errorCenter) ./ maxAllowableError) ./ ...
     sqrt(size(errorMatching(:), 1));
