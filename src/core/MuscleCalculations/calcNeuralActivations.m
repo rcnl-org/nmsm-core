@@ -3,8 +3,7 @@
 % This function calculates the neural activations given the
 % muscleExcitation signals using backward finite difference approximation
 %
-% (3D matrix of numbers, 3D matrix of numbers, 2D array of numbers) -> 
-% (3D matrix of numbers)
+% (3D mat of num, 3D mat of num, 2D array of num) -> (3D mat of num)
 % returns the neural activations
 
 % ----------------------------------------------------------------------- %
@@ -37,9 +36,9 @@ deactivationTimeConstants = 4 * activationTimeConstants;
 inverseDeactivationTimeConstants = 1 ./ deactivationTimeConstants;
 % equation 5 from Meyer 2017
 differenceOfTimeConstants = (1 ./ activationTimeConstants) - ...
-    inverseDeactivationTimeConstants; 
+    inverseDeactivationTimeConstants;
 % Each emg trial could have different time interval
-trialSpecificTimeInterval = mean(diff(emgTime, 1, 2), 2); 
+trialSpecificTimeInterval = mean(diff(emgTime, 1, 2), 2);
 neuralActivations = zeros(size(muscleExcitation));
 % equation 7 from Meyer 2017
 for j = 3:size(muscleExcitation, 3)

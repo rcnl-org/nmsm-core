@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct) -> (None)
+% This function parses the synergy groups from the XML tree.
+%
+% (struct, Model) -> (None)
+% parses synergy groups from XML tree
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
