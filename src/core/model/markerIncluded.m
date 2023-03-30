@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% returns true if the marker is in the list of marker names
+% This function checks if a marker is in a list of marker names
+%
+% (array of string, string) -> boolean
+% if marker is in markerNames, return true
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

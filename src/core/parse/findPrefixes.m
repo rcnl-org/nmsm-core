@@ -1,11 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% This function finds the prefixes of the trials to be used in the
+% personalization process. If the trial_prefixes field is present in the
+% config file, the prefixes are taken from there. Otherwise, the prefixes
+% are taken from the names of the files in the IDData folder.
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
+% (struct, string) -> (None)
+% finds the prefixes of the trials to be used in the personalization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

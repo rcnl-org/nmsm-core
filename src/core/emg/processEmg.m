@@ -4,10 +4,12 @@
 % EMG data that is filtered, demeaned, and rectified as necessary. Default
 % values are used if missing from params struct.
 %
-% params:
-%   - highPassFilterCutoff
+% Parameters:
+%    filterOrder: Order of the Butterworth filter to use
+%    highPassCutoff: Cutoff frequency for the high pass filter
+%    lowPassCutoff: Cutoff frequency for the low pass filter
 %
-% (2D Array of double, 1D Array of double, string, struct) -> (None)
+% (2D Array of double, 1D Array of double, struct) -> (2D Array of double)
 % Processes the input EMG data by RCNL's protocol
 
 % ----------------------------------------------------------------------- %
