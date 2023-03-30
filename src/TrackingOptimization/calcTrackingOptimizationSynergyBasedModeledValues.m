@@ -40,7 +40,8 @@ phaseout.muscleActivations = calcMuscleActivationFromSynergies(values);
 muscleJointMoments = calcMuscleJointMoments(params, ...
     phaseout.muscleActivations, phaseout.normalizedFiberLength, ...
     phaseout.normalizedFiberVelocity);
-phaseout.muscleJointMoments = muscleJointMoments(:, params.dofsActuatedIndex);
+phaseout.muscleJointMoments = muscleJointMoments(:, params.surrogateModelIndex);
+phaseout.muscleJointMoments = phaseout.muscleJointMoments(:, params.dofsActuatedIndex);
 end
 end
 

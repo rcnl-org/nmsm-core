@@ -194,7 +194,15 @@ if muscleModelLoadPathConstraint
     for i = 1 : length(inputs.coordinateNames)
         for j = 1 : length(inputs.surrogateModelCoordinateNames)
             if contains(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
-                inputs.dofsActuatedIndex(j) = i;
+                inputs.surrogateModelIndex(j) = i;
+            end
+        end 
+    end
+    inputs.dofsActuatedIndex = [];
+    for i = 1 : length(inputs.inverseDynamicMomentLabels)
+        for j = 1 : length(inputs.surrogateModelCoordinateNames)
+            if contains(inputs.inverseDynamicMomentLabels(i), strcat(inputs.surrogateModelCoordinateNames(j), '_moment'))
+                inputs.dofsActuatedIndex(end+1) = j;
             end
         end 
     end
