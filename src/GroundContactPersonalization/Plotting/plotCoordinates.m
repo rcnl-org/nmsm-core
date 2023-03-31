@@ -2,8 +2,8 @@
 %
 % 
 %
-% (Model, struct, string, string) -> (None)
-% Plot optimized kinematic coordinates from GCP.
+% (struct) -> (None)
+% Plot optimized kinematic coordinates from GCP from workspace data.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -31,7 +31,7 @@ function plotCoordinates(inputs)
 [modeledJointPositions, ~] = calcGCPJointKinematics( ...
     inputs.experimentalJointPositions, inputs.jointKinematicsBSplines, ...
     inputs.bSplineCoefficients);
-coordinates = ["Toe Angle", "X Rotation", "Y Rotation", "Z Rotation", ...
+coordinates = ["Toe Angle", "Y Rotation", "X Rotation", "Z Rotation", ...
     "X Translation", "Y Translation", "Z Translation"];
 for i = 1:7
     subplot(2,4,i)

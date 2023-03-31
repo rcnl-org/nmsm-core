@@ -5,7 +5,7 @@
 % completed according to the instructions of that file.
 %
 % (string) -> (None)
-% Run GroundContactPersonalization from settings file
+% Run GroundContactPersonalization from settings file.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

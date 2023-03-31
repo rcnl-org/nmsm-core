@@ -1,9 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-%
+% Calculate error between experimental and modeled vertical ground reaction 
+% force. This function returns the value errors and slope errors. This
+% function is meant to be used in a task where horizontal ground reaction
+% forces are not included. 
 %
 % (struct, struct) -> (double, double)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% Calculate error between experimental and modeled vertical GRFs.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

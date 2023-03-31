@@ -2,8 +2,8 @@
 %
 % 
 %
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct) -> (struct)
+% Use rotation matrices to rotate foot markers to GCP orientation. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function extracts the data of the OpenSim Storage object to a MATLAB
-% array of strings. The array does not include 'time', only dependent
-% column names.
+% This function extracts the data of the OpenSim TimeSeriesTable object
+% to a MATLAB array of strings. The array does not include 'time',
+% only dependent column names.
 %
-% (Storage) -> (Array of string) 
+% (TimeSeriesTable) -> (Array of string)
 % Extracts column names as string
 
 % ----------------------------------------------------------------------- %
