@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function produces the most general outermost struct portions of an
-% osimx file. An osimx file can be written to file with writeOsimxFile()
+% This function  produces a template with basic GCP result information.
+% The function addGcpContactSurface() should be used after to add contact
+% surfaces and springs
 %
-% (string, string) -> (struct)
+% (string, string, number, number, number) -> (struct) 
 % Prints a generic template for an osimx file
 
 % ----------------------------------------------------------------------- %
@@ -28,12 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = buildOsimxTemplate(modelName, osimModelFileName)
-osimx.NMSMPipelineDocument.Attributes.Version = '0_dot_1_dot_0';
-osimx.NMSMPipelineDocument.OsimxModel.Attributes.name = convertStringsToChars(modelName);
-osimx.NMSMPipelineDocument.OsimxModel.associated_osim_model.Comment = ...
-    'File name of associated .osim file';
-osimx.NMSMPipelineDocument.OsimxModel.associated_osim_model.Text = ...
-    convertStringsToChars(osimModelFileName);
+function osimx = buildMtpOsimxTemplate(modelName, osimModelFileName)
+
+osimx = buildOsimxTemplate(modelName, osimModelFileName);
+
 end
 
