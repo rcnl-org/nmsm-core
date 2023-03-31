@@ -2,8 +2,8 @@
 %
 % 
 %
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (Array of double, logical) -> (Array of double, Array of double)
+% Separates spring marker points into those inside and outside the shoe. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -34,7 +34,8 @@ shoeCurve = load(fullfile(fileparts(mfilename('fullpath')), ...
 insidePoints = [];
 outsidePoints = [];
 for i=1:size(points, 1)
-    if(isLeftFoot) %flip across vertical centerline
+    % If this is a left foot, flip points across the vertical centerline
+    if(isLeftFoot)
         points(i,1) = 1 - points(i,1);
     end
     if(isInShoeOutline(points(i,1), points(i,2), shoeCurve.x, shoeCurve.y))

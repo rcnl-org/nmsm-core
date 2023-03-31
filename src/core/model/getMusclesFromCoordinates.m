@@ -35,24 +35,22 @@ if ~isa(model, 'org.opensim.modeling.Model')
 end
 muscles = string([]);
 for i=0:model.getForceSet().getMuscles().getSize() - 1
-    if(isMuscleInCoordinates(model, coordinates, model.getForceSet().getMuscles().get(i)))
-        muscles(end + 1) = model.getForceSet().getMuscles().get(i).getName().toCharArray()';
+    if(isMuscleInCoordinates(model, coordinates, ...
+            model.getForceSet().getMuscles().get(i)))
+        muscles(end + 1) = ...
+            model.getForceSet().getMuscles().get(i).getName().toCharArray()';
     end
 end
 end
 
 function output = isMuscleInCoordinates(model, coordinates, muscle)
-%     if model.getForceSet().getMuscles().get(i).get_appliesForce()
 if muscle.get_appliesForce()
-    %         path = model.getForceSet().getMuscles().get(i) ...
-    %             .get_GeometryPath().getPathPointSet();
     path = muscle.get_GeometryPath().getPathPointSet();
     for j = 0 : path.getSize() - 1
         bodyCoordinates = getCoordinatesFromBodies(model, ...
             path.get(j).getBodyName().toCharArray()');
         for k = 1 : length(bodyCoordinates)
             if(any(strcmp(coordinates, bodyCoordinates(k))))
-%                 muscle = model.getForceSet().getMuscles().get(i).getName().toCharArray()';
                 output = true;
                 return
             end

@@ -3,7 +3,7 @@
 %
 %
 % (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% Add spring markers to footModel at specified locations. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -35,31 +35,40 @@ normalizedFootHeight = abs(markerPositions.toe(1) - ...
     markerPositions.heel(1));
 normalizedFootWidth = abs(markerPositions.medial(2) - ...
     markerPositions.lateral(2));
-calcnVec3 = model.getBodySet().get(hindfootBodyName).getPositionInGround(state);
-toesVec3 = model.getBodySet().get(toesBodyName).getPositionInGround(state);
-heelVec3 = model.getMarkerSet().get(heelMarkerName).getLocationInGround(state);
+calcnVec3 = model.getBodySet().get(hindfootBodyName) ...
+    .getPositionInGround(state);
+toesVec3 = model.getBodySet().get(toesBodyName) ...
+    .getPositionInGround(state);
+heelVec3 = model.getMarkerSet().get(heelMarkerName) ...
+    .getLocationInGround(state);
 
-markerNumber = 1;
 markerPrefix = "spring_marker_";
 
-[toeJointPoint1, toeJointPoint2] = findTwoPointsOnToeJointAxis(model, toesJointName);
+[toeJointPoint1, toeJointPoint2] = ...
+    findTwoPointsOnToeJointAxis(model, toesJointName);
 
 height = - calcnVec3.get(1);
 for i=1:length(points)
-    newPoint = calcMarkerPosition(points(i, :), normalizedFootHeight, normalizedFootWidth, normalizedMarkerPositions, calcnVec3, heelVec3, isLeftFoot);
+    newPoint = calcMarkerPosition(points(i, :), normalizedFootHeight, ...
+        normalizedFootWidth, normalizedMarkerPositions, calcnVec3, ...
+        heelVec3, isLeftFoot);
     bodyName = hindfootBodyName;
+    % Check whether a marker is above the toe joint, and use relative body
+    % positions to place the marker in the correct parent frame. 
     if(~isBelowToeJoint([toeJointPoint1(3), toeJointPoint1(1)], ...
             [toeJointPoint2(3), toeJointPoint2(1)], newPoint))
         newPoint(1) = newPoint(1) - toesVec3.get(0) + calcnVec3.get(0);
         newPoint(2) = newPoint(2) - toesVec3.get(2) + calcnVec3.get(2);
         bodyName = toesBodyName;
     end
-    addSpringToModel(model, height, newPoint, bodyName, markerPrefix + num2str(markerNumber));
-    markerNumber = markerNumber + 1;
+    addSpringToModel(model, height, newPoint, bodyName, ...
+        markerPrefix + num2str(i));
 end
 end
 
-function newPoint = calcMarkerPosition(point, normalizedFootHeight, normalizedFootWidth, normalizedMarkerPositions, calcnVec3, heelVec3, isLeftFoot)
+function newPoint = calcMarkerPosition(point, normalizedFootHeight, ...
+    normalizedFootWidth, normalizedMarkerPositions, calcnVec3, ...
+    heelVec3, isLeftFoot)
 pointX = point(2) * normalizedFootHeight;
 pointX = pointX - (calcnVec3.get(0) - heelVec3.get(0));
 if(isLeftFoot)
@@ -78,15 +87,18 @@ import org.opensim.modeling.Vec3
 marker = Marker();
 marker.setName(name);
 marker.setParentFrame(model.getBodySet().get(body));
-% bodyHeight = model.getBodySet().get(body).getPositionInGround(state).get(2);
 marker.set_location(Vec3(point(1), height, point(2)));
 model.addMarker(marker);
 end
 
-function [point1, point2] = findTwoPointsOnToeJointAxis(model, toesJointName)
+% Find points to use for determining which body a spring marker belongs to
+function [point1, point2] = findTwoPointsOnToeJointAxis(model, ...
+    toesJointName)
 [model, state] = Model(model);
-point1 = getVec3Vertical(model.getJointSet().get(toesJointName).getParentFrame().getPositionInGround(state));
-rotationMat = getRotationMatrix(model.getJointSet().get(toesJointName).getParentFrame().getRotationInGround(state).asMat33());
+point1 = getVec3Vertical(model.getJointSet().get(toesJointName) ...
+    .getParentFrame().getPositionInGround(state));
+rotationMat = getRotationMatrix(model.getJointSet().get(toesJointName) ...
+    .getParentFrame().getRotationInGround(state).asMat33());
 position2 = [0; 0; 0.1];
 point2 = (rotationMat * position2) + point1;
 point1 = (rotationMat * [0; 0; -0.1]) + point1;
@@ -94,6 +106,7 @@ point1 = point1';
 point2 = point2';
 end
 
+% Convert OpenSim rotation matrix to Matlab Array
 function rotationMat = getRotationMatrix(rotation)
 rotationMat = zeros(3);
 for i = 0:2
