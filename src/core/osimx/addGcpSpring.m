@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function  produces a template with basic GCP result information.
-% The function addGcpContactSurface() should be used after to add contact
-% surfaces and springs
+% This function adds the information about a spring to the
+% <GCPContactSurface> in a struct made fom buildGcpOsimxTemplate
 %
-% (string, string, number, number, number) -> (struct) 
-% Prints a generic template for an osimx file
+% (struct, Model, number, 1D array of number) -> (struct) 
+% Adds a spring to the contact surface of an osimx file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,25 +28,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = buildGcpOsimxTemplate(modelName, ...
-    osimModelFileName, restingSpringLength, ...
-    dynamicFrictionCoefficient, dampingFactor)
-
-osimx = buildOsimxTemplate(modelName, osimModelFileName);
-
-body = osimx.NMSMPipelineDocument.OsimxModel;
-
-body.RCNLGroundContact.resting_spring_length.Comment = ...
-    'The resting spring length of the surface';
-body.RCNLGroundContact.resting_spring_length.Text = convertStringsToChars(num2str(restingSpringLength));
-body.RCNLGroundContact.dynamic_friction_coefficient.Comment = ...
-    'The dynamic friction coefficient of the surface';
-body.RCNLGroundContact.dynamic_friction_coefficient.Text = ...
-    convertStringsToChars(num2str(dynamicFrictionCoefficient));
-body.RCNLGroundContact.damping_factor.Comment = 'The damping factor of the surface';
-body.RCNLGroundContact.damping_factor.Text = convertStringsToChars(num2str(dampingFactor));
-
-osimx.NMSMPipelineDocument.OsimxModel = body;
-
+function contactSurface = addGcpSpring(contactSurface, model, ...
+    markerNumber, springConstant)
+markerName = "spring_marker_" + markerNumber;
+springMarker = model.getMarkerSet.get(markerName);
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.Attributes.name = ...
+    convertStringsToChars(markerName);
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.parent_body.Comment = ...
+    'The body that the spring is attached to';
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.parent_body.Text = ...
+    getMarkerBodyName(model, markerName);
+location = springMarker.get_location();
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.location.Comment = ...
+    'The location of the spring in the body it is attached to';
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.location.Text = ...
+    num2str([location.get(0) location.get(1) location.get(2)], 15);
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.spring_constant.Comment = ...
+    'The modeled spring constant for the spring';
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.spring_constant.Text = ...
+    num2str(springConstant, 15);
 end
 

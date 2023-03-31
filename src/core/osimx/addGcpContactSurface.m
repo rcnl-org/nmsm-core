@@ -3,7 +3,7 @@
 % This function adds a GcpContactSurface to an existing osimx struct
 % created by buildGcpOsimxTemplate() or buildOsimxTemplate()
 %
-% (string, string, number, number, number) -> (struct) 
+% (string, string, number, number, number) -> (struct)
 % Prints a generic template for an osimx file
 
 % ----------------------------------------------------------------------- %
@@ -28,30 +28,39 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = addGcpContactSurface(osimx, springs, isLeftFoot, ...
-    toeCoordinate, toeJoint)
+function osimx = addGcpContactSurface(osimx, surface, springConstants)
 
+osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact.Comment = ...
+    'The modeled ground contact data';
 groundContact = osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact;
 
+groundContact.GCPContactSurfaceSet.GCPContactSurface.is_left_foot.Comment = ...
+    'Flag indicating whether foot model should be mirrored';
 groundContact.GCPContactSurfaceSet.GCPContactSurface.is_left_foot.Text = ...
-    isLeftFoot;
+    convertStringsToChars(num2str(surface.isLeftFoot));
+groundContact.GCPContactSurfaceSet.GCPContactSurface.toe_coordinate.Comment = ...
+    'Name of the toe angle coordinate in the model file';
 groundContact.GCPContactSurfaceSet.GCPContactSurface.toe_coordinate.Text = ...
-    toeCoordinate;
+    surface.toesCoordinateName;
+groundContact.GCPContactSurfaceSet.GCPContactSurface.toe_joint.Comment = ...
+    'Name of the toe joint in the model file';
 groundContact.GCPContactSurfaceSet.GCPContactSurface.toe_joint.Text = ...
-    toeJoint;
+    surface.toesJointName;
 
+groundContact.GCPContactSurfaceSet.Comment = 'The set of contact surfaces modeled';
+
+groundContact.GCPContactSurfaceSet.GCPContactSurface.Comment = ...
+    'The set of contact surfaces modeled';
 contactSurface = groundContact.GCPContactSurfaceSet.GCPContactSurface;
+contactSurface.GCPSpringSet.Comment = 'The set of springs for the contact surface';
 
-for i = 1:length(springs)
-    contactSurface.GCPSpringSet.objects.GCPSpring{i}.Attributes.name = ...
-        springs{i}.name;
-    contactSurface.GCPSpringSet.objects.GCPSpring{i}.parent_body.Text = ...
-        springs.parentBody;
-    contactSurface.GCPSpringSet.objects.GCPSpring{i}.location.Text = ...
-        springs.location;
-    contactSurface.GCPSpringSet.objects.GCPSpring{i}.spring_constant.Text = ...
-        springs.spring_constant;
+model = Model(surface.model);
+for marker = 1:surface.numSpringMarkers
+    contactSurface = addGcpSpring(contactSurface, model, marker, ...
+        springConstants(marker));
 end
-contactSurface.GCPSpringSet.groups = "";
+contactSurface.GCPSpringSet.groups = '';
+groundContact.GCPContactSurfaceSet.GCPContactSurface = contactSurface;
+osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact = groundContact;
 end
 
