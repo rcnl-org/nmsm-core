@@ -33,7 +33,6 @@ function MuscleTendonPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-inputs
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
@@ -42,12 +41,12 @@ if isstruct(precalInputs)
 end
 
 optimizedParams = MuscleTendonPersonalization(inputs, params);
-if params.performMuscleTendonLengthInitialization
-    reportMuscleTendonPersonalizationResults(optimizedParams, ...
-        inputs, precalInputs);
-else
-    reportMuscleTendonPersonalizationResults(optimizedParams, inputs);
-end
+% if params.performMuscleTendonLengthInitialization
+%     reportMuscleTendonPersonalizationResults(optimizedParams, ...
+%         inputs, precalInputs);
+% else
+%     reportMuscleTendonPersonalizationResults(optimizedParams, inputs);
+% end
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
 results = calcMtpSynXModeledValues(finalValues, inputs, params);
 results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
