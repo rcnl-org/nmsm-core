@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% 
+% Parses XML settings for Ground contact personalization to determine
+% intial inputs and parameters for optimization. 
 %
 % (struct) -> (struct, struct, string)
-% returns the input values for Ground Contact Personalization
+% Returns the input values for Ground Contact Personalization.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -44,8 +45,10 @@ inputDirectory = getTextFromField(getFieldByNameOrAlternate(tree, ...
 inputs.bodyModel = getFieldByNameOrError(tree, 'input_model_file').Text;
 motionFile = getFieldByNameOrError(tree, 'input_motion_file').Text;
 grfFile = getFieldByNameOrError(tree, 'input_grf_file').Text;
-inputs.kinematicsFilterCutoff = str2double(getTextFromField(...
+inputs.kinematicsFilterCutoff = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'kinematics_filter_cutoff', '6')));
+inputs.latchingVelocity = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'latching_velocity', '0.05')));
 if(~isempty(inputDirectory))
     try
         bodyModel = Model(fullfile(inputDirectory, inputs.bodyModel));
@@ -65,23 +68,21 @@ else
 end
 
 % Get inputs for each foot
-inputs.tasks = getFootTasks(inputs, tree);
+inputs.surfaces = getContactSurfaces(inputs, tree);
 inputs = getInitialValues(inputs, tree);
 end
 
 % (struct, struct) -> (struct)
-function output = getFootTasks(inputs, tree)
-tasks = getFieldByNameOrError(tree, 'FootPersonalizationTaskList');
+% Gets inputs specific to each foot, such as experimental kinematics and
+% ground reactions and foot marker names. 
+function output = getContactSurfaces(inputs, tree)
+contactSurfaces = getFieldByNameOrError(tree, 'GCPContactSurfaceSet') ...
+    .objects.GCPContactSurface;
 counter = 1;
-footTasks = orderByIndex(tasks.FootPersonalizationTask);
-for i=1:length(footTasks)
-    if(length(footTasks) == 1)
-        task = footTasks;
-    else
-        task = footTasks{i};
-    end
-    if(strcmpi(task.is_enabled.Text, 'true'))
-        output{counter} = getFootData(task);
+for i=1:length(contactSurfaces)
+    surface = contactSurfaces{i};
+    if(strcmpi(surface.is_enabled.Text, 'true'))
+        output{counter} = getFootData(surface);
         output{counter} = getGroundReactions(inputs.bodyModel, ...
             inputs.grfFileName, output{counter});
         output{counter} = getMotionTime(inputs.bodyModel, ...
@@ -96,6 +97,8 @@ end
 end
 
 % (Model, string, struct) -> (struct)
+% Determines the first and last included time point based on the input
+% kinematics motion file and start and end times given for the foot. 
 function task = getMotionTime(bodyModel, motionFile, task)
 import org.opensim.modeling.Storage
 [~, ikTime, ~] = parseMotToComponents(...
@@ -106,6 +109,8 @@ task.time = ikTime(startIndex:endIndex);
 end
 
 % (Model, string, struct) -> (struct)
+% Parses ground reaction data from a file. This will throw an exception if
+% any needed column is missing. 
 function task = getGroundReactions(bodyModel, grfFile, task)
 import org.opensim.modeling.Storage
 [grfColumnNames, grfTime, grfData] = parseMotToComponents(...
@@ -140,6 +145,8 @@ task.electricalCenter = ec;
 end
 
 % (struct, struct, struct) -> (struct)
+% Gets foot-specific options directly included in XML file, including
+% names of markers and ground reaction columns. 
 function task = getFootData(tree)
     task.isLeftFoot = strcmpi('true', ...
         getFieldByNameOrError(tree, 'is_left_foot').Text);
@@ -170,6 +177,8 @@ function task = getFootData(tree)
 end
 
 % (Array of double, Array of double) -> (None)
+% Confirms that the time points from ground reaction and kinematics data
+% match in length and value. 
 function verifyTime(grfTime, ikTime)
     if size(ikTime) ~= size(grfTime)
         throw(MException('', ['IK and GRF time columns have ' ...
@@ -180,7 +189,7 @@ function verifyTime(grfTime, ikTime)
     end
 end
 
-% Parses initial values
+% Parses initial values.
 function inputs = getInitialValues(inputs, tree)
 inputs.initialRestingSpringLength = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'initial_resting_spring_length', ...
@@ -191,27 +200,39 @@ inputs.initialDampingFactor = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'initial_damping_factor', '1e-4')));
 inputs.initialDynamicFrictionCoefficient = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, ...
-    'initial_dynamic_friction_coefficient', '0.25')));
+    'initial_dynamic_friction_coefficient', '0')));
+inputs.initialViscousFrictionCoefficient = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, ...
+    'initial_viscous_friction_coefficient', '5')));
 end
 
+% Gets single-value params.
 function params = getParams(tree)
 params = struct();
 params.restingSpringLengthInitialization = strcmpi(getTextFromField( ...
     getFieldByNameOrAlternate(tree, ...
     'resting_spring_length_initialization_is_enabled', 'true')), 'true');
+params.diffMinChange = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'diff_min_change', '1e-6')));
+params.stepTolerance = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'step_tolerance', '1e-6')));
+params.optimalityTolerance = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'optimality_tolerance', '1e-6')));
+params.functionTolerance = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'function_tolerance', '1e-6')));
 params.maxIterations = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'max_iterations', '400')));
 params.maxFunctionEvaluations = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'max_function_evaluations', ...
-    '3000000')));
+    '300000')));
 params.tasks = getOptimizationTasks(tree);
 end
 
+% Gets cost terms and design variables included in each task.
 function output = getOptimizationTasks(tree)
-tasks = getFieldByNameOrError(tree, ...
-    'GroundContactPersonalizationTaskList');
+tasks = getFieldByNameOrError(tree, 'GCPTaskList');
 counter = 1;
-gcpTasks = orderByIndex(tasks.GroundContactPersonalizationTask);
+gcpTasks = orderByIndex(tasks.GCPTask);
 for i=1:length(gcpTasks)
     if(length(gcpTasks) == 1)
         task = gcpTasks;
@@ -220,8 +241,12 @@ for i=1:length(gcpTasks)
     end
     if(strcmpi(task.is_enabled.Text, 'true'))
         output{counter} = getTaskDesignVariables(task);
-        output{counter} = getTaskCostTerms(task.CostFunctionTerms, ...
-            output{counter});
+        output{counter} = getTaskCostTerms( ...
+            task.RCNLCostTermSet.objects.RCNLCostTerm, output{counter});
+        output{counter}.costTerms.springConstantErrorFromNeighbors ...
+            .standardDeviation = str2double(getTextFromField( ...
+            getFieldByNameOrAlternate(task, ...
+            'neighborStandardDeviation', '0.05')));
         counter = counter + 1;
     end
 end
@@ -230,8 +255,8 @@ end
 % (struct) -> (struct)
 function output = getTaskDesignVariables(tree)
 variables = ["springConstants", "dampingFactor", ...
-    "dynamicFrictionCoefficient", "restingSpringLength", ...
-    "kinematicsBSplineCoefficients"];
+    "dynamicFrictionCoefficient", "viscousFrictionCoefficient", ...
+    "restingSpringLength", "kinematicsBSplineCoefficients"];
 for i=1:length(variables)
     output.designVariables(i) = strcmpi( ...
         tree.(variables(i)).Text, 'true');
@@ -240,36 +265,19 @@ end
 
 % (struct, struct) -> (struct)
 function taskStruct = getTaskCostTerms(tree, taskStruct)
-costTermNames = ["markerPositionError", "markerSlopeError", ...
+costTermFieldNames = ["markerPositionError", "markerSlopeError", ...
     "rotationError", "translationError", ...
     "coordinateCoefficientError", "verticalGrfError", ...
     "verticalGrfSlopeError", "horizontalGrfError", ...
     "horizontalGrfSlopeError", "groundReactionMomentError", ...
     "groundReactionMomentSlopeError", "springConstantErrorFromMean", ...
     "springConstantErrorFromNeighbors"];
-for i = 1:length(costTermNames)
-    enabled = valueOrAlternate(valueOrAlternate(tree, costTermNames(i), ...
-        'none'), 'is_enabled', 'false');
-    if (isstruct(enabled))
-        enabled = enabled.Text;
-    end
-    taskStruct.costTerms.(costTermNames(i)).isEnabled = strcmpi(...
-        enabled, 'true');
-    allowableError = valueOrAlternate(valueOrAlternate(tree, ...
-        costTermNames(i), 'none'), 'max_allowable_error', '1');
-    if (isstruct(allowableError))
-        allowableError = allowableError.Text;
-    end
-    taskStruct.costTerms.(costTermNames(i)).maxAllowableError = ...
-        str2double(allowableError);
-    if costTermNames(i) == "springConstantErrorFromNeighbors"
-        standardDeviation = valueOrAlternate(valueOrAlternate(tree, ...
-            costTermNames(i), 'none'), 'standard_deviation', '0.05');
-        if (isstruct(standardDeviation))
-            standardDeviation = standardDeviation.Text;
-        end
-        taskStruct.costTerms.(costTermNames(i)).standardDeviation = ...
-            str2double(standardDeviation);
-    end
-end
+costTermTypes = ["marker_position", "marker_slope", "rotation", ...
+    "translation", "coordinate_coefficient", "vertical_grf", ...
+    "vertical_grf_slope", "horizontal_grf", "horizontal_grf_slope", ...
+    "ground_reaction_moment", "ground_reaction_moment_slope", ...
+    "spring_constant_mean", "neighbor_spring_constant"];
+
+taskStruct = parseRcnlCostTermSet(tree, taskStruct, costTermFieldNames, ...
+    costTermTypes);
 end

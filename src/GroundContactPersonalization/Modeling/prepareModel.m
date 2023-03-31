@@ -1,13 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns an array of names of coordinates that connect the
-% ground to the contact bodies. These coordinates all will be modeled in
-% the kinematic model for GCP.
+% This function returns an isolated foot model with spring markers and its 
+% associated kinematics expressed in its seven coordinates (toe angle, 
+% three hindfoot rotations, three hindfoot translations).
 %
-% coordinatesOfInterest can be found from findGCPFreeCoordinates()
-%
-% (Model, string, Array of string, string, string) -> (2D Array of double)
-% Create an array of coordinate names connecting the bodies to ground
+% (string, string, string, string, string, string, struct, double, double, 
+% logical) -> (Model, Array of double, Array of double)
+% Create foot model and kinematics in seven coordinates.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

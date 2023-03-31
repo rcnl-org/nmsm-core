@@ -2,8 +2,8 @@
 %
 % 
 %
-% (Array of double, struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
+% (struct, Array of string, struct, struct, double) -> (Array of double)
+% Calculate cost for a Ground Contact Personalization task. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams, Claire V. Hammond                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,13 +29,18 @@
 
 function cost = calcGroundContactPersonalizationTaskCost( ...
     values, fieldNameOrder, inputs, params, task)
+% OpenSim models are non-serializable objects, so they cannot normally be
+% passed to a parallel pool. Using a persistent variable, the models are
+% opened once per parallel worker and repeatedly accessed. 
 persistent models;
-for foot = 1:length(inputs.tasks)
+for foot = 1:length(inputs.surfaces)
     if ~isfield(models, "model_" + foot)
-        models.("model_" + foot) = Model(inputs.tasks{foot}.model);
+        models.("model_" + foot) = Model(inputs.surfaces{foot}.model);
     end
 end
 valuesStruct = unpackValues(values, inputs, fieldNameOrder);
+% If a design variable is not included, its static value from inputs is
+% added to valuesStruct so it can be used to calculate cost if needed. 
 if ~params.tasks{task}.designVariables(1)
         valuesStruct.springConstants = inputs.springConstants;
 end
@@ -47,23 +52,27 @@ if ~params.tasks{task}.designVariables(3)
             inputs.dynamicFrictionCoefficient;
 end
 if ~params.tasks{task}.designVariables(4)
+        valuesStruct.viscousFrictionCoefficient = ...
+            inputs.viscousFrictionCoefficient;
+end
+if ~params.tasks{task}.designVariables(5)
         valuesStruct.restingSpringLength = ...
             inputs.restingSpringLength;
 end
-if ~params.tasks{task}.designVariables(5)
-    for foot = 1:length(inputs.tasks)
+if ~params.tasks{task}.designVariables(6)
+    for foot = 1:length(inputs.surfaces)
         field = "bSplineCoefficients" + foot;
-        valuesStruct.(field) = inputs.tasks{foot}.bSplineCoefficients;
+        valuesStruct.(field) = inputs.surfaces{foot}.bSplineCoefficients;
     end
 end
 cost = [];
-for foot = 1:length(inputs.tasks)
+for foot = 1:length(inputs.surfaces)
     field = "bSplineCoefficients" + foot;
     valuesBSplineCoefficients = ...
         reshape(valuesStruct.(field), [], 7);
     [modeledJointPositions, modeledJointVelocities] = ...
-        calcGCPJointKinematics(inputs.tasks{foot} ...
-        .experimentalJointPositions, inputs.tasks{foot} ...
+        calcGCPJointKinematics(inputs.surfaces{foot} ...
+        .experimentalJointPositions, inputs.surfaces{foot} ...
         .jointKinematicsBSplines, valuesBSplineCoefficients);
     modeledValues = calcGCPModeledValues(inputs, valuesStruct, ...
         modeledJointPositions, modeledJointVelocities, params, task, ...
@@ -76,16 +85,19 @@ for foot = 1:length(inputs.tasks)
 end
 end
 
+% Reformats the values array of design variables to a simpler struct. 
 function valuesStruct = unpackValues(values, inputs, fieldNameOrder)
 valuesStruct = struct();
 start = 1;
 for i=1:length(fieldNameOrder)
+    % Kinematics are specific to each foot, but other design variables are
+    % shared. 
     if contains(fieldNameOrder(i), "bSplineCoefficients")
         foot = convertStringsToChars(fieldNameOrder(i));
         foot = str2double(foot(end));
         valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
-            numel(inputs.tasks{foot}.bSplineCoefficients) - 1);
-        start = start + numel(inputs.tasks{foot}.bSplineCoefficients);
+            numel(inputs.surfaces{foot}.bSplineCoefficients) - 1);
+        start = start + numel(inputs.surfaces{foot}.bSplineCoefficients);
     else
         valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
             numel(inputs.(fieldNameOrder(i))) - 1);
@@ -98,13 +110,15 @@ for i=1:length(fieldNameOrder)
 end
 end
 
+% Calculates the overall cost using allowable errors and all included cost
+% terms. 
 function cost = calcCost(inputs, params, modeledValues, valuesStruct, ...
     task, foot)
 cost = [];
 if (params.tasks{task}.costTerms.markerPositionError.isEnabled || ...
         params.tasks{task}.costTerms.markerSlopeError.isEnabled)
     [footMarkerPositionError, footMarkerSlopeError] = ...
-        calcFootMarkerPositionAndSlopeError(inputs.tasks{foot}, ...
+        calcFootMarkerPositionAndSlopeError(inputs.surfaces{foot}, ...
         modeledValues);
 end
 if (params.tasks{task}.costTerms.markerPositionError.isEnabled)
@@ -125,7 +139,7 @@ if (params.tasks{task}.costTerms.rotationError.isEnabled)
     cost = [cost sqrt(1 / (4 * size(modeledValues.jointPositions, 2))) ...
         * ((1 / maxAllowableError) * ...
         reshape(rad2deg(modeledValues.jointPositions(1:4, :)) - ...
-        rad2deg(inputs.tasks{foot}.experimentalJointPositions(1:4, :)), ...
+        rad2deg(inputs.surfaces{foot}.experimentalJointPositions(1:4, :)), ...
         1, []))];
 end
 if (params.tasks{task}.costTerms.translationError.isEnabled)
@@ -134,12 +148,13 @@ if (params.tasks{task}.costTerms.translationError.isEnabled)
     cost = [cost sqrt(1 / (3 * size(modeledValues.jointPositions, 2))) ...
         * ((1 / maxAllowableError) * ...
         reshape(modeledValues.jointPositions(5:7, :) - ...
-        inputs.tasks{foot}.experimentalJointPositions(5:7, :), 1, []))];
+        inputs.surfaces{foot}.experimentalJointPositions(5:7, :), 1, []))];
 end
 if (params.tasks{task}.costTerms.coordinateCoefficientError.isEnabled)
     maxAllowableError = ...
-        params.tasks{task}.costTerms.coordinateCoefficientError.maxAllowableError;
-    cost = [cost sqrt(1 / (inputs.tasks{foot}.splineNodes * 7)) * (1 / ...
+        params.tasks{task}.costTerms.coordinateCoefficientError ...
+        .maxAllowableError;
+    cost = [cost sqrt(1 / (inputs.surfaces{foot}.splineNodes * 7)) * (1 / ...
         maxAllowableError * calcKinematicsBSplineCoefficientError(...
         valuesStruct.bSplineCoefficients))];
 end
@@ -148,13 +163,14 @@ if (params.tasks{task}.costTerms.verticalGrfError.isEnabled || ...
         params.tasks{task}.costTerms.horizontalGrfError.isEnabled || ...
         params.tasks{task}.costTerms.horizontalGrfSlopeError.isEnabled || ...
         params.tasks{task}.costTerms.groundReactionMomentError.isEnabled || ...
-        params.tasks{task}.costTerms.groundReactionMomentSlopeError.isEnabled)
+        params.tasks{task}.costTerms.groundReactionMomentSlopeError ...
+        .isEnabled)
     if ~isfield(modeledValues, 'anteriorGrf')
         modeledValues.anteriorGrf = zeros(size(modeledValues.verticalGrf));
         modeledValues.lateralGrf = zeros(size(modeledValues.verticalGrf));
     end
     [groundReactionForceValueErrors, groundReactionForceSlopeErrors] = ...
-        calcGroundReactionForceAndSlopeError(inputs.tasks{foot}, ...
+        calcGroundReactionForceAndSlopeError(inputs.surfaces{foot}, ...
         modeledValues);
 end
 if (params.tasks{task}.costTerms.verticalGrfError.isEnabled)
@@ -165,7 +181,8 @@ if (params.tasks{task}.costTerms.verticalGrfError.isEnabled)
 end
 if (params.tasks{task}.costTerms.verticalGrfSlopeError.isEnabled)
     maxAllowableError = ...
-        params.tasks{task}.costTerms.verticalGrfSlopeError.maxAllowableError;
+        params.tasks{task}.costTerms.verticalGrfSlopeError ...
+        .maxAllowableError;
     cost = [cost sqrt(1 / size(groundReactionForceSlopeErrors, 2)) * ...
         (1 / maxAllowableError) * groundReactionForceSlopeErrors(2, :)];
 end
@@ -179,20 +196,24 @@ if (params.tasks{task}.costTerms.horizontalGrfError.isEnabled)
 end
 if (params.tasks{task}.costTerms.horizontalGrfSlopeError.isEnabled)
     maxAllowableError = ...
-        params.tasks{task}.costTerms.horizontalGrfSlopeError.maxAllowableError;
+        params.tasks{task}.costTerms.horizontalGrfSlopeError ...
+        .maxAllowableError;
     cost = [cost sqrt(1 / size(groundReactionForceSlopeErrors, 2)) * ...
         (1 / maxAllowableError) * groundReactionForceSlopeErrors(1, :)];
     cost = [cost sqrt(1 / size(groundReactionForceSlopeErrors, 2)) * ...
         (1 / maxAllowableError) * groundReactionForceSlopeErrors(3, :)];
 end
 if (params.tasks{task}.costTerms.groundReactionMomentError.isEnabled || ...
-        params.tasks{task}.costTerms.groundReactionMomentSlopeError.isEnabled)
+        params.tasks{task}.costTerms.groundReactionMomentSlopeError ...
+        .isEnabled)
     [groundReactionMomentErrors, groundReactionMomentSlopeErrors] = ...
-        calcGroundReactionMomentAndSlopeError(inputs.tasks{foot}, modeledValues); 
+        calcGroundReactionMomentAndSlopeError(inputs.surfaces{foot}, ...
+        modeledValues); 
 end
 if (params.tasks{task}.costTerms.groundReactionMomentError.isEnabled)
     maxAllowableError = ...
-        params.tasks{task}.costTerms.groundReactionMomentError.maxAllowableError;
+        params.tasks{task}.costTerms.groundReactionMomentError ...
+        .maxAllowableError;
     cost = [cost sqrt(1 / size(groundReactionMomentErrors, 2)) * ...
         (1 / maxAllowableError) * groundReactionMomentErrors(1, :)];
     cost = [cost sqrt(1 / size(groundReactionMomentErrors, 2)) * ...
@@ -202,7 +223,8 @@ if (params.tasks{task}.costTerms.groundReactionMomentError.isEnabled)
 end
 if (params.tasks{task}.costTerms.groundReactionMomentSlopeError.isEnabled)
     maxAllowableError = ...
-        params.tasks{task}.costTerms.groundReactionMomentSlopeError.maxAllowableError;
+        params.tasks{task}.costTerms.groundReactionMomentSlopeError ...
+        .maxAllowableError;
     cost = [cost sqrt(1 / size(groundReactionMomentSlopeErrors, 2)) * ...
         (1 / maxAllowableError) * groundReactionMomentSlopeErrors(1, :)];
     cost = [cost sqrt(1 / size(groundReactionMomentSlopeErrors, 2)) * ...
@@ -212,18 +234,24 @@ if (params.tasks{task}.costTerms.groundReactionMomentSlopeError.isEnabled)
 end
 if (params.tasks{task}.costTerms.springConstantErrorFromMean.isEnabled)
     maxAllowableError = ...
-        params.tasks{task}.costTerms.springConstantErrorFromMean.maxAllowableError;
+        params.tasks{task}.costTerms.springConstantErrorFromMean ...
+        .maxAllowableError;
     cost = [cost sqrt(1 / length(valuesStruct.springConstants)) * ...
         (1 / maxAllowableError) * ...
         calcSpringConstantsErrorFromMean(valuesStruct.springConstants)];
 end
-if (params.tasks{task}.costTerms.springConstantErrorFromNeighbors.isEnabled)
+% Spring constant error from neighbors is raised to a higher power to more
+% heavily penalize discontinuity in stiffness and reduce unneeded cost
+% within the allowable error range
+if (params.tasks{task}.costTerms.springConstantErrorFromNeighbors ...
+        .isEnabled)
     maxAllowableError = ...
-        params.tasks{task}.costTerms.springConstantErrorFromNeighbors.maxAllowableError;
+        params.tasks{task}.costTerms.springConstantErrorFromNeighbors ...
+        .maxAllowableError;
     cost = [cost sqrt(1 / (size(modeledValues.gaussianWeights, 1) * ...
         size(modeledValues.gaussianWeights, 2))) * ...
         ((1 / maxAllowableError) * ...
         calcSpringConstantsErrorFromNeighbors( ...
-        valuesStruct.springConstants, modeledValues.gaussianWeights)) .^ 4];
+        valuesStruct.springConstants, modeledValues.gaussianWeights)).^ 4];
 end
 end
