@@ -29,18 +29,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = buildGcpOsimxTemplate(osimxModelName, ...
+function osimx = buildGcpOsimxTemplate(modelName, ...
     osimModelFileName, restingSpringLength, ...
     dynamicFrictionCoefficient, dampingFactor)
 
-osimx = buildOsimxTemplate(osimxModelName, osimModelFileName);
+osimx = buildOsimxTemplate(modelName, osimModelFileName);
 
 body = osimx.NMSMPipelineDocument.OsimxModel;
 
-body.RCNLGroundContact.resting_spring_length.Text = restingSpringLength;
+body.RCNLGroundContact.resting_spring_length.Text = num2str(restingSpringLength);
 body.RCNLGroundContact.dynamic_friction_coefficient.Text = ...
-    dynamicFrictionCoefficient;
-body.RCNLGroundContact.damping_factor.Text = dampingFactor;
+    num2str(dynamicFrictionCoefficient);
+body.RCNLGroundContact.damping_factor.Text = num2str(dampingFactor);
 
 end
 
