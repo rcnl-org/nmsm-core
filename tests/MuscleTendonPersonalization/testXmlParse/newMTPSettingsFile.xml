@@ -5,7 +5,7 @@
         <!--Directory used for writing results.-->
         <results_directory>results</results_directory>
         <!--Name of the input model file (.osim) to use-->
-        <input_model_file>optModel_MuscleGroups_LeftMusclesActive_NewSynx.osim</input_model_file>
+        <input_model_file>model.osim</input_model_file>
         <!--Directory for data files-->
         <data_directory></data_directory>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
@@ -104,7 +104,7 @@
         <!--A space-separated list of missing EMG channel names.-->
         <missing_emg_channel_muscle_groups> AddLongMissingEmgChannelL ExtDigLongMissingEmgChannelL FlexDigLongMissingEmgChannelL IliopsoasMissingEmgChannelL PeroneusLongMissingEmgChannelL RecFemMissingEmgChannelL TibPostMissingEmgChannelL VastMedMissingEmgChannelL</missing_emg_channel_muscle_groups>
         <!--A space-separated list of collected EMG channel names.-->
-        <collected_emg_channel_muscle_groups> BicFemLongCollectedEmgChannelL GasMedCollectedEmgChannelL GlutMaxCollectedEmgChannelL GlutMedCollectedEmgChannelL SemiMembCollectedEmgChannelL SolCollectedEmgChannelL TibAntCollectedEmgChannelL VastLatCollectedEmgChannelL</collected_emg_channel_muscle_groups>
+        <collected_emg_channel_muscle_groups> LBicFemLong LGasMed LGlutMax LGlutMed LSemiMemb LSol LTibAnt LVastLat</collected_emg_channel_muscle_groups>
 		<MuscleTendonPersonalizationTaskList>
 			<MuscleTendonPersonalizationTask>
 				<!--Flag indicating whether or not the task is enabled.-->
