@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <NMSMPipelineDocument Version="0.1.0">
-   <OsimxModel name="optModel_v6">
+   <OsimxModel name="optModel">
       <!--File name of associated .osim file-->
-      <associated_osim_model>optModel_v6_correct_height.osim</associated_osim_model>
+      <associated_osim_model>model.osim</associated_osim_model>
       <!--The modeled ground contact data-->
       <RCNLGroundContact>
          <!--The resting spring length of the surface-->
@@ -470,5 +470,10 @@
             </GCPContactSurface>
          </GCPContactSurfaceSet>
       </RCNLGroundContact>
+         <!--Optimized muscle parameters-->
+         <RCNLMuscleSet>
+         <objects/>
+         <groups/>
+      </RCNLMuscleSet>
    </OsimxModel>
 </NMSMPipelineDocument>

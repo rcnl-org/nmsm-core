@@ -1,9 +1,12 @@
-% This function is part of the NMSM Pipeline, see file for full license.(
+% This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function converts the spring portion of a parsed .osimx file
+% into a new .osimx struct to be printed with writeOsimxFile(). See
+% buildOsimxFromParsedOsimx(), buildGcpOsimx(), and 
+% buildGcpContactSurface() for reference.
 %
-%
-% (struct, string) -> (None)
-% Write calibrated ground contact model parameters to an .osimx file.
+% (struct, struct) -> (struct)
+% Adds groundContact to .osimx struct
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,22 +30,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function writeGroundContactPersonalizationOsimxFile(inputs, ...
-    groundContactModelFileName)
-
-bodyModel = Model(inputs.bodyModel);
-osimx = buildGcpOsimxTemplate(...
-    replace(bodyModel.getName().toCharArray',".","_dot_"), ...
-    inputs.bodyModel, ...
-    inputs.restingSpringLength, ...
-    inputs.dynamicFrictionCoefficient, ...
-    inputs.dampingFactor ...
-    );
-
-for surface = 1:length(inputs.surfaces)
-    osimx = addGcpContactSurface(osimx,inputs.surfaces{surface}, ...
-        inputs.springConstants);
+function contactSurface = buildGcpSpring(contactSurface, spring)
+split = strsplit(spring.name, "_");
+markerNumberStr = split{end};
+markerNumber = str2num(markerNumberStr);
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.Attributes.name = ...
+    convertStringsToChars(spring.name);
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.parent_body.Comment = ...
+    'The body that the spring is attached to';
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.parent_body.Text = ...
+    spring.parentBody;
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.location.Comment = ...
+    'The location of the spring in the body it is attached to';
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.location.Text = ...
+    num2str([spring.location(1) spring.location(2) spring.location(3)], 15);
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.spring_constant.Comment = ...
+    'The modeled spring constant for the spring';
+contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.spring_constant.Text = ...
+    num2str(spring.springConstant, 15);
 end
 
-writeOsimxFile(osimx, groundContactModelFileName);
-end

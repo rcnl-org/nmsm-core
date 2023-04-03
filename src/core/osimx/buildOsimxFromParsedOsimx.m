@@ -1,9 +1,14 @@
-% This function is part of the NMSM Pipeline, see file for full license.(
+% This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function takes the output of parseOsimxFile(filename) and produces
+% a struct that can passed directly into writeOsimxFile() and replicate the
+% input file. 
 %
+% This function is most commonly used to add values to an existing .osimx
+% file.
 %
-% (struct, string) -> (None)
-% Write calibrated ground contact model parameters to an .osimx file.
+% (struct) -> (struct) 
+% Prints MuscleTendonPersonalization results in osimx file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,22 +32,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function writeGroundContactPersonalizationOsimxFile(inputs, ...
-    groundContactModelFileName)
-
-bodyModel = Model(inputs.bodyModel);
-osimx = buildGcpOsimxTemplate(...
-    replace(bodyModel.getName().toCharArray',".","_dot_"), ...
-    inputs.bodyModel, ...
-    inputs.restingSpringLength, ...
-    inputs.dynamicFrictionCoefficient, ...
-    inputs.dampingFactor ...
-    );
-
-for surface = 1:length(inputs.surfaces)
-    osimx = addGcpContactSurface(osimx,inputs.surfaces{surface}, ...
-        inputs.springConstants);
+function osimx = buildOsimxFromParsedOsimx(osimxStruct)
+osimx = buildOsimxTemplate(osimxStruct.modelName, osimxStruct.model);
+osimx = buildMtpOsimx(osimx, osimxStruct.muscles);
+osimx = buildGcpOsimx(osimx, osimxStruct.groundContact);
 end
 
-writeOsimxFile(osimx, groundContactModelFileName);
-end
