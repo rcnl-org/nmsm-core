@@ -28,13 +28,11 @@
 function [inputs, params, resultsDirectory] = ...
     parseTrackingOptimizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-inputs = getSplines(inputs);
 params = getParams(settingsTree);
 inputs = getModelOrOsimxInputs(inputs);
 inputs = disableModelMuscles(inputs);
-inputs = getStateDerivatives(inputs);
-inputs = checkInitialGuess(inputs);
-resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
+    'results_directory'));
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
@@ -71,12 +69,12 @@ inputs.leftToeBody = inputData.params.leftToeBody;
 
 %%
 load([cd '\experimentalData.mat'])
-inputs.experimentalRightGroundReactions = experimentalRightGroundReactions;
+inputs.experimentalRightGroundReactions1 = experimentalRightGroundReactions;
 inputs.rightGroundReactionLabels = {'ground_reaction_force_x1', ...
     'ground_reaction_force_y1', 'ground_reaction_force_z1', ...
     'ground_reaction_moment_x1', 'ground_reaction_moment_y1', ...
     'ground_reaction_moment_z1'};
-inputs.experimentalLeftGroundReactions = experimentalLeftGroundReactions;
+inputs.experimentalLeftGroundReactions1 = experimentalLeftGroundReactions;
 inputs.leftGroundReactionLabels = {'ground_reaction_force_x', ...
     'ground_reaction_force_y', 'ground_reaction_force_z', ...
     'ground_reaction_moment_x', 'ground_reaction_moment_y', ...
@@ -85,7 +83,8 @@ inputs.leftGroundReactionLabels = {'ground_reaction_force_x', ...
 end
 
 function inputs = getInputs(tree)
-inputs.controllerType = getFieldByNameOrError(tree, 'type_of_controller').Text;
+inputs.controllerType = getTextFromField(getFieldByNameOrError(tree, ...
+    'type_of_controller'));
 inputs.model = parseModel(tree);
 if strcmp(inputs.controllerType, 'synergy_driven')
 osimxFile = getTextFromField(getFieldByName(tree, 'osimx_file'));
@@ -102,12 +101,14 @@ inputs.epsilon = str2double(parseElementTextByNameOrAlternate(tree, ...
     "epsilon", "1e-4"));
 inputs.vMaxFactor = str2double(parseElementTextByNameOrAlternate(tree, ...
     "v_max_factor", "10"));
-surrogateModelCoefficients = load(getTextFromField(getFieldByName(tree, 'surrogate_model_coefficients')));
+surrogateModelCoefficients = load(getTextFromField(getFieldByName(tree, ...
+    'surrogate_model_coefficients')));
 inputs.coefficients = surrogateModelCoefficients.coefficients;
 inputs.optimizeSynergyVectors = getBooleanLogicFromField( ...
     getFieldByName(tree, 'optimize_synergy_vectors'));
 end
 inputs = parseTrackingOptimizationDataDirectory(tree, inputs);
+inputs = parseGCPContactSurfaces(inputs, tree);
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs = getDesignVariableBounds(tree, inputs);
 inputs = getIntegralCostTerms(getFieldByNameOrError(tree, ...
@@ -118,8 +119,6 @@ inputs = getTerminalConstraintTerms(getFieldByNameOrError(tree, ...
     'TrackingOptimizationTerminalConstraintTerms'), inputs);
 inputs.beltSpeed = getDoubleFromField(getFieldByName(tree, 'belt_speed'));
 end
-
-
 
 function inputs = parseTrackingOptimizationDataDirectory(tree, inputs)
 dataDirectory = parseDataDirectory(tree);
@@ -154,21 +153,6 @@ inputs.experimentalTime = experimentalTime - experimentalTime(1);
 
 inputs.grfFileName = findFileListFromPrefixList(...
     fullfile(dataDirectory, "GRFData"), prefix);
-end
-
-function inputs = getSplines(inputs)
-inputs.splineJointAngles = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointAngles', 0.0000001);
-inputs.splineJointMoments = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointMoments', 0.0000001);
-% inputs.splineRightGroundReactionForces = spaps(inputs.experimentalTime, ...
-%     inputs.experimentalRightGroundReactions', 0.0000001);
-% inputs.splineLeftGroundReactionForces = spaps(inputs.experimentalTime, ...
-%     inputs.experimentalLeftGroundReactions', 0.0000001);
-if strcmp(inputs.controllerType, 'synergy_driven')
-inputs.splineMuscleActivations = spaps(inputs.experimentalTime, ...
-    inputs.experimentalMuscleActivations', 0.0000001);
-end
 end
 
 function inputs = getDesignVariableBounds(tree, inputs)
@@ -300,71 +284,4 @@ function params = getParams(tree)
 
 params.solverSettings = getOptimalControlSolverSettings(...
     getTextFromField(getFieldByName(tree, 'optimal_control_settings_file')));
-end
-
-function inputs = checkInitialGuess(inputs)
-if isfield(inputs.initialGuess, 'state')
-    for i = 1 : inputs.numCoordinates
-        for j = 1 : length(inputs.initialGuess.stateLabels)
-            if strcmpi(inputs.coordinateNames(i), inputs.initialGuess.stateLabels(j))
-                stateIndex(i) = j;
-            end
-        end 
-    end
-    inputs.initialGuess.state = inputs.initialGuess.state(:, [stateIndex ...
-    stateIndex + inputs.numCoordinates stateIndex + inputs.numCoordinates * 2]);
-end
-if isfield(inputs.initialGuess, 'control')
-    for i = 1 : inputs.numCoordinates
-        for k = 1 : length(inputs.initialGuess.controlLabels)
-            if strcmpi(inputs.coordinateNames(i), inputs.initialGuess.controlLabels(k))
-                controlIndex(i) = k;
-            end
-        end 
-    end
-    inputs.initialGuess.control(:, 1:inputs.numCoordinates) = ...
-        inputs.initialGuess.control(:, controlIndex);
-end
-if isfield(inputs.initialGuess, 'parameter')
-    parameterIndex = zeros(length(inputs.synergyGroups), inputs.numMuscles);
-    for i = 1 : length(inputs.synergyGroups)
-        for j = 1 : inputs.numMuscles
-            for k = 1 : length(inputs.synergyGroups{i}.muscleNames)
-                if strcmpi(inputs.muscleNames(j), inputs.synergyGroups{i}.muscleNames(k))
-                    if i <= 1 
-                        parameterIndex(i, k) = j;
-                    else
-                        parameterIndex(i, k + length(inputs.synergyGroups{i}.muscleNames)) = j;
-                    end
-                end
-            end
-        end 
-    end
-    parameterTemp = [];
-    numSynergiesIndex = 0;
-    for j = 1 : length(inputs.synergyGroups)
-        parameterTemp = cat(2, parameterTemp, ...
-            reshape(inputs.initialGuess.parameter(1 + numSynergiesIndex: ...
-            inputs.synergyGroups{j}.numSynergies + numSynergiesIndex, ...
-            nonzeros(parameterIndex(j, :)))', 1, []));
-        numSynergiesIndex = numSynergiesIndex + inputs.synergyGroups{j}.numSynergies;
-    end
-    inputs.initialGuess.parameter = parameterTemp;
-end
-if strcmp(inputs.controllerType, 'synergy_driven') 
-    inputs = getMuscleSynergiesInitialGuess(inputs);
-end
-end
-function inputs = getMuscleSynergiesInitialGuess(inputs)
-if isfield(inputs.initialGuess,"parameter") 
-    inputs.parameterGuess = inputs.initialGuess.parameter;
-    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
-else
-    inputs.mtpActivationsColumnNames = inputs.muscleLabels;
-    inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 2 1]);
-    inputs.parameterGuess = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs)';
-    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
-end
 end
