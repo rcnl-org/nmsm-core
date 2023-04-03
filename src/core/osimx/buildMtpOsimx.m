@@ -1,9 +1,11 @@
-% This function is part of the NMSM Pipeline, see file for full license.(
+% This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function converts the muscles portion of a parsed .osimx file
+% into a new .osimx struct to be printed with writeOsimxFile(). See
+% buildOsimxFromParsedOsimx() for reference.
 %
-%
-% (struct, string) -> (None)
-% Write calibrated ground contact model parameters to an .osimx file.
+% (struct, struct) -> (struct)
+% Adds muscles to .osimxStruct
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,22 +29,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function writeGroundContactPersonalizationOsimxFile(inputs, ...
-    groundContactModelFileName)
+function osimx = buildMtpOsimx(osimx, muscles)
 
-bodyModel = Model(inputs.bodyModel);
-osimx = buildGcpOsimxTemplate(...
-    replace(bodyModel.getName().toCharArray',".","_dot_"), ...
-    inputs.bodyModel, ...
-    inputs.restingSpringLength, ...
-    inputs.dynamicFrictionCoefficient, ...
-    inputs.dampingFactor ...
-    );
+osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.Comment = ...
+    'Optimized muscle parameters';
+osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.objects = '';
+osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.groups = '';
 
-for surface = 1:length(inputs.surfaces)
-    osimx = addGcpContactSurface(osimx,inputs.surfaces{surface}, ...
-        inputs.springConstants);
+muscleNames = fieldnames(muscles);
+
+for i = 1:length(muscleNames)
+    osimx = buildRcnlMuscle(osimx, muscleNames{i}, muscles.(muscleNames{i}));
+end
 end
 
-writeOsimxFile(osimx, groundContactModelFileName);
-end
