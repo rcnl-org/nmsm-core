@@ -43,45 +43,31 @@ end
 inputData = load([cd '\inputData.mat']);
 inputs.splineLeftGroundReactionForces = inputData.params.splineLeftGroundReactionForces;
 inputs.splineRightGroundReactionForces = inputData.params.splineRightGroundReactionForces;
-inputs.restingSpringLength = 0.0023; %0.0023;% 0.0144;%0.0123; % GCP OsimX
+inputs.restingSpringLength = 0.0023; % 0.0144;
 inputs.rightMidfootSuperiorPointOnBody = inputData.params.rightMidfootSuperiorPointOnBody;
-inputs.rightMidfootSuperiorBody = inputData.params.rightMidfootSuperiorBody;
 inputs.leftMidfootSuperiorPointOnBody = inputData.params.leftMidfootSuperiorPointOnBody;
+inputs.rightHeelBody = inputData.params.rightHeelBody;
+inputs.leftHeelBody = inputData.params.leftHeelBody;
+inputs.rightToeBody = inputData.params.rightToeBody;
+inputs.leftToeBody = inputData.params.leftToeBody; 
+inputs.springDamping = inputData.params.springDamping(1);
+inputs.dynamicFriction = inputData.params.dynamicFriction;
+inputs.viscousFriction = inputData.params.viscousFriction;
+inputs.latchingVelocity = inputData.params.latchingVelocity; 
+inputs.springStiffness.rightHeel = inputData.params.springStiffnessRightHeel;
+inputs.springStiffness.rightToe = inputData.params.springStiffnessRightToe;
+inputs.springStiffness.leftHeel = inputData.params.springStiffnessLeftHeel;
+inputs.springStiffness.leftToe = inputData.params.springStiffnessLeftToe;
+inputs.rightHeelSpringPositionOnBody = inputData.params.rightHeelSpringPositionOnBody;
+inputs.rightToeSpringPositionOnBody = inputData.params.rightToeSpringPositionOnBody;
+inputs.leftHeelSpringPositionOnBody = inputData.params.leftHeelSpringPositionOnBody;
+inputs.leftToeSpringPositionOnBody = inputData.params.leftToeSpringPositionOnBody;
 inputs.leftMidfootSuperiorBody = inputData.params.leftMidfootSuperiorBody;
-inputs.rightHeelBody = inputData.params.rightHeelBody;% GCP OsimX
-inputs.leftHeelBody = inputData.params.leftHeelBody; % GCP OsimX
-inputs.rightToeBody = inputData.params.rightToeBody; % GCP OsimX
-inputs.leftToeBody = inputData.params.leftToeBody; % GCP OsimX
-inputs.springDamping = inputData.params.springDamping(1); % GCP OsimX
-inputs.dynamicFriction = inputData.params.dynamicFriction; % GCP OsimX
-inputs.viscousFriction = inputData.params.viscousFriction; % GCP OsimX
-inputs.latchingVelocity = inputData.params.latchingVelocity; % GCP OsimX
-numSpringsRightHeel = inputData.params.numSpringsRightHeel;
-numSpringsLeftHeel = inputData.params.numSpringsLeftHeel;
-numSpringsRightToe = inputData.params.numSpringsRightToe;
-numSpringsLeftToe = inputData.params.numSpringsLeftToe;
-
-Rhsprings = 1:numSpringsRightHeel;
-Rtsprings = numSpringsRightHeel+1:numSpringsRightHeel+numSpringsRightToe;
-Lhsprings = numSpringsRightHeel+numSpringsRightToe+1:numSpringsRightHeel+numSpringsRightToe+numSpringsLeftHeel;
-Ltsprings = numSpringsRightHeel+numSpringsRightToe+numSpringsLeftHeel+1:numSpringsRightHeel+numSpringsRightToe+numSpringsLeftHeel+numSpringsLeftToe;
-inputs.springStiffness.rightHeel = inputData.params.springStiffness(Rhsprings);
-inputs.springStiffness.rightToe = inputData.params.springStiffness(Rtsprings);
-inputs.springStiffness.leftHeel = inputData.params.springStiffness(Lhsprings);
-inputs.springStiffness.leftToe = inputData.params.springStiffness(Ltsprings);
-
-springPointsOnBody = inputData.params.springPointsOnBody;% GCP OsimX
-springPointsOnBody(:,2) = springPointsOnBody(:,2) + inputs.restingSpringLength; % GCP OsimX
-
-inputs.rightHeelSpringPositionOnBody = springPointsOnBody(Rhsprings,:);
-inputs.rightToeSpringPositionOnBody = springPointsOnBody(Rtsprings,:);
-inputs.leftHeelSpringPositionOnBody = springPointsOnBody(Lhsprings,:);
-inputs.leftToeSpringPositionOnBody = springPointsOnBody(Ltsprings,:);
-
-inputs.rightHeelBody = 24;% GCP OsimX
-inputs.rightToeBody = 37; % GCP OsimX
-inputs.leftHeelBody = 23; % GCP OsimX
-inputs.leftToeBody = 36; % GCP OsimX
+inputs.rightMidfootSuperiorBody = inputData.params.rightMidfootSuperiorBody;
+inputs.rightHeelBody = inputData.params.rightHeelBody;
+inputs.rightToeBody = inputData.params.rightToeBody;
+inputs.leftHeelBody = inputData.params.leftHeelBody;
+inputs.leftToeBody = inputData.params.leftToeBody;
 
 %%
 load([cd '\experimentalData.mat'])
@@ -101,10 +87,8 @@ end
 function inputs = getInputs(tree)
 inputs.controllerType = getFieldByNameOrError(tree, 'type_of_controller').Text;
 inputs.model = parseModel(tree);
-osimxFile = getTextFromField(getFieldByName(tree, 'gcp_osimx_file'));
-% % inputs = parseGcpOsimxFile(osimxFile);
 if strcmp(inputs.controllerType, 'synergy_driven')
-osimxFile = getTextFromField(getFieldByName(tree, 'ncp_osimx_file'));
+osimxFile = getTextFromField(getFieldByName(tree, 'osimx_file'));
 inputs.ncpDataInputs = parseNcpOsimxFile(osimxFile);
 inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
 inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
@@ -134,6 +118,8 @@ inputs = getTerminalConstraintTerms(getFieldByNameOrError(tree, ...
     'TrackingOptimizationTerminalConstraintTerms'), inputs);
 inputs.beltSpeed = getDoubleFromField(getFieldByName(tree, 'belt_speed'));
 end
+
+
 
 function inputs = parseTrackingOptimizationDataDirectory(tree, inputs)
 dataDirectory = parseDataDirectory(tree);
@@ -166,9 +152,8 @@ experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
     fullfile(dataDirectory, "IKData"), prefix))';
 inputs.experimentalTime = experimentalTime - experimentalTime(1);
 
-directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "GRFData");
-[inputs.experimentalGroundReactions, inputs.groundReactionLabels] = ...
-    parseTreatmentOptimizationData(directory, prefix);
+inputs.grfFileName = findFileListFromPrefixList(...
+    fullfile(dataDirectory, "GRFData"), prefix);
 end
 
 function inputs = getSplines(inputs)
