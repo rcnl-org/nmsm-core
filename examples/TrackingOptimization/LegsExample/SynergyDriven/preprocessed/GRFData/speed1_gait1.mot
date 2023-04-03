@@ -1,10 +1,10 @@
-C:\Users\gl24\Desktop\Patient 3 Collaboration with Marleny\nms_results\Right\GRF Files\Patient3_NormalGait_1pt4_02_Right_07_GRF.mot																		
+Patient3_NormalGait_1pt4_02_Right_07_GRF.mot																		
 version=1																		
 nRows=141																		
 nColumns=19																		
 inDegrees=no																		
 endheader																		
-time	F1x	F1y	F1z	M1x	M1y	M1z	F2x	F2y	F2z	M2x	M2y	M2z	EC1x	EC1y	EC1z	EC2x	EC2y	EC2z
+time	ground_reaction_force_x	ground_reaction_force_y	ground_reaction_force_z	ground_reaction_moment_x	ground_reaction_moment_y	ground_reaction_moment_z	ground_reaction_force_x1	ground_reaction_force_y1	ground_reaction_force_z1	ground_reaction_moment_x1	ground_reaction_moment_y1	ground_reaction_moment_z1	EC1x	EC1y	EC1z	EC2x	EC2y	EC2z
 6.77	-17.5354	522.017	18.4738	-212.0318	-20.427	351.5433	-9.9345	-0.47924	17.9239	-4.0432	-14.4106	-1.3631	-0.0592	0.0182	-0.0073	-0.0462	0.0165	0.9585
 6.7806	-16.469	520.2925	21.2435	-211.6291	-21.6161	352.3243	-7.2348	0.38572	13.7402	-2.8256	-10.8999	-0.5481	-0.0592	0.0182	-0.0073	-0.0462	0.0165	0.9585
 6.7913	-14.5493	517.4282	23.7534	-210.86	-22.2423	351.024	-4.7317	1.2412	9.4126	-1.5411	-7.3405	0.32998	-0.0592	0.0182	-0.0073	-0.0462	0.0165	0.9585

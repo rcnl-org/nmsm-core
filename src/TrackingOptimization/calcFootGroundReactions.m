@@ -59,7 +59,7 @@ markerKinematics.xVelocity = squeeze(markerVelocities(i, 1, :))';
 markerKinematics.yVelocity = squeeze(markerVelocities(i, 2, :))';
 markerKinematics.zVelocity = squeeze(markerVelocities(i, 3, :))';
 
-springForces = zeros(3, size(markerPositions, 1));
+springForces = zeros(3, size(markerPositions, 3));
 
 [forces(i, 2), springForces] = calcModeledVerticalGroundReactionForce( ...
     springConstants, params.springDamping, params.restingSpringLength, ...
@@ -67,10 +67,11 @@ springForces = zeros(3, size(markerPositions, 1));
 
 values.springConstants = springConstants;
 values.dynamicFrictionCoefficient = params.dynamicFriction;
+values.viscousFrictionCoefficient = params.viscousFriction;
 
 [forces(i, 1), forces(i, 3), springForces] = ...
     calcModeledHorizontalGroundReactionForces(values, ...
-    params.beltSpeed, markerKinematics, springForces);
+    params.beltSpeed, params.latchingVelocity, markerKinematics, springForces);
 
 task.midfootSuperiorPosition = midfootSuperiorPosition';
 [moments(i, 1), moments(i, 2), moments(i, 3)] = ...
