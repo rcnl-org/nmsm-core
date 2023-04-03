@@ -2,16 +2,17 @@ function osimx = parseOsimxFile(osimxFileName)
 
 tree = xml2struct(osimxFileName);
 
-osimx.model = getFieldByNameOrError(tree, "associated_osim_model");
+osimx.model = getFieldByNameOrError(tree, "associated_osim_model").Text;
+osimx.modelName = getFieldByNameOrError(tree, "OsimxModel").Attributes.name;
 
 groundContactTree = getFieldByName(tree, "RCNLGroundContact");
 if(isstruct(groundContactTree))
     osimx.groundContact.restingSpringLength = ...
-        getFieldByNameOrError(groundContactTree, "resting_spring_length");
+        str2double(getFieldByNameOrError(groundContactTree, "resting_spring_length").Text);
     osimx.groundContact.dynamicFrictionCoefficient = ...
-        getFieldByNameOrError(groundContactTree, "dynamic_friction_coefficient");
+        str2double(getFieldByNameOrError(groundContactTree, "dynamic_friction_coefficient").Text);
     osimx.groundContact.dampingFactor = ...
-        getFieldByNameOrError(groundContactTree, "damping_factor");
+        str2double(getFieldByNameOrError(groundContactTree, "damping_factor").Text);
 
     contactSurfaceTree = getFieldByNameOrError(groundContactTree, "GCPContactSurface");
 
@@ -49,7 +50,7 @@ function contactSurface = parseContactSurface(tree)
 
 contactSurface.isLeftFoot = getFieldByNameOrError(tree, "is_left_foot").Text == "true";
 contactSurface.toesCoordinateName = getFieldByNameOrError(tree, "toes_coordinate").Text;
-contactSurface.toesJointName = getFieldByNameOrError(tree, "toes_joint");
+contactSurface.toesJointName = getFieldByNameOrError(tree, "toes_joint").Text;
 
 gcpSpringsTree = getFieldByNameOrError(tree, "GCPSpringSet");
 springsTree = getFieldByNameOrError(gcpSpringsTree, "objects").GCPSpring;
@@ -59,8 +60,9 @@ for i = 1:length(springsTree)
     else
         spring = springsTree{i};
     end
+    contactSurface.springs{i}.name = spring.Attributes.name;
     contactSurface.springs{i}.parentBody = getFieldByNameOrError(spring, "parent_body").Text;
-    contactSurface.springs{i}.location = parseSpaceSeparatedList(spring, "location");
+    contactSurface.springs{i}.location = str2double(parseSpaceSeparatedList(spring, "location"));
     contactSurface.springs{i}.springConstant = str2double(getFieldByNameOrError(spring, "spring_constant").Text);
 end
 end
