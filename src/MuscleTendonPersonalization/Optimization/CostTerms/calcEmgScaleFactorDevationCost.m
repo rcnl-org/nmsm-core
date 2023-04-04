@@ -26,13 +26,12 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcEmgScaleFactorDevationCost(values, params)
-costWeight = valueOrAlternate(params, ...
-    "emgScaleFactorDeviationCostWeight", 1);
-errorCenter = valueOrAlternate(params, ...
-    "emgScaleFactorDeviationErrorCenter", 0.3);
-maximumAllowableError = valueOrAlternate(params, ...
-    "emgScaleFactorDeviationMaximumAllowableError", 0.2);
-
-cost = costWeight * calcDeviationCostTerm(values.emgScaleFactors, ...
+costTerm = params.costTerms.emgScaleFactor;
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0.3);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.2);
+if(costTerm.isEnabled)
+cost = calcDeviationCostTerm(values.emgScaleFactors, ...
     errorCenter, maximumAllowableError);
+else
+    cost = 0;
 end

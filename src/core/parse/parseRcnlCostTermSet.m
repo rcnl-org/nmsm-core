@@ -35,7 +35,7 @@
 function taskStruct = parseRcnlCostTermSet(tree, taskStruct, ...
     costTermFieldNames, costTermTypes)
 for term = 1:length(tree)
-    costTerm = tree{term};
+    costTerm = tree.RCNLCostTermSet.objects.RCNLCostTerm{term};
     index = find(strcmpi(costTermTypes, costTerm.type.Text)); 
     if isempty(index)
         throw(MException('', ['Cost term type ' costTerm.type.Text ...
@@ -48,6 +48,9 @@ for term = 1:length(tree)
     taskStruct.costTerms.(costTermFieldNames(index)).maxAllowableError =...
         str2double(getTextFromField(getFieldByNameOrAlternate(costTerm, ...
         'max_allowable_error', '1')));
+    taskStruct.costTerms.(costTermFieldNames(index)).errorCenter = ...
+        str2double(getTextFromField(getFieldByNameOrAlternate(costTerm, ...
+        'error_center', '0')));
 end
 % Account for cost terms not included in settings file
 for i = 1:length(costTermFieldNames)
@@ -55,6 +58,7 @@ for i = 1:length(costTermFieldNames)
             costTermFieldNames(i)))
         taskStruct.costTerms.(costTermFieldNames(i)).isEnabled = false;
         taskStruct.costTerms.(costTermFieldNames(i)).maxAllowableError = 1;
+        taskStruct.costTerms.(costTermFieldNames(i)).errorCenter = 0;
     end
 end
 end
