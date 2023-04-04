@@ -26,13 +26,13 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcActivationNonlinearityDeviationCost(values, params)
-costWeight = valueOrAlternate(params, ...
-    "activationNonlinearityDeviationCostWeight", 1);
-errorCenter = valueOrAlternate(params, ...
-    "activationNonlinearityDeviationErrorCenter", 0);
-maximumAllowableError = valueOrAlternate(params, ...
-    "activationNonlinearityDeviationMaximumAllowableError", 0.1);
-cost = costWeight * calcDeviationCostTerm( ...
+costTerm = params.costTerms.activationNonlinearityConstant;
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
+if(costTerm.isEnabled)
+cost = calcDeviationCostTerm( ...
     values.activationNonlinearityConstants, errorCenter, ...
     maximumAllowableError);
+else
+    cost = 0;
 end

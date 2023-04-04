@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the Muscle Tendon optimization
+% This function takes a properly formatted XML file and runs the
+% MuscleTendonPersonalization module and saves the results correctly for
+% use in the OpenSim GUI.
+%
+% (string) -> (None)
+% Run MuscleTendonPersonalization from settings file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,14 +29,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcActivationTimeConstantDeviationCost(values, params)
-costTerm = params.costTerms.activationTimeConstant;
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0.015);
-maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.02);
-if(costTerm.isEnabled)
-    cost = calcDeviationCostTerm( ...
-        values.activationTimeConstants/100, errorCenter, ...
-        maximumAllowableError);
-else
-    cost = 0;
+function boolean = parseElementBoolean(tree, childElementName)
+try
+ boolean = strcmp(strtrim(tree.(childElementName).Text), "true");
+catch
+    throw(MException('', strcat("No child element ", childElementName)))
 end
+end
+
