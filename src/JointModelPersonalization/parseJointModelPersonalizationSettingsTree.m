@@ -86,7 +86,9 @@ if(isstruct(timeRange))
     output.startTime = str2double(timeRange{1});
     output.finishTime = str2double(timeRange{2});
 end
-if(isstruct(getFieldByName(tree, "JMPJoint")))
+output.parameters = {};
+if(isstruct(getFieldByName(tree, "JMPJoint")) || ...
+        iscell(getFieldByName(tree, "JMPBody")))
     output.parameters = getJointParameters(tree.JMPJoint);
 end
 output.scaling = [];
@@ -200,7 +202,7 @@ for i=1:length(bodyTree)
     axesStrings = parseSpaceSeparatedList(body, "move_markers");
     axes = zeros(1, 3);
     for j = 1:3
-        axes(i) = axesStrings(i) == "true";
+        axes(j) = axesStrings(j) == "true";
     end
     if(axes(1) || axes(2) || axes(3))
         markers = getMarkersFromBody(model, bodyName);
