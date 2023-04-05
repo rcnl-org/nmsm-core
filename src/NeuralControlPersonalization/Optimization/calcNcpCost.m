@@ -85,18 +85,18 @@ if params.costTerms.groupedFiberLengths.isEnabled
         numel(groupedNormalizedFiberLengths) ^ 0.5;
 end
 
-intergroupSimilarityError = [];
-if params.costTerms.intergroupSimilarity.isEnabled
+bilateralSymmetryError = [];
+if params.costTerms.bilateralSymmetry.isEnabled
     weights = findSynergyWeightsByGroup(values, inputs);
-    intergroupSimilarity = weights(1, :) - weights(2, :);
-    intergroupSimilarityError = intergroupSimilarity(:) / ...
-        params.costTerms.intergroupSimilarity.maxAllowableError / ...
-        numel(intergroupSimilarity) ^ 0.5;
+    bilateralSymmetry = weights(1, :, :) - weights(2, :, :);
+    bilateralSymmetryError = bilateralSymmetry(:) / ...
+        params.costTerms.bilateralSymmetry.maxAllowableError / ...
+        numel(bilateralSymmetry) ^ 0.5;
 end
 
 error = [momentTrackingError; activationTrackingError; ...
     activationMinimizationError; groupedActivationError; ...
-    groupedNormalizedFiberLengthError; intergroupSimilarityError];
+    groupedNormalizedFiberLengthError; bilateralSymmetryError];
 
 cost = error' * error;
 end
