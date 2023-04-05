@@ -109,15 +109,15 @@ params = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet').objects.RCNLCostTerm,...
     params, costTermFieldNames, costTermTypes);
 if params.costTerms.bilateralSymmetry.isEnabled && ...
-    length(inputs.synergyGroups) == 2
+    length(inputs.synergyGroups) ~= 2
     throw(MException('', ['Bilateral symmetry cost requires exactly ' ...
         'two synergy groups.']))
 end
 end
 
 function groups = getSynergyGroups(tree, model)
-synergySetTree = getFieldByNameOrError(tree, "SynergySet");
-groupsTree = getFieldByNameOrError(synergySetTree, "objects").Synergy;
+synergySetTree = getFieldByNameOrError(tree, "RCNLSynergySet");
+groupsTree = getFieldByNameOrError(synergySetTree, "objects").RCNLSynergy;
 groups = {};
 for i=1:length(groupsTree)
     if(length(groupsTree) == 1)
