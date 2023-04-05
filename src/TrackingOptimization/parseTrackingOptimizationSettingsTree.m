@@ -39,47 +39,19 @@ end
 
 %% missing GCP inputs
 inputData = load([cd '\inputData.mat']);
-inputs.splineLeftGroundReactionForces = inputData.params.splineLeftGroundReactionForces;
-inputs.splineRightGroundReactionForces = inputData.params.splineRightGroundReactionForces;
 inputs.restingSpringLength = 0.0023; % 0.0144;
-inputs.rightMidfootSuperiorPointOnBody = inputData.params.rightMidfootSuperiorPointOnBody;
-inputs.leftMidfootSuperiorPointOnBody = inputData.params.leftMidfootSuperiorPointOnBody;
-inputs.rightHeelBody = inputData.params.rightHeelBody;
-inputs.leftHeelBody = inputData.params.leftHeelBody;
-inputs.rightToeBody = inputData.params.rightToeBody;
-inputs.leftToeBody = inputData.params.leftToeBody; 
 inputs.springDamping = inputData.params.springDamping(1);
 inputs.dynamicFriction = inputData.params.dynamicFriction;
 inputs.viscousFriction = inputData.params.viscousFriction;
 inputs.latchingVelocity = inputData.params.latchingVelocity; 
-inputs.springStiffness.rightHeel = inputData.params.springStiffnessRightHeel;
-inputs.springStiffness.rightToe = inputData.params.springStiffnessRightToe;
-inputs.springStiffness.leftHeel = inputData.params.springStiffnessLeftHeel;
-inputs.springStiffness.leftToe = inputData.params.springStiffnessLeftToe;
-inputs.rightHeelSpringPositionOnBody = inputData.params.rightHeelSpringPositionOnBody;
-inputs.rightToeSpringPositionOnBody = inputData.params.rightToeSpringPositionOnBody;
-inputs.leftHeelSpringPositionOnBody = inputData.params.leftHeelSpringPositionOnBody;
-inputs.leftToeSpringPositionOnBody = inputData.params.leftToeSpringPositionOnBody;
-inputs.leftMidfootSuperiorBody = inputData.params.leftMidfootSuperiorBody;
-inputs.rightMidfootSuperiorBody = inputData.params.rightMidfootSuperiorBody;
-inputs.rightHeelBody = inputData.params.rightHeelBody;
-inputs.rightToeBody = inputData.params.rightToeBody;
-inputs.leftHeelBody = inputData.params.leftHeelBody;
-inputs.leftToeBody = inputData.params.leftToeBody;
-
-%%
-load([cd '\experimentalData.mat'])
-inputs.experimentalRightGroundReactions1 = experimentalRightGroundReactions;
-inputs.rightGroundReactionLabels = {'ground_reaction_force_x1', ...
-    'ground_reaction_force_y1', 'ground_reaction_force_z1', ...
-    'ground_reaction_moment_x1', 'ground_reaction_moment_y1', ...
-    'ground_reaction_moment_z1'};
-inputs.experimentalLeftGroundReactions1 = experimentalLeftGroundReactions;
-inputs.leftGroundReactionLabels = {'ground_reaction_force_x', ...
-    'ground_reaction_force_y', 'ground_reaction_force_z', ...
-    'ground_reaction_moment_x', 'ground_reaction_moment_y', ...
-    'ground_reaction_moment_z'};
-
+inputs.contactSurfaces{1}.heelSpringConstants = inputData.params.springStiffnessRightHeel;
+inputs.contactSurfaces{1}.toeSpringConstants = inputData.params.springStiffnessRightToe;
+inputs.contactSurfaces{2}.heelSpringConstants = inputData.params.springStiffnessLeftHeel;
+inputs.contactSurfaces{2}.toeSpringConstants = inputData.params.springStiffnessLeftToe;
+inputs.contactSurfaces{1}.heelSpringPointsOnBody = inputData.params.rightHeelSpringPositionOnBody;
+inputs.contactSurfaces{1}.toeSpringPointsOnBody = inputData.params.rightToeSpringPositionOnBody;
+inputs.contactSurfaces{2}.heelSpringPointsOnBody = inputData.params.leftHeelSpringPositionOnBody;
+inputs.contactSurfaces{2}.toeSpringPointsOnBody = inputData.params.leftToeSpringPositionOnBody;
 end
 
 function inputs = getInputs(tree)
@@ -108,7 +80,7 @@ inputs.optimizeSynergyVectors = getBooleanLogicFromField( ...
     getFieldByName(tree, 'optimize_synergy_vectors'));
 end
 inputs = parseTrackingOptimizationDataDirectory(tree, inputs);
-inputs = parseGCPContactSurfaces(inputs, tree);
+inputs.contactSurfaces = parseGCPContactSurfaces(inputs, tree);
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs = getDesignVariableBounds(tree, inputs);
 inputs = getIntegralCostTerms(getFieldByNameOrError(tree, ...
