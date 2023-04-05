@@ -77,14 +77,14 @@
     		<groups />
     	</ContactSurfaceSet>
     	<!--Design variable bounds-->
-		<TrackingOptimizationDesignVariableBounds>
-			<joint_positions>2</joint_positions>
-			<joint_velocities>1.5</joint_velocities>
-			<joint_accelerations>1</joint_accelerations>
-			<joint_jerks>1</joint_jerks>
-			<synergy_commands>10</synergy_commands>
-			<synergy_weights>0.15</synergy_weights>
-		</TrackingOptimizationDesignVariableBounds>
+		<RCNLDesignVariableBoundsTerms>
+    		<joint_positions_multiple>2</joint_positions_multiple>
+    		<joint_velocities_multiple>1.5</joint_velocities_multiple>
+    		<joint_accelerations_multiple>1</joint_accelerations_multiple>
+    		<joint_jerks_multiple>1</joint_jerks_multiple>
+    		<synergy_commands_max>10</synergy_commands_max>
+    		<synergy_weights_max>0.15</synergy_weights_max>
+    	</RCNLDesignVariableBoundsTerms>
 		<!--Integral terms.-->
         <TrackingOptimizationIntegralTerms>
             <TrackingTerms>

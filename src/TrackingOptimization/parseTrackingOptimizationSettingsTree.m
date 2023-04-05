@@ -129,43 +129,44 @@ end
 
 function inputs = getDesignVariableBounds(tree, inputs)
 designVariableTree = getFieldByNameOrError(tree, ...
-    'TrackingOptimizationDesignVariableBounds');
+    'RCNLDesignVariableBoundsTerms');
 jointPositionsMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_positions');
+    'joint_positions_multiple');
 if(isstruct(jointPositionsMultiple))
     inputs.statePositionsMultiple = getDoubleFromField(jointPositionsMultiple);
 end
 jointVelocitiesMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_velocities');
+    'joint_velocities_multiple');
 if(isstruct(jointVelocitiesMultiple))
     inputs.stateVelocitiesMultiple = getDoubleFromField(jointVelocitiesMultiple);
 end
 jointAccelerationsMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_accelerations');
+    'joint_accelerations_multiple');
 if(isstruct(jointAccelerationsMultiple))
     inputs.stateAccelerationsMultiple = ...
         getDoubleFromField(jointAccelerationsMultiple);
 end
-jointJerkMultiple = getFieldByNameOrError(designVariableTree, 'joint_jerks');
+jointJerkMultiple = getFieldByNameOrError(designVariableTree, ...
+    'joint_jerks_multiple');
 if(isstruct(jointJerkMultiple))
     inputs.controlJerksMultiple = getDoubleFromField(jointJerkMultiple);
 end
 if strcmp(inputs.controllerType, 'synergy_driven')
 maxControlNeuralCommands = getFieldByNameOrError(designVariableTree, ...
-    'synergy_commands');
+    'synergy_commands_max');
 if(isstruct(maxControlNeuralCommands))
     inputs.maxControlNeuralCommands = ...
         getDoubleFromField(maxControlNeuralCommands);
 end
 maxParameterSynergyWeights = getFieldByNameOrError(designVariableTree, ...
-    'synergy_weights');
+    'synergy_weights_max');
 if(isstruct(maxParameterSynergyWeights))
     inputs.maxParameterSynergyWeights = ...
         getDoubleFromField(maxParameterSynergyWeights);
 end
 else 
 maxControlTorques = getFieldByNameOrError(designVariableTree, ...
-    'torque_controls');
+    'torque_controls_max');
 if(isstruct(maxControlTorques))
     inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
 end
