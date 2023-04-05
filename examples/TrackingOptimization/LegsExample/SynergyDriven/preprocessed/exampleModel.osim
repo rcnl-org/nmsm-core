@@ -15185,6 +15185,102 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
+				<TorqueActuator name="calcn_r_Mx">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>calcn_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>1 0 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="calcn_r_My">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>calcn_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 1 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="calcn_r_Mz">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>calcn_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 0 1</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="toes_r_Mx">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>toes_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>1 0 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="toes_r_My">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>toes_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 1 0</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
+				<TorqueActuator name="toes_r_Mz">
+					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
+					<min_control>-Inf</min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
+					<max_control>Inf</max_control>
+					<!--Name of Body to which the torque actuator is applied.-->
+					<bodyA>toes_r</bodyA>
+					<!--Name of Body to which the equal and opposite torque is applied.-->
+					<bodyB>ground</bodyB>
+					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
+					<torque_is_global>true</torque_is_global>
+					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
+					<axis>0 0 1</axis>
+					<!--The maximum torque produced by this actuator when fully activated.-->
+					<optimal_force>1</optimal_force>
+				</TorqueActuator>
 				<PointActuator name="calcn_l_Fx">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
@@ -15293,102 +15389,6 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<TorqueActuator name="calcn_r_Mx">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-Inf</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>Inf</max_control>
-					<!--Name of Body to which the torque actuator is applied.-->
-					<bodyA>calcn_r</bodyA>
-					<!--Name of Body to which the equal and opposite torque is applied.-->
-					<bodyB>ground</bodyB>
-					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
-					<torque_is_global>true</torque_is_global>
-					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
-					<axis>1 0 0</axis>
-					<!--The maximum torque produced by this actuator when fully activated.-->
-					<optimal_force>1</optimal_force>
-				</TorqueActuator>
-				<TorqueActuator name="calcn_r_My">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-Inf</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>Inf</max_control>
-					<!--Name of Body to which the torque actuator is applied.-->
-					<bodyA>calcn_r</bodyA>
-					<!--Name of Body to which the equal and opposite torque is applied.-->
-					<bodyB>ground</bodyB>
-					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
-					<torque_is_global>true</torque_is_global>
-					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
-					<axis>0 1 0</axis>
-					<!--The maximum torque produced by this actuator when fully activated.-->
-					<optimal_force>1</optimal_force>
-				</TorqueActuator>
-				<TorqueActuator name="calcn_r_Mz">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-Inf</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>Inf</max_control>
-					<!--Name of Body to which the torque actuator is applied.-->
-					<bodyA>calcn_r</bodyA>
-					<!--Name of Body to which the equal and opposite torque is applied.-->
-					<bodyB>ground</bodyB>
-					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
-					<torque_is_global>true</torque_is_global>
-					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
-					<axis>0 0 1</axis>
-					<!--The maximum torque produced by this actuator when fully activated.-->
-					<optimal_force>1</optimal_force>
-				</TorqueActuator>
-				<TorqueActuator name="toes_r_Mx">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-Inf</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>Inf</max_control>
-					<!--Name of Body to which the torque actuator is applied.-->
-					<bodyA>toes_r</bodyA>
-					<!--Name of Body to which the equal and opposite torque is applied.-->
-					<bodyB>ground</bodyB>
-					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
-					<torque_is_global>true</torque_is_global>
-					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
-					<axis>1 0 0</axis>
-					<!--The maximum torque produced by this actuator when fully activated.-->
-					<optimal_force>1</optimal_force>
-				</TorqueActuator>
-				<TorqueActuator name="toes_r_My">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-Inf</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>Inf</max_control>
-					<!--Name of Body to which the torque actuator is applied.-->
-					<bodyA>toes_r</bodyA>
-					<!--Name of Body to which the equal and opposite torque is applied.-->
-					<bodyB>ground</bodyB>
-					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
-					<torque_is_global>true</torque_is_global>
-					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
-					<axis>0 1 0</axis>
-					<!--The maximum torque produced by this actuator when fully activated.-->
-					<optimal_force>1</optimal_force>
-				</TorqueActuator>
-				<TorqueActuator name="toes_r_Mz">
-					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
-					<min_control>-Inf</min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
-					<max_control>Inf</max_control>
-					<!--Name of Body to which the torque actuator is applied.-->
-					<bodyA>toes_r</bodyA>
-					<!--Name of Body to which the equal and opposite torque is applied.-->
-					<bodyB>ground</bodyB>
-					<!--Interpret axis in Ground frame if true; otherwise, body A's frame.-->
-					<torque_is_global>true</torque_is_global>
-					<!--Fixed direction about which torque is applied, in Ground or body A frame depending on 'torque_is_global' property.-->
-					<axis>0 0 1</axis>
-					<!--The maximum torque produced by this actuator when fully activated.-->
-					<optimal_force>1</optimal_force>
-				</TorqueActuator>
 				<TorqueActuator name="calcn_l_Mx">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>

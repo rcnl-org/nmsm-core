@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="40000">
+<NMSMPipelineDocument Version="0.1.0">
     <TrackingOptimizationTool>
         <!--Directory used for writing results.-->
         <results_directory>C:\Users\marle\Documents\GitHub\nmsm-core\examples\TrackingOptimization\LegsExample\SynergyDriven</results_directory>
@@ -7,34 +7,76 @@
         <data_directory>preprocessed</data_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>preprocessed\exampleModel.osim</input_model_file>
-		<!-- -->
-		<initial_states_file>states.sto</initial_states_file>
-		<!-- -->
-		<initial_controls_file>control.sto</initial_controls_file>
-		<!-- -->
-		<initial_parameters_file>parameter.sto</initial_parameters_file>
-		<!--synergy driven or torque driven--> 
-		<type_of_controller>synergy_driven</type_of_controller>
-		<!--allow synergy vectors to change-->
-		<optimize_synergy_vectors>false</optimize_synergy_vectors>
-		<!--*Optional* NCP or MTP inputs-->
-		<osimx_file>Mtp_Ncp_muscleModel.osimx</osimx_file>
-		<!-- -->
-		<SynergySet>
-			<objects>
-				<Synergy>
-					<muscle_group_name>group1</muscle_group_name>
-					<num_synergies>6</num_synergies>
-				</Synergy>
-				<Synergy>
-					<muscle_group_name>group2</muscle_group_name>
-					<num_synergies>6</num_synergies>
-				</Synergy>
-			</objects>
-			<groups />
-		</SynergySet>
-		<!--GCP inputs-->
-		<!--Bounds-->
+    	<!--*Optional* Name of the initial states guess file-->
+    	<initial_states_file>states.sto</initial_states_file>
+    	<!--*Optional* Name of the initial controls guess file-->
+    	<initial_controls_file>control.sto</initial_controls_file>
+    	<!--*Optional* Name of the initial parameters guess file-->
+    	<initial_parameters_file>parameter.sto</initial_parameters_file>
+    	<!--Indicate the name of the type of controller: synergy driven or torque driven-->
+    	<type_of_controller>synergy_driven</type_of_controller>
+    	<!--Indicate if synergy vectors should be optimized-->
+    	<optimize_synergy_vectors>false</optimize_synergy_vectors>
+    	<!--Name of the osimx model file-->
+    	<osimx_file>Mtp_Ncp_muscleModel.osimx</osimx_file>
+    	<!--Indicate the surrogate model coordinates-->
+    	<coordinate_list>hip_flexion_r hip_adduction_r hip_rotation_r knee_angle_r ankle_angle_r subtalar_angle_r hip_flexion_l hip_adduction_l hip_rotation_l knee_angle_l ankle_angle_l subtalar_angle_l</coordinate_list>
+    	<!--Name of the surrogate model coefficients file-->
+    	<surrogate_model_coefficients>coefficients.mat</surrogate_model_coefficients>
+		<!--Name of optimal controls setting file-->
+		<optimal_control_settings_file>gpopsSettings.xml</optimal_control_settings_file>
+    	<!--Indicate synergy group names-->
+    	<SynergySet>
+    		<objects>
+    			<Synergy>
+    				<muscle_group_name>group1</muscle_group_name>
+    				<num_synergies>6</num_synergies>
+    			</Synergy>
+    			<Synergy>
+    				<muscle_group_name>group2</muscle_group_name>
+    				<num_synergies>6</num_synergies>
+    			</Synergy>
+    		</objects>
+    		<groups />
+    	</SynergySet>
+		<ContactSurfaceSet>
+    		<objects>
+    			<ContactSurface>
+    				<!--Flag indicating whether foot model should be mirrored-->
+    				<is_left_foot>false</is_left_foot>
+    				<!--Names of the force columns in the grf file, ordered X, Y, Z-->
+    				<force_columns>ground_reaction_force_x1 ground_reaction_force_y1 ground_reaction_force_z1</force_columns>
+    				<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
+    				<moment_columns>ground_reaction_moment_x1 ground_reaction_moment_y1 ground_reaction_moment_z1</moment_columns>
+    				<!--Names of the electrical center columns in the grf , ordered X, Y, Z-->
+    				<electrical_center_columns>EC2x EC2y EC2z</electrical_center_columns>
+    				<!--Name of the toe body in the model file-->
+    				<toe_body>toes_r</toe_body>
+					<!--Name of the calcaneus body in the model file-->
+					<calcaneus_body>calcn_r</calcaneus_body>
+    				<!--Name of midfoot superior marker used to define ground reaction moments-->
+    				<midfoot_superior_marker>R.Midfoot.Superior</midfoot_superior_marker>
+    			</ContactSurface>
+				<ContactSurface>
+    				<!--Flag indicating whether foot model should be mirrored-->
+    				<is_left_foot>true</is_left_foot>
+    				<!--Names of the force columns in the grf file, ordered X, Y, Z-->
+    				<force_columns>ground_reaction_force_x ground_reaction_force_y ground_reaction_force_z</force_columns>
+    				<!--Names of the moment columns in the grf file, ordered X, Y, Z-->
+    				<moment_columns>ground_reaction_moment_x ground_reaction_moment_y ground_reaction_moment_z</moment_columns>
+    				<!--Names of the electrical center columns in the grf file, ordered X, Y, Z-->
+    				<electrical_center_columns>EC1x EC1y EC1z</electrical_center_columns>
+    				<!--Name of the toe body in the model file-->
+    				<toe_body>toes_l</toe_body>
+					<!--Name of the calcaneus body in the model file-->
+					<calcaneus_body>calcn_l</calcaneus_body>
+    				<!--Name of midfoot superior marker used to define ground reaction moments-->
+    				<midfoot_superior_marker>L.Midfoot.Superior</midfoot_superior_marker>
+    			</ContactSurface>
+    		</objects>
+    		<groups />
+    	</ContactSurfaceSet>
+    	<!--Design variable bounds-->
 		<TrackingOptimizationDesignVariableBounds>
 			<joint_positions>2</joint_positions>
 			<joint_velocities>1.5</joint_velocities>
@@ -734,15 +776,13 @@
 				<min_allowable_error>1</min_allowable_error>
 			</SynergyWeightsSum>
         </TrackingOptimizationTerminalConstraintTerms>
-		<!-- -->
-		<optimal_control_settings_file>gpopsSettings.xml</optimal_control_settings_file>
-		<!-- -->
-		<epsilon>1e-3</epsilon>
-		<!-- -->
+		<!--Epsilon-->
+		<epsilon>1e-4</epsilon>
+		<!--Belt speed-->
 		<belt_speed>1.4</belt_speed>
   		<!--*Optional* The vMaxFactor to use-->
         <v_max_factor>10</v_max_factor>
 		<!--*Optional* list prefix of the data file, if left blank, use prefix from IK folder-->
 		<trial_prefix></trial_prefix>
     </TrackingOptimizationTool>
-</OpenSimDocument>
+</NMSMPipelineDocument>
