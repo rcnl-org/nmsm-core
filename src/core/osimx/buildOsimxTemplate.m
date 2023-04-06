@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function produces the most general outermost struct portions of an
+% osimx file. An osimx file can be written to file with writeOsimxFile()
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (string, string) -> (struct)
+% Prints a generic template for an osimx file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Marleny Vega                              %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,28 +28,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
-if isstruct(precalInputs)
-    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
-    inputs = updateMtpInitialGuess(inputs, precalInputs, ...
-        optimizedInitialGuess);
+function osimx = buildOsimxTemplate(modelName, osimModelFileName)
+osimx.NMSMPipelineDocument.Attributes.Version = '0_dot_1_dot_0';
+osimx.NMSMPipelineDocument.OsimxModel.Attributes.name = convertStringsToChars(modelName);
+osimx.NMSMPipelineDocument.OsimxModel.associated_osim_model.Comment = ...
+    'File name of associated .osim file';
+osimx.NMSMPipelineDocument.OsimxModel.associated_osim_model.Text = ...
+    convertStringsToChars(osimModelFileName);
 end
 
-optimizedParams = MuscleTendonPersonalization(inputs, params);
-% if params.performMuscleTendonLengthInitialization
-%     reportMuscleTendonPersonalizationResults(optimizedParams, ...
-%         inputs, precalInputs);
-% else
-%     reportMuscleTendonPersonalizationResults(optimizedParams, inputs);
-% end
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
-results = calcMtpSynXModeledValues(finalValues, inputs, params);
-results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
-    end - inputs.numPaddingFrames);
-saveMuscleTendonPersonalizationResults(inputs.model, inputs.prefixes, ...
-    inputs.coordinateNames, finalValues, results, resultsDirectory);
-end

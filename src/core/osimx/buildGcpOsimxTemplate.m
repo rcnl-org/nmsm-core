@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% MuscleTendonPersonalization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function  produces a template with basic GCP result information.
+% The function addGcpContactSurface() should be used after to add contact
+% surfaces and springs
 %
-% (string) -> (None)
-% Run MuscleTendonPersonalization from settings file
+% (string, string, number, number, number) -> (struct) 
+% Prints a generic template for an osimx file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Marleny Vega                              %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,28 +29,25 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
-if isstruct(precalInputs)
-    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
-    inputs = updateMtpInitialGuess(inputs, precalInputs, ...
-        optimizedInitialGuess);
+function osimx = buildGcpOsimxTemplate(modelName, ...
+    osimModelFileName, restingSpringLength, ...
+    dynamicFrictionCoefficient, dampingFactor)
+
+osimx = buildOsimxTemplate(modelName, osimModelFileName);
+
+body = osimx.NMSMPipelineDocument.OsimxModel;
+
+body.RCNLGroundContact.resting_spring_length.Comment = ...
+    'The resting spring length of the surface';
+body.RCNLGroundContact.resting_spring_length.Text = convertStringsToChars(num2str(restingSpringLength));
+body.RCNLGroundContact.dynamic_friction_coefficient.Comment = ...
+    'The dynamic friction coefficient of the surface';
+body.RCNLGroundContact.dynamic_friction_coefficient.Text = ...
+    convertStringsToChars(num2str(dynamicFrictionCoefficient));
+body.RCNLGroundContact.damping_factor.Comment = 'The damping factor of the surface';
+body.RCNLGroundContact.damping_factor.Text = convertStringsToChars(num2str(dampingFactor));
+
+osimx.NMSMPipelineDocument.OsimxModel = body;
+
 end
 
-optimizedParams = MuscleTendonPersonalization(inputs, params);
-% if params.performMuscleTendonLengthInitialization
-%     reportMuscleTendonPersonalizationResults(optimizedParams, ...
-%         inputs, precalInputs);
-% else
-%     reportMuscleTendonPersonalizationResults(optimizedParams, inputs);
-% end
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
-results = calcMtpSynXModeledValues(finalValues, inputs, params);
-results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
-    end - inputs.numPaddingFrames);
-saveMuscleTendonPersonalizationResults(inputs.model, inputs.prefixes, ...
-    inputs.coordinateNames, finalValues, results, resultsDirectory);
-end
