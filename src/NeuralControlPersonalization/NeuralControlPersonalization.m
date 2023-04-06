@@ -44,7 +44,6 @@ verifyInputs(inputs); % (struct) -> (None)
 params = finalizeParams(params);
 inputs = finalizeInputs(inputs);
 initialValues = prepareGenericInitialValues(inputs, params);
-% initialValues = prepareNonNegativeMatrixFactorizationInitialValues();
 finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
     params);
 end
@@ -88,8 +87,8 @@ end
 function params = finalizeParams(params)
 params.activationGroups = valueOrAlternate(params, "activationGroups", ...
     {});
-params.normalizedFiberLengthGroups = valueOrAlternate(params, "normalizedFiberLengthGroups", ...
-    {});
+params.normalizedFiberLengthGroups = valueOrAlternate(params, ...
+    "normalizedFiberLengthGroups", {});
 end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
