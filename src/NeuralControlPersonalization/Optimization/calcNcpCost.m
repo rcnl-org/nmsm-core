@@ -31,72 +31,47 @@
 
 function cost = calcNcpCost(activations, inputs, params, values)
 
-momentTrackingError = [];
-if params.costTerms.momentTracking.isEnabled
-    [normalizedFiberLengths, normalizedFiberVelocities] = ...
-        calcNormalizedMuscleFiberLengthsAndVelocities(inputs, ...
-        inputs.optimalFiberLengthScaleFactors, ...
-        inputs.tendonSlackLengthScaleFactors);
-    muscleJointMoments = calcMuscleJointMoments(inputs, ...
-        activations, normalizedFiberLengths, normalizedFiberVelocities);
-
-    torqueErrors = muscleJointMoments - inputs.inverseDynamicsMoments;
-    momentTrackingError = (torqueErrors(:) / ...
-        params.costTerms.momentTracking.maxAllowableError) / ...
-        numel(torqueErrors) ^ 0.5;
-end
-
+error = [];
+% Split activations into subsets ahead of cost computation
 [activationsWithMtpData, activationsWithoutMtpData] = ...
     makeMtpActivatonSubset(activations, ...
     inputs.mtpActivationsColumnNames, inputs.muscleTendonColumnNames);
-
-activationTrackingError = [];
-if params.costTerms.activationTracking.isEnabled
-    activationTracking = activationsWithMtpData - inputs.mtpActivations;
-    activationTrackingError = (activationTracking(:) / ...
-        params.costTerms.activationTracking.maxAllowableError) / ...
-        numel(activationTracking) ^ 0.5;
+for term = 1:length(params.costTerms)
+    costTerm = params.costTerms{term};
+    if costTerm.isEnabled
+        switch costTerm.type
+            case "moment_tracking"
+                [normalizedFiberLengths, normalizedFiberVelocities] = ...
+                    calcNormalizedMuscleFiberLengthsAndVelocities( ...
+                    inputs, inputs.optimalFiberLengthScaleFactors, ...
+                    inputs.tendonSlackLengthScaleFactors);
+                muscleJointMoments = calcMuscleJointMoments(inputs, ...
+                    activations, normalizedFiberLengths, ...
+                    normalizedFiberVelocities);
+                rawCost = muscleJointMoments - ...
+                    inputs.inverseDynamicsMoments;
+            case "activation_tracking"
+                rawCost = activationsWithMtpData - inputs.mtpActivations;
+            case "activation_minimization"
+                rawCost = reshape(activationsWithoutMtpData, [], 1);
+            case "grouped_activations"
+                rawCost = calcGroupedActivationCost(activations, ...
+                    inputs, params);
+            case "grouped_fiber_lengths"
+                rawCost = calcGroupedNormalizedFiberLengthCost( ...
+                    activations, inputs, params);
+            case "bilateral_symmetry"
+                if length(inputs.synergyGroups) ~= 2
+                    throw(MException('', ['Bilateral symmetry cost ' ...
+                        'requires exactly two synergy groups.']))
+                end
+                weights = findSynergyWeightsByGroup(values, inputs);
+                rawCost = weights(1, :, :) - weights(2, :, :);
+        end
+        error = [error; (rawCost(:) / costTerm.maxAllowableError) / ...
+            sqrt(numel(rawCost))];
+    end
 end
-
-activationMinimizationError = [];
-if params.costTerms.activationMinimization.isEnabled
-    activationMinimization = reshape(activationsWithoutMtpData, [], 1);
-    activationMinimizationError = (activationMinimization / ...
-        params.costTerms.activationMinimization.maxAllowableError) / ...
-        numel(activationMinimization) ^ 0.5;
-end
-
-groupedActivationError = [];
-if params.costTerms.groupedActivations.isEnabled
-    groupedActivations = calcGroupedActivationCost(activations, inputs, ...
-        params);
-    groupedActivationError = (groupedActivations(:) / ...
-        params.costTerms.groupedActivations.maxAllowableError) / ...
-        numel(groupedActivations) ^ 0.5;
-end
-
-groupedNormalizedFiberLengthError = [];
-if params.costTerms.groupedFiberLengths.isEnabled
-    groupedNormalizedFiberLengths = calcGroupedNormalizedFiberLengthCost( ...
-        activations, inputs, params);
-    groupedNormalizedFiberLengthError = ...
-        (groupedNormalizedFiberLengths(:) / ...
-        params.costTerms.groupedFiberLengths.maxAllowableError) / ...
-        numel(groupedNormalizedFiberLengths) ^ 0.5;
-end
-
-bilateralSymmetryError = [];
-if params.costTerms.bilateralSymmetry.isEnabled
-    weights = findSynergyWeightsByGroup(values, inputs);
-    bilateralSymmetry = weights(1, :, :) - weights(2, :, :);
-    bilateralSymmetryError = bilateralSymmetry(:) / ...
-        params.costTerms.bilateralSymmetry.maxAllowableError / ...
-        numel(bilateralSymmetry) ^ 0.5;
-end
-
-error = [momentTrackingError; activationTrackingError; ...
-    activationMinimizationError; groupedActivationError; ...
-    groupedNormalizedFiberLengthError; bilateralSymmetryError];
 
 cost = error' * error;
 end
