@@ -83,7 +83,7 @@ docNode = com.mathworks.xml.XMLUtils.createDocument(xmlname_sc);
 docRootNode = docNode.getDocumentElement;
 
 %append childs
-NameLevelStuct = unfold_modified(inputStructure2Xml, false);
+NameLevelStuct = unfold(inputStructure2Xml, false);
 parseStruct(inputStructure2Xml.(xmlname), docNode, docRootNode, ...
     [inputname(1) '.' xmlname '.'], [], NameLevelStuct, 1, ...
     inputStructure2Xml);
