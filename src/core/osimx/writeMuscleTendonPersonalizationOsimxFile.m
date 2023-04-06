@@ -3,7 +3,7 @@
 % This function prints out the optimized muscle tendon parameters in an
 % osimx file
 %
-% (string, 2D matrix, string) -> (None) 
+% (string, 2D matrix, string) -> (None)
 % Prints MuscleTendonPersonalization results in osimx file
 
 % ----------------------------------------------------------------------- %
@@ -29,12 +29,16 @@
 % ----------------------------------------------------------------------- %
 
 function writeMuscleTendonPersonalizationOsimxFile(modelFileName, ...
-    optimizedParams, muscleNames, outfile)
+    osimxFileName, optimizedParams, muscleNames, outfile)
 model = Model(modelFileName);
 
-osimx = buildMtpOsimxTemplate(...
-    replace(model.getName().toCharArray',".","_dot_"), ...
-    modelFileName);
+if isfile(osimxFileName)
+    osimx = parseOsimxFile(osimxFileName);
+else
+    osimx = buildMtpOsimxTemplate(...
+        replace(model.getName().toCharArray',".","_dot_"), ...
+        modelFileName);
+end
 
 for i = 1:length(muscleNames)
     muscleParams = makeMuscleParams(model, muscleNames(i), optimizedParams, i);
@@ -45,7 +49,7 @@ outfile = strrep(outfile, 'osimx', 'xml');
 struct2xml(osimx, outfile)
 copyfile(outfile, fullfile(strrep(outfile, ...
     'xml','osimx')))
-delete(outfile) 
+delete(outfile)
 end
 
 function params = makeMuscleParams(model, muscleName, optimizedParams, index)

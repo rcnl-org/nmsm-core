@@ -59,3 +59,4 @@ totalCost = totalCost + calcMuscleExcitationPenaltyCost( ...
     synxModeledValues,experimentalData);
 totalCost(isinf(totalCost)) = 1e100;
 end
+

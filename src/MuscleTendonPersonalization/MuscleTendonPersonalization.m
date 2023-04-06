@@ -183,8 +183,6 @@ end
 function taskParams = makeTaskParams(taskInputs, params, synergyExtrapolation)
 taskParams = params;
 taskParams.costTerms = taskInputs.costTerms;
-taskParams.costTerms
-synergyExtrapolation.costTerms
 taskParams.costTerms = mergeStructs( ...
     taskParams.costTerms, ...
     synergyExtrapolation.costTerms);
