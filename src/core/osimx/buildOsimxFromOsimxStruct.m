@@ -32,7 +32,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = buildOsimxFromParsedOsimx(osimxStruct)
+function osimx = buildOsimxFromOsimxStruct(osimxStruct)
 osimx = buildOsimxTemplate(osimxStruct.modelName, osimxStruct.model);
 osimx = buildMtpOsimx(osimx, osimxStruct.muscles);
 osimx = buildGcpOsimx(osimx, osimxStruct.groundContact);

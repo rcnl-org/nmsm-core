@@ -2,7 +2,7 @@
 %
 % This function converts the groundContact portion of a parsed .osimx file
 % into a new .osimx struct to be printed with writeOsimxFile(). See
-% buildOsimxFromParsedOsimx() for reference.
+% buildOsimxFromOsimxStruct() for reference.
 %
 % (struct, struct) -> (struct)
 % Adds groundContact to .osimxStruct
@@ -30,22 +30,6 @@
 % ----------------------------------------------------------------------- %
 
 function osimx = buildGcpOsimx(osimx, groundContact)
-body = osimx.NMSMPipelineDocument.OsimxModel;
-
-body.RCNLGroundContact.resting_spring_length.Comment = ...
-    'The resting spring length of the surface';
-body.RCNLGroundContact.resting_spring_length.Text = ...
-    convertStringsToChars(num2str(groundContact.restingSpringLength));
-body.RCNLGroundContact.dynamic_friction_coefficient.Comment = ...
-    'The dynamic friction coefficient of the surface';
-body.RCNLGroundContact.dynamic_friction_coefficient.Text = ...
-    convertStringsToChars(num2str(groundContact.dynamicFrictionCoefficient));
-body.RCNLGroundContact.damping_factor.Comment = 'The damping factor of the surface';
-body.RCNLGroundContact.damping_factor.Text = ...
-    convertStringsToChars(num2str(groundContact.dampingFactor));
-
-osimx.NMSMPipelineDocument.OsimxModel = body;
-
 for i = 1:length(groundContact.contactSurface)
     osimx = buildGcpContactSurface(osimx, groundContact.contactSurface{i});
 end

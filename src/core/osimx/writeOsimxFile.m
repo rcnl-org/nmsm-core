@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.(
 %
-% This function writes an osimxStruct formed by buildOsimxFromParsedOsimx
+% This function writes an osimxStruct formed by buildOsimxFromOsimxStruct
 % or similar function.
 %
 % (struct, string) -> (None)

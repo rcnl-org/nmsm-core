@@ -5,16 +5,10 @@ tree = xml2struct(osimxFileName);
 osimx.model = getFieldByNameOrError(tree, "associated_osim_model").Text;
 osimx.modelName = getFieldByNameOrError(tree, "OsimxModel").Attributes.name;
 
-groundContactTree = getFieldByName(tree, "RCNLGroundContact");
-if(isstruct(groundContactTree))
-    osimx.groundContact.restingSpringLength = ...
-        str2double(getFieldByNameOrError(groundContactTree, "resting_spring_length").Text);
-    osimx.groundContact.dynamicFrictionCoefficient = ...
-        str2double(getFieldByNameOrError(groundContactTree, "dynamic_friction_coefficient").Text);
-    osimx.groundContact.dampingFactor = ...
-        str2double(getFieldByNameOrError(groundContactTree, "damping_factor").Text);
+rcnlGroundContactTree = getFieldByName(tree, "RCNLContactSurfaceSet");
+if(isstruct(rcnlGroundContactTree))
 
-    contactSurfaceTree = getFieldByNameOrError(groundContactTree, "GCPContactSurface");
+    contactSurfaceTree = getFieldByNameOrError(rcnlGroundContactTree, "RCNLContactSurface");
 
     for i = 1:length(contactSurfaceTree)
         if length(contactSurfaceTree) == 1
@@ -26,9 +20,9 @@ if(isstruct(groundContactTree))
     end
 end
 
-mtpMuscleSetTree = getFieldByName(tree, "RCNLMuscleSet");
-if(isstruct(mtpMuscleSetTree))
-    musclesTree = getFieldByNameOrError(mtpMuscleSetTree, "objects").RCNLMuscle;
+rcnlMuscleSetTree = getFieldByName(tree, "RCNLMuscleSet");
+if(isstruct(rcnlMuscleSetTree))
+    musclesTree = getFieldByNameOrError(rcnlMuscleSetTree, "objects").RCNLMuscle;
 
     for i = 1:length(musclesTree)
         if length(musclesTree) == 1
@@ -47,7 +41,12 @@ end
 end
 
 function contactSurface = parseContactSurface(tree)
-
+contactSurface.restingSpringLength = ...
+    str2double(getFieldByNameOrError(tree, "resting_spring_length").Text);
+contactSurface.dynamicFrictionCoefficient = ...
+    str2double(getFieldByNameOrError(tree, "dynamic_friction_coefficient").Text);
+contactSurface.dampingFactor = ...
+    str2double(getFieldByNameOrError(tree, "damping_factor").Text);
 contactSurface.isLeftFoot = getFieldByNameOrError(tree, "is_left_foot").Text == "true";
 contactSurface.toesCoordinateName = getFieldByNameOrError(tree, "toes_coordinate").Text;
 contactSurface.toesJointName = getFieldByNameOrError(tree, "toes_joint").Text;

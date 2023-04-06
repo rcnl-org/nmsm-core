@@ -2,7 +2,7 @@
 %
 % This function converts the muscles portion of a parsed .osimx file
 % into a new .osimx struct to be printed with writeOsimxFile(). See
-% buildOsimxFromParsedOsimx() for reference.
+% buildOsimxFromOsimxStruct() for reference.
 %
 % (struct, struct) -> (struct)
 % Adds muscles to .osimxStruct
