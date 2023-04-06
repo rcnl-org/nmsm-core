@@ -25,7 +25,7 @@ end
 % GCP Tasks
 for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, task);
-    save("3-28-newXML_" + task + ".mat")
+    save("4-5-newCostStructure_" + task + ".mat")
 end
 toc
 
