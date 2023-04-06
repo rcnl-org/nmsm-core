@@ -2,7 +2,7 @@
 %
 % This function converts the contactSurface portion of a parsed .osimx file
 % into a new .osimx struct to be printed with writeOsimxFile(). See
-% buildOsimxFromParsedOsimx() and buildGcpOsimx() for reference.
+% buildOsimxFromOsimxStruct() and buildGcpOsimx() for reference.
 %
 % (string, string, number, number, number) -> (struct)
 % Adds groundContact to .osimx struct
@@ -34,37 +34,49 @@ osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact.Comment = ...
     'The modeled ground contact data';
 groundContact = osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact;
 
-if ~isfield(groundContact, "GCPContactSurfaceSet")
-    groundContact.GCPContactSurfaceSet.GCPContactSurface = {};
+if ~isfield(groundContact, "RCNLContactSurfaceSet")
+    groundContact.RCNLContactSurfaceSet.RCNLContactSurface = {};
 end
 
-i = length(groundContact.GCPContactSurfaceSet.GCPContactSurface) + 1;
+i = length(groundContact.RCNLContactSurfaceSet.RCNLContactSurface) + 1;
 
-groundContact.GCPContactSurfaceSet.GCPContactSurface{i}.is_left_foot.Comment = ...
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.is_left_foot.Comment = ...
     'Flag indicating whether foot model should be mirrored';
 isLeftFoot = "false"; if contactSurface.isLeftFoot; isLeftFoot = "true"; end
-groundContact.GCPContactSurfaceSet.GCPContactSurface{i}.is_left_foot.Text = ...
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.is_left_foot.Text = ...
     convertStringsToChars(isLeftFoot);
-groundContact.GCPContactSurfaceSet.GCPContactSurface{i}.toes_coordinate.Comment = ...
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.toes_coordinate.Comment = ...
     'Name of the toe angle coordinate in the model file';
-groundContact.GCPContactSurfaceSet.GCPContactSurface{i}.toes_coordinate.Text = ...
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.toes_coordinate.Text = ...
     contactSurface.toesCoordinateName;
-groundContact.GCPContactSurfaceSet.GCPContactSurface{i}.toes_joint.Comment = ...
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.toes_joint.Comment = ...
     'Name of the toe joint in the model file';
-groundContact.GCPContactSurfaceSet.GCPContactSurface{i}.toes_joint.Text = ...
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.toes_joint.Text = ...
     contactSurface.toesJointName;
 
-groundContact.GCPContactSurfaceSet.Comment = 'The set of contact surfaces modeled';
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.resting_spring_length.Comment = ...
+    'The resting spring length of the surface';
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.resting_spring_length.Text = ...
+    convertStringsToChars(num2str(contactSurface.restingSpringLength));
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.dynamic_friction_coefficient.Comment = ...
+    'The dynamic friction coefficient of the surface';
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.dynamic_friction_coefficient.Text = ...
+    convertStringsToChars(num2str(contactSurface.dynamicFrictionCoefficient));
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.damping_factor.Comment = 'The damping factor of the surface';
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.damping_factor.Text = ...
+    convertStringsToChars(num2str(contactSurface.dampingFactor));
 
-groundContact.GCPContactSurfaceSet.GCPContactSurface{i}.Comment = ...
+groundContact.RCNLContactSurfaceSet.Comment = 'The set of contact surfaces modeled';
+
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.Comment = ...
     'The set of contact surfaces modeled';
-newContactSurface = groundContact.GCPContactSurfaceSet.GCPContactSurface{i};
+newContactSurface = groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i};
 newContactSurface.GCPSpringSet.Comment = 'The set of springs for the contact surface';
 for i = 1:length(contactSurface.springs)
     newContactSurface = buildGcpSpring(newContactSurface, contactSurface.springs{i});
 end
 newContactSurface.GCPSpringSet.groups = '';
-groundContact.GCPContactSurfaceSet.GCPContactSurface = newContactSurface;
+groundContact.RCNLContactSurfaceSet.RCNLContactSurface = newContactSurface;
 osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact = groundContact;
 end
 

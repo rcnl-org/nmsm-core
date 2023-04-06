@@ -2,7 +2,7 @@
 %
 % This function converts the spring portion of a parsed .osimx file
 % into a new .osimx struct to be printed with writeOsimxFile(). See
-% buildOsimxFromParsedOsimx(), buildGcpOsimx(), and 
+% buildOsimxFromOsimxStruct(), buildGcpOsimx(), and 
 % buildGcpContactSurface() for reference.
 %
 % (struct, struct) -> (struct)
