@@ -26,15 +26,11 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcSynergyExtrapolationMuscleActivationCost( ...
-    modeledValues, experimentalData, params)
-costTerm = params.costTerms.extrapolatedMuscleActivation;
+    modeledValues, experimentalData, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.3);
-if(costTerm.isEnabled)
 cost = calcDeviationCostTerm(...
     modeledValues.muscleActivations(:, ...
     [experimentalData.synergyExtrapolation.missingEmgChannelGroups{:}], ...
     :), errorCenter, maximumAllowableError);
-else
-    cost = 0;
 end

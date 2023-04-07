@@ -25,14 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcActivationNonlinearityDeviationCost(values, params)
-costTerm = params.costTerms.activationNonlinearityConstant;
+function cost = calcActivationNonlinearityDeviationCost(values, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
-if(costTerm.isEnabled)
 cost = calcDeviationCostTerm( ...
     values.activationNonlinearityConstants, errorCenter, ...
     maximumAllowableError);
-else
-    cost = 0;
 end

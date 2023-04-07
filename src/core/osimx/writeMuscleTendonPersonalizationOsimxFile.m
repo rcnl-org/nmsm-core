@@ -29,27 +29,27 @@
 % ----------------------------------------------------------------------- %
 
 function writeMuscleTendonPersonalizationOsimxFile(modelFileName, ...
-    osimxFileName, optimizedParams, muscleNames, outfile)
+    osimxFileName, optimizedParams, muscleNames, results_directory)
 model = Model(modelFileName);
 
 if isfile(osimxFileName)
     osimx = parseOsimxFile(osimxFileName);
+    [~, name, ~] = fileparts(osimxFileName);
+    outfile = fullfile(results_directory, strcat(name, "_mtp.xml"));
 else
     osimx = buildMtpOsimxTemplate(...
         replace(model.getName().toCharArray',".","_dot_"), ...
         modelFileName);
+    [~, name, ~] = fileparts(modelFileName);
+    outfile = fullfile(results_directory, strcat(name, "_mtp.xml"));
 end
 
 for i = 1:length(muscleNames)
     muscleParams = makeMuscleParams(model, muscleNames(i), optimizedParams, i);
-    osimx = addRcnlMuscle(osimx, muscleNames(i), muscleParams);
+    osimx.muscles.(muscleNames(i)) = muscleParams;
 end
 
-outfile = strrep(outfile, 'osimx', 'xml');
-struct2xml(osimx, outfile)
-copyfile(outfile, fullfile(strrep(outfile, ...
-    'xml','osimx')))
-delete(outfile)
+writeOsimxFile(buildOsimxFromOsimxStruct(osimx), outfile)
 end
 
 function params = makeMuscleParams(model, muscleName, optimizedParams, index)

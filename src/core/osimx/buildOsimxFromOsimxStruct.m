@@ -2,12 +2,12 @@
 %
 % This function takes the output of parseOsimxFile(filename) and produces
 % a struct that can passed directly into writeOsimxFile() and replicate the
-% input file. 
+% input file.
 %
 % This function is most commonly used to add values to an existing .osimx
 % file.
 %
-% (struct) -> (struct) 
+% (struct) -> (struct)
 % Prints MuscleTendonPersonalization results in osimx file
 
 % ----------------------------------------------------------------------- %
@@ -34,7 +34,11 @@
 
 function osimx = buildOsimxFromOsimxStruct(osimxStruct)
 osimx = buildOsimxTemplate(osimxStruct.modelName, osimxStruct.model);
-osimx = buildMtpOsimx(osimx, osimxStruct.muscles);
-osimx = buildGcpOsimx(osimx, osimxStruct.groundContact);
+if isfield(osimxStruct, "muscles")
+    osimx = buildMtpOsimx(osimx, osimxStruct.muscles);
+end
+if isfield(osimxStruct, "groundContact")
+    osimx = buildGcpOsimx(osimx, osimxStruct.groundContact);
+end
 end
 

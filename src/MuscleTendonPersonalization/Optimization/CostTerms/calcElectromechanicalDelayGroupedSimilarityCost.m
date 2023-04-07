@@ -26,15 +26,11 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcElectromechanicalDelayGroupedSimilarityCost( ...
-    values, experimentalData, params)
-costTerm = params.costTerms.groupedElectromechanicalDelay;
+    values, experimentalData, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.2);
-if(costTerm.isEnabled)
 electromechanicalDelayDeviations = calcDifferencesInEmgGroups( ...
     values.electromechanicalDelays/10, experimentalData.activationGroups);
 cost = calcDeviationCostTerm( ...
     electromechanicalDelayDeviations, errorCenter, maximumAllowableError);
-else
-    cost = 0;
 end
