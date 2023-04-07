@@ -41,15 +41,32 @@ end
 end
 
 function contactSurface = parseContactSurface(tree)
+
+contactSurface.isLeftFoot = getFieldByNameOrError(tree, "is_left_foot").Text == "true";
+contactSurface.beltSpeed = str2double(getFieldByNameOrError(tree, "belt_speed").Text);
+
+contactSurface.forceColumns = parseSpaceSeparatedList(tree, "force_columns");
+contactSurface.momentColumns = parseSpaceSeparatedList(tree, "moment_columns");
+contactSurface.electricalCenterColumns = parseSpaceSeparatedList(tree, "electrical_center_columns");
+
+contactSurface.toesCoordinateName = getFieldByNameOrError(tree, "toes_coordinate").Text;
+contactSurface.toesJointName = getFieldByNameOrError(tree, "toes_joint").Text;
+
+contactSurface.toeMarker = getFieldByNameOrError(tree, "toe_marker").Text;
+contactSurface.medialMarker = getFieldByNameOrError(tree, "medial_marker").Text;
+contactSurface.lateralMarker = getFieldByNameOrError(tree, "lateral_marker").Text;
+contactSurface.heelMarker = getFieldByNameOrError(tree, "heel_marker").Text;
+contactSurface.midfootSuperiorMarker = getFieldByNameOrError(tree, "midfoot_superior_marker").Text;
+
 contactSurface.restingSpringLength = ...
     str2double(getFieldByNameOrError(tree, "resting_spring_length").Text);
 contactSurface.dynamicFrictionCoefficient = ...
     str2double(getFieldByNameOrError(tree, "dynamic_friction_coefficient").Text);
+contactSurface.viscousFrictionCoefficient = ...
+    str2double(getFieldByNameOrError(tree, "viscous_friction_coefficient").Text);
 contactSurface.dampingFactor = ...
     str2double(getFieldByNameOrError(tree, "damping_factor").Text);
-contactSurface.isLeftFoot = getFieldByNameOrError(tree, "is_left_foot").Text == "true";
-contactSurface.toesCoordinateName = getFieldByNameOrError(tree, "toes_coordinate").Text;
-contactSurface.toesJointName = getFieldByNameOrError(tree, "toes_joint").Text;
+
 
 gcpSpringsTree = getFieldByNameOrError(tree, "GCPSpringSet");
 springsTree = getFieldByNameOrError(gcpSpringsTree, "objects").GCPSpring;
