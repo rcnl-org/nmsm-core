@@ -26,15 +26,11 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcEmgScaleFactorGroupedSimilarityCost( ...
-    values, experimentalData, params)
-costTerm = params.costTerms.groupedEmgScaleFactor;
+    values, experimentalData, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
-if(costTerm.isEnabled)
 emgScaleDeviations = calcDifferencesInEmgGroups(values.emgScaleFactors, ...
     experimentalData.activationGroups);
 cost = calcDeviationCostTerm(emgScaleDeviations, ...
     errorCenter, maximumAllowableError);
-else
-    cost = 0;
 end
