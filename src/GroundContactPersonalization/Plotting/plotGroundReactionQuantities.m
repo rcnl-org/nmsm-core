@@ -30,9 +30,9 @@
 function plotGroundReactionQuantities(inputs, params, task, foot)
 
 plotParams = params;
-plotParams.tasks{task}.costTerms.verticalGrfError.isEnabled = true;
-plotParams.tasks{task}.costTerms.horizontalGrfError.isEnabled = true;
-plotParams.tasks{task}.costTerms.groundReactionMomentError.isEnabled = true;
+% plotParams.tasks{task}.costTerms.verticalGrfError.isEnabled = true;
+% plotParams.tasks{task}.costTerms.horizontalGrfError.isEnabled = true;
+% plotParams.tasks{task}.costTerms.groundReactionMomentError.isEnabled = true;
 
 for i = 1:length(inputs.surfaces)
     models.("model_" + i) = Model(inputs.surfaces{foot}.model);
