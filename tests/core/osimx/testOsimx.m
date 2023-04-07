@@ -27,7 +27,6 @@ optimizedParams.tendonSlackLengthScaleFactors = [0.6];
 %% Check osimx parse and rewrite
 
 osimx = parseOsimxFile("full_model.osimx");
-osimx.groundContact.contactSurface{1}
 newOsimx = buildOsimxFromOsimxStruct(osimx);
 writeOsimxFile(newOsimx, "full_model2.osimx");
 osimx2 = parseOsimxFile("full_model2.osimx");
