@@ -1,13 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Parses XML settings for a RCNLCostTermSet. An array of cost term field
-% names for a tool's params struct and an array of cost term types
-% supported by the tool are required, with corresponding names sharing an
-% index. Terms not included in the RCNLCostTermSet found in these lists are
-% added to the struct with default settings and the isEnabled flag set to
-% false.
+% Parses XML settings for a RCNLCostTermSet. An array of cost term types
+% supported by the tool is required, and the program will end if the
+% settings file contains a cost term not supported by the current tool. 
 %
-% (struct, struct, Array of string, Array of string) -> (struct)
+% (struct, Array of string) -> (struct)
 % Parses settings from a RCNLCostTermSet.
 
 % ----------------------------------------------------------------------- %
@@ -32,33 +29,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function costTerms = parseRcnlCostTermSet(tree, ...
-    costTermFieldNames, costTermTypes)
+function costTerms = parseRcnlCostTermSet(tree, costTermTypes)
+costTerms = cell(1, length(tree));
 for term = 1:length(tree)
-    costTerm = tree.RCNLCostTermSet.objects.RCNLCostTerm{term};
-    index = find(strcmpi(costTermTypes, costTerm.type.Text)); 
+    currentTerm = tree{term};
+    % Find general cost term elements
+    costTerms{term}.type = getTextFromField(getFieldByNameOrError( ...
+        currentTerm, 'type'));
+    % Check that cost term exists for tool
+    index = find(strcmpi(costTermTypes, costTerms{term}.type), 1);
     if isempty(index)
-        throw(MException('', ['Cost term type ' costTerm.type.Text ...
+        throw(MException('', ['Cost term type ' costTerms{term}.type ...
             ' does not exist for this tool']))
     end
     enabled = getTextFromField(getFieldByNameOrAlternate( ...
-        costTerm, 'is_enabled', 'false'));
-    costTerms.(costTermFieldNames(index)).isEnabled = ...
-        strcmpi(enabled, 'true');
-    costTerms.(costTermFieldNames(index)).maxAllowableError =...
-        str2double(getTextFromField(getFieldByNameOrAlternate(costTerm, ...
+        currentTerm, 'is_enabled', 'false'));
+    costTerms{term}.isEnabled = strcmpi(enabled, 'true');
+    costTerms{term}.maxAllowableError = str2double(getTextFromField( ...
+        getFieldByNameOrAlternate(currentTerm, ...
         'max_allowable_error', '1')));
-    costTerms.(costTermFieldNames(index)).errorCenter = ...
-        str2double(getTextFromField(getFieldByNameOrAlternate(costTerm, ...
-        'error_center', '0')));
-end
-% Account for cost terms not included in settings file
-for i = 1:length(costTermFieldNames)
-    if ~isstruct(getFieldByName(costTerms, ...
-            costTermFieldNames(i)))
-        costTerms.(costTermFieldNames(i)).isEnabled = false;
-        costTerms.(costTermFieldNames(i)).maxAllowableError = 1;
-        costTerms.(costTermFieldNames(i)).errorCenter = 0;
+    costTerms{term}.errorCenter = str2double(getTextFromField( ...
+        getFieldByNameOrAlternate(currentTerm, 'error_center', '0')));
+    % Find context-specific cost term elements
+    try
+        costTerms{term}.coordinate = getTextFromField( ...
+            getFieldByNameOrError(currentTerm, 'coordinate'));
+    catch
     end
 end
 end
