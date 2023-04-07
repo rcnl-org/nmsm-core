@@ -25,14 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcActivationTimeConstantDeviationCost(values, params)
-costTerm = params.costTerms.activationTimeConstant;
+function cost = calcActivationTimeConstantDeviationCost(values, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0.015);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.02);
-if(costTerm.isEnabled)
-    cost = calcDeviationCostTerm( ...
-        values.activationTimeConstants/100, errorCenter, ...
-        maximumAllowableError);
-else
-    cost = 0;
+cost = calcDeviationCostTerm( ...
+    values.activationTimeConstants/100, errorCenter, ...
+    maximumAllowableError);
 end

@@ -30,9 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function osimx = buildGcpContactSurface(osimx, contactSurface)
-osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact.Comment = ...
-    'The modeled ground contact data';
-groundContact = osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact;
+groundContact = osimx.NMSMPipelineDocument.OsimxModel;
 
 if ~isfield(groundContact, "RCNLContactSurfaceSet")
     groundContact.RCNLContactSurfaceSet.RCNLContactSurface = {};
@@ -105,7 +103,7 @@ groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.damping_factor.Text = 
 groundContact.RCNLContactSurfaceSet.Comment = 'The set of contact surfaces modeled';
 
 groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i}.Comment = ...
-    'The set of contact surfaces modeled';
+    'The contact surface parameters';
 newContactSurface = groundContact.RCNLContactSurfaceSet.RCNLContactSurface{i};
 newContactSurface.GCPSpringSet.Comment = 'The set of springs for the contact surface';
 for i = 1:length(contactSurface.springs)
@@ -113,6 +111,6 @@ for i = 1:length(contactSurface.springs)
 end
 newContactSurface.GCPSpringSet.groups = '';
 groundContact.RCNLContactSurfaceSet.RCNLContactSurface = newContactSurface;
-osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact = groundContact;
+osimx.NMSMPipelineDocument.OsimxModel = mergeStructs(osimx.NMSMPipelineDocument.OsimxModel, groundContact);
 end
 

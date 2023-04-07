@@ -6,7 +6,7 @@
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>model.osim</input_model_file>
 		<!--Osimx file to build new osimx with MTP results from-->
-		<input_osimx_file>results/model_muscleModel.osimx</input_osimx_file>
+		<input_osimx_file>results\model_muscleModel.osimx</input_osimx_file>
         <!--Directory for data files-->
         <data_directory></data_directory>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
@@ -119,6 +119,11 @@
 					</RCNLCostTerm>
 					<RCNLCostTerm>
 						<type>residual_muscle_activation</type>
+						<is_enabled>true</is_enabled>
+						<max_allowable_error>0.3</max_allowable_error>
+					</RCNLCostTerm>
+					<RCNLCostTerm>
+						<type>muscle_excitation_penalty</type>
 						<is_enabled>true</is_enabled>
 						<max_allowable_error>0.3</max_allowable_error>
 					</RCNLCostTerm>

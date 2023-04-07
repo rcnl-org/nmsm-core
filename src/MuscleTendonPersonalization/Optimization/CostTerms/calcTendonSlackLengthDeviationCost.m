@@ -26,16 +26,12 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTendonSlackLengthDeviationCost(values, ...
-    experimentalData, params)
-costTerm = params.costTerms.tendonSlackLength;
+    experimentalData, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
-if(costTerm.isEnabled)
 cost = calcDeviationCostTerm( ...
     experimentalData.tendonSlackLength .* ...
     values.tendonSlackLengthScaleFactors - ...
     experimentalData.tendonSlackLength, errorCenter, ...
     maximumAllowableError);
-else
-    cost = 0;
 end

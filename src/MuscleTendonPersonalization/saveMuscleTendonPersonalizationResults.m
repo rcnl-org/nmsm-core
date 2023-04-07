@@ -61,7 +61,6 @@ for i = 1:size(results.muscleActivations, 1)
 end
 muscleNames = getMusclesFromCoordinates(model, coordinateNames);
 writeMuscleTendonPersonalizationOsimxFile(modelFileName, osimxFileName, ...
-    finalValues, muscleNames, fullfile(resultsDirectory, ...
-    strcat(name, "_mtp.xml")));
+    finalValues, muscleNames, resultsDirectory);
 end
 

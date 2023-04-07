@@ -25,13 +25,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcEmgScaleFactorDevationCost(values, params)
-costTerm = params.costTerms.emgScaleFactor;
+function cost = calcEmgScaleFactorDevationCost(values, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0.3);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.2);
-if(costTerm.isEnabled)
 cost = calcDeviationCostTerm(values.emgScaleFactors, ...
     errorCenter, maximumAllowableError);
-else
-    cost = 0;
 end
