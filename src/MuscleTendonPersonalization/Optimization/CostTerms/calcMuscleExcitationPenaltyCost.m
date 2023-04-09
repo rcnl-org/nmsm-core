@@ -34,7 +34,6 @@ muscleExcitationsConstraint = modeledValues.muscleExcitationsNoTDelay(: , ...
     size(modeledValues.muscleExcitationsNoTDelay, 3) - ...
     experimentalData.numPaddingFrames);
 cost = 120 * (muscleExcitationsConstraint - 0.5) .^ 8;
-size(cost)
 cost(isnan(cost))=0;
 cost = sum([sqrt(0.1) .* cost ].^ 2, 'all');
 end
