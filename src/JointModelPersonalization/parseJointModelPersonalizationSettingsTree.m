@@ -46,22 +46,15 @@ else
 end
 end
 
-function output = getInputs(tree)
-inputDirectory = getFieldByName(tree, 'input_directory').Text;
-modelFile = getFieldByNameOrError(tree, 'input_model_file').Text;
-if(inputDirectory)
-    output.model = fullfile(inputDirectory, modelFile);
-else
-    output.model = fullfile(pwd, modelFile);
-    inputDirectory = pwd;
-end
-model = Model(output.model);
-output.tasks = getTasks(model, tree, inputDirectory);
-output.desiredError = ...
+function inputs = getInputs(tree)
+inputs.model = parseModel(tree);
+model = Model(inputs.model);
+inputs.tasks = getTasks(model, tree);
+inputs.desiredError = ...
     str2num(getFieldByNameOrError(tree, 'desired_error').Text);
 end
 
-function output = getTasks(model, tree, inputDirectory)
+function inputs = getTasks(model, tree)
 tasks = getFieldByNameOrError(tree, 'JMPTaskList');
 counter = 1;
 jmpTasks = orderByIndex(tasks.JMPTask);
@@ -72,14 +65,14 @@ for i=1:length(jmpTasks)
         task = jmpTasks{i};
     end
     if(task.is_enabled.Text == 'true')
-        output{counter} = getTask(model, task, inputDirectory);
+        inputs{counter} = getTask(model, task);
         counter = counter + 1;
     end
 end
 end
 
-function output = getTask(model, tree, inputDirectory)
-output.markerFile = fullfile(inputDirectory, tree.marker_file_name.Text);
+function output = getTask(model, tree)
+output.markerFile = tree.marker_file_name.Text;
 timeRange = getFieldByName(tree, 'time_range');
 if(isstruct(timeRange))
     timeRange = strsplit(timeRange.Text, ' ');
@@ -87,16 +80,16 @@ if(isstruct(timeRange))
     output.finishTime = str2double(timeRange{2});
 end
 output.parameters = {};
-if(isstruct(getFieldByName(tree, "JMPJoint")) || ...
-        iscell(getFieldByName(tree, "JMPBody")))
-    output.parameters = getJointParameters(tree.JMPJoint);
+if(isstruct(getFieldByName(tree, "JMPJointSet")) || ...
+        iscell(getFieldByName(tree, "JMPJointSet")))
+    output.parameters = getJointParameters(tree.JMPJointSet);
 end
 output.scaling = [];
 output.markers = [];
-if(isstruct(getFieldByName(tree, "JMPBody")) || ...
-        iscell(getFieldByName(tree, "JMPBody")))
+if(isstruct(getFieldByName(tree, "JMPBodySet")) || ...
+        iscell(getFieldByName(tree, "JMPBodySet")))
     [output.scaling, output.markers] = ...
-        getBodyParameters(tree.JMPBody, model);
+        getBodyParameters(tree.JMPBodySet, model);
 end
 translationBounds = getFieldByName(tree, 'translation_bounds');
 if(isstruct(translationBounds))
@@ -118,7 +111,8 @@ end
 
 % this function is long and ugly but is a rote and imperative way to
 % solve this problem, it's fine
-function output = getJointParameters(jointTree)
+function inputs = getJointParameters(jointSetTree)
+jointTree = getFieldByNameOrError(jointSetTree, "JMPJoint");
 counter = 1; % for index of parameter in output
 for i=1:length(jointTree)
     if(length(jointTree) == 1)
@@ -132,7 +126,7 @@ for i=1:length(jointTree)
     verifyLength(parentTrans, 3);
     for j=0:2
         if(strcmp(parentTrans{j+1}, 'true'))
-            output{counter} = {jointName, true, true, j};
+            inputs{counter} = {jointName, true, true, j};
             counter = counter + 1;
         end
     end
@@ -141,7 +135,7 @@ for i=1:length(jointTree)
     verifyLength(parentOrient, 3);
     for j=0:2
         if(strcmp(parentOrient{j+1}, 'true'))
-            output{counter} = {jointName, true, false, j};
+            inputs{counter} = {jointName, true, false, j};
             counter = counter + 1;
         end
     end
@@ -150,7 +144,7 @@ for i=1:length(jointTree)
     verifyLength(childTrans, 3);
     for j=0:2
         if(strcmp(childTrans{j+1}, 'true'))
-            output{counter} = {jointName, false, true, j};
+            inputs{counter} = {jointName, false, true, j};
             counter = counter + 1;
         end
     end
@@ -159,20 +153,21 @@ for i=1:length(jointTree)
     verifyLength(childOrient, 3);
     for j=0:2
         if(strcmp(childOrient{j+1},'true'))
-            output{counter} = {jointName, false, false, j};
+            inputs{counter} = {jointName, false, false, j};
             counter = counter + 1;
         end
     end
 end
 end
 
-function [scaling, markers, primaryBodyAxis] = getBodyParameters( ...
-    bodyTree, model)
-scaling = getScalingBodies(bodyTree);
-markers = getMarkers(bodyTree, model);
+function [scaling, markers] = getBodyParameters( ...
+    bodySetTree, model)
+scaling = getScalingBodies(bodySetTree);
+markers = getMarkers(bodySetTree, model);
 end
 
-function output = getScalingBodies(bodyTree)
+function output = getScalingBodies(bodySetTree)
+bodyTree = getFieldByNameOrError(bodySetTree, "JMPBody");
 output = string([]);
 for i=1:length(bodyTree)
     if(length(bodyTree) == 1)
@@ -189,7 +184,8 @@ for i=1:length(bodyTree)
 end
 end
 
-function output = getMarkers(bodyTree, model)
+function output = getMarkers(bodySetTree, model)
+bodyTree = getFieldByNameOrError(bodySetTree, "JMPBody");
     axesNames = ["x", "y", "z"];
 output = {};
 for i=1:length(bodyTree)
