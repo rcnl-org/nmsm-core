@@ -67,6 +67,9 @@ for term = 1:length(params.costTerms)
                 end
                 weights = findSynergyWeightsByGroup(values, inputs);
                 rawCost = weights(1, :, :) - weights(2, :, :);
+            otherwise
+                throw(MException('', ['Cost term type ' costTerm.type ...
+                    ' does not exist for this tool.']))
         end
         error = [error; (rawCost(:) / costTerm.maxAllowableError) / ...
             sqrt(numel(rawCost))];
