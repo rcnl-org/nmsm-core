@@ -36,11 +36,6 @@ function saveMuscleTendonPersonalizationResults(modelFileName, ...
 
 model = Model(modelFileName);
 muscleColumnNames = getEnabledMusclesInOrder(model);
-if isfile(osimxFileName)
-    [~, name, ~] = fileparts(osimxFileName);
-else
-    [~, name, ~] = fileparts(modelFileName);
-end
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
