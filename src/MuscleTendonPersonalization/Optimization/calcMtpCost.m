@@ -77,6 +77,8 @@ for i = 1 : length(params.costTerms)
             case "muscle_excitation_penalty"
                 cost = calcMuscleExcitationPenaltyCost( ...
                     synxModeledValues, experimentalData, costTerm);
+            otherwise
+                throw(MException("", "Cost term " + type + " is not valid for MTP"))
         end
         totalCost = totalCost + cost;
     end
