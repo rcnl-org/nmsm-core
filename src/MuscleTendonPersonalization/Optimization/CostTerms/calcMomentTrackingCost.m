@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -26,13 +26,12 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcMomentTrackingCost(modeledValues, ...
-    experimentalData, params)
-costWeight = valueOrAlternate(params, "momentTrackingCostWeight", 1);
-errorCenter = valueOrAlternate(params, "momentTrackingErrorCenter", 0);
-maximumAllowableError = valueOrAlternate(params, ...
-    "momentTrackingMaximumAllowableError", 2);
-cost = costWeight * calcTrackingCostTerm( ...
+    experimentalData, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 2);
+cost = calcTrackingCostTerm( ...
     modeledValues.muscleJointMoments, ...
     experimentalData.inverseDynamicsMoments, errorCenter, ...
     maximumAllowableError);
 end
+

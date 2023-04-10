@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<OpenSimDocument Version="40000">
+<NMSMPipelineDocument Version="0.1.0">
    <OsimxModel name="arm26">
-      <!--Full path of the associated osim model-->
+      <!--File name of associated .osim file-->
       <associated_osim_model>arm26_one_muscle.osim</associated_osim_model>
       <!--Optimized muscle parameters-->
-      <MTPMuscleSet>
+      <RCNLMuscleSet>
          <objects>
             <RCNLMuscle name="BRA">
-               <!--Optimized electronmechanical delay-->
+               <!--Optimized electromechanical delay-->
                <electromechanical_delay>0.5</electromechanical_delay>
                <!--Optimized activation time constant-->
                <activation_time_constant>0.6</activation_time_constant>
                <!--Optimized activation nonlinearity constant-->
                <activation_nonlinearity_constant>0.5</activation_nonlinearity_constant>
-               <!--Optimized EMG scaling factor-->
+               <!--Optimized EMG scale factor-->
                <emg_scale_factor>0.6</emg_scale_factor>
-               <!--Optimized optimal fiber length scaling factor-->
-               <optimal_fiber_length_scale_factor>0.5</optimal_fiber_length_scale_factor>
-               <!--Optimized slack tendon length scaling factor-->
-               <slack_tendon_length_scale_factor>0.6</slack_tendon_length_scale_factor>
+               <!--Optimized optimal fiber length-->
+               <optimal_fiber_length>0.0429</optimal_fiber_length>
+               <!--Optimized tendon slack length-->
+               <tendon_slack_length>0.0321</tendon_slack_length>
             </RCNLMuscle>
          </objects>
          <groups/>
-      </MTPMuscleSet>
+      </RCNLMuscleSet>
    </OsimxModel>
-</OpenSimDocument>
+</NMSMPipelineDocument>
