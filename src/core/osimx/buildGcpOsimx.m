@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
-% returns the cost for all rounds of the MuscleTendonLengthInitialization optimization
+% This function converts the groundContact portion of a parsed .osimx file
+% into a new .osimx struct to be printed with writeOsimxFile(). See
+% buildOsimxFromOsimxStruct() for reference.
+%
+% (struct, struct) -> (struct)
+% Adds groundContact to .osimxStruct
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,21 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcPassiveMomentTrackingCost(modeledValues, ...
-    experimentalData, costTerm)
-
-columnsWithAllZeros = ...
-    all(experimentalData.passiveData.inverseDynamicsMoments == 0, 3);
-inverseDynamicsMoments = ...
-    experimentalData.passiveData.inverseDynamicsMoments( ...
-    repmat(~columnsWithAllZeros, 1, 1, 101));
-passiveModelMoments = modeledValues.passiveModelMoments( ...
-    repmat(~columnsWithAllZeros, 1, 1, 101));
-
-cost = calcTrackingCostArray( ...
-    passiveModelMoments, ...
-    inverseDynamicsMoments, ...
-    costTerm.errorCenter, ...
-    costTerm.maxAllowableError ...
-    );
+function osimx = buildGcpOsimx(osimx, groundContact)
+for i = 1:length(groundContact.contactSurface)
+    osimx = buildGcpContactSurface(osimx, groundContact.contactSurface{i});
 end
+end
+

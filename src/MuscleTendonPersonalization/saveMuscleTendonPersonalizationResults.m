@@ -31,11 +31,11 @@
 % ----------------------------------------------------------------------- %
 
 function saveMuscleTendonPersonalizationResults(modelFileName, ...
-    prefixes, coordinateNames, finalValues, results, resultsDirectory)
+    osimxFileName, prefixes, coordinateNames, finalValues, results, ...
+    resultsDirectory)
 
 model = Model(modelFileName);
 muscleColumnNames = getEnabledMusclesInOrder(model);
-[~, name, ~] = fileparts(modelFileName);
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
@@ -55,8 +55,7 @@ for i = 1:size(results.muscleActivations, 1)
         "modelMoments", strcat(prefixes(i), "_modelMoments", ".sto")));
 end
 muscleNames = getMusclesFromCoordinates(model, coordinateNames);
-writeMuscleTendonPersonalizationOsimxFile(modelFileName,...
-    finalValues, muscleNames, fullfile(resultsDirectory, ...
-    strcat(name, "_muscleModel.xml")));
+writeMuscleTendonPersonalizationOsimxFile(modelFileName, osimxFileName, ...
+    finalValues, muscleNames, resultsDirectory);
 end
 
