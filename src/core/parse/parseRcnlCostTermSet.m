@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Parses XML settings for a RCNLCostTermSet. An array of cost term types
-% supported by the tool is required, and the program will end if the
-% settings file contains a cost term not supported by the current tool. 
+% Parses XML settings for a RCNLCostTermSet, adding all fields included in 
+% the xml block.  
 %
-% (struct, Array of string) -> (struct)
+% (struct) -> (struct)
 % Parses settings from a RCNLCostTermSet.
 
 % ----------------------------------------------------------------------- %
@@ -29,19 +28,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function costTerms = parseRcnlCostTermSet(tree, costTermTypes)
+function costTerms = parseRcnlCostTermSet(tree)
 costTerms = cell(1, length(tree));
 for term = 1:length(tree)
     currentTerm = tree{term};
     % Find general cost term elements
     costTerms{term}.type = getTextFromField(getFieldByNameOrError( ...
         currentTerm, 'type'));
-    % Check that cost term exists for tool
-    index = find(strcmpi(costTermTypes, costTerms{term}.type), 1);
-    if isempty(index)
-        throw(MException('', ['Cost term type ' costTerms{term}.type ...
-            ' does not exist for this tool']))
-    end
     enabled = getTextFromField(getFieldByNameOrAlternate( ...
         currentTerm, 'is_enabled', 'false'));
     costTerms{term}.isEnabled = strcmpi(enabled, 'true');
@@ -50,12 +43,23 @@ for term = 1:length(tree)
         'max_allowable_error', '1')));
     costTerms{term}.errorCenter = str2double(getTextFromField( ...
         getFieldByNameOrAlternate(currentTerm, 'error_center', '0')));
-    % Find context-specific cost term elements
-    try
-        costTerms{term}.coordinate = getTextFromField( ...
-            getFieldByNameOrError(currentTerm, 'coordinate'));
-    catch
-    end
+    % Find other cost term elements
+    termElements = fieldnames(currentTerm);
+    for element = 1:length(termElements)
+        if isempty(intersect(termElements{element}, ["type" ...
+                "is_enabled" "max_allowable_error" "error_center"]))
+            contents = getTextFromField(getFieldByNameOrError( ...
+                currentTerm, termElements{element}));
+            if strcmpi(contents, "true")
+                contents = true;
+            elseif strcmpi(contents, "false")
+                contents = false;
+            elseif ~isnan(str2double(contents))
+                contents = str2double(contents);
+            end
+            costTerms{term}.(termElements{element}) = contents;
+        end
+    end 
 end
 end
 
