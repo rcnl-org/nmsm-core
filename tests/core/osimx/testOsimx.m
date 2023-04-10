@@ -20,7 +20,15 @@ optimizedParams.activationNonlinearityConstants = [0.5];
 optimizedParams.emgScaleFactors = [0.6];
 optimizedParams.optimalFiberLengthScaleFactors = [0.5];
 optimizedParams.tendonSlackLengthScaleFactors = [0.6];
-writeMuscleTendonPersonalizationOsimxFile( ...
-    "arm26_one_muscle.osim", optimizedParams, 'model.osimx')
-% assertNoException(writeMuscleTendonPersonalizationOsimxFile( ...
-%     "arm26_one_muscle.osim", optimizedParams, 'model.osimx'));
+
+% writeMuscleTendonPersonalizationOsimxFile( ...
+%     "arm26_one_muscle.osim", optimizedParams, "BRA", 'simple_model.osimx');
+
+%% Check osimx parse and rewrite
+
+osimx = parseOsimxFile("full_model.osimx");
+newOsimx = buildOsimxFromOsimxStruct(osimx);
+writeOsimxFile(newOsimx, "full_model2.osimx");
+osimx2 = parseOsimxFile("full_model2.osimx");
+assert(isequal(osimx, osimx2));
+
