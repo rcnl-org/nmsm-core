@@ -218,6 +218,7 @@ end
 end
 
 function output = getInitialValues(model, parameters, scaling, markers)
+output = [];
 for i = 1 : length(parameters)
     temp = parameters{i};
     output(i) = getFrameParameterValue(model, temp{1}, ...
@@ -231,14 +232,16 @@ for i = 1 : length(markers)
     [xPosition, yPosition, zPosition] = getMarkerParameterValues( ...
         model, marker(1));
     axis = marker(2);
-    if ~strcmp(axis, "x") output(end + 1) = xPosition; end
-    if ~strcmp(axis, "y") output(end + 1) = yPosition; end
-    if ~strcmp(axis, "z") output(end + 1) = zPosition; end
+    if strcmp(axis, "x") output(end + 1) = xPosition; end
+    if strcmp(axis, "y") output(end + 1) = yPosition; end
+    if strcmp(axis, "z") output(end + 1) = zPosition; end
 end
 end
 
 function [lowerBounds, upperBounds] = getBounds(parameters, ...
     initialValues, translationBounds, orientationBounds, scaling, markers)
+lowerBounds = [];
+upperBounds = [];
 for i=1:length(parameters)
     if(parameters{i}{3})
         lowerBounds(i) = initialValues(i) - translationBounds;
@@ -254,8 +257,6 @@ for i = 1 : length(scaling)
 end
 for i = 1 : length(markers) % double values for X and Z directions
     lowerBounds(end + 1) = -Inf;
-    lowerBounds(end + 1) = -Inf;
-    upperBounds(end + 1) = Inf;
     upperBounds(end + 1) = Inf;
 end
 end
