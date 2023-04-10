@@ -171,18 +171,8 @@ end
 end
 
 function inputs = getIntegralCostTerms(tree, inputs)
-integralCostWeightFieldNames = ["trackedCoordinates", "trackedLoads", ...
-    "trackedExternalForces", "trackedExternalMoments", ...
-    "trackedMuscleActivations"];
-integralCostWeightTypes = ["coordinate_tracking_cost_weight", ...
-    "inverse_dynamics_load_tracking_cost_weight", ...
-    "external_force_tracking_cost_weight", ...
-    "external_moment_tracking_cost_weight", ...
-    "muscle_activation_tracking_cost_weight"];
 trackingIntegralTermsTree = getFieldByNameOrError(tree, ...
     'RCNLTrackingCostTerms');
-inputs = getIntegralCostTermsCostWeight(trackingIntegralTermsTree, ...
-    inputs, integralCostWeightFieldNames, trackingIntegralTermsTree);
 rcnlCostTermTree = ...
     trackingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
 if length(rcnlCostTermTree) > 1
@@ -191,33 +181,14 @@ else
     inputs.tracking = parseRcnlCostTermSet({rcnlCostTermTree});
 end
 
-integralCostWeightFieldNames = "minimizingJointJerk";
-integralCostWeightTypes = "joint_jerk_minimization_cost_weight";
 minimizingIntegralTermsTree = getFieldByNameOrError(tree, ...
     'RCNLMinimizationCostTerms');
-inputs = getIntegralCostTermsCostWeight(minimizingIntegralTermsTree, ...
-    inputs, integralCostWeightFieldNames, trackingIntegralTermsTree);
 rcnlCostTermTree = ...
     minimizingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
 if length(rcnlCostTermTree) > 1
     inputs.minimizing = parseRcnlCostTermSet(rcnlCostTermTree);
 else
     inputs.minimizing = parseRcnlCostTermSet({rcnlCostTermTree});
-end
-end
-
-function inputs = getIntegralCostTermsCostWeight(tree, inputs, ...
-    integralCostWeightFieldNames, integralCostWeightTypes)
-
-for i = 1:length(integralCostWeightTypes)
-    costWeight = getDoubleFromField(getFieldByName(tree, ...
-        integralCostWeightTypes(i)));
-    if costWeight
-        inputs.(strcat(integralCostWeightFieldNames(i), "Enabled")) = 1;
-        inputs.(strcat(integralCostWeightFieldNames(i), "CostWeight")) = costWeight;
-    else
-        inputs.(strcat(integralCostWeightFieldNames(i), "Enabled")) = 0;
-    end
 end
 end
 
