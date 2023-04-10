@@ -29,7 +29,7 @@
         <max_function_evaluations>1e8</max_function_evaluations>
 		<MuscleTendonLengthInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization-->
-			<is_enabled>false</is_enabled>
+			<is_enabled>true</is_enabled>
 			<passive_data_input_directory>thelen</passive_data_input_directory>
 			<max_normalized_muscle_fiber_length>1</max_normalized_muscle_fiber_length>
 			<min_normalized_muscle_fiber_length>0.6</min_normalized_muscle_fiber_length>
