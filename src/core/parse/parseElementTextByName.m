@@ -9,4 +9,5 @@ elements = elementStringOrStringArray;
       else
         text = getFieldByNameOrError(tree, elements(i)).Text;
       end
+    end
 end
