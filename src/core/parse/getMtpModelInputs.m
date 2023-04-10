@@ -45,6 +45,5 @@ for i = 1:length(inputs.muscleNames)
         getPennationAngleAtOptimalFiberLength();
     inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
         getMuscles().get(muscleName).getMaxIsometricForce();
-    
 end
 end
