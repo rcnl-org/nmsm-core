@@ -26,72 +26,21 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = getIntegralBounds(inputs)
-inputs.integralOptions = {};
 inputs.maxIntegral = [];
-inputs.isEnabled = zeros(1, 6);
+for i = 1:length(inputs.tracking)
+    costTerm = inputs.tracking{i};
+    if costTerm.isEnabled
+        inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
+            costTerm.maxAllowableError);
+    end
+end
+for i = 1:length(inputs.minimizing)
+    costTerm = inputs.minimizing{i};
+    if costTerm.isEnabled
+        inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
+            costTerm.maxAllowableError);
+    end
 
-trackCoordinates = valueOrAlternate(inputs, "trackedCoordinateEnabled", 0);
-if trackCoordinates
-    [inputs.integralOptions{end+1}, inputs.maxIntegral, ...
-        inputs.trackedCoordinateIndex] = getIntegralSettings( ...
-        inputs.trackedCoordinate, inputs.coordinateNames, inputs.maxIntegral);
-    inputs.isEnabled(1) = 1;
 end
-trackLoads = valueOrAlternate(inputs, "trackedLoadEnabled", 0);
-if trackLoads
-    [inputs.integralOptions{end+1}, inputs.maxIntegral, ...
-        inputs.trackedInverseDynamicMomentsIndex] = getIntegralSettings( ...
-        inputs.trackedLoad, inputs.inverseDynamicMomentLabels, ...
-        inputs.maxIntegral);
-    inputs.isEnabled(2) = 1;
-end
-trackExternalForces = valueOrAlternate(inputs, "trackedExternalForceEnabled", 0);
-if trackExternalForces
-    for i = 1:length(inputs.contactSurfaces)
-        [tempIntegralOptions{i}, inputs.maxIntegral, ...
-            inputs.trackedExternalForcesIndex{i}] = getIntegralSettings( ...
-            inputs.trackedExternalForce, ...
-            inputs.contactSurfaces{i}.forceColumns, inputs.maxIntegral);
-        inputs.isEnabled(3) = 1;
-    end
-    inputs.integralOptions{end+1} = [tempIntegralOptions{:}];
-end
-trackExternalMoments = valueOrAlternate(inputs, "trackedExternalMomentEnabled", 0);
-if trackExternalMoments
-    for i = 1:length(inputs.contactSurfaces)
-        [tempIntegralOptions{i}, inputs.maxIntegral, ...
-            inputs.trackedExternalMomentsIndex{i}] = getIntegralSettings( ...
-            inputs.trackedExternalMoment, ...
-            inputs.contactSurfaces{i}.momentColumns, inputs.maxIntegral);
-        inputs.isEnabled(4) = 1;
-    end
-    inputs.integralOptions{end+1} = [tempIntegralOptions{:}];
-end
-trackMuscleActivation = valueOrAlternate(inputs, "trackedMuscleActivationEnabled", 0);
-if trackMuscleActivation
-    inputs.integralOptions{end+1} = ...
-        inputs.trackedMuscleActivationMaxAllowableError * ...
-        ones(1, inputs.numMuscles);
-    inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
-        nonzeros(inputs.integralOptions{end})');
-    inputs.isEnabled(5) = 1;
-end
-minimizeJointJerk = valueOrAlternate(inputs, "minimizedCoordinateEnabled", 0);
-if minimizeJointJerk
-    inputs.integralOptions{end+1} = ...
-        inputs.minimizedCoordinateMaxAllowableError * ...
-        range(inputs.experimentalJointJerks);
-    inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
-        nonzeros(inputs.integralOptions{end})');
-    inputs.isEnabled(6) = 1;
- end
 inputs.minIntegral = zeros(1, length(inputs.maxIntegral));
-end
-function [integralOptions, maxIntegral, trackedQuantityIndex] = ...
-    getIntegralSettings(trackedQuantity, modelComponentNames, tempMaxIntegral)
-integralOptions = getMaximumAllowableErrors( ...
-    trackedQuantity, modelComponentNames);
-maxIntegral = cat(2, tempMaxIntegral, nonzeros(integralOptions)');
-trackedQuantityIndex = find(integralOptions);
-integralOptions(integralOptions == 0) = [];
 end

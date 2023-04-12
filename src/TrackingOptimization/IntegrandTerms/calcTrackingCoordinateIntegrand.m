@@ -25,12 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingCoordinateIntegrand(statePositions, time, params)
+function cost = calcTrackingCoordinateIntegrand(params, time, ...
+    statePositions, coordinateName)
 
-enabledCost = valueOrAlternate(params, "trackedCoordinateEnabled", 0);
-if enabledCost
+indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
+    coordinateName));
 experimentalJointAngles = fnval(params.splineJointAngles, time)';
-cost = enabledCost * calcTrackingCostArrayTerm(experimentalJointAngles, ...
-    statePositions, params.trackedCoordinateIndex);
-end
+cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...
+    statePositions, indx);
 end

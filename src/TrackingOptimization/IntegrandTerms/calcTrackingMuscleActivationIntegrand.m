@@ -26,13 +26,11 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTrackingMuscleActivationIntegrand(muscleActivations, ...
-    time, params)
+    time, params, muscleName)
 
-enabledCost = valueOrAlternate(params, "trackedMuscleActivationEnabled", 0);
-if enabledCost
+indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
+    muscleName));
 experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
-cost = enabledCost * calcTrackingCostArrayTerm(...
-    experimentalMuscleActivations, muscleActivations, linspace(1, ...
-    params.numMuscles, params.numMuscles));
-end
+cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
+    muscleActivations, indx);
 end

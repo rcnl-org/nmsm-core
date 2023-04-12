@@ -25,13 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicLoadsIntegrand(inverseDynamicMoments, ...
-    time, params)
+function cost = calcTrackingInverseDynamicLoadsIntegrand(params, time, ...
+    inverseDynamicMoments, loadName)
 
-enabledCost = valueOrAlternate(params, "trackedLoadEnabled", 0);
-if enabledCost
+indx = find(strcmp(convertCharsToStrings(params.inverseDynamicMomentLabels), ...
+    loadName));
 experimentalJointMoments = fnval(params.splineJointMoments, time)';
-cost = enabledCost * calcTrackingCostArrayTerm(experimentalJointMoments, ...
-    inverseDynamicMoments, params.trackedInverseDynamicMomentsIndex);
-end
+cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
+    inverseDynamicMoments, indx);
 end

@@ -25,9 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointJerkIntegrand(jointJerks, params)
-enabledCost = valueOrAlternate(params, "minimizedCoordinateEnabled", 0);
-if enabledCost
-cost = enabledCost * calcMinimizingCostArrayTerm(jointJerks);
-end
+function cost = calcMinimizingJointJerkIntegrand(jointJerks, params, ...
+    coordinateName)
+
+indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
+    coordinateName));
+cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
 end
