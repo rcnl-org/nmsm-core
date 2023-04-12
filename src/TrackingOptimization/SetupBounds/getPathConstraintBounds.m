@@ -28,57 +28,13 @@
 function inputs = getPathConstraintBounds(inputs)
 inputs.maxPath = [];
 inputs.minPath = [];
-rootSegmentResidualsPathConstraint = valueOrAlternate(inputs, ...
-    "rootSegmentResidualLoadPathConstraint", 0);
-if rootSegmentResidualsPathConstraint
-    maxAllowablePathError = getMaximumAllowableErrors( ...
-        inputs.rootSegmentResidualLoad, inputs.inverseDynamicMomentLabels);
-    inputs.maxPath = nonzeros(maxAllowablePathError)';
-    inputs.rootSegmentResidualsIndex = find(maxAllowablePathError);
-    minAllowablePathError = getMinimumAllowableErrors( ...
-        inputs.rootSegmentResidualLoad, inputs.inverseDynamicMomentLabels);
-    inputs.minPath = nonzeros(minAllowablePathError)';
-end
-muscleModelLoadPathConstraint = valueOrAlternate(inputs, ...
-    "muscleModelLoadPathConstraint", 0);
-if muscleModelLoadPathConstraint
-    maxAllowablePathError = getMaximumAllowableErrors( ...
-        inputs.muscleModelLoad, inputs.inverseDynamicMomentLabels);
-    inputs.maxPath = cat(2, inputs.maxPath, ...
-        nonzeros(maxAllowablePathError)');
-    inputs.muscleActuatedMomentsIndex = find(maxAllowablePathError);
-    minAllowablePathError = getMinimumAllowableErrors( ...
-        inputs.muscleModelLoad, inputs.inverseDynamicMomentLabels);
-    inputs.minPath = cat(2, inputs.minPath, ...
-        nonzeros(minAllowablePathError)');
-    for i = 1 : length(inputs.coordinateNames)
-        for j = 1 : length(inputs.surrogateModelCoordinateNames)
-            if contains(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
-                inputs.surrogateModelIndex(j) = i;
-            end
-        end 
+for i = 1:length(inputs.path)
+    constraintTerm = inputs.path{i};
+    if constraintTerm.isEnabled
+        inputs.maxPath = cat(2, inputs.maxPath, ...
+            constraintTerm.maxError);
+        inputs.minPath = cat(2, inputs.minPath, ...
+            constraintTerm.minError);
     end
-    inputs.dofsActuatedIndex = [];
-    for i = 1 : length(inputs.inverseDynamicMomentLabels)
-        for j = 1 : length(inputs.surrogateModelCoordinateNames)
-            if contains(inputs.inverseDynamicMomentLabels(i), ...
-                    strcat(inputs.surrogateModelCoordinateNames(j), '_moment'))
-                inputs.dofsActuatedIndex(end+1) = j;
-            end
-        end 
-    end
-end
-controllerModelLoadPathConstraint = valueOrAlternate(inputs, ...
-    "controllerModelLoadPathConstraint", 0);
-if controllerModelLoadPathConstraint
-    maxAllowablePathError = getMaximumAllowableErrors( ...
-        inputs.controllerModelLoad, inputs.inverseDynamicMomentLabels);
-    inputs.maxPath = cat(2, inputs.maxPath, ...
-        nonzeros(maxAllowablePathError)');
-    inputs.torqueActuatedMomentsIndex = find(maxAllowablePathError);
-    minAllowablePathError = getMinimumAllowableErrors( ...
-        inputs.controllerModelLoad, inputs.inverseDynamicMomentLabels);
-    inputs.minPath = cat(2, inputs.minPath, ...
-        nonzeros(minAllowablePathError)');
 end
 end
