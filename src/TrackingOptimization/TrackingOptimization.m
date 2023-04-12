@@ -31,7 +31,9 @@ inverseDynamics(inputs.mexModel);
 inputs = getStateDerivatives(inputs);
 inputs = setupGroundContact(inputs);
 inputs = getSplines(inputs);
-inputs = checkInitialGuess(inputs);
+inputs = checkStateGuess(inputs);
+inputs = checkControlGuess(inputs);
+inputs = checkParameterGuess(inputs);
 inputs = getIntegralBounds(inputs);
 inputs = getPathConstraintBounds(inputs);
 inputs = getTerminalConstraintBounds(inputs); 
@@ -70,7 +72,7 @@ for i = 1:length(inputs.contactSurfaces)
         inputs.contactSurfaces{i}.experimentalGroundReactionMoments', 0.0000001);
 end
 end
-function inputs = checkInitialGuess(inputs)
+function inputs = checkStateGuess(inputs)
 if isfield(inputs.initialGuess, 'state')
     for i = 1 : inputs.numCoordinates
         for j = 1 : length(inputs.initialGuess.stateLabels)
@@ -82,6 +84,8 @@ if isfield(inputs.initialGuess, 'state')
     inputs.initialGuess.state = inputs.initialGuess.state(:, [stateIndex ...
     stateIndex + inputs.numCoordinates stateIndex + inputs.numCoordinates * 2]);
 end
+end
+function inputs = checkControlGuess(inputs)
 if isfield(inputs.initialGuess, 'control')
     for i = 1 : inputs.numCoordinates
         for k = 1 : length(inputs.initialGuess.controlLabels)
@@ -93,6 +97,8 @@ if isfield(inputs.initialGuess, 'control')
     inputs.initialGuess.control(:, 1:inputs.numCoordinates) = ...
         inputs.initialGuess.control(:, controlIndex);
 end
+end
+function inputs = checkParameterGuess(inputs)
 if isfield(inputs.initialGuess, 'parameter')
     parameterIndex = zeros(length(inputs.synergyGroups), inputs.numMuscles);
     for i = 1 : length(inputs.synergyGroups)
@@ -121,6 +127,22 @@ if isfield(inputs.initialGuess, 'parameter')
 end
 if strcmp(inputs.controllerType, 'synergy_driven') 
     inputs = getMuscleSynergiesInitialGuess(inputs);
+    for i = 1 : length(inputs.coordinateNames)
+        for j = 1 : length(inputs.surrogateModelCoordinateNames)
+            if contains(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
+                inputs.surrogateModelIndex(j) = i;
+            end
+        end 
+    end
+    inputs.dofsActuatedIndex = [];
+    for i = 1 : length(inputs.inverseDynamicMomentLabels)
+        for j = 1 : length(inputs.surrogateModelCoordinateNames)
+            if contains(inputs.inverseDynamicMomentLabels(i), ...
+                    strcat(inputs.surrogateModelCoordinateNames(j), '_moment'))
+                inputs.dofsActuatedIndex(end+1) = j;
+            end
+        end 
+    end
 end
 end
 function inputs = getMuscleSynergiesInitialGuess(inputs)

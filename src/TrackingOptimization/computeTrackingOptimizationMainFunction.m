@@ -65,9 +65,11 @@ bounds.phase.integral.upper = ones(1, length(inputs.minIntegral));
 bounds.eventgroup.lower = inputs.minTerminal;
 bounds.eventgroup.upper = inputs.maxTerminal;
 % setup parameter bounds
+if strcmp(inputs.controllerType, 'synergy_driven') 
 if inputs.optimizeSynergyVectors
     bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
     bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
+end
 end
 end
 function guess = setupInitialGuess(inputs)
@@ -102,9 +104,14 @@ if isfield(inputs.initialGuess, 'control')
     guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
         inputs.maxControl, inputs.minControl);
 else
+    for i = 1:length(inputs.controlTorqueNames)
+        indx = find(strcmp(convertCharsToStrings( ...
+            inputs.inverseDynamicMomentLabels), ...
+            strcat(inputs.controlTorqueNames(i), '_moment')));
+        controlTorquesGuess(:, i) = inputs.experimentalJointMoments(:, indx);
+    end
     guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
-        inputs.experimentalJointMoments(:, inputs.torqueActuatedMomentsIndex)], ...
-        inputs.maxControl, inputs.minControl);
+        controlTorquesGuess], inputs.maxControl, inputs.minControl);
 end
 end
 guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
