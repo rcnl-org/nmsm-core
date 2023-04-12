@@ -3,7 +3,7 @@
 % This function prints out the optimized muscle tendon parameters in an
 % osimx file
 %
-% (string, 2D matrix, string) -> (None) 
+% (string, 2D matrix, string) -> (None)
 % Prints MuscleTendonPersonalization results in osimx file
 
 % ----------------------------------------------------------------------- %
@@ -29,37 +29,27 @@
 % ----------------------------------------------------------------------- %
 
 function writeMuscleTendonPersonalizationOsimxFile(modelFileName, ...
-    optimizedParams, muscleNames, muscleModelFileName)
+    osimxFileName, optimizedParams, muscleNames, results_directory)
 model = Model(modelFileName);
 
-osimx = buildMtpOsimxTemplate(...
-    replace(model.getName().toCharArray',".","_dot_"), ...
-    modelFileName);
+if isfile(osimxFileName)
+    osimx = parseOsimxFile(osimxFileName);
+    [~, name, ~] = fileparts(osimxFileName);
+    outfile = fullfile(results_directory, strcat(name, "_mtp.xml"));
+else
+    osimx = buildMtpOsimxTemplate(...
+        replace(model.getName().toCharArray',".","_dot_"), ...
+        modelFileName);
+    [~, name, ~] = fileparts(modelFileName);
+    outfile = fullfile(results_directory, strcat(name, "_mtp.xml"));
+end
 
 for i = 1:length(muscleNames)
     muscleParams = makeMuscleParams(model, muscleNames(i), optimizedParams, i);
-    osimx = addRcnlMuscle(osimx, muscleNames(i), muscleParams);
+    osimx.muscles.(muscleNames(i)) = muscleParams;
 end
 
-% MTP.OpenSimDocument.Attributes.Version = '40000';
-% MTP.OpenSimDocument.OsimxModel.Attributes.name = replace( ...
-%     model.getName.toCharArray',".","_dot_");
-% MTP.OpenSimDocument.OsimxModel.associated_osim_model.Comment = ...
-%     ['Full path of the associated osim model'];
-% MTP.OpenSimDocument.OsimxModel.associated_osim_model.Text = ...
-%     convertStringsToChars(modelFileName);
-% MTP.OpenSimDocument.OsimxModel.MTPMuscleSet.Comment = [ ...
-%     'Optimized muscle parameters'];
-% for i = 1:size(muscleNames, 2)
-
-% end
-% MTP.OpenSimDocument.OsimxModel.MTPMuscleSet.groups = '';
-
-muscleModelFileName = strrep(muscleModelFileName, 'osimx', 'xml');
-struct2xml(osimx, muscleModelFileName)
-copyfile(muscleModelFileName, fullfile(strrep(muscleModelFileName, ...
-    'xml','osimx')))
-delete(muscleModelFileName) 
+writeOsimxFile(buildOsimxFromOsimxStruct(osimx), outfile)
 end
 
 function params = makeMuscleParams(model, muscleName, optimizedParams, index)

@@ -25,12 +25,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcPassiveForceCost(modeledValues, params)
-costWeight = valueOrAlternate(params, "passiveForceCostWeight", 1);
-errorCenter = valueOrAlternate(params, "passiveForceErrorCenter", 0);
-maximumAllowableError = valueOrAlternate(params, ...
-    "passiveForceMaximumAllowableError", 50);
-
-cost = costWeight * calcDeviationCostTerm(modeledValues.passiveForce, ...
+function cost = calcPassiveForceCost(modeledValues, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 50);
+cost = calcDeviationCostTerm(modeledValues.passiveForce, ...
     errorCenter, maximumAllowableError);
 end
