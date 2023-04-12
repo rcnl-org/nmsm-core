@@ -29,8 +29,7 @@ function [inputs, params, resultsDirectory] = ...
     parseTrackingOptimizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
-inputs = getModelOrOsimxInputs(inputs);
-inputs = disableModelMuscles(inputs);
+inputs = modifyModelForces(inputs);
 resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'results_directory'));
 if(isempty(resultsDirectory))
@@ -78,6 +77,11 @@ surrogateModelCoefficients = load(getTextFromField(getFieldByName(tree, ...
 inputs.coefficients = surrogateModelCoefficients.coefficients;
 inputs.optimizeSynergyVectors = getBooleanLogicFromField( ...
     getFieldByName(tree, 'optimize_synergy_vectors'));
+inputs = getModelOrOsimxInputs(inputs);
+elseif strcmp(inputs.controllerType, 'torque_driven')
+inputs.controlTorqueNames = parseSpaceSeparatedList(tree, ...
+    "coordinate_list");
+inputs.numTorqueControls = length(inputs.controlTorqueNames);
 end
 inputs = parseTrackingOptimizationDataDirectory(tree, inputs);
 inputs.contactSurfaces = parseGCPContactSurfaces(inputs, tree);

@@ -25,11 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [model, inputs] = disableModelMuscles(inputs, model)
-import org.opensim.modeling.Model
-inputs.numTotalMuscles = model.getForceSet().getMuscles().getSize();
-for i = 0:model.getForceSet().getMuscles().getSize()-1
-    if model.getForceSet().getMuscles().get(i).get_appliesForce()
-        model.getForceSet().getMuscles().get(i).set_appliesForce(0);
-    end
+function inputs = modifyModelForces(inputs)
+if ~isa(inputs.model, 'org.opensim.modeling.Model')
+    model = Model(inputs.model);
+end
+[model, inputs] = disableModelMuscles(inputs, model);
+model = addContactSurfaceActuators(inputs, model);
+inputs.mexModel = strcat(strrep(inputs.model,'.osim',''), '_inactiveMuscles.osim');
+model.print(inputs.mexModel);
 end
