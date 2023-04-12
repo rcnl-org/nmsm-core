@@ -41,7 +41,6 @@ appliedLoads = [zeros(length(values.time), params.numTotalMuscles) groundReactio
 phaseout.inverseDynamicMoments = inverseDynamics(values.time, ...
     values.statePositions, values.stateVelocities, ...
     values.stateAccelerations, params.coordinateNames, appliedLoads);
-phaseout = parseInverseDynamicMoments(phaseout, params);
 end
 function [springPositions, springVelocities] = getSpringLocations(time, ....
     statePositions, stateVelocities, params)
@@ -99,17 +98,5 @@ for i = 1:length(groundReactions.calcaneusForces)
         groundReactions.calcaneusForces{i} + groundReactions.toeForces{i};
     groundReactionsInLab.moments{i} = ...
         groundReactions.calcaneusMoments{i} + groundReactions.toeMoments{i};
-end
-end
-function phaseout = parseInverseDynamicMoments(phaseout, params)
-
-phaseout.rootSegmentResiduals = ...
-    phaseout.inverseDynamicMoments(:, params.rootSegmentResidualsIndex);
-if strcmp(params.controllerType, 'synergy_driven') 
-phaseout.muscleActuatedMoments = ...
-    phaseout.inverseDynamicMoments(:, params.muscleActuatedMomentsIndex);
-elseif strcmp(params.controllerType, 'torque_driven') 
-phaseout.torqueActuatedMoments = ...
-    phaseout.inverseDynamicMoments(:, params.torqueActuatedMomentsIndex);
 end
 end
