@@ -25,25 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function path = calcTrackingOptimizationPathConstraint(values, phaseout, ...
-    params)
-path = [];
-for i = 1:length(params.path)
-    constraintTerm = params.path{i};
-    if constraintTerm.isEnabled
-        switch constraintTerm.type
-            case "root_segment_residual_load"
-                path = cat(2, path, ...
-                    calcRootSegmentResidualsPathConstraints(...
-                    constraintTerm.load, ...
-                    params.inverseDynamicMomentLabels, ...
-                    phaseout.inverseDynamicMoments));
-            case "muscle_model_moment_consistency"
-                path = cat(2, path, ...
-                    calcMuscleActuatedMomentsPathConstraints(params, ...
-                    phaseout, constraintTerm.load));
-        end
-    end
-end
-path = scaleToBounds(path, params.maxPath, params.minPath);
+function pathTerm = calcRootSegmentResidualsPathConstraints(loadName, ...
+    inverseDynamicMomentLabels, inverseDynamicMoments)
+
+indx = find(strcmp(convertCharsToStrings(inverseDynamicMomentLabels), ...
+    loadName));
+pathTerm = inverseDynamicMoments(:, indx);
 end
