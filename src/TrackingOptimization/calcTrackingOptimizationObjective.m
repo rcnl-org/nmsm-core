@@ -25,21 +25,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function objective = calcTrackingOptimizationObjective( ...
-    integralTerms, params)
+function objective = calcTrackingOptimizationObjective(integral)
 
-objective = calcTrackingCoordinateObjective(...
-    integralTerms.trackingCoordinates, params);
-objective = objective + calcTrackingInverseDynamicLoadsObjective(...
-    integralTerms.trackingInverseDynamicLoads, params);
-objective = objective + calcTrackingExternalForcesObjective(...
-    integralTerms.trackingExternalForces, params);
-objective = objective + calcTrackingExternalMomentsObjective(...
-    integralTerms.trackingExternalMoments, params);
-if strcmp(params.controllerType, 'synergy_driven')
-objective = objective + calcTrackingMuscleActivationObjective(...
-    integralTerms.trackingMuscleActivations, params);
-end
-objective = objective + calcMinimizingJointJerkObjective(...
-    integralTerms.minimizingJointJerk, params);
+objective = sum(integral) / length(integral);
 end

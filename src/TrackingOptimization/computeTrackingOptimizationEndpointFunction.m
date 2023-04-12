@@ -29,7 +29,5 @@ function output = computeTrackingOptimizationEndpointFunction(inputs)
 
 output.eventgroup.event = calcTrackingOptimizationTerminalConstraint( ...
     inputs, inputs.auxdata);
-integralTerms = parseIntegral(inputs.phase.integral, inputs.auxdata);
-output.objective = calcTrackingOptimizationObjective(integralTerms, ...
-    inputs.auxdata);
+output.objective = calcTrackingOptimizationObjective(inputs.phase.integral);
 end
