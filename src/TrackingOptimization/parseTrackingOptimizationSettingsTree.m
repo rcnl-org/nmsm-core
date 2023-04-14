@@ -35,14 +35,6 @@ resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
-
-%% missing GCP inputs
-inputData = load([cd '\inputData.mat']);
-inputs.temp.restingSpringLength = 0.0023;
-inputs.temp.springDamping = inputData.params.springDamping(1);
-inputs.temp.dynamicFriction = inputData.params.dynamicFriction;
-inputs.temp.viscousFriction = inputData.params.viscousFriction;
-inputs.temp.latchingVelocity = inputData.params.latchingVelocity; 
 end
 
 function inputs = getInputs(tree)

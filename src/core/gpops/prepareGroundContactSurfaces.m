@@ -30,38 +30,44 @@ import org.opensim.modeling.Model
 osimModel = Model(osimModel);
 osimModel.finalizeConnections();
 
-
 for i=1:length(contactSurfaces)
-    output{i} = contactSurfaces{i};
-
-    parentCounter = 1;
-    childCounter = 1;
-    [parentBody, childBody] = getJointBodyNames(osimModel, contactSurfaces{i}.toesJointName);
-    for j = 1:length(contactSurfaces{i}.springs)
-        if strcmp(contactSurfaces{i}.springs{j}.parentBody, parentBody)
-            output{i}.heelSpringPointsOnBody(parentCounter, :) = contactSurfaces{i}.springs{j}.location;
-            output{i}.heelSpringConstants(parentCounter) = contactSurfaces{i}.springs{j}.springConstant;
-            parentCounter = parentCounter + 1;
-        elseif strcmp(contactSurfaces{i}.springs{j}.parentBody, childBody)
-            output{i}.toeSpringPointsOnBody(childCounter, :) = contactSurfaces{i}.springs{j}.location;
-            output{i}.toeSpringConstants(childCounter) = contactSurfaces{i}.springs{j}.springConstant;
-            childCounter = childCounter + 1;
-        end
-    end
-
-    output{i}.midfootSuperiorPointOnBody(1) = ...
-        osimModel.getMarkerSet.get(output{i}.midfootSuperiorMarker).get_location().get(0);
-    output{i}.midfootSuperiorPointOnBody(2) = ...
-        osimModel.getMarkerSet.get(output{i}.midfootSuperiorMarker).get_location().get(1);
-    output{i}.midfootSuperiorPointOnBody(3) = ...
-        osimModel.getMarkerSet.get(output{i}.midfootSuperiorMarker).get_location().get(2);
+    output{i} = getParentChildSprings(osimModel, contactSurfaces{i});
+    output{i}.midfootSuperiorPointOnBody(1) = osimModel.getMarkerSet. ...
+        get(output{i}.midfootSuperiorMarker).get_location().get(0);
+    output{i}.midfootSuperiorPointOnBody(2) = osimModel.getMarkerSet. ...
+        get(output{i}.midfootSuperiorMarker).get_location().get(1);
+    output{i}.midfootSuperiorPointOnBody(3) = osimModel.getMarkerSet. ...
+        get(output{i}.midfootSuperiorMarker).get_location().get(2);
     output{i}.midfootSuperiorBody = osimModel.getBodySet.getIndex( ...
-        osimModel.getMarkerSet.get(output{i}.midfootSuperiorMarker).getParentFrame().getName());
-    output{i}.toeBody = osimModel.getBodySet.getIndex(childBody);
-    output{i}.calcaneusBodyName = parentBody;
-    output{i}.toeBodyName = childBody;
-    output{i}.calcaneusBody = osimModel.getBodySet.getIndex(parentBody);
-    output{i} = parseGroundReactionDataWithoutTime(osimModel, grfFileName, output{i});
+        osimModel.getMarkerSet.get(output{i}.midfootSuperiorMarker). ...
+        getParentFrame().getName());
+    output{i}.toeBody = osimModel.getBodySet.getIndex(output{i}.toeBodyName);
+    output{i}.calcaneusBody = osimModel.getBodySet. ...
+        getIndex(output{i}.calcaneusBodyName);
+    output{i} = parseGroundReactionDataWithoutTime(osimModel, ...
+        grfFileName, output{i});
+end
+end
+function output = getParentChildSprings(osimModel, contactSurfaces)
+output = contactSurfaces;
+output.heelSpringPointsOnBody = [];
+output.heelSpringConstants = [];
+output.toeSpringPointsOnBody = [];
+output.toeSpringConstants = [];
+[output.calcaneusBodyName, output.toeBodyName] = ...
+    getJointBodyNames(osimModel, contactSurfaces.toesJointName);
+for j = 1:length(contactSurfaces.springs)
+    if strcmp(contactSurfaces.springs{j}.parentBody, output.calcaneusBodyName)
+        output.heelSpringPointsOnBody(end+1, :) = ...
+            contactSurfaces.springs{j}.location;
+        output.heelSpringConstants(end+1) = ...
+            contactSurfaces.springs{j}.springConstant;
+    elseif strcmp(contactSurfaces.springs{j}.parentBody, output.toeBodyName)
+        output.toeSpringPointsOnBody(end+1, :) = ...
+            contactSurfaces.springs{j}.location;
+        output.toeSpringConstants(end+1) = ...
+            contactSurfaces.springs{j}.springConstant;
+    end
 end
 end
 function output = parseGroundReactionDataWithoutTime(model, grfFile, output)
