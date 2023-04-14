@@ -38,28 +38,20 @@ end
 
 %% missing GCP inputs
 inputData = load([cd '\inputData.mat']);
-inputs.restingSpringLength = 0.0023; % 0.0144;
-inputs.springDamping = inputData.params.springDamping(1);
-inputs.dynamicFriction = inputData.params.dynamicFriction;
-inputs.viscousFriction = inputData.params.viscousFriction;
-inputs.latchingVelocity = inputData.params.latchingVelocity; 
-inputs.contactSurfaces{1}.heelSpringConstants = inputData.params.springStiffnessRightHeel;
-inputs.contactSurfaces{1}.toeSpringConstants = inputData.params.springStiffnessRightToe;
-inputs.contactSurfaces{2}.heelSpringConstants = inputData.params.springStiffnessLeftHeel;
-inputs.contactSurfaces{2}.toeSpringConstants = inputData.params.springStiffnessLeftToe;
-inputs.contactSurfaces{1}.heelSpringPointsOnBody = inputData.params.rightHeelSpringPositionOnBody;
-inputs.contactSurfaces{1}.toeSpringPointsOnBody = inputData.params.rightToeSpringPositionOnBody;
-inputs.contactSurfaces{2}.heelSpringPointsOnBody = inputData.params.leftHeelSpringPositionOnBody;
-inputs.contactSurfaces{2}.toeSpringPointsOnBody = inputData.params.leftToeSpringPositionOnBody;
+inputs.temp.restingSpringLength = 0.0023;
+inputs.temp.springDamping = inputData.params.springDamping(1);
+inputs.temp.dynamicFriction = inputData.params.dynamicFriction;
+inputs.temp.viscousFriction = inputData.params.viscousFriction;
+inputs.temp.latchingVelocity = inputData.params.latchingVelocity; 
 end
 
 function inputs = getInputs(tree)
 inputs.controllerType = getTextFromField(getFieldByNameOrError(tree, ...
     'type_of_controller'));
 inputs.model = parseModel(tree);
+inputs.osimx = parseOsimxFile(getTextFromField(getFieldByName(tree, ...
+    'osimx_file')));
 if strcmp(inputs.controllerType, 'synergy_driven')
-osimxFile = getTextFromField(getFieldByName(tree, 'osimx_file'));
-inputs.ncpDataInputs = parseNCPOsimxFile(osimxFile);
 inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
 inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
 inputs.numSynergyWeights = getNumSynergyWeights(inputs.synergyGroups);
@@ -84,13 +76,13 @@ inputs.controlTorqueNames = parseSpaceSeparatedList(tree, ...
 inputs.numTorqueControls = length(inputs.controlTorqueNames);
 end
 inputs = parseTrackingOptimizationDataDirectory(tree, inputs);
-inputs.contactSurfaces = parseGCPContactSurfaces(inputs, tree);
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs = getDesignVariableBounds(tree, inputs);
 inputs = getIntegralCostTerms(tree, inputs);
 inputs = getPathConstraintTerms(tree, inputs);
 inputs = getTerminalConstraintTerms(tree, inputs);
-inputs.beltSpeed = getDoubleFromField(getFieldByName(tree, 'belt_speed'));
+inputs.contactSurfaces = prepareGroundContactSurfaces(inputs.model, ...
+    inputs.osimx.groundContact.contactSurface, inputs.grfFileName);
 end
 
 function inputs = parseTrackingOptimizationDataDirectory(tree, inputs)

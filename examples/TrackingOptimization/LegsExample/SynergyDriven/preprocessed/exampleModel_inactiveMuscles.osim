@@ -15077,7 +15077,7 @@
 						<!--All properties of this object have their default values.-->
 					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
-				<PointActuator name="calcn_r_Fx">
+				<PointActuator name="pointactuator">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15095,7 +15095,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="calcn_r_Fy">
+				<PointActuator name="pointactuator_0">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15113,7 +15113,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="calcn_r_Fz">
+				<PointActuator name="pointactuator_1">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15131,7 +15131,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="toes_r_Fx">
+				<PointActuator name="pointactuator_2">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15149,7 +15149,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="toes_r_Fy">
+				<PointActuator name="pointactuator_3">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15167,7 +15167,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="toes_r_Fz">
+				<PointActuator name="pointactuator_4">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15185,7 +15185,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<TorqueActuator name="calcn_r_Mx">
+				<TorqueActuator name="torqueactuator">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15201,7 +15201,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="calcn_r_My">
+				<TorqueActuator name="torqueactuator_0">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15217,7 +15217,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="calcn_r_Mz">
+				<TorqueActuator name="torqueactuator_1">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15233,7 +15233,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="toes_r_Mx">
+				<TorqueActuator name="torqueactuator_2">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15249,7 +15249,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="toes_r_My">
+				<TorqueActuator name="torqueactuator_3">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15265,7 +15265,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="toes_r_Mz">
+				<TorqueActuator name="torqueactuator_4">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15281,7 +15281,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<PointActuator name="calcn_l_Fx">
+				<PointActuator name="pointactuator_5">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15299,7 +15299,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="calcn_l_Fy">
+				<PointActuator name="pointactuator_6">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15317,7 +15317,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="calcn_l_Fz">
+				<PointActuator name="pointactuator_7">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15335,7 +15335,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="toes_l_Fx">
+				<PointActuator name="pointactuator_8">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15353,7 +15353,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="toes_l_Fy">
+				<PointActuator name="pointactuator_9">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15371,7 +15371,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<PointActuator name="toes_l_Fz">
+				<PointActuator name="pointactuator_10">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15389,7 +15389,7 @@
 					<!--The maximum force produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</PointActuator>
-				<TorqueActuator name="calcn_l_Mx">
+				<TorqueActuator name="torqueactuator_5">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15405,7 +15405,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="calcn_l_My">
+				<TorqueActuator name="torqueactuator_6">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15421,7 +15421,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="calcn_l_Mz">
+				<TorqueActuator name="torqueactuator_7">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15437,7 +15437,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="toes_l_Mx">
+				<TorqueActuator name="torqueactuator_8">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15453,7 +15453,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="toes_l_My">
+				<TorqueActuator name="torqueactuator_9">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->
@@ -15469,7 +15469,7 @@
 					<!--The maximum torque produced by this actuator when fully activated.-->
 					<optimal_force>1</optimal_force>
 				</TorqueActuator>
-				<TorqueActuator name="toes_l_Mz">
+				<TorqueActuator name="torqueactuator_10">
 					<!--Minimum allowed value for control signal. Used primarily when solving for control values.-->
 					<min_control>-Inf</min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving for control values.-->

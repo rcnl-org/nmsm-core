@@ -25,64 +25,58 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = parseGCPContactSurfaces(inputs, tree)
+function output = prepareGroundContactSurfaces(osimModel, contactSurfaces, grfFileName)
 import org.opensim.modeling.Model
-model = Model(inputs.model);
-model.finalizeConnections();
+osimModel = Model(osimModel);
+osimModel.finalizeConnections();
 
-contactSurfaces = getFieldByNameOrError(tree, 'ContactSurfaceSet') ...
-    .objects.ContactSurface;
+
 for i=1:length(contactSurfaces)
-    surface = contactSurfaces{i};
-    output{i} = parseFootData(surface);
-    output{i} = parseGroundReactionData(inputs.model, ...
-        inputs.grfFileName, output{i});
-    tempFields = {'electricalCenterColumns'};
-    output{i} = rmfield(output{i}, tempFields);
+    output{i} = contactSurfaces{i};
+
+    parentCounter = 1;
+    childCounter = 1;
+    [parentBody, childBody] = getJointBodyNames(osimModel, contactSurfaces{i}.toesJointName);
+    for j = 1:length(contactSurfaces{i}.springs)
+        if strcmp(contactSurfaces{i}.springs{j}.parentBody, parentBody)
+            output{i}.heelSpringPointsOnBody(parentCounter, :) = contactSurfaces{i}.springs{j}.location;
+            output{i}.heelSpringConstants(parentCounter) = contactSurfaces{i}.springs{j}.springConstant;
+            parentCounter = parentCounter + 1;
+        elseif strcmp(contactSurfaces{i}.springs{j}.parentBody, childBody)
+            output{i}.toeSpringPointsOnBody(childCounter, :) = contactSurfaces{i}.springs{j}.location;
+            output{i}.toeSpringConstants(childCounter) = contactSurfaces{i}.springs{j}.springConstant;
+            childCounter = childCounter + 1;
+        end
+    end
+
     output{i}.midfootSuperiorPointOnBody(1) = ...
-        model.getMarkerSet.get(output{i}.midfootSuperior).get_location().get(0);
+        osimModel.getMarkerSet.get(output{i}.midfootSuperiorMarker).get_location().get(0);
     output{i}.midfootSuperiorPointOnBody(2) = ...
-        model.getMarkerSet.get(output{i}.midfootSuperior).get_location().get(1);
+        osimModel.getMarkerSet.get(output{i}.midfootSuperiorMarker).get_location().get(1);
     output{i}.midfootSuperiorPointOnBody(3) = ...
-        model.getMarkerSet.get(output{i}.midfootSuperior).get_location().get(2);
-    output{i}.midfootSuperiorBody = model.getBodySet.getIndex( ...
-        model.getMarkerSet.get(output{i}.midfootSuperior).getParentFrame().getName());
-    output{i}.toeBody = model.getBodySet.getIndex(output{i}.toeBodyName);
-    output{i}.calcaneusBody = model.getBodySet.getIndex(output{i}.calcaneusBodyName);
+        osimModel.getMarkerSet.get(output{i}.midfootSuperiorMarker).get_location().get(2);
+    output{i}.midfootSuperiorBody = osimModel.getBodySet.getIndex( ...
+        osimModel.getMarkerSet.get(output{i}.midfootSuperiorMarker).getParentFrame().getName());
+    output{i}.toeBody = osimModel.getBodySet.getIndex(childBody);
+    output{i}.calcaneusBodyName = parentBody;
+    output{i}.toeBodyName = childBody;
+    output{i}.calcaneusBody = osimModel.getBodySet.getIndex(parentBody);
+    output{i} = parseGroundReactionDataWithoutTime(osimModel, grfFileName, output{i});
 end
 end
-
-function output = parseFootData(tree)
-    output.isLeftFoot = strcmpi('true', ...
-        getFieldByNameOrError(tree, 'is_left_foot').Text);
-    output.toeBodyName = getFieldByNameOrError(tree, ...
-        'toe_body').Text;
-    output.calcaneusBodyName = getFieldByNameOrError(tree, ...
-        'calcaneus_body').Text;
-    output.midfootSuperior = getFieldByNameOrError(tree, ...
-        'midfoot_superior_marker').Text;
-    output.forceColumns = split(getFieldByNameOrError(tree, ...
-        'force_columns').Text);
-    output.momentColumns = split(getFieldByNameOrError(tree, ...
-        'moment_columns').Text);
-    output.electricalCenterColumns = split(getFieldByNameOrError(tree, ...
-        'electrical_center_columns').Text);
-end
-
-function output = parseGroundReactionData(bodyModel, grfFile, output)
+function output = parseGroundReactionDataWithoutTime(model, grfFile, output)
 import org.opensim.modeling.Storage
-[grfColumnNames, ~, grfData] = parseMotToComponents(...
-    Model(bodyModel), Storage(grfFile));
+[grfColumnNames, ~, grfData] = parseMotToComponents(model, Storage(grfFile));
 for i=1:size(grfColumnNames')
     label = grfColumnNames(i);
     for j = 1:3
-        if strcmpi(label, output.forceColumns(j, :))
+        if strcmpi(label, output.forceColumns(j))
             grf(j, :) = grfData(i, :);
         end
-        if strcmpi(label, output.momentColumns(j, :))
+        if strcmpi(label, output.momentColumns(j))
             moments(j, :) = grfData(i, :);
         end
-        if strcmpi(label, output.electricalCenterColumns(j, :))
+        if strcmpi(label, output.electricalCenterColumns(j))
             ec(j, :) = grfData(i, :);
         end
     end
