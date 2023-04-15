@@ -27,15 +27,15 @@
 
 function inputs = getIntegralBounds(inputs)
 inputs.maxIntegral = [];
-for i = 1:length(inputs.tracking)
-    costTerm = inputs.tracking{i};
+for i = 1:length(inputs.integral.tracking)
+    costTerm = inputs.integral.tracking{i};
     if costTerm.isEnabled
         inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
             costTerm.maxAllowableError);
     end
 end
-for i = 1:length(inputs.minimizing)
-    costTerm = inputs.minimizing{i};
+for i = 1:length(inputs.integral.minimizing)
+    costTerm = inputs.integral.minimizing{i};
     if costTerm.isEnabled
         inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
             costTerm.maxAllowableError);

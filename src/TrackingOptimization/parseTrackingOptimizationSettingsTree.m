@@ -70,7 +70,8 @@ end
 inputs = parseTrackingOptimizationDataDirectory(tree, inputs);
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs = getDesignVariableBounds(tree, inputs);
-inputs = getIntegralCostTerms(tree, inputs);
+inputs = getContinuousCostTerms(getFieldByNameOrError(tree, ...
+    'RCNLContinuousCostTermSet'), inputs);
 inputs = getPathConstraintTerms(tree, inputs);
 inputs = getTerminalConstraintTerms(tree, inputs);
 inputs.contactSurfaces = prepareGroundContactSurfaces(inputs.model, ...
@@ -158,25 +159,29 @@ end
 end
 end
 
-function inputs = getIntegralCostTerms(tree, inputs)
+function inputs = getContinuousCostTerms(tree, inputs)
 trackingIntegralTermsTree = getFieldByNameOrError(tree, ...
     'RCNLTrackingCostTerms');
+if isfield(trackingIntegralTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
 rcnlCostTermTree = ...
     trackingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
 if length(rcnlCostTermTree) > 1
-    inputs.tracking = parseRcnlCostTermSet(rcnlCostTermTree);
+    inputs.integral.tracking = parseRcnlCostTermSet(rcnlCostTermTree);
 else
-    inputs.tracking = parseRcnlCostTermSet({rcnlCostTermTree});
+    inputs.integral.tracking = parseRcnlCostTermSet({rcnlCostTermTree});
+end
 end
 
 minimizingIntegralTermsTree = getFieldByNameOrError(tree, ...
     'RCNLMinimizationCostTerms');
+if isfield(minimizingIntegralTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
 rcnlCostTermTree = ...
     minimizingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
 if length(rcnlCostTermTree) > 1
-    inputs.minimizing = parseRcnlCostTermSet(rcnlCostTermTree);
+    inputs.integral.minimizing = parseRcnlCostTermSet(rcnlCostTermTree);
 else
-    inputs.minimizing = parseRcnlCostTermSet({rcnlCostTermTree});
+    inputs.integral.minimizing = parseRcnlCostTermSet({rcnlCostTermTree});
+end
 end
 end
 

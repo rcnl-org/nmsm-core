@@ -26,6 +26,6 @@
 % ----------------------------------------------------------------------- %
 
 function objective = calcTrackingOptimizationObjective(integral)
-
-objective = sum(integral) / length(integral);
+continuousObjective = sum(integral) / length(integral);
+objective = continuousObjective;
 end

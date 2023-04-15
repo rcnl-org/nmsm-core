@@ -28,8 +28,8 @@
 function integrand = calcTrackingOptimizationIntegrand(values, params, ...
     phaseout)
 integrand = [];
-for i = 1:length(params.tracking)
-    costTerm = params.tracking{i};
+for i = 1:length(params.integral.tracking)
+    costTerm = params.integral.tracking{i};
     if costTerm.isEnabled
         switch costTerm.type
             case "coordinate"
@@ -60,8 +60,8 @@ for i = 1:length(params.tracking)
         end
     end
 end
-for i = 1:length(params.minimizing)
-    costTerm = params.minimizing{i};
+for i = 1:length(params.integral.minimizing)
+    costTerm = params.integral.minimizing{i};
     if costTerm.isEnabled
         switch costTerm.type
             case "joint_jerk"
