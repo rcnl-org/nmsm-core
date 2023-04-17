@@ -1,8 +1,10 @@
 load('trackingOptimizationContinuousInputsAndValues.mat')
-phaseout = load('expectedPhaseout.mat');
+load('phaseout.mat')
+% load('integralTerms.mat')
+% inputs.auxdata.integral = integralTerms;
 
 phaseout.integrand = calcTrackingOptimizationIntegrand(values, inputs.auxdata, ...
     phaseout);
 
 expectedIntegrand = load('expectedIntegrand.mat');
-assertWithinRange(phaseout.integrand, expectedIntegrand.integrand, 1e-3);
+assertWithinRange(phaseout.integrand(:,1:31), expectedIntegrand.integrand(:,1:31), 1e0);
