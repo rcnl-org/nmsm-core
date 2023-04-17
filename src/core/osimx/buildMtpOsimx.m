@@ -30,7 +30,6 @@
 % ----------------------------------------------------------------------- %
 
 function osimx = buildMtpOsimx(osimx, muscles)
-
 osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.Comment = ...
     'Optimized muscle parameters';
 osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.objects = '';

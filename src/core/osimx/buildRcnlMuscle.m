@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -65,6 +65,10 @@ muscles{i}.optimal_fiber_length.Text = convertStringsToChars( ...
 muscles{i}.tendon_slack_length.Comment = 'Optimized tendon slack length';
 muscles{i}.tendon_slack_length.Text = convertStringsToChars( ...
     num2str(muscleParameters.tendonSlackLength, 15));
+
+muscles{i}.max_isometric_force.Comment = 'Optimized max isometric force';
+muscles{i}.max_isometric_force.Text = convertStringsToChars( ...
+    num2str(muscleParameters.maxIsometricForce, 15));
 
 osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.objects.RCNLMuscle = muscles;
 end
