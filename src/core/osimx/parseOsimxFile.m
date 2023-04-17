@@ -96,7 +96,8 @@ contactSurface.viscousFrictionCoefficient = ...
     str2double(getFieldByNameOrError(tree, "viscous_friction_coefficient").Text);
 contactSurface.dampingFactor = ...
     str2double(getFieldByNameOrError(tree, "damping_factor").Text);
-
+contactSurface.latchingVelocity = ...
+    str2double(getFieldByNameOrError(tree, "latching_velocity").Text);
 
 gcpSpringsTree = getFieldByNameOrError(tree, "GCPSpringSet");
 springsTree = getFieldByNameOrError(gcpSpringsTree, "objects").GCPSpring;
