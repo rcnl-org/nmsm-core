@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Marleny Vega                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,6 +30,11 @@
 % ----------------------------------------------------------------------- %
 
 function osimx = buildGcpOsimx(osimx, groundContact)
+osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.Comment = ...
+    'The set of contact surfaces modeled';
+osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.objects = '';
+osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.groups = '';
+
 for i = 1:length(groundContact.contactSurface)
     osimx = buildGcpContactSurface(osimx, groundContact.contactSurface{i});
 end
