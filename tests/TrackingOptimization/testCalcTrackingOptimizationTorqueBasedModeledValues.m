@@ -2,7 +2,7 @@ load('trackingOptimizationContinuousInputsAndValues.mat')
 
 pointKinematics('exampleModel.osim');
 inverseDynamics('exampleModel.osim');
-phaseout = calcTrackingOptimizationTorqueBasedModeledValues(values, inputs.auxdata);
+phaseout = calcTorqueBasedModeledValues(values, inputs.auxdata);
 
 expectedPhaseout = load('expectedPhaseout.mat');
 
