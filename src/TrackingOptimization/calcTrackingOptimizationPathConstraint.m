@@ -45,7 +45,10 @@ for i = 1:length(params.path)
             case "torque_model_moment_consistency"
                 path = cat(2, path, ...
                     calcTorqueActuatedMomentsPathConstraints(params, ...
-                    phaseout, values.controlTorques, constraintTerm.load));    
+                    phaseout, values.controlTorques, constraintTerm.load));   
+            otherwise
+                throw(MException('', ['Constraint term type ' ...
+                    constraintTerm.type ' does not exist for this tool.']))    
         end
     end
 end
