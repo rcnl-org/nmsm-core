@@ -25,7 +25,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function phaseout = calcTrackingOptimizationTorqueBasedModeledValues(values, params)
+function phaseout = calcTorqueBasedModeledValues(values, params)
 
 [springPositions, springVelocities] = getSpringLocations(values.time, ....
     values.statePositions, values.stateVelocities, params);

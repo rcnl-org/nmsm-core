@@ -25,8 +25,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function phaseout = calcTrackingOptimizationSynergyBasedModeledValues(...
-    values, params, phaseout)
+function phaseout = calcSynergyBasedModeledValues(values, params, phaseout)
 if strcmp(params.controllerType, 'synergy_driven') 
 jointAngles = getMuscleActuatedDOFs(values, params);
 [params.muscleTendonLength, params.momentArms] = calcSurrogateModel( ...
