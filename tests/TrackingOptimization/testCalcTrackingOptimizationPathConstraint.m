@@ -1,5 +1,4 @@
 load('trackingOptimizationContinuousInputsAndValues.mat')
-% phaseout = load('phaseout.mat');
 phaseout = load('expectedPhaseout.mat');
 
 phaseout.path = calcTrackingOptimizationPathConstraint(values, phaseout, inputs.auxdata);

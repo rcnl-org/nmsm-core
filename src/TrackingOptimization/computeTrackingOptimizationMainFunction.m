@@ -29,12 +29,12 @@ function output = computeTrackingOptimizationMainFunction(inputs, params)
 bounds = setupProblemBounds(inputs);
 guess = setupInitialGuess(inputs);
 setup = setupSolverSettings(inputs, bounds, guess, params);
-% solution = gpops2(setup);
-% solution = solution.result.solution;
+solution = gpops2(setup);
+solution = solution.result.solution;
 solution.auxdata = inputs;
-% if inputs.optimizeSynergyVectors
-%     solution.phase.parameter = solution.parameter;
-% end
+if inputs.optimizeSynergyVectors
+    solution.phase.parameter = solution.parameter;
+end
 output = computeTrackingOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
