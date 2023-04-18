@@ -27,7 +27,8 @@
 
 function [inputs, params, resultsDirectory] = ...
     parseVerificationOptimizationSettingsTree(settingsTree)
-inputs = getInputs(settingsTree);
+inputs = getTreatmentOptimizationInputs(settingsTree);
+inputs = getDesignVariableBounds(settingsTree, inputs);
 params = getParams(settingsTree);
 inputs = modifyModelForces(inputs);
 resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...

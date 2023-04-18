@@ -66,6 +66,9 @@ for i = 1:length(params.terminal)
                     modeledValues.groundReactionsLab.moments, ...
                     params.contactSurfaces, ...
                     constraintTerm.moment));  
+            otherwise
+                throw(MException('', ['Constraint term type ' ...
+                    constraintTerm.type ' does not exist for this tool.']))    
         end
     end
 end

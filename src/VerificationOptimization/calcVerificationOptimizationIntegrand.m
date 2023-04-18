@@ -37,6 +37,9 @@ for i = 1:length(params.integral.tracking)
                     calcTrackingCoordinateIntegrand(params, ...
                     values.time, values.statePositions, ...
                     costTerm.coordinate));  
+            otherwise
+                throw(MException('', ['Cost term type ' costTerm.type ...
+                    ' does not exist for this tool.']))   
         end
     end
 end
@@ -48,6 +51,9 @@ for i = 1:length(params.integral.minimizing)
                 integrand = cat(2, integrand, ...
                     calcMinimizingJointJerkIntegrand(values.controlJerks, ...
                     params, costTerm.coordinate));
+            otherwise
+                throw(MException('', ['Cost term type ' costTerm.type ...
+                    ' does not exist for this tool.']))   
         end
     end
 end
