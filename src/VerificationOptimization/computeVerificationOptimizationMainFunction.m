@@ -60,13 +60,6 @@ bounds.phase.integral.upper = ones(1, length(inputs.minIntegral));
 % setup terminal constraint bounds
 bounds.eventgroup.lower = inputs.minTerminal;
 bounds.eventgroup.upper = inputs.maxTerminal;
-% setup parameter bounds
-if strcmp(inputs.controllerType, 'synergy_driven') 
-if inputs.optimizeSynergyVectors
-    bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
-    bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
-end
-end
 end
 function guess = setupInitialGuess(inputs)
 
@@ -91,10 +84,6 @@ else
     guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
         inputs.commandsGuess], inputs.maxControl, inputs.minControl);
 end
-if inputs.optimizeSynergyVectors
-        guess.phase.parameter = scaleToBounds(inputs.parameterGuess, ...
-            inputs.maxParameter, inputs.minParameter);
-end
 elseif strcmp(inputs.controllerType, 'torque_driven') 
 if isfield(inputs.initialGuess, 'control')
     guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
@@ -116,9 +105,9 @@ end
 function setup = setupSolverSettings(inputs, bounds, guess, params)
 
 setup.name = params.solverSettings.optimizationFileName;
-setup.functions.continuous = @computeTrackingOptimizationContinuousFunction;
+setup.functions.continuous = @computeVerificationOptimizationContinuousFunction;
 auxdata.ContinuousFunc = setup.functions.continuous;
-setup.functions.endpoint = @computeTrackingOptimizationEndpointFunction;
+setup.functions.endpoint = @computeVerificationOptimizationEndpointFunction;
 setup.auxdata = inputs;
 setup.bounds = bounds;
 setup.guess = guess;
