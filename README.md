@@ -48,7 +48,10 @@ GCP creates a personalized contact array with varying spring constants for calcu
 No installation is required, following the instructions below, download the package, open the `Project.prj` file and you are ready to personalize models.
 
 ## Requirements
-- MATLAB (Tested on 2022a)
+- MATLAB (Tested on 2022b)
+    - Optimization Toolbox
+    - Parallel Computing Toolbox
+    - Statistics and Machine Learning Toolbox
 - OpenSim 4.4 or greater
 - OpenSim MATLAB Bindings
 
