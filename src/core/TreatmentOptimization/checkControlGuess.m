@@ -25,33 +25,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTrackingOptimizationValueStruct(inputs, params)
-
-values.time = scaleToOriginal(inputs.time, params.maxTime, ...
-    params.minTime);
-state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
-    params.maxState, ones(size(inputs.state, 1), 1) .* params.minState);
-control = scaleToOriginal(inputs.control, ones(size(inputs.control, 1), 1) .* ...
-    params.maxControl, ones(size(inputs.control, 1), 1) .* params.minControl);
-values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
-values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
-values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
-values.controlJerks = control(:, 1 : params.numCoordinates);
-if strcmp(params.controllerType, 'synergy_driven') 
-    if params.optimizeSynergyVectors 
-        values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
-            params.maxParameter, params.minParameter);
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            values.synergyWeights, params);
-    else
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            params.parameterGuess, params);
+function inputs = checkControlGuess(inputs)
+if isfield(inputs.initialGuess, 'control')
+    for i = 1 : inputs.numCoordinates
+        for k = 1 : length(inputs.initialGuess.controlLabels)
+            if strcmpi(inputs.coordinateNames(i), inputs.initialGuess.controlLabels(k))
+                controlIndex(i) = k;
+            end
+        end 
     end
-    values.controlNeuralCommands = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numSynergies);
-else
-    values.controlTorques = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numTorqueControls);
+    inputs.initialGuess.control(:, 1:inputs.numCoordinates) = ...
+        inputs.initialGuess.control(:, controlIndex);
 end
-
 end

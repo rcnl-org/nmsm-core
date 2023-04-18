@@ -25,33 +25,37 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTrackingOptimizationValueStruct(inputs, params)
+function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
+dataDirectory = parseDataDirectory(tree);
+prefix = findPrefixes(tree, dataDirectory);
 
-values.time = scaleToOriginal(inputs.time, params.maxTime, ...
-    params.minTime);
-state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
-    params.maxState, ones(size(inputs.state, 1), 1) .* params.minState);
-control = scaleToOriginal(inputs.control, ones(size(inputs.control, 1), 1) .* ...
-    params.maxControl, ones(size(inputs.control, 1), 1) .* params.minControl);
-values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
-values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
-values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
-values.controlJerks = control(:, 1 : params.numCoordinates);
-if strcmp(params.controllerType, 'synergy_driven') 
-    if params.optimizeSynergyVectors 
-        values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
-            params.maxParameter, params.minParameter);
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            values.synergyWeights, params);
-    else
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            params.parameterGuess, params);
-    end
-    values.controlNeuralCommands = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numSynergies);
-else
-    values.controlTorques = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numTorqueControls);
+directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IDData");
+[inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
+    parseTreatmentOptimizationData(directory, prefix);
+inputs.numActuators = size(inputs.experimentalJointMoments, 2);
+
+directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IKData");
+[inputs.experimentalJointAngles, inputs.coordinateNames] = ...
+    parseTreatmentOptimizationData(directory, prefix);
+inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
+
+if strcmp(inputs.controllerType, 'synergy_driven')
+directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
+[inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
+    parseTreatmentOptimizationData(directory, prefix);
+directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
+    dataDirectory, "MAData"), prefix);
+inputs.momentArms = parseSelectMomentArms(directories, ...
+    inputs.surrogateModelCoordinateNames, inputs.muscleNames);
+inputs.momentArms = reshape(permute(inputs.momentArms, [1 4 2 3]), [], ...
+    length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
+inputs = getMuscleSpecificSurrogateModelData(inputs);
 end
 
+experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
+    fullfile(dataDirectory, "IKData"), prefix))';
+inputs.experimentalTime = experimentalTime - experimentalTime(1);
+
+inputs.grfFileName = findFileListFromPrefixList(...
+    fullfile(dataDirectory, "GRFData"), prefix);
 end

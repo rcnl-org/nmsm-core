@@ -1,7 +1,5 @@
 load('trackingOptimizationContinuousInputsAndValues.mat')
 load('phaseout.mat')
-% load('integralTerms.mat')
-% inputs.auxdata.integral = integralTerms;
 
 phaseout.integrand = calcTrackingOptimizationIntegrand(values, inputs.auxdata, ...
     phaseout);
