@@ -25,24 +25,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getVerificationOptimizationValueStruct(inputs, params)
+function cost = calcTrackingControllerIntegrand(params, values, ...
+    phaseout, controllerName)
 
-values.time = scaleToOriginal(inputs.time, params.maxTime, ...
-    params.minTime);
-state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
-    params.maxState, ones(size(inputs.state, 1), 1) .* params.minState);
-control = scaleToOriginal(inputs.control, ones(size(inputs.control, 1), 1) .* ...
-    params.maxControl, ones(size(inputs.control, 1), 1) .* params.minControl);
-values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
-values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
-values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
-values.controlJerks = control(:, 1 : params.numCoordinates);
-if strcmp(params.controllerType, 'synergy_driven') 
-    values.controlNeuralCommands = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numSynergies);
-else
-    values.controlTorques = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numTorqueControls);
-end
-values.synergyWeights = params.synergyWeights;
+switch params.controllerType
+    case 'synergy_driven'
+        indx = find(strcmp(convertCharsToStrings( ...
+            params.synergyLabels), controllerName));
+        neuralCommands = fnval(params.splineNeuralCommands, values.time)';
+        cost = calcTrackingCostArrayTerm(neuralCommands, values.controlNeuralCommands, indx);
+    case 'torque_driven'
+        indx1 = find(strcmp(convertCharsToStrings( ...
+            params.inverseDynamicMomentLabels), controllerName));
+        indx2 = find(strcmp(convertCharsToStrings( ...
+            strcat(params.controlTorqueNames, '_moment')), controllerName));
+        experimentalJointMoments = fnval(params.splineJointMoments, values.time)';
+        cost = experimentalJointMoments(:, indx1) - values.controlTorques(:, indx2);
 end

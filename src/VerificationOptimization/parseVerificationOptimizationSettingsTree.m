@@ -27,8 +27,7 @@
 
 function [inputs, params, resultsDirectory] = ...
     parseVerificationOptimizationSettingsTree(settingsTree)
-inputs = getTreatmentOptimizationInputs(settingsTree);
-inputs = getDesignVariableBounds(settingsTree, inputs);
+inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
 inputs = modifyModelForces(inputs);
 resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
@@ -36,6 +35,14 @@ resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
+end
+
+function inputs = getInputs(tree)
+import org.opensim.modeling.Storage
+inputs = getTreatmentOptimizationInputs(tree);
+inputs = getDesignVariableBounds(tree, inputs);
+inputs.synergyWeights = parseTreatmentOptimizationStandard(...
+    {getTextFromField(getFieldByName(tree, 'synergy_vectors_file'))});
 end
 
 function inputs = getDesignVariableBounds(tree, inputs)
