@@ -41,8 +41,10 @@ function inputs = getInputs(tree)
 import org.opensim.modeling.Storage
 inputs = getTreatmentOptimizationInputs(tree);
 inputs = getDesignVariableBounds(tree, inputs);
+if strcmpi(inputs.controllerType, 'synergy_driven')
 inputs.synergyWeights = parseTreatmentOptimizationStandard(...
     {getTextFromField(getFieldByName(tree, 'synergy_vectors_file'))});
+end
 end
 
 function inputs = getDesignVariableBounds(tree, inputs)

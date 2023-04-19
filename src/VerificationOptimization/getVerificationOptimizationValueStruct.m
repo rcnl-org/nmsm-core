@@ -40,9 +40,9 @@ values.controlJerks = control(:, 1 : params.numCoordinates);
 if strcmp(params.controllerType, 'synergy_driven') 
     values.controlNeuralCommands = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numSynergies);
+    values.synergyWeights = params.synergyWeights;
 else
     values.controlTorques = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numTorqueControls);
 end
-values.synergyWeights = params.synergyWeights;
 end
