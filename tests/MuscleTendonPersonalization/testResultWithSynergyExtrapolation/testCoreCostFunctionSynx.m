@@ -2,11 +2,11 @@
 clear
 
 load('initialValues.mat')
-values.electromechanicalDelays = electromechanicalDelays; 
+values.electromechanicalDelays = electromechanicalDelays;
 values.activationTimeConstants = activationTimeConstants;
 values.activationNonlinearityConstants = activationNonlinearityConstants;
-values.emgScaleFactors = emgScaleFactors; 
-values.optimalFiberLengthScaleFactors = optimalFiberLengthScaleFactors; 
+values.emgScaleFactors = emgScaleFactors;
+values.optimalFiberLengthScaleFactors = optimalFiberLengthScaleFactors;
 values.tendonSlackLengthScaleFactors = tendonSlackLengthScaleFactors;
 values.synergyWeights = synergyWeights;
 
@@ -123,10 +123,10 @@ modeledValues = calcMtpModeledValues(values, experimentalData, struct());
 
 expectedCost = load('individualCostsExpected.mat').individualCostsExpected;
 
-momentTrackingCost = calcMomentTrackingCost(synxModeledValues, experimentalData, struct());
+momentTrackingCost = calcSynergyExtrapolationMomentTrackingCost(synxModeledValues, experimentalData, struct());
 assertWithinRange(momentTrackingCost, sum(expectedCost.synxMomentMatching .^ 2, "all"), 1e-13)
 
-momentTrackingNoSynXCost = calcMomentTrackingNoSynxCost(modeledValues, experimentalData, struct());
+momentTrackingNoSynXCost = calcMomentTrackingCost(modeledValues, experimentalData, struct());
 assertWithinRange(momentTrackingNoSynXCost, sum(expectedCost.momentMatching .^ 2, "all"), 1e-13)
 
 activationTimePenalty = calcActivationTimeConstantDeviationCost(values, struct());
@@ -160,10 +160,10 @@ assertWithinRange(tdelayGroupedSimilarity, sum(expectedCost.tdelayPairedSimilari
 minPassiveForce = calcPassiveForceCost(synxModeledValues, struct());
 assertWithinRange(minPassiveForce, sum(expectedCost.minPassiveForce .^ 2, "all"), 1e-13)
 
-synergyMuscleExcitationMinimization = calcMuscleActivationFromSynergyCost(synxModeledValues, experimentalData, struct());
+synergyMuscleExcitationMinimization = calcSynergyExtrapolationMuscleActivationCost(synxModeledValues, experimentalData, struct());
 assertWithinRange(synergyMuscleExcitationMinimization, sum(expectedCost.synergyMuscleExcitationMinimization .^ 2, "all"), 1e-13)
 
-residualMuscleActivationMinimization = calcMuscleActivationFromResidualsCost(synxModeledValues, modeledValues, experimentalData, struct());
+residualMuscleActivationMinimization =calcResidualMuscleActivationCost(synxModeledValues, modeledValues, experimentalData, struct());
 assertWithinRange(residualMuscleActivationMinimization, sum(expectedCost.residualMuscleActivationMinimization .^ 2, "all"), 1e-13)
 
 excitationPenalty = calcMuscleExcitationPenaltyCost(synxModeledValues,experimentalData);
@@ -173,8 +173,39 @@ assertWithinRange(excitationPenalty, sum([sqrt(0.1) * expectedCost.excitationPen
 
 synxModeledValues = calcMtpSynXModeledValues(values, experimentalData, struct());
 modeledValues = calcMtpModeledValues(values, experimentalData, struct());
+params.costTerms = {};
+params.costTerms{1}.type = "measured_inverse_dynamics_joint_moment";
+params.costTerms{1}.isEnabled = true;
+params.costTerms{2}.type = "inverse_dynamics_joint_moment";
+params.costTerms{2}.isEnabled = true;
+params.costTerms{3}.type = "activation_time_constant";
+params.costTerms{3}.isEnabled = true;
+params.costTerms{4}.type = "activation_nonlinearity_constant";
+params.costTerms{4}.isEnabled = true;
+params.costTerms{5}.type = "optimal_muscle_fiber_length";
+params.costTerms{5}.isEnabled = true;
+params.costTerms{6}.type = "tendon_slack_length";
+params.costTerms{6}.isEnabled = true;
+params.costTerms{7}.type = "emg_scale_factor";
+params.costTerms{7}.isEnabled = true;
+params.costTerms{8}.type = "normalized_muscle_fiber_length";
+params.costTerms{8}.isEnabled = true;
+params.costTerms{9}.type = "passive_muscle_force";
+params.costTerms{9}.isEnabled = true;
+params.costTerms{10}.type = "grouped_normalized_muscle_fiber_length";
+params.costTerms{10}.isEnabled = true;
+params.costTerms{11}.type = "grouped_emg_scale_factor";
+params.costTerms{11}.isEnabled = true;
+params.costTerms{12}.type = "grouped_electromechanical_delay";
+params.costTerms{12}.isEnabled = true;
+params.costTerms{13}.type = "extrapolated_muscle_activation";
+params.costTerms{13}.isEnabled = true;
+params.costTerms{14}.type = "residual_muscle_activation";
+params.costTerms{14}.isEnabled = true;
+params.costTerms{15}.type = "muscle_excitation_penalty";
+params.costTerms{15}.isEnabled = true;
 cost = calcMtpCost(values, synxModeledValues, modeledValues, ...
-    experimentalData, struct());
+    experimentalData, params);
 
 load('costExpected.mat')
 assertWithinRange(cost, costExpected, 1e-11)

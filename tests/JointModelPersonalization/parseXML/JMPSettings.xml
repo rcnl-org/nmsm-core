@@ -16,10 +16,14 @@
 			<JMPTask name="Left Hip">
 				<!--Flag indicating whether or not the task is enabled.-->
 				<is_enabled>true</is_enabled>
+                <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>1</index>
 				<!--The markers file to use for the task-->
 				<marker_file_name>walk_free_01.trc</marker_file_name>
 				<!--Name of the IK Settings File for the internal Inverse Kinematics Solver-->
 				<ik_settings_file>IKSettings.xml</ik_settings_file>
+                <JMPJointSet>
+                    <objects>
 				<!--A joint that will be optimized in the task-->
 				<JMPJoint name="hip_l">
 					<scale_bodies>false</scale_bodies>
@@ -45,6 +49,9 @@
 						<orientation_bounds>0.5</orientation_bounds>
 					</child_frame_transformation>
 				</JMPJoint>
+            </objects>
+            <groups/>
+        </JMPJointSet>
 			</JMPTask>
 		</JMPTaskList>
 		<!--*Optional* The accuracy of the IKSolver solution in absolute terms. Default is 1e-5. It determines the number of significant digits to which the solution can be trusted.-->

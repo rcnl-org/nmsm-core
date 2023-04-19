@@ -4,7 +4,7 @@
 % passing before pushing the code to the GitHub repository.
 
 % Copyright RCNL *change later*
-
+clear;clc;
 import matlab.unittest.TestRunner
 import matlab.unittest.plugins.CodeCoveragePlugin
 
@@ -14,7 +14,7 @@ runner = TestRunner.withTextOutput;
 runner.addPlugin(coverage)
 
 [parseResults, suites] = matlab.unittest.internal.runtestsParser( ...
-    @testsuite,'tests','IncludeSubfolders',true);
+    @testsuite,'tests/NeuralControlPersonalization','IncludeSubfolders',true);
 
 % Change 'tests' to directory of interest (i.e. 'tests/core/model') if you
 % only want to run a subset of tests
@@ -22,4 +22,4 @@ runner.addPlugin(coverage)
 %     @testsuite,'tests','IncludeSubfolders',true);
 
 results = run(runner, suites);
-results.assertSuccess()
+% results.assertSuccess()

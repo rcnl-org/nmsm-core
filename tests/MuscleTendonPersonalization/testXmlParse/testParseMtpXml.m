@@ -1,20 +1,19 @@
-clear; clc;
 settingsFileName = "newMTPSettingsFile.xml";
-% settingsTree = xml2struct(settingsFileName);
-% [inputs, params, resultsDirectory] = parseMuscleTendonPersonalizationSettingsTree(settingsTree);
+settingsTree = xml2struct(settingsFileName);
+[inputs, params, resultsDirectory] = parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 
-MuscleTendonPersonalizationTool(settingsFileName)
+% MuscleTendonPersonalizationTool(settingsFileName)
 
 % import org.opensim.modeling.Storage
-% 
+%
 % passiveData = load("thelen/passiveData.mat").passiveData;
-% 
+%
 % size(passiveMomentsArms)
-% 
+%
 % size(passiveData.inverseDynamicsMoments)
-% 
-% 
-% 
+%
+%
+%
 % prefixes = findPrefixes(struct(), fullfile(pwd, "thelen"));
 % momentNames = parseMotToComponents(Model("model.osim"), ...
 %     Storage(fullfile(pwd, "thelen", "IKData", "Thelen_AnklePassive_01.mot")))
