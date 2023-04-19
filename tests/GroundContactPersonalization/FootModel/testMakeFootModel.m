@@ -37,7 +37,7 @@ coordinatesOfInterest = findGCPFreeCoordinates(bodyModel, toesBodyName);
 
 [footPosition, markerPositions] = makeFootKinematics(bodyModel, ...
     motionFileName, coordinatesOfInterest, hindfootBodyName, ...
-    toesCoordinateName, markerNames, startTime, endTime);
+    toesCoordinateName, markerNames, startTime, endTime, isLeftFoot);
 footVelocity = calcBSplineDerivative(time, footPosition, 4, 21);
 
 markerNamesFields = fieldnames(markerNames);
@@ -46,7 +46,7 @@ markerVelocities.(markerNamesFields{i}) = calcBSplineDerivative(time, ...
     markerPositions.(markerNamesFields{i}), 4, 21);
 end
 
-footModel = makeFootModel(bodyModel, toesJointName);
+footModel = makeFootModel(bodyModel, toesJointName, isLeftFoot);
 footModel = addSpringsToModel(footModel, markerNames, gridWidth, ...
     gridHeight, hindfootBodyName, toesBodyName, toesJointName, ...
     isLeftFoot, markerPositions);

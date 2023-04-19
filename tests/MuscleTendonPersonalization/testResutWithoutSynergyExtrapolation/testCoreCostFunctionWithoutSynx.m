@@ -2,11 +2,11 @@
 clear
 
 load('initialValues.mat')
-values.electromechanicalDelays = electromechanicalDelays; 
+values.electromechanicalDelays = electromechanicalDelays;
 values.activationTimeConstants = activationTimeConstants;
 values.activationNonlinearityConstants = activationNonlinearityConstants;
-values.emgScaleFactors = emgScaleFactors; 
-values.optimalFiberLengthScaleFactors = optimalFiberLengthScaleFactors; 
+values.emgScaleFactors = emgScaleFactors;
+values.optimalFiberLengthScaleFactors = optimalFiberLengthScaleFactors;
 values.tendonSlackLengthScaleFactors = tendonSlackLengthScaleFactors;
 
 experimentalData = inputData;
@@ -74,7 +74,8 @@ modeledValues = calcMtpModeledValues(values, experimentalData, struct());
 
 expectedCost = load('individualCostsExpected.mat').individualCostsExpected;
 
-momentTrackingCost = calcMomentTrackingCost(modeledValues, experimentalData, struct());
+costTerm.maxAllowableError = 2;
+momentTrackingCost = calcSynergyExtrapolationMomentTrackingCost(modeledValues, experimentalData, struct());
 assertWithinRange(momentTrackingCost, sum(expectedCost.momentMatching .^ 2, "all"), 1e-13)
 
 activationTimePenalty = calcActivationTimeConstantDeviationCost(values, struct());
@@ -112,7 +113,7 @@ assertWithinRange(minPassiveForce, sum(expectedCost.minPassiveForce .^ 2, "all")
 
 params = struct();
 totalCost = calcMomentTrackingCost(modeledValues, experimentalData, ...
-    params);
+    costTerm);
 totalCost = totalCost + calcActivationTimeConstantDeviationCost(values, ...
     params);
 totalCost = totalCost + calcActivationNonlinearityDeviationCost(values, ...

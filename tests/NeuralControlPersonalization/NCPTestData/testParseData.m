@@ -1,6 +1,5 @@
-clear; clc;
 
-NeuralControlPersonalizationTool("NCPLatest.xml");
+NeuralControlPersonalizationTool("newNCPSettingsFile.xml");
 % settingsTree = xml2struct("NCPLatest.xml");
 
 % [inputs, params, resultsDirectory] = ...
