@@ -1,9 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% () -> ()
 % 
-%
-% (struct, struct) -> (struct)
-% Optimize ground contact parameters according to Jackson et al. (2016)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,16 +25,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function body = getBodyByName(model, bodyName)
-body = false;
-for i=0:model.getBodySet().getSize()-1
-    if strcmp(bodyName, model.getBodySet().get(i).getName().toCharArray')
-        body = model.getBodySet().get(i);
-        break
-    end
+function [output, inputs] = VerificationOptimization(inputs, params)
+pointKinematics(inputs.mexModel);
+inverseDynamics(inputs.mexModel);
+inputs = getStateDerivatives(inputs);
+inputs = setupGroundContact(inputs);
+inputs = getSplines(inputs);
+inputs = checkStateGuess(inputs);
+inputs = checkControlGuess(inputs);
+inputs = checkParameterGuess(inputs);
+inputs = getIntegralBounds(inputs);
+inputs = getPathConstraintBounds(inputs);
+inputs = getTerminalConstraintBounds(inputs); 
+inputs = getDesignVariableInputBounds(inputs);
+if strcmp(inputs.controllerType, 'synergy_driven') 
+    inputs = setupMuscleSynergies(inputs);
 end
-if ~isa(body, "org.opensim.modeling.Body")
-    throw(MException("", "body not found in model"))
+output = computeVerificationOptimizationMainFunction(inputs, params);
 end
+function inputs = setupMuscleSynergies(inputs)
+inputs.splineNeuralCommands = spaps(inputs.initialGuess.time, ...
+    inputs.initialGuess.control(:, inputs.numCoordinates + 1:end)', 0.0000001);
+inputs.synergyLabels = inputs.initialGuess.controlLabels(:, inputs.numCoordinates + 1:end);
 end
-
