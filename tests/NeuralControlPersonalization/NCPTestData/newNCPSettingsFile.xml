@@ -88,9 +88,7 @@
             </RCNLCostTermSet>
 		</MuscleTendonLengthInitialization>
         <!--The first of two MTP results directories -->
-        <mtp_results_directory_1>C:\Github\nmsm-core\nonTrackedScripts\NCP tests\mtpResults</mtp_results_directory_1>
-        <!--The second of two MTP results directories -->
-        <mtp_results_directory_2>left_leg</mtp_results_directory_2>
+        <mtp_results_directory>mtpResults</mtp_results_directory>
 		<!---->
 		<SynergySet>
 			<objects>
