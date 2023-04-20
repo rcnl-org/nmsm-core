@@ -36,7 +36,7 @@ for i=1:length(inputs.tasks)
     functions = makeFunctions(inputs.tasks{i}.parameters, ...
         inputs.tasks{i}.scaling, inputs.tasks{i}.markers);
     params.markerNames = getMarkersOnJoints(outputModel, ...
-        inputs.tasks{i}.parameters);
+        inputs.tasks{i}.parameters, inputs.tasks{i}.scaling);
     taskParams = mergeStructs(inputs.tasks{i}, params);
     optimizedValues = computeKinematicCalibration(inputs.model, ...
         inputs.tasks{i}.markerFile, functions, inputs.desiredError, ...
@@ -55,7 +55,7 @@ try verifyNumeric(inputs.desiredError);
 catch; throw(MException('','inputs.desiredError is not a number'));end
 for i=1:length(inputs.tasks)
     % check marker files
-    try verifyMarkersReferenceArg(inputs.tasks{i}.markerFile); 
+    try verifyMarkersReferenceArg(inputs.tasks{i}.markerFile);
     catch; throw(MException('',strcat('invalid markerFile for task ', ...
             num2str(i))));
     end
@@ -63,7 +63,7 @@ for i=1:length(inputs.tasks)
     try verifyJointModelPersonalizationFunctionsArgs(...
             inputs.model, inputs.tasks{i}.parameters);
     catch; throw(MException('', strcat('invalid function parameters ', ...
-            'for task ', num2str(i)))); 
+            'for task ', num2str(i))));
     end
 end
 end
@@ -97,8 +97,7 @@ if(isfield(params, fieldName))
 end
 end
 
-function functions = makeFunctions(parameters, scaling, markers, ...
-    primaryBodyAxis)
+function functions = makeFunctions(parameters, scaling, markers)
 functions = {};
 for i=1:length(parameters)
     p = parameters{i};
@@ -111,25 +110,33 @@ for i=1:length(markers)
     marker = markers{i};
     name = marker(1);
     axis = marker(2);
-    if ~strcmp(axis, "x") 
+    if strcmp(axis, "x")
         functions{end + 1} = makeMarkerFunction(name, "x");
     end
-    if ~strcmp(axis, "y") 
+    if strcmp(axis, "y")
         functions{end + 1} = makeMarkerFunction(name, "y");
     end
-    if ~strcmp(axis, "z") 
+    if strcmp(axis, "z")
         functions{end + 1} = makeMarkerFunction(name, "z");
     end
 end
 end
 
-function markerNames = getMarkersOnJoints(model, parameters)
+function markerNames = getMarkersOnJoints(model, parameters, bodies)
 import org.opensim.modeling.*
 markerNames = {};
 jointNames = {};
 for i=1:length(parameters)
     if ~any(strcmp(jointNames,parameters{i}{1}))
         jointNames{length(jointNames)+1} = parameters{i}{1};
+    end
+end
+for i = 1:length(bodies)
+    joints = getBodyJointNames(model, bodies{i});
+    for j = 1:length(joints)
+        if ~any(strcmp(jointNames, joints(j)))
+            jointNames{length(jointNames)+1} = joints(j);
+        end
     end
 end
 for k=1:length(jointNames)
