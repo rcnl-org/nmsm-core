@@ -56,9 +56,11 @@ if strcmp(inputs.controllerType, 'synergy_driven')
     inputs.maxControl = [maxControlJerks maxControlNeuralCommands];
     inputs.minControl = [minControlJerks zeros(1, inputs.numSynergies)];
     
+    if inputs.optimizeSynergyVectors
     inputs.maxParameter = inputs.maxParameterSynergyWeights * ...
         ones(1, inputs.numSynergyWeights);
     inputs.minParameter = zeros(1, inputs.numSynergyWeights);
+    end
 elseif strcmp(inputs.controllerType, 'torque_driven') 
     for i = 1:length(inputs.controlTorqueNames)
         indx = find(strcmp(convertCharsToStrings( ...
