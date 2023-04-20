@@ -17,7 +17,6 @@ correctNames = ["one", "two", "three"];
 
 orderedTasks = orderByIndex(tasks);
 for i = 1:length(orderedTasks)
-    orderedTasks{i}.name
     assert(orderedTasks{i}.name == correctNames(i));
 end
 

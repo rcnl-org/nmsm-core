@@ -14,7 +14,7 @@ runner = TestRunner.withTextOutput;
 runner.addPlugin(coverage)
 
 [parseResults, suites] = matlab.unittest.internal.runtestsParser( ...
-    @testsuite,'tests/NeuralControlPersonalization','IncludeSubfolders',true);
+    @testsuite,'tests','IncludeSubfolders',true);
 
 % Change 'tests' to directory of interest (i.e. 'tests/core/model') if you
 % only want to run a subset of tests
