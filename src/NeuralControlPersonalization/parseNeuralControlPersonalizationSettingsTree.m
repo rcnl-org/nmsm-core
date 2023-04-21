@@ -32,7 +32,7 @@
 function [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-params = getParams(settingsTree, inputs.model);
+params = getParams(settingsTree, inputs.model, inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -47,10 +47,10 @@ inputs = loadMtpData(tree, inputs);
 inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.maxIsometricForce, inputs.optimalFiberLength, ...
     inputs.tendonSlackLength, inputs.pennationAngle] = ...
-    getMuscleInputs(inputs, inputs.muscleNames);
+    getMuscleInputs(inputs, inputs.muscleTendonColumnNames);
 [inputs.optimalFiberLengthScaleFactors, ...
     inputs.tendonSlackLengthScaleFactors] = getMtpDataInputs( ...
-    inputs.mtpMuscleData, inputs.muscleNames);
+    inputs.mtpMuscleData, inputs.muscleTendonColumnNames);
 end
 
 function inputs = loadMtpData(tree, inputs)
@@ -88,7 +88,7 @@ for i = 1:length(muscles)
 end
 end
 
-function params = getParams(tree, model)
+function params = getParams(tree, model, inputs)
 model = Model(model);
 params = struct();
 params.activationGroupNames = parseSpaceSeparatedList(tree, ...
@@ -99,11 +99,26 @@ params.normalizedFiberLengthGroupNames = parseSpaceSeparatedList(tree, ...
     'normalized_fiber_length_muscle_groups');
 params.normalizedFiberLengthGroups = groupNamesToGroups( ...
     params.normalizedFiberLengthGroupNames, model);
+params.costTerms = parseRcnlCostTermSet( ...
+    getFieldByNameOrError(tree, 'RCNLCostTermSet').objects.RCNLCostTerm);
+params.diffMinChange = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'diff_min_change', '1e-6')));
+params.stepTolerance = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'step_tolerance', '1e-16')));
+params.optimalityTolerance = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'optimality_tolerance', '1e-3')));
+params.functionTolerance = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'function_tolerance', '1e-6')));
+params.maxIterations = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'max_iterations', '1e3')));
+params.maxFunctionEvaluations = str2double(getTextFromField(...
+    getFieldByNameOrAlternate(tree, 'max_function_evaluations', ...
+    '1e6')));
 end
 
 function groups = getSynergyGroups(tree, model)
-synergySetTree = getFieldByNameOrError(tree, "SynergySet");
-groupsTree = getFieldByNameOrError(synergySetTree, "objects").Synergy;
+synergySetTree = getFieldByNameOrError(tree, "RCNLSynergySet");
+groupsTree = getFieldByNameOrError(synergySetTree, "objects").RCNLSynergy;
 groups = {};
 for i=1:length(groupsTree)
     if(length(groupsTree) == 1)
