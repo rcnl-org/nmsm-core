@@ -25,9 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs] = SurrogateModelCreation(inputs)
+function SurrogateModelCreation(inputs)
 
-if inputs.performLatinHyperCubeSampling
+inputs = getData(inputs);
+
+if strcmpi(inputs.performLatinHyperCubeSampling, 'true')
     [inputs.muscleTendonLengths, inputs.momentArms, ... 
         inputs.experimentalJointAngles] = performLhsSampling(inputs);
 end
@@ -37,6 +39,64 @@ inputs = getMuscleSpecificSurrogateModelData(inputs);
     createSurrogateModel(inputs.muscleSpecificJointAngles, ...
     inputs.muscleTendonLengths, inputs.muscleSpecificMomentArms, ...
     inputs.polynomialDegree);
+
+saveSurrogateModel(inputs);
+
+reportSurrogateModel(inputs);
+end
+
+function inputs = getData(inputs)
+
+tree.trial_prefixes = inputs.trialPrefixes;
+prefixes = findPrefixes(tree.trial_prefixes, inputs.dataDirectory);
+inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
+    inputs.surrogateModelCoordinateNames);
+inputs.numMuscles = length(inputs.muscleNames);
+
+inverseKinematicsFileNames = findFileListFromPrefixList(fullfile( ...
+    inputs.dataDirectory, "IKData"), prefixes);
+[inputs.experimentalJointAngles, inputs.coordinateNames] = ...
+    parseInverseKinematicsFile(inverseKinematicsFileNames, inputs.model);
+inputs.experimentalJointAngles =  ...
+    reshape(permute(inputs.experimentalJointAngles, [1 3 2]), [], ...
+    length(inputs.coordinateNames));
+
+directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
+    inputs.dataDirectory, "MAData"), prefixes);
+[inputs.muscleTendonLengths, inputs.muscleTendonColumnNames] = ...
+    parseFileFromDirectories(directories, "Length.sto");
+inputs.muscleTendonLengths = findSpecificMusclesInData( ...
+    inputs.muscleTendonLengths, inputs.muscleTendonColumnNames, ...
+    inputs.muscleNames);
+inputs.muscleTendonLengths = reshape(permute(inputs.muscleTendonLengths, ...
+    [1 3 2]), [], length(inputs.muscleNames));
+inputs.momentArms = parseSelectMomentArms(directories, ...
+    inputs.surrogateModelCoordinateNames, inputs.muscleNames);
+inputs.momentArms = reshape(permute(inputs.momentArms, [1 4 2 3]), [], ...
+    length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
+
+if(isempty(inputs.resultsDirectory))
+    inputs.resultsDirectory = pwd;
+end
+end
+
+function [cells, columnNames] = parseInverseKinematicsFile(files, model)
+import org.opensim.modeling.*
+file = Storage(files(1));
+dataFromFileOne = storageToDoubleMatrix(file);
+columnNames = getStorageColumnNames(file);
+cells = zeros([length(files) ...
+    size(dataFromFileOne)]);
+cells(1, :, :) = dataFromFileOne;
+for i=2:length(files)
+    cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
+end
+osimModel = Model(model);
+for i = 1:length(columnNames)
+    if strcmp(osimModel.getCoordinateSet.get(columnNames(i)).getMotionType(), 'Rotational')
+        cells(:, i, :) = cells(:, i, :) * pi/180;
+    end
+end
 end
 
 function [muscleTendonLengths, momentArms, ...

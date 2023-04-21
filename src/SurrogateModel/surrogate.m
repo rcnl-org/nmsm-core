@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% The following script can be used to create a surrogate model of the
+% muscle tendon lengths, moment arms, and muscle tendon velocities
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,11 +25,31 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function SurrogateModelCreationTool(settingsFileName)
+%% Required Values
+inputSettings.model = 'preprocessed\exampleModel.osim';
+inputSettings.dataDirectory = 'preprocessed';
+inputSettings.epsilon = 1e-4;
+inputSettings.polynomialDegree = 5;
+% Indicate 'true' or 'false' for performing latin hyper cube sampling 
+inputSettings.performLatinHyperCubeSampling = 'false';
+% Indicate the coordinates that should be used in the surrogate model
+inputSettings.surrogateModelCoordinateNames = ["hip_adduction_l", ...
+    "hip_flexion_l", "hip_rotation_l", "knee_angle_l", "ankle_angle_l", ...
+    "subtalar_angle_l", "hip_adduction_r", "hip_flexion_r", ...
+    "hip_rotation_r", "knee_angle_r", "ankle_angle_r", "subtalar_angle_r"];
 
-settingsTree = xml2struct(settingsFileName);
-inputs = parseSurrogateModelCreationSettingsTree(settingsTree);
-inputs = SurrogateModelCreation(inputs);
-saveSurrogateModel(inputs);
-reportSurrogateModel(inputs)
-end
+% If performLatinHyperCubeSampling is set to true, set the range multiplier
+% and the number of points used for latin hyper cube sampling, otherwise,
+% leave blank
+inputSettings.lhsRangeMultiplier = [];
+inputSettings.lhsNumPoints = [];
+
+%% *Optional* Values
+% The trial prefix is the prefix of each output file, identifying the
+% motion such as 'gait' or 'squat' or 'step_up'.
+inputSettings.trialPrefixes = ["gait_1", "gait_2", "gait_3"];
+% Results directory, if blank, results are printed to current directory
+inputSettings.resultsDirectory = [];
+
+%% Create surrogate model
+SurrogateModelCreation(inputSettings);
