@@ -51,7 +51,7 @@ inputs.model = parseModel(tree);
 model = Model(inputs.model);
 inputs.tasks = getTasks(model, tree);
 inputs.desiredError = ...
-    str2num(getFieldByNameOrError(tree, 'desired_error').Text);
+    str2num(getFieldByNameOrError(tree, 'allowable_error').Text);
 end
 
 function inputs = getTasks(model, tree)
@@ -263,7 +263,7 @@ end
 end
 
 function output = getParams(tree)
-import org.opensim.modeling.*
+output = struct();
 paramArgs = ["accuracy", "diff_min_change", "optimality_tolerance", ...
     "function_tolerance", "step_tolerance", "max_function_evaluations"];
 % name in matlab is different, use for output struct arg name

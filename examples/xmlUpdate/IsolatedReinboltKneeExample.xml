@@ -18,6 +18,7 @@
                 <index>1</index>
 				<!--The markers file to use for the task-->
 				<marker_file_name>l_knee.trc</marker_file_name>
+                <!--The set of joints to be optimized in the task-->
                 <JMPJointSet>
                     <objects>
 				        <!--A joint that will be optimized in the task-->
@@ -46,6 +47,7 @@
                     </objects>
                     <groups />
                 </JMPJointSet>
+                <!--The set of bodies to be optimized in the task-->
                 <JMPBodySet>
                     <objects>
                         <!--A body that will be optimized in the task-->
@@ -63,6 +65,7 @@
                         </JMPBody>
                     </objects>
                     <groups />
+                </JMPBodySet>
 			</JMPTask>
 		</JMPTaskList>
 		<!--*Optional* The accuracy of the IKSolver solution in absolute terms. Default is 1e-5. It determines the number of significant digits to which the solution can be trusted.-->
