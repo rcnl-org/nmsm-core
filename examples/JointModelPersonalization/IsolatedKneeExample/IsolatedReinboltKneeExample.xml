@@ -8,7 +8,7 @@
 		<!--Name of the output model file (.osim) to create.-->
 		<output_model_file>Rajagopal_4.0_RCNL_markers_scaled_knee.osim</output_model_file>
         <!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters)-->
-        <desired_error>0.01</desired_error>
+        <allowable_error>0.01</allowable_error>
 		<!--The set of <JMPTask> to be completed by the tool, each Task is a separate optimization-->
 		<JMPTaskList>
 			<JMPTask name="Left Knee">
@@ -18,10 +18,7 @@
                 <index>1</index>
 				<!--The markers file to use for the task-->
 				<marker_file_name>l_knee.trc</marker_file_name>
-				<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
-				<translation_bounds>0.1</translation_bounds>
-				<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
-				<orientation_bounds>1.0</orientation_bounds>
+                <!--The set of joints to be optimized in the task-->
                 <JMPJointSet>
                     <objects>
 				        <!--A joint that will be optimized in the task-->
@@ -31,12 +28,20 @@
 				        		<translation>true true false</translation>
 				        		<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
 				        		<orientation>true true false</orientation>
+				        		<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
+				        		<translation_bounds>0.1</translation_bounds>
+				        		<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
+				        		<orientation_bounds>1.0</orientation_bounds>
 				        	</parent_frame_transformation>
 				        	<child_frame_transformation>
 				        		<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
 				        		<translation>true true true</translation>
 				        		<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
 				        		<orientation>true true false</orientation>
+				        		<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
+				        		<translation_bounds>0.1</translation_bounds>
+				        		<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
+				        		<orientation_bounds>1.0</orientation_bounds>
 				        	</child_frame_transformation>
                         </JMPJoint>
 						<JMPJoint name="hip_l">
@@ -45,17 +50,26 @@
 				        		<translation>true true false</translation>
 				        		<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
 				        		<orientation>true true false</orientation>
+								<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
+				        		<translation_bounds>0.1</translation_bounds>
+				        		<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
+				        		<orientation_bounds>1.0</orientation_bounds>
 				        	</parent_frame_transformation>
 				        	<child_frame_transformation>
 				        		<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
 				        		<translation>true true true</translation>
 				        		<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
 				        		<orientation>true true false</orientation>
+				        		<!-- Translation bounds set the upper and lower limits of the search range around the initial value-->
+				        		<translation_bounds>0.1</translation_bounds>
+				        		<!-- Orientation bounds in radians set the upper and lower limits of the search range around the initial value-->
+				        		<orientation_bounds>1.0</orientation_bounds>
 				        	</child_frame_transformation>
                         </JMPJoint>
                     </objects>
                     <groups />
                 </JMPJointSet>
+                <!--The set of bodies to be optimized in the task-->
                 <JMPBodySet>
                     <objects>
                         <!--A body that will be optimized in the task-->
@@ -73,7 +87,7 @@
                         </JMPBody>
                     </objects>
                     <groups />
-				</JMPBodySet>
+                </JMPBodySet>
 			</JMPTask>
 		</JMPTaskList>
 		<!--*Optional* The accuracy of the IKSolver solution in absolute terms. Default is 1e-5. It determines the number of significant digits to which the solution can be trusted.-->

@@ -19,7 +19,7 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-clear;clc;
+
 % Make sure the nmsm-core project is open by double-clicking Project.prj in
 % the nmsm-core repository.
 settingsFileName = 'IsolatedReinboltKneeExample.xml';
