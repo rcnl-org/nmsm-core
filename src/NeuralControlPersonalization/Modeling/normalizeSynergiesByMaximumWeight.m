@@ -1,11 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% This function normalizes synergies by dividing each synergy weight vector
+% by its maximum value and multiplying each weight vector's corresponding
+% synergy commands by the same value. This does not change the calculated
+% activations, but the weight vectors may be more easily plotted and
+% interpreted. 
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
+% (Array of double, Array of double) -> (Array of double, Array of double)
+% Normalizes synergies by maximum synergy weight
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +17,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,7 +31,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = computeNeuralControlCostFunction(values, inputs, params)
-activations = calcActivationsFromSynergyDesignVariables(values, inputs, params);
-cost = calcNcpCost(activations, inputs, params, values);
+function [synergyWeights, synergyCommands] = ...
+    normalizeSynergiesByMaximumWeight(synergyWeights, synergyCommands)
+scaleFactors = max(synergyWeights')';
+synergyWeights = synergyWeights ./ scaleFactors;
+synergyCommands = synergyCommands .* permute(scaleFactors, [3 2 1]);
 end
