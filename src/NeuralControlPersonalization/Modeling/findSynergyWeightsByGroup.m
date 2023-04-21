@@ -1,11 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% This function finds the synergy weights from the design variables and
+% arranges them in an array where the first index indicates the synergy
+% group a set of weights belongs to. This is used in the bilateral symmetry
+% cost term. 
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
+% (Array of double, struct) -> (Array of double)
+% Finds synergy weights from design variables array
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,7 +30,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = computeNeuralControlCostFunction(values, inputs, params)
-activations = calcActivationsFromSynergyDesignVariables(values, inputs, params);
-cost = calcNcpCost(activations, inputs, params, values);
+function weights = findSynergyWeightsByGroup(values, inputs)
+weights = zeros(length(inputs.synergyGroups), ...
+    inputs.synergyGroups{1}.numSynergies, ...
+    length(inputs.synergyGroups{1}.muscleNames));
+valuesIndex = 1;
+for i = 1:length(inputs.synergyGroups)
+    weights(i, :, :) = ...
+        reshape(values(valuesIndex : valuesIndex + ...
+        length(inputs.synergyGroups{i}.muscleNames) * ...
+        inputs.synergyGroups{i}.numSynergies - 1), size(weights, 2), []);
+    valuesIndex = valuesIndex + ...
+        length(inputs.synergyGroups{i}.muscleNames) * ...
+        inputs.synergyGroups{i}.numSynergies;
+end
 end
