@@ -4,10 +4,9 @@
         <!--MTP AND NCP SHARED SETTINGS-->
         <!--Directory used for writing results.-->
         <results_directory>results</results_directory>
-		<!--Name of input .osimx file to append results. Leave empty if an .osimx file has not been written for this model yet. -->
-		<input_osimx_file></input_osimx_file>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>model.osim</input_model_file>
+        <input_osimx_file></input_osimx_file>
         <!--Directory for data files-->
         <data_directory>preprocessed</data_directory>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
@@ -19,19 +18,11 @@
         <!--A space-separated list of the normalized fiber length muscle groups. -->
         <normalized_fiber_length_muscle_groups> GluteusMaximusL GluteusMediusL GluteusMinimusL HipFlexorsL PeroneusL GastrocL TibialisAnteriorL TibialisPosteriorL HamstringsFiberLengthL QuadricepsFiberLengthL AdductorFiberLengthL GluteusMaximusR GluteusMediusR GluteusMinimusR HipFlexorsR PeroneusR GastrocR TibialisAnteriorR TibialisPosteriorR HamstringsFiberLengthR QuadricepsFiberLengthR AdductorFiberLengthR</normalized_fiber_length_muscle_groups>
 		<!--*Optional* space-separated list of prefixes to use for data files, if left blank, use all prefixes fron IK folder-->
-		<trial_prefixes>trial_1 trial_2</trial_prefixes>		
-		<!--*Optional* The minimum step of the least squares algorithm. Default is 1e-6.-->
-		<diff_min_change>1e-6</diff_min_change>
-		<!--*Optional* The step tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-16-->
-		<step_tolerance>1e-16</step_tolerance>
-		<!--*Optional* The optimality tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-3-->
-		<optimality_tolerance>1e-3</optimality_tolerance>
-		<!--*Optional* The function tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-6-->
-		<function_tolerance>1e-6</function_tolerance>
-		<!--*Optional* The number of allowed iterations of the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge. Default is 1e3-->
-        <max_iterations>1e3</max_iterations>
-		<!--*Optional* The number of allowed cost function calls for the lsqnonlin optimization, setting this lower can help cancel an optimization that won't converge-->
-        <max_function_evaluations>1e6</max_function_evaluations>
+		<trial_prefixes>trial_1</trial_prefixes>
+        <!--*Optional* The number of allowed iterations of the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
+        <max_iterations>2e3</max_iterations>
+        <!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
+        <max_function_evaluations>1e8</max_function_evaluations>
 		<MuscleTendonLengthInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization-->
 			<is_enabled>false</is_enabled>
@@ -96,58 +87,43 @@
                 <groups />
             </RCNLCostTermSet>
 		</MuscleTendonLengthInitialization>
-        <!-- END OF MTP AND NCP SHARED SETTINGS-->
-        <!--NCP SPECIFIC SETTINGS-->
         <!--The first of two MTP results directories -->
         <mtp_results_directory>mtpResults</mtp_results_directory>
 		<!---->
-		<RCNLSynergySet>
+		<SynergySet>
 			<objects>
-				<RCNLSynergy>
+				<Synergy>
 					<muscle_group_name>right_side</muscle_group_name>
 					<num_synergies>6</num_synergies>
-				</RCNLSynergy>
-				<RCNLSynergy>
+				</Synergy>
+				<Synergy>
 					<muscle_group_name>left_side</muscle_group_name>
 					<num_synergies>6</num_synergies>
-				</RCNLSynergy>
+				</Synergy>
 			</objects>
 			<groups />
-		</RCNLSynergySet>
-		<RCNLCostTermSet>
-			<objects>
-				<RCNLCostTerm>
-					<type>moment_tracking</type>
-					<is_enabled>true</is_enabled>
-					<max_allowable_error>5</max_allowable_error>
-				</RCNLCostTerm>
-				<RCNLCostTerm>
-					<type>activation_tracking</type>
-					<is_enabled>true</is_enabled>
-					<max_allowable_error>0.01</max_allowable_error>
-				</RCNLCostTerm>
-				<RCNLCostTerm>
-					<type>activation_minimization</type>
-					<is_enabled>true</is_enabled>
-					<max_allowable_error>0.05</max_allowable_error>
-				</RCNLCostTerm>
-				<RCNLCostTerm>
-					<type>grouped_activations</type>
-					<is_enabled>true</is_enabled>
-					<max_allowable_error>0.1</max_allowable_error>
-				</RCNLCostTerm>
-				<RCNLCostTerm>
-					<type>grouped_fiber_lengths</type>
-					<is_enabled>true</is_enabled>
-					<max_allowable_error>0.1</max_allowable_error>
-				</RCNLCostTerm>
-				<RCNLCostTerm>
-					<type>bilateral_symmetry</type>
-					<is_enabled>false</is_enabled>
-					<max_allowable_error>1e-3</max_allowable_error>
-				</RCNLCostTerm>
-			</objects>
-			<groups/>
-		</RCNLCostTermSet>
+		</SynergySet>
+		<!--false if synergies per side are independent of each other; true if synergy vector weights are the same between left and right-->
+		<enforce_bilateral_symmetry>false</enforce_bilateral_symmetry>
+        <RCNLCostTermSet>
+            <objects>
+                <RCNLCostTerm>
+                    <type>inverse_dynamics_joint_moment</type>
+                    <is_enabled>true</is_enabled>
+                    <max_allowable_error>5</max_allowable_error>
+                </RCNLCostTerm>
+                <RCNLCostTerm>
+                    <type>activation_tracking</type>
+                    <is_enabled>true</is_enabled>
+                    <max_allowable_error>0.01</max_allowable_error>
+                </RCNLCostTerm>
+                <RCNLCostTerm>
+                    <type>activation_minimization</type>
+                    <is_enabled>true</is_enabled>
+                    <max_allowable_error>0.01</max_allowable_error>
+                </RCNLCostTerm>
+            </objects>
+            <groups />
+        </RCNLCostTermSet>
     </NeuralControlPersonalizationTool>
 </OpenSimDocument>
