@@ -27,11 +27,10 @@
 
 function phaseout = calcSynergyBasedModeledValues(values, params, phaseout)
 if strcmp(params.controllerType, 'synergy_driven') 
-jointAngles = getMuscleActuatedDOFs(values, params);
-[params.muscleTendonLength, params.momentArms] = calcSurrogateModel( ...
-    params, jointAngles);
-params.muscleTendonVelocity = calcMuscleTendonVelocities(values.time, ...
-    params.muscleTendonLength);
+[jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, params);
+[params.muscleTendonLength, params.momentArms, ...
+    params.muscleTendonVelocity] = calcSurrogateModel(params, ...
+    jointAngles, jointVelocities);
 [phaseout.normalizedFiberLength, phaseout.normalizedFiberVelocity] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities(params, ...
     ones(1, params.numMuscles), ones(1, params.numMuscles));
@@ -47,7 +46,7 @@ end
 function muscleActivations = calcMuscleActivationFromSynergies(values)
 muscleActivations = values.controlNeuralCommands * values.synergyWeights;
 end
-function jointAngles = getMuscleActuatedDOFs(values, params)
+function [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, params)
 
 for i = 1:params.numMuscles
     counter = 1;
@@ -55,6 +54,7 @@ for i = 1:params.numMuscles
         for k = 1:length(params.surrogateModelLabels{i})
             if strcmp(params.coordinateNames(j), params.surrogateModelLabels{i}{k})
                 jointAngles{i}(:,counter) = values.statePositions(:,j);
+                jointVelocities{i}(:,counter) = values.stateVelocities(:,j);
                 counter = counter + 1;
             end
         end
