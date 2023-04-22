@@ -39,6 +39,10 @@ for i = 1:inputs.numMuscles
                         inputs.experimentalJointAngles(:,j);
                     inputs.muscleSpecificMomentArms{i}(:,counter) = ...
                         inputs.momentArms(:,k,i);
+                    if isfield(inputs, 'experimentalJointVelocities')
+                        inputs.muscleSpecificJointVelocities{i}(:,counter) = ...
+                            inputs.experimentalJointVelocities(:,j);
+                    end
                     counter = counter + 1;
                 end
             end

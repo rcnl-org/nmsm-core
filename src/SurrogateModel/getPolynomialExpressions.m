@@ -35,11 +35,13 @@
 % -----------------------------------------------------------------------
 
 function [polynomialExpressionMuscleTendonLength, ...
+    polynomialExpressionMuscleTendonVelocities, ...
     polynomialExpressionMomentArms, theta] = ...
     getPolynomialExpressions(jointAngles, polynomialDegree)
 
 % Initialize symbolic thetas
 theta = sym('theta', [1 size(jointAngles, 2)]);
+thetaDot = sym('thetaDot', [1 size(jointAngles, 2)]);
 % Create polynomial basis function
 basisFunction = 1;
 for i = 1 : size(jointAngles, 2)
@@ -52,6 +54,23 @@ polynomialExpressionMuscleTendonLength = ...
     children(expand(polynomialExpressionMuscleTendonLength));
 polynomialExpressionMuscleTendonLength = ...
     cat(2, polynomialExpressionMuscleTendonLength{:});
+% Differentiate muscle tendon length w.r.t. time
+for i = 1 : size(jointAngles, 2)
+    for j = 1 : size(polynomialExpressionMuscleTendonLength, 2)
+        syms(sprintf('theta%d(t)', i))
+        theta_t(i) = symfun(eval(sprintf('theta%d(t)', i)), t);
+        tempPolynomialExpressionMuscleTendonVelocity = subs(polynomialExpressionMuscleTendonLength(1, j), theta(i), theta_t(i));
+        tempPolynomialExpressionMuscleTendonVelocity = diff(tempPolynomialExpressionMuscleTendonVelocity, t);
+        tempPolynomialExpressionMuscleTendonVelocity = subs(tempPolynomialExpressionMuscleTendonVelocity, diff(theta_t(i), t), thetaDot(i));
+        polynomialExpressionMuscleTendonVelocity(i, j) = subs(tempPolynomialExpressionMuscleTendonVelocity, theta_t(i), theta(i));
+    end
+end
+polynomialExpressionMuscleTendonVelocities = polynomialExpressionMuscleTendonVelocity(1, :);
+for i = 1 : size(jointAngles, 2)
+    for j = 1 : size(polynomialExpressionMuscleTendonLength, 2)
+        polynomialExpressionMuscleTendonVelocities(1, j) = polynomialExpressionMuscleTendonVelocity(i, j) + polynomialExpressionMuscleTendonVelocities(1, j);
+    end
+end
 % Differentiate -muscle tendon length w.r.t. associated joint angle
 for i = 1 : size(jointAngles, 2)
     polynomialExpressionMomentArms(i, :) = ...

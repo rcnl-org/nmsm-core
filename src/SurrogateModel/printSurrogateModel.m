@@ -27,10 +27,11 @@
 
 function printSurrogateModel(numMuscles, ...
     polynomialExpressionMuscleTendonLengths, ...
+    polynomialExpressionMuscleTendonVelocities, ...
     polynomialExpressionMomentArms, jointAngles, resultsDirectory)
 
 fid = fopen([resultsDirectory '\PatientSpecificSurrogateModel.m'], 'wt');
-fprintf(fid, 'function [matrix] = PatientSpecificSurrogateModel(jointAngles, numMuscles)\n');
+fprintf(fid, 'function [matrix] = PatientSpecificSurrogateModel(jointAngles, jointVelocities, numMuscles)\n');
 fprintf(fid, 'onesCol = ones(size(jointAngles, 1), 1);\n');
 fprintf(fid, 'zeroCol = zeros(size(jointAngles, 1), 1);\n');
 fprintf(fid, 'switch numMuscles\n');
@@ -39,12 +40,26 @@ for i=1:numMuscles
     for j=1:size(jointAngles{i}, 2)
         fprintf(fid, ['        theta' num2str(j) ' = jointAngles(:, ' num2str(j) ');\n']);
     end
+    for j=1:size(jointAngles{i}, 2)
+        fprintf(fid, ['        thetaDot' num2str(j) ' = jointVelocities(:, ' num2str(j) ');\n']);
+    end
     fprintf(fid, '        muscleTendonLengths = [');
     for j=1:size(polynomialExpressionMuscleTendonLengths{i}, 2)
         if polynomialExpressionMuscleTendonLengths{i}(1,j) == 1
             fprintf(fid, ' onesCol,');
         else
             fprintf(fid, [' ' strrep(strrep(char(polynomialExpressionMuscleTendonLengths{i}(1,j)),'*','.*'),'^','.^') ',']);
+        end
+    end
+    fprintf(fid, '];\n');
+    fprintf(fid, '        muscleTendonVelocities = [');
+    for j=1:size(polynomialExpressionMuscleTendonVelocities{i}, 2)
+        if polynomialExpressionMuscleTendonVelocities{i}(1,j) == 1
+            fprintf(fid, ' onesCol,');
+        elseif polynomialExpressionMuscleTendonVelocities{i}(1,j) == 0
+            fprintf(fid, ' zeroCol,'); 
+        else
+            fprintf(fid, [' ' strrep(strrep(char(polynomialExpressionMuscleTendonVelocities{i}(1,j)),'*','.*'),'^','.^') ',']);
         end
     end
     fprintf(fid, '];\n');
@@ -61,7 +76,7 @@ for i=1:numMuscles
         end
         fprintf(fid, '];\n');
     end
-    fprintf(fid, '        matrix = [muscleTendonLengths; ');
+    fprintf(fid, '        matrix = [muscleTendonLengths; muscleTendonVelocities;');
     for k=1:size(polynomialExpressionMomentArms{i}, 1)
         fprintf(fid, ['momentArms' num2str(k) '; ']);
     end
