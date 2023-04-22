@@ -34,12 +34,12 @@ storage = org.opensim.modeling.Storage(muscleTendonLengthFileName);
 length = storageToDoubleMatrix(storage);
 time = findTimeColumn(storage);
 
-velocityData = calcDerivativesFromGcvSplines(time, length, 4, ...
-    cutoffFrequency);
+numNodes = splFitWithCutoff(time, length, cutoffFrequency, 4);
+velocityData = calcBSplineDerivative(time, length, 4, numNodes);
 
 [filepath, name, ext] = fileparts(muscleTendonLengthFileName);
 name = strrep(name, "_Length", "");
-writeToSto(getStorageColumnNames(storage), time, velocityData, ...
+writeToSto(getStorageColumnNames(storage), time, velocityData', ...
     fullfile(filepath, strcat(name, "_Velocity", ext)));
 
 end

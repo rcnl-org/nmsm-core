@@ -26,8 +26,8 @@ processRawEmgFile(emgFileName, filterOrder, highPassCutoff, ...
 % muscle-tendon length. The file is written in the same directory as the
 % muscle-tendon length file.
 
-muscleTendonLengthFileName = ...
-    "MuscleAnalysis/model_MuscleAnalysis_Length.sto";
+muscleTendonLengthFileName = "trial_1_Length.sto";%...
+    %"MuscleAnalysis/model_MuscleAnalysis_Length.sto";
 cutoffFrequency = 10;
 createMuscleTendonVelocity(muscleTendonLengthFileName, cutoffFrequency);
 
