@@ -8,7 +8,7 @@ settingsTree = xml2struct(settingsFileName);
 %
 % passiveData = load("thelen/passiveData.mat").passiveData;
 %
-% size(passiveMomentsArms)
+% size(passiveMomentArms)
 %
 % size(passiveData.inverseDynamicsMoments)
 %
@@ -25,7 +25,7 @@ settingsTree = xml2struct(settingsFileName);
 %     end
 %     for j=1:length(momentNames)
 %         writeToSto(muscleNames, linspace(0,1,101), ...
-%             squeeze(passiveMomentsArms(i, j, :, :))', ...
+%             squeeze(passiveMomentArms(i, j, :, :))', ...
 %             fullfile(pwd, "thelen", "MAData", prefixes(i), prefixes(i) + "_MomentArm_" + momentNames(j) + ".sto"))
 %     end
 %     writeToSto(muscleNames, linspace(0,1,101), ...

@@ -74,7 +74,7 @@ if (~isempty(passiveInputDirectory))
             all(inputs.passiveMuscleTendonLengthColumnNames == inputs.muscleNames))
             throw(MException('', 'Muscle names in passive data do not match muscle names from coordinates.'))
         end
-        inputs.passiveMomentsArms = ...
+        inputs.passiveMomentArms = ...
             parseMomentArms(passiveDirectories, inputs.model);
         inputs.passiveMomentDataExists = 1;
     end
