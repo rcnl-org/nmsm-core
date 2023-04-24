@@ -10,6 +10,7 @@ values.optimalFiberLengthScaleFactors = optimalFiberLengthScaleFactors;
 values.tendonSlackLengthScaleFactors = tendonSlackLengthScaleFactors;
 
 experimentalData = inputData;
+experimentalData.inverseDynamicsMoments = experimentalData.experimentalMoments;
 % Muscle Excitation Calculation
 muscleExcitations = calcMuscleExcitations(experimentalData.emgTime, ...
     experimentalData.emgSplines, values.electromechanicalDelays, ...

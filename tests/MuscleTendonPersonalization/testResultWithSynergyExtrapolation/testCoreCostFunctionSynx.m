@@ -11,6 +11,7 @@ values.tendonSlackLengthScaleFactors = tendonSlackLengthScaleFactors;
 values.synergyWeights = synergyWeights;
 
 experimentalData = inputData;
+experimentalData.inverseDynamicsMoments = experimentalData.experimentalMoments;
 
 %%%%%%%%%%%%%%%%%%%%%%%% calcMtpSynXModeledValues %%%%%%%%%%%%%%%%%%%%%%%%
 
