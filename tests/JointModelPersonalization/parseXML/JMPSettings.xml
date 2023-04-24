@@ -10,7 +10,7 @@
 		<!--Name of the output model file (.osim) to create.-->
 		<output_model_file>subject01_gait2392_scaled_output.osim</output_model_file>
         <!--The desired error-->
-        <desired_error>0.005</desired_error>
+        <allowable_error>0.005</allowable_error>
 		<!--The set of <Task> to be completed by the tool, each Task is a separate optimization-->
 		<JMPTaskList>
 			<JMPTask name="Left Hip">
