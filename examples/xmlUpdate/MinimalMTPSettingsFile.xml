@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+    <MuscleTendonPersonalizationTool>
+        <!--Directory used for writing results.-->
+        <results_directory>results</results_directory>
+        <!--Name of the input model file (.osim) to use-->
+        <input_model_file>optModel_MuscleGroups_LeftMusclesActive_NewSynx.osim</input_model_file>
+        <!--Directory for data files-->
+        <data_directory></data_directory>
+		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
+		<coordinate_list>hip_flexion_l hip_adduction_l hip_rotation_l knee_angle_l ankle_angle_l subtalar_angle_l</coordinate_list>
+        <!--A space-separated list of the activation muscle groups. -->
+        <activation_muscle_groups> AdductorActivationGroupL GluteusMaxActivationGroupL GluteusMedActivationGroupL GluteusMinActivationGroupL IliopsoasActivationGroupL HamstringActivationGroupL BicepsFemActivationGroupL PeroneusActivationGroupL</activation_muscle_groups>
+        <!--A space-separated list of the normalized fiber length muscle groups. -->
+        <normalized_fiber_length_muscle_groups> AdductorFiberLengthGroupL GluteusMaxFiberLengthGroupL GluteusMedFiberLengthGroupL GluteusMinFiberLengthGroupL QuadricepFiberLengthGroupL HamstringFiberLengthGroupL PeroneusFiberLengthGroupL IliopsoasFiberLengthGroupL GastrocFiberLengthGroupL TibialisAnteriorFiberLengthGroupL TibialisPosteriorFiberLengthGroupL</normalized_fiber_length_muscle_groups>
+        <!--A space-separated list of missing EMG channel names.-->
+        <missing_emg_channel_muscle_groups> AddLongMissingEmgChannelL ExtDigLongMissingEmgChannelL FlexDigLongMissingEmgChannelL IliopsoasMissingEmgChannelL PeroneusLongMissingEmgChannelL RecFemMissingEmgChannelL TibPostMissingEmgChannelL VastMedMissingEmgChannelL</missing_emg_channel_muscle_groups>
+        <!--A space-separated list of collected EMG channel names.-->
+        <collected_emg_channel_muscle_groups> BicFemLongCollectedEmgChannelL GasMedCollectedEmgChannelL GlutMaxCollectedEmgChannelL GlutMedCollectedEmgChannelL SemiMembCollectedEmgChannelL SolCollectedEmgChannelL TibAntCollectedEmgChannelL VastLatCollectedEmgChannelL</collected_emg_channel_muscle_groups>
+		<MuscleTendonLengthInitialization>
+			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization-->
+			<is_enabled>false</is_enabled>
+		</MuscleTendonLengthInitialization>
+		 <!-- Synergy Extrapolation Settings -->
+		<MTPSynergyExtrapolation>
+			<!--Flag indicating if synergery extrapolation should be performed as part of this task-->
+			<is_enabled>true</is_enabled>
+			<!--*Optional* space-separated list of prefixes that indicate different speeds or tasks, one speed or task will be assumed for all trials-->
+			<task_prefixes>speed1 speed2</task_prefixes>
+			<!--Specify the matrix factorization approach for MSA; PCA or NMF.-->
+			<matrix_factorization_method>PCA</matrix_factorization_method>
+			<!--Indicate the number of synergies for synergy extrapolation.-->
+			<number_of_synergies>5</number_of_synergies>
+			<!--Indicate categorization of variability for synergy extrapolation: Task, Trial, or Subject.-->
+			<synergy_extrapolation_categorization>trial</synergy_extrapolation_categorization>
+			<!--Indicate categorization of variability for muscle activation residuals: Task, Trial, or Subject.-->
+			<residual_categorization>task</residual_categorization>
+		</MTPSynergyExtrapolation>
+    </MuscleTendonPersonalizationTool>
+</OpenSimDocument>

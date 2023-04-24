@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<NMSMPipelineDocument Version="0.1.0">
+	<JointModelPersonalizationTool>
+		<!--Directory used for writing results.-->
+		<results_directory/>
+		<!--Name of the input model file (.osim) to use-->
+		<input_model_file>Rajagopal_4.0_RCNL_markers_scaled.osim</input_model_file>
+		<!--Name of the output model file (.osim) to create.-->
+		<output_model_file>Rajagopal_4.0_RCNL_markers_scaled_knee.osim</output_model_file>
+        <!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters)-->
+        <allowable_error>0.01</allowable_error>
+		<!--The set of <JMPTask> to be completed by the tool, each Task is a separate optimization-->
+		<JMPTaskList>
+			<JMPTask name="Left Knee">
+				<!--Flag indicating whether or not the task is enabled.-->
+				<is_enabled>true</is_enabled>
+                <!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+                <index>1</index>
+				<!--The markers file to use for the task-->
+				<marker_file_name>l_knee.trc</marker_file_name>
+                <!--The set of joints to be optimized in the task-->
+                <JMPJointSet>
+                    <objects>
+				        <!--A joint that will be optimized in the task-->
+				        <JMPJoint name="knee_l">
+				        	<parent_frame_transformation>
+				        		<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
+				        		<translation>true true false</translation>
+				        		<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
+				        		<orientation>true true false</orientation>
+				        	</parent_frame_transformation>
+				        	<child_frame_transformation>
+				        		<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
+				        		<translation>true true true</translation>
+				        		<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
+				        		<orientation>true true false</orientation>
+				        	</child_frame_transformation>
+                        </JMPJoint>
+						<JMPJoint name="hip_l">
+				        	<parent_frame_transformation>
+				        		<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
+				        		<translation>true true false</translation>
+				        		<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
+				        		<orientation>true true false</orientation>
+				        	</parent_frame_transformation>
+				        	<child_frame_transformation>
+				        		<!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized-->
+				        		<translation>true true true</translation>
+				        		<!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized-->
+				        		<orientation>true true false</orientation>
+				        	</child_frame_transformation>
+                        </JMPJoint>
+                    </objects>
+                    <groups />
+                </JMPJointSet>
+                <!--The set of bodies to be optimized in the task-->
+                <JMPBodySet>
+                    <objects>
+                        <!--A body that will be optimized in the task-->
+                        <JMPBody name="femur_l">
+                            <!-- boolean value for if the body is to be scaled-->
+                            <scale_body>true</scale_body>
+                            <!--Three boolean values (separated by spaces) for which axes the markers should be free to move in (x, y, z) order-->
+                            <move_markers>true false true</move_markers>
+                        </JMPBody>
+                        <JMPBody name="tibia_l">
+                            <!-- boolean value for if the body is to be scaled-->
+                            <scale_body>true</scale_body>
+                            <!--Three boolean values (separated by spaces) for which axes the markers should be free to move in (x, y, z) order-->
+                            <move_markers>true false true</move_markers>
+                        </JMPBody>
+                    </objects>
+                    <groups />
+				</JMPBodySet>
+			</JMPTask>
+		</JMPTaskList>
+	</JointModelPersonalizationTool>
+</OpenSimDocument>
