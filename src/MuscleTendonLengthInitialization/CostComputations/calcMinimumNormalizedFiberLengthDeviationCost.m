@@ -27,7 +27,8 @@
 
 function cost = calcMinimumNormalizedFiberLengthDeviationCost( ...
     modeledValues, experimentalData, costTerm)
-
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.3);
 minNormalizedFiberLength = min(modeledValues.normalizedFiberLength, [], 3);
 for i = 1 : size(experimentalData.muscleTendonLength,1)
 for ii = 1 : length(experimentalData.muscleNames)
@@ -42,6 +43,5 @@ end
 end
 
 cost = calcDeviationCostArray(...
-    minNormalizedFiberLengthError, costTerm.errorCenter, ...
-    costTerm.maxAllowableError);
+    minNormalizedFiberLengthError, errorCenter, maximumAllowableError);
 end

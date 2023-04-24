@@ -26,7 +26,9 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcPassiveForcePenaltyCost(modeledValues, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 10);
 cost = calcDeviationCostArray( ...
-    modeledValues.passiveForce, costTerm.errorCenter, ...
-    costTerm.maxAllowableError);
+    modeledValues.passiveForce, errorCenter, ...
+    maximumAllowableError);
 end

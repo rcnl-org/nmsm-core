@@ -57,11 +57,15 @@ if isfield(experimentalData, 'muscleTendonLength')
 normalizedFiberLengths = (experimentalData.muscleTendonLength - ...
     scaledTendonSlackLength) ./ (scaledOptimalFiberLength .* ...
     cos(experimentalData.pennationAngle));
+else
+    normalizedFiberLengths = [];
 end
 % Normalized muscle fiber velocity, equation 3 from Meyer 2017
 if isfield(experimentalData, 'muscleTendonVelocity')
 normalizedFiberVelocities = (experimentalData.muscleTendonVelocity) ./ ...
     (experimentalData.vMaxFactor .* scaledOptimalFiberLength .* ...
     cos(experimentalData.pennationAngle));
+else
+    normalizedFiberVelocities = [];
 end
 end

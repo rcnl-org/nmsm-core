@@ -27,7 +27,8 @@
 
 function cost = calcNormalizedFiberLengthMeanSimilarityCost( ...
     modeledValues, experimentalData, costTerm)
-
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
 Ind = 1;
 for i = 1:length(experimentalData.normalizedFiberLengthGroups)
 normalizedFiberLengthSimilarity = ...
@@ -42,6 +43,6 @@ Ind = Ind + size(experimentalData.normalizedFiberLengthGroups{i}, 2);
 end
 
 cost = calcDeviationCostArray(...
-    normalizedFiberLengthSimilarityCost, costTerm.errorCenter, ...
-    costTerm.maxAllowableError);
+    normalizedFiberLengthSimilarityCost, errorCenter, ...
+    maximumAllowableError);
 end

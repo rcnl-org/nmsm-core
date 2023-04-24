@@ -1,6 +1,6 @@
 DataType=double
 version=3
-OpenSimVersion=4.5-2023-02-16-ca98b50
+OpenSimVersion=4.4-2022-07-23-0e9fedc
 endheader
 time	column1	column2
 1	4	7
