@@ -25,16 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params, resultsDirectory] = ...
+function [inputs, params] = ...
     parseVerificationOptimizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
 inputs = modifyModelForces(inputs);
-resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
-    'results_directory'));
-if(isempty(resultsDirectory))
-    resultsDirectory = pwd;
-end
 end
 
 function inputs = getInputs(tree)
