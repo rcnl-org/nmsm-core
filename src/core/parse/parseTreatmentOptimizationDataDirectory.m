@@ -29,33 +29,50 @@ function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
 dataDirectory = parseDataDirectory(tree);
 prefix = findPrefixes(tree, dataDirectory);
 
-directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IDData");
-[inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
-    parseTreatmentOptimizationData(directory, prefix);
-inputs.numActuators = size(inputs.experimentalJointMoments, 2);
-
-directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IKData");
-[inputs.experimentalJointAngles, inputs.coordinateNames] = ...
-    parseTreatmentOptimizationData(directory, prefix);
-inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
-
-if strcmp(inputs.controllerType, 'synergy_driven')
-directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
-[inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
-    parseTreatmentOptimizationData(directory, prefix);
-directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    dataDirectory, "MAData"), prefix);
-inputs.momentArms = parseSelectMomentArms(directories, ...
-    inputs.surrogateModelCoordinateNames, inputs.muscleNames);
-inputs.momentArms = reshape(permute(inputs.momentArms, [1 4 2 3]), [], ...
-    length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
-inputs = getMuscleSpecificSurrogateModelData(inputs);
+directory = findFirstLevelSubDirectoriesFromPrefixes( ...
+    inputs.resultsDirectory, "optimal");
+if ~isempty(directory)
+    [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
+        parseTreatmentOptimizationData(directory, 'inverseDynamics');
+    [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
+        parseTreatmentOptimizationData(directory, 'inverseKinematics');
+    experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
+        directory, "inverseKinematics"))';
+    inputs.experimentalTime = experimentalTime - experimentalTime(1);
+    inputs.grfFileName = findFileListFromPrefixList(...
+        directory, "groundReactions");
+    if strcmp(inputs.controllerType, 'synergy_driven')
+        [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
+            parseTreatmentOptimizationData(directory, 'muscleActivations');
+    end
+else
+    directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IDData");
+    [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
+        parseTreatmentOptimizationData(directory, prefix);
+    directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IKData");
+    [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
+        parseTreatmentOptimizationData(directory, prefix);
+    experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
+        fullfile(dataDirectory, "IKData"), prefix))';
+    inputs.experimentalTime = experimentalTime - experimentalTime(1);
+    inputs.grfFileName = findFileListFromPrefixList(...
+        fullfile(dataDirectory, "GRFData"), prefix);
+    if strcmp(inputs.controllerType, 'synergy_driven')
+        directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
+        [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
+            parseTreatmentOptimizationData(directory, prefix);
+    end
 end
 
-experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
-    fullfile(dataDirectory, "IKData"), prefix))';
-inputs.experimentalTime = experimentalTime - experimentalTime(1);
-
-inputs.grfFileName = findFileListFromPrefixList(...
-    fullfile(dataDirectory, "GRFData"), prefix);
+if strcmp(inputs.controllerType, 'synergy_driven')
+    directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
+        dataDirectory, "MAData"), prefix);
+    inputs.momentArms = parseSelectMomentArms(directories, ...
+        inputs.surrogateModelCoordinateNames, inputs.muscleNames);
+    inputs.momentArms = reshape(permute(inputs.momentArms, [1 4 2 3]), [], ...
+        length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
+    inputs = getMuscleSpecificSurrogateModelData(inputs);
+end
+inputs.numActuators = size(inputs.experimentalJointMoments, 2);
+inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
 end
