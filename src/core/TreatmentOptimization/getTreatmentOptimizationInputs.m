@@ -26,6 +26,9 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = getTreatmentOptimizationInputs(tree)
+inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
+    'results_directory'));
+if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = getTextFromField(getFieldByNameOrError(tree, ...
     'type_of_controller'));
 inputs.model = parseModel(tree);
