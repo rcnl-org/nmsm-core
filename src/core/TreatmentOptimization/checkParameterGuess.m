@@ -26,7 +26,13 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = checkParameterGuess(inputs)
-if isfield(inputs.initialGuess, 'parameter')
+if isfield(inputs.initialGuess, 'parameter') || isfield(inputs,"synergyWeights") 
+    if isfield(inputs.initialGuess, 'parameter')
+        inputs.synergyWeightsGuess = inputs.initialGuess.parameter;
+    elseif isfield(inputs,"synergyWeights") 
+        inputs.synergyWeightsGuess = inputs.synergyWeights;
+    end
+
     parameterIndex = zeros(length(inputs.synergyGroups), inputs.numMuscles);
     for i = 1 : length(inputs.synergyGroups)
         for j = 1 : inputs.numMuscles
@@ -41,16 +47,16 @@ if isfield(inputs.initialGuess, 'parameter')
             end
         end 
     end
-    parameterTemp = [];
+    synergyWeightsFlattened = [];
     numSynergiesIndex = 0;
     for j = 1 : length(inputs.synergyGroups)
-        parameterTemp = cat(2, parameterTemp, ...
-            reshape(inputs.initialGuess.parameter(1 + numSynergiesIndex: ...
+        synergyWeightsFlattened = cat(2, synergyWeightsFlattened, ...
+            reshape(inputs.synergyWeightsGuess(1 + numSynergiesIndex: ...
             inputs.synergyGroups{j}.numSynergies + numSynergiesIndex, ...
             nonzeros(parameterIndex(j, :)))', 1, []));
         numSynergiesIndex = numSynergiesIndex + inputs.synergyGroups{j}.numSynergies;
     end
-    inputs.initialGuess.parameter = parameterTemp;
+    inputs.synergyWeightsGuess = synergyWeightsFlattened;
 end
 if strcmp(inputs.controllerType, 'synergy_driven') 
     inputs = getMuscleSynergiesInitialGuess(inputs);
@@ -73,15 +79,14 @@ if strcmp(inputs.controllerType, 'synergy_driven')
 end
 end
 function inputs = getMuscleSynergiesInitialGuess(inputs)
-if isfield(inputs.initialGuess,"parameter") 
-    inputs.parameterGuess = inputs.initialGuess.parameter;
-    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
+if isfield(inputs.initialGuess,"parameter") || isfield(inputs,"synergyWeights") 
+    synergyWeights = getSynergyWeightsFromGroups(inputs.synergyWeightsGuess, inputs);
+    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;    
 else
     inputs.mtpActivationsColumnNames = inputs.muscleLabels;
     inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 2 1]);
-    inputs.parameterGuess = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs)';
-    synergyWeights = getSynergyWeightsFromGroups(inputs.parameterGuess, inputs);
+    inputs.synergyWeightsGuess = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs)';
+    synergyWeights = getSynergyWeightsFromGroups(inputs.synergyWeightsGuess, inputs);
     inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
 end
 end
