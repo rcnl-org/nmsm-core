@@ -60,6 +60,13 @@ bounds.phase.integral.upper = ones(1, length(inputs.minIntegral));
 % setup terminal constraint bounds
 bounds.eventgroup.lower = inputs.minTerminal;
 bounds.eventgroup.upper = inputs.maxTerminal;
+% setup parameter bounds
+if strcmp(inputs.controllerType, 'synergy_driven') 
+if inputs.optimizeSynergyVectors
+    bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
+    bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
+end
+end
 end
 function guess = setupInitialGuess(inputs)
 
@@ -83,6 +90,10 @@ if isfield(inputs.initialGuess, 'control')
 else
     guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
         inputs.commandsGuess], inputs.maxControl, inputs.minControl);
+end
+if inputs.optimizeSynergyVectors
+        guess.phase.parameter = scaleToBounds(inputs.synergyWeightsGuess, ...
+            inputs.maxParameter, inputs.minParameter);
 end
 elseif strcmp(inputs.controllerType, 'torque_driven') 
 if isfield(inputs.initialGuess, 'control')

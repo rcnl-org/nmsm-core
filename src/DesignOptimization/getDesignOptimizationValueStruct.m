@@ -38,9 +38,17 @@ values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
 values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
 values.controlJerks = control(:, 1 : params.numCoordinates);
 if strcmp(params.controllerType, 'synergy_driven') 
+    if params.optimizeSynergyVectors 
+        values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
+            params.maxParameter, params.minParameter);
+        values.synergyWeights = getSynergyWeightsFromGroups(...
+            values.synergyWeights, params);
+    else
+        values.synergyWeights = getSynergyWeightsFromGroups(...
+            params.synergyWeightsGuess, params);
+    end
     values.controlNeuralCommands = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numSynergies);
-    values.synergyWeights = params.synergyWeights;
 else
     values.controlTorques = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numTorqueControls);

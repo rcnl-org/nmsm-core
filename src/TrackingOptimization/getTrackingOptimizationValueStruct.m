@@ -45,7 +45,7 @@ if strcmp(params.controllerType, 'synergy_driven')
             values.synergyWeights, params);
     else
         values.synergyWeights = getSynergyWeightsFromGroups(...
-            params.parameterGuess, params);
+            params.synergyWeightsGuess, params);
     end
     values.controlNeuralCommands = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numSynergies);
@@ -53,5 +53,4 @@ else
     values.controlTorques = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numTorqueControls);
 end
-
 end
