@@ -25,13 +25,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function event = calcDesignOptimizationTerminalConstraint(inputs, params)
-
-inputs.phase.state = [inputs.phase.initialstate; inputs.phase.finalstate];
-inputs.phase.time = [inputs.phase.initialtime; inputs.phase.finaltime];
-inputs.phase.control = ones(size(inputs.phase.time,1),length(params.minControl));
-values = getDesignOptimizationValueStruct(inputs.phase, params);
-modeledValues = calcTorqueBasedModeledValues(values, params);
+function event = calcDesignOptimizationTerminalConstraint(values, ...
+    modeledValues, params)
 
 event = [];
 for i = 1:length(params.terminal)

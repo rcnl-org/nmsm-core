@@ -25,17 +25,34 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = computeDesignOptimizationEndpointFunction(inputs)
+function inputs = getDiscreteCostTerms(tree, inputs)
+trackingDiscreteTermsTree = getFieldByName(tree, 'RCNLTrackingCostTerms');
+if isstruct(trackingDiscreteTermsTree)
+    if isfield(trackingDiscreteTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
+        rcnlCostTermTree = ...
+            trackingDiscreteTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
+        if length(rcnlCostTermTree) > 1
+            inputs.discrete.tracking = ...
+                parseRcnlCostTermSet(rcnlCostTermTree);
+        else
+            inputs.discrete.tracking = ...
+                parseRcnlCostTermSet({rcnlCostTermTree});
+        end
+    end
+end
 
-inputs.phase.state = [inputs.phase.initialstate; inputs.phase.finalstate];
-inputs.phase.time = [inputs.phase.initialtime; inputs.phase.finaltime];
-inputs.phase.control = ones(size(inputs.phase.time,1),length(inputs.auxdata.minControl));
-values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
-modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
-
-output.eventgroup.event = calcDesignOptimizationTerminalConstraint( ...
-   values, modeledValues, inputs.auxdata);
-discrete = calcDesignOptimizationDiscreteObjective(values, inputs.auxdata);
-output.objective = calcDesignOptimizationObjective(discrete, ...
-    inputs.phase.integral);
+minimizingDiscreteTermsTree = getFieldByName(tree, 'RCNLMinimizationCostTerms');
+if isstruct(minimizingDiscreteTermsTree)
+    if isfield(minimizingDiscreteTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
+        rcnlCostTermTree = ...
+            minimizingDiscreteTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
+        if length(rcnlCostTermTree) > 1
+            inputs.discrete.minimizing = ...
+                parseRcnlCostTermSet(rcnlCostTermTree);
+        else
+            inputs.discrete.minimizing = ...
+                parseRcnlCostTermSet({rcnlCostTermTree});
+        end
+    end
+end
 end

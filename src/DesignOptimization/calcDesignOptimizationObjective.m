@@ -25,7 +25,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function objective = calcDesignOptimizationObjective(integral)
-continuousObjective = sum(integral) / length(integral);
-objective = continuousObjective;
+function objective = calcDesignOptimizationObjective(discrete, continuous)
+continuousObjective = sum(continuous) / length(continuous);
+discreteObjective = sum(discrete) / length(discrete);
+if isnan(discreteObjective); discreteObjective = 0; end
+objective = continuousObjective + discreteObjective;
 end
