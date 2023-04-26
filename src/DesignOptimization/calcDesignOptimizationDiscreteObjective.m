@@ -25,17 +25,34 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = computeDesignOptimizationEndpointFunction(inputs)
+function discrete = calcDesignOptimizationDiscreteObjective(values, params)
 
-inputs.phase.state = [inputs.phase.initialstate; inputs.phase.finalstate];
-inputs.phase.time = [inputs.phase.initialtime; inputs.phase.finaltime];
-inputs.phase.control = ones(size(inputs.phase.time,1),length(inputs.auxdata.minControl));
-values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
-modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
-
-output.eventgroup.event = calcDesignOptimizationTerminalConstraint( ...
-   values, modeledValues, inputs.auxdata);
-discrete = calcDesignOptimizationDiscreteObjective(values, inputs.auxdata);
-output.objective = calcDesignOptimizationObjective(discrete, ...
-    inputs.phase.integral);
+discrete = [];
+if isfield(params, 'discrete')
+    for i = 1:length(params.discrete.tracking)
+        costTerm = params.discrete.tracking{i};
+        if costTerm.isEnabled
+            switch costTerm.type
+                case "synergy_vectors"
+                    discrete = cat(2, discrete, ...
+                        calcTrackingCoordinateIntegrand(params, ...
+                        values.time, values.statePositions, ...
+                        costTerm.coordinate));   
+                otherwise
+                    throw(MException('', ['Cost term type ' costTerm.type ...
+                        ' does not exist for this tool.']))   
+            end
+        end
+    end
+    for i = 1:length(params.discrete.minimizing)
+        costTerm = params.discrete.minimizing{i};
+        if costTerm.isEnabled
+            switch costTerm.type
+                otherwise
+                    throw(MException('', ['Cost term type ' costTerm.type ...
+                        ' does not exist for this tool.']))   
+            end
+        end
+    end
+end
 end
