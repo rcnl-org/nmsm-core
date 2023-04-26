@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<OpenSimDocument Version="40000">
+<NMSMPipelineDocument Version="0.1.0">
     <NeuralControlPersonalizationTool>
         <!--Directory used for writing results.-->
         <results_directory>results</results_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>model.osim</input_model_file>
+	<input_osimx_file>model.osimx</input_osimx_file>
         <!--Directory for data files-->
         <data_directory>preprocessed</data_directory>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
@@ -13,16 +14,16 @@
         <activation_muscle_groups>InternalObliquesR ExternalObliquesR ErectorSpinaeR MultifidusR QuadratusLumborumR AdductorsR BicepsFemorisR TibialisAnteriorR FlexorLongusR GastrocR ExternalRotatorsR GluteusMaximusR GluteusMediusR GluteusMinimusR HipFlexorsR SemiHamstringsR QuadricepsR PeroneusR InternalObliquesL ExternalObliquesL ErectorSpinaeL MultifidusL QuadratusLumborumL AdductorsL BicepsFemorisL TibialisAnteriorL FlexorLongusL GastrocL ExternalRotatorsL GluteusMaximusL GluteusMediusL GluteusMinimusL HipFlexorsL SemiHamstringsL QuadricepsL PeroneusL</activation_muscle_groups>
         <!--A space-separated list of the normalized fiber length muscle groups. -->
         <normalized_fiber_length_muscle_groups> GluteusMaximusL GluteusMediusL GluteusMinimusL HipFlexorsL PeroneusL GastrocL TibialisAnteriorL TibialisPosteriorL HamstringsFiberLengthL QuadricepsFiberLengthL AdductorFiberLengthL GluteusMaximusR GluteusMediusR GluteusMinimusR HipFlexorsR PeroneusR GastrocR TibialisAnteriorR TibialisPosteriorR HamstringsFiberLengthR QuadricepsFiberLengthR AdductorFiberLengthR</normalized_fiber_length_muscle_groups>
-		<MuscleTendonLengthInitialization>
+		<MuscleTendonParameterInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization-->
 			<is_enabled>false</is_enabled>
-		</MuscleTendonLengthInitialization>
-        <!--The first of two MTP results directories -->
+		</MuscleTendonParameterInitialization>
+        <!--The MTP results directories -->
         <mtp_results_directory>mtpResults</mtp_results_directory>
 		<!---->
-		<SynergySet>
+		<RCNLSynergySet>
 			<objects>
-				<Synergy>
+				<RCNLSynergy>
 					<muscle_group_name>right_side</muscle_group_name>
 					<num_synergies>6</num_synergies>
 				</Synergy>
@@ -36,4 +37,4 @@
 		<!--false if synergies per side are independent of each other; true if synergy vector weights are the same between left and right-->
 		<enforce_bilateral_symmetry>false</enforce_bilateral_symmetry>
     </NeuralControlPersonalizationTool>
-</OpenSimDocument>
+</NMSMPipelineDocument>
