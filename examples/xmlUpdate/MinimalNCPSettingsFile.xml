@@ -5,7 +5,7 @@
         <results_directory>results</results_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>model.osim</input_model_file>
-	<input_osimx_file>model.osimx</input_osimx_file>
+		<input_osimx_file>model.osimx</input_osimx_file>
         <!--Directory for data files-->
         <data_directory>preprocessed</data_directory>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
