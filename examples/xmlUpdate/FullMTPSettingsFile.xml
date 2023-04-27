@@ -5,8 +5,8 @@
         <results_directory>results</results_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>optModel_MuscleGroups_LeftMusclesActive_NewSynx.osim</input_model_file>
-	<!--Name of the input osimx file to use, blank if a new osimx file should be created-->
-	<input_osimx_file>example.osimx</input_osimx_file>
+		<!--Name of the input osimx file to use, blank if a new osimx file should be created-->
+		<input_osimx_file>example.osimx</input_osimx_file>
         <!--Directory for data files-->
         <data_directory></data_directory>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
@@ -27,7 +27,7 @@
         <max_iterations>2e3</max_iterations>
         <!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
         <max_function_evaluations>1e8</max_function_evaluations>
-		<MaximumIsometricForceAdjustment>
+		<MuscleTendonParameterInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization-->
 			<is_enabled>false</is_enabled>
 			<passive_moment_data_directory>thelen</passive_moment_data_directory>
@@ -89,7 +89,7 @@
                 </objects>
                 <groups />
             </RCNLCostTermSet>
-		</MaximumIsometricForceAdjustment>
+		</MuscleTendonParameterInitialization>
 		 <!-- Synergy Extrapolation Settings -->
 		<MTPSynergyExtrapolation>
 			<!--Flag indicating if synergery extrapolation should be performed as part of this task-->

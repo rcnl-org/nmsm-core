@@ -74,10 +74,6 @@
 			<groups />
 		</GCPContactSurfaceSet>
 		<!--Initial values of design variables-->
-		<initial_resting_spring_length>0.05</initial_resting_spring_length>
-		<initial_spring_constant>2500</initial_spring_constant>
-		<initial_damping_factor>1e-4</initial_damping_factor>
-		<initial_dynamic_friction_coefficient>0</initial_dynamic_friction_coefficient>
 		<initial_viscous_friction_coefficient>5</initial_viscous_friction_coefficient>
     </GroundContactPersonalizationTool>
 </OpenSimDocument>
