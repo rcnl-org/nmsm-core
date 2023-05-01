@@ -26,14 +26,14 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTrackingControllerIntegrand(params, values, ...
-    phaseout, controllerName)
+    controllerName)
 
 switch params.controllerType
     case 'synergy_driven'
         indx = find(strcmp(convertCharsToStrings( ...
             params.synergyLabels), controllerName));
-        neuralCommands = fnval(params.splineNeuralCommands, values.time)';
-        cost = calcTrackingCostArrayTerm(neuralCommands, values.controlNeuralCommands, indx);
+        synergyActivations = fnval(params.splineSynergyActivations, values.time)';
+        cost = calcTrackingCostArrayTerm(synergyActivations, values.controlSynergyActivations, indx);
     case 'torque_driven'
         indx1 = find(strcmp(convertCharsToStrings( ...
             params.inverseDynamicMomentLabels), controllerName));
