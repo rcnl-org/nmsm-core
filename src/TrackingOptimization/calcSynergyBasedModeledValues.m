@@ -44,7 +44,7 @@ end
 end
 
 function muscleActivations = calcMuscleActivationFromSynergies(values)
-muscleActivations = values.controlNeuralCommands * values.synergyWeights;
+muscleActivations = values.controlSynergyActivations * values.synergyWeights;
 end
 function [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, params)
 

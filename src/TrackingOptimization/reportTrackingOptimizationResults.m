@@ -36,9 +36,9 @@ plotMuscleActivations(solution.muscleActivations, values.time, ...
 % plot synergy activations
 synergyTitles = {};
 for i = 1 : inputs.numSynergies
-    synergyTitles{end + 1} = strcat('command', num2str(i));
+    synergyTitles{end + 1} = strcat('synergy activation', num2str(i));
 end
-plotResultsWithOutComparison(values.controlNeuralCommands, values.time, ...
+plotResultsWithOutComparison(values.controlSynergyActivations, values.time, ...
     synergyTitles, ["Synergy" "Activations"]);
 end
 % plot joint angles
