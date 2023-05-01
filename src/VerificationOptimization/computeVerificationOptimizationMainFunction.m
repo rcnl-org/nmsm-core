@@ -82,7 +82,7 @@ if isfield(inputs.initialGuess, 'control')
         inputs.maxControl, inputs.minControl);
 else
     guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
-        inputs.commandsGuess], inputs.maxControl, inputs.minControl);
+        inputs.synergyActivationsGuess], inputs.maxControl, inputs.minControl);
 end
 elseif strcmp(inputs.controllerType, 'torque_driven') 
 if isfield(inputs.initialGuess, 'control')
