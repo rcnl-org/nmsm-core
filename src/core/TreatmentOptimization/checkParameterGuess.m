@@ -81,12 +81,12 @@ end
 function inputs = getMuscleSynergiesInitialGuess(inputs)
 if isfield(inputs.initialGuess,"parameter") || isfield(inputs,"synergyWeights") 
     synergyWeights = getSynergyWeightsFromGroups(inputs.synergyWeightsGuess, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;    
+    inputs.synergyActivationsGuess = inputs.experimentalMuscleActivations / synergyWeights;    
 else
     inputs.mtpActivationsColumnNames = inputs.muscleLabels;
     inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 2 1]);
     inputs.synergyWeightsGuess = prepareNonNegativeMatrixFactorizationInitialValues(inputs, inputs)';
     synergyWeights = getSynergyWeightsFromGroups(inputs.synergyWeightsGuess, inputs);
-    inputs.commandsGuess = inputs.experimentalMuscleActivations / synergyWeights;
+    inputs.synergyActivationsGuess = inputs.experimentalMuscleActivations / synergyWeights;
 end
 end

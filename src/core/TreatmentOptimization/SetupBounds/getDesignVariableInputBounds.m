@@ -51,9 +51,9 @@ minControlJerks = min(inputs.experimentalJointJerks) - ...
     inputs.controlJerksMultiple * range(inputs.experimentalJointJerks);
 
 if strcmp(inputs.controllerType, 'synergy_driven') 
-    maxControlNeuralCommands = inputs.maxControlNeuralCommands * ...
+    maxControlSynergyActivations = inputs.maxControlSynergyActivations * ...
         ones(1, inputs.numSynergies);
-    inputs.maxControl = [maxControlJerks maxControlNeuralCommands];
+    inputs.maxControl = [maxControlJerks maxControlSynergyActivations];
     inputs.minControl = [minControlJerks zeros(1, inputs.numSynergies)];
     
     if inputs.optimizeSynergyVectors
