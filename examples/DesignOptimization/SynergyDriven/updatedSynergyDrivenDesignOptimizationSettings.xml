@@ -2,7 +2,7 @@
 <NMSMPipelineDocument Version="0.1.0">
     <TrackingOptimizationTool>
         <!--Directory used for writing results.-->
-        <results_directory>C:\Users\marle\Documents\GitHub\nmsm-core\examples\VerificationOptimization\SynergyDriven</results_directory>
+        <results_directory>C:\Users\marle\Documents\GitHub\nmsm-core\examples\DesignOptimization\SynergyDriven</results_directory>
         <!--Directory for input files-->
         <data_directory>preprocessed</data_directory>
         <!--Name of the input model file (.osim) to use-->
@@ -15,6 +15,8 @@
     	<type_of_controller>synergy_driven</type_of_controller>
     	<!--Indicate name of file consisting of synergy vectors-->
     	<synergy_vectors_file>synergyVectors.sto</synergy_vectors_file>
+		<!--Indicate if synergy vectors should be optimized-->
+    	<optimize_synergy_vectors>true</optimize_synergy_vectors>
     	<!--Name of the osimx model file-->
     	<osimx_file>exampleModel.osimx</osimx_file>
     	<!--Indicate the surrogate model coordinates-->
@@ -43,7 +45,7 @@
     		<joint_velocities_multiple>1.5</joint_velocities_multiple>
     		<joint_accelerations_multiple>1</joint_accelerations_multiple>
     		<joint_jerks_multiple>1</joint_jerks_multiple>
-    		<synergy_commands_max>10</synergy_commands_max>
+    		<synergy_activations_max>10</synergy_activations_max>
     		<synergy_weights_max>0.15</synergy_weights_max>
     	</RCNLDesignVariableBoundsTerms>
 		<RCNLContinuousCostTermSet>
@@ -240,73 +242,73 @@
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>command1</controller>
+								<controller>synergy_activation1</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>command2</controller>
+								<controller>synergy_activation2</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>command3</controller>
+								<controller>synergy_activation3</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>command4</controller>
+								<controller>synergy_activation4</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>command5</controller>
+								<controller>synergy_activation5</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>command6</controller>
+								<controller>synergy_activation6</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>command7</controller>
+								<controller>synergy_activation7</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>command8</controller>
+								<controller>synergy_activation8</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>commands9</controller>
+								<controller>synergy_activation9</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>commands10</controller>
+								<controller>synergy_activation10</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>commands11</controller>
+								<controller>synergy_activation11</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 							<RCNLCostTerm>
 								<type>controller</type>
-								<controller>commands12</controller>
+								<controller>synergy_activation12</controller>
 								<is_enabled>true</is_enabled>
 								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>

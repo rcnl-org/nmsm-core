@@ -89,7 +89,7 @@ if isfield(inputs.initialGuess, 'control')
         inputs.maxControl, inputs.minControl);
 else
     guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
-        inputs.commandsGuess], inputs.maxControl, inputs.minControl);
+        inputs.synergyActivationsGuess], inputs.maxControl, inputs.minControl);
 end
 if inputs.optimizeSynergyVectors
         guess.phase.parameter = scaleToBounds(inputs.synergyWeightsGuess, ...
