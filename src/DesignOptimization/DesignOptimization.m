@@ -44,7 +44,7 @@ end
 output = computeDesignOptimizationMainFunction(inputs, params);
 end
 function inputs = setupMuscleSynergies(inputs)
-inputs.splineNeuralCommands = spaps(inputs.initialGuess.time, ...
+inputs.splineSynergyActivations = spaps(inputs.initialGuess.time, ...
     inputs.initialGuess.control(:, inputs.numCoordinates + 1:end)', 0.0000001);
 inputs.synergyLabels = inputs.initialGuess.controlLabels(:, inputs.numCoordinates + 1:end);
 end

@@ -2,7 +2,7 @@
 <NMSMPipelineDocument Version="0.1.0">
     <TrackingOptimizationTool>
         <!--Directory used for writing results.-->
-        <results_directory>C:\Users\marle\Documents\GitHub\nmsm-core\examples\VerificationOptimization\TorqueDriven</results_directory>
+        <results_directory>C:\Users\marle\Documents\GitHub\nmsm-core\examples\DesignOptimization\TorqueDriven</results_directory>
         <!--Directory for input files-->
         <data_directory>preprocessed</data_directory>
         <!--Name of the input model file (.osim) to use-->
