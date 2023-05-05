@@ -1,0 +1,65 @@
+Things to Talk About Tomorrow
+
+automatic scaling?? keep space for users to define bounds, accommodate scaling 
+
+Kinematics define the state, joint velocity, joint acceleration
+	tendon force is in state?
+Controls are synergy activations or torques
+Initial Time, always constant?
+Final Time, ask for range? vs ask for final time upper/lower
+Guess is just data inputs?
+	static parameters added to guess
+Initial guess of parameters is baked into parameter definition? Range needed
+
+Do we only do single phase?
+
+Bounds:
+	initial state bounds
+		can initial state change?
+		by how much?
+	final state bounds
+		can final state change?
+		by how much?
+	state bounds
+		obviously states can change
+		how to control how much state changes
+		is state only kinematics?
+		can use add time-variable 
+	can you explain path constraints again?
+	some quantity that varies with time, keeps it on rails, define width
+	satisfy pelvis residuals as a path constraint
+	on controls, states, calculated quantities
+	control bounds
+		can change? yes
+		should they always be bounded 0-1?
+		how to describe bounds amount? by percent??
+		multiple for jerk
+		for torque controls
+		for synergy activations
+	please explain integrals and integral bounds
+		can integrate anything, can use integration in cost function
+		including 'total' knee adduction
+		
+	duration upper/lower
+		boolean element
+		how much? range
+	define static parameters
+		if it's a static parameter it changes
+		upper and lower bounds
+	
+Endpoint:
+	objective
+		how to let user add more objectives??
+	what are eventgroups and do we care?
+	event groups are terminal constraints
+	periodicity is terminal constraint
+
+Continuous:
+	How do we calculate the dynamics??
+	what is a path and integrand
+	
+	do you have examples of endpoint cost terms vs continuous cost terms?
+	metabolic cost
+	step length difference
+	
+
