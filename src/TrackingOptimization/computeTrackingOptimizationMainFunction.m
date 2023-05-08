@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -61,14 +61,18 @@ bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
 bounds.phase.integral.lower = zeros(1, length(inputs.minIntegral));
 bounds.phase.integral.upper = ones(1, length(inputs.minIntegral));
 % setup terminal constraint bounds
-bounds.eventgroup.lower = inputs.minTerminal;
-bounds.eventgroup.upper = inputs.maxTerminal;
-% setup parameter bounds
-if strcmp(inputs.controllerType, 'synergy_driven') 
-if inputs.optimizeSynergyVectors
-    bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
-    bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
+if ~isempty(inputs.minTerminal)
+    bounds.eventgroup.lower = inputs.minTerminal;
 end
+if ~isempty(inputs.maxTerminal)
+    bounds.eventgroup.upper = inputs.maxTerminal;
+end
+% setup parameter bounds
+if strcmp(inputs.controllerType, 'synergy_driven')
+    if inputs.optimizeSynergyVectors
+        bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
+        bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
+    end
 end
 end
 function guess = setupInitialGuess(inputs)
@@ -86,32 +90,32 @@ else
     guess.phase.time = scaleToBounds(inputs.experimentalTime, inputs.maxTime, ...
         inputs.minTime);
 end
-if strcmp(inputs.controllerType, 'synergy_driven') 
-if isfield(inputs.initialGuess, 'control')
-    guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
-        inputs.maxControl, inputs.minControl);
-else
-    guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
-        inputs.synergyActivationsGuess], inputs.maxControl, inputs.minControl);
-end
-if inputs.optimizeSynergyVectors
+if strcmp(inputs.controllerType, 'synergy_driven')
+    if isfield(inputs.initialGuess, 'control')
+        guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
+            inputs.maxControl, inputs.minControl);
+    else
+        guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
+            inputs.synergyActivationsGuess], inputs.maxControl, inputs.minControl);
+    end
+    if inputs.optimizeSynergyVectors
         guess.phase.parameter = scaleToBounds(inputs.parameterGuess, ...
             inputs.maxParameter, inputs.minParameter);
-end
-elseif strcmp(inputs.controllerType, 'torque_driven') 
-if isfield(inputs.initialGuess, 'control')
-    guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
-        inputs.maxControl, inputs.minControl);
-else
-    for i = 1:length(inputs.controlTorqueNames)
-        indx = find(strcmp(convertCharsToStrings( ...
-            inputs.inverseDynamicMomentLabels), ...
-            strcat(inputs.controlTorqueNames(i), '_moment')));
-        controlTorquesGuess(:, i) = inputs.experimentalJointMoments(:, indx);
     end
-    guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
-        controlTorquesGuess], inputs.maxControl, inputs.minControl);
-end
+elseif strcmp(inputs.controllerType, 'torque_driven')
+    if isfield(inputs.initialGuess, 'control')
+        guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
+            inputs.maxControl, inputs.minControl);
+    else
+        for i = 1:length(inputs.controlTorqueNames)
+            indx = find(strcmp(convertCharsToStrings( ...
+                inputs.inverseDynamicMomentLabels), ...
+                strcat(inputs.controlTorqueNames(i), '_moment')));
+            controlTorquesGuess(:, i) = inputs.experimentalJointMoments(:, indx);
+        end
+        guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
+            controlTorquesGuess], inputs.maxControl, inputs.minControl);
+    end
 end
 guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
     inputs.minIntegral);

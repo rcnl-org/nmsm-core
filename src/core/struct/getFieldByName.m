@@ -41,7 +41,7 @@ if(isstruct(deepStruct))
     fields = fieldnames(deepStruct);
     for i=1:length(fields)
         [output, path] = getFieldByName(deepStruct.(fields{i}),field);
-        if(isstruct(output))
+        if(isstruct(output) || iscell(output))
             path = [string(fields{i}) path];
             return
         end

@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,18 +26,19 @@
 % ----------------------------------------------------------------------- %
 
 function phaseout = calcTorqueBasedModeledValues(values, params)
-
-[springPositions, springVelocities] = getSpringLocations(values.time, ....
-    values.statePositions, values.stateVelocities, params);
-phaseout.bodyLocations = getBodyLocations(values.time, ....
-    values.statePositions, values.stateVelocities, params);
-groundReactions = calcFootGroundReactions(springPositions, springVelocities, ...
-    params, phaseout.bodyLocations);
-groundReactionsBody = tranferGroundReactionMoments( ...
-    phaseout.bodyLocations, groundReactions, params);
-phaseout.groundReactionsLab = calcGroundReactionsLab(groundReactions);
-
-appliedLoads = [zeros(length(values.time), params.numTotalMuscles) groundReactionsBody];
+appliedLoads = [zeros(length(values.time), params.numTotalMuscles)];
+if ~isempty(params.contactSurfaces)
+    [springPositions, springVelocities] = getSpringLocations(values.time, ....
+        values.statePositions, values.stateVelocities, params);
+    phaseout.bodyLocations = getBodyLocations(values.time, ....
+        values.statePositions, values.stateVelocities, params);
+    groundReactions = calcFootGroundReactions(springPositions, springVelocities, ...
+        params, phaseout.bodyLocations);
+    groundReactionsBody = tranferGroundReactionMoments( ...
+        phaseout.bodyLocations, groundReactions, params);
+    phaseout.groundReactionsLab = calcGroundReactionsLab(groundReactions);
+    appliedLoads = [appliedLoads groundReactionsBody];
+end
 phaseout.inverseDynamicMoments = inverseDynamics(values.time, ...
     values.statePositions, values.stateVelocities, ...
     values.stateAccelerations, params.coordinateNames, appliedLoads);
