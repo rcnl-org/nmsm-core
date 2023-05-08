@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -35,26 +35,26 @@ inputs.model = parseModel(tree);
 inputs.osimx = parseOsimxFile(getTextFromField(getFieldByName(tree, ...
     'osimx_file')));
 if strcmp(inputs.controllerType, 'synergy_driven')
-inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
-inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
-inputs.numSynergyWeights = getNumSynergyWeights(inputs.synergyGroups);
-inputs.surrogateModelCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "coordinate_list");
-inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
-    inputs.surrogateModelCoordinateNames);
-inputs.numMuscles = length(inputs.muscleNames);
-inputs.epsilon = str2double(parseElementTextByNameOrAlternate(tree, ...
-    "epsilon", "1e-4"));
-inputs.vMaxFactor = str2double(parseElementTextByNameOrAlternate(tree, ...
-    "v_max_factor", "10"));
-surrogateModelCoefficients = load(getTextFromField(getFieldByName(tree, ...
-    'surrogate_model_coefficients')));
-inputs.coefficients = surrogateModelCoefficients.coefficients;
-inputs = getModelOrOsimxInputs(inputs);
+    inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
+    inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
+    inputs.numSynergyWeights = getNumSynergyWeights(inputs.synergyGroups);
+    inputs.surrogateModelCoordinateNames = parseSpaceSeparatedList(tree, ...
+        "coordinate_list");
+    inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
+        inputs.surrogateModelCoordinateNames);
+    inputs.numMuscles = length(inputs.muscleNames);
+    inputs.epsilon = str2double(parseElementTextByNameOrAlternate(tree, ...
+        "epsilon", "1e-4"));
+    inputs.vMaxFactor = str2double(parseElementTextByNameOrAlternate(tree, ...
+        "v_max_factor", "10"));
+    surrogateModelCoefficients = load(getTextFromField(getFieldByName(tree, ...
+        'surrogate_model_coefficients')));
+    inputs.coefficients = surrogateModelCoefficients.coefficients;
+    inputs = getModelOrOsimxInputs(inputs);
 elseif strcmp(inputs.controllerType, 'torque_driven')
-inputs.controlTorqueNames = parseSpaceSeparatedList(tree, ...
-    "coordinate_list");
-inputs.numTorqueControls = length(inputs.controlTorqueNames);
+    inputs.controlTorqueNames = parseSpaceSeparatedList(tree, ...
+        "coordinate_list");
+    inputs.numTorqueControls = length(inputs.controlTorqueNames);
 end
 inputs.optimizeSynergyVectors = getBooleanLogicFromField(...
     parseElementTextByNameOrAlternate(tree, "optimizeSynergyVectors", 0));
@@ -64,8 +64,14 @@ inputs = getContinuousCostTerms(getFieldByNameOrError(tree, ...
     'RCNLContinuousCostTermSet'), inputs);
 inputs = getDiscreteCostTerms(getFieldByName(tree, ...
     'RCNLDiscreteCostTermSet'), inputs);
-inputs = getPathConstraintTerms(tree, inputs);
-inputs = getTerminalConstraintTerms(tree, inputs);
-inputs.contactSurfaces = prepareGroundContactSurfaces(inputs.model, ...
-    inputs.osimx.groundContact.contactSurface, inputs.grfFileName);
+inputs.path = getPathConstraintTerms(tree);
+inputs.terminal = getTerminalConstraintTerms(tree);
+contactSurfaces = getFieldByName(inputs.osimx, "contactSurface");
+if (isstruct(contactSurfaces) || iscell(contactSurfaces)) && ...
+        isfield(inputs, "grfFileName")
+    inputs.contactSurfaces = prepareGroundContactSurfaces(inputs.model, ...
+        contactSurfaces, inputs.grfFileName);
+else
+    inputs.contactSurfaces = {};
+end
 end
