@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,7 +30,7 @@ function saveTrackingOptimizationResults(solution, inputs)
 values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
 outputDirectory = [inputs.resultsDirectory '\optimal'];
 if ~exist(outputDirectory, 'dir')
-   mkdir(outputDirectory)
+    mkdir(outputDirectory)
 end
 writeToSto(inputs.coordinateNames, values.time, values.statePositions, ...
     fullfile(outputDirectory, "inverseKinematics.sto"));
@@ -54,9 +54,11 @@ for i = 1:length(inputs.contactSurfaces)
         solution.groundReactionsLab.moments{i}, ...
         midfootSuperiorLocation];
 end
-writeToSto(groundContactLabels, values.time, ...
-    groundContactData, fullfile(outputDirectory, ...
-    "groundReactions.sto"));
+if ~isempty(groundContactData)
+    writeToSto(groundContactLabels, values.time, ...
+        groundContactData, fullfile(outputDirectory, ...
+        "groundReactions.sto"));
+end
 stateLabels = inputs.coordinateNames;
 for i = 1 : length(inputs.coordinateNames)
     stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
@@ -79,7 +81,7 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         inputs.numSynergies), [values.synergyWeights], ...
         fullfile(inputs.resultsDirectory, "parameterSolution.sto"));
     writeToSto(inputs.muscleLabels, values.time, solution.muscleActivations, ...
-    fullfile(outputDirectory, "muscleActivations.sto"));
+        fullfile(outputDirectory, "muscleActivations.sto"));
 elseif strcmp(inputs.controllerType, 'torque_driven')
     controlLabels = inputs.coordinateNames;
     for i = 1 : inputs.numTorqueControls
