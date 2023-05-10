@@ -29,25 +29,25 @@ function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
 dataDirectory = parseDataDirectory(tree);
 prefix = findPrefixes(tree, dataDirectory);
 
-directory = findFirstLevelSubDirectoriesFromPrefixes( ...
-    inputs.resultsDirectory, "optimal");
-if ~isempty(directory)
-    [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
-        parseTreatmentOptimizationData(directory, 'inverseDynamics');
-    [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
-        parseTreatmentOptimizationData(directory, 'inverseKinematics');
-    experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
-        directory, "inverseKinematics"))';
-    inputs.experimentalTime = experimentalTime - experimentalTime(1);
-    if exist(fullfile(dataDirectory, "groundReactions"), 'dir')
-        inputs.grfFileName = findFileListFromPrefixList(...
-            directory, "groundReactions");
-    end
-    if strcmp(inputs.controllerType, 'synergy_driven')
-        [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
-            parseTreatmentOptimizationData(directory, 'muscleActivations');
-    end
-else
+% directory = findFirstLevelSubDirectoriesFromPrefixes( ...
+%     inputs.resultsDirectory, "optimal");
+% if ~isempty(directory)
+%     [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
+%         parseTreatmentOptimizationData(directory, 'inverseDynamics');
+%     [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
+%         parseTreatmentOptimizationData(directory, 'inverseKinematics');
+%     experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
+%         directory, "inverseKinematics"))';
+%     inputs.experimentalTime = experimentalTime - experimentalTime(1);
+%     if exist(fullfile(dataDirectory, "groundReactions"), 'dir')
+%         inputs.grfFileName = findFileListFromPrefixList(...
+%             directory, "groundReactions");
+%     end
+%     if strcmp(inputs.controllerType, 'synergy_driven')
+%         [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
+%             parseTreatmentOptimizationData(directory, 'muscleActivations');
+%     end
+% else
     directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IDData");
     [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
         parseTreatmentOptimizationData(directory, prefix);
@@ -66,7 +66,7 @@ else
         [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
             parseTreatmentOptimizationData(directory, prefix);
     end
-end
+% end
 
 if strcmp(inputs.controllerType, 'synergy_driven')
     directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
