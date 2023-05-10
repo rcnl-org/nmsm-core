@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <NMSMPipelineDocument Version="0.1.0">
-    <VerificationOptimizationTool>
+    <DesignOptimizationTool>
         <!--Directory used for writing results.-->
         <results_directory />
         <!--Directory for input files-->
         <data_directory>preprocessed</data_directory>
         <!--Name of the input model file (.osim) to use-->
-        <input_model_file>simple_arm.osim</input_model_file>
+        <input_model_file>simple_arm_translated_away.osim</input_model_file>
     	<!--*Optional* Name of the initial states guess file-->
     	<initial_states_file />
     	<!--*Optional* Name of the initial controls guess file-->
@@ -89,5 +89,5 @@
 		</RCNLTerminalConstraintTerms>
 		<!--*Optional* list prefix of the data file, if left blank, use prefix from IK folder-->
 		<trial_prefix></trial_prefix>
-    </VerificationOptimizationTool>
+    </DesignOptimizationTool>
 </NMSMPipelineDocument>
