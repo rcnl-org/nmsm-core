@@ -29,12 +29,15 @@ function output = computeDesignOptimizationEndpointFunction(inputs)
 
 inputs.phase.state = [inputs.phase.initialstate; inputs.phase.finalstate];
 inputs.phase.time = [inputs.phase.initialtime; inputs.phase.finaltime];
-inputs.phase.control = ones(size(inputs.phase.time,1),length(inputs.auxdata.minControl));
+inputs.phase.control = ones(size(inputs.phase.time,1), ...
+    length(inputs.auxdata.minControl));
 values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 
+if ~isempty(inputs.auxdata.terminal)
 output.eventgroup.event = calcDesignOptimizationTerminalConstraint( ...
    values, modeledValues, inputs.auxdata);
+end
 discrete = calcDesignOptimizationDiscreteObjective(values, inputs.auxdata);
 output.objective = calcDesignOptimizationObjective(discrete, ...
     inputs.phase.integral);
