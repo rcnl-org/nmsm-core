@@ -26,7 +26,7 @@
 % ----------------------------------------------------------------------- %
 
 function saveCommonOptimalControlResults(solution, inputs, values)
-outputDirectory = [inputs.resultsDirectory '\optimal'];
+outputDirectory = fullfile(inputs.resultsDirectory, 'optimal');
 if ~exist(outputDirectory, 'dir')
     mkdir(outputDirectory)
 end
