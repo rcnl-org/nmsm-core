@@ -27,7 +27,7 @@
 
 function output = computeTrackingOptimizationMainFunction(inputs, params)
 bounds = setupProblemBounds(inputs);
-guess = setupInitialGuess(inputs);
+guess = setupCommonOptimalControlInitialGuess(inputs);
 setup = setupSolverSettings(inputs, bounds, guess, params);
 solution = gpops2(setup);
 solution = solution.result.solution;
@@ -50,51 +50,6 @@ if strcmp(inputs.controllerType, 'synergy_driven')
 end
 end
 
-function guess = setupInitialGuess(inputs)
-
-if isfield(inputs.initialGuess, 'state')
-    guess.phase.time = scaleToBounds(inputs.initialGuess.time, inputs.maxTime, ...
-        inputs.minTime);
-    guess.phase.state = scaleToBounds(inputs.initialGuess.state, ...
-        inputs.maxState, inputs.minState);
-else
-    guess.phase.state = scaleToBounds([inputs.experimentalJointAngles ...
-        inputs.experimentalJointVelocities ...
-        inputs.experimentalJointAccelerations], inputs.maxState, ...
-        inputs.minState);
-    guess.phase.time = scaleToBounds(inputs.experimentalTime, inputs.maxTime, ...
-        inputs.minTime);
-end
-if strcmp(inputs.controllerType, 'synergy_driven')
-    if isfield(inputs.initialGuess, 'control')
-        guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
-            inputs.maxControl, inputs.minControl);
-    else
-        guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
-            inputs.synergyActivationsGuess], inputs.maxControl, inputs.minControl);
-    end
-    if inputs.optimizeSynergyVectors
-        guess.phase.parameter = scaleToBounds(inputs.parameterGuess, ...
-            inputs.maxParameter, inputs.minParameter);
-    end
-elseif strcmp(inputs.controllerType, 'torque_driven')
-    if isfield(inputs.initialGuess, 'control')
-        guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
-            inputs.maxControl, inputs.minControl);
-    else
-        for i = 1:length(inputs.controlTorqueNames)
-            indx = find(strcmp(convertCharsToStrings( ...
-                inputs.inverseDynamicMomentLabels), ...
-                strcat(inputs.controlTorqueNames(i), '_moment')));
-            controlTorquesGuess(:, i) = inputs.experimentalJointMoments(:, indx);
-        end
-        guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
-            controlTorquesGuess], inputs.maxControl, inputs.minControl);
-    end
-end
-guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
-    inputs.minIntegral);
-end
 function setup = setupSolverSettings(inputs, bounds, guess, params)
 
 setup.name = params.solverSettings.optimizationFileName;
