@@ -36,30 +36,7 @@ output = computeDesignOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
 function bounds = setupProblemBounds(inputs)
-% setup time bounds
-bounds.phase.initialtime.lower = -0.5;
-bounds.phase.initialtime.upper = -0.5;
-bounds.phase.finaltime.lower = 0.5;
-bounds.phase.finaltime.upper = 0.5;
-% setup state bounds
-bounds.phase.initialstate.lower = -0.5 * ones(1, length(inputs.minState));
-bounds.phase.initialstate.upper = 0.5 * ones(1, length(inputs.minState));
-bounds.phase.finalstate.lower = -0.5 * ones(1, length(inputs.minState));
-bounds.phase.finalstate.upper = 0.5 * ones(1, length(inputs.minState));
-bounds.phase.state.lower = -0.5 * ones(1, length(inputs.minState));
-bounds.phase.state.upper = 0.5 * ones(1, length(inputs.minState));
-% setup path constraint bounds
-bounds.phase.path.lower = -0.5 * ones(1, length(inputs.minPath));
-bounds.phase.path.upper = 0.5 * ones(1, length(inputs.minPath));
-% setup control bounds
-bounds.phase.control.lower = -0.5 * ones(1, length(inputs.minControl));
-bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
-% setup integral bounds
-bounds.phase.integral.lower = zeros(1, length(inputs.minIntegral));
-bounds.phase.integral.upper = ones(1, length(inputs.minIntegral));
-% setup terminal constraint bounds
-bounds.eventgroup.lower = inputs.minTerminal;
-bounds.eventgroup.upper = inputs.maxTerminal;
+bounds = setupCommonOptimalControlBounds(inputs);
 % setup parameter bounds
 if strcmp(inputs.controllerType, 'synergy_driven') 
 if inputs.optimizeSynergyVectors
