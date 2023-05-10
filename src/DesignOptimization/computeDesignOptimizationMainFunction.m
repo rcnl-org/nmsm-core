@@ -28,7 +28,10 @@
 function output = computeDesignOptimizationMainFunction(inputs, params)
 bounds = setupProblemBounds(inputs);
 guess = setupCommonOptimalControlInitialGuess(inputs);
-setup = setupSolverSettings(inputs, bounds, guess, params);
+setup = setupCommonOptimalControlSolverSettings(inputs, ...
+    bounds, guess, params, ...
+    @computeDesignOptimizationContinuousFunction, ...
+    @computeDesignOptimizationEndpointFunction);
 solution = gpops2(setup);
 solution = solution.result.solution;
 solution.auxdata = inputs;
@@ -45,35 +48,4 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
 end
-end
-
-
-function setup = setupSolverSettings(inputs, bounds, guess, params)
-
-setup.name = params.solverSettings.optimizationFileName;
-setup.functions.continuous = @computeDesignOptimizationContinuousFunction;
-auxdata.ContinuousFunc = setup.functions.continuous;
-setup.functions.endpoint = @computeDesignOptimizationEndpointFunction;
-setup.auxdata = inputs;
-setup.bounds = bounds;
-setup.guess = guess;
-setup.nlp.solver = params.solverSettings.solverType;
-setup.nlp.ipoptoptions.linear_solver = params.solverSettings.linearSolverType;
-setup.nlp.ipoptoptions.tolerance = params.solverSettings.solverTolerance;
-setup.nlp.ipoptoptions.maxiterations = params.solverSettings.maxIterations;
-setup.nlp.snoptoptions.linear_solver = params.solverSettings.linearSolverType;
-setup.nlp.snoptoptions.tolerance = params.solverSettings.solverTolerance;
-setup.nlp.snoptoptions.maxiterations = params.solverSettings.maxIterations;
-setup.derivatives.stepsize1 = params.solverSettings.stepSize;
-setup.derivatives.supplier = params.solverSettings.derivativeApproximation;
-setup.derivatives.derivativelevel = params.solverSettings.derivativeOrder;
-setup.derivatives.dependencies = params.solverSettings.derivativeDependencies;
-mesh.method = params.solverSettings.meshMethod;
-mesh.tolerance = params.solverSettings.meshTolerance;
-mesh.maxiterations = params.solverSettings.meshMaxIterations;
-N = params.solverSettings.collocationPoints;
-mesh.phase.colpoints = 10*ones(1, N);
-mesh.phase.fraction = ones(1, N) / N;
-setup.method = params.solverSettings.method;
-setup.mesh = mesh;
 end
