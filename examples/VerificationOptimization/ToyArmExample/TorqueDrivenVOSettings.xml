@@ -8,9 +8,9 @@
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>simple_arm.osim</input_model_file>
     	<!--*Optional* Name of the initial states guess file-->
-    	<initial_states_file />
+    	<initial_states_file>statesSolutionTO.sto</initial_states_file>
     	<!--*Optional* Name of the initial controls guess file-->
-    	<initial_controls_file />
+    	<initial_controls_file>controlSolutionTO.sto</initial_controls_file>
     	<!--Indicate the name of the type of controller: synergy driven or torque driven-->
     	<type_of_controller>torque_driven</type_of_controller>
     	<!--Indicate if synergy vectors should be optimized-->
@@ -45,7 +45,7 @@
 								<type>controller</type>
 								<controller>r_elbow_flex_moment</controller>
 								<is_enabled>true</is_enabled>
-								<max_allowable_error>20</max_allowable_error>
+								<max_allowable_error>10</max_allowable_error>
 							</RCNLCostTerm>
 						</objects>
 						<groups />
