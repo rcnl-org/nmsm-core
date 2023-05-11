@@ -30,6 +30,13 @@ function cost = calcTrackingMuscleActivationIntegrand(muscleActivations, ...
 
 indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
     muscleName));
+
+if params.splineMuscleActivations.dim > 1
+    experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
+else
+    experimentalMuscleActivations = fnval(params.splineMuscleActivations, time);
+end
+
 experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
 cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
     muscleActivations, indx);
