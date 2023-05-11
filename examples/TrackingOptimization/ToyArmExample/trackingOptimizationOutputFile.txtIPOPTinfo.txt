@@ -11,13 +11,6 @@ List of user-set options:
                              print_level = 5                     yes
                       print_user_options = yes                   yes
                                      tol = 0.001                 yes
-
-******************************************************************************
-This program contains Ipopt, a library for large-scale nonlinear optimization.
- Ipopt is released as open source code under the Eclipse Public License (EPL).
-         For more information visit http://projects.coin-or.org/Ipopt
-******************************************************************************
-
 This is Ipopt version trunk, running with linear solver ma57.
 
 Number of nonzeros in equality constraint Jacobian...:     2053
@@ -61,7 +54,7 @@ Number of inequality constraint evaluations          = 8
 Number of equality constraint Jacobian evaluations   = 8
 Number of inequality constraint Jacobian evaluations = 8
 Number of Lagrangian Hessian evaluations             = 0
-Total CPU secs in IPOPT (w/o function evaluations)   =      0.284
-Total CPU secs in NLP function evaluations           =      0.586
+Total CPU secs in IPOPT (w/o function evaluations)   =      0.109
+Total CPU secs in NLP function evaluations           =      0.279
 
 EXIT: Optimal Solution Found.
