@@ -32,14 +32,13 @@ for i = 1:length(params.contactSurfaces)
     indx = find(strcmp(convertCharsToStrings(params.contactSurfaces{i}.momentColumns), ...
         loadName));
     if ~isempty(indx)
-        if params.splineExperimentalGroundReactionMoments.dim > 1
+        if params.splineExperimentalGroundReactionMoments{i}.dim > 1
             experimentalGroundReactions = ...
-                fnval(params.splineExperimentalGroundReactionMoments, time)';
+                fnval(params.splineExperimentalGroundReactionMoments{i}, time)';
         else
             experimentalGroundReactions = ...
-                fnval(params.splineExperimentalGroundReactionMoments, time);
+                fnval(params.splineExperimentalGroundReactionMoments{i}, time);
         end
-
         cost = calcTrackingCostArrayTerm(...
             experimentalGroundReactions, groundReactionMoments{i}, ...
             indx);
