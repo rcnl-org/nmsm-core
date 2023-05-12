@@ -61,11 +61,3 @@ for i = 1:params.numMuscles
     end
 end
 end
-function muscleTendonVelocities = calcMuscleTendonVelocities(time, ...
-    muscleTendonLength)
-
-for i = 1 : size(muscleTendonLength, 2)
-    muscleTendonVelocities(:, i) = calcDerivative(time, ...
-        muscleTendonLength(:, i));
-end
-end
