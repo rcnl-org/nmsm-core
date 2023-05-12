@@ -5,6 +5,8 @@
         <results_directory>results</results_directory>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>optModel_MuscleGroups_LeftMusclesActive_NewSynx.osim</input_model_file>
+		<!--Name of the input osimx file to use, blank if a new osimx file should be created-->
+		<input_osimx_file>example.osimx</input_osimx_file>
         <!--Directory for data files-->
         <data_directory></data_directory>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
@@ -25,14 +27,13 @@
         <max_iterations>2e3</max_iterations>
         <!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
         <max_function_evaluations>1e8</max_function_evaluations>
-		<MuscleTendonLengthInitialization>
+		<MuscleTendonParameterInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization-->
 			<is_enabled>false</is_enabled>
-			<passive_data_input_directory>thelen</passive_data_input_directory>
+			<passive_moment_data_directory>thelen</passive_moment_data_directory>
 			<max_normalized_muscle_fiber_length>1</max_normalized_muscle_fiber_length>
 			<min_normalized_muscle_fiber_length>0.6</min_normalized_muscle_fiber_length>
             <optimize_maximum_muscle_stress>true</optimize_maximum_muscle_stress>
-            <optimize_isometric_max_force>true</optimize_isometric_max_force>
             <!--*Optional* The muscle specific tension to use-->
             <maximum_muscle_stress>610e3</maximum_muscle_stress>
 			<RCNLCostTermSet>
@@ -88,7 +89,7 @@
                 </objects>
                 <groups />
             </RCNLCostTermSet>
-		</MuscleTendonLengthInitialization>
+		</MuscleTendonParameterInitialization>
 		 <!-- Synergy Extrapolation Settings -->
 		<MTPSynergyExtrapolation>
 			<!--Flag indicating if synergery extrapolation should be performed as part of this task-->

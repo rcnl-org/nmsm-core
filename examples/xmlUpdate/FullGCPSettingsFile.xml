@@ -3,10 +3,10 @@
     <GroundContactPersonalizationTool>
         <!--Directory used for writing results.-->
         <results_directory/>
-        <!--Directory for input files-->
-        <input_directory/>
         <!--Name of the input model file (.osim) to use-->
         <input_model_file>optModel_v6_correct_height.osim</input_model_file>
+		<!--Name of the input .osimx model file where contact surfaces will be appended-->
+		<input_osimx_file>model.osimx</input_osimx_file>
 		<!--Name of the input motion file (.mot) to use-->
         <input_motion_file>CPRIT_Patient3_NormalGait_1pt0_01_Right_75_ik.mot</input_motion_file>
 		<!--Name of the input ground reaction forces file (.mot) to use-->

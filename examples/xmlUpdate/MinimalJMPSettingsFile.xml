@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <NMSMPipelineDocument Version="0.1.0">
 	<JointModelPersonalizationTool>
-		<!--Directory used for writing results.-->
-		<results_directory/>
 		<!--Name of the input model file (.osim) to use-->
 		<input_model_file>Rajagopal_4.0_RCNL_markers_scaled.osim</input_model_file>
 		<!--Name of the output model file (.osim) to create.-->
@@ -75,4 +73,4 @@
 			</JMPTask>
 		</JMPTaskList>
 	</JointModelPersonalizationTool>
-</OpenSimDocument>
+</NMSMPipelineDocument>
