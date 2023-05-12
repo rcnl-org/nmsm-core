@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="40000">
     <NeuralControlPersonalizationTool>
-        <!--MTP AND NCP SHARED SETTINGS-->
         <!--Directory used for writing results.-->
         <results_directory>results</results_directory>
         <!--Name of the input model file (.osim) to use-->
@@ -22,7 +21,7 @@
         <max_iterations>2e3</max_iterations>
         <!--*Optional* The number of allowed cost function calls for the fmincon optimization, setting this lower can help cancel an optimization that won't converge-->
         <max_function_evaluations>1e8</max_function_evaluations>
-		<MuscleTendonLengthInitialization>
+		<MuscleTendonParameterInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization-->
 			<is_enabled>false</is_enabled>
 			<passive_data_input_directory>thelen</passive_data_input_directory>
@@ -85,11 +84,9 @@
                 </objects>
                 <groups />
             </RCNLCostTermSet>
-		</MuscleTendonLengthInitialization>
-        <!--The first of two MTP results directories -->
-        <mtp_results_directory_1>C:\Github\nmsm-core\nonTrackedScripts\NCP tests\mtpResults</mtp_results_directory_1>
-        <!--The second of two MTP results directories -->
-        <mtp_results_directory_2>left_leg</mtp_results_directory_2>
+		</MuscleTendonParameterInitialization>
+        <!--The MTP results directories -->
+        <mtp_results_directory>mtpResults</mtp_results_directory>
 		<!---->
 		<SynergySet>
 			<objects>
