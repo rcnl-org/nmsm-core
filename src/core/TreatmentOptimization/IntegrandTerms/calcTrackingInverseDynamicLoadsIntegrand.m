@@ -30,7 +30,12 @@ function cost = calcTrackingInverseDynamicLoadsIntegrand(params, time, ...
 
 indx = find(strcmp(convertCharsToStrings(params.inverseDynamicMomentLabels), ...
     loadName));
-experimentalJointMoments = fnval(params.splineJointMoments, time)';
+
+if params.splineJointMoments.dim > 1
+    experimentalJointMoments = fnval(params.splineJointMoments, time)';
+else
+    experimentalJointMoments = fnval(params.splineJointMoments, time);
+end
 cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
     inverseDynamicMoments, indx);
 end

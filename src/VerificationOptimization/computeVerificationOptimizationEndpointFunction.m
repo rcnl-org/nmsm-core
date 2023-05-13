@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,8 +26,11 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeVerificationOptimizationEndpointFunction(inputs)
-
-output.eventgroup.event = calcVerificationOptimizationTerminalConstraint( ...
-    inputs, inputs.auxdata);
-output.objective = calcVerificationOptimizationObjective(inputs.phase.integral);
+if ~isempty(inputs.auxdata.terminal)
+    output.eventgroup.event = ...
+        calcVerificationOptimizationTerminalConstraint(inputs, ...
+        inputs.auxdata);
+end
+output.objective = ...
+    calcVerificationOptimizationObjective(inputs.phase.integral);
 end
