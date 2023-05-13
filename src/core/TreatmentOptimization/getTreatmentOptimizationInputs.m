@@ -26,6 +26,9 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = getTreatmentOptimizationInputs(tree)
+inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
+    'results_directory'));
+if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = getTextFromField(getFieldByNameOrError(tree, ...
     'type_of_controller'));
 inputs.model = parseModel(tree);
@@ -59,6 +62,8 @@ inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs = getContinuousCostTerms(getFieldByNameOrError(tree, ...
     'RCNLContinuousCostTermSet'), inputs);
+inputs = getDiscreteCostTerms(getFieldByName(tree, ...
+    'RCNLDiscreteCostTermSet'), inputs);
 inputs = getPathConstraintTerms(tree, inputs);
 inputs = getTerminalConstraintTerms(tree, inputs);
 inputs.contactSurfaces = prepareGroundContactSurfaces(inputs.model, ...

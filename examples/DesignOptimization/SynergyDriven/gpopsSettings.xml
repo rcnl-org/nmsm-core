@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<GpopsDocument Version="40000">
+    <GpopsSettings>
+		<solver_type>ipopt</solver_type>
+		<!-- -->
+		<linear_solver_type>ma57</linear_solver_type>
+		<!-- -->
+		<solver_tolerance>1e-3</solver_tolerance>
+		<!-- -->
+		<step_size>1e-8</step_size>
+		<!-- -->
+        <max_iterations>2e4</max_iterations>
+		<!-- -->
+		<derivative_approximation>sparseCD</derivative_approximation>
+		<!-- -->
+		<derivative_order>first</derivative_order>
+		<!-- -->
+		<derivative_dependencies>sparse</derivative_dependencies>
+		<!-- -->
+		<mesh_method></mesh_method>
+		<!-- -->
+		<mesh_tolerance></mesh_tolerance>
+		<!-- -->
+		<mesh_max_iterations>0</mesh_max_iterations>
+		<!-- -->
+		<method>RPM-integration</method>
+		<!--Multiples of 10-->
+		<collocation_points>5</collocation_points>
+    </GpopsSettings>
+</GpopsDocument>
