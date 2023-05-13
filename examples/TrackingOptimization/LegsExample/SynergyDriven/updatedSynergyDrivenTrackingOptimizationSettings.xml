@@ -45,7 +45,7 @@
     		<joint_velocities_multiple>1.5</joint_velocities_multiple>
     		<joint_accelerations_multiple>1</joint_accelerations_multiple>
     		<joint_jerks_multiple>1</joint_jerks_multiple>
-    		<synergy_commands_max>10</synergy_commands_max>
+    		<synergy_activations_max>10</synergy_activations_max>
     		<synergy_weights_max>0.15</synergy_weights_max>
     	</RCNLDesignVariableBoundsTerms>
 		<RCNLContinuousCostTermSet>
