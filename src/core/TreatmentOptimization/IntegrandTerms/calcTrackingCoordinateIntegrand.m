@@ -30,7 +30,12 @@ function cost = calcTrackingCoordinateIntegrand(params, time, ...
 
 indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
     coordinateName));
-experimentalJointAngles = fnval(params.splineJointAngles, time)';
+if params.splineJointAngles.dim > 1
+    experimentalJointAngles = fnval(params.splineJointAngles, time)';
+else
+    experimentalJointAngles = fnval(params.splineJointAngles, time);
+end
+
 cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...
     statePositions, indx);
 end
