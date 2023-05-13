@@ -78,8 +78,8 @@ surface.coordinatesOfInterest = findGCPFreeCoordinates(...
 % Use a user-defined cutoff frequency to determine the number of B-spline
 % nodes needed to represent kinematics. 
 surface.splineNodes = splFitWithCutoff(surface.time, footPosition, ... 
-    inputs.kinematicsFilterCutoff, 4, surfaceNumber);
-disp("Spline nodes for foot " + task + ": " + surface.splineNodes)
+    inputs.kinematicsFilterCutoff, 4);
+disp("Spline nodes for foot " + surfaceNumber + ": " + surface.splineNodes)
 footVelocity = calcBSplineDerivative(surface.time, footPosition, ...
     4, surface.splineNodes);
 markerNamesFields = fieldnames(surface.markerNames);

@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,9 +25,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getPathConstraintTerms(tree, inputs)
-pathConstraintTermsTree = getFieldByNameOrError(tree, ...
+function path = getPathConstraintTerms(tree)
+pathConstraintTermsTree = getFieldByName(tree, ...
     'RCNLPathConstraintTerms');
-inputs.path = parseRcnlConstraintTermSet(pathConstraintTermsTree. ...
-    RCNLConstraintTermSet.objects.RCNLConstraintTerm);
+if(isstruct(pathConstraintTermsTree))
+    pathConstraints = getFieldByName(pathConstraintTermsTree, ...
+        'RCNLConstraintTerm');
+    if isstruct(pathConstraints) || iscell(pathConstraints)
+        path = parseRcnlConstraintTermSet(pathConstraints);
+    else
+        path = {};
+    end
+else
+    path = {};
+end
 end

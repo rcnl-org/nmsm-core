@@ -28,6 +28,8 @@
 function [data, dataLabels] = parseTreatmentOptimizationData(directory, ...
     prefix)
 [data, dataLabels] = parseFileFromDirectories(directory, prefix);
-data = squeeze(data)';
+newData = zeros(size(data, 2), size(data, 3));
+newData(:, :) = data(1, :, :);
+data = newData';
 dataLabels = cellstr(dataLabels);
 end

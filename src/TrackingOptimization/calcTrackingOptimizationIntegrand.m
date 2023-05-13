@@ -77,6 +77,6 @@ for i = 1:length(params.integral.minimizing)
         end
     end
 end
-integrand = scaleToBounds(integrand, params.maxIntegral, params.minIntegral);
+integrand = integrand ./ (params.maxIntegral - params.minIntegral);
 integrand = integrand .^ 2;
 end
