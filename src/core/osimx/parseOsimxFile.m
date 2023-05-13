@@ -29,7 +29,12 @@
 
 function osimx = parseOsimxFile(osimxFileName)
 
-tree = xml2struct(osimxFileName);
+if strcmp(osimxFileName, "")
+    osimx = struct();
+    return
+else
+    tree = xml2struct(osimxFileName);
+end
 
 osimx.model = getFieldByNameOrError(tree, "associated_osim_model").Text;
 osimx.modelName = getFieldByNameOrError(tree, "OsimxModel").Attributes.name;

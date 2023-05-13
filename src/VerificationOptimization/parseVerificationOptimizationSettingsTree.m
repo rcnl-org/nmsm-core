@@ -25,16 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params, resultsDirectory] = ...
+function [inputs, params] = ...
     parseVerificationOptimizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
 inputs = modifyModelForces(inputs);
-resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
-    'results_directory'));
-if(isempty(resultsDirectory))
-    resultsDirectory = pwd;
-end
 end
 
 function inputs = getInputs(tree)
@@ -72,11 +67,11 @@ if(isstruct(jointJerkMultiple))
     inputs.controlJerksMultiple = getDoubleFromField(jointJerkMultiple);
 end
 if strcmp(inputs.controllerType, 'synergy_driven')
-maxControlNeuralCommands = getFieldByNameOrError(designVariableTree, ...
-    'synergy_commands_max');
-if(isstruct(maxControlNeuralCommands))
-    inputs.maxControlNeuralCommands = ...
-        getDoubleFromField(maxControlNeuralCommands);
+maxControlSynergyActivations = getFieldByNameOrError(designVariableTree, ...
+    'synergy_activations_max');
+if(isstruct(maxControlSynergyActivations))
+    inputs.maxControlSynergyActivations = ...
+        getDoubleFromField(maxControlSynergyActivations);
 end
 else 
 maxControlTorques = getFieldByNameOrError(designVariableTree, ...
