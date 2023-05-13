@@ -52,6 +52,7 @@ No installation is required, following the instructions below, download the pack
     - Optimization Toolbox
     - Parallel Computing Toolbox
     - Statistics and Machine Learning Toolbox
+    - Curve Fitting Toolbox
 - OpenSim 4.4 or greater
 - OpenSim MATLAB Bindings
 
