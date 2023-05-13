@@ -31,9 +31,8 @@
 
 function TrackingOptimizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
-[inputs, params, resultsDirectory] = ...
-    parseTrackingOptimizationSettingsTree(settingsTree);
+[inputs, params] = parseTrackingOptimizationSettingsTree(settingsTree);
 [outputs, inputs] = TrackingOptimization(inputs, params);
 reportTrackingOptimizationResults(outputs, inputs);
-saveTrackingOptimizationResults(outputs, inputs, resultsDirectory);
+saveTrackingOptimizationResults(outputs, inputs);
 end

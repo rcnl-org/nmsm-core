@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,38 +25,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveTrackingOptimizationResults(solution, inputs, resultsDirectory)
+function saveTrackingOptimizationResults(solution, inputs)
 
 values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
-stateLabels = inputs.coordinateNames;
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
-end
-for i = 1 : length(inputs.coordinateNames)
-stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
-end
-writeToSto(stateLabels, values.time, ...
-        [values.statePositions values.stateVelocities values.stateAccelerations], fullfile(resultsDirectory, ...
-        "statesSolution.sto"));
+saveCommonOptimalControlResults(solution, inputs, values);
 if strcmp(inputs.controllerType, 'synergy_driven')
-controlLabels = inputs.coordinateNames;
-for i = 1 : inputs.numSynergies
-controlLabels{end + 1} = strcat('command', num2str(i));
+    writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, ...
+        inputs.numSynergies), [values.synergyWeights], ...
+        fullfile(inputs.resultsDirectory, "parameterSolution.sto"));
+    writeToSto(inputs.muscleLabels, values.time, ...
+        solution.muscleActivations, ...
+        fullfile(outputDirectory, "muscleActivations.sto"));
 end
-writeToSto(controlLabels, values.time, ...
-        [values.controlJerks values.controlNeuralCommands], fullfile(resultsDirectory, ...
-        "controlSolution.sto"));
-writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, inputs.numSynergies), ...
-        [values.synergyWeights], fullfile(resultsDirectory, ...
-        "parameterSolution.sto"));
-elseif strcmp(inputs.controllerType, 'torque_driven')
-controlLabels = inputs.coordinateNames;
-for i = 1 : inputs.numTorqueControls
-controlLabels{end + 1} = strcat('torqueControl', num2str(i));
-end
-writeToSto(controlLabels, values.time, ...
-        [values.controlJerks values.controlTorques], fullfile(resultsDirectory, ...
-        "controlSolution.sto"));
-end
-delete(inputs.mexModel);
 end

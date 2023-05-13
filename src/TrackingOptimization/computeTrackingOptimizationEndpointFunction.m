@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,8 +26,9 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeTrackingOptimizationEndpointFunction(inputs)
-
-output.eventgroup.event = calcTrackingOptimizationTerminalConstraint( ...
-    inputs, inputs.auxdata);
+if ~isempty(inputs.auxdata.terminal)
+    output.eventgroup.event = calcTrackingOptimizationTerminalConstraint( ...
+        inputs, inputs.auxdata);
+end
 output.objective = calcTrackingOptimizationObjective(inputs.phase.integral);
 end

@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,9 +25,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getTerminalConstraintTerms(tree, inputs)
-terminalConstraintTermsTree = getFieldByNameOrError(tree, ...
+function terminal = getTerminalConstraintTerms(tree)
+terminalConstraintTermsTree = getFieldByName(tree, ...
     'RCNLTerminalConstraintTerms');
-inputs.terminal = parseRcnlConstraintTermSet(terminalConstraintTermsTree. ...
-    RCNLConstraintTermSet.objects.RCNLConstraintTerm);
+if(isstruct(terminalConstraintTermsTree))
+    terminalConstraints = getFieldByName(terminalConstraintTermsTree, ...
+        "RCNLConstraintTerm");
+    if isstruct(terminalConstraints) || iscell(terminalConstraints)
+        terminal = parseRcnlConstraintTermSet(terminalConstraints);
+    else        
+        terminal = {};
+    end
+else
+    terminal = {};
 end

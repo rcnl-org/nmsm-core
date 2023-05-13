@@ -31,7 +31,11 @@
 function costTerms = parseRcnlConstraintTermSet(tree)
 costTerms = cell(1, length(tree));
 for term = 1:length(tree)
-    currentTerm = tree{term};
+    if length(tree) == 1
+        currentTerm = tree;
+    else
+        currentTerm = tree{term};
+    end
     % Find general cost term elements
     costTerms{term}.type = getTextFromField(getFieldByNameOrError( ...
         currentTerm, 'type'));
