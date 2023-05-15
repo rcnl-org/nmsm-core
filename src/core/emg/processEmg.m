@@ -58,7 +58,7 @@ emgData = filtfilt(b, a, emgData);
 % Remove any negative EMG values that may still exist
 emgData(emgData < 0) = 0;
 
-processedEmgData = emgData;
+processedEmgData = emgData';
 
 end
 

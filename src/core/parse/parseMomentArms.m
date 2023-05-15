@@ -29,12 +29,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cells = parseMomentArms(directories, model)
+function [cells, coordinates] = parseMomentArms(directories, model)
 import org.opensim.modeling.Storage
 if ~isequal(class(model), 'org.opensim.modeling.Model')
     model = Model(model);
 end
-firstTrial = parseMuscleAnalysisCoordinates(directories(1), model);
+[firstTrial, coordinates] = ...
+    parseMuscleAnalysisCoordinates(directories(1), model);
 cells = zeros([length(directories) size(firstTrial)]);
 cells(1, :, :, :) = firstTrial;
 for i=2:length(directories)
@@ -44,9 +45,11 @@ end
 end
 
 
-function cells = parseMuscleAnalysisCoordinates(inputDirectory, model)
+function [cells, coordinates] = ...
+    parseMuscleAnalysisCoordinates(inputDirectory, model)
 import org.opensim.modeling.Storage
-coordFileNames = findMuscleAnalysisCoordinateFiles(inputDirectory, model);
+[coordFileNames, coordinates] = ...
+    findMuscleAnalysisCoordinateFiles(inputDirectory, model);
 firstFile = storageToDoubleMatrix(Storage(coordFileNames(1)));
 cells = zeros([length(coordFileNames) size(firstFile)]);
 cells(1, :, :) = firstFile;
@@ -55,15 +58,18 @@ for i=2:length(coordFileNames)
 end
 end
 
-function names = findMuscleAnalysisCoordinateFiles(directory, model)
+function [names, coordinates] = ...
+    findMuscleAnalysisCoordinateFiles(directory, model)
 files = dir(directory);
 names = string([]);
+coordinates = string([]);
 for i=0:model.getCoordinateSet().getSize()-1
     for j=1:length(files)
         if(contains(files(j).name, strcat("MomentArm_", ...
                 model.getCoordinateSet().get(i).getName().toCharArray', ...
                 ".sto")))
             names(end+1) = fullfile(directory, files(j).name);
+            coordinates(end+1) = model.getCoordinateSet().get(i).getName().toCharArray';
         end
     end
 end

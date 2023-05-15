@@ -11,13 +11,13 @@
 %% Preprocessing Script
 
 % All values required
-rawEmgFileName = "rawEmg.mot";
+rawEmgFileName = "input_data\Patient3_NormalGait_1pt0_02_Right_01_EMG.mot";
 filterOrder = 4;
 highPassCutoff = 10;
 lowPassCutoff = 50;
-processedEmgFileName = "processedEmg.sto";
+processedEmgFileName = "Patient3_NormalGait_1pt0_02_Right_01_processedEmg.sto";
 
-processRawEmgFile(emgFileName, filterOrder, highPassCutoff, ...
+processRawEmgFile(rawEmgFileName, filterOrder, highPassCutoff, ...
     lowPassCutoff, processedEmgFileName);
 
 
@@ -26,7 +26,7 @@ processRawEmgFile(emgFileName, filterOrder, highPassCutoff, ...
 % muscle-tendon length. The file is written in the same directory as the
 % muscle-tendon length file.
 
-muscleTendonLengthFileName = "trial_1_Length.sto";%...
+muscleTendonLengthFileName = "MuscleAnalysis\UF_Patient3_correctHeight_MuscleAnalysis_Length.sto";%...
     %"MuscleAnalysis/model_MuscleAnalysis_Length.sto";
 cutoffFrequency = 10;
 createMuscleTendonVelocity(muscleTendonLengthFileName, cutoffFrequency);
@@ -35,16 +35,17 @@ createMuscleTendonVelocity(muscleTendonLengthFileName, cutoffFrequency);
 
 % Required: pairs of start/end time of events to be extracted
 trialTimePairs = [
-    5.2 6.2;
-    6.3 7.3;
-    7.4 8.5;
+    0.65 1.9
 ];
 
+% Required: Associated .osim model file
+inputSettings.model = "UF_Patient3_correctHeight_JMP_MTPGroups.osim";
+
 % All values optional: files and directories of data to be split
-inputSettings.ikFileName = "ik.mot";
-inputSettings.idFileName = "id.mot";
+inputSettings.ikFileName = "input_data\Patient3_NormalGait_1pt0_02_Right_01_IK.mot";
+inputSettings.idFileName = "input_data\Patient3_NormalGait_1pt0_02_Right_01_ID.sto";
 % The emgFileName should be the name of the *processed* emg data file
-% inputSettings.emgFileName = "emg.mot";
+inputSettings.emgFileName = "Patient3_NormalGait_1pt0_02_Right_01_processedEmg.sto";
 inputSettings.maDirectory = "MuscleAnalysis";
 
 % All values optional: output information, uses default values otherwise

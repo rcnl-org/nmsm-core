@@ -1,5 +1,13 @@
-function splitIntoFiles(outputDir, ikFileName, idFileName, ...
-    muscleAnalysisDirectory, emgFileName, trialName, timePairs, model)
+function splitIntoTrials(timePairs, inputSettings, outputSettings)
+
+model = inputSettings.model;
+ikFileName = inputSettings.ikFileName;
+idFileName = inputSettings.idFileName;
+emgFileName = inputSettings.emgFileName;
+muscleAnalysisDirectory = inputSettings.maDirectory;
+trialName = outputSettings.trialPrefix;
+outputDir = outputSettings.resultsDirectory;
+
 model = Model(model);
 ikOutputDir = 'IKData';
 idOutputDir = 'IDData';
@@ -92,6 +100,8 @@ function filesToSection = makeFilesToSection(outputDir, ikOutputDir, ...
 filesToSection = [ ...
     fullfile(outputDir, maOutputDir, trialName + ...
     "_Length.sto"), ...
+    fullfile(outputDir, maOutputDir, trialName + ...
+    "_Velocity.sto"), ...
     fullfile(outputDir, ikOutputDir, trialName + ".sto"), ...
     fullfile(outputDir, idOutputDir, trialName + ".sto")
     ];
@@ -121,6 +131,13 @@ for k=1:length(files)
     if(~files(k).isdir && contains(files(k).name, "MuscleAnalysis_Length"))
         copyfile(fullfile(inputDir, files(k).name), ...
             fullfile(outputDir, trialName + "_Length.sto"))
+        break;
+    end
+end
+for k=1:length(files)
+    if(~files(k).isdir && contains(files(k).name, "MuscleAnalysis_Velocity"))
+        copyfile(fullfile(inputDir, files(k).name), ...
+            fullfile(outputDir, trialName + "_Velocity.sto"))
         break;
     end
 end
