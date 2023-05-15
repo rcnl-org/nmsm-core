@@ -119,6 +119,11 @@ if(isstruct(maxFunctionEvaluations))
     params.maxFunctionEvaluations = str2double( ...
         maxFunctionEvaluations.Text);
 end
+stepTolerance = getFieldByName(tree, 'step_tolerance');
+if(isstruct(stepTolerance))
+    params.stepTolerance = str2double( ...
+        stepTolerance.Text);
+end
 performMuscleTendonLengthInitialization = getFieldByNameOrError(tree, ...
     'MuscleTendonLengthInitialization').is_enabled;
 if(performMuscleTendonLengthInitialization.Text == "true")
