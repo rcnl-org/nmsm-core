@@ -25,45 +25,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function integrand = calcDesignOptimizationIntegrand(values, params, ...
-    phaseout)
-integrand = [];
-for i = 1:length(params.integral.tracking)
-    costTerm = params.integral.tracking{i};
-    if costTerm.isEnabled
-        switch costTerm.type
-            case "coordinate"
-                integrand = cat(2, integrand, ...
-                    calcTrackingCoordinateIntegrand(params, ...
-                    values.time, values.statePositions, ...
-                    costTerm.coordinate));
-            case "controller"
-                integrand = cat(2, integrand, ...
-                    calcTrackingControllerIntegrand(params, values, ...
-                    costTerm.controller));      
-            otherwise
-                throw(MException('', ['Cost term type ' costTerm.type ...
-                    ' does not exist for this tool.']))   
-        end
-    end
+function cost = calcMinimizingMetabolicCost(metabolicCost)
+
+cost = calcMinimizingCostArrayTerm(metabolicCost);
 end
-for i = 1:length(params.integral.minimizing)
-    costTerm = params.integral.minimizing{i};
-    if costTerm.isEnabled
-        switch costTerm.type
-            case "joint_jerk"
-                integrand = cat(2, integrand, ...
-                    calcMinimizingJointJerkIntegrand(values.controlJerks, ...
-                    params, costTerm.coordinate));
-            case "metabolic_cost"
-                integrand = cat(2, integrand, ...
-                    calcMinimizingMetabolicCost(phaseout.metabolicCost));
-            otherwise
-                throw(MException('', ['Cost term type ' costTerm.type ...
-                    ' does not exist for this tool.']))   
-        end
-    end
-end
-integrand = scaleToBounds(integrand, params.maxIntegral, params.minIntegral);
-integrand = integrand .^ 2;
-end
+
