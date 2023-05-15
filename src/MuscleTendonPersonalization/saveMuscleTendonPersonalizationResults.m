@@ -32,10 +32,10 @@
 
 function saveMuscleTendonPersonalizationResults(modelFileName, ...
     osimxFileName, prefixes, coordinateNames, finalValues, results, ...
-    resultsDirectory)
+    resultsDirectory, muscleColumnNames)
 
 model = Model(modelFileName);
-muscleColumnNames = getEnabledMusclesInOrder(model);
+% muscleColumnNames = getEnabledMusclesInOrder(model);
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
