@@ -62,10 +62,6 @@ inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet'));
-inputs = getContinuousCostTerms(getFieldByNameOrError(tree, ...
-    'RCNLContinuousCostTermSet'), inputs);
-inputs = getDiscreteCostTerms(getFieldByName(tree, ...
-    'RCNLDiscreteCostTermSet'), inputs);
 inputs.path = getPathConstraintTerms(tree);
 inputs.terminal = getTerminalConstraintTerms(tree);
 contactSurfaces = getFieldByName(inputs.osimx, "contactSurface");
