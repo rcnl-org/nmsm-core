@@ -48,4 +48,9 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
 end
+for i = 1:length(inputs.userDefinedParameters)
+    bounds.parameter.lower = [bounds.parameter.lower, inputs.userDefinedParameters{i}.lower];
+    bounds.parameter.upper = [bounds.parameter.upper, inputs.userDefinedParameters{i}.upper];
+end
+end
 end
