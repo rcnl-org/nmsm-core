@@ -28,6 +28,7 @@
 function output = computeDesignOptimizationMainFunction(inputs, params)
 bounds = setupProblemBounds(inputs);
 guess = setupCommonOptimalControlInitialGuess(inputs);
+guess = addUserDefinedTermsToGuess(guess, inputs);
 setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeDesignOptimizationContinuousFunction, ...
@@ -48,8 +49,33 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
 end
-% for i = 1:length(inputs.userDefinedParameters)
-%     bounds.parameter.lower = [bounds.parameter.lower, inputs.userDefinedParameters{i}.lower];
-%     bounds.parameter.upper = [bounds.parameter.upper, inputs.userDefinedParameters{i}.upper];
-% end
+for i = 1:length(inputs.costTerms)
+    if isfield(bounds, "parameter") && isfield(bounds.parameter, "lower")
+        costTerm = inputs.costTerms{i};
+        if strcmp(costTerm.type, "user_defined")
+            if strcmp(costTerm.cost_term_type, "parameter")
+                bounds.parameter.lower = [bounds.parameter.lower, ...
+                    costTerm.lower_bounds];
+                bounds.parameter.upper = [bounds.parameter.upper, ...
+                    costTerm.upper_bounds];
+            end
+        end
+    end
+end
+end
+
+function guess = addUserDefinedTermsToGuess(guess, inputs)
+for i = 1:length(inputs.costTerms)
+    costTerm = inputs.costTerms{i};
+    if strcmp(costTerm.type, "user_defined")
+        if strcmp(costTerm.cost_term_type, "parameter")
+            if ~isfield(guess, "phase") || ...
+                    ~isfield(guess.phase, "parameter")
+                guess.phase.parameter = [];
+            end
+            guess.phase.parameter = [guess.phase.parameter, ...
+                costTerm.initial_values];
+        end
+    end
+end
 end

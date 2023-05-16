@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -46,7 +46,7 @@ for i = 1:length(params.costTerms)
                     params, costTerm.coordinate));
             case "user_defined"
                 if strcmp(costTerm.cost_term_type, "continuous")
-                    
+
                 end
             otherwise
                 throw(MException('', ['Cost term type ' costTerm.type ...
