@@ -43,7 +43,8 @@ else
     [~, name, ~] = fileparts(modelFileName);
     outfile = fullfile(results_directory, strcat(name, "_mtp.xml"));
 end
-
+osimx.modelName = name;
+osimx.model = modelFileName;
 for i = 1:length(muscleNames)
     muscleParams = makeMuscleParams(model, muscleNames(i), optimizedParams, i);
     osimx.muscles.(muscleNames(i)) = muscleParams;
