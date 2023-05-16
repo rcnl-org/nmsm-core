@@ -69,6 +69,7 @@ collectedEmgGroupNames = parseSpaceSeparatedList(tree, "collected_emg_channel_mu
 [inputs.fullEmgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
 collectedEmgGroupNamesMembers = ismember(inputs.emgDataColumnNames, collectedEmgGroupNames);
 inputs.emgData = inputs.fullEmgData(:, collectedEmgGroupNamesMembers, :);
+inputs.emgDataColumnNames = inputs.emgDataColumnNames(collectedEmgGroupNamesMembers);
 firstEmgDataExpanded = expandEmgDatas(inputs.model, squeeze(inputs.emgData(1, :, :)), collectedEmgGroupNames, inputs.muscleNames);
 inputs.emgDataExpanded = zeros(size(inputs.emgData, 1), size(firstEmgDataExpanded, 1), size(firstEmgDataExpanded, 2));
 inputs.emgDataExpanded(1, :, :) = firstEmgDataExpanded;
