@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,8 +30,12 @@ function phaseout = computeDesignOptimizationContinuousFunction(inputs)
 values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
 phaseout = calcTorqueBasedModeledValues(values, inputs.auxdata);
 phaseout = calcSynergyBasedModeledValues(values, inputs.auxdata, phaseout);
-phaseout.dynamics = calcDesignOptimizationDynamicsConstraint(values, inputs.auxdata);
-phaseout.path = calcDesignOptimizationPathConstraint(values, phaseout, inputs.auxdata);
-phaseout.integrand = calcDesignOptimizationIntegrand(values, inputs.auxdata, ...
-    phaseout);
+phaseout.dynamics = calcDesignOptimizationDynamicsConstraint(values, ...
+    inputs.auxdata);
+if ~isempty(inputs.auxdata.path)
+    phaseout.path = calcDesignOptimizationPathConstraint(values, ...
+        phaseout, inputs.auxdata);
+end
+phaseout.integrand = calcDesignOptimizationIntegrand(values, ...
+    inputs.auxdata);
 end
