@@ -61,7 +61,7 @@ inputs.optimizeSynergyVectors = getBooleanLogicFromField(...
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs.costTerms = parseRcnlCostTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLCostTermSet'));
+    getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
 inputs.path = getPathConstraintTerms(tree);
 inputs.terminal = getTerminalConstraintTerms(tree);
 contactSurfaces = getFieldByName(inputs.osimx, "contactSurface");
