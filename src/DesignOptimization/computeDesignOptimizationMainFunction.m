@@ -33,7 +33,9 @@ setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeDesignOptimizationContinuousFunction, ...
     @computeDesignOptimizationEndpointFunction);
+% setup.scales.method = 'automatic-bounds';
 solution = gpops2(setup);
+solution.result
 solution = solution.result.solution;
 solution.auxdata = inputs;
 output = computeDesignOptimizationContinuousFunction(solution);
@@ -50,10 +52,14 @@ if strcmp(inputs.controllerType, 'synergy_driven')
     end
 end
 for i = 1:length(inputs.costTerms)
-    if isfield(bounds, "parameter") && isfield(bounds.parameter, "lower")
-        costTerm = inputs.costTerms{i};
-        if strcmp(costTerm.type, "user_defined")
-            if strcmp(costTerm.cost_term_type, "parameter")
+    costTerm = inputs.costTerms{i};
+    if strcmp(costTerm.type, "user_defined")
+        if strcmp(costTerm.cost_term_type, "parameter")
+            if ~isfield(bounds, "parameter") || ...
+                    ~isfield(bounds.parameter, "lower")
+                bounds.parameter.lower = [costTerm.lower_bounds];
+                bounds.parameter.upper = [costTerm.upper_bounds];
+            else
                 bounds.parameter.lower = [bounds.parameter.lower, ...
                     costTerm.lower_bounds];
                 bounds.parameter.upper = [bounds.parameter.upper, ...
@@ -71,9 +77,9 @@ for i = 1:length(inputs.costTerms)
         if strcmp(costTerm.cost_term_type, "parameter")
             if ~isfield(guess, "phase") || ...
                     ~isfield(guess.phase, "parameter")
-                guess.phase.parameter = [];
+                guess.parameter = [];
             end
-            guess.phase.parameter = [guess.phase.parameter, ...
+            guess.parameter = [guess.parameter, ...
                 costTerm.initial_values];
         end
     end

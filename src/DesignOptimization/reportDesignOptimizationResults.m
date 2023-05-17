@@ -26,7 +26,7 @@
 % ----------------------------------------------------------------------- %
 
 function reportDesignOptimizationResults(solution, inputs)
-
+parameterResults = solution.solution.parameter
 values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
 if strcmp(inputs.controllerType, 'synergy_driven') 
 % plot Muscle Activations

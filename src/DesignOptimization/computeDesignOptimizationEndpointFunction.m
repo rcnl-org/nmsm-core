@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -35,11 +35,25 @@ values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 
 if ~isempty(inputs.auxdata.terminal)
-output.eventgroup.event = calcDesignOptimizationTerminalConstraint( ...
-   values, modeledValues, inputs.auxdata);
+    output.eventgroup.event = calcDesignOptimizationTerminalConstraint( ...
+        values, modeledValues, inputs.auxdata);
 end
-discrete = calcDesignOptimizationDiscreteObjective(values, inputs.auxdata);
-
+% discrete = calcDesignOptimizationDiscreteObjective(values, inputs.auxdata);
+discrete = computeStaticParameterCost(inputs);
 output.objective = calcDesignOptimizationObjective(discrete, ...
     inputs.phase.integral);
 end
+
+function cost = computeStaticParameterCost(inputs)
+costTerms = inputs.auxdata.costTerms;
+cost = 0;
+for i = 1:length(costTerms)
+    costTerm = costTerms{i};
+    if strcmp(costTerm.type, "user_defined") && ...
+            strcmp(costTerm.cost_term_type, "parameter")
+        func = str2func(costTerm.function_name);
+        cost = cost + func(inputs);
+    end
+end
+end
+
