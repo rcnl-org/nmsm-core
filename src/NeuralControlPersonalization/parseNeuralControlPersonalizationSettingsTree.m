@@ -51,8 +51,8 @@ mtpResults = getFieldByName(tree, "mtp_results_directory");
 if isstruct(mtpResults) && ~isempty(mtpResults.Text)
     inputs = loadMtpData(tree, inputs);
     [inputs.optimalFiberLengthScaleFactors, ...
-        inputs.tendonSlackLengthScaleFactors] = getMtpDataInputs( ...
-        inputs.mtpMuscleData, inputs.muscleTendonColumnNames);
+        inputs.tendonSlackLengthScaleFactors, ...
+        inputs.maxIsometricForce] = getMtpDataInputs(inputs);
 end
 end
 
@@ -146,14 +146,31 @@ end
 end
 
 function [optimalFiberLengthScaleFactors, ...
-    tendonSlackLengthScaleFactors] = getMtpDataInputs(mtpData, muscleNames)
+    tendonSlackLengthScaleFactors, maxIsometricForce] = ...
+    getMtpDataInputs(inputs)
+mtpData = inputs.mtpMuscleData;
+muscleNames = inputs.muscleTendonColumnNames;
+
 optimalFiberLengthScaleFactors = zeros(1, length(muscleNames));
 tendonSlackLengthScaleFactors = zeros(1, length(muscleNames));
-mtpDataMuscleNames = fieldnames(mtpData);
+maxIsometricForce = inputs.maxIsometricForce;
+mtpDataMuscleNames = fieldnames(mtpData.muscles);
 for i = 1 : length(muscleNames)
     if ismember(muscleNames(i), mtpDataMuscleNames)
-        optimalFiberLengthScaleFactors(i) = mtpData.(muscleNames(i)).optimalFiberLengthScaleFactor;
-        tendonSlackLengthScaleFactors(i) = mtpData.(muscleNames(i)).tendonSlackLengthScaleFactor;
+        currentMuscle = mtpData.muscles.(muscleNames(i));
+        if isfield(currentMuscle, 'optimalFiberLength')
+            optimalFiberLengthScaleFactors(i) = currentMuscle.optimalFiberLength / inputs.optimalFiberLength(i);
+        else
+            optimalFiberLengthScaleFactors(i) = 1;
+        end
+        if isfield(currentMuscle, 'tendonSlackLength')
+            tendonSlackLengthScaleFactors(i) = currentMuscle.tendonSlackLength / inputs.tendonSlackLength(i);
+        else
+            tendonSlackLengthScaleFactors(i) = 1;
+        end
+        if isfield(currentMuscle, 'maxIsometricForce')
+            maxIsometricForce(i) = currentMuscle.maxIsometricForce;
+        end
     else
         optimalFiberLengthScaleFactors(i) = 1;
         tendonSlackLengthScaleFactors(i) = 1;
