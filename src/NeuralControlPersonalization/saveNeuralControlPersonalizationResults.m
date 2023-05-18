@@ -23,4 +23,7 @@ for i = 1 : size(synergyCommands, 1)
             ) ...
         )
 end
+if isstruct(precalInputs)
+    writeNeuralControlPersonalizationOsimxFile()
+end
 end

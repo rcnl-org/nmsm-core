@@ -48,6 +48,9 @@ optimizedParams = MuscleTendonPersonalization(inputs, params);
 %     reportMuscleTendonPersonalizationResults(optimizedParams, inputs);
 % end
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
+if precalInputs.optimizeIsometricMaxForce
+    finalValues.maxIsometricForce = inputs.maxIsometricForce;
+end
 results = calcMtpSynXModeledValues(finalValues, inputs, params);
 results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
     end - inputs.numPaddingFrames);
