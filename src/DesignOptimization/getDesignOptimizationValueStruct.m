@@ -26,7 +26,6 @@
 % ----------------------------------------------------------------------- %
 
 function values = getDesignOptimizationValueStruct(inputs, params)
-
 values.time = scaleToOriginal(inputs.time, params.maxTime, ...
     params.minTime);
 state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
@@ -52,5 +51,8 @@ if strcmp(params.controllerType, 'synergy_driven')
 else
     values.controlTorques = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numTorqueControls);
+end
+for i = 1:length(params.userDefinedVariables)
+    values.(params.userDefinedVariables{i}.type) = inputs.parameter(i, 1);
 end
 end

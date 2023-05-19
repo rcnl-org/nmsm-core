@@ -1,11 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% () -> ()
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,13 +25,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function prefixes = parseSpaceSeparatedList(tree, elementName)
-prefixField = getFieldByName(tree, elementName);
-if ~isempty(prefixField.Text)
-    if(strcmp(prefixField.Text(1), ' '))
-        prefixField.Text = prefixField.Text(2:end);
-    end
-    prefixes = string(strsplit(prefixField.Text, ' '));
-else
-    prefixes = string([]);
+function inputs = updateSystemFromUserDefinedFunctions(inputs, values)
+for i = 1:length(inputs.auxdata.systemFns)
+    func = str2func(inputs.auxdata.systemFns(i));
+    inputs = func(inputs, values);
+end
 end

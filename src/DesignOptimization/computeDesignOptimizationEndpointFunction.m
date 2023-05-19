@@ -31,7 +31,10 @@ inputs.phase.state = [inputs.phase.initialstate; inputs.phase.finalstate];
 inputs.phase.time = [inputs.phase.initialtime; inputs.phase.finaltime];
 inputs.phase.control = ones(size(inputs.phase.time,1), ...
     length(inputs.auxdata.minControl));
-values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
+phase = inputs.phase;
+phase.parameter = inputs.parameter;
+values = getDesignOptimizationValueStruct(phase, inputs.auxdata);
+inputs = updateSystemFromUserDefinedFunctions(inputs, values);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 
 if ~isempty(inputs.auxdata.terminal)
@@ -50,7 +53,7 @@ cost = 0;
 for i = 1:length(costTerms)
     costTerm = costTerms{i};
     if strcmp(costTerm.type, "user_defined") && ...
-            strcmp(costTerm.cost_term_type, "parameter")
+            strcmp(costTerm.cost_term_type, "discrete")
         func = str2func(costTerm.function_name);
         cost = cost + func(inputs);
     end

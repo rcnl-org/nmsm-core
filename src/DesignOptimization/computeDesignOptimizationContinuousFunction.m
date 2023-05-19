@@ -28,6 +28,7 @@
 function phaseout = computeDesignOptimizationContinuousFunction(inputs)
 
 values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
+inputs = updateSystemFromUserDefinedFunctions(inputs, values);
 phaseout = calcTorqueBasedModeledValues(values, inputs.auxdata);
 phaseout = calcSynergyBasedModeledValues(values, inputs.auxdata, phaseout);
 phaseout.dynamics = calcDesignOptimizationDynamicsConstraint(values, ...
@@ -39,3 +40,4 @@ end
 phaseout.integrand = calcDesignOptimizationIntegrand(values, ...
     inputs.auxdata);
 end
+

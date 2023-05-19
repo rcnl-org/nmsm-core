@@ -33,11 +33,11 @@ setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeDesignOptimizationContinuousFunction, ...
     @computeDesignOptimizationEndpointFunction);
-% setup.scales.method = 'automatic-bounds';
 solution = gpops2(setup);
 solution.result
 solution = solution.result.solution;
 solution.auxdata = inputs;
+solution.phase.parameter = [solution.parameter];
 output = computeDesignOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
@@ -51,37 +51,29 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
 end
-for i = 1:length(inputs.costTerms)
-    costTerm = inputs.costTerms{i};
-    if strcmp(costTerm.type, "user_defined")
-        if strcmp(costTerm.cost_term_type, "parameter")
-            if ~isfield(bounds, "parameter") || ...
-                    ~isfield(bounds.parameter, "lower")
-                bounds.parameter.lower = [costTerm.lower_bounds];
-                bounds.parameter.upper = [costTerm.upper_bounds];
-            else
-                bounds.parameter.lower = [bounds.parameter.lower, ...
-                    costTerm.lower_bounds];
-                bounds.parameter.upper = [bounds.parameter.upper, ...
-                    costTerm.upper_bounds];
-            end
-        end
+for i = 1:length(inputs.userDefinedVariables)
+    variable = inputs.userDefinedVariables{i};
+    if ~isfield(bounds, "parameter") || ...
+            ~isfield(bounds.parameter, "lower")
+        bounds.parameter.lower = [variable.lower_bounds];
+        bounds.parameter.upper = [variable.upper_bounds];
+    else
+        bounds.parameter.lower = [bounds.parameter.lower, ...
+            variable.lower_bounds];
+        bounds.parameter.upper = [bounds.parameter.upper, ...
+            variable.upper_bounds];
     end
 end
 end
 
 function guess = addUserDefinedTermsToGuess(guess, inputs)
-for i = 1:length(inputs.costTerms)
-    costTerm = inputs.costTerms{i};
-    if strcmp(costTerm.type, "user_defined")
-        if strcmp(costTerm.cost_term_type, "parameter")
-            if ~isfield(guess, "phase") || ...
-                    ~isfield(guess.phase, "parameter")
-                guess.parameter = [];
-            end
-            guess.parameter = [guess.parameter, ...
-                costTerm.initial_values];
-        end
+for i = 1:length(inputs.userDefinedVariables)
+    variable = inputs.userDefinedVariables{i};
+    if ~isfield(guess, "phase") || ...
+            ~isfield(guess.phase, "parameter")
+        guess.parameter = [];
     end
+    guess.parameter = [guess.parameter, ...
+        variable.initial_values];
 end
 end
