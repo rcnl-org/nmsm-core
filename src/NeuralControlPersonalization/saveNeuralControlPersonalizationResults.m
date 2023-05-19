@@ -1,5 +1,5 @@
 function saveNeuralControlPersonalizationResults(synergyWeights, ...
-    synergyCommands, inputs, resultsDirectory)
+    synergyCommands, inputs, resultsDirectory, precalInputs)
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
@@ -24,6 +24,7 @@ for i = 1 : size(synergyCommands, 1)
         )
 end
 if isstruct(precalInputs)
-    writeNeuralControlPersonalizationOsimxFile()
+    writeNeuralControlPersonalizationOsimxFile(inputs, ...
+        resultsDirectory, precalInputs)
 end
 end
