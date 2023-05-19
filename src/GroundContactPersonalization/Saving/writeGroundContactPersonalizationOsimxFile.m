@@ -28,9 +28,22 @@
 % ----------------------------------------------------------------------- %
 
 function writeGroundContactPersonalizationOsimxFile(inputs, ...
-    groundContactModelFileName)
+    resultsDirectory, osimxFileName)
+modelFileName = inputs.model;
+model = Model(modelFileName);
 
-bodyModel = Model(inputs.bodyModel);
+if isfile(osimxFileName)
+    osimx = parseOsimxFile(inputs.osimxFileName);
+    [~, name, ~] = fileparts(inputs.osimxFileName);
+    outfile = fullfile(resultsDirectory, strcat(name, "_gcp.xml"));
+else
+    osimx = buildGcpOsimxTemplate(...
+        replace(model.getName().toCharArray',".","_dot_"), modelFileName);
+    [~, name, ~] = fileparts(modelFileName);
+    outfile = fullfile(resultsDirectory, strcat(name, "_gcp.xml"));
+end
+
+%% To update
 osimx = buildGcpOsimxTemplate(...
     replace(bodyModel.getName().toCharArray',".","_dot_"), ...
     inputs.bodyModel, ...
