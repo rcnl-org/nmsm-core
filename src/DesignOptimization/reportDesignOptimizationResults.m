@@ -26,10 +26,11 @@
 % ----------------------------------------------------------------------- %
 
 function reportDesignOptimizationResults(solution, inputs)
-if isfield(solution.solution, "parameter")
-    parameterResults = solution.solution.parameter
-end
 values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
+for i = 1:length(inputs.userDefinedVariables)
+    disp(inputs.userDefinedVariables{i}.type)
+    disp(values.(inputs.userDefinedVariables{i}.type))
+end
 if strcmp(inputs.controllerType, 'synergy_driven') 
 % plot Muscle Activations
 plotMuscleActivations(solution.muscleActivations, values.time, ...
