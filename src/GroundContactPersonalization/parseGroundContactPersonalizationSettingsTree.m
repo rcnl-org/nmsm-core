@@ -43,7 +43,7 @@ import org.opensim.modeling.*
 inputDirectory = getTextFromField(getFieldByNameOrAlternate(tree, ...
     'input_directory', pwd));
 inputs.inputOsimxFile = getTextFromField(getFieldByNameOrAlternate( ...
-    tree, 'input_osimx_file', []));
+    tree, 'input_osimx_file', ''));
 inputs.bodyModel = getFieldByNameOrError(tree, 'input_model_file').Text;
 motionFile = getFieldByNameOrError(tree, 'input_motion_file').Text;
 grfFile = getFieldByNameOrError(tree, 'input_grf_file').Text;
@@ -90,8 +90,7 @@ for i=1:length(contactSurfaces)
         output{counter} = getMotionTime(inputs.bodyModel, ...
             inputs.motionFileName, output{counter});
         verifyTime(output{counter}.grfTime, output{counter}.time);
-        tempFields = {'forceColumns', 'momentColumns', ...
-            'electricalCenterColumns', 'grfTime', 'startTime', 'endTime'};
+        tempFields = {'grfTime', 'startTime', 'endTime'};
         output{counter} = rmfield(output{counter}, tempFields);
         counter = counter + 1;
     end

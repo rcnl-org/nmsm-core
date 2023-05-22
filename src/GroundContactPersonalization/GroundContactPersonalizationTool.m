@@ -35,6 +35,6 @@ settingsTree = xml2struct(settingsFileName);
     parseGroundContactPersonalizationSettingsTree(settingsTree);
 results = GroundContactPersonalization(inputs, params);
 saveGroundContactPersonalizationResults(results, params, ...
-    resultsDirectory, inputs.osimxFileName);
+    resultsDirectory, inputs.inputOsimxFile);
 end
 
