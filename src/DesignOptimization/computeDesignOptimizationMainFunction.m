@@ -28,13 +28,16 @@
 function output = computeDesignOptimizationMainFunction(inputs, params)
 bounds = setupProblemBounds(inputs);
 guess = setupCommonOptimalControlInitialGuess(inputs);
+guess = addUserDefinedTermsToGuess(guess, inputs);
 setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeDesignOptimizationContinuousFunction, ...
     @computeDesignOptimizationEndpointFunction);
 solution = gpops2(setup);
+solution.result
 solution = solution.result.solution;
 solution.auxdata = inputs;
+solution.phase.parameter = [solution.parameter];
 output = computeDesignOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
@@ -47,5 +50,30 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
+end
+for i = 1:length(inputs.userDefinedVariables)
+    variable = inputs.userDefinedVariables{i};
+    if ~isfield(bounds, "parameter") || ...
+            ~isfield(bounds.parameter, "lower")
+        bounds.parameter.lower = [variable.lower_bounds];
+        bounds.parameter.upper = [variable.upper_bounds];
+    else
+        bounds.parameter.lower = [bounds.parameter.lower, ...
+            variable.lower_bounds];
+        bounds.parameter.upper = [bounds.parameter.upper, ...
+            variable.upper_bounds];
+    end
+end
+end
+
+function guess = addUserDefinedTermsToGuess(guess, inputs)
+for i = 1:length(inputs.userDefinedVariables)
+    variable = inputs.userDefinedVariables{i};
+    if ~isfield(guess, "phase") || ...
+            ~isfield(guess.phase, "parameter")
+        guess.parameter = [];
+    end
+    guess.parameter = [guess.parameter, ...
+        variable.initial_values];
 end
 end

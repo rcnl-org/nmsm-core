@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,34 +25,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getDiscreteCostTerms(tree, inputs)
-trackingDiscreteTermsTree = getFieldByName(tree, 'RCNLTrackingCostTerms');
-if isstruct(trackingDiscreteTermsTree)
-    if isfield(trackingDiscreteTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
-        rcnlCostTermTree = ...
-            trackingDiscreteTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
-        if length(rcnlCostTermTree) > 1
-            inputs.discrete.tracking = ...
-                parseRcnlCostTermSet(rcnlCostTermTree);
-        else
-            inputs.discrete.tracking = ...
-                parseRcnlCostTermSet({rcnlCostTermTree});
-        end
+function output = isMinimizationCostTerm(costTerm)
+minimizationCostTerms = [ ...
+    "joint_jerk_minimization" ...
+    ];
+output = false;
+for i = 1:length(minimizationCostTerms)
+    if strcmp(costTerm.type, minimizationCostTerms(i))
+        output = true;
+        return
     end
+end
 end
 
-minimizingDiscreteTermsTree = getFieldByName(tree, 'RCNLMinimizationCostTerms');
-if isstruct(minimizingDiscreteTermsTree)
-    if isfield(minimizingDiscreteTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
-        rcnlCostTermTree = ...
-            minimizingDiscreteTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
-        if length(rcnlCostTermTree) > 1
-            inputs.discrete.minimizing = ...
-                parseRcnlCostTermSet(rcnlCostTermTree);
-        else
-            inputs.discrete.minimizing = ...
-                parseRcnlCostTermSet({rcnlCostTermTree});
-        end
-    end
-end
-end

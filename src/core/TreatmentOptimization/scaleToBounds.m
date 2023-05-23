@@ -26,6 +26,5 @@
 % ----------------------------------------------------------------------- %
 
 function scaledValue = scaleToBounds(value, maximum, minimum)
-
 scaledValue = (value - (maximum + minimum) / 2) ./ (maximum - minimum);
 end

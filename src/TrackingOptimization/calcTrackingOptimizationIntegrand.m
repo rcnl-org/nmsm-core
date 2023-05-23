@@ -28,16 +28,16 @@
 function integrand = calcTrackingOptimizationIntegrand(values, params, ...
     phaseout)
 integrand = [];
-for i = 1:length(params.integral.tracking)
-    costTerm = params.integral.tracking{i};
+for i = 1:length(params.costTerms)
+    costTerm = params.costTerms{i};
     if costTerm.isEnabled
         switch costTerm.type
-            case "coordinate"
+            case "coordinate_tracking"
                 integrand = cat(2, integrand, ...
                     calcTrackingCoordinateIntegrand(params, ...
                     values.time, values.statePositions, ...
                     costTerm.coordinate));
-            case "inverse_dynamics_load"
+            case "inverse_dynamics_load_tracking"
                 integrand = cat(2, integrand, ...
                     calcTrackingInverseDynamicLoadsIntegrand(params, ...
                     values.time, phaseout.inverseDynamicMoments, ...
@@ -57,23 +57,13 @@ for i = 1:length(params.integral.tracking)
                     calcTrackingMuscleActivationIntegrand( ...
                     phaseout.muscleActivations, ...
                     values.time, params, costTerm.muscle));   
-            otherwise
-                throw(MException('', ['Cost term type ' costTerm.type ...
-                    ' does not exist for this tool.']))    
-        end
-    end
-end
-for i = 1:length(params.integral.minimizing)
-    costTerm = params.integral.minimizing{i};
-    if costTerm.isEnabled
-        switch costTerm.type
-            case "joint_jerk"
+            case "joint_jerk_minimization"
                 integrand = cat(2, integrand, ...
                     calcMinimizingJointJerkIntegrand(values.controlJerks, ...
                     params, costTerm.coordinate));
             otherwise
                 throw(MException('', ['Cost term type ' costTerm.type ...
-                    ' does not exist for this tool.']))        
+                    ' does not exist for this tool.']))    
         end
     end
 end

@@ -28,30 +28,20 @@
 function integrand = calcVerificationOptimizationIntegrand(values, params, ...
     phaseout)
 integrand = [];
-for i = 1:length(params.integral.tracking)
-    costTerm = params.integral.tracking{i};
+for i = 1:length(params.costTerms)
+    costTerm = params.costTerms{i};
     if costTerm.isEnabled
         switch costTerm.type
-            case "coordinate"
+            case "coordinate_tracking"
                 integrand = cat(2, integrand, ...
                     calcTrackingCoordinateIntegrand(params, ...
                     values.time, values.statePositions, ...
                     costTerm.coordinate));
-            case "controller"
+            case "controller_tracking"
                 integrand = cat(2, integrand, ...
                     calcTrackingControllerIntegrand(params, values, ...
-                    costTerm.controller));      
-            otherwise
-                throw(MException('', ['Cost term type ' costTerm.type ...
-                    ' does not exist for this tool.']))   
-        end
-    end
-end
-for i = 1:length(params.integral.minimizing)
-    costTerm = params.integral.minimizing{i};
-    if costTerm.isEnabled
-        switch costTerm.type
-            case "joint_jerk"
+                    costTerm.controller));  
+            case "joint_jerk_minimization"
                 integrand = cat(2, integrand, ...
                     calcMinimizingJointJerkIntegrand(values.controlJerks, ...
                     params, costTerm.coordinate));
