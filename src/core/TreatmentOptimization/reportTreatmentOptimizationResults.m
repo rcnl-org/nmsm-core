@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +25,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function reportVerificationOptimizationResults(solution, inputs)
+function reportTreatmentOptimizationResults(solution, inputs)
 
-values = getVerificationOptimizationValueStruct(solution.solution.phase, inputs);
-if strcmp(inputs.controllerType, 'synergy_driven') 
+if isfield(solution.solution, "parameter")
+    parameterResults = solution.solution.parameter
+end
+values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
+if strcmp(inputs.controllerType, 'synergy_driven')
 % plot Muscle Activations
 plotMuscleActivations(solution.muscleActivations, values.time, ...
     inputs.experimentalMuscleActivations, inputs.experimentalTime, ...
@@ -103,16 +106,16 @@ end
 function figureXLabels(numTotalPlots, numColumnPlots, plotIndex, xLabel)
 
 if plotIndex > numTotalPlots - numColumnPlots
-    xlabel(xLabel); 
-else 
-    xticklabels(''); 
+    xlabel(xLabel);
+else
+    xticklabels('');
 end
 end
 function figureYLabels(numTotalPlots, numColumnPlots, plotIndex, yLabel)
 
 if ismember(plotIndex, 1 : numColumnPlots : numTotalPlots)
     ylabel({yLabel(1); yLabel(2)});
-else 
-    yticklabels(''); 
+else
+    yticklabels('');
 end
 end
