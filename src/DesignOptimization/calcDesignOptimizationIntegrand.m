@@ -25,7 +25,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function integrand = calcDesignOptimizationIntegrand(values, auxdata)
+function integrand = calcDesignOptimizationIntegrand(values, ...
+    modeledValues, auxdata)
 integrand = [];
 [costTermCalculations, allowedTypes] = ...
     generateCostTermStruct("continuous", "DesignOptimization");
@@ -36,7 +37,9 @@ for i = 1:length(auxdata.costTerms)
         if isfield(costTermCalculations, costTerm.type) && ...
                 any(ismember(allowedTypes, costTerm.type))
             fn = costTermCalculations.(costTerm.type);
-            integrand = cat(2, integrand, fn(values, auxdata, costTerm));
+            integrand = cat(2, ...
+                integrand,  ...
+                fn(values, modeledValues, auxdata, costTerm));
         else
             throw(MException('', ['Cost term type ' costTerm.type ...
                 ' does not exist for this tool.']))
