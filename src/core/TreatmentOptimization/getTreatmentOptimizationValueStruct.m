@@ -25,19 +25,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTrackingOptimizationValueStruct(inputs, params)
-values = getTreatmentOptimizationValueStruct(inputs, params);
-if strcmp(params.controllerType, 'synergy_driven')
-    if params.optimizeSynergyVectors
-        values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
-            params.maxParameter, params.minParameter);
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            values.synergyWeights, params);
-    else
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            params.synergyWeightsGuess, params);
-    end
-    values.controlSynergyActivations = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numSynergies);
+function values = getTreatmentOptimizationValueStruct(inputs, params)
+
+values.time = scaleToOriginal(inputs.time, params.maxTime, ...
+    params.minTime);
+state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
+    params.maxState, ones(size(inputs.state, 1), 1) .* params.minState);
+control = scaleToOriginal(inputs.control, ones(size(inputs.control, 1), 1) .* ...
+    params.maxControl, ones(size(inputs.control, 1), 1) .* params.minControl);
+values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
+values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
+values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
+values.controlJerks = control(:, 1 : params.numCoordinates);
+
+if ~strcmp(params.controlType, 'synergy_driven')
+    values.controlTorques = control(:, params.numCoordinates + 1 : ...
+    params.numCoordinates + params.numTorqueControls);
 end
+
 end
