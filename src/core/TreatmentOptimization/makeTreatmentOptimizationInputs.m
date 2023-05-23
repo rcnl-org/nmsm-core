@@ -25,15 +25,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, inputs] = DesignOptimization(inputs, params)
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-if strcmp(inputs.controllerType, 'synergy_driven')
-    inputs = setupMuscleSynergies(inputs);
-end
-output = computeDesignOptimizationMainFunction(inputs, params);
-end
-function inputs = setupMuscleSynergies(inputs)
-inputs.splineSynergyActivations = spaps(inputs.initialGuess.time, ...
-    inputs.initialGuess.control(:, inputs.numCoordinates + 1:end)', 0.0000001);
-inputs.synergyLabels = inputs.initialGuess.controlLabels(:, inputs.numCoordinates + 1:end);
+function inputs = makeTreatmentOptimizationInputs(inputs, params)
+pointKinematics(inputs.mexModel);
+inverseDynamics(inputs.mexModel);
+inputs = getStateDerivatives(inputs);
+inputs = setupGroundContact(inputs);
+inputs = getSplines(inputs);
+inputs = checkStateGuess(inputs);
+inputs = checkControlGuess(inputs);
+inputs = checkParameterGuess(inputs);
+inputs = getIntegralBounds(inputs);
+inputs = getPathConstraintBounds(inputs);
+inputs = getTerminalConstraintBounds(inputs);
+inputs = getDesignVariableInputBounds(inputs);
 end
