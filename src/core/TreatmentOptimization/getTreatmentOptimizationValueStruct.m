@@ -38,7 +38,7 @@ values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
 values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
 values.controlJerks = control(:, 1 : params.numCoordinates);
 
-if ~strcmp(params.controlType, 'synergy_driven')
+if ~strcmp(params.controllerType, 'synergy_driven')
     values.controlTorques = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numTorqueControls);
 end

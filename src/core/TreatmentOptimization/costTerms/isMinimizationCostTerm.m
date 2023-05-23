@@ -26,7 +26,9 @@
 % ----------------------------------------------------------------------- %
 
 function output = isMinimizationCostTerm(costTerm)
-minimizationCostTerms = ["joint_jerk_minimization"];
+minimizationCostTerms = [ ...
+    "joint_jerk_minimization" ...
+    ];
 output = false;
 for i = 1:length(minimizationCostTerms)
     if strcmp(costTerm.type, minimizationCostTerms(i))

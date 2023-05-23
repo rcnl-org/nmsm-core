@@ -37,8 +37,6 @@ if strcmp(params.controllerType, 'synergy_driven')
         values.synergyWeights = getSynergyWeightsFromGroups(...
             params.synergyWeightsGuess, params);
     end
-    values.controlSynergyActivations = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numSynergies);
 end
 for i = 1:length(params.userDefinedVariables)
     values.(params.userDefinedVariables{i}.type) = inputs.parameter(i, 1);
