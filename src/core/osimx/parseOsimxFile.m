@@ -43,13 +43,12 @@ rcnlGroundContactTree = getFieldByName(tree, "RCNLContactSurfaceSet");
 if(isstruct(rcnlGroundContactTree))
 
     contactSurfaceTree = getFieldByNameOrError(rcnlGroundContactTree, "objects").RCNLContactSurface;
+    if isstruct(contactSurfaceTree)
+        contactSurfaceTree = {contactSurfaceTree};
+    end
 
     for i = 1:length(contactSurfaceTree)
-        if length(contactSurfaceTree) == 1
-            contactSurface = contactSurfaceTree;
-        else
-            contactSurface = contactSurfaceTree{i};
-        end
+        contactSurface = contactSurfaceTree{i};
         osimx.groundContact.contactSurface{i} = parseContactSurface(contactSurface);
     end
 end

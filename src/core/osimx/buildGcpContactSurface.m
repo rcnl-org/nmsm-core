@@ -37,6 +37,10 @@ if(~isstruct(groundContact))
     groundContact.RCNLContactSurface = {};
 else
     i = length(groundContact.RCNLContactSurface) + 1;
+    if length(groundContact.RCNLContactSurface) == 1
+        groundContact.RCNLContactSurface = ...
+            {groundContact.RCNLContactSurface};
+    end
 end
 
 contact = groundContact.RCNLContactSurface;
@@ -103,12 +107,12 @@ contact{i}.Comment = 'The contact surface parameters';
 newContactSurface = contact{i};
 newContactSurface.GCPSpringSet.Comment = ...
     'The set of springs for the contact surface';
-for i = 1:length(contactSurface.springs)
+for j = 1:length(contactSurface.springs)
     newContactSurface = buildGcpSpring(newContactSurface, ...
-        contactSurface.springs{i});
+        contactSurface.springs{j});
 end
 newContactSurface.GCPSpringSet.groups = '';
 osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.objects. ...
-    RCNLContactSurface = newContactSurface;
+    RCNLContactSurface{i} = newContactSurface;
 end
 
