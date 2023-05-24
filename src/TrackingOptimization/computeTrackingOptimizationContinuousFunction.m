@@ -26,7 +26,6 @@
 % ----------------------------------------------------------------------- %
 
 function phaseout = computeTrackingOptimizationContinuousFunction(inputs)
-
 values = getTrackingOptimizationValueStruct(inputs.phase, inputs.auxdata);
 phaseout = calcTorqueBasedModeledValues(values, inputs.auxdata);
 phaseout = calcSynergyBasedModeledValues(values, inputs.auxdata, phaseout);

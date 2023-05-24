@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,20 +27,23 @@
 
 function inputs = getIntegralBounds(inputs)
 inputs.maxIntegral = [];
-for i = 1:length(inputs.integral.tracking)
-    costTerm = inputs.integral.tracking{i};
+inputs.minIntegral = [];
+for i = 1:length(inputs.costTerms)
+    costTerm = inputs.costTerms{i};
     if costTerm.isEnabled
-        inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
-            costTerm.maxAllowableError);
+        if isTrackingCostTerm(costTerm) || isMinimizationCostTerm(costTerm)
+            inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
+                costTerm.maxAllowableError);
+        elseif strcmp(costTerm.type, "user_defined")
+            if strcmp(costTerm.cost_term_type, "continuous")
+                inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
+                    costTerm.maxAllowableError);
+            end
+        else
+            throw(MException('', ['Cost term type ' costTerm.type ...
+                ' does not exist for this tool.']))
+        end
     end
-end
-for i = 1:length(inputs.integral.minimizing)
-    costTerm = inputs.integral.minimizing{i};
-    if costTerm.isEnabled
-        inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
-            costTerm.maxAllowableError);
-    end
-
 end
 inputs.minIntegral = zeros(1, length(inputs.maxIntegral));
 end

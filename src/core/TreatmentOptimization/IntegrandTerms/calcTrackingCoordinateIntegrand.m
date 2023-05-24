@@ -25,15 +25,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingCoordinateIntegrand(params, time, ...
+function cost = calcTrackingCoordinateIntegrand(auxdata, time, ...
     statePositions, coordinateName)
 
-indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
+indx = find(strcmp(convertCharsToStrings(auxdata.coordinateNames), ...
     coordinateName));
-if params.splineJointAngles.dim > 1
-    experimentalJointAngles = fnval(params.splineJointAngles, time)';
+if auxdata.splineJointAngles.dim > 1
+    experimentalJointAngles = fnval(auxdata.splineJointAngles, time)';
 else
-    experimentalJointAngles = fnval(params.splineJointAngles, time);
+    experimentalJointAngles = fnval(auxdata.splineJointAngles, time);
 end
 
 cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...
