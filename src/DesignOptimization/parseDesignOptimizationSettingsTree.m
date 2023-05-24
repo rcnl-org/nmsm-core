@@ -46,7 +46,7 @@ if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
     inputs.userDefinedVariables = parseRcnlCostTermSet( ...
         parameterTree.RCNLParameterTerm);
 else
-    inputs.userDefinedVariables = struct();
+    inputs.userDefinedVariables = {};
 end
 end
 
