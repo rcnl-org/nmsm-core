@@ -39,6 +39,6 @@ tic
 
 toc
 
-reportTrackingOptimizationResults(outputs, inputs);
+reportTreatmentOptimizationResults(outputs, inputs);
 saveTrackingOptimizationResults(outputs, inputs);
 end
