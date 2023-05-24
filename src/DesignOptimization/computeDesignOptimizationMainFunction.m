@@ -34,7 +34,6 @@ setup = setupCommonOptimalControlSolverSettings(inputs, ...
     @computeDesignOptimizationContinuousFunction, ...
     @computeDesignOptimizationEndpointFunction);
 solution = gpops2(setup);
-solution.result
 solution = solution.result.solution;
 solution.auxdata = inputs;
 solution.phase.parameter = [solution.parameter];
