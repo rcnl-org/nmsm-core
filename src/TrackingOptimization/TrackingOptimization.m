@@ -26,9 +26,10 @@
 % ----------------------------------------------------------------------- %
 
 function [output, inputs] = TrackingOptimization(inputs, params)
-pointKinematics(inputs.mexModel);
+% pointKinematics(inputs.mexModel);
 inverseDynamics(inputs.mexModel);
-inputs
+% inputs
+gcp;
 inputs = getStateDerivatives(inputs);
 inputs = setupGroundContact(inputs);
 inputs = getSplines(inputs);

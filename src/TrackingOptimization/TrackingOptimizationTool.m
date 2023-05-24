@@ -32,7 +32,13 @@
 function TrackingOptimizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 [inputs, params] = parseTrackingOptimizationSettingsTree(settingsTree);
+
+tic
+
 [outputs, inputs] = TrackingOptimization(inputs, params);
+
+toc
+
 reportTrackingOptimizationResults(outputs, inputs);
 saveTrackingOptimizationResults(outputs, inputs);
 end

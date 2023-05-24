@@ -27,6 +27,8 @@
 
 function values = getTrackingOptimizationValueStruct(inputs, params)
 
+% values.mexModel = 
+
 values.time = scaleToOriginal(inputs.time, params.maxTime, ...
     params.minTime);
 state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
