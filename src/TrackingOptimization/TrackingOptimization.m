@@ -27,5 +27,9 @@
 
 function [output, inputs] = TrackingOptimization(inputs, params)
 inputs = makeTreatmentOptimizationInputs(inputs, params);
+% pointKinematics(inputs.mexModel);
+inverseDynamics(inputs.mexModel);
+% inputs
+gcp;
 output = computeTrackingOptimizationMainFunction(inputs, params);
 end
