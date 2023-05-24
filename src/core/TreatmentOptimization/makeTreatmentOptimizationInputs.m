@@ -26,7 +26,7 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeTreatmentOptimizationInputs(inputs, params)
-pointKinematics(inputs.mexModel);
+% pointKinematics(inputs.mexModel);
 inverseDynamics(inputs.mexModel);
 inputs = getStateDerivatives(inputs);
 inputs = setupGroundContact(inputs);

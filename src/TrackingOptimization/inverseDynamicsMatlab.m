@@ -1,4 +1,4 @@
-function IDLoads = inverseDynamics(time,q,qp,qpp,IKLabels,AppliedLoads,modelFile)
+function IDLoads = inverseDynamicsMatlab(time,q,qp,qpp,IKLabels,AppliedLoads,modelFile)
     % Load Library
     import org.opensim.modeling.*;
 
