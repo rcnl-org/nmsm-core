@@ -34,7 +34,6 @@ setup = setupCommonOptimalControlSolverSettings(inputs, ...
     @computeDesignOptimizationContinuousFunction, ...
     @computeDesignOptimizationEndpointFunction);
 solution = gpops2(setup);
-solution.result
 solution = solution.result.solution;
 solution.auxdata = inputs;
 solution.phase.parameter = [solution.parameter];
@@ -55,13 +54,13 @@ for i = 1:length(inputs.userDefinedVariables)
     variable = inputs.userDefinedVariables{i};
     if ~isfield(bounds, "parameter") || ...
             ~isfield(bounds.parameter, "lower")
-        bounds.parameter.lower = [variable.lower_bounds];
-        bounds.parameter.upper = [variable.upper_bounds];
+        bounds.parameter.lower = [-0.5];
+        bounds.parameter.upper = [0.5];
     else
         bounds.parameter.lower = [bounds.parameter.lower, ...
-            variable.lower_bounds];
+            -0.5];
         bounds.parameter.upper = [bounds.parameter.upper, ...
-            variable.upper_bounds];
+            0.5];
     end
 end
 end
@@ -74,6 +73,9 @@ for i = 1:length(inputs.userDefinedVariables)
         guess.parameter = [];
     end
     guess.parameter = [guess.parameter, ...
-        variable.initial_values];
+        scaleToBounds( ...
+        variable.initial_values, ...
+        variable.upper_bounds, ...
+        variable.lower_bounds)];
 end
 end
