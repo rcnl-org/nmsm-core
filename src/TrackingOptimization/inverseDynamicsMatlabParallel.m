@@ -2,30 +2,40 @@ function IDLoads = inverseDynamics(time,q,qp,qpp,IKLabels,AppliedLoads,modelFile
 % Load Library
 import org.opensim.modeling.*;
 
-% Open a Model by name
-osimModel = Model(modelFile);
-
-% Initialize the system and get the initial state
-osimState = osimModel.initSystem();
-
 % Get the number of coords and markers
 numPts = size(time,1);
 numControls = size(AppliedLoads,2);
-numCoords = osimState.getNQ;
+numCoords = Model(modelFile).initSystem().getNQ;
 
 % Split time points into parallel problems
 numWorkers = gcp().NumWorkers;
 IDLoadsJobs = cell(1, numWorkers);
 AccelsTempVec = cell(1, numWorkers);
 
-clear osimModel
-clear osimState
+for worker = 1:numWorkers
+    IDLoadsJobs{worker} = idWorkerHelper(modelFile, numPts, numControls, numCoords, numWorkers, AccelsTempVec{worker},time,q,qp,qpp,IKLabels,AppliedLoads,worker);
+end
 
-parfor worker = 1:numWorkers
+IDLoads = IDLoadsJobs{1};
+for job = 2 : numWorkers
+    IDLoads = cat(1, IDLoads, IDLoadsJobs{job});
+end
 
-    osimModel = Model(modelFile);
-    osimState = osimModel.initSystem();
-    idSolver = InverseDynamicsSolver(osimModel);
+end
+
+function IDLoadsJob = idWorkerHelper(modelFile, numPts, numControls, numCoords, numWorkers, AccelsTempVec,time,q,qp,qpp,IKLabels,AppliedLoads,worker)
+    
+    import org.opensim.modeling.*;
+    persistent osimModel;
+    persistent osimState;
+    persistent idSolver;
+    if isempty(osimModel)
+        osimModel = Model(modelFile);
+        osimState = osimModel.initSystem();
+        idSolver = InverseDynamicsSolver(osimModel);
+    end
+
+    IDLoadsJob = [];
 
     for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts / numWorkers), numPts)
         osimState.setTime(time(j,1));
@@ -45,12 +55,10 @@ parfor worker = 1:numWorkers
 
             for ii = 1:size(q,2)
                 if abs(q(j,ii)-StateQ) <= 1e-6
-                    AccelsTempVec{worker}(j-indexOffset,i) = qpp(j,ii);
+                    AccelsTempVec(j-indexOffset,i) = qpp(j,ii);
                 end
             end
         end
-
-        tempMarkerGlobalPos=Vec3;
 
         newControls = Vector(numControls,0);
 
@@ -65,22 +73,14 @@ parfor worker = 1:numWorkers
         AccelsVec = Vector(osimState.getNQ,0);
 
         for i=0:osimState.getNQ-1
-            AccelsVec.set(i,AccelsTempVec{worker}(j-indexOffset,i+1));
+            AccelsVec.set(i,AccelsTempVec(j-indexOffset,i+1));
         end
 
-        IDLoadsVec = Vector;
         IDLoadsVec = idSolver.solve(osimState,AccelsVec);
 
         for i=0:numCoords-1
-            IDLoadsJobs{worker}(j-indexOffset,i+1) = IDLoadsVec.get(i);
+            IDLoadsJob(j-indexOffset,i+1) = IDLoadsVec.get(i);
         end
     end
-
-end
-
-IDLoads = IDLoadsJobs{1};
-for job = 2 : numWorkers
-    IDLoads = cat(1, IDLoads, IDLoadsJobs{job});
-end
 
 end
