@@ -1,20 +1,9 @@
 function [SpringPos, SpringVel] = pointKinematics(time,q,qp,SpringMat,SpringBodyMat,...
     modelFile,IKLabels)
 
-% Load Library
-import org.opensim.modeling.*;
-
-% Open a Model by name
-osimModel = Model(modelFile);
-
-% Initialize the system and get the initial state
-osimState = osimModel.initSystem();
-
 % Get the number of coords and markers
 numPts = size(time,1);
 numSprings = size(SpringMat,1);
-
-refBodySet = osimModel.getBodySet;
 
 % Split time points into parallel problems
 numWorkers = gcp().NumWorkers;
@@ -22,9 +11,37 @@ SpringPosJobs = cell(1, numWorkers);
 SpringVelJobs = cell(1, numWorkers);
 
 parfor worker = 1:numWorkers
+    [SpringPosJobs{worker}, SpringVelJobs{worker}] = pointKinematicsWorkerHelper(modelFile, numPts, numSprings, numWorkers, time,q,qp,SpringMat,SpringBodyMat,IKLabels,worker);
+end
+
+SpringPos = SpringPosJobs{1};
+SpringVel = SpringVelJobs{1};
+for job = 2 : numWorkers
+    SpringPos = cat(1, SpringPos, SpringPosJobs{job});
+    SpringVel = cat(1, SpringVel, SpringVelJobs{job});
+end
+
+end
+
+function [SpringPosJob, SpringVelJob] = pointKinematicsWorkerHelper(modelFile, numPts, numSprings, numWorkers, time,q,qp,SpringMat,SpringBodyMat,IKLabels,worker)
+
+    import org.opensim.modeling.*;
+    persistent osimModel;
+    persistent osimState;
+    persistent refBodySet;
+    if isempty(osimModel)
+        osimModel = Model(modelFile);
+        osimState = osimModel.initSystem();
+        refBodySet = osimModel.getBodySet;
+    end
+
+    SpringPosJob = [];
+    SpringVelJob = [];
+    indexOffset = (worker - 1) * ceil(numPts / numWorkers);
 
     for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts / numWorkers), numPts)
         osimState.setTime(time(j,1));
+
         for k=1:size(IKLabels,2)
             if ~osimModel.getCoordinateSet.get(IKLabels{k}).get_locked
                 osimModel.getCoordinateSet.get(IKLabels{k}).setValue(osimState,q(j,k));
@@ -46,19 +63,10 @@ parfor worker = 1:numWorkers
             osimModel.getSimbodyEngine.getVelocity(osimState,tempRefParentBody,tempLocalPos,tempGlobalVel);
 
             for k=0:2
-                SpringPosJobs{worker}(j,(i-1)*3+k+1)=tempGlobalPos.get(k);
-                SpringVelJobs{worker}(j,(i-1)*3+k+1)=tempGlobalVel.get(k);
+                SpringPosJob(j-indexOffset,(i-1)*3+k+1)=tempGlobalPos.get(k);
+                SpringVelJob(j-indexOffset,(i-1)*3+k+1)=tempGlobalVel.get(k);
             end
         end
     end
-
-end
-
-SpringPos = SpringPosJobs{1};
-SpringVel = SpringVelJobs{1};
-for job = 2 : numWorkers
-    SpringPos = cat(1, SpringPos, SpringPosJobs{job});
-    SpringVel = cat(1, SpringVel, SpringVelJobs{job});
-end
 
 end

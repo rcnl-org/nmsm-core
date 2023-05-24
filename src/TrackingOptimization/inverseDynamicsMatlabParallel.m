@@ -1,18 +1,16 @@
-function IDLoads = inverseDynamics(time,q,qp,qpp,IKLabels,AppliedLoads,modelFile)
-% Load Library
-import org.opensim.modeling.*;
+function IDLoads = inverseDynamicsMatlabParallel(time,q,qp,qpp,IKLabels,AppliedLoads,modelFile)
 
 % Get the number of coords and markers
 numPts = size(time,1);
 numControls = size(AppliedLoads,2);
-numCoords = Model(modelFile).initSystem().getNQ;
+numCoords = length(IKLabels);
 
 % Split time points into parallel problems
 numWorkers = gcp().NumWorkers;
 IDLoadsJobs = cell(1, numWorkers);
 AccelsTempVec = cell(1, numWorkers);
 
-for worker = 1:numWorkers
+parfor worker = 1:numWorkers
     IDLoadsJobs{worker} = idWorkerHelper(modelFile, numPts, numControls, numCoords, numWorkers, AccelsTempVec{worker},time,q,qp,qpp,IKLabels,AppliedLoads,worker);
 end
 
@@ -37,11 +35,10 @@ function IDLoadsJob = idWorkerHelper(modelFile, numPts, numControls, numCoords, 
 
     IDLoadsJob = [];
 
+    indexOffset = (worker - 1) * ceil(numPts / numWorkers);
+
     for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts / numWorkers), numPts)
         osimState.setTime(time(j,1));
-
-        indexOffset = (worker - 1) * ceil(numPts / numWorkers);
-
         for k=1:size(IKLabels,2)
             if ~osimModel.getCoordinateSet.get(IKLabels{k}).get_locked
                 osimModel.getCoordinateSet.get(IKLabels{k}).setValue(osimState,q(j,k));
@@ -72,8 +69,13 @@ function IDLoadsJob = idWorkerHelper(modelFile, numPts, numControls, numCoords, 
 
         AccelsVec = Vector(osimState.getNQ,0);
 
+        includedQIndex = 1;
         for i=0:osimState.getNQ-1
-            AccelsVec.set(i,AccelsTempVec(j-indexOffset,i+1));
+            currentCoordinate = osimModel.getCoordinateSet().get(i).getName().toCharArray';
+            if any(cellfun(@isequal, IKLabels, repmat({currentCoordinate}, 1, length(IKLabels))))
+                AccelsVec.set(i,AccelsTempVec(j-indexOffset,includedQIndex));
+                includedQIndex = includedQIndex + 1;
+            end
         end
 
         IDLoadsVec = idSolver.solve(osimState,AccelsVec);

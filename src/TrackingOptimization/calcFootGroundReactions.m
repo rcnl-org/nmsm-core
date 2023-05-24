@@ -42,6 +42,9 @@ end
 function [forces, moments] = calcGroundReactionForcesAndMoments(markerPositions, ...
     markerVelocities, springConstants, midfootSuperiorPosition, contactSurface)
 
+markerPositions = reshape(markerPositions, [], 3, size(springConstants, 2));
+markerVelocities = reshape(markerVelocities, [], 3, size(springConstants, 2));
+
 for i = 1:size(markerPositions, 1)
 markerKinematics.xPosition = squeeze(markerPositions(i, 1, :))';
 markerKinematics.height = squeeze(markerPositions(i, 2, :))';
