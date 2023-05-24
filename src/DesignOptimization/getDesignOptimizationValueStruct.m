@@ -39,6 +39,9 @@ if strcmp(params.controllerType, 'synergy_driven')
     end
 end
 for i = 1:length(params.userDefinedVariables)
-    values.(params.userDefinedVariables{i}.type) = inputs.parameter(i, 1);
+    values.(params.userDefinedVariables{i}.type) = scaleToOriginal( ...
+        inputs.parameter(i, 1), ...
+        params.userDefinedVariables{i}.upper_bounds, ...
+        params.userDefinedVariables{i}.lower_bounds);
 end
 end
