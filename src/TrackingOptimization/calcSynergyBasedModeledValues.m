@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,20 +26,22 @@
 % ----------------------------------------------------------------------- %
 
 function phaseout = calcSynergyBasedModeledValues(values, params, phaseout)
-if strcmp(params.controllerType, 'synergy_driven') 
-[jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, params);
-[params.muscleTendonLength, params.momentArms, ...
-    params.muscleTendonVelocity] = calcSurrogateModel(params, ...
-    jointAngles, jointVelocities);
-[phaseout.normalizedFiberLength, phaseout.normalizedFiberVelocity] = ...
-    calcNormalizedMuscleFiberLengthsAndVelocities(params, ...
-    ones(1, params.numMuscles), ones(1, params.numMuscles));
-phaseout.muscleActivations = calcMuscleActivationFromSynergies(values);
-muscleJointMoments = calcMuscleJointMoments(params, ...
-    phaseout.muscleActivations, phaseout.normalizedFiberLength, ...
-    phaseout.normalizedFiberVelocity);
-phaseout.muscleJointMoments = muscleJointMoments(:, params.surrogateModelIndex);
-phaseout.muscleJointMoments = phaseout.muscleJointMoments(:, params.dofsActuatedIndex);
+if strcmp(params.controllerType, 'synergy_driven')
+    [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, params);
+    [params.muscleTendonLength, params.momentArms, ...
+        params.muscleTendonVelocity] = calcSurrogateModel(params, ...
+        jointAngles, jointVelocities);
+    [phaseout.normalizedFiberLength, phaseout.normalizedFiberVelocity] = ...
+        calcNormalizedMuscleFiberLengthsAndVelocities(params, ...
+        ones(1, params.numMuscles), ones(1, params.numMuscles));
+    phaseout.muscleActivations = calcMuscleActivationFromSynergies(values);
+    phaseout.metabolicCost = calcMetabolicCost(values.time, ...
+        values.statePositions, phaseout.muscleActivations, params);
+    muscleJointMoments = calcMuscleJointMoments(params, ...
+        phaseout.muscleActivations, phaseout.normalizedFiberLength, ...
+        phaseout.normalizedFiberVelocity);
+    phaseout.muscleJointMoments = muscleJointMoments(:, params.surrogateModelIndex);
+    phaseout.muscleJointMoments = phaseout.muscleJointMoments(:, params.dofsActuatedIndex);
 end
 end
 

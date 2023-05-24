@@ -25,19 +25,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTrackingOptimizationValueStruct(inputs, params)
-values = getTreatmentOptimizationValueStruct(inputs, params);
-if strcmp(params.controllerType, 'synergy_driven')
-    if params.optimizeSynergyVectors
-        values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
-            params.maxParameter, params.minParameter);
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            values.synergyWeights, params);
-    else
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            params.synergyWeightsGuess, params);
-    end
-    values.controlSynergyActivations = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numSynergies);
-end
+function inputs = makeTreatmentOptimizationInputs(inputs, params)
+pointKinematics(inputs.mexModel);
+inverseDynamics(inputs.mexModel);
+inputs = getStateDerivatives(inputs);
+inputs = setupGroundContact(inputs);
+inputs = getSplines(inputs);
+inputs = checkStateGuess(inputs);
+inputs = checkControlGuess(inputs);
+inputs = checkParameterGuess(inputs);
+inputs = getIntegralBounds(inputs);
+inputs = getPathConstraintBounds(inputs);
+inputs = getTerminalConstraintBounds(inputs);
+inputs = getDesignVariableInputBounds(inputs);
 end

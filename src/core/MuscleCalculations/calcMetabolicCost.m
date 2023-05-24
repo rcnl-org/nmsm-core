@@ -25,6 +25,40 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function scaledValue = scaleToBounds(value, maximum, minimum)
-scaledValue = (value - (maximum + minimum) / 2) ./ (maximum - minimum);
+function metabolicCost = calcMetabolicCost(time, statePositions, ...
+    muscleActivations, params)
+
+for indx = 1 : numel(params.integral.minimizing)
+    if strcmpi(params.integral.minimizing{indx}.type, 'metabolic_cost')
+        import org.opensim.modeling.*
+        model = Model(params.model);
+        for i = 1 : params.numMuscles
+            controller = PrescribedController();
+            controller.addActuator(model.getMuscles().get(params.muscleNames{i}));
+            controlFunction = PiecewiseLinearFunction();
+            for j = 1:size(muscleActivations, 1)
+                controlFunction.addPoint(time(j), muscleActivations(j, i));
+            end
+            controller.prescribeControlForActuator(params.muscleNames{i}, ...
+                controlFunction);
+            model.addComponent(controller);
+        end
+        
+        state = model.initSystem();
+        for i = 1:size(muscleActivations, 1)
+            for j = 1 : size(params.coordinateNames, 2)
+                if ~model.getCoordinateSet.get(params.coordinateNames(j)). ....
+                        get_locked
+                    model.getCoordinateSet.get(params.coordinateNames(j)). ...
+                        setValue(state, statePositions(i, j));
+                end
+            end
+            state.setTime(time(i));
+            model.realizeDynamics(state);
+            model.equilibrateMuscles(state);
+            tempTotalCost = model.getProbeSet().get(0).getProbeOutputs(state);
+            metabolicCost(i, :) = tempTotalCost.get(0);
+        end
+    end
+end
 end
