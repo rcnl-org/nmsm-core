@@ -27,9 +27,9 @@
 
 function [output, inputs] = TrackingOptimization(inputs, params)
 inputs = makeTreatmentOptimizationInputs(inputs, params);
-% pointKinematics(inputs.mexModel);
-inverseDynamics(inputs.mexModel);
-% inputs
-gcp;
+if isequal(mexext, 'mexw64')
+    pointKinematicsMexWindows(inputs.mexModel);
+    inverseDynamicsMexWindows(inputs.mexModel);
+end
 output = computeTrackingOptimizationMainFunction(inputs, params);
 end

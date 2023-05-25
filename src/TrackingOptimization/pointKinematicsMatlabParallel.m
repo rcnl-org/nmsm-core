@@ -25,47 +25,50 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function IDLoads = inverseDynamicsMatlabParallel(time,q,qp,qpp,IKLabels,AppliedLoads,modelFile)
+function [SpringPos, SpringVel] = pointKinematicsMatlabParallel(time,q,qp,SpringMat,SpringBodyMat,...
+    modelFile,IKLabels)
 
 % Get the number of coords and markers
 numPts = size(time,1);
-numControls = size(AppliedLoads,2);
-numCoords = length(IKLabels);
+numSprings = size(SpringMat,1);
 
 % Split time points into parallel problems
 numWorkers = gcp().NumWorkers;
-IDLoadsJobs = cell(1, numWorkers);
-AccelsTempVec = cell(1, numWorkers);
+SpringPosJobs = cell(1, numWorkers);
+SpringVelJobs = cell(1, numWorkers);
 
 parfor worker = 1:numWorkers
-    IDLoadsJobs{worker} = idWorkerHelper(modelFile, numPts, numControls, numCoords, numWorkers, AccelsTempVec{worker},time,q,qp,qpp,IKLabels,AppliedLoads,worker);
+    [SpringPosJobs{worker}, SpringVelJobs{worker}] = pointKinematicsWorkerHelper(modelFile, numPts, numSprings, numWorkers, time,q,qp,SpringMat,SpringBodyMat,IKLabels,worker);
 end
 
-IDLoads = IDLoadsJobs{1};
+SpringPos = SpringPosJobs{1};
+SpringVel = SpringVelJobs{1};
 for job = 2 : numWorkers
-    IDLoads = cat(1, IDLoads, IDLoadsJobs{job});
+    SpringPos = cat(1, SpringPos, SpringPosJobs{job});
+    SpringVel = cat(1, SpringVel, SpringVelJobs{job});
 end
 
 end
 
-function IDLoadsJob = idWorkerHelper(modelFile, numPts, numControls, numCoords, numWorkers, AccelsTempVec,time,q,qp,qpp,IKLabels,AppliedLoads,worker)
-    
+function [SpringPosJob, SpringVelJob] = pointKinematicsWorkerHelper(modelFile, numPts, numSprings, numWorkers, time,q,qp,SpringMat,SpringBodyMat,IKLabels,worker)
+
     import org.opensim.modeling.*;
     persistent osimModel;
     persistent osimState;
-    persistent idSolver;
+    persistent refBodySet;
     if isempty(osimModel)
         osimModel = Model(modelFile);
         osimState = osimModel.initSystem();
-        idSolver = InverseDynamicsSolver(osimModel);
+        refBodySet = osimModel.getBodySet;
     end
 
-    IDLoadsJob = [];
-
+    SpringPosJob = [];
+    SpringVelJob = [];
     indexOffset = (worker - 1) * ceil(numPts / numWorkers);
 
     for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts / numWorkers), numPts)
         osimState.setTime(time(j,1));
+
         for k=1:size(IKLabels,2)
             if ~osimModel.getCoordinateSet.get(IKLabels{k}).get_locked
                 osimModel.getCoordinateSet.get(IKLabels{k}).setValue(osimState,q(j,k));
@@ -74,41 +77,22 @@ function IDLoadsJob = idWorkerHelper(modelFile, numPts, numControls, numCoords, 
         end
         osimModel.realizeVelocity(osimState);
 
-        for i=1:osimState.getNQ
-            StateQ = osimState.getQ.get(i-1);
+        for i=1:numSprings
+            tempRefParentBody = refBodySet.get(SpringBodyMat(i));
+            tempLocalPos = Vec3(3,0);
+            tempGlobalPos = Vec3(3,0);
+            tempGlobalVel = Vec3(3,0);
+            tempLocalPos.set(0,SpringMat(i,1));
+            tempLocalPos.set(1,SpringMat(i,2));
+            tempLocalPos.set(2,SpringMat(i,3));
 
-            for ii = 1:size(q,2)
-                if abs(q(j,ii)-StateQ) <= 1e-6
-                    AccelsTempVec(j-indexOffset,i) = qpp(j,ii);
-                end
+            osimModel.getSimbodyEngine.getPosition(osimState,tempRefParentBody,tempLocalPos,tempGlobalPos);
+            osimModel.getSimbodyEngine.getVelocity(osimState,tempRefParentBody,tempLocalPos,tempGlobalVel);
+
+            for k=0:2
+                SpringPosJob(j-indexOffset,(i-1)*3+k+1)=tempGlobalPos.get(k);
+                SpringVelJob(j-indexOffset,(i-1)*3+k+1)=tempGlobalVel.get(k);
             end
-        end
-
-        newControls = Vector(numControls,0);
-
-        for i=0:numControls-1
-            newControls.set(i,AppliedLoads(j,i+1));
-        end
-
-        osimModel.setControls(osimState,newControls);
-        osimModel.markControlsAsValid(osimState);
-        osimModel.realizeDynamics(osimState);
-
-        AccelsVec = Vector(osimState.getNQ,0);
-
-        includedQIndex = 1;
-        for i=0:osimState.getNQ-1
-            currentCoordinate = osimModel.getCoordinateSet().get(i).getName().toCharArray';
-            if any(cellfun(@isequal, IKLabels, repmat({currentCoordinate}, 1, length(IKLabels))))
-                AccelsVec.set(i,AccelsTempVec(j-indexOffset,includedQIndex));
-                includedQIndex = includedQIndex + 1;
-            end
-        end
-
-        IDLoadsVec = idSolver.solve(osimState,AccelsVec);
-
-        for i=0:numCoords-1
-            IDLoadsJob(j-indexOffset,i+1) = IDLoadsVec.get(i);
         end
     end
 
