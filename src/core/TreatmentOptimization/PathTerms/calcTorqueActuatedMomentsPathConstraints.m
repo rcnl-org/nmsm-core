@@ -28,9 +28,9 @@
 function pathTerm = calcTorqueActuatedMomentsPathConstraints(params, ...
     phaseout, controlTorques, loadName)
 
-indx1 = find(strcmp(convertCharsToStrings(params.inverseDynamicMomentLabels), ...
-    loadName));
-indx2 = find(strcmp(strcat(params.controlTorqueNames, ...
-    '_moment'), loadName));
+loadName = erase(loadName, '_moment');
+indx1 = find(cellfun(@isequal, params.coordinateNames, ...
+    repmat({loadName}, 1, length(params.coordinateNames))));
+indx2 = find(strcmp(params.controlTorqueNames, loadName));
 pathTerm = phaseout.inverseDynamicMoments(:, indx1) - controlTorques(:, indx2);
 end
