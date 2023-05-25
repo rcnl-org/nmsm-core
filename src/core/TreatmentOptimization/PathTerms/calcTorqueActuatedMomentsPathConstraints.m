@@ -29,6 +29,7 @@ function pathTerm = calcTorqueActuatedMomentsPathConstraints(params, ...
     phaseout, controlTorques, loadName)
 
 loadName = erase(loadName, '_moment');
+loadName = erase(loadName, '_force');
 indx1 = find(cellfun(@isequal, params.coordinateNames, ...
     repmat({loadName}, 1, length(params.coordinateNames))));
 indx2 = find(strcmp(params.controlTorqueNames, loadName));

@@ -28,7 +28,9 @@
 function cost = calcTrackingInverseDynamicLoadsIntegrand(params, time, ...
     inverseDynamicMoments, loadName)
 
-indx = find(strcmp(convertCharsToStrings(params.inverseDynamicMomentLabels), ...
+loadName = erase(loadName, '_moment');
+loadName = erase(loadName, '_force');
+indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
     loadName));
 
 if params.splineJointMoments.dim > 1
@@ -36,6 +38,10 @@ if params.splineJointMoments.dim > 1
 else
     experimentalJointMoments = fnval(params.splineJointMoments, time);
 end
-cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
+
+momentLabelsNoSuffix = erase(params.inverseDynamicMomentLabels, '_moment');
+momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
+includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(params.coordinateNames));
+cost = calcTrackingCostArrayTerm(experimentalJointMoments(:, includedJointMomentCols), ...
     inverseDynamicMoments, indx);
 end
