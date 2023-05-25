@@ -29,7 +29,7 @@ function [SpringPos, SpringVel] = pointKinematics(time,q,qp,SpringMat,SpringBody
     modelFile,IKLabels)
 if isequal(mexext, 'mexw64')
     [SpringPos, SpringVel] = pointKinematicsMexWindows(time,q,qp, ...
-        SpringMat,SpringBodyMat,IKLabels);
+        SpringMat',SpringBodyMat,IKLabels);
 else
     [SpringPos, SpringVel] = pointKinematicsMatlabParallel(time,q,qp, ...
         SpringMat,SpringBodyMat,modelFile,IKLabels);
