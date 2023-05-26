@@ -40,7 +40,6 @@ if ~isempty(params.contactSurfaces)
     phaseout.groundReactionsLab = calcGroundReactionsLab(groundReactions);
     appliedLoads = [appliedLoads groundReactionsBody];
 end
-clear inverseDynamicsMatlabParallel
 phaseout.inverseDynamicMoments = inverseDynamics(values.time, ...
     values.statePositions, values.stateVelocities, ...
     values.stateAccelerations, params.coordinateNames, appliedLoads, params.mexModel);

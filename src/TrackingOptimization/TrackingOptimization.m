@@ -31,5 +31,7 @@ if isequal(mexext, 'mexw64')
     pointKinematicsMexWindows(inputs.mexModel);
     inverseDynamicsMexWindows(inputs.mexModel);
 end
+clear inverseDynamicsMatlabParallel
+clear pointKinematicsMatlabParallel
 output = computeTrackingOptimizationMainFunction(inputs, params);
 end
