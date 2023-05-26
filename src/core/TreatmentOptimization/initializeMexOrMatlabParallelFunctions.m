@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,8 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, inputs] = TrackingOptimization(inputs, params)
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
-output = computeTrackingOptimizationMainFunction(inputs, params);
+function initializeMexOrMatlabParallelFunctions(modelFile)
+if isequal(mexext, 'mexw64')
+    pointKinematicsMexWindows(modelFile);
+    inverseDynamicsMexWindows(modelFile);
+end
+clear inverseDynamicsMatlabParallel
+clear pointKinematicsMatlabParallel
 end
