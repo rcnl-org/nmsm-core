@@ -60,7 +60,7 @@ function IDLoadsJob = idWorkerHelper(modelFile, numPts, numControls, numCoords, 
         idSolver = InverseDynamicsSolver(osimModel);
     end
 
-    IDLoadsJob = [];
+    IDLoadsJob = zeros(length(1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts / numWorkers), numPts)), numCoords);
 
     indexOffset = (worker - 1) * ceil(numPts / numWorkers);
 

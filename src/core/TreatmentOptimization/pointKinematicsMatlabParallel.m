@@ -62,8 +62,8 @@ function [SpringPosJob, SpringVelJob] = pointKinematicsWorkerHelper(modelFile, n
         refBodySet = osimModel.getBodySet;
     end
 
-    SpringPosJob = [];
-    SpringVelJob = [];
+    SpringPosJob = zeros(length(1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts / numWorkers), numPts)), numSprings * 3);
+    SpringVelJob = zeros(length(1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts / numWorkers), numPts)), numSprings * 3);
     indexOffset = (worker - 1) * ceil(numPts / numWorkers);
 
     for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts / numWorkers), numPts)
