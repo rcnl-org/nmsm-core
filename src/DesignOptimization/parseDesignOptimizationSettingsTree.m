@@ -88,6 +88,7 @@ if(isstruct(maxControlTorques))
     inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
 end
 end
+inputs.toolName = "DesignOptimization";
 end
 
 function params = getParams(tree)

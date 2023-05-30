@@ -43,8 +43,9 @@ if ~isempty(inputs.auxdata.terminal)
     output.eventgroup.event = calcDesignOptimizationTerminalConstraint( ...
         values, modeledValues, inputs.auxdata);
 end
-% discrete = calcDesignOptimizationDiscreteObjective(values, inputs.auxdata);
-discrete = computeStaticParameterCost(inputs);
+discrete = calcDesignOptimizationDiscreteObjective(values, ...
+    modeledValues, inputs.auxdata);
+% discrete = computeStaticParameterCost(inputs);
 output.objective = calcDesignOptimizationObjective(discrete, ...
     inputs.phase.integral);
 end
