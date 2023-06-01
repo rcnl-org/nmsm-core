@@ -35,6 +35,8 @@ end
 function inputs = getInputs(tree)
 import org.opensim.modeling.Storage
 inputs = getTreatmentOptimizationInputs(tree);
+inputs.experimentalTime = inputs.experimentalTime / ...
+    inputs.experimentalTime(end);
 inputs = getDesignVariableBounds(tree, inputs);
 if strcmpi(inputs.controllerType, 'synergy_driven')
 inputs.synergyWeights = parseTreatmentOptimizationStandard(...
