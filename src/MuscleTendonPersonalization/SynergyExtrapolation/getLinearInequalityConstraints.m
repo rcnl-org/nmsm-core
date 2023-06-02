@@ -83,7 +83,8 @@ for i = 1:totalGroups
         numOtherDesignVariables + size(fullCommands, 2) * (i - 1) + 1 : ...
         numOtherDesignVariables + size(fullCommands, 2) * i) = fullCommands;
 end
-b = ones(totalGroups * size(fullCommands, 1), 1);
+A = cat(1, A, -A);
+b = ones(totalGroups * size(fullCommands, 1) * 2, 1);
 
 end
 
