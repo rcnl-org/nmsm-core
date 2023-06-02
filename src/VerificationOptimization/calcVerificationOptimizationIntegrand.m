@@ -25,32 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function integrand = calcVerificationOptimizationIntegrand(values, params, ...
-    phaseout)
-integrand = [];
-for i = 1:length(params.costTerms)
-    costTerm = params.costTerms{i};
-    if costTerm.isEnabled
-        switch costTerm.type
-            case "coordinate_tracking"
-                integrand = cat(2, integrand, ...
-                    calcTrackingCoordinateIntegrand(params, ...
-                    values.time, values.statePositions, ...
-                    costTerm.coordinate));
-            case "controller_tracking"
-                integrand = cat(2, integrand, ...
-                    calcTrackingControllerIntegrand(params, values, ...
-                    costTerm.controller));  
-            case "joint_jerk_minimization"
-                integrand = cat(2, integrand, ...
-                    calcMinimizingJointJerkIntegrand(values.controlJerks, ...
-                    params, costTerm.coordinate));
-            otherwise
-                throw(MException('', ['Cost term type ' costTerm.type ...
-                    ' does not exist for this tool.']))   
-        end
-    end
-end
-integrand = scaleToBounds(integrand, params.maxIntegral, params.minIntegral);
+function integrand = calcVerificationOptimizationIntegrand(values, ...
+    modeledValues, auxdata)
+[costTermCalculations, allowedTypes] = ...
+    generateCostTermStruct("continuous", "VerificationOptimization");
+integrand = calcTreatmentOptimizationCost( ...
+    costTermCalculations, allowedTypes, values, modeledValues, auxdata);
+integrand = scaleToBounds(integrand, auxdata.maxIntegral, auxdata.minIntegral);
 integrand = integrand .^ 2;
 end

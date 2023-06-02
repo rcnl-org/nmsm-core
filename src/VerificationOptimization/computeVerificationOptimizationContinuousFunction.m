@@ -32,6 +32,6 @@ phaseout = calcTorqueBasedModeledValues(values, inputs.auxdata);
 phaseout = calcSynergyBasedModeledValues(values, inputs.auxdata, phaseout);
 phaseout.dynamics = calcVerificationOptimizationDynamicsConstraint(values, inputs.auxdata);
 phaseout.path = calcVerificationOptimizationPathConstraint(values, phaseout, inputs.auxdata);
-phaseout.integrand = calcVerificationOptimizationIntegrand(values, inputs.auxdata, ...
-    phaseout);
+phaseout.integrand = calcVerificationOptimizationIntegrand(values, ...
+    phaseout, inputs.auxdata);
 end
