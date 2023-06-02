@@ -63,6 +63,10 @@ for i = 1:length(inputs.userDefinedVariables)
             0.5];
     end
 end
+if isfield(inputs, "finalTimeRange")
+    bounds.phase.finaltime.lower = -0.5;
+    bounds.phase.finaltime.upper = 0.5;
+end
 end
 
 function guess = addUserDefinedTermsToGuess(guess, inputs)

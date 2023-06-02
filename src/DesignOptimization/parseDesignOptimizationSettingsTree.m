@@ -89,6 +89,11 @@ maxControlTorques = getFieldByNameOrError(designVariableTree, ...
 if(isstruct(maxControlTorques))
     inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
 end
+finalTimeRange = getFieldByName(designVariableTree, ...
+    'final_time_range');
+if(isstruct(finalTimeRange))
+    inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
+end
 end
 end
 

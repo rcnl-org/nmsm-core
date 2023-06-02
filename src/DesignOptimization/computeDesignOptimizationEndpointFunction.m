@@ -46,7 +46,7 @@ end
 % discrete = calcDesignOptimizationDiscreteObjective(values, inputs.auxdata);
 discrete = computeStaticParameterCost(inputs);
 output.objective = calcDesignOptimizationObjective(discrete, ...
-    inputs.phase.integral);
+    inputs.phase.integral, inputs.phase.finaltime, inputs.auxdata);
 end
 
 function cost = computeStaticParameterCost(inputs)
