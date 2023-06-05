@@ -46,7 +46,7 @@ for i = 1:length(auxdata.costTerms)
         end
     end
 end
-integrand = scaleToBounds(integrand, auxdata.maxIntegral, auxdata.minIntegral);
+integrand = integrand ./ (auxdata.maxIntegral - auxdata.minIntegral);
 integrand = integrand .^ 2;
 end
 
