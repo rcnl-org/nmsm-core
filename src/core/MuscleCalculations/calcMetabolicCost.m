@@ -25,28 +25,40 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getContinuousCostTerms(tree, inputs)
-trackingIntegralTermsTree = getFieldByNameOrError(tree, ...
-    'RCNLTrackingCostTerms');
-if isfield(trackingIntegralTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
-rcnlCostTermTree = ...
-    trackingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
-if length(rcnlCostTermTree) > 1
-    inputs.integral.tracking = parseRcnlCostTermSet(rcnlCostTermTree);
-else
-    inputs.integral.tracking = parseRcnlCostTermSet({rcnlCostTermTree});
-end
-end
+function metabolicCost = calcMetabolicCost(time, statePositions, ...
+    muscleActivations, params)
 
-minimizingIntegralTermsTree = getFieldByNameOrError(tree, ...
-    'RCNLMinimizationCostTerms');
-if isfield(minimizingIntegralTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
-rcnlCostTermTree = ...
-    minimizingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
-if length(rcnlCostTermTree) > 1
-    inputs.integral.minimizing = parseRcnlCostTermSet(rcnlCostTermTree);
-else
-    inputs.integral.minimizing = parseRcnlCostTermSet({rcnlCostTermTree});
-end
+for indx = 1 : numel(params.integral.minimizing)
+    if strcmpi(params.integral.minimizing{indx}.type, 'metabolic_cost')
+        import org.opensim.modeling.*
+        model = Model(params.model);
+        for i = 1 : params.numMuscles
+            controller = PrescribedController();
+            controller.addActuator(model.getMuscles().get(params.muscleNames{i}));
+            controlFunction = PiecewiseLinearFunction();
+            for j = 1:size(muscleActivations, 1)
+                controlFunction.addPoint(time(j), muscleActivations(j, i));
+            end
+            controller.prescribeControlForActuator(params.muscleNames{i}, ...
+                controlFunction);
+            model.addComponent(controller);
+        end
+        
+        state = model.initSystem();
+        for i = 1:size(muscleActivations, 1)
+            for j = 1 : size(params.coordinateNames, 2)
+                if ~model.getCoordinateSet.get(params.coordinateNames(j)). ....
+                        get_locked
+                    model.getCoordinateSet.get(params.coordinateNames(j)). ...
+                        setValue(state, statePositions(i, j));
+                end
+            end
+            state.setTime(time(i));
+            model.realizeDynamics(state);
+            model.equilibrateMuscles(state);
+            tempTotalCost = model.getProbeSet().get(0).getProbeOutputs(state);
+            metabolicCost(i, :) = tempTotalCost.get(0);
+        end
+    end
 end
 end

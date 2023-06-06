@@ -42,6 +42,8 @@ function inputs = getInputs(tree)
 import org.opensim.modeling.*
 inputDirectory = getTextFromField(getFieldByNameOrAlternate(tree, ...
     'input_directory', pwd));
+inputs.inputOsimxFile = getTextFromField(getFieldByNameOrAlternate( ...
+    tree, 'input_osimx_file', ''));
 inputs.bodyModel = getFieldByNameOrError(tree, 'input_model_file').Text;
 motionFile = getFieldByNameOrError(tree, 'input_motion_file').Text;
 grfFile = getFieldByNameOrError(tree, 'input_grf_file').Text;
@@ -51,11 +53,11 @@ inputs.latchingVelocity = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'latching_velocity', '0.05')));
 if(~isempty(inputDirectory))
     try
-        bodyModel = Model(fullfile(inputDirectory, inputs.bodyModel));
+        bodyModel = Model(inputs.bodyModel);
         inputs.motionFileName = fullfile(inputDirectory, motionFile);
         inputs.grfFileName = fullfile(inputDirectory, grfFile);
     catch
-        bodyModel = Model(fullfile(pwd, inputDirectory, inputs.bodyModel));
+        bodyModel = Model(pwd, inputs.bodyModel);
         inputs.motionFileName = fullfile(pwd, inputDirectory, motionFile);
         inputs.grfFileName = fullfile(pwd, inputDirectory, grfFile);
         inputDirectory = fullfile(pwd, inputDirectory);
@@ -88,8 +90,7 @@ for i=1:length(contactSurfaces)
         output{counter} = getMotionTime(inputs.bodyModel, ...
             inputs.motionFileName, output{counter});
         verifyTime(output{counter}.grfTime, output{counter}.time);
-        tempFields = {'forceColumns', 'momentColumns', ...
-            'electricalCenterColumns', 'grfTime', 'startTime', 'endTime'};
+        tempFields = {'grfTime', 'startTime', 'endTime'};
         output{counter} = rmfield(output{counter}, tempFields);
         counter = counter + 1;
     end

@@ -25,34 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function discrete = calcDesignOptimizationDiscreteObjective(values, params)
+function discrete = calcDesignOptimizationDiscreteObjective(values, ...
+    modeledValues, auxdata)
 
-discrete = [];
-if isfield(params, 'discrete')
-    for i = 1:length(params.discrete.tracking)
-        costTerm = params.discrete.tracking{i};
-        if costTerm.isEnabled
-            switch costTerm.type
-                case "synergy_vectors"
-                    discrete = cat(2, discrete, ...
-                        calcTrackingCoordinateIntegrand(params, ...
-                        values.time, values.statePositions, ...
-                        costTerm.coordinate));   
-                otherwise
-                    throw(MException('', ['Cost term type ' costTerm.type ...
-                        ' does not exist for this tool.']))   
-            end
-        end
-    end
-    for i = 1:length(params.discrete.minimizing)
-        costTerm = params.discrete.minimizing{i};
-        if costTerm.isEnabled
-            switch costTerm.type
-                otherwise
-                    throw(MException('', ['Cost term type ' costTerm.type ...
-                        ' does not exist for this tool.']))   
-            end
-        end
-    end
-end
+[costTermCalculations, allowedTypes] = ...
+    generateCostTermStruct("discrete", "DesignOptimization");
+discrete = calcTreatmentOptimizationCost( ...
+    costTermCalculations, allowedTypes, values, modeledValues, auxdata);
 end

@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -26,18 +26,6 @@
 % ----------------------------------------------------------------------- %
 
 function [output, inputs] = TrackingOptimization(inputs, params)
-pointKinematics(inputs.mexModel);
-inverseDynamics(inputs.mexModel);
-inputs
-inputs = getStateDerivatives(inputs);
-inputs = setupGroundContact(inputs);
-inputs = getSplines(inputs);
-inputs = checkStateGuess(inputs);
-inputs = checkControlGuess(inputs);
-inputs = checkParameterGuess(inputs);
-inputs = getIntegralBounds(inputs);
-inputs = getPathConstraintBounds(inputs);
-inputs = getTerminalConstraintBounds(inputs); 
-inputs = getDesignVariableInputBounds(inputs);
+inputs = makeTreatmentOptimizationInputs(inputs, params);
 output = computeTrackingOptimizationMainFunction(inputs, params);
 end

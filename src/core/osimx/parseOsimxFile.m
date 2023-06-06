@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Marleny Vega                              %
+% Author(s): Claire V. Hammond, Marleny Vega, Spencer Williams            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -43,13 +43,12 @@ rcnlGroundContactTree = getFieldByName(tree, "RCNLContactSurfaceSet");
 if(isstruct(rcnlGroundContactTree))
 
     contactSurfaceTree = getFieldByNameOrError(rcnlGroundContactTree, "objects").RCNLContactSurface;
+    if isstruct(contactSurfaceTree)
+        contactSurfaceTree = {contactSurfaceTree};
+    end
 
     for i = 1:length(contactSurfaceTree)
-        if length(contactSurfaceTree) == 1
-            contactSurface = contactSurfaceTree;
-        else
-            contactSurface = contactSurfaceTree{i};
-        end
+        contactSurface = contactSurfaceTree{i};
         osimx.groundContact.contactSurface{i} = parseContactSurface(contactSurface);
     end
 end
@@ -64,13 +63,27 @@ if(isstruct(rcnlMuscleSetTree))
         else
             muscle = musclesTree{i};
         end
-        osimx.muscles.(muscle.Attributes.name).electromechanicalDelay = str2double(muscle.electromechanical_delay.Text);
-        osimx.muscles.(muscle.Attributes.name).activationTimeConstant = str2double(muscle.activation_time_constant.Text);
-        osimx.muscles.(muscle.Attributes.name).activationNonlinearityConstant = str2double(muscle.activation_nonlinearity_constant.Text);
-        osimx.muscles.(muscle.Attributes.name).emgScaleFactor = str2double(muscle.emg_scale_factor.Text);
-        osimx.muscles.(muscle.Attributes.name).optimalFiberLength = str2double(muscle.optimal_fiber_length.Text);
-        osimx.muscles.(muscle.Attributes.name).tendonSlackLength = str2double(muscle.tendon_slack_length.Text);
-        osimx.muscles.(muscle.Attributes.name).maxIsometricForce = str2double(muscle.max_isometric_force.Text);
+        if isstruct(getFieldByName(muscle, 'electromechanical_delay'))
+            osimx.muscles.(muscle.Attributes.name).electromechanicalDelay = str2double(muscle.electromechanical_delay.Text);
+        end
+        if isstruct(getFieldByName(muscle, 'activation_time_constant'))
+            osimx.muscles.(muscle.Attributes.name).activationTimeConstant = str2double(muscle.activation_time_constant.Text);
+        end
+        if isstruct(getFieldByName(muscle, 'activation_nonlinearity_constant'))
+            osimx.muscles.(muscle.Attributes.name).activationNonlinearityConstant = str2double(muscle.activation_nonlinearity_constant.Text);
+        end
+        if isstruct(getFieldByName(muscle, 'emg_scale_factor'))
+            osimx.muscles.(muscle.Attributes.name).emgScaleFactor = str2double(muscle.emg_scale_factor.Text);
+        end
+        if isstruct(getFieldByName(muscle, 'optimal_fiber_length'))
+            osimx.muscles.(muscle.Attributes.name).optimalFiberLength = str2double(muscle.optimal_fiber_length.Text);
+        end
+        if isstruct(getFieldByName(muscle, 'tendon_slack_length'))
+            osimx.muscles.(muscle.Attributes.name).tendonSlackLength = str2double(muscle.tendon_slack_length.Text);
+        end
+        if isstruct(getFieldByName(muscle, 'max_isometric_force'))
+            osimx.muscles.(muscle.Attributes.name).maxIsometricForce = str2double(muscle.max_isometric_force.Text);
+        end
     end
 end
 end

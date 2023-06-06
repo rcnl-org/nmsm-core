@@ -25,34 +25,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getDiscreteCostTerms(tree, inputs)
-trackingDiscreteTermsTree = getFieldByName(tree, 'RCNLTrackingCostTerms');
-if isstruct(trackingDiscreteTermsTree)
-    if isfield(trackingDiscreteTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
-        rcnlCostTermTree = ...
-            trackingDiscreteTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
-        if length(rcnlCostTermTree) > 1
-            inputs.discrete.tracking = ...
-                parseRcnlCostTermSet(rcnlCostTermTree);
-        else
-            inputs.discrete.tracking = ...
-                parseRcnlCostTermSet({rcnlCostTermTree});
-        end
-    end
+function cost = calcMinimizingMetabolicCost(metabolicCost)
+
+cost = calcMinimizingCostArrayTerm(metabolicCost);
 end
 
-minimizingDiscreteTermsTree = getFieldByName(tree, 'RCNLMinimizationCostTerms');
-if isstruct(minimizingDiscreteTermsTree)
-    if isfield(minimizingDiscreteTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
-        rcnlCostTermTree = ...
-            minimizingDiscreteTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
-        if length(rcnlCostTermTree) > 1
-            inputs.discrete.minimizing = ...
-                parseRcnlCostTermSet(rcnlCostTermTree);
-        else
-            inputs.discrete.minimizing = ...
-                parseRcnlCostTermSet({rcnlCostTermTree});
-        end
-    end
-end
-end

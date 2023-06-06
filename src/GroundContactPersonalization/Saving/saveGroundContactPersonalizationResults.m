@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function saveGroundContactPersonalizationResults(inputs, params, ...
-    resultsDirectory)
+    resultsDirectory, osimxFileName)
 [~, name, ~] = fileparts(inputs.bodyModel);
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
@@ -39,7 +39,7 @@ writeOptimizedFootKinematicsToSto(inputs, resultsDirectory, name);
 writeReplacedExperimentalGroundReactionsToSto(inputs, ... 
     resultsDirectory, name);
 writeOptimizedGroundReactionsToSto(inputs, params, resultsDirectory, name);
-writeGroundContactPersonalizationOsimxFile(inputs,...
-    fullfile(resultsDirectory, strcat(name, "_groundContactModel.xml")));
+writeGroundContactPersonalizationOsimxFile(inputs, resultsDirectory, ...
+    osimxFileName);
 end
 

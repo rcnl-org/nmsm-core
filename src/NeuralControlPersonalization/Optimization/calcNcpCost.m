@@ -33,9 +33,13 @@ function cost = calcNcpCost(activations, inputs, params, values)
 
 error = [];
 % Split activations into subsets ahead of cost computation
-[activationsWithMtpData, activationsWithoutMtpData] = ...
-    makeMtpActivatonSubset(activations, ...
-    inputs.mtpActivationsColumnNames, inputs.muscleTendonColumnNames);
+if isfield(inputs, 'mtpActivationsColumnNames')
+    [activationsWithMtpData, activationsWithoutMtpData] = ...
+        makeMtpActivatonSubset(activations, ...
+        inputs.mtpActivationsColumnNames, inputs.muscleTendonColumnNames);
+else
+    activationsWithoutMtpData = activations;
+end
 for term = 1:length(params.costTerms)
     costTerm = params.costTerms{term};
     if costTerm.isEnabled
@@ -51,7 +55,11 @@ for term = 1:length(params.costTerms)
                 rawCost = muscleJointMoments - ...
                     inputs.inverseDynamicsMoments;
             case "activation_tracking"
-                rawCost = activationsWithMtpData - inputs.mtpActivations;
+                if isfield(inputs, 'mtpActivations')
+                    rawCost = activationsWithMtpData - inputs.mtpActivations;
+                else
+                    rawCost = 0;
+                end
             case "activation_minimization"
                 rawCost = reshape(activationsWithoutMtpData, [], 1);
             case "grouped_activations"

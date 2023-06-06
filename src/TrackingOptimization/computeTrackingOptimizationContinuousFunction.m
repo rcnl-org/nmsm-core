@@ -26,12 +26,10 @@
 % ----------------------------------------------------------------------- %
 
 function phaseout = computeTrackingOptimizationContinuousFunction(inputs)
-
 values = getTrackingOptimizationValueStruct(inputs.phase, inputs.auxdata);
 phaseout = calcTorqueBasedModeledValues(values, inputs.auxdata);
 phaseout = calcSynergyBasedModeledValues(values, inputs.auxdata, phaseout);
 phaseout.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
 phaseout.path = calcTrackingOptimizationPathConstraint(values, phaseout, inputs.auxdata);
-phaseout.integrand = calcTrackingOptimizationIntegrand(values, inputs.auxdata, ...
-    phaseout);
+phaseout.integrand = calcTrackingOptimizationIntegrand(values, phaseout, inputs.auxdata);
 end

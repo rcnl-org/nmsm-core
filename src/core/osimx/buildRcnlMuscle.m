@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Marleny Vega                              %
+% Author(s): Claire V. Hammond, Marleny Vega, Spencer Williams            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -42,34 +42,47 @@ end
 muscles = muscleObjects.RCNLMuscle;
 muscles{i}.Attributes.name = convertStringsToChars(muscleName);
 
-muscles{i}.electromechanical_delay.Comment = 'Optimized electromechanical delay';
-muscles{i}.electromechanical_delay.Text = convertStringsToChars( ...
-    num2str(muscleParameters.electromechanicalDelay, 15));
+if isfield(muscleParameters, 'electromechanicalDelay')
+    muscles{i}.electromechanical_delay.Comment = 'Optimized electromechanical delay';
+    muscles{i}.electromechanical_delay.Text = convertStringsToChars( ...
+        num2str(muscleParameters.electromechanicalDelay, 15));
+end
 
-muscles{i}.activation_time_constant.Comment = 'Optimized activation time constant';
-muscles{i}.activation_time_constant.Text = convertStringsToChars( ...
-    num2str(muscleParameters.activationTimeConstant, 15));
+if isfield(muscleParameters, 'activationTimeConstant')
+    muscles{i}.activation_time_constant.Comment = 'Optimized activation time constant';
+    muscles{i}.activation_time_constant.Text = convertStringsToChars( ...
+        num2str(muscleParameters.activationTimeConstant, 15));
+end
 
-muscles{i}.activation_nonlinearity_constant.Comment = 'Optimized activation nonlinearity constant';
-muscles{i}.activation_nonlinearity_constant.Text = convertStringsToChars( ...
-    num2str(muscleParameters.activationNonlinearityConstant, 15));
+if isfield(muscleParameters, 'activationNonlinearityConstant')
+    muscles{i}.activation_nonlinearity_constant.Comment = 'Optimized activation nonlinearity constant';
+    muscles{i}.activation_nonlinearity_constant.Text = convertStringsToChars( ...
+        num2str(muscleParameters.activationNonlinearityConstant, 15));
+end
 
-muscles{i}.emg_scale_factor.Comment = 'Optimized EMG scale factor';
-muscles{i}.emg_scale_factor.Text = convertStringsToChars( ...
-    num2str(muscleParameters.emgScaleFactor, 15));
+if isfield(muscleParameters, 'emgScaleFactor')
+    muscles{i}.emg_scale_factor.Comment = 'Optimized EMG scale factor';
+    muscles{i}.emg_scale_factor.Text = convertStringsToChars( ...
+        num2str(muscleParameters.emgScaleFactor, 15));
+end
 
-muscles{i}.optimal_fiber_length.Comment = 'Optimized optimal fiber length';
-muscles{i}.optimal_fiber_length.Text = convertStringsToChars( ...
-    num2str(muscleParameters.optimalFiberLength, 15));
+if isfield(muscleParameters, 'optimalFiberLength')
+    muscles{i}.optimal_fiber_length.Comment = 'Optimized optimal fiber length';
+    muscles{i}.optimal_fiber_length.Text = convertStringsToChars( ...
+        num2str(muscleParameters.optimalFiberLength, 15));
+end
 
-muscles{i}.tendon_slack_length.Comment = 'Optimized tendon slack length';
-muscles{i}.tendon_slack_length.Text = convertStringsToChars( ...
-    num2str(muscleParameters.tendonSlackLength, 15));
+if isfield(muscleParameters, 'tendonSlackLength')
+    muscles{i}.tendon_slack_length.Comment = 'Optimized tendon slack length';
+    muscles{i}.tendon_slack_length.Text = convertStringsToChars( ...
+        num2str(muscleParameters.tendonSlackLength, 15));
+end
 
-muscles{i}.max_isometric_force.Comment = 'Optimized max isometric force';
-muscles{i}.max_isometric_force.Text = convertStringsToChars( ...
-    num2str(muscleParameters.maxIsometricForce, 15));
+if isfield(muscleParameters, 'maxIsometricForce')
+    muscles{i}.max_isometric_force.Comment = 'Optimized max isometric force';
+    muscles{i}.max_isometric_force.Text = convertStringsToChars( ...
+        num2str(muscleParameters.maxIsometricForce, 15));
+end
 
 osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.objects.RCNLMuscle = muscles;
 end
-
