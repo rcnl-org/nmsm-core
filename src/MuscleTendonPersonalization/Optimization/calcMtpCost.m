@@ -73,7 +73,7 @@ for i = 1 : length(params.costTerms)
                     synxModeledValues, experimentalData, costTerm);
             case "residual_muscle_activation"
                 cost = calcResidualMuscleActivationCost( ...
-                    synxModeledValues, modeledValues, experimentalData, params);
+                    synxModeledValues, modeledValues, experimentalData, costTerm);
             case "muscle_excitation_penalty"
                 cost = calcMuscleExcitationPenaltyCost( ...
                     synxModeledValues, experimentalData, costTerm);
