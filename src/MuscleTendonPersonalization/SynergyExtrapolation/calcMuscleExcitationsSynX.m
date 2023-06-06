@@ -84,6 +84,7 @@ muscleExcitations = evaluateEmgSplines(experimentalData.emgTime, ...
     emgSplines, timeDelay);
 % muscleExcitations = permute(muscleExcitations,[1 3 2]);                                     
 end
+
 function UnmeasuredExcitations = getUnmeasuredMuscleExcitations(params, ...
     emgData, extrapolationCommands, extrapolationWeights)
 
@@ -121,6 +122,7 @@ end
 end
 UnmeasuredExcitations = permute(UnmeasuredExcitations, [3 2 1]);
 end
+
 function residualExcitations = getResidualMuscleExcitation(params, ...
     residualCommands, residualWeights)
 
@@ -149,6 +151,7 @@ for i = 1:size(params.residualCategorizationOfTrials, 2)
 end
 residualExcitations = concatResidualExcitations;
 end
+
 function emgData = updateEmgSignals(missingEmgChannelGroups, emgData, ...
     unmeasuredEmgSignals)
 
@@ -159,6 +162,7 @@ for j = 1 : size(missingEmgChannelGroups{i}, 2)
 end
 end
 end
+
 function emgData = distributeResidualExcitations(emgData, ...
     currentEmgChannelGroups, residualExcitations)
 
@@ -175,6 +179,7 @@ residualExcitationsExpanded = reshape(residualExcitationsExpanded, ...
     size(emgData, 3), size(emgData, 1), size(emgData, 2));
 emgData = emgData + permute(residualExcitationsExpanded, [2 3 1]);
 end
+
 function emgSplines = createEmgSignals(emgData, emgTime, timeDelay)
 
 emgSplines = cell(size(emgData, 1), size(emgData, 2));
@@ -192,6 +197,7 @@ else
     end
 end
 end
+
 function emgData = evaluateEmgSplines(emgTime, emgSplines, timeDelay)
 
 if size(timeDelay, 2) == 1

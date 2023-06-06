@@ -77,6 +77,7 @@ if(isstruct(maxControlTorques))
     inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
 end
 end
+inputs.toolName = "TrackingOptimization";
 end
 
 function params = getParams(tree)
