@@ -27,6 +27,7 @@
 
 function [output, inputs] = DesignOptimization(inputs, params)
 inputs = makeTreatmentOptimizationInputs(inputs, params);
+initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 if strcmp(inputs.controllerType, 'synergy_driven')
     inputs = setupMuscleSynergies(inputs);
 end
