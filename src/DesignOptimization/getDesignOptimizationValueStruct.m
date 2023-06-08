@@ -37,6 +37,13 @@ if strcmp(params.controllerType, 'synergy_driven')
         values.synergyWeights = getSynergyWeightsFromGroups(...
             params.synergyWeightsGuess, params);
     end
+    if params.splineJointMoments.dim > 1
+        values.controlSynergyActivations = ...
+            fnval(params.splineSynergyActivations, values.time)';
+    else
+        values.controlSynergyActivations = ...
+            fnval(params.splineSynergyActivations, values.time);
+    end
 end
 for i = 1:length(params.userDefinedVariables)
     values.(params.userDefinedVariables{i}.type) = scaleToOriginal( ...
