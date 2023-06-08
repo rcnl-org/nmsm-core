@@ -26,8 +26,10 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeTreatmentOptimizationInputs(inputs, params)
-pointKinematics(inputs.mexModel);
-inverseDynamics(inputs.mexModel);
+if isequal(mexext, 'mexw64')
+    pointKinematicsMexWindows(inputs.mexModel);
+    inverseDynamicsMexWindows(inputs.mexModel);
+end
 inputs = getStateDerivatives(inputs);
 inputs = setupGroundContact(inputs);
 inputs = getSplines(inputs);

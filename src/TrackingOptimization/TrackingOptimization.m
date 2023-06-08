@@ -27,5 +27,6 @@
 
 function [output, inputs] = TrackingOptimization(inputs, params)
 inputs = makeTreatmentOptimizationInputs(inputs, params);
+initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 output = computeTrackingOptimizationMainFunction(inputs, params);
 end
