@@ -26,8 +26,8 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeDesignOptimizationMainFunction(inputs, params)
-bounds = setupProblemBounds(inputs);
 guess = setupCommonOptimalControlInitialGuess(inputs);
+bounds = setupProblemBounds(inputs, guess);
 guess = addUserDefinedTermsToGuess(guess, inputs);
 setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
@@ -41,7 +41,7 @@ output = computeDesignOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
 
-function bounds = setupProblemBounds(inputs)
+function bounds = setupProblemBounds(inputs, guess)
 bounds = setupCommonOptimalControlBounds(inputs);
 % setup parameter bounds
 if strcmp(inputs.controllerType, 'synergy_driven')
@@ -62,6 +62,10 @@ for i = 1:length(inputs.userDefinedVariables)
         bounds.parameter.upper = [bounds.parameter.upper, ...
             0.5];
     end
+end
+if isfield(inputs, "finalTimeRange")
+    bounds.phase.finaltime.lower = (0.5 - guess.phase.time(end)) + 0.5;
+    bounds.phase.finaltime.upper = 0.5;
 end
 end
 

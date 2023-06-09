@@ -31,8 +31,6 @@ function integrand = calcDesignOptimizationIntegrand(values, ...
     generateCostTermStruct("continuous", "DesignOptimization");
 integrand = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedTypes, values, modeledValues, auxdata);
-integrand = scaleToBounds(integrand, auxdata.maxIntegral, auxdata.minIntegral);
+integrand = integrand ./ (auxdata.maxIntegral - auxdata.minIntegral);
 integrand = integrand .^ 2;
 end
-
-
