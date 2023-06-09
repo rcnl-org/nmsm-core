@@ -27,27 +27,10 @@
 
 function integrand = calcDesignOptimizationIntegrand(values, ...
     modeledValues, auxdata)
-integrand = [];
 [costTermCalculations, allowedTypes] = ...
     generateCostTermStruct("continuous", "DesignOptimization");
-
-for i = 1:length(auxdata.costTerms)
-    costTerm = auxdata.costTerms{i};
-    if costTerm.isEnabled
-        if isfield(costTermCalculations, costTerm.type) && ...
-                any(ismember(allowedTypes, costTerm.type))
-            fn = costTermCalculations.(costTerm.type);
-            integrand = cat(2, ...
-                integrand,  ...
-                fn(values, modeledValues, auxdata, costTerm));
-        else
-            throw(MException('', ['Cost term type ' costTerm.type ...
-                ' does not exist for this tool.']))
-        end
-    end
-end
+integrand = calcTreatmentOptimizationCost( ...
+    costTermCalculations, allowedTypes, values, modeledValues, auxdata);
 integrand = integrand ./ (auxdata.maxIntegral - auxdata.minIntegral);
 integrand = integrand .^ 2;
 end
-
-

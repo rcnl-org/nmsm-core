@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,18 +25,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = isTrackingCostTerm(costTerm)
-trackingCostTerms = [ ...
-    "coordinate_tracking", ...
-    "controller_tracking", ...
-    "inverse_dynamics_load_tracking" ...
-    ];
-output = false;
-for i = 1:length(trackingCostTerms)
-    if strcmp(costTerm.type, trackingCostTerms(i))
-        output = true;
-        return
-    end
+function [SpringPos, SpringVel] = pointKinematics(time,q,qp,SpringMat,SpringBodyMat,...
+    modelFile,IKLabels)
+if isequal(mexext, 'mexw64')
+    [SpringPos, SpringVel] = pointKinematicsMexWindows(time,q,qp, ...
+        SpringMat',SpringBodyMat,IKLabels);
+else
+    [SpringPos, SpringVel] = pointKinematicsMatlabParallel(time,q,qp, ...
+        SpringMat,SpringBodyMat,modelFile,IKLabels);
 end
 end
-

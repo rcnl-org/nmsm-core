@@ -95,6 +95,7 @@ if(isstruct(finalTimeRange))
     inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
 end
 end
+inputs.toolName = "DesignOptimization";
 end
 
 function params = getParams(tree)

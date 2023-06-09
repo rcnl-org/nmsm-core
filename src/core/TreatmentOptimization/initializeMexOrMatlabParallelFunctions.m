@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,16 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = isMinimizationCostTerm(costTerm)
-minimizationCostTerms = [ ...
-    "joint_jerk_minimization" ...
-    ];
-output = false;
-for i = 1:length(minimizationCostTerms)
-    if strcmp(costTerm.type, minimizationCostTerms(i))
-        output = true;
-        return
-    end
+function initializeMexOrMatlabParallelFunctions(modelFile)
+if isequal(mexext, 'mexw64')
+    pointKinematicsMexWindows(modelFile);
+    inverseDynamicsMexWindows(modelFile);
 end
+clear inverseDynamicsMatlabParallel
+clear pointKinematicsMatlabParallel
 end
-
