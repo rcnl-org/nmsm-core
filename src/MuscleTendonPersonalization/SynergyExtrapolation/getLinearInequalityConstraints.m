@@ -78,7 +78,7 @@ fullEmg = reshape(emgData, size(emgData, 1) * size(emgData, 2), ...
     size(emgData, 3));
 
 if strcmp(params.matrixFactorizationMethod, 'PCA')
-    totalGroups = length(params.missingEmgChannelGroups) + ...
+    totalGroups = length(params.missingEmgChannelGroups) * size(emgData, 2) + ...
         length(params.currentEmgChannelGroups);
     A = zeros(totalGroups * size(fullCommands, 1), ...
         numOtherDesignVariables + totalGroups * size(fullCommands, 2));
@@ -90,12 +90,12 @@ if strcmp(params.matrixFactorizationMethod, 'PCA')
     A = cat(1, A, -A);
 
     b = ones(length(params.missingEmgChannelGroups) * ...
-        size(fullCommands, 1), 1);
+        size(emgData, 2) * size(fullCommands, 1), 1);
     for i = 1:length(params.currentEmgChannelGroups)
         b = [b; 1 - fullEmg(:, i)];
     end
     b = [b; zeros(length(params.missingEmgChannelGroups) * ...
-        size(fullCommands, 1), 1)];
+        size(emgData, 2) * size(fullCommands, 1), 1)];
     for i = 1:length(params.currentEmgChannelGroups)
         b = [b; fullEmg(:, i)];
     end
