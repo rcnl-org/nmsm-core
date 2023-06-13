@@ -38,6 +38,8 @@ if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
+else
+    precalInputs = struct('optimizeIsometricMaxForce', false);
 end
 
 optimizedParams = MuscleTendonPersonalization(inputs, params);
