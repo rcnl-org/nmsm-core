@@ -111,7 +111,7 @@ params.normalizedFiberLengthGroupNames = parseSpaceSeparatedList(tree, ...
 params.normalizedFiberLengthGroups = groupNamesToGroups( ...
     params.normalizedFiberLengthGroupNames, model);
 params.costTerms = parseRcnlCostTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLCostTermSet').objects.RCNLCostTerm);
+    getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
 if strcmpi('true', getTextFromField(getFieldByName(tree, ...
         'enforce_bilateral_symmetry')))
     params.costTerms{end+1} = struct('type', 'bilateral_symmetry', ...
@@ -134,7 +134,7 @@ end
 
 function groups = getSynergyGroups(tree, model)
 synergySetTree = getFieldByNameOrError(tree, "RCNLSynergySet");
-groupsTree = getFieldByNameOrError(synergySetTree, "objects").RCNLSynergy;
+groupsTree = getFieldByNameOrError(synergySetTree, "RCNLSynergy");
 groups = {};
 for i=1:length(groupsTree)
     if(length(groupsTree) == 1)
