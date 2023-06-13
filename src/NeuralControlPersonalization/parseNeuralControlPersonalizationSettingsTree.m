@@ -68,7 +68,7 @@ mtpResultsDirectory = getFieldByNameOrError( ...
     parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(mtpResultsDirectory, "muscleActivations"), inputs.prefixes));
 osimxFileName = getFieldByName(tree, "input_osimx_file");
-if ~isstruct(osimxFileName)
+if ~isstruct(osimxFileName) || isempty(osimxFileName.Text)
     throw(MException('', 'An input .osimx file is required if using data from MTP.'))
 end
 inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text);
