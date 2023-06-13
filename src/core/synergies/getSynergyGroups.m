@@ -29,7 +29,7 @@
 
 function groups = getSynergyGroups(tree, model)
 synergySetTree = getFieldByNameOrError(tree, "SynergySet");
-groupsTree = getFieldByNameOrError(synergySetTree, "objects").Synergy;
+groupsTree = getFieldByNameOrError(synergySetTree, "Synergy");
 groups = {};
 for i=1:length(groupsTree)
     if(length(groupsTree) == 1)

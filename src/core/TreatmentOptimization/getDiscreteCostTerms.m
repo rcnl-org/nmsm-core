@@ -28,9 +28,9 @@
 function inputs = getDiscreteCostTerms(tree, inputs)
 trackingDiscreteTermsTree = getFieldByName(tree, 'RCNLTrackingCostTerms');
 if isstruct(trackingDiscreteTermsTree)
-    if isfield(trackingDiscreteTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
+    if isfield(trackingDiscreteTermsTree.RCNLCostTermSet, 'RCNLCostTerm')
         rcnlCostTermTree = ...
-            trackingDiscreteTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
+            trackingDiscreteTermsTree.RCNLCostTermSet.RCNLCostTerm;
         if length(rcnlCostTermTree) > 1
             inputs.discrete.tracking = ...
                 parseRcnlCostTermSet(rcnlCostTermTree);
@@ -43,9 +43,9 @@ end
 
 minimizingDiscreteTermsTree = getFieldByName(tree, 'RCNLMinimizationCostTerms');
 if isstruct(minimizingDiscreteTermsTree)
-    if isfield(minimizingDiscreteTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
+    if isfield(minimizingDiscreteTermsTree.RCNLCostTermSet, 'RCNLCostTerm')
         rcnlCostTermTree = ...
-            minimizingDiscreteTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
+            minimizingDiscreteTermsTree.RCNLCostTermSet.RCNLCostTerm;
         if length(rcnlCostTermTree) > 1
             inputs.discrete.minimizing = ...
                 parseRcnlCostTermSet(rcnlCostTermTree);

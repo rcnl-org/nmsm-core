@@ -100,7 +100,7 @@ params.normalizedFiberLengthGroupNames = parseSpaceSeparatedList(tree, ...
 params.normalizedFiberLengthGroups = groupNamesToGroups( ...
     params.normalizedFiberLengthGroupNames, model);
 params.costTerms = parseRcnlCostTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLCostTermSet').objects.RCNLCostTerm);
+    getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
 params.diffMinChange = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'diff_min_change', '1e-6')));
 params.stepTolerance = str2double(getTextFromField(...
@@ -118,7 +118,7 @@ end
 
 function groups = getSynergyGroups(tree, model)
 synergySetTree = getFieldByNameOrError(tree, "RCNLSynergySet");
-groupsTree = getFieldByNameOrError(synergySetTree, "objects").RCNLSynergy;
+groupsTree = getFieldByNameOrError(synergySetTree, "RCNLSynergy");
 groups = {};
 for i=1:length(groupsTree)
     if(length(groupsTree) == 1)

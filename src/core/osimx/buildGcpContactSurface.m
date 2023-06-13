@@ -30,7 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function osimx = buildGcpContactSurface(osimx, contactSurface)
-groundContact = osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.objects;
+groundContact = osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet;
 
 if(~isstruct(groundContact))
     i = 1;
@@ -107,8 +107,7 @@ for i = 1:length(contactSurface.springs)
     newContactSurface = buildGcpSpring(newContactSurface, ...
         contactSurface.springs{i});
 end
-newContactSurface.GCPSpringSet.groups = '';
-osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.objects. ...
+osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet. ...
     RCNLContactSurface = newContactSurface;
 end
 

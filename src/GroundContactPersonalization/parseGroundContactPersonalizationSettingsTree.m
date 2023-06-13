@@ -77,7 +77,7 @@ end
 % ground reactions and foot marker names. 
 function output = getContactSurfaces(inputs, tree)
 contactSurfaces = getFieldByNameOrError(tree, 'GCPContactSurfaceSet') ...
-    .objects.GCPContactSurface;
+    .GCPContactSurface;
 counter = 1;
 for i=1:length(contactSurfaces)
     surface = contactSurfaces{i};
@@ -242,7 +242,7 @@ for i=1:length(gcpTasks)
     if(strcmpi(task.is_enabled.Text, 'true'))
         output{counter} = getTaskDesignVariables(task);
         output{counter}.costTerms = parseRcnlCostTermSet( ...
-            task.RCNLCostTermSet.objects.RCNLCostTerm);
+            task.RCNLCostTermSet.RCNLCostTerm);
         output{counter}.neighborStandardDeviation = ...
             str2double(getTextFromField(getFieldByNameOrAlternate(task, ...
             'neighborStandardDeviation', '0.05')));

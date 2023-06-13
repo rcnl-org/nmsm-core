@@ -42,7 +42,7 @@ osimx.modelName = getFieldByNameOrError(tree, "OsimxModel").Attributes.name;
 rcnlGroundContactTree = getFieldByName(tree, "RCNLContactSurfaceSet");
 if(isstruct(rcnlGroundContactTree))
 
-    contactSurfaceTree = getFieldByNameOrError(rcnlGroundContactTree, "objects").RCNLContactSurface;
+    contactSurfaceTree = getFieldByNameOrError(rcnlGroundContactTree, "RCNLContactSurface");
 
     for i = 1:length(contactSurfaceTree)
         if length(contactSurfaceTree) == 1
@@ -56,7 +56,7 @@ end
 
 rcnlMuscleSetTree = getFieldByName(tree, "RCNLMuscleSet");
 if(isstruct(rcnlMuscleSetTree))
-    musclesTree = getFieldByNameOrError(rcnlMuscleSetTree, "objects").RCNLMuscle;
+    musclesTree = getFieldByNameOrError(rcnlMuscleSetTree, "RCNLMuscle");
 
     for i = 1:length(musclesTree)
         if length(musclesTree) == 1
@@ -105,7 +105,7 @@ contactSurface.latchingVelocity = ...
     str2double(getFieldByNameOrError(tree, "latching_velocity").Text);
 
 gcpSpringsTree = getFieldByNameOrError(tree, "GCPSpringSet");
-springsTree = getFieldByNameOrError(gcpSpringsTree, "objects").GCPSpring;
+springsTree = getFieldByNameOrError(gcpSpringsTree, "GCPSpring");
 for i = 1:length(springsTree)
     if length(springsTree) == 1
         spring = springsTree;

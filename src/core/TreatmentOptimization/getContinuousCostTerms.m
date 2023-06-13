@@ -28,9 +28,9 @@
 function inputs = getContinuousCostTerms(tree, inputs)
 trackingIntegralTermsTree = getFieldByNameOrError(tree, ...
     'RCNLTrackingCostTerms');
-if isfield(trackingIntegralTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
+if isfield(trackingIntegralTermsTree.RCNLCostTermSet, 'RCNLCostTerm')
 rcnlCostTermTree = ...
-    trackingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
+    trackingIntegralTermsTree.RCNLCostTermSet.RCNLCostTerm;
 if length(rcnlCostTermTree) > 1
     inputs.integral.tracking = parseRcnlCostTermSet(rcnlCostTermTree);
 else
@@ -40,9 +40,9 @@ end
 
 minimizingIntegralTermsTree = getFieldByNameOrError(tree, ...
     'RCNLMinimizationCostTerms');
-if isfield(minimizingIntegralTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
+if isfield(minimizingIntegralTermsTree.RCNLCostTermSet, 'RCNLCostTerm')
 rcnlCostTermTree = ...
-    minimizingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
+    minimizingIntegralTermsTree.RCNLCostTermSet.RCNLCostTerm;
 if length(rcnlCostTermTree) > 1
     inputs.integral.minimizing = parseRcnlCostTermSet(rcnlCostTermTree);
 else

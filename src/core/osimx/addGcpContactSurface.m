@@ -60,7 +60,6 @@ for marker = 1:surface.numSpringMarkers
     contactSurface = addGcpSpring(contactSurface, model, marker, ...
         springConstants(marker));
 end
-contactSurface.GCPSpringSet.groups = '';
 groundContact.GCPContactSurfaceSet.GCPContactSurface = contactSurface;
 osimx.NMSMPipelineDocument.OsimxModel.RCNLGroundContact = groundContact;
 end

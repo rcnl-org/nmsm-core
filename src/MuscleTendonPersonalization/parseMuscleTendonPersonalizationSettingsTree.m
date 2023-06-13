@@ -104,7 +104,7 @@ function output = getTask(tree)
 output.muscleSpecificElectromechanicalDelays = ...
     parseElementBoolean(tree, "muscle_specific_electromechanical_delays");
 output.isIncluded = ones(1, 7);
-output.costTerms = parseRcnlCostTermSet(tree.RCNLCostTermSet.objects.RCNLCostTerm);
+output.costTerms = parseRcnlCostTermSet(tree.RCNLCostTermSet.RCNLCostTerm);
 end
 
 % (struct) -> (struct)
@@ -151,7 +151,7 @@ synergyExtrapolation.residualCategorization = ...
 synergyExtrapolation.taskNames = ...
     parseSpaceSeparatedList(synergyExtrapolationTree, 'task_prefixes');
 synergyExtrapolation.costTerms = parseRcnlCostTermSet(...
-    synergyExtrapolationTree.RCNLCostTermSet.objects.RCNLCostTerm);
+    synergyExtrapolationTree.RCNLCostTermSet.RCNLCostTerm);
 end
 
 function inputs = getSynergyExtrapolationInputs(model, ...

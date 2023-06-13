@@ -35,8 +35,7 @@ osimx = buildOsimxTemplate(modelName, osimModelFileName);
 
 osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.Comment = ...
     'Optimized muscle parameters';
-osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.objects = '';
-osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.groups = '';
+osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet = '';
 
 end
 
