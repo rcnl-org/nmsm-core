@@ -31,6 +31,6 @@ function integrand = calcVerificationOptimizationIntegrand(values, ...
     generateCostTermStruct("continuous", "VerificationOptimization");
 integrand = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedTypes, values, modeledValues, auxdata);
-integrand = integrand ./ (params.maxIntegral - params.minIntegral);
+integrand = integrand ./ (auxdata.maxIntegral - auxdata.minIntegral);
 integrand = integrand .^ 2;
 end
