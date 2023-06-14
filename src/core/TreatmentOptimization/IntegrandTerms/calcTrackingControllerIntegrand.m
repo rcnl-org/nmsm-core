@@ -25,20 +25,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingControllerIntegrand(auxdata, values, ...
+function cost = calcTrackingControllerIntegrand(auxdata, values, time, ...
     controllerName)
 
 switch auxdata.controllerType
     case 'synergy_driven'
         indx = find(strcmp(convertCharsToStrings( ...
             auxdata.synergyLabels), controllerName));
-        synergyActivations = fnval(auxdata.splineSynergyActivations, values.time)';
+        if auxdata.splineJointMoments.dim > 1
+            synergyActivations = fnval(auxdata.splineSynergyActivations, time)';
+        else
+            synergyActivations = fnval(auxdata.splineSynergyActivations, time);
+        end
         cost = calcTrackingCostArrayTerm(synergyActivations, values.controlSynergyActivations, indx);
     case 'torque_driven'
         indx1 = find(strcmp(convertCharsToStrings( ...
             auxdata.inverseDynamicMomentLabels), controllerName));
         indx2 = find(strcmp(convertCharsToStrings( ...
             strcat(auxdata.controlTorqueNames, '_moment')), controllerName));
-        experimentalJointMoments = fnval(auxdata.splineJointMoments, values.time)';
+        if auxdata.splineJointMoments.dim > 1
+            experimentalJointMoments = fnval(auxdata.splineJointMoments, time)';
+        else
+            experimentalJointMoments = fnval(auxdata.splineJointMoments, time);
+        end
         cost = experimentalJointMoments(:, indx1) - values.controlTorques(:, indx2);
 end

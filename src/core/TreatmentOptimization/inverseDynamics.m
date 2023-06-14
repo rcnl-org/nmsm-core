@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                                             %
+% Author(s): Spencer Williams, Marleny Vega                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,13 +25,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function IDLoads = inverseDynamics(time,q,qp,qpp,IKLabels,AppliedLoads, ...
-    modelFile)
+function inverseDynamicMoments = inverseDynamics(time, jointAngles, ...
+    jointVelocities, jointAccelerations, coordinateLabels, appliedLoads, ...
+    modelName)
 if isequal(mexext, 'mexw64')
-    IDLoads = inverseDynamicsMexWindows(time,q,qp,qpp,IKLabels, ...
-        AppliedLoads);
+    inverseDynamicMoments = inverseDynamicsMexWindows(time, jointAngles, ...
+        jointVelocities, jointAccelerations, coordinateLabels, ...
+        appliedLoads);
 else
-    IDLoads = inverseDynamicsMatlabParallel(time,q,qp,qpp,IKLabels, ...
-        AppliedLoads,modelFile);
+    inverseDynamicMoments = inverseDynamicsMatlabParallel(time, ...
+        jointAngles, jointVelocities, jointAccelerations, coordinateLabels, ...
+        appliedLoads, modelName);
 end
 end

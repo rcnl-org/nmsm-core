@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                                             %
+% Author(s): Spencer Williams, Marleny Vega                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,13 +25,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [SpringPos, SpringVel] = pointKinematics(time,q,qp,SpringMat,SpringBodyMat,...
-    modelFile,IKLabels)
+function [pointPositions, pointVelocities] = pointKinematics(time, ...
+    jointAngles,jointVelocities, pointLocationOnBody, body, modelName, ...
+    coordinateLabels)
 if isequal(mexext, 'mexw64')
-    [SpringPos, SpringVel] = pointKinematicsMexWindows(time,q,qp, ...
-        SpringMat',SpringBodyMat,IKLabels);
+    [pointPositions, pointVelocities] = pointKinematicsMexWindows(time, ...
+        jointAngles, jointVelocities, pointLocationOnBody', body, ...
+        coordinateLabels);
 else
-    [SpringPos, SpringVel] = pointKinematicsMatlabParallel(time,q,qp, ...
-        SpringMat,SpringBodyMat,modelFile,IKLabels);
+    [pointPositions, pointVelocities] = pointKinematicsMatlabParallel(time, ...
+        jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
+        coordinateLabels);
 end
 end

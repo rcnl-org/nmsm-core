@@ -41,6 +41,8 @@ values.controlJerks = control(:, 1 : params.numCoordinates);
 if ~strcmp(params.controllerType, 'synergy_driven')
     values.controlTorques = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numTorqueControls);
+else 
+    values.controlSynergyActivations = control(:, ...
+    params.numCoordinates + 1 : params.numCoordinates + params.numSynergies);
 end
-
 end

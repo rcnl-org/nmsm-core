@@ -26,11 +26,15 @@
 % ----------------------------------------------------------------------- %
 
 function reportTreatmentOptimizationResults(solution, inputs)
-
-if isfield(solution.solution, "parameter")
-    parameterResults = solution.solution.parameter
+if isfield(inputs, 'userDefinedVariables')
+    for i = 1:length(inputs.userDefinedVariables)
+        parameterResults = scaleToOriginal( ...
+            solution.solution.phase.parameter(i, 1), ...
+            inputs.userDefinedVariables{i}.upper_bounds, ...
+            inputs.userDefinedVariables{i}.lower_bounds)
+    end
 end
-values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
+values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
 if strcmp(inputs.controllerType, 'synergy_driven')
 % plot Muscle Activations
 plotMuscleActivations(solution.muscleActivations, values.time, ...
