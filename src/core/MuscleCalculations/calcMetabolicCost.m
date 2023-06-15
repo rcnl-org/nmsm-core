@@ -29,7 +29,7 @@ function metabolicCost = calcMetabolicCost(time, statePositions, ...
     muscleActivations, params)
 metabolicCost = [];
 for indx = 1 : numel(params.costTerms)
-    if strcmpi(params.costTerms{indx}.type, 'metabolic_cost')
+    if strcmpi(params.costTerms{indx}.type, 'metabolic_cost_minimization')
         import org.opensim.modeling.*
         model = Model(params.model);
         for i = 1 : params.numMuscles
