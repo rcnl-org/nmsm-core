@@ -27,7 +27,7 @@ These toolsets, built in MATLAB using OpenSim, are intended to dramatically redu
 
 ### Joint Model Personalization (JMP)
 
-JMP optimizes the joint parameters of specific joints to reduce Inverse Kinematics errors for a specified marker file.
+JMP optimizes the joint parameters of specific joints to reduce Inverse Kinematics errors for a specified marker file. JMP also allows optimization of marker placement and body scaling.
 
 ### Data Preprocessing
 
@@ -35,11 +35,11 @@ This modules prepares large chunks of raw data into the specified format for use
 
 ### Muscle Tendon Personalization (MTP)
 
-MTP personalizes the muscle properties of a model based on EMG data
+MTP personalizes the muscle properties of a model from EMG data. MTP includes Synergy Extrapolation, a process to solve for missing EMG data.
 
 ### Neural Control Personalization (NCP)
 
-NCP calculates
+NCP calculates the muscle activations of muscles for which no EMG data is available through solving for optimal muscle synergies.
 
 ### Ground Contact Personalization (GCP)
 
