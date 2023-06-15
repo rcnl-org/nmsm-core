@@ -83,7 +83,7 @@ Example uses of the NMSM Pipeline are available in the [nmsm-examples repository
 
 ## Testing
 
-The NMSM Pipeline uses MATLAB's built-in testing suite alongside GitHub Action self-hosted runners to test a set of files that attempt to test a variety of possible scenarios for the use of the NMSM Pipeline. This suite can be tested by running the `runLocalTestSuite.m` file in the top level of the `/tests` directory. This file requires the current path to be the top level of the project (the same level as `Project.prj`).
+The NMSM Pipeline uses MATLAB's built-in testing suite alongside GitHub Action self-hosted runners to test a set of files that attempt to test a variety of possible scenarios for the use of the NMSM Pipeline. This suite can be tested by running the `runLocalTestSuite.m` file in the top level of the [nmsm-test repository](https://github.com/rcnl-org/nmsm-test). This repository requires the project (`Project.prj`) to be open.
 
 ## How to Cite
 
