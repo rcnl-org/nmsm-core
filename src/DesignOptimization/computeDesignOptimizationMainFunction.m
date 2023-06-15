@@ -72,8 +72,7 @@ end
 function guess = addUserDefinedTermsToGuess(guess, inputs)
 for i = 1:length(inputs.userDefinedVariables)
     variable = inputs.userDefinedVariables{i};
-    if ~isfield(guess, "phase") || ...
-            ~isfield(guess.phase, "parameter")
+    if ~isfield(guess, "parameter") 
         guess.parameter = [];
     end
     guess.parameter = [guess.parameter, ...
