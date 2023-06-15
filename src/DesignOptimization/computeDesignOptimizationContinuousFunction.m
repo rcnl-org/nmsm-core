@@ -25,19 +25,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function phaseout = computeDesignOptimizationContinuousFunction(inputs)
+function modeledValues = computeDesignOptimizationContinuousFunction(inputs)
 
 values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
 inputs = updateSystemFromUserDefinedFunctions(inputs, values);
-phaseout = calcTorqueBasedModeledValues(values, inputs.auxdata);
-phaseout = calcSynergyBasedModeledValues(values, inputs.auxdata, phaseout);
-phaseout.dynamics = calcDesignOptimizationDynamicsConstraint(values, ...
+modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
+modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, ...
+    modeledValues);
+modeledValues.dynamics = calcDesignOptimizationDynamicsConstraint(values, ...
     inputs.auxdata);
 if ~isempty(inputs.auxdata.path)
-    phaseout.path = calcDesignOptimizationPathConstraint(values, ...
-        phaseout, inputs.auxdata);
+    modeledValues.path = calcDesignOptimizationPathConstraint(values, ...
+        modeledValues, inputs.auxdata);
 end
-phaseout.integrand = calcDesignOptimizationIntegrand(values, ...
-    inputs.auxdata);
+modeledValues.integrand = calcDesignOptimizationIntegrand(values, ...
+    modeledValues, inputs.auxdata);
 end
 

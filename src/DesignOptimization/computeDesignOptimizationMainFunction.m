@@ -26,15 +26,14 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeDesignOptimizationMainFunction(inputs, params)
-bounds = setupProblemBounds(inputs);
 guess = setupCommonOptimalControlInitialGuess(inputs);
+bounds = setupProblemBounds(inputs, guess);
 guess = addUserDefinedTermsToGuess(guess, inputs);
 setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeDesignOptimizationContinuousFunction, ...
     @computeDesignOptimizationEndpointFunction);
 solution = gpops2(setup);
-solution.result
 solution = solution.result.solution;
 solution.auxdata = inputs;
 solution.phase.parameter = [solution.parameter];
@@ -42,7 +41,7 @@ output = computeDesignOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
 
-function bounds = setupProblemBounds(inputs)
+function bounds = setupProblemBounds(inputs, guess)
 bounds = setupCommonOptimalControlBounds(inputs);
 % setup parameter bounds
 if strcmp(inputs.controllerType, 'synergy_driven')
@@ -55,14 +54,18 @@ for i = 1:length(inputs.userDefinedVariables)
     variable = inputs.userDefinedVariables{i};
     if ~isfield(bounds, "parameter") || ...
             ~isfield(bounds.parameter, "lower")
-        bounds.parameter.lower = [variable.lower_bounds];
-        bounds.parameter.upper = [variable.upper_bounds];
+        bounds.parameter.lower = [-0.5];
+        bounds.parameter.upper = [0.5];
     else
         bounds.parameter.lower = [bounds.parameter.lower, ...
-            variable.lower_bounds];
+            -0.5];
         bounds.parameter.upper = [bounds.parameter.upper, ...
-            variable.upper_bounds];
+            0.5];
     end
+end
+if isfield(inputs, "finalTimeRange")
+    bounds.phase.finaltime.lower = guess.phase.time(end) - (0.5 - guess.phase.time(end));
+    bounds.phase.finaltime.upper = 0.5;
 end
 end
 
@@ -74,6 +77,9 @@ for i = 1:length(inputs.userDefinedVariables)
         guess.parameter = [];
     end
     guess.parameter = [guess.parameter, ...
-        variable.initial_values];
+        scaleToBounds( ...
+        variable.initial_values, ...
+        variable.upper_bounds, ...
+        variable.lower_bounds)];
 end
 end

@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,14 +25,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = isMinimizationCostTerm(costTerm)
-minimizationCostTerms = ["joint_jerk_minimization"];
-output = false;
-for i = 1:length(minimizationCostTerms)
-    if strcmp(costTerm.type, minimizationCostTerms(i))
-        output = true;
-        return
-    end
-end
-end
+function values = getTreatmentOptimizationValueStruct(inputs, params)
 
+values.time = scaleToOriginal(inputs.time, params.maxTime, ...
+    params.minTime);
+state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
+    params.maxState, ones(size(inputs.state, 1), 1) .* params.minState);
+control = scaleToOriginal(inputs.control, ones(size(inputs.control, 1), 1) .* ...
+    params.maxControl, ones(size(inputs.control, 1), 1) .* params.minControl);
+values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
+values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
+values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
+values.controlJerks = control(:, 1 : params.numCoordinates);
+
+if ~strcmp(params.controllerType, 'synergy_driven')
+    values.controlTorques = control(:, params.numCoordinates + 1 : ...
+    params.numCoordinates + params.numTorqueControls);
+else 
+    values.controlSynergyActivations = control(:, ...
+    params.numCoordinates + 1 : params.numCoordinates + params.numSynergies);
+end
+end

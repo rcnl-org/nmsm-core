@@ -36,6 +36,7 @@ sectionDataFiles( ...
 for i=1:length(filesToSection)
     delete(filesToSection(i));
 end
+delete(fullfile(outputDir, emgOutputDir, trialName + ".sto"));
 moveMAFilesToSeparateDirectories(trialName, outputDir, ...
         maOutputDir, timePairs)
 end
@@ -173,7 +174,7 @@ end
 
 function moveMAFilesToSeparateDirectories(trialName, outputDir, ...
         maOutputDir, timePairs)
-for i=1:length(timePairs)
+for i=1:size(timePairs, 1)
     mkdir(fullfile(outputDir, maOutputDir, trialName + "_" ...
         + i));
     files = dir(fullfile(outputDir, maOutputDir));

@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -26,19 +26,9 @@
 % ----------------------------------------------------------------------- %
 
 function values = getTrackingOptimizationValueStruct(inputs, params)
-
-values.time = scaleToOriginal(inputs.time, params.maxTime, ...
-    params.minTime);
-state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
-    params.maxState, ones(size(inputs.state, 1), 1) .* params.minState);
-control = scaleToOriginal(inputs.control, ones(size(inputs.control, 1), 1) .* ...
-    params.maxControl, ones(size(inputs.control, 1), 1) .* params.minControl);
-values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
-values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
-values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
-values.controlJerks = control(:, 1 : params.numCoordinates);
-if strcmp(params.controllerType, 'synergy_driven') 
-    if params.optimizeSynergyVectors 
+values = getTreatmentOptimizationValueStruct(inputs, params);
+if strcmp(params.controllerType, 'synergy_driven')
+    if params.optimizeSynergyVectors
         values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
             params.maxParameter, params.minParameter);
         values.synergyWeights = getSynergyWeightsFromGroups(...
@@ -47,10 +37,5 @@ if strcmp(params.controllerType, 'synergy_driven')
         values.synergyWeights = getSynergyWeightsFromGroups(...
             params.synergyWeightsGuess, params);
     end
-    values.controlSynergyActivations = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numSynergies);
-else
-    values.controlTorques = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numTorqueControls);
 end
 end

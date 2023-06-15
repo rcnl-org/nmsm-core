@@ -43,7 +43,8 @@ else
     [~, name, ~] = fileparts(modelFileName);
     outfile = fullfile(results_directory, strcat(name, "_mtp.xml"));
 end
-
+osimx.modelName = name;
+osimx.model = modelFileName;
 for i = 1:length(muscleNames)
     muscleParams = makeMuscleParams(model, muscleNames(i), optimizedParams, i);
     osimx.muscles.(muscleNames(i)) = muscleParams;
@@ -53,16 +54,29 @@ writeOsimxFile(buildOsimxFromOsimxStruct(osimx), outfile)
 end
 
 function params = makeMuscleParams(model, muscleName, optimizedParams, index)
-params.electromechanicalDelay = optimizedParams.electromechanicalDelays(index);
-params.activationTimeConstant = optimizedParams.activationTimeConstants(index);
-params.activationNonlinearityConstant = ...
-    optimizedParams.activationNonlinearityConstants(index);
-
+if isfield(optimizedParams, 'electromechanicalDelays')
+    params.electromechanicalDelay = optimizedParams.electromechanicalDelays(index);
+end
+if isfield(optimizedParams, 'activationTimeConstants')
+    params.activationTimeConstant = optimizedParams.activationTimeConstants(index);
+end
+if isfield(optimizedParams, 'activationNonlinearityConstants')
+    params.activationNonlinearityConstant = ...
+        optimizedParams.activationNonlinearityConstants(index);
+end
 muscle = model.getForceSet().getMuscles().get(muscleName);
-
-params.emgScaleFactor = optimizedParams.emgScaleFactors(index);
-params.optimalFiberLength = muscle.get_optimal_fiber_length() * ...
-    optimizedParams.optimalFiberLengthScaleFactors(index);
-params.tendonSlackLength = muscle.get_tendon_slack_length() * ...
-    optimizedParams.tendonSlackLengthScaleFactors(index);
+if isfield(optimizedParams, 'emgScaleFactors')
+    params.emgScaleFactor = optimizedParams.emgScaleFactors(index);
+end
+if isfield(optimizedParams, 'optimalFiberLengthScaleFactors')
+    params.optimalFiberLength = muscle.get_optimal_fiber_length() * ...
+        optimizedParams.optimalFiberLengthScaleFactors(index);
+end
+if isfield(optimizedParams, 'tendonSlackLengthScaleFactors')
+    params.tendonSlackLength = muscle.get_tendon_slack_length() * ...
+        optimizedParams.tendonSlackLengthScaleFactors(index);
+end
+if isfield(optimizedParams, 'maxIsometricForce')
+    params.maxIsometricForce = optimizedParams.maxIsometricForce(index);
+end
 end

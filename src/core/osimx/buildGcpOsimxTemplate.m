@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,25 +29,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = buildGcpOsimxTemplate(modelName, ...
-    osimModelFileName, restingSpringLength, ...
-    dynamicFrictionCoefficient, dampingFactor)
+function osimx = buildGcpOsimxTemplate(modelName, osimModelFileName)
 
 osimx = buildOsimxTemplate(modelName, osimModelFileName);
 
-body = osimx.NMSMPipelineDocument.OsimxModel;
-
-body.RCNLGroundContact.resting_spring_length.Comment = ...
-    'The resting spring length of the surface';
-body.RCNLGroundContact.resting_spring_length.Text = convertStringsToChars(num2str(restingSpringLength));
-body.RCNLGroundContact.dynamic_friction_coefficient.Comment = ...
-    'The dynamic friction coefficient of the surface';
-body.RCNLGroundContact.dynamic_friction_coefficient.Text = ...
-    convertStringsToChars(num2str(dynamicFrictionCoefficient));
-body.RCNLGroundContact.damping_factor.Comment = 'The damping factor of the surface';
-body.RCNLGroundContact.damping_factor.Text = convertStringsToChars(num2str(dampingFactor));
-
-osimx.NMSMPipelineDocument.OsimxModel = body;
+osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.Comment = ...
+    'Optimized contact surface parameters';
+osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.objects = '';
+osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.groups = '';
 
 end
 

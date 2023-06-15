@@ -32,7 +32,9 @@ inputs.phase.time = [inputs.phase.initialtime; inputs.phase.finaltime];
 inputs.phase.control = ones(size(inputs.phase.time,1), ...
     length(inputs.auxdata.minControl));
 phase = inputs.phase;
-phase.parameter = inputs.parameter;
+if isfield(inputs, "parameter")
+    phase.parameter = inputs.parameter;
+end
 values = getDesignOptimizationValueStruct(phase, inputs.auxdata);
 inputs = updateSystemFromUserDefinedFunctions(inputs, values);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
@@ -41,10 +43,11 @@ if ~isempty(inputs.auxdata.terminal)
     output.eventgroup.event = calcDesignOptimizationTerminalConstraint( ...
         values, modeledValues, inputs.auxdata);
 end
-% discrete = calcDesignOptimizationDiscreteObjective(values, inputs.auxdata);
-discrete = computeStaticParameterCost(inputs);
+discrete = calcDesignOptimizationDiscreteObjective(values, ...
+    modeledValues, inputs.auxdata);
+% discrete = computeStaticParameterCost(inputs);
 output.objective = calcDesignOptimizationObjective(discrete, ...
-    inputs.phase.integral);
+    inputs.phase.integral, values.time(end), inputs.auxdata);
 end
 
 function cost = computeStaticParameterCost(inputs)

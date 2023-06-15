@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,10 +25,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function reportVerificationOptimizationResults(solution, inputs)
-
-values = getVerificationOptimizationValueStruct(solution.solution.phase, inputs);
-if strcmp(inputs.controllerType, 'synergy_driven') 
+function reportTreatmentOptimizationResults(solution, inputs)
+if isfield(inputs, 'userDefinedVariables')
+    for i = 1:length(inputs.userDefinedVariables)
+        parameterResults = scaleToOriginal( ...
+            solution.solution.phase.parameter(i, 1), ...
+            inputs.userDefinedVariables{i}.upper_bounds, ...
+            inputs.userDefinedVariables{i}.lower_bounds)
+    end
+end
+values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
+if strcmp(inputs.controllerType, 'synergy_driven')
 % plot Muscle Activations
 plotMuscleActivations(solution.muscleActivations, values.time, ...
     inputs.experimentalMuscleActivations, inputs.experimentalTime, ...
@@ -103,16 +110,16 @@ end
 function figureXLabels(numTotalPlots, numColumnPlots, plotIndex, xLabel)
 
 if plotIndex > numTotalPlots - numColumnPlots
-    xlabel(xLabel); 
-else 
-    xticklabels(''); 
+    xlabel(xLabel);
+else
+    xticklabels('');
 end
 end
 function figureYLabels(numTotalPlots, numColumnPlots, plotIndex, yLabel)
 
 if ismember(plotIndex, 1 : numColumnPlots : numTotalPlots)
     ylabel({yLabel(1); yLabel(2)});
-else 
-    yticklabels(''); 
+else
+    yticklabels('');
 end
 end

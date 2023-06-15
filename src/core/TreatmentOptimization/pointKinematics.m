@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams, Marleny Vega                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,18 +25,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = setupGroundContact(inputs)
-for i = 1:length(inputs.contactSurfaces)
-    midfootSuperiorLocation = pointKinematics(inputs.experimentalTime, ...
-        inputs.experimentalJointAngles, inputs.experimentalJointVelocities, ...
-        inputs.contactSurfaces{i}.midfootSuperiorPointOnBody, ...
-        inputs.contactSurfaces{i}.midfootSuperiorBody, inputs.mexModel, ...
-        inputs.coordinateNames);
-    midfootSuperiorLocation(:, 2) = 0;
-    inputs.contactSurfaces{i}.experimentalGroundReactionMoments = ...
-        transferMoments(inputs.contactSurfaces{i}.electricalCenter, ...
-        midfootSuperiorLocation, ...
-        inputs.contactSurfaces{i}.experimentalGroundReactionMoments, ...
-        inputs.contactSurfaces{i}.experimentalGroundReactionForces);
+function [pointPositions, pointVelocities] = pointKinematics(time, ...
+    jointAngles,jointVelocities, pointLocationOnBody, body, modelName, ...
+    coordinateLabels)
+if isequal(mexext, 'mexw64')
+    [pointPositions, pointVelocities] = pointKinematicsMexWindows(time, ...
+        jointAngles, jointVelocities, pointLocationOnBody', body, ...
+        coordinateLabels);
+else
+    [pointPositions, pointVelocities] = pointKinematicsMatlabParallel(time, ...
+        jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
+        coordinateLabels);
 end
 end

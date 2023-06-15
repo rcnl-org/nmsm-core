@@ -26,12 +26,14 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = getIntegralBounds(inputs)
+[~, allowedTypes] = generateCostTermStruct("continuous", inputs.toolName);
 inputs.maxIntegral = [];
 inputs.minIntegral = [];
 for i = 1:length(inputs.costTerms)
     costTerm = inputs.costTerms{i};
     if costTerm.isEnabled
-        if isTrackingCostTerm(costTerm) || isMinimizationCostTerm(costTerm)
+        if any(ismember(costTerm.type, allowedTypes)) && ...
+                ~strcmp(costTerm.type, "user_defined")
             inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
                 costTerm.maxAllowableError);
         elseif strcmp(costTerm.type, "user_defined")
