@@ -68,7 +68,45 @@ A = [zeros(2 * size(params.missingEmgChannelGroups, 2) * size(emgData, 1) * ...
 b = [zeros(size(emgData, 1) * size(emgData, 2) * size( ...
     params.missingEmgChannelGroups, 2), 1); ones(size(emgData, 1) * ...
     size(emgData, 2) * size(params.missingEmgChannelGroups, 2), 1)];
+
+% fullCommands = synergyCommands{1};
+% for i = 2:length(synergyCommands)
+%     fullCommands = cat(1, fullCommands, synergyCommands{i});
+% end
+% fullCommands(:, end+1) = ones(size(fullCommands, 1), 1);
+% fullEmg = reshape(emgData, size(emgData, 1) * size(emgData, 2), ...
+%     size(emgData, 3));
+% 
+% if strcmp(params.matrixFactorizationMethod, 'PCA')
+%     totalGroups = length(params.missingEmgChannelGroups) * size(emgData, 2) + ...
+%         length(params.currentEmgChannelGroups);
+%     A = zeros(totalGroups * size(fullCommands, 1), ...
+%         numOtherDesignVariables + totalGroups * size(fullCommands, 2));
+%     for i = 1:totalGroups
+%         A(size(fullCommands, 1) * (i - 1) + 1 : size(fullCommands, 1) * i, ...
+%             numOtherDesignVariables + size(fullCommands, 2) * (i - 1) + 1 : ...
+%             numOtherDesignVariables + size(fullCommands, 2) * i) = fullCommands;
+%     end
+%     A = cat(1, A, -A);
+% 
+%     b = ones(length(params.missingEmgChannelGroups) * ...
+%         size(emgData, 2) * size(fullCommands, 1), 1);
+%     for i = 1:length(params.currentEmgChannelGroups)
+%         b = [b; 1 - fullEmg(:, i)];
+%     end
+%     b = [b; zeros(length(params.missingEmgChannelGroups) * ...
+%         size(emgData, 2) * size(fullCommands, 1), 1)];
+%     for i = 1:length(params.currentEmgChannelGroups)
+%         b = [b; fullEmg(:, i)];
+%     end
+% end
+
 end
+
+
+
+
+
 function [aMatrix, aMatrixSynergy] = allocateSynxMatrixAMemory(emgData, ...
     numberOfSynergies, missingEmgChannelGroups, thirdMatrixDimension, ...
     matrixFactorizationFactor)
@@ -79,6 +117,7 @@ aMatrixSynergy = zeros(size(emgData, 1) * size(emgData, 2) * ...
     size(missingEmgChannelGroups, 2), (numberOfSynergies + ...
     matrixFactorizationFactor) * thirdMatrixDimension * numberOfSynergies);
 end
+
 function aMatrixSynergy = updateHalfMatrixA(emgData, aMatrix,...
     numberOfSynergies, missingEmgChannelGroups, thirdMatrixDimension, ...
     matrixFactorizationFactor)
@@ -91,6 +130,7 @@ for i = 1:size(missingEmgChannelGroups,2)
         matrixFactorizationFactor) * thirdMatrixDimension) = aMatrix;
 end 
 end
+
 function aMatrixSynergy = getSynxAMatrix(params, synergyCommands, ...
     emgData, matrixFactorizationFactor)
 
@@ -118,6 +158,7 @@ aMatrixSynergy = updateHalfMatrixA(emgData, aMatrix, ...
     params.numberOfSynergies, params.missingEmgChannelGroups, ...
     length(params.synergyCategorizationOfTrials), matrixFactorizationFactor);
 end
+
 function aMatrixResidual = getResidualAMatrix(emgData, ...
     numberOfSynergies, missingEmgChannelGroups, residualCategorization, ...
     matrixFactorizationFactor)

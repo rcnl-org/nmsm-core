@@ -28,21 +28,70 @@
 % ----------------------------------------------------------------------- %
 
 function writeGroundContactPersonalizationOsimxFile(inputs, ...
-    groundContactModelFileName)
+    resultsDirectory, osimxFileName)
+modelFileName = inputs.bodyModel;
+model = Model(modelFileName);
 
-bodyModel = Model(inputs.bodyModel);
-osimx = buildGcpOsimxTemplate(...
-    replace(bodyModel.getName().toCharArray',".","_dot_"), ...
-    inputs.bodyModel, ...
-    inputs.restingSpringLength, ...
-    inputs.dynamicFrictionCoefficient, ...
-    inputs.dampingFactor ...
-    );
+if isfile(osimxFileName)
+    osimx = parseOsimxFile(inputs.inputOsimxFile);
+    [~, name, ~] = fileparts(inputs.inputOsimxFile);
+    outfile = fullfile(resultsDirectory, strcat(name, "_gcp.xml"));
+else
+    osimx = buildGcpOsimxTemplate(...
+        replace(model.getName().toCharArray',".","_dot_"), modelFileName);
+    [~, name, ~] = fileparts(modelFileName);
+    outfile = fullfile(resultsDirectory, strcat(name, "_gcp.xml"));
+end
+osimx.modelName = name;
+osimx.model = modelFileName;
 
-for surface = 1:length(inputs.surfaces)
-    osimx = addGcpContactSurface(osimx,inputs.surfaces{surface}, ...
-        inputs.springConstants);
+osimx = addGcpContactSurfaces(osimx, inputs);
+
+writeOsimxFile(buildOsimxFromOsimxStruct(osimx), outfile);
 end
 
-writeOsimxFile(osimx, groundContactModelFileName);
+function osimx = addGcpContactSurfaces(osimx, inputs)
+if ~isfield(osimx, 'groundContact')
+    osimx.groundContact.contactSurface = {};
+end
+for foot = 1:length(inputs.surfaces)    
+    newSurface.isLeftFoot = inputs.surfaces{foot}.isLeftFoot;
+    newSurface.beltSpeed = inputs.surfaces{foot}.beltSpeed;
+    newSurface.forceColumns = string(inputs.surfaces{foot}.forceColumns)';
+    newSurface.momentColumns = string(inputs.surfaces{foot}.momentColumns)';
+    newSurface.electricalCenterColumns = string(inputs.surfaces{foot} ...
+        .electricalCenterColumns)';
+    newSurface.toesCoordinateName = inputs.surfaces{foot} ...
+        .toesCoordinateName;
+    newSurface.toesJointName = inputs.surfaces{foot}.toesJointName;
+    newSurface.toeMarker = inputs.surfaces{foot}.markerNames.toe;
+    newSurface.medialMarker = inputs.surfaces{foot}.markerNames.medial;
+    newSurface.lateralMarker = inputs.surfaces{foot}.markerNames.lateral;
+    newSurface.heelMarker = inputs.surfaces{foot}.markerNames.heel;
+    newSurface.midfootSuperiorMarker = inputs.surfaces{foot} ...
+        .markerNames.midfootSuperior;
+    newSurface.restingSpringLength = inputs.restingSpringLength;
+    newSurface.dynamicFrictionCoefficient = inputs ...
+        .dynamicFrictionCoefficient;
+    newSurface.viscousFrictionCoefficient = inputs ...
+        .viscousFrictionCoefficient;
+    newSurface.dampingFactor = inputs.dampingFactor;
+    newSurface.latchingVelocity = inputs.latchingVelocity;
+
+    for i = 1:length(inputs.springConstants)
+        newSurface.springs{i} = addGcpSpring(inputs, foot, i);
+    end
+
+    index = 1 + length(osimx.groundContact.contactSurface);
+    osimx.groundContact.contactSurface{index} = newSurface;
+end
+end
+
+function spring = addGcpSpring(inputs, foot, springNumber)
+    spring.name = "spring_marker_" + springNumber;
+    model = Model("footModel_" + foot + ".osim");
+    springMarker = model.getMarkerSet.get(spring.name);
+    spring.parentBody = getMarkerBodyName(model, spring.name);
+    spring.location = Vec3ToArray(springMarker.get_location());
+    spring.springConstant = inputs.springConstants(springNumber);
 end

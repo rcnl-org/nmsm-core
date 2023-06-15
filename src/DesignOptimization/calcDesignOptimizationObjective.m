@@ -25,8 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function objective = calcDesignOptimizationObjective(discrete, continuous)
+function objective = calcDesignOptimizationObjective(discrete, ...
+    continuous, finalTime, inputs)
 continuousObjective = sum(continuous) / length(continuous);
+if isfield(inputs, "finalTimeRange")
+    continuousObjective = continuousObjective / finalTime;
+end
 discreteObjective = sum(discrete) / length(discrete);
 if isnan(discreteObjective); discreteObjective = 0; end
 objective = continuousObjective + discreteObjective;

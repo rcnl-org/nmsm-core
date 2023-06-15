@@ -40,9 +40,9 @@ sampleRate = length(emgTime) / (emgTime(end) - emgTime(1));
 
 % High pass filter the data
 order = valueOrAlternate(params, "filterOrder", 4);
-highPassCutoff = valueOrAlternate(params, "highPassCutoff", 10);
+highPassCutoff = valueOrAlternate(params, "highPassCutoff", 40);
 [b,a] = butter(order, 2 * highPassCutoff/sampleRate, 'high');
-emgData = filtfilt(b, a, emgData);
+emgData = filtfilt(b, a, emgData')';
 
 % Demean
 emgData = emgData-ones(size(emgData, 1), 1) * mean(emgData);
@@ -51,12 +51,15 @@ emgData = emgData-ones(size(emgData, 1), 1) * mean(emgData);
 emgData = abs(emgData);
 
 % Low pass filter
-lowPassCutoff = valueOrAlternate(params, "lowPassCutoff", 40);
-[b,a] = butter(order, 2 * lowPassCutoff / sampleRate);
-emgData = filtfilt(b, a, emgData);
+lowPassCutoff = valueOrAlternate(params, "lowPassCutoff", 10);
+[b,a] = butter(order, 2 * lowPassCutoff / sampleRate, 'low');
+emgData = filtfilt(b, a, emgData')';
 
 % Remove any negative EMG values that may still exist
 emgData(emgData < 0) = 0;
+
+% Normalize by maximum value for each channel
+emgData = emgData ./ max(emgData, [], 2);
 
 processedEmgData = emgData';
 

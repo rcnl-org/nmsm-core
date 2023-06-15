@@ -43,14 +43,22 @@ function inputs = getInputs(tree)
 inputs = parseMtpNcpSharedInputs(tree);
 inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
 inputs = matchMuscleNamesFromCoordinatesAndSynergyGroups(inputs);
-inputs = loadMtpData(tree, inputs);
 inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.maxIsometricForce, inputs.optimalFiberLength, ...
     inputs.tendonSlackLength, inputs.pennationAngle] = ...
     getMuscleInputs(inputs, inputs.muscleTendonColumnNames);
-[inputs.optimalFiberLengthScaleFactors, ...
-    inputs.tendonSlackLengthScaleFactors] = getMtpDataInputs( ...
-    inputs.mtpMuscleData, inputs.muscleTendonColumnNames);
+mtpResults = getFieldByName(tree, "mtp_results_directory");
+if isstruct(mtpResults) && ~isempty(mtpResults.Text)
+    inputs = loadMtpData(tree, inputs);
+    [inputs.optimalFiberLengthScaleFactors, ...
+        inputs.tendonSlackLengthScaleFactors, ...
+        inputs.maxIsometricForce] = getMtpDataInputs(inputs);
+else
+    inputs.optimalFiberLengthScaleFactors = ...
+        ones(1, length(inputs.muscleTendonColumnNames));
+    inputs.tendonSlackLengthScaleFactors = ...
+        ones(1, length(inputs.muscleTendonColumnNames));
+end
 end
 
 function inputs = loadMtpData(tree, inputs)
@@ -59,8 +67,11 @@ mtpResultsDirectory = getFieldByNameOrError( ...
 [inputs.mtpActivations, inputs.mtpActivationsColumnNames] = ...
     parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(mtpResultsDirectory, "muscleActivations"), inputs.prefixes));
-inputs.mtpMuscleData = parseOsimxFile(fullfile(mtpResultsDirectory, ...
-    "model.osimx"));
+osimxFileName = getFieldByName(tree, "input_osimx_file");
+if ~isstruct(osimxFileName) || isempty(osimxFileName.Text)
+    throw(MException('', 'An input .osimx file is required if using data from MTP.'))
+end
+inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text);
 % Remove activations of muscles from coordinates not included
 includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
     inputs.muscleTendonColumnNames);
@@ -101,6 +112,11 @@ params.normalizedFiberLengthGroups = groupNamesToGroups( ...
     params.normalizedFiberLengthGroupNames, model);
 params.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet').objects.RCNLCostTerm);
+if strcmpi('true', getTextFromField(getFieldByName(tree, ...
+        'enforce_bilateral_symmetry')))
+    params.costTerms{end+1} = struct('type', 'bilateral_symmetry', ...
+        'isEnabled', true, 'maxAllowableError', 1e-6, 'errorCenter', 0);
+end
 params.diffMinChange = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'diff_min_change', '1e-6')));
 params.stepTolerance = str2double(getTextFromField(...
@@ -140,14 +156,31 @@ end
 end
 
 function [optimalFiberLengthScaleFactors, ...
-    tendonSlackLengthScaleFactors] = getMtpDataInputs(mtpData, muscleNames)
+    tendonSlackLengthScaleFactors, maxIsometricForce] = ...
+    getMtpDataInputs(inputs)
+mtpData = inputs.mtpMuscleData;
+muscleNames = inputs.muscleTendonColumnNames;
+
 optimalFiberLengthScaleFactors = zeros(1, length(muscleNames));
 tendonSlackLengthScaleFactors = zeros(1, length(muscleNames));
-mtpDataMuscleNames = fieldnames(mtpData);
+maxIsometricForce = inputs.maxIsometricForce;
+mtpDataMuscleNames = fieldnames(mtpData.muscles);
 for i = 1 : length(muscleNames)
     if ismember(muscleNames(i), mtpDataMuscleNames)
-        optimalFiberLengthScaleFactors(i) = mtpData.(muscleNames(i)).optimalFiberLengthScaleFactor;
-        tendonSlackLengthScaleFactors(i) = mtpData.(muscleNames(i)).tendonSlackLengthScaleFactor;
+        currentMuscle = mtpData.muscles.(muscleNames(i));
+        if isfield(currentMuscle, 'optimalFiberLength')
+            optimalFiberLengthScaleFactors(i) = currentMuscle.optimalFiberLength / inputs.optimalFiberLength(i);
+        else
+            optimalFiberLengthScaleFactors(i) = 1;
+        end
+        if isfield(currentMuscle, 'tendonSlackLength')
+            tendonSlackLengthScaleFactors(i) = currentMuscle.tendonSlackLength / inputs.tendonSlackLength(i);
+        else
+            tendonSlackLengthScaleFactors(i) = 1;
+        end
+        if isfield(currentMuscle, 'maxIsometricForce')
+            maxIsometricForce(i) = currentMuscle.maxIsometricForce;
+        end
     else
         optimalFiberLengthScaleFactors(i) = 1;
         tendonSlackLengthScaleFactors(i) = 1;

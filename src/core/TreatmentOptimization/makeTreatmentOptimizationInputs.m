@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,28 +25,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getContinuousCostTerms(tree, inputs)
-trackingIntegralTermsTree = getFieldByNameOrError(tree, ...
-    'RCNLTrackingCostTerms');
-if isfield(trackingIntegralTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
-rcnlCostTermTree = ...
-    trackingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
-if length(rcnlCostTermTree) > 1
-    inputs.integral.tracking = parseRcnlCostTermSet(rcnlCostTermTree);
-else
-    inputs.integral.tracking = parseRcnlCostTermSet({rcnlCostTermTree});
+function inputs = makeTreatmentOptimizationInputs(inputs, params)
+if isequal(mexext, 'mexw64')
+    pointKinematicsMexWindows(inputs.mexModel);
+    inverseDynamicsMexWindows(inputs.mexModel);
 end
-end
-
-minimizingIntegralTermsTree = getFieldByNameOrError(tree, ...
-    'RCNLMinimizationCostTerms');
-if isfield(minimizingIntegralTermsTree.RCNLCostTermSet.objects, 'RCNLCostTerm')
-rcnlCostTermTree = ...
-    minimizingIntegralTermsTree.RCNLCostTermSet.objects.RCNLCostTerm;
-if length(rcnlCostTermTree) > 1
-    inputs.integral.minimizing = parseRcnlCostTermSet(rcnlCostTermTree);
-else
-    inputs.integral.minimizing = parseRcnlCostTermSet({rcnlCostTermTree});
-end
-end
+inputs = getStateDerivatives(inputs);
+inputs = setupGroundContact(inputs);
+inputs = getSplines(inputs);
+inputs = checkStateGuess(inputs);
+inputs = checkControlGuess(inputs);
+inputs = checkParameterGuess(inputs);
+inputs = getIntegralBounds(inputs);
+inputs = getPathConstraintBounds(inputs);
+inputs = getTerminalConstraintBounds(inputs);
+inputs = getDesignVariableInputBounds(inputs);
 end

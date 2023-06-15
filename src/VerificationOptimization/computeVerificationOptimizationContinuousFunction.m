@@ -25,13 +25,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function phaseout = computeVerificationOptimizationContinuousFunction(inputs)
+function modeledValues = computeVerificationOptimizationContinuousFunction(inputs)
 
 values = getVerificationOptimizationValueStruct(inputs.phase, inputs.auxdata);
-phaseout = calcTorqueBasedModeledValues(values, inputs.auxdata);
-phaseout = calcSynergyBasedModeledValues(values, inputs.auxdata, phaseout);
-phaseout.dynamics = calcVerificationOptimizationDynamicsConstraint(values, inputs.auxdata);
-phaseout.path = calcVerificationOptimizationPathConstraint(values, phaseout, inputs.auxdata);
-phaseout.integrand = calcVerificationOptimizationIntegrand(values, inputs.auxdata, ...
-    phaseout);
+modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
+modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, modeledValues);
+modeledValues.dynamics = calcVerificationOptimizationDynamicsConstraint(values, inputs.auxdata);
+modeledValues.path = calcVerificationOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+modeledValues.integrand = calcVerificationOptimizationIntegrand(values, ...
+    modeledValues, inputs.auxdata);
 end

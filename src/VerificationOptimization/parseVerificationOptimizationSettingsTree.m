@@ -80,6 +80,7 @@ if(isstruct(maxControlTorques))
     inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
 end
 end
+inputs.toolName = "VerificationOptimization";
 end
 
 function params = getParams(tree)

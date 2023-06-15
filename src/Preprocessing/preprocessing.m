@@ -13,8 +13,8 @@
 % All values required
 rawEmgFileName = "input_data\Patient3_NormalGait_1pt0_02_Right_01_EMG.mot";
 filterOrder = 4;
-highPassCutoff = 10;
-lowPassCutoff = 50;
+highPassCutoff = 40;
+lowPassCutoff = 10;
 processedEmgFileName = "Patient3_NormalGait_1pt0_02_Right_01_processedEmg.sto";
 
 processRawEmgFile(rawEmgFileName, filterOrder, highPassCutoff, ...
@@ -39,7 +39,7 @@ trialTimePairs = [
 ];
 
 % Required: Associated .osim model file
-inputSettings.model = "UF_Patient3_correctHeight_JMP_MTPGroups.osim";
+inputSettings.model = "UF_Patient3_correctHeight_JMP_MTPGroups_NCPGroups.osim";
 
 % All values optional: files and directories of data to be split
 inputSettings.ikFileName = "input_data\Patient3_NormalGait_1pt0_02_Right_01_IK.mot";

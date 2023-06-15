@@ -28,7 +28,7 @@
 % ----------------------------------------------------------------------- %
 
 function results = GroundContactPersonalization(inputs, params)
-inputs = prepareGroundContactPersonalizationInputs(inputs, params);
+inputs = prepareGroundContactPersonalizationInputs(inputs);
 % Optionally initializes the resting spring length.
 if params.restingSpringLengthInitialization
     inputs = initializeRestingSpringLength(inputs);
