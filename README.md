@@ -1,12 +1,15 @@
 # Neuromusculoskeletal Modeling (NMSM) Pipeline
 
 <p align='center'>
-[![Uses MATLAB 2022a](https://img.shields.io/badge/MATLAB-2022a-red)](https://www.mathworks.com/products/matlab.html)
-[![Platform Windows, macOS Intel, macOS M1](https://img.shields.io/badge/platform-Windows%20|%20macOS%20Intel%20|%20macOS%20M1-lightgrey)](#requirements)
-[![Test - Mac Intel Status](https://github.com/rcnl-org/nmsm-test-runners/actions/workflows/matlab_tests_self_mac_intel.yml/badge.svg)](#testing)
-[![Test - Mac M1 Status](https://github.com/rcnl-org/nmsm-test-runners/actions/workflows/matlab_tests_self_mac_m1.yml/badge.svg)](#testing)
-[![Test - Windows Status](https://github.com/rcnl-org/nmsm-test-runners/actions/workflows/matlab_tests_self_windows.yml/badge.svg)](#testing)
-[![Apache 2.0 License](https://img.shields.io/badge/license-Apache%202.0-blue)](#license)
+<a href="https://www.mathworks.com/products/matlab.html">
+    <img src="https://img.shields.io/badge/MATLAB-2022b-red" alt="MATLAB 2022b Badge">
+</a>
+<a href="#requirements">
+    <img src="https://img.shields.io/badge/platform-Windows%20|%20macOS%20Intel%20|%20macOS%20M1-lightgrey" alt="Requirements Badge">
+</a>
+<a href="#license">
+    <img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License Badge">
+</a>
 </p>
 
 > Doctors have long known that people differ in susceptibility to disease and response to medicines. But, with little guidance for understanding and adjusting to individual differences, treatments developed have generally been standardized for the many, rather than the few. - National Academy of Engineering
@@ -19,10 +22,6 @@ The NMSM Pipeline is comprised of two toolsets:
 2. Treatment Optimization - a series of tools that use a personalized neuromusculoskeletal model to calculate optimal control based conclusions for research and clinical applications.
 
 These toolsets, built in MATLAB using OpenSim, are intended to dramatically reduce the barrier to entry for research in model personalization and treatment optimization.
-
-### Motivation
-
-
 
 ## Modules
 
