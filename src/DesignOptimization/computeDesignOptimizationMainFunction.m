@@ -26,8 +26,9 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeDesignOptimizationMainFunction(inputs, params)
-bounds = setupProblemBounds(inputs);
 guess = setupCommonOptimalControlInitialGuess(inputs);
+bounds = setupProblemBounds(inputs, guess);
+guess = addUserDefinedTermsToGuess(guess, inputs);
 setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeDesignOptimizationContinuousFunction, ...
@@ -35,11 +36,12 @@ setup = setupCommonOptimalControlSolverSettings(inputs, ...
 solution = gpops2(setup);
 solution = solution.result.solution;
 solution.auxdata = inputs;
+solution.phase.parameter = [solution.parameter];
 output = computeDesignOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
 
-function bounds = setupProblemBounds(inputs)
+function bounds = setupProblemBounds(inputs, guess)
 bounds = setupCommonOptimalControlBounds(inputs);
 % setup parameter bounds
 if strcmp(inputs.controllerType, 'synergy_driven')
@@ -47,5 +49,37 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
+end
+for i = 1:length(inputs.userDefinedVariables)
+    variable = inputs.userDefinedVariables{i};
+    if ~isfield(bounds, "parameter") || ...
+            ~isfield(bounds.parameter, "lower")
+        bounds.parameter.lower = [-0.5];
+        bounds.parameter.upper = [0.5];
+    else
+        bounds.parameter.lower = [bounds.parameter.lower, ...
+            -0.5];
+        bounds.parameter.upper = [bounds.parameter.upper, ...
+            0.5];
+    end
+end
+if isfield(inputs, "finalTimeRange")
+    bounds.phase.finaltime.lower = guess.phase.time(end) - (0.5 - guess.phase.time(end));
+    bounds.phase.finaltime.upper = 0.5;
+end
+end
+
+function guess = addUserDefinedTermsToGuess(guess, inputs)
+for i = 1:length(inputs.userDefinedVariables)
+    variable = inputs.userDefinedVariables{i};
+    if ~isfield(guess, "phase") || ...
+            ~isfield(guess.phase, "parameter")
+        guess.parameter = [];
+    end
+    guess.parameter = [guess.parameter, ...
+        scaleToBounds( ...
+        variable.initial_values, ...
+        variable.upper_bounds, ...
+        variable.lower_bounds)];
 end
 end

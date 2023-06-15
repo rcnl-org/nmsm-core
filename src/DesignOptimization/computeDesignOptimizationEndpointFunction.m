@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -31,14 +31,35 @@ inputs.phase.state = [inputs.phase.initialstate; inputs.phase.finalstate];
 inputs.phase.time = [inputs.phase.initialtime; inputs.phase.finaltime];
 inputs.phase.control = ones(size(inputs.phase.time,1), ...
     length(inputs.auxdata.minControl));
-values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
+phase = inputs.phase;
+if isfield(inputs, "parameter")
+    phase.parameter = inputs.parameter;
+end
+values = getDesignOptimizationValueStruct(phase, inputs.auxdata);
+inputs = updateSystemFromUserDefinedFunctions(inputs, values);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 
 if ~isempty(inputs.auxdata.terminal)
-output.eventgroup.event = calcDesignOptimizationTerminalConstraint( ...
-   values, modeledValues, inputs.auxdata);
+    output.eventgroup.event = calcDesignOptimizationTerminalConstraint( ...
+        values, modeledValues, inputs.auxdata);
 end
-discrete = calcDesignOptimizationDiscreteObjective(values, inputs.auxdata);
+discrete = calcDesignOptimizationDiscreteObjective(values, ...
+    modeledValues, inputs.auxdata);
+% discrete = computeStaticParameterCost(inputs);
 output.objective = calcDesignOptimizationObjective(discrete, ...
-    inputs.phase.integral);
+    inputs.phase.integral, values.time(end), inputs.auxdata);
 end
+
+function cost = computeStaticParameterCost(inputs)
+costTerms = inputs.auxdata.costTerms;
+cost = 0;
+for i = 1:length(costTerms)
+    costTerm = costTerms{i};
+    if strcmp(costTerm.type, "user_defined") && ...
+            strcmp(costTerm.cost_term_type, "discrete")
+        func = str2func(costTerm.function_name);
+        cost = cost + func(inputs);
+    end
+end
+end
+

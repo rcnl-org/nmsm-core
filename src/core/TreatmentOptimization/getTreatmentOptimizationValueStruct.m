@@ -1,10 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function adds the information about a spring to the
-% <GCPContactSurface> in a struct made fom buildGcpOsimxTemplate
+% () -> ()
 %
-% (struct, Model, number, 1D array of number) -> (struct) 
-% Adds a spring to the contact surface of an osimx file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,24 +25,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function contactSurface = addGcpSpring(contactSurface, model, ...
-    markerNumber, springConstant)
-markerName = "spring_marker_" + markerNumber;
-springMarker = model.getMarkerSet.get(markerName);
-contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.Attributes.name = ...
-    convertStringsToChars(markerName);
-contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.parent_body.Comment = ...
-    'The body that the spring is attached to';
-contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.parent_body.Text = ...
-    getMarkerBodyName(model, markerName);
-location = springMarker.get_location();
-contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.location.Comment = ...
-    'The location of the spring in the body it is attached to';
-contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.location.Text = ...
-    num2str([location.get(0) location.get(1) location.get(2)], 15);
-contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.spring_constant.Comment = ...
-    'The modeled spring constant for the spring';
-contactSurface.GCPSpringSet.objects.GCPSpring{markerNumber}.spring_constant.Text = ...
-    num2str(springConstant, 15);
-end
+function values = getTreatmentOptimizationValueStruct(inputs, params)
 
+values.time = scaleToOriginal(inputs.time, params.maxTime, ...
+    params.minTime);
+state = scaleToOriginal(inputs.state, ones(size(inputs.state, 1), 1) .* ...
+    params.maxState, ones(size(inputs.state, 1), 1) .* params.minState);
+control = scaleToOriginal(inputs.control, ones(size(inputs.control, 1), 1) .* ...
+    params.maxControl, ones(size(inputs.control, 1), 1) .* params.minControl);
+values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
+values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
+values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
+values.controlJerks = control(:, 1 : params.numCoordinates);
+
+if ~strcmp(params.controllerType, 'synergy_driven')
+    values.controlTorques = control(:, params.numCoordinates + 1 : ...
+    params.numCoordinates + params.numTorqueControls);
+else 
+    values.controlSynergyActivations = control(:, ...
+    params.numCoordinates + 1 : params.numCoordinates + params.numSynergies);
+end
+end

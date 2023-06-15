@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % () -> ()
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,42 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function integrand = calcDesignOptimizationIntegrand(values, params, ...
-    phaseout)
-integrand = [];
-for i = 1:length(params.integral.tracking)
-    costTerm = params.integral.tracking{i};
-    if costTerm.isEnabled
-        switch costTerm.type
-            case "coordinate"
-                integrand = cat(2, integrand, ...
-                    calcTrackingCoordinateIntegrand(params, ...
-                    values.time, values.statePositions, ...
-                    costTerm.coordinate));
-            case "controller"
-                integrand = cat(2, integrand, ...
-                    calcTrackingControllerIntegrand(params, values, ...
-                    costTerm.controller));      
-            otherwise
-                throw(MException('', ['Cost term type ' costTerm.type ...
-                    ' does not exist for this tool.']))   
-        end
-    end
-end
-for i = 1:length(params.integral.minimizing)
-    costTerm = params.integral.minimizing{i};
-    if costTerm.isEnabled
-        switch costTerm.type
-            case "joint_jerk"
-                integrand = cat(2, integrand, ...
-                    calcMinimizingJointJerkIntegrand(values.controlJerks, ...
-                    params, costTerm.coordinate));
-            otherwise
-                throw(MException('', ['Cost term type ' costTerm.type ...
-                    ' does not exist for this tool.']))   
-        end
-    end
-end
-integrand = scaleToBounds(integrand, params.maxIntegral, params.minIntegral);
+function integrand = calcDesignOptimizationIntegrand(values, ...
+    modeledValues, auxdata)
+[costTermCalculations, allowedTypes] = ...
+    generateCostTermStruct("continuous", "DesignOptimization");
+integrand = calcTreatmentOptimizationCost( ...
+    costTermCalculations, allowedTypes, values, modeledValues, auxdata);
+integrand = integrand ./ (auxdata.maxIntegral - auxdata.minIntegral);
 integrand = integrand .^ 2;
 end

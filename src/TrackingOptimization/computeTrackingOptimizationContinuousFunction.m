@@ -25,13 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function phaseout = computeTrackingOptimizationContinuousFunction(inputs)
-
+function modeledValues = computeTrackingOptimizationContinuousFunction(inputs)
 values = getTrackingOptimizationValueStruct(inputs.phase, inputs.auxdata);
-phaseout = calcTorqueBasedModeledValues(values, inputs.auxdata);
-phaseout = calcSynergyBasedModeledValues(values, inputs.auxdata, phaseout);
-phaseout.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
-phaseout.path = calcTrackingOptimizationPathConstraint(values, phaseout, inputs.auxdata);
-phaseout.integrand = calcTrackingOptimizationIntegrand(values, inputs.auxdata, ...
-    phaseout);
+modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
+modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, modeledValues);
+modeledValues.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
+modeledValues.path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+modeledValues.integrand = calcTrackingOptimizationIntegrand(values, modeledValues, inputs.auxdata);
 end

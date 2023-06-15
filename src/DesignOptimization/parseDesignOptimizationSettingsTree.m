@@ -40,6 +40,14 @@ if strcmpi(inputs.controllerType, 'synergy_driven')
 inputs.synergyWeights = parseTreatmentOptimizationStandard(...
     {getTextFromField(getFieldByName(tree, 'synergy_vectors_file'))});
 end
+inputs.systemFns = parseSpaceSeparatedList(tree, "model_functions");
+parameterTree = getFieldByNameOrError(tree, "RCNLParameterTermSet");
+if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
+    inputs.userDefinedVariables = parseRcnlCostTermSet( ...
+        parameterTree.RCNLParameterTerm);
+else
+    inputs.userDefinedVariables = {};
+end
 end
 
 function inputs = getDesignVariableBounds(tree, inputs)
@@ -79,7 +87,13 @@ maxControlTorques = getFieldByNameOrError(designVariableTree, ...
 if(isstruct(maxControlTorques))
     inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
 end
+finalTimeRange = getFieldByName(designVariableTree, ...
+    'final_time_range');
+if(isstruct(finalTimeRange))
+    inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
 end
+end
+inputs.toolName = "DesignOptimization";
 end
 
 function params = getParams(tree)

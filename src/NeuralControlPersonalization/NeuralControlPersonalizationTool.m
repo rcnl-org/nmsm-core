@@ -47,5 +47,5 @@ end
 [synergyWeights, synergyCommands] = normalizeSynergiesByMaximumWeight(...
     synergyWeights, synergyCommands);
 saveNeuralControlPersonalizationResults(synergyWeights, ...
-    synergyCommands, inputs, resultsDirectory);
+    synergyCommands, inputs, resultsDirectory, precalInputs);
 end
