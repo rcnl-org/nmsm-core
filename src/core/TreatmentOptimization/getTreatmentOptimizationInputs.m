@@ -56,8 +56,8 @@ elseif strcmp(inputs.controllerType, 'torque_driven')
         "coordinate_list");
     inputs.numTorqueControls = length(inputs.controlTorqueNames);
 end
-inputs.optimizeSynergyVectors = getBooleanLogicFromField(...
-    parseElementTextByNameOrAlternate(tree, "optimizeSynergyVectors", 0));
+inputs.optimizeSynergyVectors = getBooleanLogic(...
+    parseElementTextByNameOrAlternate(tree, "optimize_synergy_vectors", 0));
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs.experimentalTime = inputs.experimentalTime / ...

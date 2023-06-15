@@ -81,6 +81,14 @@ if(isstruct(maxControlSynergyActivations))
     inputs.maxControlSynergyActivations = ...
         getDoubleFromField(maxControlSynergyActivations);
 end
+if inputs.optimizeSynergyVectors
+    maxParameterSynergyWeights = getFieldByNameOrError(designVariableTree, ...
+        'synergy_weights_max');
+    if(isstruct(maxParameterSynergyWeights))
+        inputs.maxParameterSynergyWeights = ...
+            getDoubleFromField(maxParameterSynergyWeights);
+    end
+end
 else 
 maxControlTorques = getFieldByNameOrError(designVariableTree, ...
     'torque_controls_max');
