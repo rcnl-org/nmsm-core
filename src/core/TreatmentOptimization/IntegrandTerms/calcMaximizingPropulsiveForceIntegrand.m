@@ -34,7 +34,5 @@ for i = 1:length(params.contactSurfaces)
             modeledValues.groundReactionsLab.forces{i}(:,1));
     end
 end
-minimizingPropulsiveForce = 1 ./ propulsiveForce;
-minimizingPropulsiveForce(minimizingPropulsiveForce==inf) = 0;
-cost = calcMinimizingCostArrayTerm(minimizingPropulsiveForce);
+cost = calcMaximizingCostArrayTerm(propulsiveForce);
 end

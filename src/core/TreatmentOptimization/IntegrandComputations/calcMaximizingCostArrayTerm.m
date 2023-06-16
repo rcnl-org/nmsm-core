@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the cost for tracking values 
 %
+% (Array of number, Array of number, number, number) -> (struct)
+% returns tracking cost
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,14 +27,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMaximizingBreakingForceIntegrand(modeledValues, ...
-    params, costTerm)
+function cost = calcMaximizingCostArrayTerm(modelValue)
 
-for i = 1:length(params.contactSurfaces)
-    if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
-        breakingForce = getBreakingForce( ...
-            modeledValues.groundReactionsLab.forces{i}(:,1));
-    end
-end
-cost = calcMaximizingCostArrayTerm(breakingForce);
+maximizingError = 1 ./ modelValue;
+maximizingError(maximizingError==inf) = 0;
+cost = maximizingError;
 end
