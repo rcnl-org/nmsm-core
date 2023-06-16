@@ -25,19 +25,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modeledValues = computeDesignOptimizationContinuousFunction(inputs)
+function cost = calcMaximizingPropulsiveForceIntegrand(modeledValues, ...
+    params, costTerm)
 
-values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
-inputs = updateSystemFromUserDefinedFunctions(inputs, values);
-modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
-modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, ...
-    modeledValues);
-modeledValues.dynamics = calcDesignOptimizationDynamicsConstraint(values, ...
-    inputs.auxdata);
-if ~isempty(inputs.auxdata.path)
-    modeledValues.path = calcDesignOptimizationPathConstraint(values, ...
-        modeledValues, inputs.auxdata);
+for i = 1:length(params.contactSurfaces)
+    if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
+        propulsiveForce = getPropulsiveForce( ...
+            modeledValues.groundReactionsLab.forces{i}(:,1));
+    end
 end
-modeledValues.integrand = calcDesignOptimizationIntegrand(values, ...
-    modeledValues, inputs.auxdata);
+minimizingPropulsiveForce = 1 ./ propulsiveForce;
+minimizingPropulsiveForce(minimizingPropulsiveForce==inf) = 0;
+cost = calcMinimizingCostArrayTerm(minimizingPropulsiveForce);
 end

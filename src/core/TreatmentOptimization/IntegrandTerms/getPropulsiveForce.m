@@ -25,19 +25,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modeledValues = computeDesignOptimizationContinuousFunction(inputs)
+function propulsiveForce = getPropulsiveForce(anteroPosteriorForce)
 
-values = getDesignOptimizationValueStruct(inputs.phase, inputs.auxdata);
-inputs = updateSystemFromUserDefinedFunctions(inputs, values);
-modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
-modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, ...
-    modeledValues);
-modeledValues.dynamics = calcDesignOptimizationDynamicsConstraint(values, ...
-    inputs.auxdata);
-if ~isempty(inputs.auxdata.path)
-    modeledValues.path = calcDesignOptimizationPathConstraint(values, ...
-        modeledValues, inputs.auxdata);
-end
-modeledValues.integrand = calcDesignOptimizationIntegrand(values, ...
-    modeledValues, inputs.auxdata);
+anteroPosteriorForce = anteroPosteriorForce - 10;
+anteroPosteriorForce(anteroPosteriorForce<=0) = 0;
+propulsiveForce = anteroPosteriorForce;
 end
