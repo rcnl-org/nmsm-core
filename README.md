@@ -64,7 +64,7 @@ No installation is required, following the instructions below, download the pack
     - Statistics and Machine Learning Toolbox
     - Curve Fitting Toolbox
 - OpenSim 4.4 or greater
-- OpenSim MATLAB Bindings
+- [OpenSim MATLAB Bindings](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+with+Matlab)
 
 ### Step-by-Step
 - Click the green `Code` button at the top right of this page (or clone the repository if you are familiar with git)
