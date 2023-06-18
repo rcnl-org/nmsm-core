@@ -25,25 +25,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function stepLength = calcStepLength(normalForce, heelPosition, ...
-    pelvisPosition)
+function cost = calcMaximizingSingleSupportTimeIntegrand(values, ...
+    modeledValues, params, costTerm)
 
-normalForce = normalForce - 30;
-normalForce(normalForce<0) = 0;
-slope = diff(normalForce);
-heelStrikeEvent = getHeelStrikeEvent(slope);
-if isempty(heelStrikeEvent)
-    if normalForce(1) == 0
-        heelStrikeEvent  = 1;
-        stepLength = ...
-            (heelPosition(heelStrikeEvent, 1) - pelvisPosition(heelStrikeEvent, :)) + ...
-            (pelvisPosition(heelStrikeEvent, :) - heelPosition(heelStrikeEvent, 2));
-    else
-        stepLength = 0;
+for i = 1:length(params.contactSurfaces)
+    if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
+        if i == 1
+            singleSupportTime = calcSingleSupportTime( ...
+                modeledValues.groundReactionsLab.forces{i + 1}(:, 2), values.time);
+        else
+            singleSupportTime = calcSingleSupportTime( ...
+                modeledValues.groundReactionsLab.forces{i - 1}(:, 2), values.time);
+        end
     end
-else
-    stepLength = ...
-        (heelPosition(heelStrikeEvent, 1) - pelvisPosition(heelStrikeEvent, :)) + ...
-        (pelvisPosition(heelStrikeEvent, :) - heelPosition(heelStrikeEvent, 2));
 end
+cost = calcMaximizingCostArrayTerm(singleSupportTime * ...
+    ones(length(values.time), 1));
 end

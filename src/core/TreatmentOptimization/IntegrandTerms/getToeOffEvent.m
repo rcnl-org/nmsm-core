@@ -25,25 +25,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function stepLength = calcStepLength(normalForce, heelPosition, ...
-    pelvisPosition)
+function toeOffEvent = getToeOffEvent(slope)
 
-normalForce = normalForce - 30;
-normalForce(normalForce<0) = 0;
-slope = diff(normalForce);
-heelStrikeEvent = getHeelStrikeEvent(slope);
-if isempty(heelStrikeEvent)
-    if normalForce(1) == 0
-        heelStrikeEvent  = 1;
-        stepLength = ...
-            (heelPosition(heelStrikeEvent, 1) - pelvisPosition(heelStrikeEvent, :)) + ...
-            (pelvisPosition(heelStrikeEvent, :) - heelPosition(heelStrikeEvent, 2));
-    else
-        stepLength = 0;
+timePadding = round(length(slope) * 0.10) + 1;
+toeOffEvent = [];
+for i = 1 + timePadding : length(slope)
+    if slope(i) == 0 && all(slope(i - timePadding : i - 1) < 0)
+        toeOffEvent = i;
     end
-else
-    stepLength = ...
-        (heelPosition(heelStrikeEvent, 1) - pelvisPosition(heelStrikeEvent, :)) + ...
-        (pelvisPosition(heelStrikeEvent, :) - heelPosition(heelStrikeEvent, 2));
 end
 end
