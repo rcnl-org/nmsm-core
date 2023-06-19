@@ -1,5 +1,5 @@
-NMSM Pipeline
-Copyright (c) 2021 Rice University and the Authors
+Neuromusculoskeletal Modeling Pipeline
+Copyright (c) 2023 Rice University and the Authors
 
 This product bundles:
 xml2struct
