@@ -80,4 +80,20 @@ elseif strcmp(inputs.controllerType, 'torque_driven')
     inputs.maxControl = [maxControlJerks maxControlTorques];
     inputs.minControl = [minControlJerks minControlTorques];
 end
+
+if inputs.enableExternalTorqueControl 
+    for i = 1:length(inputs.externalControlTorqueNames)
+        indx = find(strcmp(convertCharsToStrings( ...
+            inputs.inverseDynamicMomentLabels), ...
+            strcat(inputs.externalControlTorqueNames(i), '_moment')));
+        maxExternalControlTorques(i) = max(inputs.experimentalJointMoments(:, ...
+            indx)) + inputs.maxExternalTorqueControls * ...
+            range(inputs.experimentalJointMoments(:, indx));
+        minExternalControlTorques(i) = min(inputs.experimentalJointMoments(:, ...
+            indx)) - inputs.maxExternalTorqueControls * ...
+            range(inputs.experimentalJointMoments(:, indx));
+    end
+    inputs.maxControl = [inputs.maxControl maxExternalControlTorques];
+    inputs.minControl = [inputs.minControl minExternalControlTorques];
+end
 end

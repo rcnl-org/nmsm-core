@@ -91,15 +91,25 @@ if inputs.optimizeSynergyVectors
 end
 else 
 maxControlTorques = getFieldByNameOrError(designVariableTree, ...
-    'torque_controls_max');
+    'torque_controls_multiple');
 if(isstruct(maxControlTorques))
     inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
+end
 end
 finalTimeRange = getFieldByName(designVariableTree, ...
     'final_time_range');
 if(isstruct(finalTimeRange))
     inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
 end
+inputs.enableExternalTorqueControl = getBooleanLogicFromField(getFieldByName(tree, ...
+    "enable_external_torque_controls"));
+if inputs.enableExternalTorqueControl
+    inputs.externalControlTorqueNames = parseSpaceSeparatedList(tree, ...
+        "external_control_coordinate_list");
+    inputs.numExternalTorqueControls = length(inputs.externalControlTorqueNames);
+    inputs.maxExternalTorqueControls = getDoubleFromField( ...
+        getFieldByNameOrError(designVariableTree, ...
+        'external_torque_control_multiple'));
 end
 inputs.toolName = "DesignOptimization";
 end

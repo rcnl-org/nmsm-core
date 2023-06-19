@@ -27,6 +27,7 @@
 
 function values = getDesignOptimizationValueStruct(inputs, params)
 values = getTreatmentOptimizationValueStruct(inputs, params);
+
 if strcmp(params.controllerType, 'synergy_driven')
     if params.optimizeSynergyVectors
         values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
@@ -37,12 +38,27 @@ if strcmp(params.controllerType, 'synergy_driven')
         values.synergyWeights = getSynergyWeightsFromGroups(...
             params.synergyWeightsGuess, params);
     end
-    if params.splineJointMoments.dim > 1
+    if params.splineSynergyActivations.dim > 1
         values.controlSynergyActivations = ...
             fnval(params.splineSynergyActivations, values.time)';
     else
         values.controlSynergyActivations = ...
             fnval(params.splineSynergyActivations, values.time);
+    end
+    if params.enableExternalTorqueControl
+        controls = scaleToOriginal(inputs.control, ones(size( ...
+            inputs.control, 1), 1) .* params.maxControl, ...
+            ones(size(inputs.control, 1), 1) .* params.minControl);
+        values.externalTorqueControls = controls(:, params.numCoordinates + ...
+            params.numSynergies + 1 : end);
+    end
+else 
+    if params.enableExternalTorqueControl
+        controls = scaleToOriginal(inputs.control, ones(size( ...
+            inputs.control, 1), 1) .* params.maxControl, ...
+            ones(size(inputs.control, 1), 1) .* params.minControl);
+        values.externalTorqueControls = controls(:, params.numCoordinates + ...
+            params.numTorqueControls + 1 : end);
     end
 end
 if isfield(params, 'userDefinedVariables')
