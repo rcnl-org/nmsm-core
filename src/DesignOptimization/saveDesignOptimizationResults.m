@@ -28,4 +28,11 @@
 function saveDesignOptimizationResults(solution, inputs)
 values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
 saveCommonOptimalControlResults(solution, inputs, values)
+if inputs.systemFns
+    values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
+    inputs.auxdata = inputs;
+    inputs = updateSystemFromUserDefinedFunctions(inputs, values);
+    model = Model(inputs.auxdata.model);
+    model.print(strrep(inputs.mexModel, '_inactiveMuscles.osim', 'DesignOpt.osim'));
+end
 end
