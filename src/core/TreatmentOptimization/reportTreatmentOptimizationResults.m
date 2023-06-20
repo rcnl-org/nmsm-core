@@ -47,6 +47,17 @@ for i = 1 : inputs.numSynergies
 end
 plotResultsWithOutComparison(values.controlSynergyActivations, values.time, ...
     synergyTitles, ["Synergy" "Activations"]);
+else 
+% plot torque controls
+plotResultsWithOutComparison(values.controlTorques, values.time, ...
+    inputs.controlTorqueNames, ["Torque" "Controls"]);
+end
+% plot external torque controls
+if isfield(inputs, 'enableExternalTorqueControl')
+    if inputs.enableExternalTorqueControl
+        plotResultsWithOutComparison(values.externalTorqueControls, values.time, ...
+            inputs.externalControlTorqueNames, ["External" "Torque Controls"]);
+    end
 end
 % plot joint angles
 plotResultsWithComparison(values.statePositions, values.time, ...
