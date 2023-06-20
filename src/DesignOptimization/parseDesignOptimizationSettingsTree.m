@@ -30,6 +30,7 @@ function [inputs, params] = ...
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
 inputs = modifyModelForces(inputs);
+inputs = updateMuscleModelProperties(inputs);
 end
 
 function inputs = getInputs(tree)
