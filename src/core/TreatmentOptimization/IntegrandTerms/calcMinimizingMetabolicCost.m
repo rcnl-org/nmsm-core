@@ -25,8 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingMetabolicCost(metabolicCost)
+function cost = calcMinimizingMetabolicCost(values, modeledValues, ...
+    params)
 
+metabolicCost = calcMetabolicCost(values.time, ...
+    values.statePositions, modeledValues.muscleActivations, params);
 cost = calcMinimizingCostArrayTerm(metabolicCost);
 end
-
