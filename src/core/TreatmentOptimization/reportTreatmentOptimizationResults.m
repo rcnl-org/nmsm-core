@@ -76,6 +76,13 @@ plotResultsWithComparison(solution.groundReactionsLab.moments{i}, values.time, .
     inputs.contactSurfaces{i}.experimentalGroundReactionMoments, inputs.experimentalTime, ...
     ["GRTx", "GRTy", "GRTz"], ["Ground" "Reaction Moments"]);
 end
+
+if strcmp(inputs.toolName, 'DesignOptimization')
+    gait = input('Print gait specific measurements (yes or no): ', 's');
+    if strcmp(gait, 'yes')
+        reportingGaitSpecificMeasurements(values, solution, inputs);
+    end
+end
 end
 function plotMuscleActivations(muscleActivations, time, ...
     experimentalMuscleActivations, experimentalTime, muscleLabels)
