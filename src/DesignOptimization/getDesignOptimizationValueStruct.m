@@ -56,7 +56,8 @@ if strcmp(params.controllerType, 'synergy_driven')
             params.numSynergies + 1 : end);
     end
 else 
-    if params.enableExternalTorqueControl
+    if isfield(params, "enableExternalTorqueControl") && ...
+            params.enableExternalTorqueControl
         controls = scaleToOriginal(inputs.control, ones(size( ...
             inputs.control, 1), 1) .* params.maxControl, ...
             ones(size(inputs.control, 1), 1) .* params.minControl);

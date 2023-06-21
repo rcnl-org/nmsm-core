@@ -91,10 +91,12 @@ if inputs.optimizeSynergyVectors
     end
 end
 else 
-maxControlTorques = getFieldByNameOrError(designVariableTree, ...
+maxControlTorques = getFieldByName(designVariableTree, ...
     'torque_controls_multiple');
 if(isstruct(maxControlTorques))
     inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
+else
+    inputs.maxControlTorquesMultiple = 1;
 end
 end
 finalTimeRange = getFieldByName(designVariableTree, ...

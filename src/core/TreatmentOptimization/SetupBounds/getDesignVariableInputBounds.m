@@ -81,7 +81,8 @@ elseif strcmp(inputs.controllerType, 'torque_driven')
     inputs.minControl = [minControlJerks minControlTorques];
 end
 
-if inputs.enableExternalTorqueControl 
+if isfield(inputs, "enableExternalTorqueControl") && ...
+        inputs.enableExternalTorqueControl 
     for i = 1:length(inputs.externalControlTorqueNames)
         indx = find(strcmp(convertCharsToStrings( ...
             inputs.inverseDynamicMomentLabels), ...
