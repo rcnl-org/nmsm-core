@@ -55,7 +55,7 @@ GCP creates a personalized contact array with varying spring constants for calcu
 
 ## How to Install
 
-No installation is required, following the instructions below, download the package, open the `Project.prj` file and you are ready to personalize models.
+No installation is required, following the instructions below, download the package, open the `Project.prj` file and you are ready to personalize models and optimize treatments.
 
 ### Requirements
 - MATLAB (Tested on 2022b)
