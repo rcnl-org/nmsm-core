@@ -29,6 +29,7 @@ function inputs = updateMuscleModelProperties(inputs)
 if ~isa(inputs.model, 'org.opensim.modeling.Model')
     inputs.model = Model(inputs.model);
 end
+if strcmp(inputs.controllerType, 'synergy_driven')
 for i = 1 : inputs.numMuscles
     inputs.model.getForceSet().getMuscles().get(inputs.muscleNames(i)). ...
         setOptimalFiberLength(inputs.optimalFiberLength(i));

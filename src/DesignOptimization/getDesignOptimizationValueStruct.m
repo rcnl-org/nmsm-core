@@ -28,6 +28,7 @@
 function values = getDesignOptimizationValueStruct(inputs, params)
 values = getTreatmentOptimizationValueStruct(inputs, params);
 
+numParameters = 0;
 if strcmp(params.controllerType, 'synergy_driven')
     if params.optimizeSynergyVectors
         values.synergyWeights = scaleToOriginal(inputs.parameter(1, ...
@@ -35,6 +36,7 @@ if strcmp(params.controllerType, 'synergy_driven')
             params.maxParameter, params.minParameter);
         values.synergyWeights = getSynergyWeightsFromGroups(...
             values.synergyWeights, params);
+        numParameters = params.numSynergyWeights;
     else
         values.synergyWeights = getSynergyWeightsFromGroups(...
             params.synergyWeightsGuess, params);
@@ -65,7 +67,7 @@ end
 if isfield(params, 'userDefinedVariables')
     for i = 1:length(params.userDefinedVariables)
         values.(params.userDefinedVariables{i}.type)(i) = scaleToOriginal( ...
-            inputs.parameter(1, i + params.numSynergyWeights), ...
+            inputs.parameter(1, i + numParameters), ...
             params.userDefinedVariables{i}.upper_bounds, ...
             params.userDefinedVariables{i}.lower_bounds);
     end
