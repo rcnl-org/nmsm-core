@@ -63,6 +63,7 @@ if(isstruct(rcnlMuscleSetTree))
         else
             muscle = musclesTree{i};
         end
+        osimx.muscles.(muscle.Attributes.name) = struct();
         if isstruct(getFieldByName(muscle, 'electromechanical_delay'))
             osimx.muscles.(muscle.Attributes.name).electromechanicalDelay = str2double(muscle.electromechanical_delay.Text);
         end
