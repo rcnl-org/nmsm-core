@@ -63,6 +63,7 @@ No installation is required, following the instructions below, download the pack
     - Parallel Computing Toolbox
     - Statistics and Machine Learning Toolbox
     - Curve Fitting Toolbox
+    - Symbolic Math Toolbox
 - OpenSim 4.4 or greater
 - [OpenSim MATLAB Bindings](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+with+Matlab)
 
