@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function reads the optimal control settings (GPOPS-II based) from a
+% separate XML file.  
+%
+% (struct) -> (Array of string)
+% Optimal control solver settings are loaded 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
