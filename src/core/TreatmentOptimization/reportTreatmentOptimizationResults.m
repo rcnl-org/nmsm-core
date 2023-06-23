@@ -1,8 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function plots the results from all three treatment optimization
+% tools (tracking, verification, and design optimization).
 %
-
+% (struct, struct) -> (None)
+% Plots results from treatment optimization
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %

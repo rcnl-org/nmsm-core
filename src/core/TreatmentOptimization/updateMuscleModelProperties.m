@@ -1,7 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% If muscles are present, this model updates the optimal fiber length, max
+% isometric force, and tendon slack length values based on changes 
+% resulting from design optimization or from updated values from the 
+% osimx file. 
+%
+% (struct) -> (struct)
+% Updated muscle model properties in the osim model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function prints to console gait specific measurements: step length
+% asymmetry, step time asymmetry, stride lengh, and final time.
 %
+% (struct, struct, struct) -> ()
+% Prints to console gait specific measurements
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

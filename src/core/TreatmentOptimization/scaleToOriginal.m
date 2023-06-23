@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function scales the values back to original based on the assigned
+% bounds.
+%
+% (Array of number, number, number) -> (Array of number)
+% Scales vector back to original
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

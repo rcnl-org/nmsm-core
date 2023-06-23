@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function initializes the point kinematics and inverse dynamics mex 
+% files if the appropriate mex extention exists. It also clears previous
+% parallel workers 
 %
+% (Array of string) -> ()
+% Intializes mex files or clear previous parallel workers 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                                             %
+% Author(s): Spencer Williams, Marleny Vega                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %

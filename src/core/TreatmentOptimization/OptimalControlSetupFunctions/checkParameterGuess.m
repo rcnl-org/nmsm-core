@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function checks that the initial guess parameters file is in the 
+% correct order
+%
+% (struct) -> (struct)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

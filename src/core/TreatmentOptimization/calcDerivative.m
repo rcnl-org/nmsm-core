@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function calculates the first derivative of the curve provided using
+% piecewise polynomials.
+%
+% (Array of number, array of number) -> (Array of number)
+% Returns first derivative
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

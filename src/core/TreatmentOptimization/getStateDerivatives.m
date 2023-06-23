@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function calculates the joint velocities, accelerations, and jerk
+% based of the experimental joint angles
+%
+% (struct) -> (struct)
+% Returns state derivatives
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

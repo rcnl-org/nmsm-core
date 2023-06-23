@@ -1,7 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function parsed the state variable based on the index provided.
+% State positions are parsed if the index value is set to 1.
+% State velocities are parsed if the index value is set to 2.
+% State accelerations are parsed if the index value is set to 3.
+%
+% (2D matrix) -> (2D matrix, number, number)
+% Returns parsed state varaible
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

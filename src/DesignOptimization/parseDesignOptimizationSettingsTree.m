@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function parses the settings tree resulting from xml2struct of the
+% Design Optimizatoin settings XML file.
+%
+% (struct) -> (struct, struct)
+% returns the input values for Design Optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -104,12 +107,13 @@ finalTimeRange = getFieldByName(designVariableTree, ...
 if(isstruct(finalTimeRange))
     inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
 end
-inputs.enableExternalTorqueControl = getBooleanLogicFromField(getFieldByName(tree, ...
-    "enable_external_torque_controls"));
+inputs.enableExternalTorqueControl = getBooleanLogicFromField( ...
+    getFieldByName(tree, "enable_external_torque_controls"));
 if inputs.enableExternalTorqueControl
     inputs.externalControlTorqueNames = parseSpaceSeparatedList(tree, ...
         "external_control_coordinate_list");
-    inputs.numExternalTorqueControls = length(inputs.externalControlTorqueNames);
+    inputs.numExternalTorqueControls = ...
+        length(inputs.externalControlTorqueNames);
     inputs.maxExternalTorqueControls = getDoubleFromField( ...
         getFieldByNameOrError(designVariableTree, ...
         'external_torque_control_multiple'));
