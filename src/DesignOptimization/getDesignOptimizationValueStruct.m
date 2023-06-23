@@ -1,7 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function parses and scales the design variables specific to
+% Design Optimization. If the model is synergy driven, synergy weights are
+% properly calculated if they are fixed or being optimized. If the model
+% has user defined parameters, they are parsed and scaled. Lastly, if
+% the model has external torque actuators, they are parsed and
+% scaled.
 %
+% (struct, struct) -> (struct)
+% Design variables specific to Design Optimization are parsed and scaled
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

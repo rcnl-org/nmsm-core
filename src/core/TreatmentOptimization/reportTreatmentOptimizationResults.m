@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function plots the results from all three treatment optimization
-% tools (tracking, verification, and design optimization
+% tools (tracking, verification, and design optimization).
 %
 % (struct, struct) -> (None)
 % Plots results from treatment optimization
