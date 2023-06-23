@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-%
+% This function uses a mex file or a matlab function with parallel workers
+% to calculate inverse dynamics moments.
+% 
+% (Array of number, 2D matrix, 2D matrix, 2D matrix, Cell, 2D matrix, 
+% Array of string) -> (2D matrix)
+% Returns inverse dynamic moments
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

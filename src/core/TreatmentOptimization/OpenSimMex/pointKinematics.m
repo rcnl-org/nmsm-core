@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function uses a mex file or a matlab function with parallel workers
+% to calculate the position and velocity of a point.
 %
+% (Array of number, 2D matrix, 2D matrix, 2D matrix (or Array of number), 
+% Array of number (or number), Array of string, Cell) -> (2D matrix, 2D matrix)
+% Returns point positions and point velocities
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,7 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function [pointPositions, pointVelocities] = pointKinematics(time, ...
-    jointAngles,jointVelocities, pointLocationOnBody, body, modelName, ...
+    jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
     coordinateLabels)
 if isequal(mexext, 'mexw64')
     [pointPositions, pointVelocities] = pointKinematicsMexWindows(time, ...

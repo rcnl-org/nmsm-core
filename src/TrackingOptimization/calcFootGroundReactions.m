@@ -1,7 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function loads the appropriate spring position and velocity
+% directions to calculate the corresponding ground reaction forces and
+% moments. The ground reaction forces and moments are calculated for both
+% the parent (ex. calcaneus) and child body (ex. toes).
+%
+% (struct, struct, struct, struct) -> (struct)
+% Returns ground reaction forces and moments at the parent and child body 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
