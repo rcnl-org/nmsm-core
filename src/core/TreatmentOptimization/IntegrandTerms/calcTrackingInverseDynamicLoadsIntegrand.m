@@ -42,7 +42,7 @@ end
 momentLabelsNoSuffix = erase(params.inverseDynamicMomentLabels, '_moment');
 momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
 includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(params.coordinateNames));
-if ~isequal(mexext, 'mexw64')
+if size(inverseDynamicMoments, 2) ~= size(experimentalJointMoments, 2)
     experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
 end
 cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
