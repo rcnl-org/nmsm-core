@@ -4,7 +4,7 @@
 % problem and is used by Tracking Optimization, Verification Optimization,
 % and Design Optimization
 %
-% () => ()
+% (struct) -> (struct)
 % return a set of setup values common to all optimal control problems
 
 % ----------------------------------------------------------------------- %
@@ -74,4 +74,3 @@ end
 guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
     inputs.minIntegral);
 end
-

@@ -4,7 +4,8 @@
 % problem and is used by Tracking Optimization, Verification Optimization,
 % and Design Optimization
 %
-% () => ()
+% (struct, struct, struct, struct, function handle, function handle) 
+% -> (struct)
 % return a set of solver values common to all optimal control problems
 
 % ----------------------------------------------------------------------- %
