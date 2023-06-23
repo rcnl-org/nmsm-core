@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function gathers the maximum and minimum bounds for all path
+% constraint terms. 
+%
+% (struct) -> (struct)
+% Computes max and min path bounds
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

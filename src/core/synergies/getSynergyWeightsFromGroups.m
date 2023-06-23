@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function reformats synergy weights from a number array to a 2D
+% matrix.
+%
+% (Array of number, struct) -> (2D matrix)
+% Returns synergy weights as a 2D matrix
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,7 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function synergyWeightsReformatted = getSynergyWeightsFromGroups(synergyWeights, params)
+function synergyWeightsReformatted = getSynergyWeightsFromGroups(...
+    synergyWeights, params)
 synergyWeightsReformatted = zeros(params.numSynergies, params.numMuscles);
 valuesIndex = 1;
 row = 1;

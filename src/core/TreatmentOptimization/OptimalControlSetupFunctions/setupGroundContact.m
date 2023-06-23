@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function first calculates the midfoot superior location and then 
+% transfers the ground reaction moments from the electrical center to the 
+% midfoot superior location.
+%
+% (struct) -> (struct)
+% Transfers the ground reaction moments to the midfoot superior location
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
