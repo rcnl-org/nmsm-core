@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function takes a properly formatted XML file and runs the
-% TrackingOptimization module and saves the results correctly for
+% Design Optimization module and saves the results correctly for
 % use in the OpenSim GUI.
 %
 % (string) -> (None)
-% Run TrackingOptimization from settings file
+% Run DesignOptimization from settings file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

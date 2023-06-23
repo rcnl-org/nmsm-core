@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function saves and prints the unscaled results from 
+% Design Optimization. An osim model may also be printed if model specific
+% values were optimized
+%
+% (struct, struct) -> (None)
+% Prints design optimization results
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
