@@ -1,7 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-%
+% This function uses OpenSim's Simbody engine to calculate the location 
+% and velocities of the indicated point(s). Parallel workers are used to 
+% speed up computational time.
+% 
+% (Array of number, 2D matrix, 2D matrix, 2D matrix (or Array of number), 
+% Array of number (or number), Array of string, cell) -> (2D matrix, 2D matrix)
+% Returns point positions and point velocities
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

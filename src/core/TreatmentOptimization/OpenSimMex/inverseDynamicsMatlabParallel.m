@@ -1,7 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-%
+% This function uses OpenSim's inverse dynamics solver to calculate inverse
+% dynamics moments. Parallel workers are used to speed up computational
+% time.
+% 
+% (Array of number, 2D matrix, 2D matrix, 2D matrix, Cell, 2D matrix, 
+% Array of string) -> (2D matrix)
+% Returns inverse dynamic moments
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
