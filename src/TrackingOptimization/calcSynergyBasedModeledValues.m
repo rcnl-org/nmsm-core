@@ -1,7 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates muscle tendon lengths and velocities along with
+% moment arms from a surrogate model. These quantities are used to
+% calculate normalized fiber lengths and velocities. Muscle activations are
+% calculated from muscles synergies and all of these quantities are used to
+% calculate the muscle produced joint moments.
 %
+% (struct, struct, struct) -> (struct)
+% Returns normalized fiber lengths and velocities, muscle activations, and
+% muscle joint moments
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,7 +32,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modeledValues = calcSynergyBasedModeledValues(values, params, modeledValues)
+function modeledValues = calcSynergyBasedModeledValues(values, params, ...
+    modeledValues)
 if strcmp(params.controllerType, 'synergy_driven')
     [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, params);
     [params.muscleTendonLength, params.momentArms, ...
@@ -38,16 +46,16 @@ if strcmp(params.controllerType, 'synergy_driven')
     muscleJointMoments = calcMuscleJointMoments(params, ...
         modeledValues.muscleActivations, modeledValues.normalizedFiberLength, ...
         modeledValues.normalizedFiberVelocity);
-    modeledValues.muscleJointMoments = muscleJointMoments(:, params.surrogateModelIndex);
-    modeledValues.muscleJointMoments = modeledValues.muscleJointMoments(:, params.dofsActuatedIndex);
+    modeledValues.muscleJointMoments = muscleJointMoments(:, ...
+        params.surrogateModelIndex);
+    modeledValues.muscleJointMoments = modeledValues.muscleJointMoments(:, ...
+        params.dofsActuatedIndex);
 end
 end
-
 function muscleActivations = calcMuscleActivationFromSynergies(values)
 muscleActivations = values.controlSynergyActivations * values.synergyWeights;
 end
 function [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, params)
-
 for i = 1:params.numMuscles
     counter = 1;
     for j = 1:length(params.coordinateNames)

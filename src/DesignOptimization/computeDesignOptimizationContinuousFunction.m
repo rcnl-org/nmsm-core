@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function computes the dynamic constraints, path constraints (if any)
+% and cost function terms (if any) for design optimization.
+% 
+% (struct) -> (struct)
 %
 
 % ----------------------------------------------------------------------- %
