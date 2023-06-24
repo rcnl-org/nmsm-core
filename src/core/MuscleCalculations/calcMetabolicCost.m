@@ -1,6 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the total metabolic cost based of the ProbeSet
+% indicated in the osim model. The muscles, metabolic cost model, and
+% metabolic cost elements used are solely dependent on the settings
+% specified in the ProbeSet. 
+%
+% (Array of number, 2D matrix, 2D matrix, struct) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %

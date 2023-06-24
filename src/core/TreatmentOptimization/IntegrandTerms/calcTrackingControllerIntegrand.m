@@ -1,6 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% If the model is synergy driven, this function tracks the difference
+% between original and current synergy activation controls. If the model is
+% torque driven, this function tracks the difference between inverse
+% dynamics moments and current torque controls. 
+%
+% (struct, struct, Array of number, Array of string) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -33,20 +38,27 @@ switch auxdata.controllerType
         indx = find(strcmp(convertCharsToStrings( ...
             auxdata.synergyLabels), controllerName));
         if auxdata.splineJointMoments.dim > 1
-            synergyActivations = fnval(auxdata.splineSynergyActivations, time)';
+            synergyActivations = ...
+                fnval(auxdata.splineSynergyActivations, time)';
         else
-            synergyActivations = fnval(auxdata.splineSynergyActivations, time);
+            synergyActivations = ...
+                fnval(auxdata.splineSynergyActivations, time);
         end
-        cost = calcTrackingCostArrayTerm(synergyActivations, values.controlSynergyActivations, indx);
+        cost = calcTrackingCostArrayTerm(synergyActivations, ...
+            values.controlSynergyActivations, indx);
     case 'torque_driven'
         indx1 = find(strcmp(convertCharsToStrings( ...
             auxdata.inverseDynamicMomentLabels), controllerName));
         indx2 = find(strcmp(convertCharsToStrings( ...
-            strcat(auxdata.controlTorqueNames, '_moment')), controllerName));
+            strcat(auxdata.controlTorqueNames, '_moment')), ...
+            controllerName));
         if auxdata.splineJointMoments.dim > 1
-            experimentalJointMoments = fnval(auxdata.splineJointMoments, time)';
+            experimentalJointMoments = ...
+                fnval(auxdata.splineJointMoments, time)';
         else
-            experimentalJointMoments = fnval(auxdata.splineJointMoments, time);
+            experimentalJointMoments = ...
+                fnval(auxdata.splineJointMoments, time);
         end
-        cost = experimentalJointMoments(:, indx1) - values.controlTorques(:, indx2);
+        cost = experimentalJointMoments(:, indx1) - ...
+            values.controlTorques(:, indx2);
 end
