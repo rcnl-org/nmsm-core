@@ -32,10 +32,12 @@ for i = 1:length(params.contactSurfaces)
     if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
         if i == 1
             singleSupportTime = calcSingleSupportTime( ...
-                modeledValues.groundReactionsLab.forces{i + 1}(:, 2), values.time);
+                modeledValues.groundReactionsLab.forces{i + 1}(:, 2), ...
+                values.time);
         else
             singleSupportTime = calcSingleSupportTime( ...
-                modeledValues.groundReactionsLab.forces{i - 1}(:, 2), values.time);
+                modeledValues.groundReactionsLab.forces{i - 1}(:, 2), ...
+                values.time);
         end
     end
 end

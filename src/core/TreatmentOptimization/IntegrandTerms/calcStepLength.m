@@ -25,25 +25,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function stepLength = calcStepLength(normalForce, heelPosition, ...
-    pelvisPosition)
+function stepLength = calcStepLength(normalForce, heelPosition)
 
-normalForce = normalForce - 30;
+normalForce = normalForce - 30; % Noise buffer
 normalForce(normalForce<0) = 0;
 slope = diff(normalForce);
 heelStrikeEvent = getHeelStrikeEvent(slope);
 if isempty(heelStrikeEvent)
     if normalForce(1) == 0
         heelStrikeEvent  = 1;
-        stepLength = ...
-            (heelPosition(heelStrikeEvent, 1) - pelvisPosition(heelStrikeEvent, :)) + ...
-            (pelvisPosition(heelStrikeEvent, :) - heelPosition(heelStrikeEvent, 2));
+        stepLength = heelPosition(heelStrikeEvent, 1) - ...
+            heelPosition(heelStrikeEvent, 2);
     else
         stepLength = 0;
     end
 else
-    stepLength = ...
-        (heelPosition(heelStrikeEvent, 1) - pelvisPosition(heelStrikeEvent, :)) + ...
-        (pelvisPosition(heelStrikeEvent, :) - heelPosition(heelStrikeEvent, 2));
+    stepLength = heelPosition(heelStrikeEvent, 1) - ...
+        heelPosition(heelStrikeEvent, 2);
 end
 end

@@ -29,20 +29,13 @@
 % ----------------------------------------------------------------------- %
 
 function reportingGaitSpecificMeasurements(values, modeledValues, params)
-for i = 1:length(params.costTerms)
-    if isfield(params.costTerms{i}, 'reference_body')
-        referenceBody = params.costTerms{i}.reference_body;
-    end
-end
-if ~exist('referenceBody', 'var')
-    referenceBody = input('Name of refence body (ex. pelvis): ', 's');
-end
+
 stepLengthAsymmetry = calcStepLengthAsymmetry(values, ...
-    modeledValues, params, referenceBody);
+    modeledValues, params);
 stepTimeAsymmetry = calcStepTimeAsymmetry(values, ...
     modeledValues, params);
 strideLength = calcStrideLength(values, modeledValues,...
-    params, referenceBody);
+    params);
 finalTime = values.time(end);
 
 table(stepLengthAsymmetry, stepTimeAsymmetry, strideLength, finalTime, ...
