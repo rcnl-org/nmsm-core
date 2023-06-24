@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the difference between the walking speed and the
+% error center specified by the user. On average, normal walking speed is 
+% around 1.2 to 1.4 meters per second. 
+%
+% (struct, struct, struct, struct) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %
@@ -25,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGoalWalkingSpeedIntegrand(values, modeledValues,...
+function cost = calcGoalWalkingSpeedIntegrand(modeledValues,...
     params, costTerm)
 
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 1.3);

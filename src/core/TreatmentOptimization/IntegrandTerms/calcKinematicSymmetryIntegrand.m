@@ -1,6 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates kinematic symmetry, or the difference between 
+% two joint angles. Kinematic symmetry is calculated as the difference 
+% between one joint angle and the second joint angle with a 50% phase
+% shift. To use this term, an even number is encouraged for the
+% <setup_mesh_phase_intervals> tag in the optimal control settings.
+% Additionally, two coordinate names are required to calculate the
+% difference. 
+%
+% (2D matrix, struct, struct) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %

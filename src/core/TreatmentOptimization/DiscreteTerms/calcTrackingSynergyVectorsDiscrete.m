@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the difference between the original and current
+% synergy weights. 
+%
+% (2D matix, struct, struct) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %

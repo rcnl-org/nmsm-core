@@ -1,6 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates stride length.
+%
+% (struct, struct) -> (number)
 %
 
 % ----------------------------------------------------------------------- %
@@ -25,8 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function strideLength = calcStrideLength(values, modeledValues,...
-    params)
+function strideLength = calcStrideLength(modeledValues, params)
 
 for i = 1:length(params.contactSurfaces)
     if i == 1
