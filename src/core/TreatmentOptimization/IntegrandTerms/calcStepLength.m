@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the step length for the specified foot for one
+% gait cycle. 
+%
+% (struct, struct, struct, struct) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %

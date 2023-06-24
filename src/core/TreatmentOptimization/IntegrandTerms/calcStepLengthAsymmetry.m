@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates step length asymmetry. Step length asymmetry is
+% calculated as the ratio between step lengths, therefore a step length
+% asymmetry of 1 represent symmetry. 
+%
+% (struct, struct, struct, Array of string) -> (Number)
 %
 
 % ----------------------------------------------------------------------- %
@@ -25,8 +29,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function stepLengthAsymmetry = calcStepLengthAsymmetry(values, ...
-    modeledValues, params)
+function stepLengthAsymmetry = calcStepLengthAsymmetry(modeledValues, ...
+    params)
 
 for i = 1:length(params.contactSurfaces)
     if i == 1

@@ -1,6 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function identifies the heel strike event by detecting changes in
+% slope of the normal force. To avoid erroneous detection of a heel strike
+% event, the slope of the normal force must be positive for at least 10% of
+% the time. Detects only one heel strike (use for only one gait cycle). 
+%
+% (Array of number) -> (Number)
 %
 
 % ----------------------------------------------------------------------- %

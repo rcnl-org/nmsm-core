@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function tracks the difference between the predicted step length 
+% asymmetry and the error center specified. An error center of "1" would
+% encourage step legth symmetry. 
+%
+% (struct, struct, struct, struct) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %
@@ -29,7 +33,7 @@ function cost = calcStepLengthAsymmetryIntegrand(values, modeledValues,...
     params, costTerm)
 
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 1);
-stepLengthAsymmetry = calcStepLengthAsymmetry(values, modeledValues,...
+stepLengthAsymmetry = calcStepLengthAsymmetry(modeledValues,...
     params, costTerm.reference_body);
 cost = calcTrackingCostArrayTerm(stepLengthAsymmetry * ...
     ones(length(values.time), 1), errorCenter * ...
