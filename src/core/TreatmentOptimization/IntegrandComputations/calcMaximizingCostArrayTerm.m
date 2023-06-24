@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost for tracking values 
+% This function calculates the cost for maximizing values 
 %
-% (Array of number, Array of number, number, number) -> (struct)
-% returns tracking cost
+% (Array of number) -> (Array of number)
+% returns maximizing cost
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
