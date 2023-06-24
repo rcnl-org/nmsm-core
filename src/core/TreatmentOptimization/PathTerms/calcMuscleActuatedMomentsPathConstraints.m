@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
-%
-% () -> ()
 % 
+% This function calculates the difference between the inverse dynamic
+% moments and the muscle produced moments for the specified coordinate. 
+% Applicable only if the model is synergy driven.
+% 
+% (struct, struct, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,12 +30,12 @@
 % ----------------------------------------------------------------------- %
 
 function pathTerm = calcMuscleActuatedMomentsPathConstraints(params, ...
-    phaseout, loadName)
+    modeledValues, loadName)
 
 indx1 = find(strcmp(convertCharsToStrings(params.inverseDynamicMomentLabels), ...
     loadName));
 indx2 = find(strcmp(strcat(params.surrogateModelCoordinateNames, ...
     '_moment'), loadName));
-pathTerm = phaseout.inverseDynamicMoments(:, indx1) - ...
-    phaseout.muscleJointMoments(:, indx2);
+pathTerm = modeledValues.inverseDynamicMoments(:, indx1) - ...
+    modeledValues.muscleJointMoments(:, indx2);
 end

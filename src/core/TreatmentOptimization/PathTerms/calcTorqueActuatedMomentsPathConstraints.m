@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the difference between the inverse dynamic
+% moments and the torque based control for the specified coordinate.
+% Applicable only if the model is torque driven.
+%
+% (struct, struct, 2D matrix, Array of string) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -26,12 +30,13 @@
 % ----------------------------------------------------------------------- %
 
 function pathTerm = calcTorqueActuatedMomentsPathConstraints(params, ...
-    phaseout, controlTorques, loadName)
+    modeledValues, controlTorques, loadName)
 
 loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
 indx1 = find(cellfun(@isequal, params.coordinateNames, ...
     repmat({loadName}, 1, length(params.coordinateNames))));
 indx2 = find(strcmp(params.controlTorqueNames, loadName));
-pathTerm = phaseout.inverseDynamicMoments(:, indx1) - controlTorques(:, indx2);
+pathTerm = modeledValues.inverseDynamicMoments(:, indx1) - ...
+    controlTorques(:, indx2);
 end

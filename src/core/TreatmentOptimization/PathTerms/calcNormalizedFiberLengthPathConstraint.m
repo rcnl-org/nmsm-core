@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function bounds the normalized muscle fiber length to the user 
+% defined values for the specified muscle. Applicable only if the model is 
+% synergy driven.
+%
+% (struct, struct, Array of string) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -26,9 +30,9 @@
 % ----------------------------------------------------------------------- %
 
 function pathTerm = calcNormalizedFiberLengthPathConstraint(params, ...
-    phaseout, muscleName)
+    modeledValues, muscleName)
 
 indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
     muscleName));
-pathTerm = phaseout.normalizedFiberLength(:, indx);
+pathTerm = modeledValues.normalizedFiberLength(:, indx);
 end

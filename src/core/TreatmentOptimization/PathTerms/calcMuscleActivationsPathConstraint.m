@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function bounds the muscle activations to the user defined values
+% for the specified muscle. Applicable only if the model is synergy driven.
+%
+% (struct, struct, 2D matrix, Array of string) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -26,9 +29,9 @@
 % ----------------------------------------------------------------------- %
 
 function pathTerm = calcMuscleActivationsPathConstraint(params, ...
-    phaseout, muscleName)
+    modeledValues, muscleName)
 
 indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
     muscleName));
-pathTerm = phaseout.muscleActivations(:, indx);
+pathTerm = modeledValues.muscleActivations(:, indx);
 end
