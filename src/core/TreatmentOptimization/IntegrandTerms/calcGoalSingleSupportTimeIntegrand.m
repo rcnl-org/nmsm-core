@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function tracks the difference between the predicted single spport
+% phase and the error center for the specified foot. On average, single 
+% support phase is around 0.37 to 0.39 of the gait cycle. 
 %
+% (struct, struct, struct, struct) -> (Array of number)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

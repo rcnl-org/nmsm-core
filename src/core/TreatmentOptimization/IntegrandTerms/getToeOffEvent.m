@@ -1,6 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function identifies the toe off event by detecting changes in
+% slope of the normal force. To avoid erroneous detection of a toe off
+% event, the slope of the normal force must be negative for at least 10% of
+% the time. Detects only one toe off event (use for only one gait cycle). 
+%
+% (Array of number) -> (Number)
 %
 
 % ----------------------------------------------------------------------- %

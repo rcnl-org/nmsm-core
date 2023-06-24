@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function tracks the difference between the predicted step time
+% asymmetry and the error center specified. An error center of "1" would
+% encourage step time symmetry. 
+%
+% (struct, struct, struct, struct) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %

@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates step time asymmetry. Step time asymmetry is
+% calculated as the ratio between single support times, therefore a step 
+% time asymmetry of 1 represent symmetry. 
+%
+% (struct, struct, struct) -> (Number)
 %
 
 % ----------------------------------------------------------------------- %

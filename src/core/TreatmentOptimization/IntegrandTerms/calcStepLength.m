@@ -3,7 +3,7 @@
 % This function calculates the step length for the specified foot for one
 % gait cycle. 
 %
-% (struct, struct, struct, struct) -> (Array of number)
+% (Array of number, Array of number) -> (Number)
 %
 
 % ----------------------------------------------------------------------- %

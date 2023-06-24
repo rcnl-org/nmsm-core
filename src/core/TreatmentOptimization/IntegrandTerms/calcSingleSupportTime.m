@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the single support time for the specified foot 
+% for one gait cycle. 
+%
+% (Array of number, Array of number) -> (Number)
 %
 
 % ----------------------------------------------------------------------- %
@@ -27,7 +30,7 @@
 
 function singleSupportTime = calcSingleSupportTime(normalForce, time)
 
-normalForce = normalForce - 30;
+normalForce = normalForce - 30; % Noise buffer
 normalForce(normalForce<0) = 0;
 slope = diff(normalForce);
 

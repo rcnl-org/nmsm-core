@@ -4,7 +4,7 @@
 % calculated as the ratio between step lengths, therefore a step length
 % asymmetry of 1 represent symmetry. 
 %
-% (struct, struct, struct, Array of string) -> (Number)
+% (struct, struct) -> (Number)
 %
 
 % ----------------------------------------------------------------------- %
