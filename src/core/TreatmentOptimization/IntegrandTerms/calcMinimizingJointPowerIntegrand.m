@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates and minimizes the joint power for the specified
+% coordinate. 
 %
+% (2D matrix, 2D matrix, struct, Array of string) -> (Array of number)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
