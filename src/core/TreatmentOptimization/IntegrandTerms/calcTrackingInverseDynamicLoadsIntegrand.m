@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function calculates the difference between the experimental and
+% predicted inverse dynamic moments for the specified coordinate. 
+%
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -41,9 +44,11 @@ end
 
 momentLabelsNoSuffix = erase(params.inverseDynamicMomentLabels, '_moment');
 momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(params.coordinateNames));
+includedJointMomentCols = ismember(momentLabelsNoSuffix, ...
+    convertCharsToStrings(params.coordinateNames));
 if ~isequal(mexext, 'mexw64')
-    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
+    experimentalJointMoments = experimentalJointMoments(:,0 ...
+        includedJointMomentCols);
 end
 cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
     inverseDynamicMoments, indx);

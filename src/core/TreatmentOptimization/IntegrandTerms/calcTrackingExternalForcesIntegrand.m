@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the difference between the experimental and
+% predicted ground reaction forces for the specified force. 
+%
+% (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -29,15 +32,17 @@ function cost = calcTrackingExternalForcesIntegrand(params, ...
     groundReactionsForces, time, forceName)
 
 for i = 1:length(params.contactSurfaces)
-    indx = find(strcmp(convertCharsToStrings(params.contactSurfaces{i}.forceColumns), ...
-        forceName));
+    indx = find(strcmp(convertCharsToStrings(params.contactSurfaces{i}. ...
+        forceColumns), forceName));
     if ~isempty(indx)
         if params.splineExperimentalGroundReactionForces{i}.dim > 1
             experimentalGroundReactions = ...
-                fnval(params.splineExperimentalGroundReactionForces{i}, time)';
+                fnval(params.splineExperimentalGroundReactionForces{i}, ...
+                time)';
         else
             experimentalGroundReactions = ...
-                fnval(params.splineExperimentalGroundReactionForces{i}, time);
+                fnval(params.splineExperimentalGroundReactionForces{i}, ...
+                time);
         end
         cost = calcTrackingCostArrayTerm(...
             experimentalGroundReactions, groundReactionsForces{i}, ...
