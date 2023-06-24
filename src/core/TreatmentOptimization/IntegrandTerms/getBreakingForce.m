@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function zeros out the positive portions of the anterior-posterior 
+% force to obtain the breaking force. 
+%
+% (struct, struct, struct) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %
@@ -27,7 +30,7 @@
 
 function breakingForce = getBreakingForce(anteroPosteriorForce)
 
-anteroPosteriorForce = anteroPosteriorForce + 10;
+anteroPosteriorForce = anteroPosteriorForce + 10; % Noise buffer
 anteroPosteriorForce(anteroPosteriorForce>=0) = 0;
 breakingForce = anteroPosteriorForce;
 end

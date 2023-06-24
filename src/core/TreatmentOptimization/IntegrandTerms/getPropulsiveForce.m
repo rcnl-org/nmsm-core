@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function zeros out the negative portions of the anterior-posterior 
+% force to obtain the propulive force. 
+%
+% (struct, struct, struct) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %
@@ -27,7 +30,7 @@
 
 function propulsiveForce = getPropulsiveForce(anteroPosteriorForce)
 
-anteroPosteriorForce = anteroPosteriorForce - 10;
+anteroPosteriorForce = anteroPosteriorForce - 10; % Noise buffer
 anteroPosteriorForce(anteroPosteriorForce<=0) = 0;
 propulsiveForce = anteroPosteriorForce;
 end
