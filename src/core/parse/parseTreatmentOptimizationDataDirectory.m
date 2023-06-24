@@ -49,11 +49,12 @@ prefix = findPrefixes(tree, dataDirectory);
 %     end
 % else
     directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IDData");
+    model = Model(inputs.model);
     [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
-        parseTreatmentOptimizationData(directory, prefix);
+        parseTreatmentOptimizationData(directory, prefix, model);
     directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IKData");
     [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
-        parseTreatmentOptimizationData(directory, prefix);
+        parseTreatmentOptimizationData(directory, prefix, model);
     experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
         fullfile(dataDirectory, "IKData"), prefix))';
     inputs.experimentalTime = experimentalTime - experimentalTime(1);
@@ -64,7 +65,7 @@ prefix = findPrefixes(tree, dataDirectory);
     if strcmp(inputs.controllerType, 'synergy_driven')
         directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
         [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
-            parseTreatmentOptimizationData(directory, prefix);
+            parseTreatmentOptimizationData(directory, prefix, model);
     end
 % end
 

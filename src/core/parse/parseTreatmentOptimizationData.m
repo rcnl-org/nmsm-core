@@ -26,8 +26,8 @@
 % ----------------------------------------------------------------------- %
 
 function [data, dataLabels] = parseTreatmentOptimizationData(directory, ...
-    prefix)
-[data, dataLabels] = parseFileFromDirectories(directory, prefix);
+    prefix, model)
+[data, dataLabels] = parseFileFromDirectories(directory, prefix, model);
 newData = zeros(size(data, 2), size(data, 3));
 newData(:, :) = data(1, :, :);
 data = newData';

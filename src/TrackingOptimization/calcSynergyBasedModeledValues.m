@@ -55,6 +55,7 @@ end
 function muscleActivations = calcMuscleActivationFromSynergies(values)
 muscleActivations = values.controlSynergyActivations * values.synergyWeights;
 end
+
 function [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, params)
 for i = 1:params.numMuscles
     counter = 1;
