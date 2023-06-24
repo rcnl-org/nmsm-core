@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the final position for the specified
+% point on the specified body. The difference between the final point 
+% position and target positon is calculated.
+%
+% (struct, struct, struct) -> (Number)
 % 
 
 % ----------------------------------------------------------------------- %
