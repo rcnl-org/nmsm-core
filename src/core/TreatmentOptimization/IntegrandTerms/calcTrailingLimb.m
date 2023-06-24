@@ -1,6 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the trailing limb angle. The trailing limb angle
+% is the angle between OpenSim's vertical axis and a vector created between
+% the greater trochanter and the fifth metatarsal head. The location of the
+% greater trochanter and the fifth metatarsal is required. The name of the
+% bodies that each location is in reference to must also be assigned.  
+%
+% (struct, struct, 2D matrix, struct) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %

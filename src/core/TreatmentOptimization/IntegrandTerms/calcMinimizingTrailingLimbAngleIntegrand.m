@@ -1,6 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function minimizes the trailing limb for the specified foot. 
+%
+% (struct, struct, struct, struct) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %
