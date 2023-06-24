@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function minimizes the center of mass velocity in the y direction.
 %
+% (struct, struct) -> (Array of number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

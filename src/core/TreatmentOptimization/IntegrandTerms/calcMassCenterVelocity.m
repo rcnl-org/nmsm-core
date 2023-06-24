@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the center of mass velocity.
 %
+% (struct, Array of string, Cell) -> (2D matrix)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,7 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function massCenterVelocity = calcMassCenterVelocity(values, model, coordinateNames)
+function massCenterVelocity = calcMassCenterVelocity(values, model, ...
+    coordinateNames)
 
 import org.opensim.modeling.*
 osimModel = Model(model);

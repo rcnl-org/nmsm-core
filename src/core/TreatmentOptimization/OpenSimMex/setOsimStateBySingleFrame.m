@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function assigns the state positions and velocities to the OpenSim
+% model, for a single time frame.
 %
+% (struct, Model, State, Cell, number) -> (Model, State)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
