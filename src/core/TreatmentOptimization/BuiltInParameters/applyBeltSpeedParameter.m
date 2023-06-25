@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function adjusts the given model joint parent frame translation
-% coordinate to the given value argument.
+% This function adjusts the belt speed for the specified foot. 
 %
-% (Model, string, integer, number) -> ()
-% Mutates model joint parent frame translation coordinate to new value
+% (struct, struct) -> (struct)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

@@ -1,8 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function adjusts the max isometric force for the given muscle.
+% This function adjusts the optimal fiber length for the given muscle on 
+% the OpenSim model.
 %
-% () -> ()
+% (Model, Array of string, Number) -> ()
 % 
 
 % ----------------------------------------------------------------------- %
