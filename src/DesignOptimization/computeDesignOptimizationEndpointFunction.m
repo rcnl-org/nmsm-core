@@ -1,7 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function computes the terminal constraint (if any), discrete 
-% objective (if any), and total cost function objective.
+% objective (if any), and total cost function objective for design
+% optimization.
 % 
 % (struct) -> (struct)
 %

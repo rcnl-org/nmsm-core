@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function parses and scales the design variables specific to
+% Tracking Optimization. If the model is synergy driven, synergy weights 
+% are properly calculated if they are fixed or being optimized.
 %
+% (struct, struct) -> (struct)
+% Design variables specific to Tracking Optimization are parsed and scaled
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

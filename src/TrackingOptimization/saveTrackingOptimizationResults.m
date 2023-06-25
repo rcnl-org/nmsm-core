@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function saves and prints the unscaled results from Tracking
+% Optimization.
 %
+% (struct, struct) -> (None)
+% Prints tracking optimization results
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

@@ -1,8 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function saves and prints the unscaled results from Verification
-% Optimization. An osim model may also be printed if model specific
-% values were optimized
+% Optimization.
 %
 % (struct, struct) -> (None)
 % Prints verification optimization results
