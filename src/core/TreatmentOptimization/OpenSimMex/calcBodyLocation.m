@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the location of the specified point on the
+% specified body with respect to the ground. 
+%
+% (struct, Array of number, Array of string, struct) -> (Array of string)
 %
 
 % ----------------------------------------------------------------------- %
