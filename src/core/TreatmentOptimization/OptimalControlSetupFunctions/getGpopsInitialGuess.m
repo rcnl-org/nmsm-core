@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function parses and loads the initial guesses for states (if
+% specified), controls (if specified), and parameters (if specified)
+%
+% (struct) -> (struct)
 % 
 
 % ----------------------------------------------------------------------- %

@@ -1,8 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function pulls a file from the directory given as the input. 
-% This file is then organized into a 2D matrix with dimensions matching:
-% (numFrames, numMuscles)
+% This function reads the input file and stores the data into 
+% (numFrames x  numColumns).
 %
 % (Array of string) -> (2D matrix of number)
 % returns a 2D matrix of the loaded data trial

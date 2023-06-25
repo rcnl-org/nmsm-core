@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function pulls the files from the directory given as the input. 
+% These files are then organized into a 2D matrix with dimensions matching:
+% (numFrames, numMuscles) and/or (numFrames, numCoordinates)
+%
+% (Array of string, Array of string, Model) -> (2D matrix, Cell)
+% Returns a 2D matrix
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

@@ -1,7 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function takes a parsed settings tree (xml2struct) and finds the
+% inverse dynamics, inverse kinematics, ground reactions (if applicable),
+% muscle activation (if applicable) and muscle analysis (if applicable) 
+% data directories. 
 %
+% (struct, struct) -> (struct)
+% Returns input structure with experimental data
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
