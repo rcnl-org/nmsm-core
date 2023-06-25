@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the path constraint for design optimization
+% This function calculates the path constraint for design optimization.
 %
 % (struct, struct, struct) -> (2D matrix)
 % Returns path constraint

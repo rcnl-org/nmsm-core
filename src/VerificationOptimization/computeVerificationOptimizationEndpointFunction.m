@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function computes the terminal constraint (if any), and total cost 
+% function objective.
+% 
+% (struct) -> (struct)
 %
 
 % ----------------------------------------------------------------------- %

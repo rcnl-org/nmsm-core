@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the dynamic constraint
+% This function calculates the dynamic constraint for design optimization.
 %
 % (struct, struct) -> (2D matrix)
 % Returns the dynamic constraint
