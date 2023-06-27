@@ -38,10 +38,7 @@ switch auxdata.controllerType
         indx = find(strcmp(convertCharsToStrings( ...
             auxdata.synergyLabels), controllerName));
         synergyActivations = ...
-            fnval(auxdata.splineSynergyActivations, time);
-        if ~all(size(synergyActivations)==size(values.controlSynergyActivations))
-            synergyActivations = synergyActivations';
-        end
+            fnval(auxdata.splineSynergyActivations, time)';
         cost = calcTrackingCostArrayTerm(synergyActivations, ...
             values.controlSynergyActivations, indx);
     case 'torque_driven'
