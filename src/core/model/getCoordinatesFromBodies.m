@@ -31,14 +31,17 @@
 function coordinates = getCoordinatesFromBodies(model, bodies)
 coordinates = {};
 for i = 0 : model.getJointSet().getSize()-1
-    childName = model.findComponent(model.getJointSet().get(i) ...
-        .getChildFrame().getSocket('parent').getConnecteePath()) ...
-        .getName().toCharArray';
-    if(any(strcmp(bodies, childName)))
-        for j=0:model.getJointSet().get(i).numCoordinates()-1
-            coordinates{end+1} = model.getJointSet().get(i) ...
-                .get_coordinates(j);
+    try
+        childName = model.findComponent(model.getJointSet().get(i) ...
+            .getChildFrame().getSocket('parent').getConnecteePath()) ...
+            .getName().toCharArray';
+        if(any(strcmp(bodies, childName)))
+            for j=0:model.getJointSet().get(i).numCoordinates()-1
+                coordinates{end+1} = model.getJointSet().get(i) ...
+                    .get_coordinates(j);
+            end
         end
+    catch
     end
 end
 coordinates = string(coordinates);

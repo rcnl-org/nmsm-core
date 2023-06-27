@@ -32,11 +32,11 @@ function cost = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedTypes, values, modeledValues, auxdata)
 cost = [];
 for i = 1:length(auxdata.costTerms)
-    costTerm = auxdata.costTerms{i};
+    costTerm = auxdata.costTerms{i}
     if costTerm.isEnabled
         if isfield(costTermCalculations, costTerm.type) && ...
                 any(ismember(allowedTypes, costTerm.type))
-            fn = costTermCalculations.(costTerm.type);
+            fn = costTermCalculations.(costTerm.type)
             cost = cat(2, ...
                 cost,  ...
                 fn(values, modeledValues, auxdata, costTerm));

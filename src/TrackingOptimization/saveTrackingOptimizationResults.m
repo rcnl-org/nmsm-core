@@ -29,7 +29,6 @@
 % ----------------------------------------------------------------------- %
 
 function saveTrackingOptimizationResults(solution, inputs)
-
 values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
 saveCommonOptimalControlResults(solution, inputs, values);
 if strcmp(inputs.controllerType, 'synergy_driven')
@@ -38,6 +37,6 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         fullfile(inputs.resultsDirectory, "parameterSolution.sto"));
     writeToSto(inputs.muscleLabels, values.time, ...
         solution.muscleActivations, ...
-        fullfile(outputDirectory, "muscleActivations.sto"));
+        fullfile(inputs.resultsDirectory, "muscleActivations.sto"));
 end
 end

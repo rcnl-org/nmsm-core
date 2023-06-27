@@ -36,7 +36,7 @@ if isfield(inputs, 'userDefinedVariables')
             inputs.userDefinedVariables{i}.lower_bounds)
     end
 end
-values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
+values = getTreatmentOptimizationValueStruct(solution.solution.phase, inputs);
 if strcmp(inputs.controllerType, 'synergy_driven')
 % plot Muscle Activations
 plotMuscleActivations(solution.muscleActivations, values.time, ...

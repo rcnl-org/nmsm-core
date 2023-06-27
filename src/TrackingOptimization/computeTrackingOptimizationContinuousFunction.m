@@ -33,6 +33,9 @@ values = getTrackingOptimizationValueStruct(inputs.phase, inputs.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, modeledValues);
 modeledValues.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
-modeledValues.path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+if ~isempty(path)
+    modeledValues.path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+end
 modeledValues.integrand = calcTrackingOptimizationIntegrand(values, modeledValues, inputs.auxdata);
 end
