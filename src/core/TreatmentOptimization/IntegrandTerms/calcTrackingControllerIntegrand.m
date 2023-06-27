@@ -3,10 +3,10 @@
 % If the model is synergy driven, this function tracks the difference
 % between original and current synergy activation controls. If the model is
 % torque driven, this function tracks the difference between inverse
-% dynamics moments and current torque controls. 
+% dynamics moments and current torque controls.
 %
 % (struct, struct, Array of number, Array of string) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -35,20 +35,13 @@ function cost = calcTrackingControllerIntegrand(auxdata, values, time, ...
 
 switch auxdata.controllerType
     case 'synergy_driven'
-        auxdata.synergyLabels
         indx = find(strcmp(convertCharsToStrings( ...
             auxdata.synergyLabels), controllerName));
-        auxdata.splineJointMoments
-        if auxdata.splineJointMoments.dim > 1
-            synergyActivations = ...
-                fnval(auxdata.splineSynergyActivations, time)';
-        else
-            synergyActivations = ...
-                fnval(auxdata.splineSynergyActivations, time);
+        synergyActivations = ...
+            fnval(auxdata.splineSynergyActivations, time);
+        if ~all(size(synergyActivations)==size(values.controlSynergyActivations))
+            synergyActivations = synergyActivations';
         end
-        synergyActivations
-        values.controlSynergyActivations
-        indx
         cost = calcTrackingCostArrayTerm(synergyActivations, ...
             values.controlSynergyActivations, indx);
     case 'torque_driven'
