@@ -34,6 +34,14 @@ setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeTrackingOptimizationContinuousFunction, ...
     @computeTrackingOptimizationEndpointFunction);
+checkInitialGuess = input('Run through continuous function and view initial guess? (yes or no): ', 's');
+if strcmp(checkInitialGuess, 'yes')
+    initialGuess = guess;
+    initialGuess.auxdata = inputs;
+    output = computeTrackingOptimizationContinuousFunction(initialGuess);
+    output.solution = initialGuess;
+    reportTreatmentOptimizationResults(output, inputs);
+end
 solution = gpops2(setup);
 solution = solution.result.solution;
 solution.auxdata = inputs;
