@@ -80,6 +80,9 @@ end
 function output = getContactSurfaces(inputs, tree)
 contactSurfaces = getFieldByNameOrError(tree, 'GCPContactSurfaceSet') ...
     .objects.GCPContactSurface;
+if length(contactSurfaces) == 1
+    contactSurfaces = {contactSurfaces};
+end
 counter = 1;
 for i=1:length(contactSurfaces)
     surface = contactSurfaces{i};
