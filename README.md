@@ -33,19 +33,19 @@ JMP optimizes the joint parameters of specific joints to reduce Inverse Kinemati
 
 This modules prepares large chunks of raw data into the specified format for use in MTP and NCP. It is required to be completed after JMP because the model created from JMP is used to calculate model specific data (IK, ID, Muscle Analysis).
 
-### Muscle Tendon Personalization (MTP)
+### Muscle Tendon Model Personalization (MTP)
 
 MTP personalizes the muscle properties of a model from EMG data. MTP includes Synergy Extrapolation, a process to solve for missing EMG data.
 
-### Neural Control Personalization (NCP)
+### Neural Control Model Personalization (NCP)
 
 NCP calculates the muscle activations of muscles for which no EMG data is available through solving for optimal muscle synergies.
 
-### Ground Contact Personalization (GCP)
+### Ground Contact Model Personalization (GCP)
 
 GCP creates a personalized contact array with varying spring constants for calculating more accurate foot-ground contact interactions.
 
-### Surrogate Model
+### Surrogate Model Creation
 
 ### Tracking Optimization (TO)
 
