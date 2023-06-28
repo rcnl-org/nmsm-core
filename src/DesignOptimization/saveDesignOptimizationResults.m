@@ -32,7 +32,7 @@
 function saveDesignOptimizationResults(solution, inputs)
 values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
 saveCommonOptimalControlResults(solution, inputs, values)
-if inputs.systemFns
+if isfield(inputs, "systemFns")
     values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
     inputs.auxdata = inputs;
     inputs = updateSystemFromUserDefinedFunctions(inputs, values);
