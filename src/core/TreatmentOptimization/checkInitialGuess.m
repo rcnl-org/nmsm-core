@@ -1,9 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function sets up GPOPS-II to run Tracking Optimization.
+% This function runs the continuous function to allow users to check that
+% the optimization has been setup correctly. Additionally, the user's
+% initial guesses are plotted to allow the user to visualize their initial 
+% guess. 
 % 
-% (struct) -> (struct, struct)
-% Assigns optimal control settings and runs Tracking Optimization 
+% (struct, struct, function handle) -> ()
+% Checks to that continuous function works and plots initial guess
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,31 +30,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = computeTrackingOptimizationMainFunction(inputs, params)
-bounds = setupProblemBounds(inputs);
-guess = setupCommonOptimalControlInitialGuess(inputs);
-setup = setupCommonOptimalControlSolverSettings(inputs, ...
-    bounds, guess, params, ...
-    @computeTrackingOptimizationContinuousFunction, ...
-    @computeTrackingOptimizationEndpointFunction);
-checkInitialGuess(guess, inputs, ...
-    @computeTrackingOptimizationContinuousFunction);
-solution = gpops2(setup);
-solution = solution.result.solution;
-solution.auxdata = inputs;
-if inputs.optimizeSynergyVectors
-    solution.phase.parameter = solution.parameter;
+function checkInitialGuess(guess, inputs, continuousFunction)
+initialGuess = guess;
+initialGuess.auxdata = inputs;
+if isfield(initialGuess,'parameter')
+    initialGuess.phase.parameter = initialGuess.parameter;
 end
-output = computeTrackingOptimizationContinuousFunction(solution);
-output.solution = solution;
-end
-function bounds = setupProblemBounds(inputs)
-bounds = setupCommonOptimalControlBounds(inputs);
-% setup parameter bounds
-if strcmp(inputs.controllerType, 'synergy_driven')
-    if inputs.optimizeSynergyVectors
-        bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
-        bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
-    end
-end
+output = continuousFunction(initialGuess);
+output.solution = initialGuess;
+reportTreatmentOptimizationResults(output, inputs);
+pause(0.1);
 end
