@@ -52,6 +52,7 @@ if strcmp(params.controllerType, 'synergy_driven')
         params.dofsActuatedIndex);
 end
 end
+
 function muscleActivations = calcMuscleActivationFromSynergies(values)
 muscleActivations = values.controlSynergyActivations * values.synergyWeights;
 end

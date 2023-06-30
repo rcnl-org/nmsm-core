@@ -2,8 +2,8 @@
 %
 % This function takes a parsed settings tree (xml2struct) and finds the
 % inverse dynamics, inverse kinematics, ground reactions (if applicable),
-% muscle activation (if applicable) and muscle analysis (if applicable) 
-% data directories. 
+% muscle activation (if applicable) and muscle analysis (if applicable)
+% data directories.
 %
 % (struct, struct) -> (struct)
 % Returns input structure with experimental data
@@ -32,27 +32,40 @@
 
 function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
 dataDirectory = parseDataDirectory(tree);
+previousResultsDirectoryElement = getFieldByName(tree, 'previous_results_directory');
+if isstruct(previousResultsDirectoryElement)
+    previousResultsDirectory = previousResultsDirectoryElement.Text;
+else
+    previousResultsDirectory = [];
+end
+if strcmp(previousResultsDirectory, "")
+        previousResultsDirectory = [];
+end
 prefix = findPrefixes(tree, dataDirectory);
 
-% directory = findFirstLevelSubDirectoriesFromPrefixes( ...
-%     inputs.resultsDirectory, "optimal");
-% if ~isempty(directory)
-%     [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
-%         parseTreatmentOptimizationData(directory, 'inverseDynamics');
-%     [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
-%         parseTreatmentOptimizationData(directory, 'inverseKinematics');
-%     experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
-%         directory, "inverseKinematics"))';
-%     inputs.experimentalTime = experimentalTime - experimentalTime(1);
-%     if exist(fullfile(dataDirectory, "groundReactions"), 'dir')
-%         inputs.grfFileName = findFileListFromPrefixList(...
-%             directory, "groundReactions");
-%     end
-%     if strcmp(inputs.controllerType, 'synergy_driven')
-%         [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
-%             parseTreatmentOptimizationData(directory, 'muscleActivations');
-%     end
-% else
+if ~isempty(previousResultsDirectory) && ...
+        exist(fullfile(previousResultsDirectory, "optimal"), 'dir')
+    directory = findFirstLevelSubDirectoriesFromPrefixes( ...
+        previousResultsDirectory, "optimal");
+    if ~isempty(directory)
+        model = Model(inputs.model);
+        [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
+            parseTreatmentOptimizationData(directory, 'inverseDynamics', model);
+        [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
+            parseTreatmentOptimizationData(directory, 'inverseKinematics', model);
+        experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
+            directory, "inverseKinematics"))';
+        inputs.experimentalTime = experimentalTime - experimentalTime(1);
+        if exist(fullfile(dataDirectory, "groundReactions"), 'dir')
+            inputs.grfFileName = findFileListFromPrefixList(...
+                directory, "groundReactions");
+        end
+        if strcmp(inputs.controllerType, 'synergy_driven')
+            [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
+                parseTreatmentOptimizationData(directory, 'muscleActivations', model);
+        end
+    end
+else
     directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IDData");
     model = Model(inputs.model);
     [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
@@ -72,7 +85,7 @@ prefix = findPrefixes(tree, dataDirectory);
         [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
             parseTreatmentOptimizationData(directory, prefix, model);
     end
-% end
+end
 
 if strcmp(inputs.controllerType, 'synergy_driven')
     directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...

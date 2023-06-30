@@ -1,12 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the position and velocities of the spring
-% locations and corresponding ground reaction forces and moments if 
+% locations and corresponding ground reaction forces and moments if
 % contact surfaces are present. This function also calculates inverse
 % dynamic moments.
 %
 % (struct, struct) -> (struct)
-% returns body locations, ground reactions, and inverse dynamic moments 
+% returns body locations, ground reactions, and inverse dynamic moments
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -50,6 +50,7 @@ modeledValues.inverseDynamicMoments = inverseDynamics(values.time, ...
     values.stateAccelerations, params.coordinateNames, appliedLoads, ...
     params.mexModel);
 end
+
 function [springPositions, springVelocities] = getSpringLocations(time, ....
     statePositions, stateVelocities, params)
 
@@ -68,6 +69,7 @@ for i = 1:length(params.contactSurfaces)
         params.mexModel, params.coordinateNames);
 end
 end
+
 function bodyLocations = getBodyLocations(time, statePositions, ...
     stateVelocities, params)
 
@@ -86,6 +88,7 @@ for i = 1:length(params.contactSurfaces)
         params.mexModel, params.coordinateNames);
 end
 end
+
 function groundReactionsBody = tranferGroundReactionMoments( ...
     bodyLocations, groundReactions, params)
 
@@ -97,11 +100,12 @@ for i = 1:length(params.contactSurfaces)
     childMoment = transferMoments(bodyLocations.midfootSuperior{i}, ...
         bodyLocations.child{i}, groundReactions.childMoments{i}, ...
         groundReactions.childForces{i});
-    groundReactionsBody = [groundReactionsBody ... 
+    groundReactionsBody = [groundReactionsBody ...
         groundReactions.parentForces{i} groundReactions.childForces{i} ...
         parentMoment childMoment];
 end
 end
+
 function groundReactionsInLab = calcGroundReactionsLab(groundReactions)
 
 for i = 1:length(groundReactions.parentForces)

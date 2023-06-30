@@ -37,6 +37,6 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         fullfile(inputs.resultsDirectory, "parameterSolution.sto"));
     writeToSto(inputs.muscleLabels, values.time, ...
         solution.muscleActivations, ...
-        fullfile(inputs.resultsDirectory, "muscleActivations.sto"));
+        fullfile(inputs.resultsDirectory, "optimal", "muscleActivations.sto"));
 end
 end
