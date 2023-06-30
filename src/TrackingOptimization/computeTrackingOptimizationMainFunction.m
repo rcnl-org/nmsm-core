@@ -34,14 +34,7 @@ setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeTrackingOptimizationContinuousFunction, ...
     @computeTrackingOptimizationEndpointFunction);
-checkInitialGuess = input('Run through continuous function and view initial guess? (yes or no): ', 's');
-if strcmp(checkInitialGuess, 'yes')
-    initialGuess = guess;
-    initialGuess.auxdata = inputs;
-    output = computeTrackingOptimizationContinuousFunction(initialGuess);
-    output.solution = initialGuess;
-    reportTreatmentOptimizationResults(output, inputs);
-end
+checkInitialGuess(guess, inputs);
 solution = gpops2(setup);
 solution = solution.result.solution;
 solution.auxdata = inputs;
@@ -50,6 +43,12 @@ if inputs.optimizeSynergyVectors
 end
 output = computeTrackingOptimizationContinuousFunction(solution);
 output.solution = solution;
+end
+
+function checkInitialGuess(guess, inputs)
+initialGuess = guess;
+initialGuess.auxdata = inputs;
+computeTrackingOptimizationContinuousFunction(initialGuess);
 end
 
 function bounds = setupProblemBounds(inputs)
