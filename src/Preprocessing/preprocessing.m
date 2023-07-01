@@ -14,7 +14,7 @@
 rawEmgFileName = "input_data\Patient3_NormalGait_1pt0_02_Right_01_EMG.mot";
 filterOrder = 4;
 highPassCutoff = 40;
-lowPassCutoff = 10;
+lowPassCutoff = 3.5 / 1.25;
 processedEmgFileName = "Patient3_NormalGait_1pt0_02_Right_01_processedEmg.sto";
 
 processRawEmgFile(rawEmgFileName, filterOrder, highPassCutoff, ...

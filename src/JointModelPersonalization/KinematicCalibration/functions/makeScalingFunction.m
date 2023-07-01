@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns the joint function representing the function
-% parameters for use as a function to be passed in the Joint Model
-% Personalization and Kinematic Calibration modules.
-% 
-% (string, boolean, boolean, integer) -> (function)
-% Returns the appropriate function for given input parameters
+% This function returns a function handle for adjusting the position of a
+% scaling of a body in a model.
+%
+% (string) -> (function)
+% return a function handle for adjusting the scaling of a body
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

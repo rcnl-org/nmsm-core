@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function prints out the optimized muscle tendon parameters from 
+% This function prints out the optimized muscle tendon parameters from
 % Neural Control Personalization in an osimx file
 %
 % (string, 2D matrix, string) -> (None)
@@ -58,14 +58,20 @@ if ~isfield(osimx, 'muscles')
 end
 for i = 1:length(inputs.muscleTendonColumnNames)
     if ~isfield(osimx.muscles, inputs.muscleTendonColumnNames(i))
+        osimx.muscles.(inputs.muscleTendonColumnNames(i)) = struct();
+    end
+    if ~isfield(osimx.muscles.(inputs.muscleTendonColumnNames(i)), "optimalFiberLength")
         osimx.muscles.(inputs.muscleTendonColumnNames(i)) ...
             .optimalFiberLength = inputs.optimalFiberLength(i);
+    end
+    if ~isfield(osimx.muscles.(inputs.muscleTendonColumnNames(i)), "tendonSlackLength")
         osimx.muscles.(inputs.muscleTendonColumnNames(i)) ...
             .tendonSlackLength = inputs.tendonSlackLength(i);
-        if precalInputs.optimizeIsometricMaxForce
-            osimx.muscles.(inputs.muscleTendonColumnNames(i)) ...
-                .maxIsometricForce = inputs.maxIsometricForce(i);
-        end
+    end
+    if precalInputs.optimizeIsometricMaxForce && ...
+            ~isfield(osimx.muscles.(inputs.muscleTendonColumnNames(i)), "maxIsometricForce")
+        osimx.muscles.(inputs.muscleTendonColumnNames(i)) ...
+            .maxIsometricForce = inputs.maxIsometricForce(i);
     end
 end
 

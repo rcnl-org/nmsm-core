@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function parses the settings tree resulting from xml2struct of the
+% Design Optimizatoin settings XML file.
+%
+% (struct) -> (struct, struct)
+% returns the input values for Design Optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,6 +33,7 @@ function [inputs, params] = ...
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
 inputs = modifyModelForces(inputs);
+inputs = updateMuscleModelProperties(inputs);
 end
 
 function inputs = getInputs(tree)
@@ -81,17 +85,38 @@ if(isstruct(maxControlSynergyActivations))
     inputs.maxControlSynergyActivations = ...
         getDoubleFromField(maxControlSynergyActivations);
 end
+if inputs.optimizeSynergyVectors
+    maxParameterSynergyWeights = getFieldByNameOrError(designVariableTree, ...
+        'synergy_weights_max');
+    if(isstruct(maxParameterSynergyWeights))
+        inputs.maxParameterSynergyWeights = ...
+            getDoubleFromField(maxParameterSynergyWeights);
+    end
+end
 else 
-maxControlTorques = getFieldByNameOrError(designVariableTree, ...
-    'torque_controls_max');
+maxControlTorques = getFieldByName(designVariableTree, ...
+    'torque_controls_multiple');
 if(isstruct(maxControlTorques))
     inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
+else
+    inputs.maxControlTorquesMultiple = 1;
+end
 end
 finalTimeRange = getFieldByName(designVariableTree, ...
     'final_time_range');
 if(isstruct(finalTimeRange))
     inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
 end
+inputs.enableExternalTorqueControl = getBooleanLogicFromField( ...
+    getFieldByName(tree, "enable_external_torque_controls"));
+if inputs.enableExternalTorqueControl
+    inputs.externalControlTorqueNames = parseSpaceSeparatedList(tree, ...
+        "external_control_coordinate_list");
+    inputs.numExternalTorqueControls = ...
+        length(inputs.externalControlTorqueNames);
+    inputs.maxExternalTorqueControls = getDoubleFromField( ...
+        getFieldByNameOrError(designVariableTree, ...
+        'external_torque_control_multiple'));
 end
 inputs.toolName = "DesignOptimization";
 end

@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the difference between the experimental and
+% predicted muscle activations for the specified muscle. 
+%
+% (2D matrix, Array of number, struct, Array of string) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -32,9 +35,11 @@ indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
     muscleName));
 
 if params.splineMuscleActivations.dim > 1
-    experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
+    experimentalMuscleActivations = ...
+        fnval(params.splineMuscleActivations, time)';
 else
-    experimentalMuscleActivations = fnval(params.splineMuscleActivations, time);
+    experimentalMuscleActivations = ...
+        fnval(params.splineMuscleActivations, time);
 end
 
 experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';

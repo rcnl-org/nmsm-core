@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function parses and scales the design variables specific to
+% Verification Optimization. If the model is synergy driven, synergy 
+% weights are properly calculated and fixed.
 %
+% (struct, struct) -> (struct)
+% Design variables specific to Verification Optimization are parsed and scaled
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,8 +32,6 @@
 function values = getVerificationOptimizationValueStruct(inputs, params)
 values = getTreatmentOptimizationValueStruct(inputs, params);
 if strcmp(params.controllerType, 'synergy_driven')
-    values.controlSynergyActivations = inputs.control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numSynergies);
     values.synergyWeights = getSynergyWeightsFromGroups(...
         params.synergyWeightsGuess, params);
 end

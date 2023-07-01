@@ -68,9 +68,9 @@ mtpResultsDirectory = getFieldByNameOrError( ...
     parseMtpStandard(findFileListFromPrefixList( ...
     fullfile(mtpResultsDirectory, "muscleActivations"), inputs.prefixes));
 osimxFileName = getFieldByName(tree, "input_osimx_file");
-if ~isstruct(osimxFileName) || isempty(osimxFileName.Text)
-    throw(MException('', 'An input .osimx file is required if using data from MTP.'))
-end
+% if ~isstruct(osimxFileName) || isempty(osimxFileName.Text)
+%     throw(MException('', 'An input .osimx file is required if using data from MTP.'))
+% end
 inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text);
 % Remove activations of muscles from coordinates not included
 includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
@@ -115,7 +115,7 @@ params.costTerms = parseRcnlCostTermSet( ...
 if strcmpi('true', getTextFromField(getFieldByName(tree, ...
         'enforce_bilateral_symmetry')))
     params.costTerms{end+1} = struct('type', 'bilateral_symmetry', ...
-        'isEnabled', true, 'maxAllowableError', 1e-6, 'errorCenter', 0);
+        'isEnabled', true, 'maxAllowableError', 1e-4, 'errorCenter', 0);
 end
 params.diffMinChange = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'diff_min_change', '1e-6')));
@@ -164,7 +164,12 @@ muscleNames = inputs.muscleTendonColumnNames;
 optimalFiberLengthScaleFactors = zeros(1, length(muscleNames));
 tendonSlackLengthScaleFactors = zeros(1, length(muscleNames));
 maxIsometricForce = inputs.maxIsometricForce;
-mtpDataMuscleNames = fieldnames(mtpData.muscles);
+if isfield(mtpData, "muscles")
+    mtpDataMuscleNames = fieldnames(mtpData.muscles);
+else
+    throw(MException('',  ...
+        "input osimx file contains no RCNLMuscle elements"))
+end
 for i = 1 : length(muscleNames)
     if ismember(muscleNames(i), mtpDataMuscleNames)
         currentMuscle = mtpData.muscles.(muscleNames(i));
