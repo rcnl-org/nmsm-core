@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function reads the input file and stores the data into 
+% (numFrames x  numColumns).
+%
+% (Array of string) -> (2D matrix of number)
+% returns a 2D matrix of the loaded data trial
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

@@ -1,7 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function parses and scales the design variables specific to
+% Design Optimization. If the model is synergy driven, synergy weights are
+% properly calculated if they are fixed or being optimized. If the model
+% has user defined parameters, they are parsed and scaled. Lastly, if
+% the model has external torque actuators, they are parsed and
+% scaled.
 %
+% (struct, struct) -> (struct)
+% Design variables specific to Design Optimization are parsed and scaled
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,28 +34,48 @@
 
 function values = getDesignOptimizationValueStruct(inputs, params)
 values = getTreatmentOptimizationValueStruct(inputs, params);
+
+numParameters = 0;
 if strcmp(params.controllerType, 'synergy_driven')
     if params.optimizeSynergyVectors
-        values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
+        values.synergyWeights = scaleToOriginal(inputs.parameter(1, ...
+            1 : params.numSynergyWeights), ...
             params.maxParameter, params.minParameter);
         values.synergyWeights = getSynergyWeightsFromGroups(...
             values.synergyWeights, params);
+        numParameters = params.numSynergyWeights;
     else
         values.synergyWeights = getSynergyWeightsFromGroups(...
             params.synergyWeightsGuess, params);
     end
-    if params.splineJointMoments.dim > 1
+    if params.splineSynergyActivations.dim > 1
         values.controlSynergyActivations = ...
             fnval(params.splineSynergyActivations, values.time)';
     else
         values.controlSynergyActivations = ...
             fnval(params.splineSynergyActivations, values.time);
     end
+    if params.enableExternalTorqueControl
+        controls = scaleToOriginal(inputs.control, ones(size( ...
+            inputs.control, 1), 1) .* params.maxControl, ...
+            ones(size(inputs.control, 1), 1) .* params.minControl);
+        values.externalTorqueControls = controls(:, params.numCoordinates + ...
+            params.numSynergies + 1 : end);
+    end
+else 
+    if isfield(params, "enableExternalTorqueControl") && ...
+            params.enableExternalTorqueControl
+        controls = scaleToOriginal(inputs.control, ones(size( ...
+            inputs.control, 1), 1) .* params.maxControl, ...
+            ones(size(inputs.control, 1), 1) .* params.minControl);
+        values.externalTorqueControls = controls(:, params.numCoordinates + ...
+            params.numTorqueControls + 1 : end);
+    end
 end
 if isfield(params, 'userDefinedVariables')
     for i = 1:length(params.userDefinedVariables)
-        values.(params.userDefinedVariables{i}.type) = scaleToOriginal( ...
-            inputs.parameter(i, 1), ...
+        values.(params.userDefinedVariables{i}.type)(i) = scaleToOriginal( ...
+            inputs.parameter(1, i + numParameters), ...
             params.userDefinedVariables{i}.upper_bounds, ...
             params.userDefinedVariables{i}.lower_bounds);
     end

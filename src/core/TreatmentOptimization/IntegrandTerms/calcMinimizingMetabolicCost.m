@@ -1,8 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function minimizes the metabolic cost.
+%
+% (struct, struct, struct) -> (Array of number)
 % 
-
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
@@ -25,8 +26,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingMetabolicCost(metabolicCost)
+function cost = calcMinimizingMetabolicCost(values, modeledValues, ...
+    params)
 
+metabolicCost = calcMetabolicCost(values.time, ...
+    values.statePositions, modeledValues.muscleActivations, params);
 cost = calcMinimizingCostArrayTerm(metabolicCost);
 end
-

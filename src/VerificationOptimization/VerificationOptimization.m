@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function sets up the input variables and mex files (or parallel 
+% matlab function) for the main function verification optimization.
 %
+% (struct, struct) -> (struct, struct)
+% Inputs for the main function are setup
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -33,6 +36,7 @@ if strcmp(inputs.controllerType, 'synergy_driven')
 end
 output = computeVerificationOptimizationMainFunction(inputs, params);
 end
+
 function inputs = setupMuscleSynergies(inputs)
 inputs.splineSynergyActivations = spaps(inputs.initialGuess.time, ...
     inputs.initialGuess.control(:, inputs.numCoordinates + 1:end)', 0.0000001);

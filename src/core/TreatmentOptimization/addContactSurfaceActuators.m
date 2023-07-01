@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% If contact surfaces are present, point and torque actuators are added to
+% the model. The actuators are only added to the bodies with contact
+% surfaces.
+%
+% (struct, Model) -> (Model)
+% Adds point and torque actuators to model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

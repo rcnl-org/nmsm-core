@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function bounds the root segment residual loads to the values
+% specified by the user for the specified root semgment loads.
+%
+% (Array of string, Cell, 2D matrix) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %

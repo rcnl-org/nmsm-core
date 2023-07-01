@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function saves and prints the unscaled results from 
+% Design Optimization. An osim model may also be printed if model specific
+% values were optimized
+%
+% (struct, struct) -> (None)
+% Prints design optimization results
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,4 +32,11 @@
 function saveDesignOptimizationResults(solution, inputs)
 values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
 saveCommonOptimalControlResults(solution, inputs, values)
+if isfield(inputs, "systemFns")
+    values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
+    inputs.auxdata = inputs;
+    inputs = updateSystemFromUserDefinedFunctions(inputs, values);
+    model = Model(inputs.auxdata.model);
+    model.print(strrep(inputs.mexModel, '_inactiveMuscles.osim', 'DesignOpt.osim'));
+end
 end

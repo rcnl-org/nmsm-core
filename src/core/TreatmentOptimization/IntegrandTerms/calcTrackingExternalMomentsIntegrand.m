@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the difference between the experimental and
+% predicted ground reaction moments for the specified moment. 
+%
+% (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -29,15 +32,17 @@ function cost = calcTrackingExternalMomentsIntegrand(params, ...
     groundReactionMoments, time, loadName)
 
 for i = 1:length(params.contactSurfaces)
-    indx = find(strcmp(convertCharsToStrings(params.contactSurfaces{i}.momentColumns), ...
-        loadName));
+    indx = find(strcmp(convertCharsToStrings(params.contactSurfaces{i}. ...
+        momentColumns), loadName));
     if ~isempty(indx)
         if params.splineExperimentalGroundReactionMoments{i}.dim > 1
             experimentalGroundReactions = ...
-                fnval(params.splineExperimentalGroundReactionMoments{i}, time)';
+                fnval(params.splineExperimentalGroundReactionMoments{i}, ...
+                time)';
         else
             experimentalGroundReactions = ...
-                fnval(params.splineExperimentalGroundReactionMoments{i}, time);
+                fnval(params.splineExperimentalGroundReactionMoments{i}, ...
+                time);
         end
         cost = calcTrackingCostArrayTerm(...
             experimentalGroundReactions, groundReactionMoments{i}, ...
