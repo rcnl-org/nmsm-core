@@ -1,7 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the position and velocities of the spring
+% locations and corresponding ground reaction forces and moments if
+% contact surfaces are present. This function also calculates inverse
+% dynamic moments.
 %
+% (struct, struct) -> (struct)
+% returns body locations, ground reactions, and inverse dynamic moments
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,25 +30,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function phaseout = calcTorqueBasedModeledValues(values, params)
+function modeledValues = calcTorqueBasedModeledValues(values, params)
 appliedLoads = [zeros(length(values.time), params.numTotalMuscles)];
 if ~isempty(params.contactSurfaces)
     clear pointKinematics
-    [springPositions, springVelocities] = getSpringLocations(values.time, ....
+    [springPositions, springVelocities] = getSpringLocations( ...
+        values.time, values.statePositions, values.stateVelocities, params);
+    modeledValues.bodyLocations = getBodyLocations(values.time, ....
         values.statePositions, values.stateVelocities, params);
-    phaseout.bodyLocations = getBodyLocations(values.time, ....
-        values.statePositions, values.stateVelocities, params);
-    groundReactions = calcFootGroundReactions(springPositions, springVelocities, ...
-        params, phaseout.bodyLocations);
+    groundReactions = calcFootGroundReactions(springPositions, ...
+        springVelocities, params, modeledValues.bodyLocations);
     groundReactionsBody = tranferGroundReactionMoments( ...
-        phaseout.bodyLocations, groundReactions, params);
-    phaseout.groundReactionsLab = calcGroundReactionsLab(groundReactions);
+        modeledValues.bodyLocations, groundReactions, params);
+    modeledValues.groundReactionsLab = calcGroundReactionsLab(groundReactions);
     appliedLoads = [appliedLoads groundReactionsBody];
 end
-phaseout.inverseDynamicMoments = inverseDynamics(values.time, ...
+modeledValues.inverseDynamicMoments = inverseDynamics(values.time, ...
     values.statePositions, values.stateVelocities, ...
-    values.stateAccelerations, params.coordinateNames, appliedLoads, params.mexModel);
+    values.stateAccelerations, params.coordinateNames, appliedLoads, ...
+    params.mexModel);
 end
+
 function [springPositions, springVelocities] = getSpringLocations(time, ....
     statePositions, stateVelocities, params)
 
@@ -62,13 +69,16 @@ for i = 1:length(params.contactSurfaces)
         params.mexModel, params.coordinateNames);
 end
 end
+
 function bodyLocations = getBodyLocations(time, statePositions, ...
     stateVelocities, params)
 
 for i = 1:length(params.contactSurfaces)
-    bodyLocations.midfootSuperior{i} = pointKinematics(time, statePositions, ...
-        stateVelocities, params.contactSurfaces{i}.midfootSuperiorPointOnBody, ...
-        params.contactSurfaces{i}.midfootSuperiorBody, params.mexModel, params.coordinateNames);
+    bodyLocations.midfootSuperior{i} = pointKinematics(time, ...
+        statePositions, stateVelocities, ...
+        params.contactSurfaces{i}.midfootSuperiorPointOnBody, ...
+        params.contactSurfaces{i}.midfootSuperiorBody, ...
+        params.mexModel, params.coordinateNames);
     bodyLocations.midfootSuperior{i}(:, 2) = 0;
     bodyLocations.parent{i} = pointKinematics(time, statePositions, ...
         stateVelocities, [0 0 0], params.contactSurfaces{i}.parentBody, ...
@@ -78,6 +88,7 @@ for i = 1:length(params.contactSurfaces)
         params.mexModel, params.coordinateNames);
 end
 end
+
 function groundReactionsBody = tranferGroundReactionMoments( ...
     bodyLocations, groundReactions, params)
 
@@ -89,10 +100,12 @@ for i = 1:length(params.contactSurfaces)
     childMoment = transferMoments(bodyLocations.midfootSuperior{i}, ...
         bodyLocations.child{i}, groundReactions.childMoments{i}, ...
         groundReactions.childForces{i});
-    groundReactionsBody = [groundReactionsBody groundReactions.parentForces{i} ...
-        groundReactions.childForces{i} parentMoment childMoment];
+    groundReactionsBody = [groundReactionsBody ...
+        groundReactions.parentForces{i} groundReactions.childForces{i} ...
+        parentMoment childMoment];
 end
 end
+
 function groundReactionsInLab = calcGroundReactionsLab(groundReactions)
 
 for i = 1:length(groundReactions.parentForces)

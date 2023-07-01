@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function scales the values to a unit interval of [-0.5 to 0.5]
+%
+% (Array of number, number, number) -> (Array of number)
+% Scales vector to within bounds
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

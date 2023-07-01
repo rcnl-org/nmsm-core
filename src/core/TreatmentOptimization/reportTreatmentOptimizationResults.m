@@ -1,8 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function plots the results from all three treatment optimization
+% tools (tracking, verification, and design optimization).
 %
-
+% (struct, struct) -> (None)
+% Plots results from treatment optimization
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
@@ -34,7 +36,7 @@ if isfield(inputs, 'userDefinedVariables')
             inputs.userDefinedVariables{i}.lower_bounds)
     end
 end
-values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
+values = getTreatmentOptimizationValueStruct(solution.solution.phase, inputs);
 if strcmp(inputs.controllerType, 'synergy_driven')
 % plot Muscle Activations
 plotMuscleActivations(solution.muscleActivations, values.time, ...
@@ -47,6 +49,17 @@ for i = 1 : inputs.numSynergies
 end
 plotResultsWithOutComparison(values.controlSynergyActivations, values.time, ...
     synergyTitles, ["Synergy" "Activations"]);
+else 
+% plot torque controls
+plotResultsWithOutComparison(values.controlTorques, values.time, ...
+    inputs.controlTorqueNames, ["Torque" "Controls"]);
+end
+% plot external torque controls
+if isfield(inputs, 'enableExternalTorqueControl')
+    if inputs.enableExternalTorqueControl
+        plotResultsWithOutComparison(values.externalTorqueControls, values.time, ...
+            inputs.externalControlTorqueNames, ["External" "Torque Controls"]);
+    end
 end
 % plot joint angles
 plotResultsWithComparison(values.statePositions, values.time, ...
@@ -65,6 +78,13 @@ plotResultsWithComparison(solution.groundReactionsLab.moments{i}, values.time, .
     inputs.contactSurfaces{i}.experimentalGroundReactionMoments, inputs.experimentalTime, ...
     ["GRTx", "GRTy", "GRTz"], ["Ground" "Reaction Moments"]);
 end
+
+% if strcmp(inputs.toolName, 'DesignOptimization')
+%     gait = input('Print gait specific measurements (yes or no): ', 's');
+%     if strcmp(gait, 'yes')
+%         reportingGaitSpecificMeasurements(values, solution, inputs);
+%     end
+% end
 end
 function plotMuscleActivations(muscleActivations, time, ...
     experimentalMuscleActivations, experimentalTime, muscleLabels)

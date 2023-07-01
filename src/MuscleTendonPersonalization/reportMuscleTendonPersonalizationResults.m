@@ -128,7 +128,7 @@ function plotPassiveForceData(modeledValue, experimentalData)
 meanModeledValue = squeeze(mean(modeledValue, 2));
 stdModeledValue = squeeze(std(modeledValue, [], 2));
 figure('name', 'MuscleTendonLengthInitialization Passive Forces'); 
-nplots = ceil(sqrt(experimentalData.numMuscles));
+nplots = ceil(sqrt(length(experimentalData.muscleNames)));
 
 t = 1 : size(meanModeledValue, 1);
 for i = 1 : size(meanModeledValue, 2)
@@ -140,9 +140,9 @@ fill([t'; flipud(t')], ...
     'b', 'linestyle', 'None', 'FaceAlpha', 0.5);
 axis([1 size(modeledValue, 1) min(modeledValue,[],'all') max(modeledValue,[],'all')])
 title(strrep(experimentalData.muscleNames{i}, '_', ' '))
-if i > experimentalData.numMuscles - nplots; xlabel('Time Points'); 
+if i > length(experimentalData.muscleNames) - nplots; xlabel('Time Points'); 
 else xticklabels(''); end
-if ismember(i, 1 : nplots : experimentalData.numMuscles)
+if ismember(i, 1 : nplots : length(experimentalData.muscleNames))
     ylabel({'Passive','Force [N]'});
 else yticklabels(''); end
 end

@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the cost function values for all treatment
+% optimization modules (tracking, verification and design optimization).
+%
+% (struct, string, struct, struct, struct) -> (2D matrix)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -45,4 +48,3 @@ for i = 1:length(auxdata.costTerms)
     end
 end
 end
-

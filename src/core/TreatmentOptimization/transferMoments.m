@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function transfers the location of moment to the position
+% indicated. 
+%
+% (2D matrix, 2D matrix, 2D matrix, 2D matrix) -> (2D matrix)
+% Returns moments at a different location
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

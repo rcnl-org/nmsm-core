@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function computes the dynamic constraints, path constraints (if any)
+% and cost function terms (if any) for tracking optimization.
 % 
+% (struct) -> (struct)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,6 +33,9 @@ values = getTrackingOptimizationValueStruct(inputs.phase, inputs.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, modeledValues);
 modeledValues.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
-modeledValues.path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+if ~isempty(path)
+    modeledValues.path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+end
 modeledValues.integrand = calcTrackingOptimizationIntegrand(values, modeledValues, inputs.auxdata);
 end

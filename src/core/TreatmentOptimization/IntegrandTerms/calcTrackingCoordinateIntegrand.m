@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the difference between the experimental and
+% predicted joint angles for the specified coordinate. 
+%
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %

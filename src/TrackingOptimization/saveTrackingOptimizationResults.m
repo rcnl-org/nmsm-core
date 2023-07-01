@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function saves and prints the unscaled results from Tracking
+% Optimization.
 %
+% (struct, struct) -> (None)
+% Prints tracking optimization results
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,7 +29,6 @@
 % ----------------------------------------------------------------------- %
 
 function saveTrackingOptimizationResults(solution, inputs)
-
 values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
 saveCommonOptimalControlResults(solution, inputs, values);
 if strcmp(inputs.controllerType, 'synergy_driven')
@@ -35,6 +37,6 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         fullfile(inputs.resultsDirectory, "parameterSolution.sto"));
     writeToSto(inputs.muscleLabels, values.time, ...
         solution.muscleActivations, ...
-        fullfile(outputDirectory, "muscleActivations.sto"));
+        fullfile(inputs.resultsDirectory, "optimal", "muscleActivations.sto"));
 end
 end

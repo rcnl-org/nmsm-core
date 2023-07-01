@@ -80,6 +80,9 @@ end
 function output = getContactSurfaces(inputs, tree)
 contactSurfaces = getFieldByNameOrError(tree, 'GCPContactSurfaceSet') ...
     .objects.GCPContactSurface;
+if length(contactSurfaces) == 1
+    contactSurfaces = {contactSurfaces};
+end
 counter = 1;
 for i=1:length(contactSurfaces)
     surface = contactSurfaces{i};
@@ -211,8 +214,8 @@ end
 function params = getParams(tree)
 params = struct();
 params.restingSpringLengthInitialization = strcmpi(getTextFromField( ...
-    getFieldByNameOrAlternate(tree, ...
-    'resting_spring_length_initialization_is_enabled', 'true')), 'true');
+    getFieldByNameOrAlternate(tree, 'initialize_resting_spring_length', ...
+    'true')), 'true');
 params.diffMinChange = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'diff_min_change', '1e-6')));
 params.stepTolerance = str2double(getTextFromField(...

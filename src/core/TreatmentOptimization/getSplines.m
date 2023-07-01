@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function calculates the splines for all experimental data. These
+% splines are evaluated at the collocation points to allow tracking of 
+% these quanitites during treatment optimization
+%
+% (struct) -> (struct)
+% Calculates the splines for all experimental data
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

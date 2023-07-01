@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function sets up the input variables and mex files (or parallel 
+% matlab function) for the main function of tracking optimization.
 %
+% (struct, struct) -> (struct, struct)
+% Inputs for the main function are setup
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

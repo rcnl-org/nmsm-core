@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function parses the settings tree resulting from xml2struct of the
+% Tracking Optimizatoin settings XML file.
+%
+% (struct) -> (struct, struct)
+% returns the input values for Tracking Optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
