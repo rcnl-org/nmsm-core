@@ -38,6 +38,4 @@ if isfield(initialGuess,'parameter')
 end
 output = continuousFunction(initialGuess);
 output.solution = initialGuess;
-reportTreatmentOptimizationResults(output, inputs);
-pause(0.1);
 end
