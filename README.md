@@ -5,7 +5,7 @@
     <img src="https://img.shields.io/badge/MATLAB-2022b-red" alt="MATLAB 2022b Badge">
 </a>
 <a href="#requirements">
-    <img src="https://img.shields.io/badge/platform-Windows%20|%20macOS%20Intel%20|%20macOS%20M1-green" alt="Requirements Badge">
+    <img src="https://img.shields.io/badge/platform-Windows%20|%20macOS%20Intel%20|%20macOS%20M1-brightgreen" alt="Requirements Badge">
 </a>
 <a href="#license">
     <img src="https://img.shields.io/badge/license-Apache%202.0-blue" alt="License Badge">
