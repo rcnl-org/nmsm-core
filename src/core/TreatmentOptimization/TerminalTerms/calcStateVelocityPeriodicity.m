@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the difference between the starting and final
+% state velocity for the specified coordinate. 
+%
+% (2D matrix, Cell, Array of string) -> (Number)
 % 
 
 % ----------------------------------------------------------------------- %

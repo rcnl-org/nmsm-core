@@ -31,11 +31,18 @@
 function createMuscleTendonVelocity(muscleTendonLengthFileName, ...
     cutoffFrequency)
 storage = org.opensim.modeling.Storage(muscleTendonLengthFileName);
-length = storageToDoubleMatrix(storage);
+lengthData = storageToDoubleMatrix(storage);
 time = findTimeColumn(storage);
+isLongFile = length(time) > 200;
 
-numNodes = splFitWithCutoff(time, length, cutoffFrequency, 4);
-velocityData = calcBSplineDerivative(time, length, 4, numNodes);
+if isLongFile
+    numNodes = splFitWithCutoff(time(1:200), lengthData(:, 1:200), ...
+        cutoffFrequency, 4);
+    numNodes = numNodes * length(time) / 200;
+else
+    numNodes = splFitWithCutoff(time, lengthData, cutoffFrequency, 4);
+end
+velocityData = calcBSplineDerivative(time, lengthData, 4, numNodes);
 
 [filepath, name, ext] = fileparts(muscleTendonLengthFileName);
 name = strrep(name, "_Length", "");

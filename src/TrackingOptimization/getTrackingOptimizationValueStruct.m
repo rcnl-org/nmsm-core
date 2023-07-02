@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function parses and scales the design variables specific to
+% Tracking Optimization. If the model is synergy driven, synergy weights 
+% are properly calculated if they are fixed or being optimized.
 %
+% (struct, struct) -> (struct)
+% Design variables specific to Tracking Optimization are parsed and scaled
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,15 +33,13 @@ function values = getTrackingOptimizationValueStruct(inputs, params)
 values = getTreatmentOptimizationValueStruct(inputs, params);
 if strcmp(params.controllerType, 'synergy_driven')
     if params.optimizeSynergyVectors
-        values.synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
+        synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
             params.maxParameter, params.minParameter);
         values.synergyWeights = getSynergyWeightsFromGroups(...
-            values.synergyWeights, params);
+            synergyWeights, params);
     else
         values.synergyWeights = getSynergyWeightsFromGroups(...
             params.synergyWeightsGuess, params);
     end
-    values.controlSynergyActivations = inputs.control(:, ...
-        params.numCoordinates + 1 : params.numCoordinates + params.numSynergies);
 end
 end

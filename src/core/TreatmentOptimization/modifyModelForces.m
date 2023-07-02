@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function disables all muscles, if any, in the osim model. Point and
+% torque actuators are also added to the model if contact surfaces exist.
+% The modified model is then saved and printed. 
+%
+% (struct) -> (struct)
+% Modifies osim model
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

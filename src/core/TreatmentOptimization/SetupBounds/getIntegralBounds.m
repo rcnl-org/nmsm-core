@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function gathers the maximum and minimum bounds for all continuous
+% cost term function values.
 %
+% (struct) -> (struct)
+% Computes max and min integral bounds
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,13 +29,15 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = getIntegralBounds(inputs)
-[~, allowedTypes] = generateCostTermStruct("continuous", inputs.toolName);
+[~, continuousAllowedTypes] = generateCostTermStruct("continuous", inputs.toolName);
+[~, discreteAllowedTypes] = generateCostTermStruct("discrete", inputs.toolName);
+
 inputs.maxIntegral = [];
 inputs.minIntegral = [];
 for i = 1:length(inputs.costTerms)
     costTerm = inputs.costTerms{i};
     if costTerm.isEnabled
-        if any(ismember(costTerm.type, allowedTypes)) && ...
+        if any(ismember(costTerm.type, continuousAllowedTypes)) && ...
                 ~strcmp(costTerm.type, "user_defined")
             inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
                 costTerm.maxAllowableError);
@@ -41,7 +46,8 @@ for i = 1:length(inputs.costTerms)
                 inputs.maxIntegral = cat(2, inputs.maxIntegral, ...
                     costTerm.maxAllowableError);
             end
-        else
+        elseif any(ismember(costTerm.type, continuousAllowedTypes)) && ...
+                    any(ismember(costTerm.type, discreteAllowedTypes))
             throw(MException('', ['Cost term type ' costTerm.type ...
                 ' does not exist for this tool.']))
         end

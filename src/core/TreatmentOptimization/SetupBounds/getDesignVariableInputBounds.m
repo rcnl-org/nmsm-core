@@ -1,7 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This functions computes the maximum and minimum values for all design
+% variables. The maximum and minimum values for most design variables are
+% based on the multiples value selected by the user times the range of data.
+% For example, if the angle B has a range of -5 to +5, and state position
+% multiple is 1, the maximum value of angle B is 15 and the minimum value
+% of angle B is -15. 
+%
+% (struct) -> (struct)
+% Computes max and min design variable bounds
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,7 +33,11 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = getDesignVariableInputBounds(inputs)
-inputs.maxTime = max(inputs.experimentalTime);
+if isfield(inputs, "finalTimeRange")
+    inputs.maxTime = max(inputs.experimentalTime) + inputs.finalTimeRange;
+else
+    inputs.maxTime = max(inputs.experimentalTime);
+end
 inputs.minTime = min(inputs.experimentalTime);
 
 maxStatePositions = max(inputs.experimentalJointAngles) + ...
@@ -75,5 +86,22 @@ elseif strcmp(inputs.controllerType, 'torque_driven')
     end
     inputs.maxControl = [maxControlJerks maxControlTorques];
     inputs.minControl = [minControlJerks minControlTorques];
+end
+
+if isfield(inputs, "enableExternalTorqueControl") && ...
+        inputs.enableExternalTorqueControl 
+    for i = 1:length(inputs.externalControlTorqueNames)
+        indx = find(strcmp(convertCharsToStrings( ...
+            inputs.inverseDynamicMomentLabels), ...
+            strcat(inputs.externalControlTorqueNames(i), '_moment')));
+        maxExternalControlTorques(i) = max(inputs.experimentalJointMoments(:, ...
+            indx)) + inputs.maxExternalTorqueControls * ...
+            range(inputs.experimentalJointMoments(:, indx));
+        minExternalControlTorques(i) = min(inputs.experimentalJointMoments(:, ...
+            indx)) - inputs.maxExternalTorqueControls * ...
+            range(inputs.experimentalJointMoments(:, indx));
+    end
+    inputs.maxControl = [inputs.maxControl maxExternalControlTorques];
+    inputs.minControl = [inputs.minControl minExternalControlTorques];
 end
 end

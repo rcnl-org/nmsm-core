@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% Parses XML settings for a RCNLTerminalConstraintTerms, adding all fields 
+% included in the xml block.  
 %
+% (struct) -> (struct)
+% Parses settings from a RCNLTerminalConstraintTerms.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

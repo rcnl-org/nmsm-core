@@ -1,7 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function parses and scales the design variables common to all 
+% treatment optimization modules (tracking, verification, and design 
+% optimization). Time, states, and controls are parsed and scaled back to
+% their original values.
 %
+% (struct, struct) -> (struct)
+% Design variables common to all treatment optimization modules are parsed
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -41,6 +46,8 @@ values.controlJerks = control(:, 1 : params.numCoordinates);
 if ~strcmp(params.controllerType, 'synergy_driven')
     values.controlTorques = control(:, params.numCoordinates + 1 : ...
     params.numCoordinates + params.numTorqueControls);
+else 
+    values.controlSynergyActivations = control(:, ...
+    params.numCoordinates + 1 : params.numCoordinates + params.numSynergies);
 end
-
 end

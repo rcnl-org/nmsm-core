@@ -48,10 +48,11 @@ for i = 1:length(inputs.inverseDynamicsMomentsColumnNames)
 end
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
     dataDirectory, "MAData"), inputs.prefixes);
+model = Model(inputs.model);
 [inputs.muscleTendonLength, inputs.muscleTendonColumnNames] = ...
-    parseFileFromDirectories(directories, "Length.sto");
+    parseFileFromDirectories(directories, "Length.sto", model);
 inputs.muscleTendonVelocity = parseFileFromDirectories(directories, ...
-    "Velocity.sto");
+    "Velocity.sto", model);
 [inputs.momentArms, inputs.momentArmsCoordinateNames] = ...
     parseMomentArms(directories, inputs.model);
 end

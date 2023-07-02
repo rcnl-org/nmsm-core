@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function calculates the dynamic constraint for tracking optimization.
+%
+% (struct, struct) -> (2D matrix)
+% Returns the dynamic constraint
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

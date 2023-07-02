@@ -34,7 +34,8 @@ inputs.tendonSlackLength = [];
 inputs.pennationAngle = [];
 inputs.maxIsometricForce = [];
 for i = 1 : inputs.numMuscles
-    if isfield(inputs.osimx.muscles, inputs.muscleNames(i))
+    if isfield(inputs.osimx, "muscles") && ...
+            isfield(inputs.osimx.muscles, inputs.muscleNames(i))
         if isnan(inputs.osimx.muscles.(inputs.muscleNames(i)).optimalFiberLength)
             inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
                 getMuscles().get(i-1).getOptimalFiberLength();

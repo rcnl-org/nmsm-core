@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% This function calculates the cost function objective for design 
+% optimization.
+%
+% (Number, Array of number, Number, struct) -> (Number)
+% Returns objective
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,8 +28,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function objective = calcDesignOptimizationObjective(discrete, continuous)
+function objective = calcDesignOptimizationObjective(discrete, ...
+    continuous, finalTime, inputs)
 continuousObjective = sum(continuous) / length(continuous);
+if isfield(inputs, "finalTimeRange")
+    continuousObjective = continuousObjective / finalTime;
+end
 discreteObjective = sum(discrete) / length(discrete);
 if isnan(discreteObjective); discreteObjective = 0; end
 objective = continuousObjective + discreteObjective;

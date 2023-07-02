@@ -1,6 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function calculates the discrete objectives for design optimization.
+%
+% (struct, struct, struct) -> (Number)
 % 
 
 % ----------------------------------------------------------------------- %

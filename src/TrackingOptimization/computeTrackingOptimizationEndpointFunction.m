@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-%
+% This function computes the terminal constraint (if any) and total cost 
+% function objective for tracking optimization.
+% 
+% (struct) -> (struct)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,8 +29,11 @@
 
 function output = computeTrackingOptimizationEndpointFunction(inputs)
 if ~isempty(inputs.auxdata.terminal)
-    output.eventgroup.event = calcTrackingOptimizationTerminalConstraint( ...
+    event = calcTrackingOptimizationTerminalConstraint( ...
         inputs, inputs.auxdata);
+    if ~isempty(event)
+        output.eventgroup.event = event;
+    end
 end
 output.objective = calcTrackingOptimizationObjective(inputs.phase.integral);
 end

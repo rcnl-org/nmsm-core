@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function computes the terminal constraint (if any), discrete 
+% objective (if any), and total cost function objective for design
+% optimization.
+% 
+% (struct) -> (struct)
 %
 
 % ----------------------------------------------------------------------- %
@@ -47,7 +51,7 @@ discrete = calcDesignOptimizationDiscreteObjective(values, ...
     modeledValues, inputs.auxdata);
 % discrete = computeStaticParameterCost(inputs);
 output.objective = calcDesignOptimizationObjective(discrete, ...
-    inputs.phase.integral);
+    inputs.phase.integral, values.time(end), inputs.auxdata);
 end
 
 function cost = computeStaticParameterCost(inputs)
@@ -62,4 +66,3 @@ for i = 1:length(costTerms)
     end
 end
 end
-

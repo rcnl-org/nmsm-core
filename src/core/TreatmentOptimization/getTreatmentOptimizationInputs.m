@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function parses the settings tree resulting from xml2struct from the
+% settings XML file common to all treatment optimizatin modules (trackning,
+% verification, and design optimization).
 %
+% (struct) -> (struct, struct)
+% returns the input values for all treatment optimization modules
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -34,6 +38,8 @@ inputs.controllerType = getTextFromField(getFieldByNameOrError(tree, ...
 inputs.model = parseModel(tree);
 inputs.osimx = parseOsimxFile(getTextFromField(getFieldByName(tree, ...
     'osimx_file')));
+inputs.integralBound = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "integral_bound", "1"));
 if strcmp(inputs.controllerType, 'synergy_driven')
     inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
     inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
@@ -56,10 +62,12 @@ elseif strcmp(inputs.controllerType, 'torque_driven')
         "coordinate_list");
     inputs.numTorqueControls = length(inputs.controlTorqueNames);
 end
-inputs.optimizeSynergyVectors = getBooleanLogicFromField(...
-    parseElementTextByNameOrAlternate(tree, "optimizeSynergyVectors", 0));
+inputs.optimizeSynergyVectors = getBooleanLogic(...
+    parseElementTextByNameOrAlternate(tree, "optimize_synergy_vectors", 0));
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs.initialGuess = getGpopsInitialGuess(tree);
+inputs.experimentalTime = inputs.experimentalTime / ...
+    inputs.experimentalTime(end);
 inputs.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
 inputs.path = getPathConstraintTerms(tree);

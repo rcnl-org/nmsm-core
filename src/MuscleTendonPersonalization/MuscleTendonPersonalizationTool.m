@@ -38,15 +38,17 @@ if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
+else
+    precalInputs = struct('optimizeIsometricMaxForce', false);
 end
 
 optimizedParams = MuscleTendonPersonalization(inputs, params);
-% if params.performMuscleTendonLengthInitialization
-%     reportMuscleTendonPersonalizationResults(optimizedParams, ...
-%         inputs, precalInputs);
-% else
-%     reportMuscleTendonPersonalizationResults(optimizedParams, inputs);
-% end
+if params.performMuscleTendonLengthInitialization
+    reportMuscleTendonPersonalizationResults(optimizedParams, ...
+        inputs, precalInputs);
+else
+    reportMuscleTendonPersonalizationResults(optimizedParams, inputs);
+end
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
 if precalInputs.optimizeIsometricMaxForce
     finalValues.maxIsometricForce = inputs.maxIsometricForce;

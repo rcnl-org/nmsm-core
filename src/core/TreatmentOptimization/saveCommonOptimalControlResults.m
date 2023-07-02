@@ -1,7 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
+% This function saves and prints the unscaled results from all
+% treatment optimization modules (tracking, verification, and design 
+% optimization. 
 %
+% (struct, struct) -> (None)
+% Prints treatment optimization results
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -91,4 +95,3 @@ elseif strcmp(inputs.controllerType, 'torque_driven')
 end
 delete(inputs.mexModel);
 end
-

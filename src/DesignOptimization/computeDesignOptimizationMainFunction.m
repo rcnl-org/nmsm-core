@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-%
+% This function sets up GPOPS-II to run Design Optimization.
+% 
+% (struct) -> (struct, struct)
+% Assigns optimal control settings and runs Design Optimization 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,13 +28,15 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeDesignOptimizationMainFunction(inputs, params)
-bounds = setupProblemBounds(inputs);
 guess = setupCommonOptimalControlInitialGuess(inputs);
+bounds = setupProblemBounds(inputs, guess);
 guess = addUserDefinedTermsToGuess(guess, inputs);
 setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeDesignOptimizationContinuousFunction, ...
     @computeDesignOptimizationEndpointFunction);
+checkInitialGuess(guess, inputs, ...
+    @computeVerificationOptimizationContinuousFunction);
 solution = gpops2(setup);
 solution = solution.result.solution;
 solution.auxdata = inputs;
@@ -40,8 +44,7 @@ solution.phase.parameter = [solution.parameter];
 output = computeDesignOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
-
-function bounds = setupProblemBounds(inputs)
+function bounds = setupProblemBounds(inputs, guess)
 bounds = setupCommonOptimalControlBounds(inputs);
 % setup parameter bounds
 if strcmp(inputs.controllerType, 'synergy_driven')
@@ -63,13 +66,15 @@ for i = 1:length(inputs.userDefinedVariables)
             0.5];
     end
 end
+if isfield(inputs, "finalTimeRange")
+    bounds.phase.finaltime.lower = guess.phase.time(end) - (0.5 - guess.phase.time(end));
+    bounds.phase.finaltime.upper = 0.5;
 end
-
+end
 function guess = addUserDefinedTermsToGuess(guess, inputs)
 for i = 1:length(inputs.userDefinedVariables)
     variable = inputs.userDefinedVariables{i};
-    if ~isfield(guess, "phase") || ...
-            ~isfield(guess.phase, "parameter")
+    if ~isfield(guess, "parameter") 
         guess.parameter = [];
     end
     guess.parameter = [guess.parameter, ...
