@@ -26,8 +26,8 @@ If applicable, add screenshots to help explain your problem.
 **Desktop (please complete the following information):**
  - OS: [e.g. Windows, Mac M1, Mac Intel]
  - OpenSim Version: [e.g. 4.4]
- - MATLAB Version [e.g. 2022b]
- - NMSM Pipeline Version [e.g. v1.0]
+ - MATLAB Version: [e.g. 2022b]
+ - NMSM Pipeline Version: [e.g. v1.0]
 
 **Additional context**
 Add any other context about the problem here.

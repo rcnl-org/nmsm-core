@@ -33,19 +33,19 @@ JMP optimizes the joint parameters of specific joints to reduce Inverse Kinemati
 
 This modules prepares large chunks of raw data into the specified format for use in MTP and NCP. It is required to be completed after JMP because the model created from JMP is used to calculate model specific data (IK, ID, Muscle Analysis).
 
-### Muscle Tendon Personalization (MTP)
+### Muscle Tendon Model Personalization (MTP)
 
 MTP personalizes the muscle properties of a model from EMG data. MTP includes Synergy Extrapolation, a process to solve for missing EMG data.
 
-### Neural Control Personalization (NCP)
+### Neural Control Model Personalization (NCP)
 
 NCP calculates the muscle activations of muscles for which no EMG data is available through solving for optimal muscle synergies.
 
-### Ground Contact Personalization (GCP)
+### Ground Contact Model Personalization (GCP)
 
 GCP creates a personalized contact array with varying spring constants for calculating more accurate foot-ground contact interactions.
 
-### Surrogate Model
+### Surrogate Model Creation
 
 ### Tracking Optimization (TO)
 
@@ -55,7 +55,7 @@ GCP creates a personalized contact array with varying spring constants for calcu
 
 ## How to Install
 
-No installation is required, following the instructions below, download the package, open the `Project.prj` file and you are ready to personalize models.
+No installation is required, following the instructions below, download the package, open the `Project.prj` file and you are ready to personalize models and optimize treatments.
 
 ### Requirements
 - MATLAB (Tested on 2022b)
@@ -63,12 +63,13 @@ No installation is required, following the instructions below, download the pack
     - Parallel Computing Toolbox
     - Statistics and Machine Learning Toolbox
     - Curve Fitting Toolbox
+    - Symbolic Math Toolbox
 - OpenSim 4.4 or greater
 - [OpenSim MATLAB Bindings](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+with+Matlab)
 
 ### Step-by-Step
-- Click the green `Code` button at the top right of this page (or clone the repository if you are familiar with git)
-- Click the `Download Zip` button
+- Navigate to the [NMSM Pipeline SimTK Project](https://simtk.org/projects/nmsm).
+- Go to the download section and download the latest version.
 - Unzip the file in a directory of your choosing
 - Double-click the `Project.prj` file
   - This adds all of the functions used in the NMSM Pipeline to your path temporarily, until the project is closed.
