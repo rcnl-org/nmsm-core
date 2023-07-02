@@ -30,7 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function osimx = buildRcnlMuscle(osimx, muscleName, muscleParameters)
-muscleObjects = osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.objects;
+muscleObjects = osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet;
 
 if(~isstruct(muscleObjects))
     i = 1;
@@ -84,5 +84,5 @@ if isfield(muscleParameters, 'maxIsometricForce')
         num2str(muscleParameters.maxIsometricForce, 15));
 end
 
-osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.objects.RCNLMuscle = muscles;
+osimx.NMSMPipelineDocument.OsimxModel.RCNLMuscleSet.RCNLMuscle = muscles;
 end

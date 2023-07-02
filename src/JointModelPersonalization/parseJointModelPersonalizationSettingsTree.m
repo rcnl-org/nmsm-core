@@ -111,8 +111,8 @@ end
 % solve this problem, it's fine
 function inputs = getJointParameters(jointSetTree)
 inputs = {};
-if isfield(jointSetTree, "objects") && isfield(jointSetTree.objects, "JMPJoint")
-    jointTree = jointSetTree.objects.JMPJoint;
+if isfield(jointSetTree, "JMPJoint")
+    jointTree = jointSetTree.JMPJoint;
     counter = 1; % for index of parameter in output
     for i=1:length(jointTree)
         if(length(jointTree) == 1)
@@ -163,8 +163,8 @@ end
 
 function [scaling, markers] = getBodyParameters( ...
     bodySetTree, model)
-if isfield(bodySetTree, "objects") && isfield(bodySetTree.objects, "JMPBody")
-    bodyTree = bodySetTree.objects.JMPBody;
+if isfield(bodySetTree, "JMPBody")
+    bodyTree = bodySetTree.JMPBody;
     scaling = getScalingBodies(bodyTree);
     markers = getMarkers(bodyTree, model);
 else
