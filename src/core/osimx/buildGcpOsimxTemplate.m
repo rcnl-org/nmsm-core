@@ -36,7 +36,6 @@ osimx = buildOsimxTemplate(modelName, osimModelFileName);
 osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.Comment = ...
     'Optimized contact surface parameters';
 osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet = '';
-osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.groups = '';
 
 end
 

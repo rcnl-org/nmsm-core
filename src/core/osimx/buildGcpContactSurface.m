@@ -111,7 +111,6 @@ for j = 1:length(contactSurface.springs)
     newContactSurface = buildGcpSpring(newContactSurface, ...
         contactSurface.springs{j});
 end
-newContactSurface.GCPSpringSet.groups = '';
 osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet. ...
     RCNLContactSurface{i} = newContactSurface;
 end

@@ -33,8 +33,6 @@ function osimx = buildGcpOsimx(osimx, groundContact)
 osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.Comment = ...
     'The set of contact surfaces modeled';
 osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet = '';
-osimx.NMSMPipelineDocument.OsimxModel.RCNLContactSurfaceSet.groups = '';
-
 for i = 1:length(groundContact.contactSurface)
     osimx = buildGcpContactSurface(osimx, groundContact.contactSurface{i});
 end
