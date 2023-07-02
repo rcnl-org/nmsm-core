@@ -29,18 +29,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function error = computeInnerOptimization(values, functions, model, ...
+function error = computeInnerOptimization(values, functions, modelFile, ...
     markerFileName, params)
-model = Model(model);
-for i = 1:length(values)
-    functions{i}(values(i), model);
+persistent model;
+if isempty(model)
+    model = Model(modelFile);
 end
-markersReference = makeJmpMarkerRef(model, markerFileName, params);
-error = computeInnerOptimizationHeuristic(model, ...
-    markersReference, params);
+modelCopy = Model(model);
+for i = 1:length(values)
+    functions{i}(values(i), modelCopy);
+end
+markersReference = makeJmpMarkerRef(modelCopy, markerFileName, params);
+error = computeInnerOptimizationHeuristic(modelCopy, markersReference, ...
+   params);
 markersReference = libpointer;
 java.lang.System.gc();
 end
-
-
-

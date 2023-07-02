@@ -127,7 +127,7 @@ end
 
 function costTerms = getCostFunctionTerms(tree)
 costTerms = parseRcnlCostTermSet( ...
-    tree.RCNLCostTermSet.objects.RCNLCostTerm);
+    tree.RCNLCostTermSet.RCNLCostTerm);
 end
 
 function inputs = getMuscleVolume(inputs)

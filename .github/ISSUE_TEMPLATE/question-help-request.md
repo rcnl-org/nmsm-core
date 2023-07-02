@@ -13,7 +13,7 @@ A clear and concise description of what the question is. Ex. How do I [...]
 **Have you looked for a solution on [nmsm.rice.edu](https://nmsm.rice.edu)?**
 Our tutorial and documentation website may have an answer
 
-**Describe a answer you'd like**
+**Describe an answer you'd like**
 A clear and concise description of what you expect the answer to be.
 
 **Describe alternatives you've considered**
