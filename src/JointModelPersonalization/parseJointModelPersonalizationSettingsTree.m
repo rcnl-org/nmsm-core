@@ -38,7 +38,7 @@ end
 
 function outputFile = getOutputFile(tree)
 outputFile = getFieldByNameOrError(tree, 'output_model_file').Text;
-resultsDir = getFieldByNameOrError(tree, 'results_directory').Text;
+resultsDir = getFieldByName(tree, 'results_directory').Text;
 if(resultsDir)
     outputFile = fullfile(resultsDir, outputFile);
 else
