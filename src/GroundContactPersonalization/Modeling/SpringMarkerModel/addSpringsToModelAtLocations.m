@@ -29,7 +29,7 @@
 
 function model = addSpringsToModelAtLocations(model, markerPositions, ...
     normalizedMarkerPositions, points, toesJointName, ...
-    hindfootBodyName, toesBodyName, heelMarkerName, isLeftFoot)
+    hindfootBodyName, toesBodyName, heelMarkerName, isLeftFoot, theta)
 [model, state] = Model(model);
 normalizedFootHeight = abs(markerPositions.toe(1) - ...
     markerPositions.heel(1));
@@ -47,11 +47,13 @@ markerPrefix = "spring_marker_";
 [toeJointPoint1, toeJointPoint2] = ...
     findTwoPointsOnToeJointAxis(model, toesJointName);
 
-height = - calcnVec3.get(1);
+height = -calcnVec3.get(1);
 for i=1:length(points)
     newPoint = calcMarkerPosition(points(i, :), normalizedFootHeight, ...
         normalizedFootWidth, normalizedMarkerPositions, calcnVec3, ...
         heelVec3, isLeftFoot);
+    [newPoint(1), newPoint(2)] = rotateValues2D(newPoint(1), ...
+        newPoint(2), theta);
     bodyName = hindfootBodyName;
     % Check whether a marker is above the toe joint, and use relative body
     % positions to place the marker in the correct parent frame. 
@@ -77,7 +79,9 @@ else
     pointY = point(1);
 end
 pointY = pointY * normalizedFootWidth;
-pointY = pointY - normalizedMarkerPositions.heel(2) * normalizedFootWidth;
+averageHorizontal = (normalizedMarkerPositions.toe(2) + ...
+    normalizedMarkerPositions.heel(2)) / 2;
+pointY = pointY - (averageHorizontal * normalizedFootWidth) / 2;
 newPoint = [pointX, pointY];
 end
 
