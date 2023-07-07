@@ -54,6 +54,7 @@ for i=1:length(points)
         heelVec3, isLeftFoot);
     [newPoint(1), newPoint(2)] = rotateValues2D(newPoint(1), ...
         newPoint(2), theta);
+    newPoint(2) = newPoint(2) + (heelVec3.get(2) - calcnVec3.get(2));
     bodyName = hindfootBodyName;
     % Check whether a marker is above the toe joint, and use relative body
     % positions to place the marker in the correct parent frame. 
@@ -79,9 +80,9 @@ else
     pointY = point(1);
 end
 pointY = pointY * normalizedFootWidth;
-averageHorizontal = (normalizedMarkerPositions.toe(2) + ...
-    normalizedMarkerPositions.heel(2)) / 2;
-pointY = pointY - (averageHorizontal * normalizedFootWidth) / 2;
+averageHorizontal = (normalizedMarkerPositions.lateral(2) + ...
+    normalizedMarkerPositions.medial(2)) / 2;
+pointY = pointY - (averageHorizontal * normalizedFootWidth);
 newPoint = [pointX, pointY];
 end
 

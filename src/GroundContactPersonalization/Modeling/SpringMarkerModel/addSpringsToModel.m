@@ -48,7 +48,8 @@ if isLeftFoot
     end
 end
 
-[markerPositions, theta] = rotateMarkersToeToHeelVertical(meanMarkerLocations);
+markerPositions = rotateMarkersToeToHeelVertical(meanMarkerLocations);
+theta = findTheta(model, hindfootBodyName, toesBodyName, markerNames);
 normalizedMarkerPositions = removeNormalizedMarkerOffsets( ...
     normalizeMarkerPositions(markerPositions));
 model = addSpringsToModelAtLocations(model, markerPositions, ...
@@ -57,3 +58,33 @@ model = addSpringsToModelAtLocations(model, markerPositions, ...
 model.finalizeConnections();
 end
 
+function theta = findTheta(model, hindfootBodyName, toesBodyName, markerNames)
+
+[model, state] = Model(model);
+calcnVec3 = model.getBodySet().get(hindfootBodyName) ...
+    .getPositionInGround(state);
+toesVec3 = model.getBodySet().get(toesBodyName) ...
+    .getPositionInGround(state);
+heelVec3 = model.getMarkerSet().get(markerNames.heel) ...
+    .get_location();
+toeVec3 = model.getMarkerSet().get(markerNames.toe) ...
+    .get_location();
+
+start = [heelVec3.get(0), heelVec3.get(2)];
+finish = [toeVec3.get(0), toeVec3.get(2)];
+
+newFinish = [];
+newFinish(1) = finish(1) + toesVec3.get(0) - calcnVec3.get(0);
+newFinish(2) = finish(2) + toesVec3.get(2) - calcnVec3.get(2);
+difference = newFinish - start;
+
+theta = solveForTheta2DRotationMatrix(difference(1), difference(2), 1, 0);
+
+end
+
+function theta = solveForTheta2DRotationMatrix(initialX, initialY, ...
+    finalX, finalY)
+rotationAngles = asin(cross([finalX finalY 0], [initialX initialY 0]) / ...
+    (norm([initialX initialY]) * norm([finalX finalY])));
+theta = rotationAngles(3);
+end

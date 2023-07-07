@@ -27,8 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [markerPositions, theta] = ...
-    rotateMarkersToeToHeelVertical(markerPositions)
+function markerPositions = rotateMarkersToeToHeelVertical(markerPositions)
 markerNamesList = fieldnames(markerPositions);
 markersX = zeros(4,1);
 markersZ = zeros(4,1);
