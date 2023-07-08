@@ -40,6 +40,9 @@ function outputFile = getOutputFile(tree)
 outputFile = getFieldByNameOrError(tree, 'output_model_file').Text;
 resultsDir = getFieldByName(tree, 'results_directory').Text;
 if(resultsDir)
+    if ~exist(resultsDir, 'dir')
+        mkdir(resultsDir)
+    end
     outputFile = fullfile(resultsDir, outputFile);
 else
     outputFile = fullfile(pwd, outputFile);
