@@ -3,7 +3,7 @@
 % 
 %
 % (struct) -> (struct)
-% Use rotation matrices to rotate foot markers to GCP orientation. 
+% Rotate markers or other values by the given rotation (theta) value 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,38 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function markerPositions = rotateMarkersToeToHeelVertical(markerPositions)
-markerNamesList = fieldnames(markerPositions);
-markersX = zeros(4,1);
-markersZ = zeros(4,1);
-
-for i=1:length(markerNamesList)
-    markersX(i) = markerPositions.(markerNamesList{i})(1);
-    markersZ(i) = markerPositions.(markerNamesList{i})(2);
-end
-
-[~, topIndex] = max(markersX);
-top = [markersX(topIndex), markersZ(topIndex)];
-
-markersX = markersX - top(1);
-markersZ = markersZ - top(2);
-
-theta = solveForTheta2DRotationMatrix(markersZ(4), markersX(4), 0, 1);
-
-[markersZ, markersX] = rotateValues2D(markersZ, markersX, theta);
-
-markersX = markersX + top(1);
-markersZ = markersZ + top(2);
-
-for i=1:length(markerNamesList)
-    markerPositions.(markerNamesList{i})(1) = markersX(i);
-    markerPositions.(markerNamesList{i})(2) = markersZ(i);
-end
-end
-
-function theta = solveForTheta2DRotationMatrix(initialX, initialY, ...
-    finalX, finalY)
-rotationAngles = asin(cross([finalX finalY 0], [initialX initialY 0]) / ...
-    (norm([initialX initialY]) * norm([finalX finalY])));
-theta = rotationAngles(3);
+function [newXValues, newYValues] = rotateValues2D(xValues, yValues, theta)
+newXValues = (xValues * cos(theta)) - (yValues * sin(theta));
+newYValues = (xValues * sin(theta)) + (yValues * cos(theta));
 end
