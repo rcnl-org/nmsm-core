@@ -1,3 +1,47 @@
+% This function is part of the NMSM Pipeline, see file for full license.
+%
+% This function accepts a list of time pairs and input and output settings
+% and splits the data into trials given by the time pairs. The data is
+% written to the output directory specified in the output settings.
+%
+% inputSettings is a struct with the following fields:
+%   model: an opensim model, can be invoked with Model(modelFileName)
+%   ikFileName: a string or char array with the name of the ik data file
+%   idFileName: a string or char array with the name of the id data file
+%   emgFileName: a string or char array with the name of the emg data file
+%   grfFileName: a string or char array with the name of the grf data file
+%   maDirectory: a string or char array with the name of directory storing
+%       the muscle analysis data
+% outputSettings is a struct with the following fields:
+%   trialPrefix: a string or char array with the prefix for the trial
+%       (i.e. prefix 'gait' will result in trials named gait1, gait2, etc.)
+%   resultsDirectory: a string or char array with the name of the directory
+%
+% (2xN array, struct, struct) -> (None)
+% splits the data into trials given by time pairs
+
+% ----------------------------------------------------------------------- %
+% The NMSM Pipeline is a toolkit for model personalization and treatment  %
+% optimization of neuromusculoskeletal models through OpenSim. See        %
+% nmsm.rice.edu and the NOTICE file for more information. The             %
+% NMSM Pipeline is developed at Rice University and supported by the US   %
+% National Institutes of Health (R01 EB030520).                           %
+%                                                                         %
+% Copyright (c) 2021 Rice University and the Authors                      %
+% Author(s): Claire V. Hammond                                            %
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         %
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
+
 function splitIntoTrials(timePairs, inputSettings, outputSettings)
 
 model = inputSettings.model;
