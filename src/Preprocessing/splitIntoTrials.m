@@ -14,7 +14,7 @@
 %       the muscle analysis data
 % outputSettings is a struct with the following fields:
 %   trialPrefix: a string or char array with the prefix for the trial
-%       (i.e. prefix 'gait' will result in trials named gait1, gait2, etc.)
+%       (i.e. prefix 'gait' will name files gait_1, gait_2, etc.)
 %   resultsDirectory: a string or char array with the name of the directory
 %
 % (2xN array, struct, struct) -> (None)
