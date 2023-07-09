@@ -42,7 +42,8 @@ state = initializeState(model);
 scaleSet = org.opensim.modeling.ScaleSet();
 scale = org.opensim.modeling.Scale();
 scale.setSegmentName(bodyName);
-scale.setScaleFactors(org.opensim.modeling.Vec3(value));
+scale.setScaleFactors(org.opensim.modeling.Vec3(value / ...
+    getScalingParameterValue(model, bodyName)));
 scale.setApply(true);
 scaleSet.cloneAndAppend(scale);
 model.scale(state, scaleSet, true, -1.0);
