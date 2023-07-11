@@ -40,10 +40,9 @@ for i = 1:length(auxdata.costTerms)
             cost = cat(2, ...
                 cost,  ...
                 fn(values, modeledValues, auxdata, costTerm));
-%         else
-%             costTerm
-%             throw(MException('', ['Cost term type ' costTerm.type ...
-%                 ' does not exist for this tool.']))
+        else
+            throw(MException('', ['Cost term type ' costTerm.type ...
+                ' does not exist for this tool.']))
         end
     end
 end
