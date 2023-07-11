@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function sets up GPOPS-II to run Tracking Optimization.
-% 
+%
 % (struct) -> (struct, struct)
-% Assigns optimal control settings and runs Tracking Optimization 
+% Assigns optimal control settings and runs Tracking Optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,7 +28,7 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeTrackingOptimizationMainFunction(inputs, params)
-bounds = setupProblemBounds(inputs);
+bounds = setupProblemBounds(inputs, params);
 guess = setupCommonOptimalControlInitialGuess(inputs);
 setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
@@ -45,8 +45,9 @@ end
 output = computeTrackingOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
-function bounds = setupProblemBounds(inputs)
-bounds = setupCommonOptimalControlBounds(inputs);
+
+function bounds = setupProblemBounds(inputs, params)
+bounds = setupCommonOptimalControlBounds(inputs, params);
 % setup parameter bounds
 if strcmp(inputs.controllerType, 'synergy_driven')
     if inputs.optimizeSynergyVectors
