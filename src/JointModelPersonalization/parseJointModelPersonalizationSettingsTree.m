@@ -72,7 +72,7 @@ for i=1:length(jmpTasks)
     else
         task = jmpTasks{i};
     end
-    if(task.is_enabled.Text == 'true')
+    if strcmpi(task.is_enabled.Text, 'true')
         inputs{counter} = getTask(model, task);
         counter = counter + 1;
     end
