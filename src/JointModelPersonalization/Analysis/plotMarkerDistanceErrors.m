@@ -45,8 +45,9 @@ else
             xlabel('time (s)')
             ylabel('error (units of marker file)')
             plot(time, y);
-            legendList{end+1} = strcat(storages{j}. ...
-                getColumnLabels.get(i).toCharArray', num2str(j));
+            legendList{end+1} = strrep(strcat(storages{j}. ...
+                getColumnLabels.get(i).toCharArray', num2str(j)), ...
+                '_', '\_');
         end
         legend(legendList)
         legendList = {};
