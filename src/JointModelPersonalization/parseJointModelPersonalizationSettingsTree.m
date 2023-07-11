@@ -41,7 +41,12 @@ outputFile = getFieldByNameOrError(tree, 'output_model_file').Text;
 resultsDir = getFieldByName(tree, 'results_directory').Text;
 if(resultsDir)
     if ~exist(resultsDir, 'dir')
-        mkdir(resultsDir)
+        try
+            mkdir(resultsDir)
+        catch
+            throw(MException('', "Cannot find output directory " + ...
+                resultsDir))
+        end
     end
     outputFile = fullfile(resultsDir, outputFile);
 else
