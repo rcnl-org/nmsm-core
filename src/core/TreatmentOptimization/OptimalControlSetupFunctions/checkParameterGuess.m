@@ -65,7 +65,7 @@ if strcmp(inputs.controllerType, 'synergy_driven')
     inputs = getMuscleSynergiesInitialGuess(inputs);
     for i = 1 : length(inputs.coordinateNames)
         for j = 1 : length(inputs.surrogateModelCoordinateNames)
-            if contains(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
+            if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
                 inputs.surrogateModelIndex(j) = i;
             end
         end 
@@ -73,7 +73,7 @@ if strcmp(inputs.controllerType, 'synergy_driven')
     inputs.dofsActuatedIndex = [];
     for i = 1 : length(inputs.inverseDynamicMomentLabels)
         for j = 1 : length(inputs.surrogateModelCoordinateNames)
-            if contains(inputs.inverseDynamicMomentLabels(i), ...
+            if strcmp(inputs.inverseDynamicMomentLabels(i), ...
                     strcat(inputs.surrogateModelCoordinateNames(j), '_moment'))
                 inputs.dofsActuatedIndex(end+1) = j;
             end
