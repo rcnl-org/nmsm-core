@@ -29,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function bounds = setupCommonOptimalControlBounds(inputs)
+function bounds = setupCommonOptimalControlBounds(inputs, params)
 % setup time bounds
 bounds.phase.initialtime.lower = -0.5;
 bounds.phase.initialtime.upper = -0.5;
@@ -50,7 +50,7 @@ bounds.phase.control.lower = -0.5 * ones(1, length(inputs.minControl));
 bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
 % setup integral bounds
 bounds.phase.integral.lower = zeros(1, length(inputs.minIntegral));
-bounds.phase.integral.upper = inputs.integralBound * ones(1, length(inputs.minIntegral));
+bounds.phase.integral.upper = params.solverSettings.integralBound * ones(1, length(inputs.minIntegral));
 % setup terminal constraint bounds
 if ~isempty(inputs.minTerminal)
     bounds.eventgroup.lower = inputs.minTerminal;
