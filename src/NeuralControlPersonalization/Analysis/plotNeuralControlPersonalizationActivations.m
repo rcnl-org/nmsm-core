@@ -68,11 +68,11 @@ for i = 1:size(muscleActivations, 1)
         hasLegend = false;
     end
     subplot(figureHeight, figureWidth, subplotNumber)
-    plot(time, muscleActivations(i, :))
+    plot(time, muscleActivations(i, :), 'LineWidth', 2)
     mtpIndex = find(muscleNames(i) == mtpMuscleNames);
     if ~isempty(mtpIndex)
         hold on
-        plot(time, mtpActivations(mtpIndex, :));
+        plot(time, mtpActivations(mtpIndex, :), 'LineWidth', 2);
         if ~hasLegend
             legend("NCP Results", "Previous Activations")
             hasLegend = true;
@@ -80,6 +80,7 @@ for i = 1:size(muscleActivations, 1)
         hold off
     end
     title(strrep(muscleNames(i), "_", " "))
+    ylim([0 1])
     subplotNumber = subplotNumber + 1;
 end
 end
