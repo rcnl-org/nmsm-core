@@ -44,9 +44,11 @@ end
 
 momentLabelsNoSuffix = erase(params.inverseDynamicMomentLabels, '_moment');
 momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(params.coordinateNames));
+experimentalColsInModeled = ismember(momentLabelsNoSuffix, convertCharsToStrings(params.coordinateNames));
+modeledColsInExperimental = ismember(convertCharsToStrings(params.coordinateNames), momentLabelsNoSuffix);
 if size(inverseDynamicMoments, 2) ~= size(experimentalJointMoments, 2)
-    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
+    experimentalJointMoments = experimentalJointMoments(:, experimentalColsInModeled);
+    inverseDynamicMoments = inverseDynamicMoments(:, modeledColsInExperimental);
 end
 cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
     inverseDynamicMoments, indx);

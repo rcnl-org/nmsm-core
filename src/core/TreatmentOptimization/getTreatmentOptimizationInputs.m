@@ -66,6 +66,7 @@ inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs.initialGuess = getGpopsInitialGuess(tree);
 inputs.experimentalTime = inputs.experimentalTime / ...
     inputs.experimentalTime(end);
+inputs = reorderTreatmentOptimizationDataByCoordinates(inputs);
 inputs.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
 inputs.path = getPathConstraintTerms(tree);
