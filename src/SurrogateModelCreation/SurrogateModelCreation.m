@@ -90,19 +90,15 @@ end
 function [cells, columnNames] = parseInverseKinematicsFile(files, model)
 import org.opensim.modeling.*
 file = Storage(files(1));
-dataFromFileOne = storageToDoubleMatrix(file);
-columnNames = getStorageColumnNames(file);
+osimModel = Model(model);
+[columnNames, ~, dataFromFileOne] = parseMotToComponents(osimModel, file);
 cells = zeros([length(files) ...
     size(dataFromFileOne)]);
 cells(1, :, :) = dataFromFileOne;
 for i=2:length(files)
-    cells(i, :, :) = storageToDoubleMatrix(Storage(files(i)));
-end
-osimModel = Model(model);
-for i = 1:length(columnNames)
-    if strcmp(osimModel.getCoordinateSet.get(columnNames(i)).getMotionType(), 'Rotational')
-        cells(:, i, :) = cells(:, i, :) * pi/180;
-    end
+    [~, ~, data] = parseMotToComponents(osimModel, ...
+        Storage(files(i)));
+    cells(i, :, :) = data;
 end
 end
 
