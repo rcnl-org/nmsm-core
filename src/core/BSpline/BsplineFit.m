@@ -2,7 +2,8 @@
 %
 % Fits a B-spline curve to a set of data points.
 %
-% (array of num, array of num, num, num) => (2d mat, 2d mat, 2d mat)
+% (Array of double, Array of double, double, double) 
+% -> (Array of double, Array of double, Array of double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
