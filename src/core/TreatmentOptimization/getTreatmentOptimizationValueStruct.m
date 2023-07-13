@@ -43,11 +43,11 @@ values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
 values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
 values.controlJerks = control(:, 1 : params.numCoordinates);
 
-if ~strcmp(params.controllerType, 'synergy_driven')
-    values.controlTorques = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numTorqueControls);
-else 
+if strcmp(params.controllerType, 'synergy_driven')
     values.controlSynergyActivations = control(:, ...
     params.numCoordinates + 1 : params.numCoordinates + params.numSynergies);
+else 
+    values.controlTorques = control(:, params.numCoordinates + 1 : ...
+    params.numCoordinates + params.numTorqueControls);
 end
 end

@@ -43,6 +43,7 @@ if inputs.optimizeSynergyVectors
     solution.phase.parameter = solution.parameter;
 end
 output = computeTrackingOptimizationContinuousFunction(solution);
+output = reduceSolutionToCoordinateList(output, inputs);
 output.solution = solution;
 end
 
@@ -55,4 +56,9 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
 end
+end
+
+function output = reduceSolutionToCoordinateList(output, inputs)
+output.inverseDynamicMoments = ...
+    output.inverseDynamicMoments(:, inputs.indicesInParsedIdData);
 end
