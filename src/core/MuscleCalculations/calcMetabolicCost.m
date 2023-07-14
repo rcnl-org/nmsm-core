@@ -6,7 +6,7 @@
 % specified in the ProbeSet. 
 %
 % (Array of number, 2D matrix, 2D matrix, struct) -> (Array of number)
-% 
+% Calculates metabolic cost using a model's ProbeSet.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
