@@ -105,9 +105,8 @@ for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts 
             accelsVec.set(i, accelsTempVec(j - indexOffset, includedQIndex));
             includedQIndex = includedQIndex + 1;
         end
-    end    
-    IDLoadsVec = inverseDynamicsSolver.solve(osimState, accelsVec, ...
-        Vector(), VectorOfSpatialVec());
+    end
+    IDLoadsVec = inverseDynamicsSolver.solve(osimState,accelsVec);
     for i=0 : numCoords - 1
         inverseDynamicJobs(j - indexOffset, i + 1) = IDLoadsVec.get(i);
     end
