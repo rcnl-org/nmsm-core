@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the joint velocities, accelerations, and jerk
-% based of the experimental joint angles
+% based of the experimental joint angles using 5th degree GCV splines.
 %
 % (struct) -> (struct)
 % Returns state derivatives
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams, Claire V. Hammond            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,13 +29,21 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = getStateDerivatives(inputs)
-points = length(inputs.experimentalTime);
-interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);
-[N, Np, Npp] = BSplineMatrices(5, 10, points, interval);
-Nodes = N\inputs.experimentalJointAngles;
-inputs.experimentalJointVelocities = Np * Nodes;
-inputs.experimentalJointAccelerations = Npp * Nodes;
-inputs.experimentalJointJerks = calcBSplineDerivative( ...
-    inputs.experimentalTime, inputs.experimentalJointAccelerations, ...
-    2, 10);
+% Use 5th degree GCV splines to match OpenSim ID method in GUI tool
+storage = org.opensim.modeling.Storage(inputs.kinematicsFile);
+gcvSplineSet = org.opensim.modeling.GCVSplineSet(5, storage);
+timeCol = findTimeColumn(storage);
+velocity = zeros(length(timeCol), storage.getColumnLabels.getSize() - 1);
+acceleration = velocity;
+jerk = velocity;
+for i = 0:gcvSplineSet.getSize()-1
+    for j = 1:length(timeCol)
+        velocity(j, i+1) = gcvSplineSet.evaluate(i, 1, timeCol(j));
+        acceleration(j, i+1) = gcvSplineSet.evaluate(i, 2, timeCol(j));
+        jerk(j, i+1) = gcvSplineSet.evaluate(i, 3, timeCol(j));
+    end
+end
+inputs.experimentalJointVelocities = velocity;
+inputs.experimentalJointAccelerations = acceleration;
+inputs.experimentalJointJerks = jerk;
 end
