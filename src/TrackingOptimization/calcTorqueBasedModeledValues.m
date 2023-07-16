@@ -45,10 +45,9 @@ if ~isempty(params.contactSurfaces)
     modeledValues.groundReactionsLab = calcGroundReactionsLab(groundReactions);
     appliedLoads = [appliedLoads groundReactionsBody];
 end
-valuesID = updateStateDerivatives(values, params);
-modeledValues.inverseDynamicMoments = inverseDynamics(valuesID.time, ...
-    valuesID.statePositions, valuesID.stateVelocities, ...
-    valuesID.stateAccelerations, params.coordinateNames, appliedLoads, ...
+modeledValues.inverseDynamicMoments = inverseDynamics(values.time, ...
+    values.statePositions, values.stateVelocities, ...
+    values.stateAccelerations, params.coordinateNames, appliedLoads, ...
     params.mexModel);
 end
 
@@ -115,28 +114,4 @@ for i = 1:length(groundReactions.parentForces)
     groundReactionsInLab.moments{i} = ...
         groundReactions.parentMoments{i} + groundReactions.childMoments{i};
 end
-end
-
-function values = updateStateDerivatives(values, inputs)
-import org.opensim.modeling.TimeSeriesTable
-import org.opensim.modeling.STOFileAdapter
-table = TimeSeriesTable();
-columnLabelsVec = stringArrayToStdVectorString(convertCharsToStrings(inputs.coordinateNames));
-table.setColumnLabels(columnLabelsVec);
-for i=1:length(values.time)
-    table.appendRow(values.time(i), doubleArrayToRowVector(values.statePositions(i, :)))
-end
-
-gcvSplineSet = org.opensim.modeling.GCVSplineSet(table, columnLabelsVec, 5);
-timeCol = values.time';
-velocity = zeros(length(timeCol), length(inputs.coordinateNames));
-acceleration = velocity;
-for i = 0:gcvSplineSet.getSize()-1
-    for j = 1:length(timeCol)
-        velocity(j, i+1) = gcvSplineSet.evaluate(i, 1, timeCol(j));
-        acceleration(j, i+1) = gcvSplineSet.evaluate(i, 2, timeCol(j));
-    end
-end
-values.stateVelocities = velocity;
-values.stateAccelerations = acceleration;
 end
