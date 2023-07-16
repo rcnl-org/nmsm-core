@@ -29,21 +29,30 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = getStateDerivatives(inputs)
-% Use 5th degree GCV splines to match OpenSim ID method in GUI tool
-storage = org.opensim.modeling.Storage(inputs.kinematicsFile);
-gcvSplineSet = org.opensim.modeling.GCVSplineSet(5, storage);
-timeCol = findTimeColumn(storage);
-velocity = zeros(length(timeCol), storage.getColumnLabels.getSize() - 1);
-acceleration = velocity;
-jerk = velocity;
-for i = 0:gcvSplineSet.getSize()-1
-    for j = 1:length(timeCol)
-        velocity(j, i+1) = gcvSplineSet.evaluate(i, 1, timeCol(j));
-        acceleration(j, i+1) = gcvSplineSet.evaluate(i, 2, timeCol(j));
-        jerk(j, i+1) = gcvSplineSet.evaluate(i, 3, timeCol(j));
-    end
-end
-inputs.experimentalJointVelocities = velocity;
-inputs.experimentalJointAccelerations = acceleration;
-inputs.experimentalJointJerks = jerk;
+points = length(inputs.experimentalTime);
+interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);
+[N, Np, Npp] = BSplineMatrices(5, 10, points, interval);
+Nodes = N\inputs.experimentalJointAngles;
+inputs.experimentalJointVelocities = Np * Nodes;
+inputs.experimentalJointAccelerations = Npp * Nodes;
+inputs.experimentalJointJerks = calcBSplineDerivative( ...
+    inputs.experimentalTime, inputs.experimentalJointAccelerations, ...
+    2, 10);
+% % Use 5th degree GCV splines to match OpenSim ID method in GUI tool
+% storage = org.opensim.modeling.Storage(inputs.kinematicsFile);
+% gcvSplineSet = org.opensim.modeling.GCVSplineSet(5, storage);
+% timeCol = findTimeColumn(storage);
+% velocity = zeros(length(timeCol), storage.getColumnLabels.getSize() - 1);
+% acceleration = velocity;
+% jerk = velocity;
+% for i = 0:gcvSplineSet.getSize()-1
+%     for j = 1:length(timeCol)
+%         velocity(j, i+1) = gcvSplineSet.evaluate(i, 1, timeCol(j));
+%         acceleration(j, i+1) = gcvSplineSet.evaluate(i, 2, timeCol(j));
+%         jerk(j, i+1) = gcvSplineSet.evaluate(i, 3, timeCol(j));
+%     end
+% end
+% inputs.experimentalJointVelocities = velocity;
+% inputs.experimentalJointAccelerations = acceleration;
+% inputs.experimentalJointJerks = jerk;
 end
