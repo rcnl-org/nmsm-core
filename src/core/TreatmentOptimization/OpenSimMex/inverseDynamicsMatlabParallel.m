@@ -79,17 +79,10 @@ for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts 
                 setValue(osimState,jointAngles(j, k));
             osimModel.getCoordinateSet.get(coordinateLabels{k}). ...
                 setSpeedValue(osimState,jointVelocities(j, k));
+            accelsTempVec(j - indexOffset, k) = jointAccelerations(j, k);
         end
     end
     osimModel.realizeVelocity(osimState);
-    for i=1:osimState.getNQ
-        statePositions = osimState.getQ.get(i-1);
-        for ii = 1:size(jointAngles,2)
-            if abs(jointAngles(j, ii) - statePositions) <= 1e-6
-                accelsTempVec(j - indexOffset, i) = jointAccelerations(j, ii);
-            end
-        end
-    end
     newControls = Vector(numControls,0);
     for i=0 : numControls - 1
         newControls.set(i, appliedLoads(j, i + 1));
