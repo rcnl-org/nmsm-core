@@ -31,6 +31,7 @@
 
 function VerificationOptimizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
+verifyVersion(settingsTree, "VerificationOptimizationTool");
 [inputs, params] = parseVerificationOptimizationSettingsTree(settingsTree);
 [outputs, inputs] = VerificationOptimization(inputs, params);
 reportTreatmentOptimizationResults(outputs, inputs);
