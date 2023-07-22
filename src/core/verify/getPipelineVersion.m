@@ -1,11 +1,19 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the GroundContactPersonalization function
-% such that an xml file can be passed and the resulting computation can be
-% completed according to the instructions of that file.
+% This function hard codes the version of the software. It is used to
+% check compatibility between the software and the settings files for
+% different versions of the software.
 %
-% (string) -> (None)
-% Run GroundContactPersonalization from settings file.
+% This value should be updated with each release. Please use semantic
+% versioning (https://semver.org/) to determine the version number.
+%
+% Specifically, versions are of the form MAJOR.MINOR.PATCH
+% MAJOR version when you make incompatible API changes,
+% MINOR version when you add functionality in a backwards compatible manner,
+% PATCH version when you make backwards compatible bug fixes.
+%
+% () -> (string)
+% return: version number of the software as a string
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,13 +37,6 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function GroundContactPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "GroundContactPersonalizationTool");
-[inputs, params, resultsDirectory] = ...
-    parseGroundContactPersonalizationSettingsTree(settingsTree);
-results = GroundContactPersonalization(inputs, params);
-saveGroundContactPersonalizationResults(results, params, ...
-    resultsDirectory, inputs.inputOsimxFile);
+function version = getPipelineVersion()
+version = "1.0.0";
 end
-
