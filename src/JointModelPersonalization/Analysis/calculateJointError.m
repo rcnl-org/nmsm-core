@@ -40,6 +40,7 @@ for i=1:length(jointNames)
         end
     end
 end
+clear computeInnerOptimization
 error = computeInnerOptimization([], {}, model, markerFileName, params);
 error = sum(error.^2);
 end

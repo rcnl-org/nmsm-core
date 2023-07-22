@@ -51,6 +51,16 @@ inputs.kinematicsFilterCutoff = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'kinematics_filter_cutoff', '6')));
 inputs.latchingVelocity = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'latching_velocity', '0.05')));
+inputs.gridWidth = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'grid_width', '5')));
+if isempty(inputs.gridWidth) || isnan(inputs.gridWidth) 
+    inputs.gridWidth = 5; 
+end
+inputs.gridHeight = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'grid_height', '15')));
+if isempty(inputs.gridHeight) || isnan(inputs.gridHeight)
+    inputs.gridHeight = 15; 
+end
 if(~isempty(inputDirectory))
     try
         bodyModel = Model(inputs.bodyModel);

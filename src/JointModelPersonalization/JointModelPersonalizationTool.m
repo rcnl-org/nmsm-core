@@ -5,7 +5,7 @@
 % computation can be completed according to the instructions of that file.
 %
 % (string) -> (None)
-% Run JointModelPersonalization from settings file
+% Runs JointModelPersonalization after parsing inputs from settings file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -31,7 +31,9 @@
 
 function JointModelPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
-[outputFile, inputs, params] = parseJointModelPersonalizationSettingsTree(settingsTree);
+verifyVersion(settingsTree, "JointModelPersonalizationTool");
+[outputFile, inputs, params] = ...
+    parseJointModelPersonalizationSettingsTree(settingsTree);
 newModel = JointModelPersonalization(inputs, params);
 newModel.print(outputFile);
 end

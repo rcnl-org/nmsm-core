@@ -29,14 +29,14 @@
 
 function output = computeDesignOptimizationMainFunction(inputs, params)
 guess = setupCommonOptimalControlInitialGuess(inputs);
-bounds = setupProblemBounds(inputs, guess);
+bounds = setupProblemBounds(inputs, params, guess);
 guess = addUserDefinedTermsToGuess(guess, inputs);
 setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
     @computeDesignOptimizationContinuousFunction, ...
     @computeDesignOptimizationEndpointFunction);
 checkInitialGuess(guess, inputs, ...
-    @computeVerificationOptimizationContinuousFunction);
+    @computeDesignOptimizationContinuousFunction);
 solution = gpops2(setup);
 solution = solution.result.solution;
 solution.auxdata = inputs;
@@ -44,8 +44,9 @@ solution.phase.parameter = [solution.parameter];
 output = computeDesignOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
-function bounds = setupProblemBounds(inputs, guess)
-bounds = setupCommonOptimalControlBounds(inputs);
+
+function bounds = setupProblemBounds(inputs, params, guess)
+bounds = setupCommonOptimalControlBounds(inputs, params);
 % setup parameter bounds
 if strcmp(inputs.controllerType, 'synergy_driven')
     if inputs.optimizeSynergyVectors

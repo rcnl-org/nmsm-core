@@ -36,7 +36,7 @@ for i=1:length(inputs.tasks)
     functions = makeFunctions(inputs.tasks{i}.parameters, ...
         inputs.tasks{i}.scaling, inputs.tasks{i}.markers);
     params.markerNames = getMarkersOnJoints(outputModel, ...
-        inputs.tasks{i}.parameters, inputs.tasks{i}.scaling);
+        inputs.tasks{i});
     taskParams = mergeStructs(inputs.tasks{i}, params);
     optimizedValues = computeKinematicCalibration(inputs.model, ...
         inputs.tasks{i}.markerFile, functions, inputs.desiredError, ...
@@ -122,9 +122,16 @@ for i=1:length(markers)
 end
 end
 
-function markerNames = getMarkersOnJoints(model, parameters, bodies)
+function markerNames = getMarkersOnJoints(model, task)
 import org.opensim.modeling.*
+parameters = task.parameters;
+bodies = task.scaling;
 markerNames = {};
+for i = 1:length(task.markers)
+    if ~any(strcmp(markerNames, task.markers{i}(1)))
+        markerNames{end+1} = convertStringsToChars(task.markers{i}(1));
+    end
+end
 jointNames = {};
 for i=1:length(parameters)
     if ~any(strcmp(jointNames,parameters{i}{1}))

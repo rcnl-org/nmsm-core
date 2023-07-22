@@ -31,9 +31,6 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = prepareGroundContactPersonalizationInputs(inputs)
-inputs.gridWidth = 5;
-inputs.gridHeight = 15;
-
 % Mean marker locations are used to ensure any included feet have the same 
 % number of spring markers. 
 meanRightFootMarkerLocations = getMeanFootMarkerLocations(inputs);

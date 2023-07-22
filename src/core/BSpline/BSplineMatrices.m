@@ -1,16 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% BSPLINEMATRICES generates the matrices necessary to create a B-spline
-%    curve and its first and second time derivative.
-%
-%    [N, NP, NPP] = BSPLINEMATRICES computes and saves to disk the B-spline
-%    N coefficent matrix and its first and second time derivatives (NP and
-%    NPP) given the B-spline degree, number of nodes, number of output time
-%    frames, and sampling interval.
-%
-%    Example
-%        [N, Np, Npp] = BSplineMatrices(5, 20, 101, 0.01);
-% (number, number, number, number) => (2d matrix, 2d matrix, 2d matrix)
+% Generates the matrices necessary to create a B-spline curve and its 
+% first and second time derivative given the B-spline degree, number of 
+% nodes, number of output time frames, and sampling interval.
+% 
+% (double, double, double, double) 
+% -> (Array of double, Array of double, Array of double)
+% Generates B-spline matrices to represent data and two derivatives. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

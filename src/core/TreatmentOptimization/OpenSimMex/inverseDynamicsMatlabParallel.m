@@ -41,10 +41,9 @@ numCoords = length(coordinateLabels);
 % Split time points into parallel problems
 numWorkers = gcp().NumWorkers;
 inverseDynamicJobs = cell(1, numWorkers);
-accelsTempVec = cell(1, numWorkers);
 parfor worker = 1:numWorkers
     inverseDynamicJobs{worker} = idWorkerHelper(modelName, numPts, ...
-        numControls, numCoords, numWorkers, accelsTempVec{worker}, ...
+        numControls, numCoords, numWorkers, ...
         time, jointAngles, jointVelocities, jointAccelerations, ...
         coordinateLabels,appliedLoads,worker);
 end
@@ -55,7 +54,7 @@ for job = 2 : numWorkers
 end
 end
 function inverseDynamicJobs = idWorkerHelper(modelName, numPts, ...
-    numControls, numCoords, numWorkers, accelsTempVec, time, jointAngles, ...
+    numControls, numCoords, numWorkers, time, jointAngles, ...
     jointVelocities, jointAccelerations, coordinateLabels, appliedLoads, ...
     worker)
     
@@ -68,10 +67,10 @@ if isempty(osimModel)
     osimState = osimModel.initSystem();
     inverseDynamicsSolver = InverseDynamicsSolver(osimModel);
 end
-inverseDynamicJobs = zeros(length(1 + (worker - 1) * ceil(numPts / numWorkers) : ...
-    min(worker * ceil(numPts / numWorkers), numPts)), numCoords);
-indexOffset = (worker - 1) * ceil(numPts / numWorkers);
-for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts / numWorkers), numPts)
+inverseDynamicJobs = [];
+start = round((numPts/numWorkers) * (worker-1)) + 1;
+stop = round((numPts/numWorkers) * (worker));
+for j = start : stop
     osimState.setTime(time(j,1));
     for k=1:size(coordinateLabels,2)
         if ~osimModel.getCoordinateSet.get(coordinateLabels{k}).get_locked
@@ -79,14 +78,16 @@ for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts 
                 setValue(osimState,jointAngles(j, k));
             osimModel.getCoordinateSet.get(coordinateLabels{k}). ...
                 setSpeedValue(osimState,jointVelocities(j, k));
+%             accelsTempVec(j - indexOffset, k) = jointAccelerations(j, k);
         end
     end
     osimModel.realizeVelocity(osimState);
+    accelsTempVec = zeros(1, osimState.getNQ());
     for i=1:osimState.getNQ
-        statePositions = osimState.getQ.get(i-1);
+        StateQ = osimState.getQ.get(i-1);
         for ii = 1:size(jointAngles,2)
-            if abs(jointAngles(j, ii) - statePositions) <= 1e-6
-                accelsTempVec(j - indexOffset, i) = jointAccelerations(j, ii);
+            if abs(jointAngles(j,ii)-StateQ) <= 1e-6
+                accelsTempVec(i) = jointAccelerations(j,ii);
             end
         end
     end
@@ -97,18 +98,19 @@ for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts 
     osimModel.setControls(osimState, newControls);
     osimModel.markControlsAsValid(osimState);
     osimModel.realizeDynamics(osimState);
+    
     accelsVec = Vector(osimState.getNQ, 0);
     includedQIndex = 1;
     for i=0:osimState.getNQ-1
-        currentCoordinate = osimModel.getCoordinateSet().get(i).getName().toCharArray';
-        if any(cellfun(@isequal, coordinateLabels, repmat({currentCoordinate}, 1, length(coordinateLabels))))
-            accelsVec.set(i, accelsTempVec(j - indexOffset, includedQIndex));
+%         currentCoordinate = osimModel.getCoordinateSet().get(i).getName().toCharArray';
+%         if any(cellfun(@isequal, coordinateLabels, repmat({currentCoordinate}, 1, length(coordinateLabels))))
+            accelsVec.set(i, accelsTempVec(includedQIndex));
             includedQIndex = includedQIndex + 1;
-        end
-    end
-    IDLoadsVec = inverseDynamicsSolver.solve(osimState,accelsVec);
+%         end
+    end    
+    IDLoadsVec = inverseDynamicsSolver.solve(osimState, accelsVec);
     for i=0 : numCoords - 1
-        inverseDynamicJobs(j - indexOffset, i + 1) = IDLoadsVec.get(i);
+        inverseDynamicJobs(j-start + 1, i + 1) = IDLoadsVec.get(i);
     end
 end
 end

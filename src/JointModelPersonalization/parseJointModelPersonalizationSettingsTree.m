@@ -38,8 +38,16 @@ end
 
 function outputFile = getOutputFile(tree)
 outputFile = getFieldByNameOrError(tree, 'output_model_file').Text;
-resultsDir = getFieldByNameOrError(tree, 'results_directory').Text;
+resultsDir = getFieldByName(tree, 'results_directory').Text;
 if(resultsDir)
+    if ~exist(resultsDir, 'dir')
+        try
+            mkdir(resultsDir)
+        catch
+            throw(MException('', "Cannot find output directory " + ...
+                resultsDir))
+        end
+    end
     outputFile = fullfile(resultsDir, outputFile);
 else
     outputFile = fullfile(pwd, outputFile);
@@ -64,7 +72,7 @@ for i=1:length(jmpTasks)
     else
         task = jmpTasks{i};
     end
-    if(task.is_enabled.Text == 'true')
+    if strcmpi(task.is_enabled.Text, 'true')
         inputs{counter} = getTask(model, task);
         counter = counter + 1;
     end

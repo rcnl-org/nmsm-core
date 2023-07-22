@@ -31,6 +31,7 @@
 
 function GroundContactPersonalizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
+verifyVersion(settingsTree, "GroundContactPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(settingsTree);
 results = GroundContactPersonalization(inputs, params);

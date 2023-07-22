@@ -31,6 +31,7 @@
 
 function DesignOptimizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
+verifyVersion(settingsTree, "DesignOptimizationTool");
 [inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
 [outputs, inputs] = DesignOptimization(inputs, params);
 reportTreatmentOptimizationResults(outputs, inputs);

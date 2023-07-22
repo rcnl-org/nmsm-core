@@ -28,7 +28,7 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeVerificationOptimizationMainFunction(inputs, params)
-bounds = setupProblemBounds(inputs);
+bounds = setupProblemBounds(inputs, params);
 guess = setupCommonOptimalControlInitialGuess(inputs);
 setup = setupCommonOptimalControlSolverSettings(inputs, ...
     bounds, guess, params, ...
@@ -43,6 +43,6 @@ output = computeVerificationOptimizationContinuousFunction(solution);
 output.solution = solution;
 end
 
-function bounds = setupProblemBounds(inputs)
-bounds = setupCommonOptimalControlBounds(inputs);
+function bounds = setupProblemBounds(inputs, params)
+bounds = setupCommonOptimalControlBounds(inputs, params);
 end

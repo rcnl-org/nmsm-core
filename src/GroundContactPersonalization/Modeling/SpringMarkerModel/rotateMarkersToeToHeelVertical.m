@@ -31,6 +31,7 @@ function markerPositions = rotateMarkersToeToHeelVertical(markerPositions)
 markerNamesList = fieldnames(markerPositions);
 markersX = zeros(4,1);
 markersZ = zeros(4,1);
+
 for i=1:length(markerNamesList)
     markersX(i) = markerPositions.(markerNamesList{i})(1);
     markersZ(i) = markerPositions.(markerNamesList{i})(2);
@@ -44,7 +45,7 @@ markersZ = markersZ - top(2);
 
 theta = solveForTheta2DRotationMatrix(markersZ(4), markersX(4), 0, 1);
 
-[markersZ, markersX] = rotateValues(markersZ, markersX, theta);
+[markersZ, markersX] = rotateValues2D(markersZ, markersX, theta);
 
 markersX = markersX + top(1);
 markersZ = markersZ + top(2);
@@ -60,9 +61,4 @@ function theta = solveForTheta2DRotationMatrix(initialX, initialY, ...
 rotationAngles = asin(cross([finalX finalY 0], [initialX initialY 0]) / ...
     (norm([initialX initialY]) * norm([finalX finalY])));
 theta = rotationAngles(3);
-end
-
-function [newXValues, newYValues] = rotateValues(xValues, yValues, theta)
-newXValues = (xValues * cos(theta)) - (yValues * sin(theta));
-newYValues = (xValues * sin(theta)) + (yValues * cos(theta));
 end

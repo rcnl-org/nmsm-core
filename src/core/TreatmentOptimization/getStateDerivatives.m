@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the joint velocities, accelerations, and jerk
-% based of the experimental joint angles
+% based of the experimental joint angles using 5th degree GCV splines.
 %
 % (struct) -> (struct)
 % Returns state derivatives
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams, Claire V. Hammond            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,12 +29,13 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = getStateDerivatives(inputs)
-for i = 1 : size(inputs.experimentalJointAngles, 2)
-    inputs.experimentalJointVelocities (:, i) = calcDerivative(...
-        inputs.experimentalTime, inputs.experimentalJointAngles(:, i));
-    inputs.experimentalJointAccelerations (:, i) = calcDerivative(...
-        inputs.experimentalTime, inputs.experimentalJointVelocities(:, i));
-    inputs.experimentalJointJerks (:, i) = calcDerivative(...
-        inputs.experimentalTime, inputs.experimentalJointAccelerations(:, i));
-end
+points = length(inputs.experimentalTime);
+interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);
+[N, Np, Npp] = BSplineMatrices(5, 10, points, interval);
+Nodes = N\inputs.experimentalJointAngles;
+inputs.experimentalJointVelocities = Np * Nodes;
+inputs.experimentalJointAccelerations = Npp * Nodes;
+inputs.experimentalJointJerks = calcBSplineDerivative( ...
+    inputs.experimentalTime, inputs.experimentalJointAccelerations, ...
+    2, 10);
 end
