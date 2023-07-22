@@ -46,7 +46,7 @@ function [ s ] = xml2struct( file )
             end
             
             if (exist(file,'file') == 0)
-                error(['The file ' file ' could not be found']);
+                throw(MException('', strcat("The file ", file, " could not be found")));
             end
         end
         %read the xml file

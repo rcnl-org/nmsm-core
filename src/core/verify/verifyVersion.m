@@ -33,26 +33,28 @@
 function verifyVersion(settingsTree, toolName)
 if ~isfield(settingsTree, "NMSMPipelineDocument")
     throw(MException('verifyVersion:invalidSettingsFile', ...
-        'Settings file is not a valid NMSM Pipeline settings file.'))
+        strcat("Settings file is not a valid NMSM Pipeline settings file. ", ...
+        "The XML file is not an <NMSMPipelineDocument>")))
 end
-settingsFileVersion = settingsTree.NMSMPipelineDocument.Attribute.version;
-section = settingsFileVersion.split('.');
-if length(sections) == 0
+settingsFileVersion = convertCharsToStrings( ...
+    settingsTree.NMSMPipelineDocument.Attributes.Version);
+sections = settingsFileVersion.split('.');
+softwareSections = getPipelineVersion().split('.');
+if isempty(sections)
     throw(MException('verifyVersion:invalidSettingsFile', ...
         'Cannot find version number in settings file.'))
 end
 if length(sections) == 1
-    section(2) = 0;
+    sections(2) = 0;
 end
-if section(1) ~= getPipelineVersion().split('.')(1)
+if sections(1) ~= softwareSections(1)
     throw(MException('verifyVersion:invalidSettingsFile', ...
         strcat("Settings file is not compatible with this version of the NMSM Pipeline.", ...
         " Software version: ", getPipelineVersion(), ...
         " Settings file version: ", settingsFileVersion, ...
         " For the latest version of the NMSM Pipeline, please visit https://nmsm.rice.edu.")))
-        ))
 end
-if section(2) ~= getPipelineVersion().split('.')(2)
+if sections(2) ~= softwareSections(2)
     warning(strcat("Settings file may not be compatible with this version of the NMSM Pipeline.", ...
         " Software version: ", getPipelineVersion(), ...
         " Settings file version: ", settingsFileVersion, ...
