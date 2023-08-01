@@ -47,6 +47,8 @@ GCP creates a personalized contact array with varying spring constants for calcu
 
 ### Surrogate Model Creation
 
+The time varying quantities muscle-tendon lengths, muscle-tendon velocities, and moment arms are calculated using polynomial functions of the joint angles and velocities that share common coefficients.
+
 ### Tracking Optimization (TO)
 
 TO focuses on finding the optimal control strategies, either torque-driven or synergy-driven, that closely match the experimental motion, moments, external loads (if applicable), and muscle activity (if applicable). By minimizing the discrepancy between the predicted and experimental data, Tracking Optimization aims to reproduce the experimental movement.
