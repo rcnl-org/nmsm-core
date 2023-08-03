@@ -1,39 +1,54 @@
-function plotMomentMatchingResults(idStoFile,ncpStoFile)
-
-% Read in ID and NCP joint moments
-idData = importdata(idStoFile);
-ncpData = importdata(ncpStoFile);
-
-idMoments = idData.data(:,[8 11 13]);
-ncpMoments = ncpData.data(:,2:4);
-
-time = idData.data(:,1);
-
-% Plot ID and NCP moments
-subplot(1,3,1), plot(time,idMoments(:,1),'k-',time,ncpMoments(:,1),'r-')
-title('Hip Moment Comparison')
-subplot(1,3,2), plot(time,idMoments(:,2),'k-',time,ncpMoments(:,2),'r-')
-title('Knee Moment Comparison')
-subplot(1,3,3), plot(time,idMoments(:,3),'k-',time,ncpMoments(:,3),'r-')
-title('Ankle Moment Comparison')
-
-% Calculate RMS errors between ID and NCP moments
-rmsErrors = zeros(1,3);
-
-for i = 1:3
-    rmsErrors(1,i) = calcRMSError(idMoments(:,i),ncpMoments(:,i));
+function plotMomentMatchingResults(experimentalMomentsFile, ...
+    modeledMomentsFile, figureWidth, figureHeight)
+import org.opensim.modeling.Storage
+if nargin < 3
+    figureWidth = 4;
 end
-
-rmsErrors
-
+if nargin < 4
+    figureHeight = 2;
 end
+figureSize = figureWidth * figureHeight;
 
-%--------------------------------------------------------------------------
-function rmsError = calcRMSError(reference,predicted)
+[experimentalColumns, experimentalTime, experimentalMoments] = ...
+    parseMotToComponents(org.opensim.modeling.Model(), ...
+    Storage(experimentalMomentsFile));
+[modeledColumns, modeledTime, modeledMoments] = parseMotToComponents( ...
+    org.opensim.modeling.Model(), Storage(modeledMomentsFile));
 
-errors = predicted-reference;
-sumErrorsSquared = errors'*errors;
-nPts = size(reference,1);
-rmsError = sqrt(sumErrorsSquared/nPts);
+includedColumns = ismember(experimentalColumns, modeledColumns);
+experimentalMoments = experimentalMoments(includedColumns, :);
+experimentalColumns = experimentalColumns(includedColumns);
 
+figureNumber = 1;
+subplotNumber = 1;
+hasLegend = false;
+figure(figureNumber)
+for i = 1:length(experimentalColumns)
+    if i > figureSize * figureNumber
+        figureNumber = figureNumber + 1;
+        figure(figureNumber)
+        subplotNumber = 1;
+        hasLegend = false;
+    end
+    subplot(figureHeight, figureWidth, subplotNumber)
+    plot(experimentalTime, experimentalMoments(i, :), 'LineWidth', 2)
+    modeledIndex = find(experimentalColumns(i) == modeledColumns);
+    if ~isempty(modeledIndex)
+        hold on
+        plot(modeledTime, modeledMoments(modeledIndex, :), 'LineWidth', 2);
+        if ~hasLegend
+            legend("Experimental Moments", "Modeled Moments")
+            hasLegend = true;
+        end
+        hold off
+        error = rms(experimentalMoments(i, :) - ...
+            modeledMoments(modeledIndex, :));
+    else
+        error = "N/A";
+    end
+    title(strrep(experimentalColumns(i), "_", " ") + newline + ...
+        " RMSE: " + error)
+    xlim([modeledTime(1) modeledTime(end)])
+    subplotNumber = subplotNumber + 1;
+end
 end
