@@ -50,7 +50,8 @@ for i = 1 : inputs.numMuscles
             inputs.tendonSlackLength(end+1) = inputs.osimx.muscles. ...
                 (inputs.muscleNames(i)).tendonSlackLength;
         end
-        if isnan(inputs.osimx.muscles.(inputs.muscleNames(i)).maxIsometricForce)
+        if ~isfield(inputs.osimx.muscles.(inputs.muscleNames(i)), ...
+                "maxIsometricForce")
             inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
                 getMuscles().get(i-1).getMaxIsometricForce();
         else
