@@ -75,6 +75,7 @@ No installation is required, following the instructions below, download the pack
     - Signal Processing Toolbox
 - OpenSim 4.4 or greater
 - [OpenSim MATLAB Bindings](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+with+Matlab)
+- [GPOPS-II Optimal Control Solver](https://www.gpops2.com/) (for Treatment Optimization, not used in Model Personalization)
 
 ### Step-by-Step
 - Navigate to the [NMSM Pipeline SimTK Project](https://simtk.org/projects/nmsm).
