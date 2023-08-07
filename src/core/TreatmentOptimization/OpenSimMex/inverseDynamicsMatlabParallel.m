@@ -75,7 +75,7 @@ for j = start : stop
     for k=1:size(coordinateLabels,2)
         if ~osimModel.getCoordinateSet.get(coordinateLabels{k}).get_locked
             osimModel.getCoordinateSet.get(coordinateLabels{k}). ...
-                setValue(osimState,jointAngles(j, k));
+                setValue(osimState,jointAngles(j, k), false);
             osimModel.getCoordinateSet.get(coordinateLabels{k}). ...
                 setSpeedValue(osimState,jointVelocities(j, k));
 %             accelsTempVec(j - indexOffset, k) = jointAccelerations(j, k);
