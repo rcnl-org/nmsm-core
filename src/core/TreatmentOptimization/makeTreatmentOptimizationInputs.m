@@ -35,6 +35,8 @@ end
 inputs = getStateDerivatives(inputs);
 inputs = setupGroundContact(inputs);
 inputs = getSplines(inputs);
+inputs = getNewInverseDynamics(inputs);
+inputs = getSplines(inputs);
 inputs = checkStateGuess(inputs);
 inputs = checkControlGuess(inputs);
 inputs = checkParameterGuess(inputs);
@@ -44,3 +46,11 @@ inputs = getTerminalConstraintBounds(inputs);
 inputs = getDesignVariableInputBounds(inputs);
 end
 
+function inputs = getNewInverseDynamics(inputs)
+values.time = inputs.experimentalTime;
+values.statePositions = inputs.experimentalJointAngles;
+values.stateVelocities = inputs.experimentalJointVelocities;
+values.stateAccelerations = inputs.experimentalJointAccelerations;
+modeledValues = calcTorqueBasedModeledValues(values, inputs);
+inputs.experimentalJointMoments = modeledValues.inverseDynamicMoments;
+end
