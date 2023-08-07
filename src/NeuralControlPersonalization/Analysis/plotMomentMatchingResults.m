@@ -30,13 +30,16 @@
 % ----------------------------------------------------------------------- %
 
 function plotMomentMatchingResults(experimentalMomentsFile, ...
-    modeledMomentsFile, figureWidth, figureHeight)
+    modeledMomentsFile, figureWidth, figureHeight, figureNumber)
 import org.opensim.modeling.Storage
 if nargin < 3
     figureWidth = 4;
 end
 if nargin < 4
     figureHeight = 2;
+end
+if nargin < 5
+    figureNumber = 1;
 end
 figureSize = figureWidth * figureHeight;
 
@@ -50,14 +53,14 @@ includedColumns = ismember(experimentalColumns, modeledColumns);
 experimentalMoments = experimentalMoments(includedColumns, :);
 experimentalColumns = experimentalColumns(includedColumns);
 
-figureNumber = 1;
 subplotNumber = 1;
 hasLegend = false;
 figure(figureNumber)
+figureIndex = 1;
 for i = 1:length(experimentalColumns)
-    if i > figureSize * figureNumber
-        figureNumber = figureNumber + 1;
-        figure(figureNumber)
+    if i > figureSize * figureIndex
+        figureIndex = figureIndex + 1;
+        figure(figureNumber + figureIndex - 1)
         subplotNumber = 1;
         hasLegend = false;
     end
