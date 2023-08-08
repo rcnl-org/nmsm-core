@@ -40,7 +40,9 @@ checkInitialGuess(guess, inputs, ...
 solution = gpops2(setup);
 solution = solution.result.solution;
 solution.auxdata = inputs;
-solution.phase.parameter = [solution.parameter];
+if isfield(solution, 'parameter')
+    solution.phase.parameter = [solution.parameter];
+end
 output = computeDesignOptimizationContinuousFunction(solution);
 output.solution = solution;
 end

@@ -35,7 +35,7 @@ modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, modeledVal
 modeledValues.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
 path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
 if ~isempty(path)
-    modeledValues.path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+    modeledValues.path = path;
 end
 modeledValues.integrand = calcTrackingOptimizationIntegrand(values, modeledValues, inputs.auxdata);
 end

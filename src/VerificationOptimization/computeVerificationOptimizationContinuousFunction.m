@@ -34,7 +34,10 @@ values = getVerificationOptimizationValueStruct(inputs.phase, inputs.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, modeledValues);
 modeledValues.dynamics = calcVerificationOptimizationDynamicsConstraint(values, inputs.auxdata);
-modeledValues.path = calcVerificationOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+path = calcVerificationOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
+if ~isempty(path)
+    modeledValues.path = path;
+end
 modeledValues.integrand = calcVerificationOptimizationIntegrand(values, ...
     modeledValues, inputs.auxdata);
 end
