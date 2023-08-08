@@ -61,7 +61,8 @@ for term = 1:length(params.costTerms)
                     rawCost = 0;
                 end
             case "activation_minimization"
-                rawCost = reshape(activationsWithoutMtpData, [], 1);
+                errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+                rawCost = reshape(activationsWithoutMtpData, [], 1) - errorCenter;
             case "grouped_activations"
                 rawCost = calcGroupedActivationCost(activations, ...
                     inputs, params);

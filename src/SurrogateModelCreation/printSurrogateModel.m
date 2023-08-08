@@ -30,7 +30,7 @@ function printSurrogateModel(numMuscles, ...
     polynomialExpressionMuscleTendonVelocities, ...
     polynomialExpressionMomentArms, jointAngles, resultsDirectory)
 
-fid = fopen([resultsDirectory '\PatientSpecificSurrogateModel.m'], 'wt');
+fid = fopen(fullfile(resultsDirectory, 'PatientSpecificSurrogateModel.m'), 'wt');
 fprintf(fid, 'function [matrix] = PatientSpecificSurrogateModel(jointAngles, jointVelocities, numMuscles)\n');
 fprintf(fid, 'onesCol = ones(size(jointAngles, 1), 1);\n');
 fprintf(fid, 'zeroCol = zeros(size(jointAngles, 1), 1);\n');

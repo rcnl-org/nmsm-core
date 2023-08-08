@@ -111,7 +111,7 @@ subplot(nplots, nplots, i)
 plot(solutionTime, solutionData(:, i)); hold on
 plot(experimentalTime, experimentalData(:, i), 'r')
 xlim([0 experimentalTime(end)])
-title(labels(i))
+title(strrep(labels(i), "_", " "))
 figureXLabels(numel(labels), nplots, i, "Time")
 end
 end
