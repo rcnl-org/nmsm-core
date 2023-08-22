@@ -1,10 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function parses the settings tree resulting from xml2struct of the
-% Tracking Optimizatoin settings XML file.
 %
-% (struct) -> (struct, struct)
-% returns the input values for Tracking Optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,17 +24,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params, resultsDirectory] = ...
-    parseTrackingOptimizationSettingsTree(settingsTree)
-inputs = getTreatmentOptimizationInputs(settingsTree);
-inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
-    inputs);
-inputs.toolName = "TrackingOptimization";
-params = getParams(settingsTree);
-inputs = modifyModelForces(inputs);
-end
-
-function params = getParams(tree)
-params.solverSettings = getOptimalControlSolverSettings(...
-    getTextFromField(getFieldByName(tree, 'optimal_control_settings_file')));
+function inputs = parseTreatmentOptimizationDesignVariableBounds( ...
+    tree, inputs)
+inputs.jointPositionsMultiple = parseDoubleOrAlternate(tree, ...
+    'joint_positions_multiple', 2);
+inputs.jointVelocitiesMultiple = parseDoubleOrAlternate(tree, ...
+    'joint_velocities_multiple', 1.5);
+inputs.jointAccelerationsMultiple = parseDoubleOrAlternate(tree, ...
+    'joint_accelerations_multiple', 1);
+inputs.controlJerksMultiple = parseDoubleOrAlternate(tree, ...
+    'joint_jerks_multiple', 1);
+inputs.maxControlSynergyActivations = parseDoubleOrAlternate(tree, ...
+    'synergy_activations_max', 10);
+inputs.maxParameterSynergyWeights = parseDoubleOrAlternate(tree, ...
+    'synergy_weights_max', 2);
+inputs.maxControlTorquesMultiple = parseDoubleOrAlternate(tree, ...
+    'torque_controls_max', 1);
 end

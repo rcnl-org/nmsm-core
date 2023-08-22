@@ -5,7 +5,7 @@
 % based on the multiples value selected by the user times the range of data.
 % For example, if the angle B has a range of -5 to +5, and state position
 % multiple is 1, the maximum value of angle B is 15 and the minimum value
-% of angle B is -15. 
+% of angle B is -15.
 %
 % (struct) -> (struct)
 % Computes max and min design variable bounds
@@ -41,17 +41,17 @@ end
 inputs.minTime = min(inputs.experimentalTime);
 
 maxStatePositions = max(inputs.experimentalJointAngles) + ...
-    inputs.statePositionsMultiple * range(inputs.experimentalJointAngles);
+    inputs.jointPositionsMultiple * range(inputs.experimentalJointAngles);
 minStatePositions = min(inputs.experimentalJointAngles) - ...
-    inputs.statePositionsMultiple * range(inputs.experimentalJointAngles);
+    inputs.jointPositionsMultiple * range(inputs.experimentalJointAngles);
 maxStateVelocities = max(inputs.experimentalJointVelocities) + ...
-    inputs.stateVelocitiesMultiple * range(inputs.experimentalJointVelocities);
+    inputs.jointVelocitiesMultiple * range(inputs.experimentalJointVelocities);
 minStateVelocities = min(inputs.experimentalJointVelocities) - ...
-    inputs.stateVelocitiesMultiple * range(inputs.experimentalJointVelocities);
+    inputs.jointVelocitiesMultiple * range(inputs.experimentalJointVelocities);
 maxStateAccelerations = max(inputs.experimentalJointAccelerations) + ...
-    inputs.stateAccelerationsMultiple * range(inputs.experimentalJointAccelerations);
+    inputs.jointAccelerationsMultiple * range(inputs.experimentalJointAccelerations);
 minStateAccelerations = min(inputs.experimentalJointAccelerations) - ...
-    inputs.stateAccelerationsMultiple * range(inputs.experimentalJointAccelerations);
+    inputs.jointAccelerationsMultiple * range(inputs.experimentalJointAccelerations);
 
 inputs.maxState = [maxStatePositions maxStateVelocities maxStateAccelerations];
 inputs.minState = [minStatePositions minStateVelocities minStateAccelerations];
@@ -61,18 +61,18 @@ maxControlJerks = max(inputs.experimentalJointJerks) + ...
 minControlJerks = min(inputs.experimentalJointJerks) - ...
     inputs.controlJerksMultiple * range(inputs.experimentalJointJerks);
 
-if strcmp(inputs.controllerType, 'synergy_driven') 
+if strcmp(inputs.controllerType, 'synergy_driven')
     maxControlSynergyActivations = inputs.maxControlSynergyActivations * ...
         ones(1, inputs.numSynergies);
     inputs.maxControl = [maxControlJerks maxControlSynergyActivations];
     inputs.minControl = [minControlJerks zeros(1, inputs.numSynergies)];
-    
+
     if inputs.optimizeSynergyVectors
     inputs.maxParameter = inputs.maxParameterSynergyWeights * ...
         ones(1, inputs.numSynergyWeights);
     inputs.minParameter = zeros(1, inputs.numSynergyWeights);
     end
-elseif strcmp(inputs.controllerType, 'torque_driven') 
+elseif strcmp(inputs.controllerType, 'torque_driven')
     for i = 1:length(inputs.controlTorqueNames)
         indx = find(strcmp(convertCharsToStrings( ...
             inputs.inverseDynamicMomentLabels), ...
@@ -94,7 +94,7 @@ elseif strcmp(inputs.controllerType, 'torque_driven')
 end
 
 if isfield(inputs, "enableExternalTorqueControl") && ...
-        inputs.enableExternalTorqueControl 
+        inputs.enableExternalTorqueControl
     for i = 1:length(inputs.externalControlTorqueNames)
         indx = find(strcmp(convertCharsToStrings( ...
             inputs.inverseDynamicMomentLabels), ...

@@ -30,60 +30,21 @@
 
 function [inputs, params] = ...
     parseVerificationOptimizationSettingsTree(settingsTree)
+inputs = getTreatmentOptimizationInputs(settingsTree);
+inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
+    inputs);
 inputs = getInputs(settingsTree);
+inputs.toolName = "VerificationOptimization";
 params = getParams(settingsTree);
 inputs = modifyModelForces(inputs);
 end
 
 function inputs = getInputs(tree)
 import org.opensim.modeling.Storage
-inputs = getTreatmentOptimizationInputs(tree);
-inputs = getDesignVariableBounds(tree, inputs);
 if strcmpi(inputs.controllerType, 'synergy_driven')
 inputs.synergyWeights = parseTreatmentOptimizationStandard(...
     {getTextFromField(getFieldByName(tree, 'synergy_vectors_file'))});
 end
-end
-
-function inputs = getDesignVariableBounds(tree, inputs)
-designVariableTree = getFieldByNameOrError(tree, ...
-    'RCNLDesignVariableBoundsTerms');
-jointPositionsMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_positions_multiple');
-if(isstruct(jointPositionsMultiple))
-    inputs.statePositionsMultiple = getDoubleFromField(jointPositionsMultiple);
-end
-jointVelocitiesMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_velocities_multiple');
-if(isstruct(jointVelocitiesMultiple))
-    inputs.stateVelocitiesMultiple = getDoubleFromField(jointVelocitiesMultiple);
-end
-jointAccelerationsMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_accelerations_multiple');
-if(isstruct(jointAccelerationsMultiple))
-    inputs.stateAccelerationsMultiple = ...
-        getDoubleFromField(jointAccelerationsMultiple);
-end
-jointJerkMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_jerks_multiple');
-if(isstruct(jointJerkMultiple))
-    inputs.controlJerksMultiple = getDoubleFromField(jointJerkMultiple);
-end
-if strcmp(inputs.controllerType, 'synergy_driven')
-maxControlSynergyActivations = getFieldByNameOrError(designVariableTree, ...
-    'synergy_activations_max');
-if(isstruct(maxControlSynergyActivations))
-    inputs.maxControlSynergyActivations = ...
-        getDoubleFromField(maxControlSynergyActivations);
-end
-else 
-maxControlTorques = getFieldByNameOrError(designVariableTree, ...
-    'torque_controls_max');
-if(isstruct(maxControlTorques))
-    inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
-end
-end
-inputs.toolName = "VerificationOptimization";
 end
 
 function params = getParams(tree)

@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function parses the settings tree resulting from xml2struct of the
-% Tracking Optimizatoin settings XML file.
+% This function attempts to parse a double from a struct field. If the
+% field is not a struct or the field cannot be parsed as a double, the
+% alternate value is returned.
 %
-% (struct) -> (struct, struct)
-% returns the input values for Tracking Optimization
+% (struct, string, double) => double
+% Parses a double or returns an alternate value
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                                                 %
+% Author(s): Claire V. Hammond                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,17 +29,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params, resultsDirectory] = ...
-    parseTrackingOptimizationSettingsTree(settingsTree)
-inputs = getTreatmentOptimizationInputs(settingsTree);
-inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
-    inputs);
-inputs.toolName = "TrackingOptimization";
-params = getParams(settingsTree);
-inputs = modifyModelForces(inputs);
-end
-
-function params = getParams(tree)
-params.solverSettings = getOptimalControlSolverSettings(...
-    getTextFromField(getFieldByName(tree, 'optimal_control_settings_file')));
+function output = parseDoubleOrAlternate(tree, field, alternate)
+    field = getFieldByName(tree, field);
+    if(isstruct(field))
+        try
+            output = str2double(field.Text);
+        catch
+            output = alternate;
+        end
+    else
+        output = alternate;
+    end
 end
