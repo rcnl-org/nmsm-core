@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the dynamic constraint for verification
+% This function calculates the dynamic constraint for treatment
 % optimization.
 %
 % (struct, struct) -> (2D matrix)
@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function dynamics = calcVerificationOptimizationDynamicsConstraint(values, ...
+function dynamics = calcDynamicConstraint(values, ...
     params)
 
 dynamics = (params.maxTime - params.minTime) * ...
