@@ -34,11 +34,7 @@ inputs = getTreatmentOptimizationInputs(settingsTree);
 inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
     inputs);
 inputs.toolName = "TrackingOptimization";
-params = getParams(settingsTree);
+params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 end
 
-function params = getParams(tree)
-params.solverSettings = getOptimalControlSolverSettings(...
-    getTextFromField(getFieldByName(tree, 'optimal_control_settings_file')));
-end

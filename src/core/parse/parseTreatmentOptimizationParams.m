@@ -1,10 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function parses the settings tree resulting from xml2struct of the
-% Verification Optimizatoin settings XML file.
 %
-% (struct) -> (struct, struct)
-% returns the input values for Verification Optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +10,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,22 +24,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params] = ...
-    parseVerificationOptimizationSettingsTree(settingsTree)
-inputs = getTreatmentOptimizationInputs(settingsTree);
-inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
-    inputs);
-inputs = getInputs(settingsTree);
-inputs.toolName = "VerificationOptimization";
-params = parseTreatmentOptimizationParams(settingsTree);
-inputs = modifyModelForces(inputs);
+function params = parseTreatmentOptimizationParams(tree)
+params.solverSettings = getOptimalControlSolverSettings(...
+    getTextFromField(getFieldByName(tree, 'optimal_control_settings_file')));
 end
-
-function inputs = getInputs(tree)
-import org.opensim.modeling.Storage
-if strcmpi(inputs.controllerType, 'synergy_driven')
-inputs.synergyWeights = parseTreatmentOptimizationStandard(...
-    {getTextFromField(getFieldByName(tree, 'synergy_vectors_file'))});
-end
-end
-

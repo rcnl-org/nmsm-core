@@ -36,7 +36,7 @@ inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
 inputs = parseDesignSettings(settingsTree, inputs);
 inputs = getInputs(settingsTree);
 inputs.toolName = "DesignOptimization";
-params = getParams(settingsTree);
+params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 inputs = updateMuscleModelProperties(inputs);
 end
@@ -76,7 +76,3 @@ if inputs.enableExternalTorqueControl
 end
 end
 
-function params = getParams(tree)
-params.solverSettings = getOptimalControlSolverSettings(...
-    getTextFromField(getFieldByName(tree, 'optimal_control_settings_file')));
-end
