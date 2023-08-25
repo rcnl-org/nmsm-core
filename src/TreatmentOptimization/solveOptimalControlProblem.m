@@ -24,20 +24,42 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function solution = solveOptimalControlProblem(inputs, params) {
+function solution = solveOptimalControlProblem(inputs, params)
+if strcmp(inputs.problemType, "SynergyDriven")
     switch inputs.solver
         case 'gpops'
-            setup = convertToGpopsInputs(inputs, params);
+            setup = convertToGpopsSynergyDrivenInputs(inputs, params);
             solution = gpops2(setup);
-            solution = convertFromGpopsOutputs(solution, inputs, params);
+            solution = convertFromGpopsSynergyDrivenOutputs(solution, ...
+                inputs, params);
         case 'moco'
-            setup = convertToMocoInputs(inputs, params);
+            setup = convertToMocoSynergyDrivenInputs(inputs, params);
             solution = moco(setup);
-            solution = convertFromMocoOutputs(solution, inputs, params);
+            solution = convertFromMocoSynergyDrivenOutputs(solution, ...
+                inputs, params);
         otherwise
             MException('solveOptimalControlProblem:invalidSolver', ...
                 'Invalid solver specified.');
     end
-}
-
+elseif strcmp(inputs.problemType, "TorqueDriven")
+    switch inputs.solver
+        case 'gpops'
+            setup = convertToGpopsTorqueDrivenInputs(inputs, params);
+            solution = gpops2(setup);
+            solution = convertFromGpopsTorqueDrivenOutputs(solution, ...
+                inputs, params);
+        case 'moco'
+            setup = convertToMocoTorqueDrivenInputs(inputs, params);
+            solution = moco(setup);
+            solution = convertFromMocoTorqueDrivenOutputs(solution, ...
+                inputs, params);
+        otherwise
+            MException('solveOptimalControlProblem:invalidSolver', ...
+                'Invalid solver specified.');
+    end
+else
+    MException('solveOptimalControlProblem:invalidProblemType', ...
+        'Invalid problem type specified.');
+end
+end
 
