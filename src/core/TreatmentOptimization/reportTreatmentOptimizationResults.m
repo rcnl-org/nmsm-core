@@ -95,7 +95,7 @@ for i = 1 : size(muscleActivations,2)
 subplot(nplots, nplots, i)
 plot(time, muscleActivations(:, i)); hold on
 plot(experimentalTime, experimentalMuscleActivations(:, i), 'r')
-axis([0 1 0 experimentalTime(end)])
+axis([0 experimentalTime(end) 0 1])
 title(muscleLabels(i))
 figureXLabels(numel(muscleLabels), nplots, i, "Time")
 figureYLabels(numel(muscleLabels), nplots, i, ["Muscle" "Activation"])
