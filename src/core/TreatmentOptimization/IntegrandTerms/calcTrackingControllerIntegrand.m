@@ -38,7 +38,7 @@ switch auxdata.controllerType
         indx = find(strcmp(convertCharsToStrings( ...
             auxdata.synergyLabels), controllerName));
         synergyActivations = ...
-            fnval(auxdata.splineSynergyActivations, time)';
+            fnval(auxdata.splineSynergyActivations, time/time(end))';
         cost = calcTrackingCostArrayTerm(synergyActivations, ...
             values.controlSynergyActivations, indx);
     case 'torque_driven'
@@ -49,10 +49,10 @@ switch auxdata.controllerType
             controllerName));
         if auxdata.splineJointMoments.dim > 1
             experimentalJointMoments = ...
-                fnval(auxdata.splineJointMoments, time)';
+                fnval(auxdata.splineJointMoments, time/time(end))';
         else
             experimentalJointMoments = ...
-                fnval(auxdata.splineJointMoments, time);
+                fnval(auxdata.splineJointMoments, time/time(end));
         end
         cost = experimentalJointMoments(:, indx1) - ...
             values.controlTorques(:, indx2);
