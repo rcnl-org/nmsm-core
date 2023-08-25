@@ -42,7 +42,7 @@ else
         fnval(params.splineMuscleActivations, time/time(end));
 end
 
-experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
+experimentalMuscleActivations = fnval(params.splineMuscleActivations, time/time(end))';
 cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
     muscleActivations, indx);
 end
