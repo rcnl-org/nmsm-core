@@ -1,10 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function sets up the input variables and mex files (or parallel
-% matlab function) for the main function of tracking optimization.
 %
-% (struct, struct) -> (struct, struct)
-% Inputs for the main function are setup
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +10,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,8 +24,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, inputs] = TrackingOptimization(inputs, params)
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
-output = computeTrackingOptimizationMainFunction(inputs, params);
-end
+function solution = solveOptimalControlProblem(inputs, params) {
+    switch inputs.solver
+        case 'gpops'
+            setup = convertToGpopsInputs(inputs, params);
+            solution = gpops2(setup);
+            solution = convertFromGpopsOutputs(solution, inputs, params);
+        case 'moco'
+            setup = convertToMocoInputs(inputs, params);
+            solution = moco(setup);
+            solution = convertFromMocoOutputs(solution, inputs, params);
+        otherwise
+            MException('solveOptimalControlProblem:invalidSolver', ...
+                'Invalid solver specified.');
+    end
+}
+
+
