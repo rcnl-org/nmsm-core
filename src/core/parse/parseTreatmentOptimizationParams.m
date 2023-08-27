@@ -25,7 +25,5 @@
 % ----------------------------------------------------------------------- %
 
 function params = parseTreatmentOptimizationParams(tree)
-params.solverSettings = getOptimalControlSolverSettings(...
-    getTextFromField(getFieldByName(tree, ...
-    'optimal_control_solver_settings_file')));
+params = struct();
 end

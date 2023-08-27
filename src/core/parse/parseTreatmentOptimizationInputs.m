@@ -29,7 +29,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getTreatmentOptimizationInputs(tree)
+function inputs = parseTreatmentOptimizationInputs(tree)
+inputs.toolName = findToolName(tree);
 inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
     'results_directory'));
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
@@ -43,11 +44,14 @@ elseif strcmp(inputs.controllerType, 'torque')
     inputs = parseTorqueController(tree, inputs);
 end
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
-inputs.initialGuess = getGpopsInitialGuess(tree);
+inputs = parseOptimalControlSolverSettings( ...
+    getTextFromField(getFieldByNameOrError(tree, ...
+    'optimal_control_solver_settings_file')), inputs);
 inputs.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
-inputs.path = getPathConstraintTerms(tree);
-inputs.terminal = getTerminalConstraintTerms(tree);
+[inputs.path, inputs.terminal] = parseRcnlConstraintTermSet( ...
+    getFieldByNameOrError(tree, 'RCNLConstraintTermSet') ...
+    .RCNLConstraintTerm, inputs.toolName, inputs.controllerType);
 contactSurfaces = getFieldByName(inputs.osimx, "contactSurface");
 if (isstruct(contactSurfaces) || iscell(contactSurfaces)) && ...
         isfield(inputs, "grfFileName")
