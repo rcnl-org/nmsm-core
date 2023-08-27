@@ -29,11 +29,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTrackingOptimizationValueStruct(inputs, params)
-values = getTreatmentOptimizationValueStruct(inputs, params);
+function values = getTrackingOptimizationValueStruct(phase, params)
+values = getTreatmentOptimizationValueStruct(phase, params);
 if strcmp(params.controllerType, 'synergy_driven')
     if params.optimizeSynergyVectors
-        synergyWeights = scaleToOriginal(inputs.parameter(1,:), ...
+        synergyWeights = scaleToOriginal(phase.parameter(1,:), ...
             params.maxParameter, params.minParameter);
         values.synergyWeights = getSynergyWeightsFromGroups(...
             synergyWeights, params);

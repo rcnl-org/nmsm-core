@@ -61,7 +61,7 @@ maxControlJerks = max(inputs.experimentalJointJerks) + ...
 minControlJerks = min(inputs.experimentalJointJerks) - ...
     inputs.controlJerksMultiple * range(inputs.experimentalJointJerks);
 
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
     maxControlSynergyActivations = inputs.maxControlSynergyActivations * ...
         ones(1, inputs.numSynergies);
     inputs.maxControl = [maxControlJerks maxControlSynergyActivations];
@@ -72,7 +72,7 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         ones(1, inputs.numSynergyWeights);
     inputs.minParameter = zeros(1, inputs.numSynergyWeights);
     end
-elseif strcmp(inputs.controllerType, 'torque_driven')
+elseif strcmp(inputs.controllerType, 'torque')
     for i = 1:length(inputs.controlTorqueNames)
         indx = find(strcmp(convertCharsToStrings( ...
             inputs.inverseDynamicMomentLabels), ...
