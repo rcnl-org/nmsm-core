@@ -30,10 +30,9 @@
 
 function [inputs, params, resultsDirectory] = ...
     parseTrackingOptimizationSettingsTree(settingsTree)
-inputs = getTreatmentOptimizationInputs(settingsTree);
+inputs = parseTreatmentOptimizationInputs(settingsTree);
 inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
     inputs);
-inputs.toolName = "TrackingOptimization";
 params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 end

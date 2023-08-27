@@ -30,12 +30,11 @@
 
 function [inputs, params] = ...
     parseDesignOptimizationSettingsTree(settingsTree)
-inputs = getTreatmentOptimizationInputs(settingsTree);
+inputs = parseTreatmentOptimizationInputs(settingsTree);
 inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
     inputs);
 inputs = parseDesignSettings(settingsTree, inputs);
 inputs = getInputs(settingsTree);
-inputs.toolName = "DesignOptimization";
 params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 inputs = updateMuscleModelProperties(inputs);
