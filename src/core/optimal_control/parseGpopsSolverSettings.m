@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function solverSettings = getGpopsSolverSettings(settingsTree)
+function solverSettings = parseGpopsSolverSettings(settingsTree)
 solverSettings.optimizationFileName = 'trackingOptimizationOutputFile.txt';
 solverSettings.derivativeSupplier = parseTextOrAlternate( ...
     settingsTree, 'setup_derivatives_supplier', 'sparseFD');

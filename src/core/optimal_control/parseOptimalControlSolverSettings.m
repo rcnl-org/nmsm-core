@@ -24,40 +24,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function solution = solveOptimalControlProblem(inputs, params)
-if strcmp(inputs.controllerType, "synergy")
-    if isfield(inputs, "gpops")
-        setup = convertToGpopsSynergyDrivenInputs(inputs, params);
-        solution = gpops2(setup);
-        solution = convertFromGpopsSynergyDrivenOutputs(solution, ...
-            inputs, params);
-    elseif isfield(inputs, "moco")
-        setup = convertToMocoSynergyDrivenInputs(inputs, params);
-        solution = moco(setup);
-        solution = convertFromMocoSynergyDrivenOutputs(solution, ...
-            inputs, params);
-    else
-        MException('solveOptimalControlProblem:invalidSolver', ...
-            'Invalid solver specified.');
-    end
-elseif strcmp(inputs.controllerType, "torque")
-    if isfield(inputs, "gpops")
-        setup = convertToGpopsTorqueDrivenInputs(inputs, params);
-        solution = gpops2(setup);
-        solution = convertFromGpopsTorqueDrivenOutputs(solution, ...
-            inputs, params);
-    elseif isfield(inputs, "moco")
-        setup = convertToMocoTorqueDrivenInputs(inputs, params);
-        solution = moco(setup);
-        solution = convertFromMocoTorqueDrivenOutputs(solution, ...
-            inputs, params);
-    else
-        MException('solveOptimalControlProblem:invalidSolver', ...
-            'Invalid solver specified.');
-    end
+function inputs = parseOptimalControlSolverSettings( ...
+    settingsFileName, inputs)
+solverSettingsTree = xml2struct(settingsFileName);
+verifyVersion(solverSettingsTree, "OptimalControlSolverSettings");
+tree = ...
+    solverSettingsTree.NMSMPipelineDocument.OptimalControlSolverSettings;
+if isfield(tree, 'GpopsSettings')
+    inputs.gpops = parseGpopsSolverSettings(tree);
+elseif isfield(tree, 'MocoSettings')
+    inputs.moco = parseMocoSolverSettings(tree);
 else
-    MException('solveOptimalControlProblem:invalidProblemType', ...
-        'Invalid problem type specified.');
+    throw(MException("OptimalControlSolverSettings:UnsupportedSolver", ...
+        "Only <GpopsSettings> and <MocoSettings> are supported"))
 end
 end
-

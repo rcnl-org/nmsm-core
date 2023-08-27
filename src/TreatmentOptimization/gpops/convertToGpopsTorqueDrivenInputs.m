@@ -24,16 +24,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function solverSettings = getOptimalControlSolverSettings(settingsFileName)
-solverSettingsTree = xml2struct(settingsFileName);
-verifyVersion(solverSettingsTree, "OptimalControlSolverSettings");
-tree = solverSettingsTree.NMSMPipelineDocument.OptimalControlSolverSettings;
-if isfield(tree, 'GpopsSettings')
-    solverSettings = getGpopsSolverSettings(tree);
-elseif isfield(tree, 'MocoSettings')
-    solverSettings = getMocoSolverSettings(tree);
-else
-    throw(MException("OptimalControlSolverSettings:UnsupportedSolver", ...
-        "Only <GpopsSettings> and <MocoSettings> are supported"))
+function setup = convertToGpopsTorqueDrivenInputs(inputs, params)
+inputs.initialGuess = getGpopsInitialGuess(tree);
+
 end
-end
+
