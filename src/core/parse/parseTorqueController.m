@@ -30,8 +30,10 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = parseTorqueController(tree, inputs)
-    inputs.controlTorqueNames = parseSpaceSeparatedList(tree, ...
-        "torque_controller_coordinate_list");
-    inputs.numTorqueControls = length(inputs.controlTorqueNames);
+inputs.controlTorqueNames = parseSpaceSeparatedList(tree, ...
+    "torque_controller_coordinate_list");
+inputs.numTorqueControls = length(inputs.controlTorqueNames);
+inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
+    inputs);
 end
 

@@ -28,11 +28,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params, resultsDirectory] = ...
+function [inputs, params] = ...
     parseTrackingOptimizationSettingsTree(settingsTree)
 inputs = parseTreatmentOptimizationInputs(settingsTree);
-inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
-    inputs);
 params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 end

@@ -48,5 +48,7 @@ inputs.coefficients = surrogateModelCoefficients.coefficients;
 inputs.optimizeSynergyVectors = getBooleanLogic(...
     parseElementTextByNameOrAlternate(tree, "optimize_synergy_vectors", 0));
 inputs = getModelOrOsimxInputs(inputs);
+inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
+    inputs);
 end
 
