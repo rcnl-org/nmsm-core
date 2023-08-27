@@ -25,7 +25,7 @@
 % ----------------------------------------------------------------------- %
 
 function solution = solveOptimalControlProblem(inputs, params)
-if strcmp(inputs.problemType, "SynergyDriven")
+if strcmp(inputs.controllerType, "synergy")
     switch inputs.solver
         case 'gpops'
             setup = convertToGpopsSynergyDrivenInputs(inputs, params);
@@ -41,7 +41,7 @@ if strcmp(inputs.problemType, "SynergyDriven")
             MException('solveOptimalControlProblem:invalidSolver', ...
                 'Invalid solver specified.');
     end
-elseif strcmp(inputs.problemType, "TorqueDriven")
+elseif strcmp(inputs.controllerType, "torque")
     switch inputs.solver
         case 'gpops'
             setup = convertToGpopsTorqueDrivenInputs(inputs, params);

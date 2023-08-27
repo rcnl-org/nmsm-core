@@ -27,11 +27,13 @@
 function solverSettings = getOptimalControlSolverSettings(settingsFileName)
 solverSettingsTree = xml2struct(settingsFileName);
 verifyVersion(solverSettingsTree, "OptimalControlSolverSettings");
-tree = solverSettingsTree.NMSMPipelineDocument;
+tree = solverSettingsTree.NMSMPipelineDocument.OptimalControlSolverSettings;
 if isfield(tree, 'GpopsSettings')
     solverSettings = getGpopsSolverSettings(tree);
-end
-if isfield(tree, 'MocoSettings')
+elseif isfield(tree, 'MocoSettings')
     solverSettings = getMocoSolverSettings(tree);
+else
+    throw(MException("OptimalControlSolverSettings:UnsupportedSolver", ...
+        "Only <GpopsSettings> and <MocoSettings> are supported"))
 end
 end
