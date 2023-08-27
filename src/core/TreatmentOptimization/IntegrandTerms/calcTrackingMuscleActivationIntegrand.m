@@ -36,13 +36,13 @@ indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
 
 if params.splineMuscleActivations.dim > 1
     experimentalMuscleActivations = ...
-        fnval(params.splineMuscleActivations, time)';
+        fnval(params.splineMuscleActivations, time/time(end))';
 else
     experimentalMuscleActivations = ...
-        fnval(params.splineMuscleActivations, time);
+        fnval(params.splineMuscleActivations, time/time(end));
 end
 
-experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
+experimentalMuscleActivations = fnval(params.splineMuscleActivations, time/time(end))';
 cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
     muscleActivations, indx);
 end

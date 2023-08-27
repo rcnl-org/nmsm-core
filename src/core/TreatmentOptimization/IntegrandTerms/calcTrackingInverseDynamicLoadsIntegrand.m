@@ -37,9 +37,9 @@ indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
     loadName));
 
 if params.splineJointMoments.dim > 1
-    experimentalJointMoments = fnval(params.splineJointMoments, time)';
+    experimentalJointMoments = fnval(params.splineJointMoments, time/time(end))';
 else
-    experimentalJointMoments = fnval(params.splineJointMoments, time);
+    experimentalJointMoments = fnval(params.splineJointMoments, time/time(end));
 end
 
 momentLabelsNoSuffix = erase(params.inverseDynamicMomentLabels, '_moment');

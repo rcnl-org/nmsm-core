@@ -38,7 +38,7 @@ output = computeVerificationOptimizationMainFunction(inputs, params);
 end
 
 function inputs = setupMuscleSynergies(inputs)
-inputs.splineSynergyActivations = spaps(inputs.initialGuess.time, ...
+inputs.splineSynergyActivations = spaps(inputs.initialGuess.time/inputs.initialGuess.time(end), ...
     inputs.initialGuess.control(:, inputs.numCoordinates + 1:end)', 0.0000001);
 inputs.synergyLabels = inputs.initialGuess.controlLabels(:, inputs.numCoordinates + 1:end);
 end
