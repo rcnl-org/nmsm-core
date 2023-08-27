@@ -25,7 +25,25 @@
 % ----------------------------------------------------------------------- %
 
 function setup = convertToGpopsTorqueDrivenInputs(inputs, params)
-inputs.initialGuess = getGpopsInitialGuess(tree);
+bounds = setupProblemBounds(inputs, params);
+guess = setupCommonOptimalControlInitialGuess(inputs);
+initializeMexOrMatlabParallelFunctions(inputs.model);
+setup = setupCommonOptimalControlSolverSettings(inputs, ...
+    bounds, guess, params, ...
+    @computeTrackingOptimizationContinuousFunction, ...
+    @computeTrackingOptimizationEndpointFunction);
+checkInitialGuess(guess, inputs, ...
+    @computeTrackingOptimizationContinuousFunction);
+end
 
+function bounds = setupProblemBounds(inputs, params)
+bounds = setupCommonOptimalControlBounds(inputs, params);
+% setup parameter bounds
+if strcmp(inputs.controllerType, 'synergy_driven')
+    if inputs.optimizeSynergyVectors
+        bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
+        bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
+    end
+end
 end
 
