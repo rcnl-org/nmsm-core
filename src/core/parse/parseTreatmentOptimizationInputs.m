@@ -44,6 +44,7 @@ elseif strcmp(inputs.controllerType, 'torque')
     inputs = parseTorqueController(tree, inputs);
 end
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
+inputs.initialGuess = parseInitialGuess(tree);
 inputs = parseOptimalControlSolverSettings( ...
     getTextFromField(getFieldByNameOrError(tree, ...
     'optimal_control_solver_settings_file')), inputs);

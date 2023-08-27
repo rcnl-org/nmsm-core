@@ -28,26 +28,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function initialGuess = getGpopsInitialGuess(tree)
+function initialGuess = parseInitialGuess(tree)
 import org.opensim.modeling.Storage
 initialGuess = [];
 statesFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
     'initial_states_file', ''));
 if ~isempty(statesFileName)
     initialGuess.time = parseTimeColumn({statesFileName})';
-    initialGuess.stateLabels = getStorageColumnNames(Storage({statesFileName}));
-    initialGuess.state = parseTreatmentOptimizationStandard({statesFileName});
+    initialGuess.stateLabels = getStorageColumnNames(Storage( ...
+        {statesFileName}));
+    initialGuess.state = parseTreatmentOptimizationStandard( ...
+        {statesFileName});
 end
 controlsFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
     'initial_controls_file', ''));
 if ~isempty(controlsFileName)
-    initialGuess.controlLabels = getStorageColumnNames(Storage({controlsFileName}));
-    initialGuess.control = parseTreatmentOptimizationStandard({controlsFileName});
+    initialGuess.controlLabels = getStorageColumnNames(Storage( ...
+        {controlsFileName}));
+    initialGuess.control = parseTreatmentOptimizationStandard( ...
+        {controlsFileName});
 end
 parametersFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
     'initial_parameters_file', ''));
 if ~isempty(parametersFileName)
-    initialGuess.parameterLabels = getStorageColumnNames(Storage({parametersFileName}));
-    initialGuess.parameter = parseTreatmentOptimizationStandard({parametersFileName});
+    initialGuess.parameterLabels = getStorageColumnNames( ...
+        Storage({parametersFileName}));
+    initialGuess.parameter = parseTreatmentOptimizationStandard( ...
+        {parametersFileName});
 end
 end
