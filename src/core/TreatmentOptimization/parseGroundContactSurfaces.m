@@ -25,7 +25,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = prepareGroundContactSurfaces(osimModel, contactSurfaces, grfFileName)
+function contactSurfaces = parseGroundContactSurfaces(inputs)
+contactSurfacesField = getFieldByName(inputs.osimx, "contactSurface");
+if (isstruct(contactSurfacesField) || iscell(contactSurfacesField)) && ...
+        isfield(inputs, "grfFileName")
+    contactSurfaces = prepareGroundContactSurfaces(inputs.model, ...
+        contactSurfacesField, inputs.grfFileName);
+else
+    contactSurfaces = {};
+end
+end
+
+function output = prepareGroundContactSurfaces(osimModel, ...
+    contactSurfaces, grfFileName)
 import org.opensim.modeling.Model
 osimModel = Model(osimModel);
 osimModel.finalizeConnections();
@@ -48,6 +60,7 @@ for i=1:length(contactSurfaces)
         grfFileName, output{i});
 end
 end
+
 function output = getParentChildSprings(osimModel, contactSurfaces)
 output = contactSurfaces;
 output.parentSpringPointsOnBody = [];
@@ -70,6 +83,7 @@ for j = 1:length(contactSurfaces.springs)
     end
 end
 end
+
 function output = parseGroundReactionDataWithoutTime(model, grfFile, output)
 import org.opensim.modeling.Storage
 [grfColumnNames, ~, grfData] = parseMotToComponents(model, Storage(grfFile));
