@@ -24,40 +24,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = solveOptimalControlProblem(inputs, params)
-if strcmp(inputs.controllerType, "synergy")
-    if isfield(inputs, "gpops")
-        setup = convertToGpopsSynergyDrivenInputs(inputs, params);
-        solution = gpops2(setup);
-        output = convertFromGpopsSynergyDrivenOutputs(solution, ...
-            inputs, params);
-    elseif isfield(inputs, "moco")
-        setup = convertToMocoSynergyDrivenInputs(inputs, params);
-        solution = moco(setup);
-        output = convertFromMocoSynergyDrivenOutputs(solution, ...
-            inputs, params);
-    else
-        MException('solveOptimalControlProblem:invalidSolver', ...
-            'Invalid solver specified.');
-    end
-elseif strcmp(inputs.controllerType, "torque")
-    if isfield(inputs, "gpops")
-        setup = convertToGpopsTorqueDrivenInputs(inputs, params);
-        solution = gpops2(setup);
-        output = convertFromGpopsTorqueDrivenOutputs(solution, ...
-            inputs, params);
-    elseif isfield(inputs, "moco")
-        setup = convertToMocoTorqueDrivenInputs(inputs, params);
-        solution = moco(setup);
-        output = convertFromMocoTorqueDrivenOutputs(solution, ...
-            inputs, params);
-    else
-        MException('solveOptimalControlProblem:invalidSolver', ...
-            'Invalid solver specified.');
-    end
-else
-    MException('solveOptimalControlProblem:invalidProblemType', ...
-        'Invalid problem type specified.');
+function output = convertFromGpopsTorqueDrivenOutputs(solution, ...
+    inputs, params)
+solution = solution.result.solution;
+solution.auxdata = inputs;
+if isfield(inputs, "optimizeSynergyVectors")
+    solution.phase.parameter = solution.parameter;
 end
+output = computeTrackingOptimizationContinuousFunction(solution);
+output.solution = solution;
 end
 
