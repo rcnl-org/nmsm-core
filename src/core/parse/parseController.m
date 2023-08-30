@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function parses the settings tree resulting from xml2struct from the
-% settings XML file common to all treatment optimizatin modules (trackning,
-% verification, and design optimization).
+% There are two controllers that can be used to solve optimal control
+% problems in the NMSM Pipeline. This function parses the shared inputs and
+% requests the correct subtools to be parsed.
 %
-% (struct) -> (struct, struct)
-% returns the input values for all treatment optimization modules
+% (struct) -> (struct)
+% parses shared controller settings from XML tree
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,25 +29,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseTreatmentOptimizationInputs(tree)
-inputs.toolName = findToolName(tree);
-inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
-    'results_directory'));
-if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
-inputs.controllerType = parseControllerType(tree);
-inputs.model = parseModel(tree);
-inputs.osimx = parseOsimxFile(getTextFromField(getFieldByName(tree, ...
-    'input_osimx_file')));
-inputs = parseController(tree, inputs);
-inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
-inputs.initialGuess = parseInitialGuess(tree);
-inputs = parseOptimalControlSolverSettings( ...
-    getTextFromField(getFieldByNameOrError(tree, ...
-    'optimal_control_solver_settings_file')), inputs);
-inputs.costTerms = parseRcnlCostTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
-[inputs.path, inputs.terminal] = parseRcnlConstraintTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLConstraintTermSet') ...
-    .RCNLConstraintTerm, inputs.toolName, inputs.controllerType);
-inputs.contactSurfaces = parseGroundContactSurfaces(inputs);
+function inputs = parseController(tree, inputs)
+inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
+    inputs);
+inputs.statesCoordinates = parseSpaceSeparatedList(tree, ...
+    "states_coordinate_list");
+
+torqueTree = getFieldByName(tree, "RCNLTorqueController");
+if isstruct(torqueTree)
+    inputs = parseTorqueController(torqueTree, inputs);
+end
+synergyTree = getFieldByName(tree, "RCNLSynergyController");
+if isstruct(synergyTree)
+    inputs = parseSynergyController(synergyTree, inputs);
+end
 end

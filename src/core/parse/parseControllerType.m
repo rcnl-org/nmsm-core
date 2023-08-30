@@ -31,19 +31,16 @@
 % ----------------------------------------------------------------------- %
 
 function controllerType = parseControllerType(tree)
-torque = getFieldByName(tree, "RCNLTorqueController");
 synergy = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(torque) && isstruct(synergy)
-    MException("TreatmentOptimizationSettings:TwoControllers", ...
-        strcat("Found <RCNLTorqueController> and ", ... 
-        "<RCNLSynergyController> - only one controller is allowed."));
-end
-if isstruct(torque)
-    controllerType = "torque";
-    return
-end
 if isstruct(synergy)
     controllerType = "synergy";
     return
 end
+torque = getFieldByName(tree, "RCNLTorqueController");
+if isstruct(torque)
+    controllerType = "torque";
+    return
+end
+throw(MException("ParseTreatmentOptimization:NoController", ...
+    "Could not find <RCNLTorqueController> or <RCNLSynergyController>"))
 end
