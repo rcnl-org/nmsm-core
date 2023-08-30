@@ -1,14 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the output of parseOsimxFile(filename) and produces
-% a struct that can passed directly into writeOsimxFile() and replicate the
-% input file.
+% This function converts the synergyGroup portion of a parsed .osimx file
+% into a new .osimx struct to be printed with writeOsimxFile(). See
+% buildOsimxFromOsimxStruct() for reference.
 %
-% This function is most commonly used to add values to an existing .osimx
-% file.
+% The expected format of the synergyGroups comes from getSynergyGroups() as
+% used in parseNeuralControlPersonalization()
 %
-% (struct) -> (struct)
-% Prints MuscleTendonPersonalization results in osimx file
+% (struct, struct) -> (struct)
+% Adds synergyGroups to .osimxStruct
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,16 +32,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = buildOsimxFromOsimxStruct(osimxStruct)
-osimx = buildOsimxTemplate(osimxStruct.modelName, osimxStruct.model);
-if isfield(osimxStruct, "muscles")
-    osimx = buildMtpOsimx(osimx, osimxStruct.muscles);
-end
-if isfield(osimxStruct, "groundContact")
-    osimx = buildGcpOsimx(osimx, osimxStruct.groundContact);
-end
-if isfield(osimxStruct, "synergyGroups")
-    osimx = buildSynergyGroupOsimx(osimx, osimxStruct.synergyGroups);
+function osimx = buildSynergyGroupOsimx(osimx, synergyGroups)
+osimx.NMSMPipelineDocument.OsimxModel.RCNLSynergySet.Comment = ...
+    'The set of synergies from NCP to find the values in this osimx file';
+for i = 1:length(synergyGroups)
+    synergyGroup.muscle_group_name.Comment = ['The name of the muscle ' ...
+        'group associated with this synergy'];
+    synergyGroup.muscle_group_name.Text = synergyGroups{i}.muscleGroupName;
+    synergyGroup.num_synergies.Comment = ['The number of synergies ' ...
+        'used by this synergy group'];
+    synergyGroup.num_synergies.Text = num2str(synergyGroups{i}.numSynergies);
+    osimx.NMSMPipelineDocument.OsimxModel.RCNLSynergySet.RCNLSynergy{i} = synergyGroup;
 end
 end
 
