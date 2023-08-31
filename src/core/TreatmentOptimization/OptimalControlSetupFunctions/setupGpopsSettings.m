@@ -30,11 +30,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function setup = setupCommonOptimalControlSolverSettings(inputs, ...
+function setup = setupGpopsSettings(inputs, ...
     bounds, guess, params, continuousFunction, endpointFunction)
 setup.name = inputs.gpops.optimizationFileName;
 setup.functions.continuous = continuousFunction;
-auxdata.ContinuousFunc = setup.functions.continuous;
 setup.functions.endpoint = endpointFunction;
 setup.auxdata = inputs;
 setup.bounds = bounds;
