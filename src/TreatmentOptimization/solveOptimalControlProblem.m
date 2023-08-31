@@ -25,22 +25,7 @@
 % ----------------------------------------------------------------------- %
 
 function output = solveOptimalControlProblem(inputs, params)
-if strcmp(inputs.controllerType, "synergy")
-    if isfield(inputs, "gpops")
-        setup = convertToGpopsSynergyDrivenInputs(inputs, params);
-        solution = gpops2(setup);
-        output = convertFromGpopsSynergyDrivenOutputs(solution, ...
-            inputs, params);
-    elseif isfield(inputs, "moco")
-        setup = convertToMocoSynergyDrivenInputs(inputs, params);
-        solution = moco(setup);
-        output = convertFromMocoSynergyDrivenOutputs(solution, ...
-            inputs, params);
-    else
-        MException('solveOptimalControlProblem:invalidSolver', ...
-            'Invalid solver specified.');
-    end
-elseif strcmp(inputs.controllerType, "torque")
+if strcmp(inputs.controllerType, "torque")
     if isfield(inputs, "gpops")
         setup = convertToGpopsTorqueDrivenInputs(inputs, params);
         solution = gpops2(setup);
@@ -50,6 +35,21 @@ elseif strcmp(inputs.controllerType, "torque")
         setup = convertToMocoTorqueDrivenInputs(inputs, params);
         solution = moco(setup);
         output = convertFromMocoTorqueDrivenOutputs(solution, ...
+            inputs, params);
+    else
+        MException('solveOptimalControlProblem:invalidSolver', ...
+            'Invalid solver specified.');
+    end
+elseif strcmp(inputs.controllerType, "synergy")
+    if isfield(inputs, "gpops")
+        setup = convertToGpopsSynergyDrivenInputs(inputs, params);
+        solution = gpops2(setup);
+        output = convertFromGpopsSynergyDrivenOutputs(solution, ...
+            inputs, params);
+    elseif isfield(inputs, "moco")
+        setup = convertToMocoSynergyDrivenInputs(inputs, params);
+        solution = moco(setup);
+        output = convertFromMocoSynergyDrivenOutputs(solution, ...
             inputs, params);
     else
         MException('solveOptimalControlProblem:invalidSolver', ...
