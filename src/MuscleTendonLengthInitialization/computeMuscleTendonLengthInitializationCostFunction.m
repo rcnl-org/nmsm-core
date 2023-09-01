@@ -28,7 +28,7 @@
 function outputCost = computeMuscleTendonLengthInitializationCostFunction(parameterChange, ...
     experimentalData)
 
-values = makeMuscleTendonLengthInitializationValuesAsStruct(parameterChange, experimentalData);
+[values, experimentalData] = makeMuscleTendonLengthInitializationValuesAsStruct(parameterChange, experimentalData);
 modeledValues = calcMuscleTendonLengthInitializationModeledValues(values, experimentalData);
 outputCost = calcMuscleTendonLengthInitializationCost(values, modeledValues, experimentalData);
 end

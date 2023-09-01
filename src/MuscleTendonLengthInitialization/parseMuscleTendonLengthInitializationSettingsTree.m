@@ -34,6 +34,7 @@ if strcmp(getFieldByNameOrError(settingsTree, ...
         "MuscleTendonLengthInitialization").is_enabled.Text, "true")
     inputs = getInputs(settingsTree);
     inputs = getMtpModelInputs(inputs);
+    inputs = saveInitialLengthParameters(inputs);
     inputs = getMuscleVolume(inputs);
 else
     inputs = false;
@@ -91,19 +92,21 @@ end
 
 % (integer, struct, string, struct) -> (struct)
 function inputs = getTask(tree, inputs)
-inputs.maximumMuscleStressIsIncluded = strcmp( ...
+inputs.maximumMuscleStressIsIncluded = strcmpi( ...
     getFieldByNameOrError( ...
         tree, ...
         'optimize_maximum_muscle_stress' ...
         ).Text, ...
     'true');
 
-optimizeIsometricMaxForce = getFieldByName(tree, ...
-    'optimize_isometric_max_force').Text;
-inputs.optimizeIsometricMaxForce = 0;
-if(optimizeIsometricMaxForce == "true")
-    inputs.optimizeIsometricMaxForce = 1;
-end
+inputs.optimizeIsometricMaxForce = strcmpi(getFieldByNameOrError(tree, ...
+    'optimize_isometric_max_force').Text, "true");
+
+inputs.useAbsoluteLengths = strcmpi( ...
+    getTextFromField( ...
+    getFieldByNameOrAlternate(tree, "optimize_absolute_length_changes", ...
+    "false")), "true");
+
 inputs.costTerms = getCostFunctionTerms(getFieldByNameOrError(tree, ...
     'MuscleTendonLengthInitialization'));
 maximumMuscleStress = getFieldByName(tree, 'maximum_muscle_stress');
@@ -159,3 +162,7 @@ for i = 1 : numMuscles
 end
 end
 
+function inputs = saveInitialLengthParameters(inputs)
+inputs.initialOptimalFiberLength = inputs.optimalFiberLength;
+inputs.initialTendonSlackLength = inputs.tendonSlackLength;
+end

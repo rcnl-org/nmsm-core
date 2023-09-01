@@ -1,10 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% updates the optimal fiber length, tendon slack length, and max isometric
-% force to be used in MTP
-%
-% (struct, array of number) -> (array of number)
-% updates the initial guess for mtp
+% (struct, struct) -> (Array of number)
+% returns the cost for tendon slack length absolute deviation
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,20 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function mtpInputs = updateMtpInitialGuess(mtpInputs, precalInputs, ...
-    optimizedInitialGuess)
-
-[values, precalInputs] = ...
-    makeMuscleTendonLengthInitializationValuesAsStruct( ...
-    optimizedInitialGuess, precalInputs);
-if precalInputs.useAbsoluteLengths
-    mtpInputs.optimalFiberLength = precalInputs.optimalFiberLength;
-    mtpInputs.tendonSlackLength = precalInputs.tendonSlackLength;
-else
-    mtpInputs.optimalFiberLength = precalInputs.optimalFiberLength .* ...
-        values.optimalFiberLengthScaleFactors;
-    mtpInputs.tendonSlackLength = precalInputs.tendonSlackLength .* ...
-        values.tendonSlackLengthScaleFactors;
-end
-mtpInputs.maxIsometricForce = getMaxIsometricForce(precalInputs, values);
+function cost = calcTendonSlackLengthAbsoluteDeviationCost( ...
+    experimentalData, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.05);
+cost = calcDeviationCostArray(experimentalData.tendonSlackLength - ...
+    experimentalData.initialTendonSlackLength, errorCenter, ...
+    maximumAllowableError);
 end
