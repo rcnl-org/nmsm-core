@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function calculates the integrand for gpops.
 %
+% (struct, struct, struct) -> (2D matrix)
+% Returns scaled integrand
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -10,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -24,26 +27,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function setup = convertToGpopsTorqueDrivenInputs(inputs, params)
-bounds = setupProblemBounds(inputs, params);
-guess = setupCommonOptimalControlInitialGuess(inputs);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
-setup = setupGpopsSettings(inputs, ...
-    bounds, guess, params, ...
-    @computeGpopsContinuousFunction, ...
-    @computeTrackingOptimizationEndpointFunction);
-checkInitialGuess(guess, inputs, ...
-    @computeGpopsContinuousFunction);
-end
-
-function bounds = setupProblemBounds(inputs, params)
-bounds = setupCommonOptimalControlBounds(inputs, params);
-% setup parameter bounds
-if strcmp(inputs.controllerType, 'synergy_driven')
-    if inputs.optimizeSynergyVectors
-        bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
-        bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
-    end
-end
+function integrand = calcGpopsIntegrand(values, modeledValues, auxdata)
+[costTermCalculations, allowedTypes] = ...
+    generateCostTermStruct("continuous", auxdata.toolName);
+integrand = calcTreatmentOptimizationCost( ...
+    costTermCalculations, allowedTypes, values, modeledValues, auxdata);
+integrand = integrand ./ (auxdata.maxIntegral - auxdata.minIntegral);
+integrand = integrand .^ 2;
 end
 

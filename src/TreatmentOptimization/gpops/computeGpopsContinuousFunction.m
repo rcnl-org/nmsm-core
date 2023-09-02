@@ -1,5 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function computes the dynamic constraints, path constraints (if any)
+% and cost function terms (if any) for gpops2.
+%
+% (struct) -> (struct)
 %
 
 % ----------------------------------------------------------------------- %
@@ -24,26 +28,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function setup = convertToGpopsTorqueDrivenInputs(inputs, params)
-bounds = setupProblemBounds(inputs, params);
-guess = setupCommonOptimalControlInitialGuess(inputs);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
-setup = setupGpopsSettings(inputs, ...
-    bounds, guess, params, ...
-    @computeGpopsContinuousFunction, ...
-    @computeTrackingOptimizationEndpointFunction);
-checkInitialGuess(guess, inputs, ...
-    @computeGpopsContinuousFunction);
+function modeledValues = computeGpopsContinuousFunction(setup)
+values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
+modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata);
+modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata, ...
+    modeledValues);
+modeledValues.dynamics = calcDynamicConstraint(values, setup.auxdata);
+if ~isempty(setup.auxdata.path)
+    [constraintTermCalculations, allowedTypes] = ...
+        generateConstraintTermStruct("path", ...
+        setup.auxdata.controllerType, setup.auxdata.toolName);
+    modeledValues.path = calcGpopsConstraint( ...
+        constraintTermCalculations, allowedTypes, values, ...
+        modeledValues, setup.auxdata);
 end
-
-function bounds = setupProblemBounds(inputs, params)
-bounds = setupCommonOptimalControlBounds(inputs, params);
-% setup parameter bounds
-if strcmp(inputs.controllerType, 'synergy_driven')
-    if inputs.optimizeSynergyVectors
-        bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
-        bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
-    end
+modeledValues.integrand = calcGpopsIntegrand(values, modeledValues, setup.auxdata);
 end
-end
-
