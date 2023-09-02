@@ -32,12 +32,15 @@ function output = computeGpopsEndpointFunction(setup)
 if ~isempty(setup.auxdata.terminal) || strcmp(setup.auxdata.toolName, "DesignOptimization")
     setup.phase.state = [setup.phase.initialstate; setup.phase.finalstate];
     setup.phase.time = [setup.phase.initialtime; setup.phase.finaltime];
-    setup.phase.control = ones(size(setup.phase.time,1),length(params.minControl));
-    if isfield(inputs, "parameter")
+    setup.phase.control = ones(size(setup.phase.time,1),length(setup.auxdata.minControl));
+    if isfield(setup, "parameter")
         setup.phase.parameter = setup.parameter;
     end
     values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
-    modeledValues = calcTorqueBasedModeledValues(values, params);
+    modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata);
+end
+
+if ~isempty(setup.auxdata.terminal)
     [constraintTermCalculations, allowedTypes] = ...
         generateConstraintTermStruct("terminal", ...
         setup.auxdata.controllerType, setup.auxdata.toolName);
@@ -50,7 +53,7 @@ if strcmp(setup.auxdata.toolName, "DesignOptimization")
     [costTermCalculations, allowedTypes] = ...
         generateCostTermStruct("discrete", "DesignOptimization");
     discrete = calcTreatmentOptimizationCost( ...
-        costTermCalculations, allowedTypes, values, modeledValues, auxdata);
+        costTermCalculations, allowedTypes, values, modeledValues, setup.auxdata);
     discreteObjective = sum(discrete) / length(discrete);
     if isnan(discreteObjective); discreteObjective = 0; end
 else

@@ -31,18 +31,16 @@
 function [inputs, params] = ...
     parseDesignOptimizationSettingsTree(settingsTree)
 inputs = parseTreatmentOptimizationInputs(settingsTree);
-inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
-    inputs);
 inputs = parseDesignSettings(settingsTree, inputs);
-inputs = getInputs(settingsTree);
+inputs = getInputs(settingsTree, inputs);
 params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 inputs = updateMuscleModelProperties(inputs);
 end
 
-function inputs = getInputs(tree)
+function inputs = getInputs(tree, inputs)
 import org.opensim.modeling.Storage
-if strcmpi(inputs.controllerType, 'synergy_driven')
+if strcmpi(inputs.controllerType, 'synergy')
 inputs.synergyWeights = parseTreatmentOptimizationStandard(...
     {getTextFromField(getFieldByName(tree, 'synergy_vectors_file'))});
 end

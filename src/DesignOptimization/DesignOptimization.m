@@ -39,6 +39,7 @@ if inputs.enableExternalTorqueControl
 end
 output = computeDesignOptimizationMainFunction(inputs, params);
 end
+
 function inputs = setupMuscleSynergies(inputs)
 inputs.splineSynergyActivations = spaps(inputs.initialGuess.time/inputs.initialGuess.time(end), ...
     inputs.initialGuess.control(:, inputs.numCoordinates + 1 : ...
@@ -46,6 +47,7 @@ inputs.splineSynergyActivations = spaps(inputs.initialGuess.time/inputs.initialG
 inputs.synergyLabels = inputs.initialGuess.controlLabels(:, ...
     inputs.numCoordinates + 1 : inputs.numCoordinates + inputs.numSynergies);
 end
+
 function inputs = setupExternalTorqueControls(inputs)
 if size(inputs.initialGuess.control, 2) ~= length(inputs.maxControl)
     inputs.initialGuess.control = [inputs.initialGuess.control ...

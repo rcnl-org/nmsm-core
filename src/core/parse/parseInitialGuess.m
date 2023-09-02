@@ -4,7 +4,7 @@
 % specified), controls (if specified), and parameters (if specified)
 %
 % (struct) -> (struct)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function initialGuess = parseInitialGuess(tree)
+function initialGuess = parseInitialGuess(tree, controllerType)
 import org.opensim.modeling.Storage
 initialGuess = [];
 statesFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
@@ -40,13 +40,25 @@ if ~isempty(statesFileName)
     initialGuess.state = parseTreatmentOptimizationStandard( ...
         {statesFileName});
 end
-controlsFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
-    'initial_controls_file', ''));
-if ~isempty(controlsFileName)
-    initialGuess.controlLabels = getStorageColumnNames(Storage( ...
-        {controlsFileName}));
-    initialGuess.control = parseTreatmentOptimizationStandard( ...
-        {controlsFileName});
+if strcmp(controllerType, "torque")
+    controlsFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
+        'initial_torque_controls_file', ''));
+    if ~isempty(controlsFileName)
+        initialGuess.controlLabels = getStorageColumnNames(Storage( ...
+            {controlsFileName}));
+        initialGuess.control = parseTreatmentOptimizationStandard( ...
+            {controlsFileName});
+    end
+end
+if strcmp(controllerType, "synergy")
+    controlsFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
+        'initial_controls_file', ''));
+    if ~isempty(controlsFileName)
+        initialGuess.controlLabels = getStorageColumnNames(Storage( ...
+            {controlsFileName}));
+        initialGuess.control = parseTreatmentOptimizationStandard( ...
+            {controlsFileName});
+    end
 end
 parametersFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
     'initial_parameters_file', ''));

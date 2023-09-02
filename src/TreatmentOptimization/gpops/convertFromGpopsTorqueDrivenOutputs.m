@@ -28,6 +28,9 @@ function output = convertFromGpopsTorqueDrivenOutputs(solution, ...
     inputs, params)
 solution = solution.result.solution;
 solution.auxdata = inputs;
+if isfield(solution, 'parameter')
+    solution.phase.parameter = [solution.parameter];
+end
 if isfield(inputs, "optimizeSynergyVectors")
     solution.phase.parameter = solution.parameter;
 end
