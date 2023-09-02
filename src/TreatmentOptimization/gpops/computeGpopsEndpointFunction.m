@@ -37,6 +37,9 @@ if ~isempty(setup.auxdata.terminal) || strcmp(setup.auxdata.toolName, "DesignOpt
         setup.phase.parameter = setup.parameter;
     end
     values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
+    if strcmp(setup.auxdata.toolName, "DesignOptimization")
+        setup = updateSystemFromUserDefinedFunctions(setup, values);
+    end
     modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata);
 end
 

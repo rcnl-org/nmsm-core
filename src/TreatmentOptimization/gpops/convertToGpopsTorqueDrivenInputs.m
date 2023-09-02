@@ -42,7 +42,7 @@ end
 function bounds = setupProblemBounds(inputs, params)
 bounds = setupCommonOptimalControlBounds(inputs, params);
 % setup parameter bounds
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
     if inputs.optimizeSynergyVectors
         bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));

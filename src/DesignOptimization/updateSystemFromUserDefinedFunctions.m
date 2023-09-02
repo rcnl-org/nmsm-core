@@ -29,7 +29,6 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = updateSystemFromUserDefinedFunctions(inputs, values)
-values
 for i = 1:length(inputs.auxdata.systemFns)
     func = str2func(inputs.auxdata.systemFns(i));
     inputs = func(inputs, values);
