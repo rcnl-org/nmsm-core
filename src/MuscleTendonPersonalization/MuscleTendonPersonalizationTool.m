@@ -35,6 +35,7 @@ verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+
 if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
@@ -50,6 +51,7 @@ if params.performMuscleTendonLengthInitialization
 else
     reportMuscleTendonPersonalizationResults(optimizedParams, inputs);
 end
+
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
 if precalInputs.optimizeIsometricMaxForce
     finalValues.maxIsometricForce = inputs.maxIsometricForce;
