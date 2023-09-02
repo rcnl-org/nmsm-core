@@ -31,7 +31,7 @@ solution.auxdata = inputs;
 if isfield(inputs, "optimizeSynergyVectors")
     solution.phase.parameter = solution.parameter;
 end
-output = computeTrackingOptimizationContinuousFunction(solution);
+output = computeGpopsContinuousFunction(solution);
 output.solution = solution;
 end
 

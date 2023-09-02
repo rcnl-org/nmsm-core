@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -31,14 +31,12 @@
 function [inputs, params] = ...
     parseVerificationOptimizationSettingsTree(settingsTree)
 inputs = parseTreatmentOptimizationInputs(settingsTree);
-inputs = parseTreatmentOptimizationDesignVariableBounds(settingsTree, ...
-    inputs);
-inputs = getInputs(settingsTree);
+inputs = getInputs(settingsTree, inputs);
 params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 end
 
-function inputs = getInputs(tree)
+function inputs = getInputs(tree, inputs)
 import org.opensim.modeling.Storage
 if strcmpi(inputs.controllerType, 'synergy_driven')
 inputs.synergyWeights = parseTreatmentOptimizationStandard(...
