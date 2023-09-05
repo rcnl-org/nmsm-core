@@ -132,29 +132,6 @@ params.maxFunctionEvaluations = str2double(getTextFromField(...
     '1e6')));
 end
 
-function groups = getSynergyGroups(tree, model)
-synergySetTree = getFieldByNameOrError(tree, "RCNLSynergySet");
-groupsTree = getFieldByNameOrError(synergySetTree, "RCNLSynergy");
-groups = {};
-for i=1:length(groupsTree)
-    if(length(groupsTree) == 1)
-        group = groupsTree;
-    else
-        group = groupsTree{i};
-    end
-    groups{i}.numSynergies = ...
-        str2double(group.num_synergies.Text);
-    groupMembers = model.getForceSet().getGroup( ...
-        group.muscle_group_name.Text).getMembers();
-    muscleNames = string([]);
-    for j=0:groupMembers.getSize() - 1
-        muscleNames(end + 1) = groupMembers.get(j);
-    end
-    groups{i}.muscleNames = muscleNames;
-    groups{i}.muscleGroupName = group.muscle_group_name.Text;
-end
-end
-
 function [optimalFiberLengthScaleFactors, ...
     tendonSlackLengthScaleFactors, maxIsometricForce] = ...
     getMtpDataInputs(inputs)
