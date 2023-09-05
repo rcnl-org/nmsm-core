@@ -32,7 +32,7 @@
 
 function modeledValues = calcTorqueBasedModeledValues(values, inputs)
 appliedLoads = [zeros(length(values.time), ...
-    model.getForceSet().getMuscles().getSize())];
+    inputs.model.getForceSet().getMuscles().getSize())];
 if ~isempty(inputs.contactSurfaces)
     clear pointKinematics
     [springPositions, springVelocities] = getSpringLocations( ...

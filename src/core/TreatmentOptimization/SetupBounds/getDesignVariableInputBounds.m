@@ -68,9 +68,9 @@ if strcmp(inputs.controllerType, 'synergy')
     inputs.minControl = [minControlJerks zeros(1, inputs.numSynergies)];
 
     if inputs.optimizeSynergyVectors
-    inputs.maxParameter = inputs.maxParameterSynergyWeights * ...
-        ones(1, inputs.numSynergyWeights);
-    inputs.minParameter = zeros(1, inputs.numSynergyWeights);
+        inputs.maxParameter = inputs.maxParameterSynergyWeights * ...
+            ones(1, inputs.numSynergyWeights);
+        inputs.minParameter = zeros(1, inputs.numSynergyWeights);
     end
 elseif strcmp(inputs.controllerType, 'torque')
     for i = 1:length(inputs.controlTorqueNames)

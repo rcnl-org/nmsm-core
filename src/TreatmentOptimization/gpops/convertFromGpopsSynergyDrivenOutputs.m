@@ -1,8 +1,5 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function computes path constraints (if any) for a gpops2 problem
-%
-% (struct) -> (struct)
 %
 
 % ----------------------------------------------------------------------- %
@@ -27,24 +24,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function constraint = calcGpopsConstraint(constraints, ...
-    constraintTermCalculations, allowedTypes, values, modeledValues, ...
-    inputs)
-constraint = [];
-for i = 1:length(constraints)
-    constraintTerm = constraints{i};
-    if constraintTerm.isEnabled
-        if isfield(constraintTermCalculations, constraintTerm.type) && ...
-                any(ismember(allowedTypes, constraintTerm.type))
-            fn = constraintTermCalculations.(constraintTerm.type);
-            constraint = cat(2, constraint, ...
-                fn(values, modeledValues, inputs, constraintTerm));
-        else
-%             throw(MException('ConstraintTerms:IllegalTerm', ...
-%                 strcat("Constraint term ",  constraintTerm.type, ...
-%                 " is not allowed for this tool")))
-        end
+function output = convertFromGpopsSynergyDrivenOutputs(solution, ...
+    inputs, params)
+solution = solution.result.solution;
+solution.auxdata = inputs;
+if strcmp(inputs.toolName, "DesignOptimization")
+    if isfield(solution, 'parameter')
+        solution.phase.parameter = [solution.parameter];
+    end
+else
+    if inputs.optimizeSynergyVectors
+        solution.phase.parameter = solution.parameter;
     end
 end
+output = computeGpopsContinuousFunction(solution);
+output.solution = solution;
 end
 

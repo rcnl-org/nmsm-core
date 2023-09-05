@@ -51,8 +51,7 @@ if strcmp(inputs.controllerType, 'synergy')
         guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
             inputs.synergyActivationsGuess], inputs.maxControl, inputs.minControl);
     end
-    if isfield(inputs, "optimizeSynergyVectors") && ...
-            inputs.optimizeSynergyVectors
+    if inputs.optimizeSynergyVectors
         guess.parameter = scaleToBounds(inputs.synergyWeightsGuess, ...
             inputs.maxParameter, inputs.minParameter);
     end
