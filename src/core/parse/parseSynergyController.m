@@ -30,7 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = parseSynergyController(tree, inputs)
-inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
+inputs.synergyGroups = parseSynergyGroups(tree, Model(inputs.model));
 inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
 inputs.numSynergyWeights = getNumSynergyWeights(inputs.synergyGroups);
 inputs.surrogateModelCoordinateNames = parseSpaceSeparatedList(tree, ...

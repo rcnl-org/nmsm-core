@@ -41,7 +41,7 @@ end
 
 function inputs = getInputs(tree)
 inputs = parseMtpNcpSharedInputs(tree);
-inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
+inputs.synergyGroups = parseSynergyGroups(tree, Model(inputs.model));
 inputs = matchMuscleNamesFromCoordinatesAndSynergyGroups(inputs);
 inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.maxIsometricForce, inputs.optimalFiberLength, ...

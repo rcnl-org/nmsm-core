@@ -27,7 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function groups = getSynergyGroups(tree, model)
+function groups = parseSynergyGroups(tree, model)
 synergySetTree = getFieldByNameOrError(tree, "RCNLSynergySet");
 groupsTree = getFieldByNameOrError(synergySetTree, "RCNLSynergy");
 groups = {};

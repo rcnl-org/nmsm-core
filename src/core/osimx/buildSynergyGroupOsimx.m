@@ -4,7 +4,7 @@
 % into a new .osimx struct to be printed with writeOsimxFile(). See
 % buildOsimxFromOsimxStruct() for reference.
 %
-% The expected format of the synergyGroups comes from getSynergyGroups() as
+% The expected format of the synergyGroups comes from parseSynergyGroups() as
 % used in parseNeuralControlPersonalization()
 %
 % (struct, struct) -> (struct)
