@@ -68,12 +68,13 @@ for i = 1:length(inputs.muscleTendonColumnNames)
         osimx.muscles.(inputs.muscleTendonColumnNames(i)) ...
             .tendonSlackLength = inputs.tendonSlackLength(i);
     end
-    if precalInputs.optimizeIsometricMaxForce && ...
+    if isstruct(precalInputs) && precalInputs.optimizeIsometricMaxForce && ...
             ~isfield(osimx.muscles.(inputs.muscleTendonColumnNames(i)), "maxIsometricForce")
         osimx.muscles.(inputs.muscleTendonColumnNames(i)) ...
             .maxIsometricForce = inputs.maxIsometricForce(i);
     end
 end
+osimx.synergyGroups = inputs.synergyGroups;
 
 writeOsimxFile(buildOsimxFromOsimxStruct(osimx), outfile)
 end

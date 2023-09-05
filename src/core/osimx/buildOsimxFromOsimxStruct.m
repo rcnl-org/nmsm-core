@@ -40,5 +40,8 @@ end
 if isfield(osimxStruct, "groundContact")
     osimx = buildGcpOsimx(osimx, osimxStruct.groundContact);
 end
+if isfield(osimxStruct, "synergyGroups")
+    osimx = buildSynergyGroupOsimx(osimx, osimxStruct.synergyGroups);
+end
 end
 

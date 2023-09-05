@@ -1,10 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the joint velocities, accelerations, and jerk
-% based of the experimental joint angles using 5th degree GCV splines.
+% This function converts the synergyGroup portion of a parsed .osimx file
+% into a new .osimx struct to be printed with writeOsimxFile(). See
+% buildOsimxFromOsimxStruct() for reference.
 %
-% (struct) -> (struct)
-% Returns state derivatives
+% The expected format of the synergyGroups comes from getSynergyGroups() as
+% used in parseNeuralControlPersonalization()
+%
+% (struct, struct) -> (struct)
+% Adds synergyGroups to .osimxStruct
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +18,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Spencer Williams, Claire V. Hammond            %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,16 +32,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getStateDerivatives(inputs)
-points = length(inputs.experimentalTime);
-interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);
-numNodes = splFitWithCutoff(inputs.experimentalTime', ...
-    inputs.experimentalJointAngles', 10, 5);
-[N, Np, Npp] = BSplineMatrices(5, numNodes, points, interval);
-Nodes = N\inputs.experimentalJointAngles;
-inputs.experimentalJointVelocities = Np * Nodes;
-inputs.experimentalJointAccelerations = Npp * Nodes;
-inputs.experimentalJointJerks = calcBSplineDerivative( ...
-    inputs.experimentalTime, inputs.experimentalJointAccelerations, ...
-    5, numNodes);
+function osimx = buildSynergyGroupOsimx(osimx, synergyGroups)
+osimx.NMSMPipelineDocument.OsimxModel.RCNLSynergySet.Comment = ...
+    'The set of synergies from NCP to find the values in this osimx file';
+for i = 1:length(synergyGroups)
+    synergyGroup.muscle_group_name.Comment = ['The name of the muscle ' ...
+        'group associated with this synergy'];
+    synergyGroup.muscle_group_name.Text = synergyGroups{i}.muscleGroupName;
+    synergyGroup.num_synergies.Comment = ['The number of synergies ' ...
+        'used by this synergy group'];
+    synergyGroup.num_synergies.Text = num2str(synergyGroups{i}.numSynergies);
+    osimx.NMSMPipelineDocument.OsimxModel.RCNLSynergySet.RCNLSynergy{i} = synergyGroup;
 end
+end
+
