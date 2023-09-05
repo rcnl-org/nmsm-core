@@ -33,7 +33,7 @@ function writeMuscleTendonPersonalizationOsimxFile(modelFileName, ...
 model = Model(modelFileName);
 
 if isfile(osimxFileName)
-    osimx = parseOsimxFile(osimxFileName);
+    osimx = parseOsimxFile(osimxFileName, model);
     [~, name, ~] = fileparts(osimxFileName);
     outfile = fullfile(results_directory, strcat(name, "_mtp.xml"));
 else

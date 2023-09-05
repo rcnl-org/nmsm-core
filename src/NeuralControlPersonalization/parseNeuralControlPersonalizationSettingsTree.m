@@ -71,7 +71,7 @@ osimxFileName = getFieldByName(tree, "input_osimx_file");
 % if ~isstruct(osimxFileName) || isempty(osimxFileName.Text)
 %     throw(MException('', 'An input .osimx file is required if using data from MTP.'))
 % end
-inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text);
+inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text, inputs.model);
 % Remove activations of muscles from coordinates not included
 includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
     inputs.muscleTendonColumnNames);
