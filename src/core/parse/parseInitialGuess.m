@@ -49,8 +49,7 @@ if strcmp(controllerType, "torque")
         initialGuess.control = parseTreatmentOptimizationStandard( ...
             {controlsFileName});
     end
-end
-if strcmp(controllerType, "synergy")
+elseif strcmp(controllerType, "synergy")
     controlsFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
         'initial_controls_file', ''));
     if ~isempty(controlsFileName)
@@ -59,13 +58,16 @@ if strcmp(controllerType, "synergy")
         initialGuess.control = parseTreatmentOptimizationStandard( ...
             {controlsFileName});
     end
-end
-parametersFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
-    'initial_parameters_file', ''));
-if ~isempty(parametersFileName)
-    initialGuess.parameterLabels = getStorageColumnNames( ...
-        Storage({parametersFileName}));
-    initialGuess.parameter = parseTreatmentOptimizationStandard( ...
-        {parametersFileName});
+    parametersFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
+        'initial_parameters_file', ''));
+    if ~isempty(parametersFileName)
+        initialGuess.parameterLabels = getStorageColumnNames( ...
+            Storage({parametersFileName}));
+        initialGuess.parameter = parseTreatmentOptimizationStandard( ...
+            {parametersFileName});
+    end
+else
+    throw(MException("IncorrectControllerType", ...
+        "controllerType must be 'torque' or 'synergy'"));
 end
 end

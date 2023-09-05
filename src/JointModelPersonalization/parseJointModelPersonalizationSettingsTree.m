@@ -55,7 +55,7 @@ end
 end
 
 function inputs = getInputs(tree)
-inputs.model = parseModel(tree);
+inputs = parseModel(tree, struct());
 model = Model(inputs.model);
 inputs.tasks = getTasks(model, tree);
 inputs.desiredError = ...

@@ -35,9 +35,9 @@ inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
     'results_directory'));
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = parseControllerType(tree);
-inputs.model = parseModel(tree);
+inputs = parseModel(tree, inputs);
 inputs.osimx = parseOsimxFile(getTextFromField(getFieldByName(tree, ...
-    'input_osimx_file')));
+    'input_osimx_file')), inputs.model);
 inputs = parseController(tree, inputs);
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs.initialGuess = parseInitialGuess(tree, inputs.controllerType);
