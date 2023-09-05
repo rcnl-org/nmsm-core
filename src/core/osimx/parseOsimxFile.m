@@ -27,7 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = parseOsimxFile(osimxFileName)
+function osimx = parseOsimxFile(osimxFileName, model)
 
 if strcmp(osimxFileName, "")
     osimx = struct();
@@ -87,6 +87,8 @@ if(isstruct(rcnlMuscleSetTree))
         end
     end
 end
+
+osimx.synergyGroups = parseSynergyGroups(tree, model);
 end
 
 function contactSurface = parseContactSurface(tree)
