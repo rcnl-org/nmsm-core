@@ -31,7 +31,7 @@
 
 function values = getTrackingOptimizationValueStruct(phase, params)
 values = getTreatmentOptimizationValueStruct(phase, params);
-if strcmp(params.controllerType, 'synergy_driven')
+if strcmp(params.controllerType, 'synergy')
     if params.optimizeSynergyVectors
         synergyWeights = scaleToOriginal(phase.parameter(1,:), ...
             params.maxParameter, params.minParameter);

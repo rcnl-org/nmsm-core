@@ -61,7 +61,7 @@ if isfield(inputs.initialGuess, 'parameter') || isfield(inputs,"synergyWeights")
     end
     inputs.synergyWeightsGuess = synergyWeightsFlattened;
 end
-if strcmp(inputs.controllerType, 'synergy_driven') 
+if strcmp(inputs.controllerType, 'synergy') 
     inputs = getMuscleSynergiesInitialGuess(inputs);
     for i = 1 : length(inputs.coordinateNames)
         for j = 1 : length(inputs.surrogateModelCoordinateNames)

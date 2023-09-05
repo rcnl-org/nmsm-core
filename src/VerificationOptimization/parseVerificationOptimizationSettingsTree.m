@@ -38,7 +38,7 @@ end
 
 function inputs = getInputs(tree, inputs)
 import org.opensim.modeling.Storage
-if strcmpi(inputs.controllerType, 'synergy_driven')
+if strcmpi(inputs.controllerType, 'synergy')
 inputs.synergyWeights = parseTreatmentOptimizationStandard(...
     {getTextFromField(getFieldByName(tree, 'synergy_vectors_file'))});
 end

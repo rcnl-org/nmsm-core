@@ -16,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -62,7 +62,7 @@ if ~isempty(previousResultsDirectory) && ...
             inputs.grfFileName = findFileListFromPrefixList(...
                 directory, "groundReactions");
         end
-        if strcmp(inputs.controllerType, 'synergy_driven')
+        if strcmp(inputs.controllerType, 'synergy')
             [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
                 parseTreatmentOptimizationData(directory, 'muscleActivations', model);
         end
@@ -84,14 +84,14 @@ else
         inputs.grfFileName = findFileListFromPrefixList(...
             fullfile(dataDirectory, "GRFData"), prefix);
     end
-    if strcmp(inputs.controllerType, 'synergy_driven')
+    if strcmp(inputs.controllerType, 'synergy')
         directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
         [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
             parseTreatmentOptimizationData(directory, prefix, model);
     end
 end
 
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
     directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
         dataDirectory, "MAData"), prefix);
     inputs.momentArms = parseSelectMomentArms(directories, ...

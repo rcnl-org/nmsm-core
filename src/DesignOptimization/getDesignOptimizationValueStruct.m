@@ -36,7 +36,7 @@ function values = getDesignOptimizationValueStruct(inputs, params)
 values = getTreatmentOptimizationValueStruct(inputs, params);
 
 numParameters = 0;
-if strcmp(params.controllerType, 'synergy_driven')
+if strcmp(params.controllerType, 'synergy')
     if params.optimizeSynergyVectors
         values.synergyWeights = scaleToOriginal(inputs.parameter(1, ...
             1 : params.numSynergyWeights), ...

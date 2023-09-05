@@ -40,7 +40,7 @@ values.stateVelocities = getCorrectStates(state, 2, inputs.numCoordinates);
 values.stateAccelerations = getCorrectStates(state, 3, inputs.numCoordinates);
 values.controlJerks = control(:, 1 : inputs.numCoordinates);
 
-if ~strcmp(inputs.controllerType, 'synergy_driven')
+if ~strcmp(inputs.controllerType, 'synergy')
     values.controlTorques = control(:, inputs.numCoordinates + 1 : ...
         inputs.numCoordinates + inputs.numTorqueControls);
 else
@@ -48,8 +48,8 @@ else
         inputs.numCoordinates + 1 : inputs.numCoordinates + inputs.numSynergies);
 end
 
-if strcmp(inputs.toolName, "TreatmentOptimization")
-    if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.toolName, "TrackingOptimization")
+    if strcmp(inputs.controllerType, 'synergy')
         if inputs.optimizeSynergyVectors
             synergyWeights = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
@@ -62,14 +62,14 @@ if strcmp(inputs.toolName, "TreatmentOptimization")
     end
 end
 if strcmp(inputs.toolName, "VerificationOptimization")
-    if strcmp(inputs.controllerType, 'synergy_driven')
+    if strcmp(inputs.controllerType, 'synergy')
         values.synergyWeights = getSynergyWeightsFromGroups(...
             inputs.synergyWeightsGuess, inputs);
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
     numParameters = 0;
-    if strcmp(inputs.controllerType, 'synergy_driven')
+    if strcmp(inputs.controllerType, 'synergy')
         if inputs.optimizeSynergyVectors
             values.synergyWeights = scaleToOriginal(phase.parameter(1, ...
                 1 : inputs.numSynergyWeights), ...

@@ -71,7 +71,7 @@ end
 writeToSto(stateLabels, values.time, [values.statePositions ...
     values.stateVelocities values.stateAccelerations], ...
     fullfile(inputs.resultsDirectory, "statesSolution.sto"));
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
     controlLabels = inputs.coordinateNames;
     for i = 1 : inputs.numSynergies
         controlLabels{end + 1} = strcat('synergy_activation', num2str(i));

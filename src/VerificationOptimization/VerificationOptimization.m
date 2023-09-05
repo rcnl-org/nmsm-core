@@ -31,7 +31,7 @@
 function [output, inputs] = VerificationOptimization(inputs, params)
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 initializeMexOrMatlabParallelFunctions(inputs.mexModel);
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
     inputs = setupMuscleSynergies(inputs);
 end
 output = computeVerificationOptimizationMainFunction(inputs, params);
