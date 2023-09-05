@@ -51,7 +51,7 @@ if strcmp(controllerType, "torque")
     end
 elseif strcmp(controllerType, "synergy")
     controlsFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
-        'initial_controls_file', ''));
+        'initial_synergy_controls_file', ''));
     if ~isempty(controlsFileName)
         initialGuess.controlLabels = getStorageColumnNames(Storage( ...
             {controlsFileName}));
@@ -59,7 +59,7 @@ elseif strcmp(controllerType, "synergy")
             {controlsFileName});
     end
     parametersFileName = getTextFromField(getFieldByNameOrAlternate(tree, ...
-        'initial_parameters_file', ''));
+        'initial_synergy_vectors_file', ''));
     if ~isempty(parametersFileName)
         initialGuess.parameterLabels = getStorageColumnNames( ...
             Storage({parametersFileName}));
