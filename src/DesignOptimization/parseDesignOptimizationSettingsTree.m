@@ -40,10 +40,6 @@ end
 
 function inputs = getInputs(tree, inputs)
 import org.opensim.modeling.Storage
-if strcmpi(inputs.controllerType, 'synergy')
-inputs.synergyWeights = parseTreatmentOptimizationStandard(...
-    {getTextFromField(getFieldByName(tree, 'synergy_vectors_file'))});
-end
 inputs.systemFns = parseSpaceSeparatedList(tree, "model_functions");
 parameterTree = getFieldByNameOrError(tree, "RCNLParameterTermSet");
 if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
