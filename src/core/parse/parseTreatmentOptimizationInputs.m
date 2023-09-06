@@ -36,11 +36,10 @@ inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = parseControllerType(tree);
 inputs = parseModel(tree, inputs);
-inputs.osimx = parseOsimxFile(getTextFromField(getFieldByName(tree, ...
-    'input_osimx_file')), inputs.model);
+inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
 inputs = parseController(tree, inputs);
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
-inputs.initialGuess = parseInitialGuess(tree, inputs.controllerType);
+inputs.initialGuess = parseInitialGuess(inputs);
 inputs = parseOptimalControlSolverSettings( ...
     getTextFromField(getFieldByNameOrError(tree, ...
     'optimal_control_solver_settings_file')), inputs);
@@ -50,4 +49,21 @@ inputs.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet') ...
     .RCNLConstraintTerm, inputs.controllerType, inputs.toolName);
 inputs.contactSurfaces = parseGroundContactSurfaces(inputs);
+end
+
+function osimx = parseOsimxFileWithCondition(tree, inputs)
+osimxFileName = parseTextOrAlternate(tree, "input_osimx_file", "");
+osimx = parseOsimxFile(osimxFileName, inputs.model);
+if strcmp(inputs.controllerType, "synergy")
+    if strcmp(osimxFileName, "")
+        throw(MException("", ...
+           strcat("<input_osimx_file> must be specified", ...
+           " for <RCNLSynergyController>")))
+    end
+    if ~isfield(osimx, "synergyGroups")
+        throw(MException("", ...
+           strcat("<RCNLSynergySet> must be specified in the", ...
+           " osimx file for <RCNLSynergyController>. Have you run NCP yet?")))
+    end
+end
 end
