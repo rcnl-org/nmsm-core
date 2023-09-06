@@ -50,8 +50,12 @@ writeToSto(stateLabels, values.time, [values.statePositions ...
     fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_states.sto")));
 if strcmp(inputs.controllerType, 'synergy')
     controlLabels = inputs.coordinateNames;
-    for i = 1 : inputs.numSynergies
-        controlLabels{end + 1} = strcat('synergy_activation', num2str(i));
+    for i = 1 : length(inputs.osimx.synergyGroups)
+        for j = 1 : inputs.osimx.synergyGroups{i}.numSynergies
+            controlLabels{end + 1} = convertStringsToChars( ...
+                strcat(inputs.osimx.synergyGroups{i}.muscleGroupName, ...
+                "_", num2str(j)));
+        end
     end
     commands = values.controlSynergyActivations;
     writeToSto(controlLabels, values.time, [values.controlJerks ...
