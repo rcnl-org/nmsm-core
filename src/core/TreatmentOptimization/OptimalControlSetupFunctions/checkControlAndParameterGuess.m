@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function checks that the initial guess control file is in the 
+% This function checks that the initial guess control file is in the
 % correct order
 %
 % (struct) -> (struct)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,16 +28,36 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = checkControlGuess(inputs)
+function inputs = checkControlAndParameterGuess(inputs)
 if isfield(inputs.initialGuess, 'control')
-    for i = 1 : inputs.numCoordinates
-        for k = 1 : length(inputs.initialGuess.controlLabels)
-            if strcmpi(inputs.coordinateNames(i), inputs.initialGuess.controlLabels(k))
-                controlIndex(i) = k;
-            end
-        end 
+    newControls = zeros(size(inputs.initialGuess.control, 1), 0);
+    newLabels = string([]);
+    for i = 1 : length(inputs.coordinateNames)
+        index = find(ismember(inputs.initialGuess.controlLabels, inputs.coordinateNames(i)));
+        if isempty(index)
+            newControls(:, end + 1) = zeros(size(inputs.initialGuess.control, 1), 1);
+        else
+            newControls(:, end + 1) = inputs.initialGuess.control(:, index);
+        end
+        newLabels(end + 1) = inputs.coordinateNames(i);
     end
-    inputs.initialGuess.control(:, 1:inputs.numCoordinates) = ...
-        inputs.initialGuess.control(:, controlIndex);
+    if strcmp(inputs.controllerType, "synergy")
+        for i = 1 : length(inputs.osimx.synergyGroups)
+            for j = 1 : inputs.osimx.synergyGroups{i}.numSynergies
+                index = find(ismember(inputs.initialGuess.controlLabels, ...
+                    strcat(inputs.osimx.synergyGroups{i}.muscleGroupName, "_", num2str(j))));
+                if isempty(index)
+                    throw(MException("ParseError:SynergyCommands", ...
+                        strcat("All synergy commands are required: ", ...
+                        strcat(inputs.osimx.synergyGroups{i}.muscleGroupName, "_", num2str(j)))));
+                else
+                    newControls(:, end + 1) = inputs.initialGuess.control(:, index);
+                end
+                newLabels(end + 1) = strcat(inputs.osimx.synergyGroups{i}.muscleGroupName, "_", num2str(j));
+            end
+        end
+    end
+    inputs.initialGuess.control = newControls;
+    inputs.initialGuess.controlLabels = newLabels;
 end
 end
