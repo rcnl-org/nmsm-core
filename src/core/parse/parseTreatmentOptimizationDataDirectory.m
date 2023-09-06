@@ -31,67 +31,28 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
-dataDirectory = parseDataDirectory(tree);
-previousResultsDirectoryElement = getFieldByName(tree, 'previous_results_directory');
-if isstruct(previousResultsDirectoryElement)
-    previousResultsDirectory = previousResultsDirectoryElement.Text;
-else
-    previousResultsDirectory = [];
-end
-if strcmp(previousResultsDirectory, "")
-        previousResultsDirectory = [];
-end
+[dataDirectory, inputs.previousResultsDirectory] = findDataDirectory(tree, inputs);
+inputs.trialName = parseTrialName(tree);
 prefix = findPrefixes(tree, dataDirectory);
-
-if ~isempty(previousResultsDirectory) && ...
-        exist(fullfile(previousResultsDirectory, "optimal"), 'dir')
-    directory = findFirstLevelSubDirectoriesFromPrefixes( ...
-        previousResultsDirectory, "optimal");
-    if ~isempty(directory)
-        model = Model(inputs.model);
-        [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
-            parseTreatmentOptimizationData(directory, 'inverseDynamics', model);
-        [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
-            parseTreatmentOptimizationData(directory, 'inverseKinematics', model);
-        experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
-            directory, "inverseKinematics"))';
-        inputs.kinematicsFile = findFileListFromPrefixList(...
-            directory, "inverseKinematics");
-        inputs.experimentalTime = experimentalTime - experimentalTime(1);
-        if exist(fullfile(dataDirectory, "groundReactions"), 'dir')
-            inputs.grfFileName = findFileListFromPrefixList(...
-                directory, "groundReactions");
-        end
-        if strcmp(inputs.controllerType, 'synergy')
-            [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
-                parseTreatmentOptimizationData(directory, 'muscleActivations', model);
-        end
-    end
-else
-    directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IDData");
-    model = Model(inputs.model);
-    [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
-        parseTreatmentOptimizationData(directory, prefix, model);
-    directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IKData");
-    [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
-        parseTreatmentOptimizationData(directory, prefix, model);
-    experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
-        fullfile(dataDirectory, "IKData"), prefix))';
-    inputs.kinematicsFile = findFileListFromPrefixList( ...
-        fullfile(dataDirectory, "IKData"), prefix);
-    inputs.experimentalTime = experimentalTime - experimentalTime(1);
-    if exist(fullfile(dataDirectory, "GRFData"), 'dir')
-        inputs.grfFileName = findFileListFromPrefixList(...
-            fullfile(dataDirectory, "GRFData"), prefix);
-    end
-    if strcmp(inputs.controllerType, 'synergy')
-        directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
-        [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
-            parseTreatmentOptimizationData(directory, prefix, model);
-    end
+[inputs.experimentalJointMoments, ...
+    inputs.inverseDynamicMomentLabels] = ...
+    parseTrialData(fullfile(dataDirectory, "IDData"), ...
+    inputs.trialName, inputs.model);
+[inputs.experimentalJointAngles, inputs.coordinateNames, ...
+    experimentalTime] = parseTrialData(...
+    fullfile(dataDirectory, "IKData"), inputs.trialName, inputs.model);
+inputs.coordinateNames = cellstr(inputs.coordinateNames);
+inputs.experimentalTime = experimentalTime - experimentalTime(1);
+if exist(fullfile(dataDirectory, "GRFData"), 'dir')
+    inputs.grfFileName = findFileListFromPrefixList(...
+        fullfile(dataDirectory, "GRFData"), prefix);
 end
-
 if strcmp(inputs.controllerType, 'synergy')
+    [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
+        parseTrialData(inputs.previousResultsDirectory, ...
+        strcat(inputs.trialName, "_combinedActivations"), inputs.model);
+    inputs.synergyWeights = parseTrialData(inputs.previousResultsDirectory, ...
+        "synergyWeights", inputs.model);
     directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
         dataDirectory, "MAData"), prefix);
     inputs.momentArms = parseSelectMomentArms(directories, ...
@@ -101,4 +62,18 @@ if strcmp(inputs.controllerType, 'synergy')
     inputs = getMuscleSpecificSurrogateModelData(inputs);
 end
 inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
+end
+
+function [dataDirectory, previousResultsDirectory] = ...
+    findDataDirectory(tree, inputs)
+dataDirectory = parseDataDirectory(tree);
+previousResultsDirectory = ...
+    parseTextOrAlternate(tree, "previous_results_directory", "");
+if strcmp(previousResultsDirectory, "") && ...
+        strcmp(inputs.controllerType, 'synergy')
+    throw(MException("ParseError:RequiredElement", ...
+        strcat("Element <previous_results_directory> required", ...
+        " for <RCNLSynergyController>, this can be an NCP", ...
+        " or Treatment Optimization results directory")))
+end
 end
