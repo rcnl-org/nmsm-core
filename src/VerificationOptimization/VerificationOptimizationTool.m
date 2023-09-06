@@ -33,8 +33,8 @@ function VerificationOptimizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "VerificationOptimizationTool");
 [inputs, params] = parseVerificationOptimizationSettingsTree(settingsTree);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
 inputs = setupMuscleSynergies(inputs);
+inputs = makeTreatmentOptimizationInputs(inputs, params);
 outputs = solveOptimalControlProblem(inputs, params);
 reportTreatmentOptimizationResults(outputs, inputs);
 saveVerificationOptimizationResults(outputs, inputs);
