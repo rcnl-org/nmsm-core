@@ -1,8 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function saves and prints the unscaled results from all
-% treatment optimization modules (tracking, verification, and design 
-% optimization. 
+% treatment optimization modules (tracking, verification, and design
+% optimization.
 %
 % (struct, struct) -> (None)
 % Prints treatment optimization results
@@ -30,15 +30,63 @@
 % ----------------------------------------------------------------------- %
 
 function saveCommonOptimalControlResults(solution, inputs, values)
-outputDirectory = fullfile(inputs.resultsDirectory, 'optimal');
-if ~exist(outputDirectory, 'dir')
-    mkdir(outputDirectory)
+if ~exist(inputs.resultsDirectory, 'dir')
+    mkdir(inputs.resultsDirectory)
+end
+
+saveInverseKinematicsResults(inputs, values, inputs.resultsDirectory);
+saveInverseDynamicsResults(solution, inputs, values, inputs.resultsDirectory);
+saveGroundReactionResults(solution, inputs, values, inputs.resultsDirectory);
+
+stateLabels = inputs.coordinateNames;
+for i = 1 : length(inputs.coordinateNames)
+    stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
+end
+for i = 1 : length(inputs.coordinateNames)
+    stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
+end
+writeToSto(stateLabels, values.time, [values.statePositions ...
+    values.stateVelocities values.stateAccelerations], ...
+    fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_states.sto")));
+if strcmp(inputs.controllerType, 'synergy')
+    controlLabels = inputs.coordinateNames;
+    for i = 1 : inputs.numSynergies
+        controlLabels{end + 1} = strcat('synergy_activation', num2str(i));
+    end
+    commands = values.controlSynergyActivations;
+    writeToSto(controlLabels, values.time, [values.controlJerks ...
+        commands], fullfile(inputs.resultsDirectory, ...
+        strcat(inputs.trialName, "_synergyCommands.sto")));
+elseif strcmp(inputs.controllerType, 'torque_driven')
+    controlLabels = inputs.coordinateNames;
+    for i = 1 : inputs.numTorqueControls
+        controlLabels{end + 1} = strcat('torqueControl', num2str(i));
+    end
+    writeToSto(controlLabels, values.time, [values.controlJerks ...
+        values.controlTorques], fullfile(inputs.resultsDirectory, ...
+        strcat(inputs.trialName, "_torqueControls.sto")));
+end
+delete(inputs.mexModel);
+end
+
+function saveInverseKinematicsResults(inputs, values, outputDirectory)
+if ~exist(fullfile(outputDirectory, "IKData"), "dir")
+    mkdir(fullfile(outputDirectory, "IKData"))
 end
 writeToSto(inputs.coordinateNames, values.time, values.statePositions, ...
-    fullfile(outputDirectory, "inverseKinematics.sto"));
+    fullfile(outputDirectory, "IKData", strcat(inputs.trialName, ".sto")));
+end
+
+function saveInverseDynamicsResults(solution, inputs, values, outputDirectory)
+if ~exist(fullfile(outputDirectory, "IDData"), "dir")
+    mkdir(fullfile(outputDirectory, "IDData"))
+end
 writeToSto(inputs.inverseDynamicMomentLabels, values.time, ...
-    solution.inverseDynamicMoments, fullfile(outputDirectory, ...
-    "inverseDynamics.sto"));
+    solution.inverseDynamicMoments, fullfile(outputDirectory, "IDData", ...
+    strcat(inputs.trialName, ".sto")));
+end
+
+function saveGroundReactionResults(solution, inputs, values, outputDirectory)
 groundContactLabels = [];
 groundContactData = [];
 for i = 1:length(inputs.contactSurfaces)
@@ -57,41 +105,11 @@ for i = 1:length(inputs.contactSurfaces)
         midfootSuperiorLocation];
 end
 if ~isempty(groundContactData)
+    if ~exist(fullfile(outputDirectory, "GRFData"), "dir")
+        mkdir(fullfile(outputDirectory, "GRFData"))
+    end
     writeToSto(groundContactLabels, values.time, ...
-        groundContactData, fullfile(outputDirectory, ...
-        "groundReactions.sto"));
+        groundContactData, fullfile(inputs.resultsDirectory, "GRFData", ...
+        strcat(inputs.trialName, ".sto")));
 end
-stateLabels = inputs.coordinateNames;
-for i = 1 : length(inputs.coordinateNames)
-    stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_u');
-end
-for i = 1 : length(inputs.coordinateNames)
-    stateLabels{end + 1} = strcat(inputs.coordinateNames{i}, '_dudt');
-end
-writeToSto(stateLabels, values.time, [values.statePositions ...
-    values.stateVelocities values.stateAccelerations], ...
-    fullfile(inputs.resultsDirectory, "statesSolution.sto"));
-if strcmp(inputs.controllerType, 'synergy')
-    controlLabels = inputs.coordinateNames;
-    for i = 1 : inputs.numSynergies
-        controlLabels{end + 1} = strcat('synergy_activation', num2str(i));
-    end
-    if isfield(values, "controlNeuralCommands")
-        commands = values.controlNeuralCommands;
-    else
-        commands = values.controlSynergyActivations;
-    end
-    writeToSto(controlLabels, values.time, [values.controlJerks ...
-        commands], fullfile(inputs.resultsDirectory, ...
-        "controlSolution.sto"));
-elseif strcmp(inputs.controllerType, 'torque_driven')
-    controlLabels = inputs.coordinateNames;
-    for i = 1 : inputs.numTorqueControls
-        controlLabels{end + 1} = strcat('torqueControl', num2str(i));
-    end
-    writeToSto(controlLabels, values.time, [values.controlJerks ...
-        values.controlTorques], fullfile(inputs.resultsDirectory, ...
-        "controlSolution.sto"));
-end
-delete(inputs.mexModel);
 end
