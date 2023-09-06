@@ -35,8 +35,13 @@ inputs.splineJointAngles = spaps(inputs.experimentalTime/inputs.experimentalTime
 inputs.splineJointMoments = spaps(inputs.experimentalTime/inputs.experimentalTime(end), ...
     inputs.experimentalJointMoments', 0.0000001);
 if strcmp(inputs.controllerType, 'synergy')
+    try % if using NCP results, this works, if using Treatment Optimization, go to step 2
 inputs.splineMuscleActivations = spaps(inputs.experimentalTime/inputs.experimentalTime(end), ...
     inputs.experimentalMuscleActivations', 0.0000001);
+    catch
+        inputs.splineMuscleActivations = spaps(inputs.muscleActivationsTime/inputs.experimentalTime(end), ...
+    inputs.experimentalMuscleActivations', 0.0000001);
+    end
 end
 for i = 1:length(inputs.contactSurfaces)
     inputs.splineExperimentalGroundReactionForces{i} = ...
