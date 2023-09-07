@@ -29,12 +29,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function adjustBodyScaling(model, bodyName, value)
+function adjustBodyScaling(model, bodyName, value, anatomicalMarkers)
 
-markers = getMarkersFromBody(model, bodyName);
-markerLocations = {};
-for i = 1:length(markers)
-    markerLocations{i} = org.opensim.modeling.Vec3(model.getMarkerSet().get(markers{i}).get_location());
+if ~anatomicalMarkers
+    markers = getMarkersFromBody(model, bodyName);
+    markerLocations = {};
+    for i = 1:length(markers)
+        markerLocations{i} = org.opensim.modeling.Vec3( ...
+            model.getMarkerSet().get(markers{i}).get_location());
+    end
 end
 
 state = initializeState(model);
@@ -48,8 +51,10 @@ scale.setApply(true);
 scaleSet.cloneAndAppend(scale);
 model.scale(state, scaleSet, true, -1.0);
 
-for i = 1:length(markers)
-    model.getMarkerSet().get(markers{i}).set_location(markerLocations{i});
+if ~anatomicalMarkers
+    for i = 1:length(markers)
+        model.getMarkerSet().get(markers{i}).set_location(markerLocations{i});
+    end
 end
 end
 
