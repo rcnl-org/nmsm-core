@@ -38,8 +38,10 @@ surrogateMuscles = createSurrogateModel( ...
     inputs.muscleSpecificJointAngles, inputs.muscleTendonLengths, ...
     inputs.muscleSpecificMomentArms,  inputs.polynomialDegree);
 
-saveSurrogateModel(inputs);
-reportSurrogateModel(inputs);
+if valueOrAlternate(inputs, 'plotResults', false)
+    inputs.surrogateMuscles = surrogateMuscles;
+    reportSurrogateModel(inputs);
+end
 end
 
 function inputs = getData(inputs)
