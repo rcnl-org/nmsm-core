@@ -88,7 +88,10 @@ if(isstruct(rcnlMuscleSetTree))
     end
 end
 
-osimx.synergyGroups = parseSynergyGroups(tree, model);
+rcnlSynergySetTree = getFieldByName(tree, "RCNLSynergySet");
+if isstruct(rcnlSynergySetTree)
+    osimx.synergyGroups = parseSynergyGroups(tree, model);
+end
 end
 
 function contactSurface = parseContactSurface(tree)
