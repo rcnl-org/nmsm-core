@@ -38,19 +38,19 @@
 % -----------------------------------------------------------------------
 
 function [newMuscleTendonLengths, newMomentArms, ...
-    newMuscleTendonVelocities] = calcSurrogateModel(params, jointAngles, ...
+    newMuscleTendonVelocities] = calcSurrogateModel(inputs, jointAngles, ...
     jointVelocities)
 
 newMomentArms = zeros(size(jointAngles{1}, 1), ...
-    length(params.coordinateNames), size(jointAngles, 2));
+    length(inputs.coordinateNames), size(jointAngles, 2));
 for i = 1 : size(jointAngles, 2)
     [newMuscleTendonLengths(:, i), newMuscleTendonVelocities(:, i), ...
-        momentArms] = params.surrogateMuscles{i}(jointAngles{i}, ...
+        momentArms] = inputs.surrogateMuscles{i}(jointAngles{i}, ...
         jointVelocities{i});
     index = 1;
-    for j = 1 : length(params.coordinateNames)
-        for k = 1 : length(params.surrogateModelLabels{i})
-            if strcmp(params.coordinateNames(j), params.surrogateModelLabels{i}(k))
+    for j = 1 : length(inputs.coordinateNames)
+        for k = 1 : length(inputs.surrogateModelLabels{i})
+            if strcmp(inputs.coordinateNames(j), inputs.surrogateModelLabels{i}(k))
                 newMomentArms(:, j, i) = momentArms(:, index);
                 index = index + 1;
             end
