@@ -34,9 +34,9 @@ function cost = calcTrackingCoordinateIntegrand(auxdata, time, ...
 indx = find(strcmp(convertCharsToStrings(auxdata.coordinateNames), ...
     coordinateName));
 if auxdata.splineJointAngles.dim > 1
-    experimentalJointAngles = fnval(auxdata.splineJointAngles, time/time(end))';
+    experimentalJointAngles = fnval(auxdata.splineJointAngles, time)';
 else
-    experimentalJointAngles = fnval(auxdata.splineJointAngles, time/time(end));
+    experimentalJointAngles = fnval(auxdata.splineJointAngles, time);
 end
 
 cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...

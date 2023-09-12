@@ -36,10 +36,10 @@ indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
 
 if params.splineMuscleActivations.dim > 1
     experimentalMuscleActivations = ...
-        fnval(params.splineMuscleActivations, time/time(end))';
+        fnval(params.splineMuscleActivations, time)';
 else
     experimentalMuscleActivations = ...
-        fnval(params.splineMuscleActivations, time/time(end));
+        fnval(params.splineMuscleActivations, time);
 end
 
 experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
