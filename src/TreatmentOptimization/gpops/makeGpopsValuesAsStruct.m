@@ -40,7 +40,7 @@ values.stateVelocities = getCorrectStates(state, 2, inputs.numCoordinates);
 values.stateAccelerations = getCorrectStates(state, 3, inputs.numCoordinates);
 values.controlJerks = control(:, 1 : inputs.numCoordinates);
 
-if ~strcmp(inputs.controllerType, 'synergy')
+if strcmp(inputs.controllerType, 'torque')
     values.controlTorques = control(:, inputs.numCoordinates + 1 : ...
         inputs.numCoordinates + inputs.numTorqueControls);
 else
