@@ -2,7 +2,7 @@
 %
 % This function computes the dynamic constraints, path constraints (if any)
 % and cost function terms (if any) for tracking optimization.
-% 
+%
 % (struct) -> (struct)
 %
 
@@ -32,7 +32,7 @@ function modeledValues = computeTrackingOptimizationContinuousFunction(inputs)
 values = getTrackingOptimizationValueStruct(inputs.phase, inputs.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, modeledValues);
-modeledValues.dynamics = calcTrackingOptimizationDynamicsConstraint(values, inputs.auxdata);
+modeledValues.dynamics = calcDynamicConstraint(values, inputs.auxdata);
 path = calcTrackingOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
 if ~isempty(path)
     modeledValues.path = path;

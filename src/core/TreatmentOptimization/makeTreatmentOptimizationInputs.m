@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function prepares the inputs for the all treatment optimization
-% modules (tracking, verification, and design optimization. 
+% modules (tracking, verification, and design optimization.
 %
-% (struct, struct) -> (struct) 
+% (struct, struct) -> (struct)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,15 +28,11 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeTreatmentOptimizationInputs(inputs, params)
-if isequal(mexext, 'mexw64')
-    pointKinematicsMexWindows(inputs.mexModel);
-    inverseDynamicsMexWindows(inputs.mexModel);
-end
 inputs = getStateDerivatives(inputs);
 inputs = setupGroundContact(inputs);
 inputs = getSplines(inputs);
 inputs = checkStateGuess(inputs);
-inputs = checkControlGuess(inputs);
+inputs = checkControlAndParameterGuess(inputs);
 inputs = checkParameterGuess(inputs);
 inputs = getIntegralBounds(inputs);
 inputs = getPathConstraintBounds(inputs);

@@ -31,7 +31,7 @@
 
 function values = getVerificationOptimizationValueStruct(inputs, params)
 values = getTreatmentOptimizationValueStruct(inputs, params);
-if strcmp(params.controllerType, 'synergy_driven')
+if strcmp(params.controllerType, 'synergy')
     values.synergyWeights = getSynergyWeightsFromGroups(...
         params.synergyWeightsGuess, params);
 end

@@ -2,7 +2,7 @@
 %
 % This function computes the dynamic constraints, path constraints (if any)
 % and cost function terms (if any) for design optimization.
-% 
+%
 % (struct) -> (struct)
 %
 
@@ -35,7 +35,7 @@ inputs = updateSystemFromUserDefinedFunctions(inputs, values);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, ...
     modeledValues);
-modeledValues.dynamics = calcDesignOptimizationDynamicsConstraint(values, ...
+modeledValues.dynamics = calcDynamicConstraint(values, ...
     inputs.auxdata);
 if ~isempty(inputs.auxdata.path)
     modeledValues.path = calcDesignOptimizationPathConstraint(values, ...

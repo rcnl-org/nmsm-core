@@ -30,8 +30,6 @@
 
 function pathTerm = calcRootSegmentResidualsPathConstraints(loadName, ...
     inverseDynamicMomentLabels, inverseDynamicMoments)
-
-indx = find(strcmp(convertCharsToStrings(inverseDynamicMomentLabels), ...
-    loadName));
-pathTerm = inverseDynamicMoments(:, indx);
+pathTerm = inverseDynamicMoments(:, ...
+    find(strcmp(inverseDynamicMomentLabels, loadName)));
 end

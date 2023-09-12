@@ -29,7 +29,6 @@
 
 function [model, inputs] = disableModelMuscles(inputs, model)
 import org.opensim.modeling.Model
-inputs.numTotalMuscles = model.getForceSet().getMuscles().getSize();
 for i = 0:model.getForceSet().getMuscles().getSize()-1
     if model.getForceSet().getMuscles().get(i).get_appliesForce()
         model.getForceSet().getMuscles().get(i).set_appliesForce(0);
