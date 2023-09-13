@@ -61,7 +61,7 @@ if strcmp(inputs.controllerType, 'synergy')
     writeToSto(controlLabels, values.time, [values.controlJerks ...
         commands], fullfile(inputs.resultsDirectory, ...
         strcat(inputs.trialName, "_synergyCommands.sto")));
-elseif strcmp(inputs.controllerType, 'torque_driven')
+elseif strcmp(inputs.controllerType, 'torque')
     controlLabels = inputs.coordinateNames;
     for i = 1 : inputs.numTorqueControls
         controlLabels{end + 1} = strcat('torqueControl', num2str(i));
