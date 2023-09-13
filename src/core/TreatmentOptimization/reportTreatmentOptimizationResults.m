@@ -52,7 +52,7 @@ plotResultsWithOutComparison(values.controlSynergyActivations, values.time, ...
 else 
 % plot torque controls
 plotResultsWithOutComparison(values.controlTorques, values.time, ...
-    inputs.controlTorqueNames, ["Torque" "Controls"]);
+    inputs.torqueControllerCoordinateNames, ["Torque" "Controls"]);
 end
 % plot external torque controls
 if isfield(inputs, 'enableExternalTorqueControl')

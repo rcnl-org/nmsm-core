@@ -69,7 +69,7 @@ else
             inputs.control, 1), 1) .* params.maxControl, ...
             ones(size(inputs.control, 1), 1) .* params.minControl);
         values.externalTorqueControls = controls(:, params.numCoordinates + ...
-            params.numTorqueControls + 1 : end);
+            length(inputs.torqueControllerCoordinateNames) + 1 : end);
     end
 end
 if isfield(params, 'userDefinedVariables')

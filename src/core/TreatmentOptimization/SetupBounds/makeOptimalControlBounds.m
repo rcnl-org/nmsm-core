@@ -38,6 +38,7 @@ inputs = makeControlBounds(inputs);
 end
 
 function inputs = makeStateBounds(inputs)
+inputs.maxTime = max(inputs.experimentalTime);
 inputs.minTime = min(inputs.experimentalTime);
 
 maxStatePositions = max(inputs.experimentalJointAngles) + ...
@@ -75,14 +76,14 @@ if strcmp(inputs.controllerType, 'synergy')
         inputs.minParameter = zeros(1, inputs.numSynergyWeights);
     end
 elseif strcmp(inputs.controllerType, 'torque')
-    for i = 1:length(inputs.controlTorqueNames)
+    for i = 1:length(inputs.torqueControllerCoordinateNames)
         indx = find(strcmp(convertCharsToStrings( ...
             inputs.inverseDynamicMomentLabels), ...
-            strcat(inputs.controlTorqueNames(i), '_moment')));
+            strcat(inputs.torqueControllerCoordinateNames(i), '_moment')));
         if isempty(indx)
             indx = find(strcmp(convertCharsToStrings( ...
                 inputs.inverseDynamicMomentLabels), ...
-                strcat(inputs.controlTorqueNames(i), '_force')));
+                strcat(inputs.torqueControllerCoordinateNames(i), '_force')));
         end
         maxControlTorques(i) = max(inputs.experimentalJointMoments(:, ...
             indx)) + inputs.maxControlTorquesMultiple * ...

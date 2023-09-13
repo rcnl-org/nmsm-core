@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function maxAllowableError = getIntegralBounds(toolName, costTerms)
+function maxAllowableError = makeMaxAllowableError(toolName, costTerms)
 [~, continuousAllowedTypes] = generateCostTermStruct("continuous", toolName);
 [~, discreteAllowedTypes] = generateCostTermStruct("discrete", toolName);
 

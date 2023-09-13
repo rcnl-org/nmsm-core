@@ -29,14 +29,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function pathTerm = calcTorqueActuatedMomentsPathConstraints(params, ...
+function pathTerm = calcTorqueActuatedMomentsPathConstraints(inputs, ...
     modeledValues, controlTorques, loadName)
 
 loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
-indx1 = find(cellfun(@isequal, params.coordinateNames, ...
-    repmat({loadName}, 1, length(params.coordinateNames))));
-indx2 = find(strcmp(params.controlTorqueNames, loadName));
+indx1 = find(cellfun(@isequal, inputs.coordinateNames, ...
+    repmat({loadName}, 1, length(inputs.coordinateNames))));
+indx2 = find(strcmp(inputs.torqueControllerCoordinateNames, loadName));
 pathTerm = modeledValues.inverseDynamicMoments(:, indx1) - ...
     controlTorques(:, indx2);
 end

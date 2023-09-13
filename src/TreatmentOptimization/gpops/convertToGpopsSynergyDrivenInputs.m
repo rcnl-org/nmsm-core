@@ -26,7 +26,7 @@
 
 function setup = convertToGpopsSynergyDrivenInputs(inputs, params)
 bounds = setupProblemBounds(inputs, params);
-guess = setupCommonOptimalControlInitialGuess(inputs);
+guess = setupGpopsInitialGuess(inputs);
 if strcmp(inputs.toolName, "DesignOptimization")
     guess = addUserDefinedTermsToGuess(guess, inputs);
 end
