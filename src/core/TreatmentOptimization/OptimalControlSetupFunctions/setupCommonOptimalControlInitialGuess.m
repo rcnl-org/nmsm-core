@@ -75,6 +75,6 @@ elseif strcmp(inputs.controllerType, 'torque')
             controlTorquesGuess], inputs.maxControl, inputs.minControl);
     end
 end
-guess.phase.integral = scaleToBounds(1e1, inputs.maxIntegral, ...
-    inputs.minIntegral);
+guess.phase.integral = scaleToBounds(1e1, inputs.maxAllowableError, ...
+    zeros(size(inputs.maxAllowableError)));
 end

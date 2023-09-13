@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function sets up GPOPS-II to run Design Optimization.
-% 
+%
 % (struct) -> (struct, struct)
-% Assigns optimal control settings and runs Design Optimization 
+% Assigns optimal control settings and runs Design Optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -69,16 +69,12 @@ for i = 1:length(inputs.userDefinedVariables)
             0.5];
     end
 end
-if isfield(inputs, "finalTimeRange")
-    bounds.phase.finaltime.lower = guess.phase.time(end) - (0.5 - guess.phase.time(end));
-    bounds.phase.finaltime.upper = 0.5;
-end
 end
 
 function guess = addUserDefinedTermsToGuess(guess, inputs)
 for i = 1:length(inputs.userDefinedVariables)
     variable = inputs.userDefinedVariables{i};
-    if ~isfield(guess, "parameter") 
+    if ~isfield(guess, "parameter")
         guess.parameter = [];
     end
     guess.parameter = [guess.parameter, ...

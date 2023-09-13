@@ -62,10 +62,6 @@ if strcmp(inputs.toolName, "DesignOptimization")
                 0.5];
         end
     end
-    if isfield(inputs, "finalTimeRange")
-        bounds.phase.finaltime.lower = guess.phase.time(end) - (0.5 - guess.phase.time(end));
-        bounds.phase.finaltime.upper = 0.5;
-    end
 end
 end
 

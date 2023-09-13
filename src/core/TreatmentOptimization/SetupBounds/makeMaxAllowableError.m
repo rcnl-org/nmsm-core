@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the splines for all experimental data. These
-% splines are evaluated at the collocation points to allow tracking of 
-% these quanitites during treatment optimization
+% This function gathers the maximum and minimum bounds for all continuous
+% cost term function values.
 %
 % (struct) -> (struct)
-% Calculates the splines for all experimental data
+% Computes max and min integral bounds
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,21 +28,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getSplines(inputs)
-inputs.splineJointAngles = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointAngles', 0.0000001);
-inputs.splineJointMoments = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointMoments', 0.0000001);
-if strcmp(inputs.controllerType, 'synergy')
-inputs.splineMuscleActivations = spaps(inputs.experimentalTime, ...
-    inputs.experimentalMuscleActivations', 0.0000001);
-end
-for i = 1:length(inputs.contactSurfaces)
-    inputs.splineExperimentalGroundReactionForces{i} = ...
-        spaps(inputs.experimentalTime, ...
-        inputs.contactSurfaces{i}.experimentalGroundReactionForces', 0.0000001);
-    inputs.splineExperimentalGroundReactionMoments{i} = ...
-        spaps(inputs.experimentalTime, ...
-        inputs.contactSurfaces{i}.experimentalGroundReactionMoments', 0.0000001);
+function maxAllowableError = getIntegralBounds(toolName, costTerms)
+[~, continuousAllowedTypes] = generateCostTermStruct("continuous", toolName);
+[~, discreteAllowedTypes] = generateCostTermStruct("discrete", toolName);
+
+maxAllowableError = [];
+for i = 1:length(costTerms)
+    costTerm = costTerms{i};
+    if costTerm.isEnabled
+        if any(ismember(costTerm.type, continuousAllowedTypes)) && ...
+                ~strcmp(costTerm.type, "user_defined")
+            maxAllowableError = cat(2, maxAllowableError, ...
+                costTerm.maxAllowableError);
+        elseif strcmp(costTerm.type, "user_defined")
+            if strcmp(costTerm.cost_term_type, "continuous")
+                maxAllowableError = cat(2, maxAllowableError, ...
+                    costTerm.maxAllowableError);
+            end
+        elseif ~any(ismember(costTerm.type, continuousAllowedTypes)) || ...
+                    ~any(ismember(costTerm.type, discreteAllowedTypes))
+            throw(MException('', ['Cost term type ' costTerm.type ...
+                ' does not exist for this tool.']))
+        end
+    end
 end
 end

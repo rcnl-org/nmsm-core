@@ -32,12 +32,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getDesignVariableInputBounds(inputs)
-if isfield(inputs, "finalTimeRange")
-    inputs.maxTime = max(inputs.experimentalTime) + inputs.finalTimeRange;
-else
-    inputs.maxTime = max(inputs.experimentalTime);
+function inputs = makeOptimalControlBounds(inputs)
+inputs = makeStateBounds(inputs);
+inputs = makeControlBounds(inputs);
 end
+
+function inputs = makeStateBounds(inputs)
 inputs.minTime = min(inputs.experimentalTime);
 
 maxStatePositions = max(inputs.experimentalJointAngles) + ...
@@ -55,7 +55,9 @@ minStateAccelerations = min(inputs.experimentalJointAccelerations) - ...
 
 inputs.maxState = [maxStatePositions maxStateVelocities maxStateAccelerations];
 inputs.minState = [minStatePositions minStateVelocities minStateAccelerations];
+end
 
+function inputs = makeControlBounds(inputs)
 maxControlJerks = max(inputs.experimentalJointJerks) + ...
     inputs.controlJerksMultiple * range(inputs.experimentalJointJerks);
 minControlJerks = min(inputs.experimentalJointJerks) - ...

@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function gathers the maximum and minimum bounds for all terminal
-% constraint terms. 
+% This function gathers the maximum and minimum bounds for all path
+% constraint terms.
 %
 % (struct) -> (struct)
-% Computes max and min terminal bounds
+% Computes max and min path bounds
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,30 +28,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getTerminalConstraintBounds(inputs)
-inputs.maxTerminal = [];
-inputs.minTerminal = [];
-for i = 1:length(inputs.terminal)
-    constraintTerm = inputs.terminal{i};
+function inputs = makePathConstraintBounds(inputs)
+inputs.maxPath = [];
+inputs.minPath = [];
+for i = 1:length(inputs.path)
+    constraintTerm = inputs.path{i};
     if constraintTerm.isEnabled
-        if strcmp(constraintTerm.type, 'synergy_weight_sum')
-            for j = 1:length(inputs.synergyGroups)
-                if strcmp(inputs.synergyGroups{j}.muscleGroupName, ...
-                        constraintTerm.synergy_group)
-                    inputs.maxTerminal = cat(2, inputs.maxTerminal, ...
-                        constraintTerm.maxError * ones(1, ...
-                        inputs.synergyGroups{j}.numSynergies));
-                    inputs.minTerminal = cat(2, inputs.minTerminal, ...
-                        constraintTerm.minError * ones(1, ...
-                        inputs.synergyGroups{j}.numSynergies));
-                end
-            end
-        else
-            inputs.maxTerminal = cat(2, inputs.maxTerminal, ...
-                constraintTerm.maxError);
-            inputs.minTerminal = cat(2, inputs.minTerminal, ...
-                constraintTerm.minError);
-        end
+        inputs.maxPath = cat(2, inputs.maxPath, ...
+            constraintTerm.maxError);
+        inputs.minPath = cat(2, inputs.minPath, ...
+            constraintTerm.minError);
     end
 end
 end

@@ -28,15 +28,14 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeTreatmentOptimizationInputs(inputs, params)
-inputs = getStateDerivatives(inputs);
+inputs = makeStateDerivatives(inputs, params);
 inputs = setupGroundContact(inputs);
-inputs = getSplines(inputs);
-inputs = checkStateGuess(inputs);
-inputs = checkControlAndParameterGuess(inputs);
-inputs = checkParameterGuess(inputs);
-inputs = getIntegralBounds(inputs);
+inputs = makeExperimentalDataSplines(inputs);
+inputs = checkInitialGuess(inputs);
+inputs.makeMaxAllowableError = ...
+    makeMaxAllowableError(inputs.toolName, inputs.costTerms);
 inputs = getPathConstraintBounds(inputs);
-inputs = getTerminalConstraintBounds(inputs);
-inputs = getDesignVariableInputBounds(inputs);
+inputs = makeTerminalConstraintBounds(inputs);
+inputs = makeOptimalControlBounds(inputs);
 end
 
