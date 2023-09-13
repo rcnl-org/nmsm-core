@@ -37,7 +37,7 @@ inputs.statesCoordinates = parseSpaceSeparatedList(tree, ...
 
 torqueTree = getFieldByName(tree, "RCNLTorqueController");
 if isstruct(torqueTree)
-    inputs = parseTorqueController(tree, inputs);
+    inputs = parseTorqueController(torqueTree, inputs);
 end
 synergyTree = getFieldByName(tree, "RCNLSynergyController");
 if isstruct(synergyTree)
