@@ -28,11 +28,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getStateDerivatives(inputs)
+function inputs = makeStateDerivatives(inputs, params)
 points = length(inputs.experimentalTime);
 interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);
+cutoffFrequency = ...
+    valueOrAlternate(params, "experimentalBSplineCutoffFrequency", 6);
 numNodes = splFitWithCutoff(inputs.experimentalTime', ...
-    inputs.experimentalJointAngles', 4, 5);
+    inputs.experimentalJointAngles', cutoffFrequency, 5);
 [N, Np, Npp] = BSplineMatrices(5, numNodes, points, interval);
 Nodes = N\inputs.experimentalJointAngles;
 inputs.experimentalJointVelocities = Np * Nodes;

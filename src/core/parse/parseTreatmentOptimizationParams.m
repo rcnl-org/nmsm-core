@@ -25,8 +25,9 @@
 % ----------------------------------------------------------------------- %
 
 function params = parseTreatmentOptimizationParams(tree)
+params = struct();
 experimentalBSplineCutoffFrequency = getFieldByName(tree, 'experimental_spline_cutoff_frequency');
-if isstruct(params.experimentalBSplineCutoffFrequency)
+if isstruct(experimentalBSplineCutoffFrequency)
     params.experimentalBSplineCutoffFrequency = experimentalBSplineCutoffFrequency.Text;
 end
 end
