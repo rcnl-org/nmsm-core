@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Marleny Vega                              %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,12 +29,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function guess = setupCommonOptimalControlInitialGuess(inputs)
-if isfield(inputs.initialGuess, 'state')
-    guess.phase.time = scaleToBounds(inputs.initialGuess.time, inputs.maxTime, ...
-        inputs.minTime);
-    guess.phase.state = scaleToBounds(inputs.initialGuess.state, ...
+function guess = setupGpopsInitialGuess(inputs)
+guess = struct();
+guess = setupInitialStatesGuess(inputs, guess);
+guess = setupInitialControlsGuess(inputs, guess);
+guess = setupInitialParametersGuess(inputs, guess);
+guess.phase.integral = scaleToBounds(1e1, inputs.maxAllowableError, ...
+    zeros(size(inputs.maxAllowableError)));
+end
+
+function guess = setupInitialStatesGuess(inputs, guess)
+if isfield(inputs, "initialState")
+    guess.phase.state = scaleToBounds(inputs.initialState, ...
         inputs.maxState, inputs.minState);
+    guess.phase.time = scaleToBounds(inputs.initialTime, inputs.maxTime, ...
+        inputs.minTime);
 else
     guess.phase.state = scaleToBounds([inputs.experimentalJointAngles ...
         inputs.experimentalJointVelocities ...
@@ -43,38 +52,34 @@ else
     guess.phase.time = scaleToBounds(inputs.experimentalTime, inputs.maxTime, ...
         inputs.minTime);
 end
-if strcmp(inputs.controllerType, 'synergy')
-    if isfield(inputs.initialGuess, 'control')
-        guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
-            inputs.maxControl, inputs.minControl);
+end
+
+function guess = setupInitialControlsGuess(inputs, guess)
+if isfield(inputs, "initialJerks")
+    controls = inputs.initialJerks;
+else
+    controls = inputs.experimentalJointJerks;
+end
+if strcmp(inputs.controllerType, "synergy")
+    if isfield(inputs, "initialSynergyControls")
+        controls = [controls, inputs.initialSynergyControls];
     else
-        guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
-            inputs.synergyActivationsGuess], inputs.maxControl, inputs.minControl);
-    end
-    if inputs.optimizeSynergyVectors
-        guess.parameter = scaleToBounds(inputs.synergyWeightsGuess, ...
-            inputs.maxParameter, inputs.minParameter);
-    end
-elseif strcmp(inputs.controllerType, 'torque')
-    if isfield(inputs.initialGuess, 'control')
-        guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
-            inputs.maxControl, inputs.minControl);
-    else
-        for i = 1:length(inputs.controlTorqueNames)
-            indx = find(strcmp(convertCharsToStrings( ...
-                inputs.inverseDynamicMomentLabels), ...
-                strcat(inputs.controlTorqueNames(i), '_moment')));
-            if isempty(indx)
-                indx = find(strcmp(convertCharsToStrings( ...
-                inputs.inverseDynamicMomentLabels), ...
-                strcat(inputs.controlTorqueNames(i), '_force')));
-            end
-            controlTorquesGuess(:, i) = inputs.experimentalJointMoments(:, indx);
-        end
-        guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
-            controlTorquesGuess], inputs.maxControl, inputs.minControl);
+        throw(MException("NoInitialSynergyControls", ...
+            "initial synergy controls required for synergy driven"))
     end
 end
-guess.phase.integral = scaleToBounds(1e1, inputs.maxAllowableError, ...
-    zeros(size(inputs.maxAllowableError)));
+if isfield(inputs, "initialTorqueControls")
+    controls = [controls, inputs.initialTorqueControls];
+else
+    controls = [controls, inputs.experimentalJointMoments];
+end
+guess.phase.control = scaleToBounds(controls, inputs.maxControl, ...
+    inputs.minControl);
+end
+
+function guess = setupInitialParametersGuess(inputs, guess)
+if valueOrAlternate(inputs, "optimizeSynergyVectors", false)
+    guess.parameter = scaleToBounds(inputs.synergyWeights, ...
+        inputs.maxParameter, inputs.minParameter);
+end
 end

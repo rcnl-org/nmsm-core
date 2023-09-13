@@ -29,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveCommonOptimalControlResults(solution, inputs, values)
+function saveTreatmentOptimizationResults(solution, inputs, values)
 if ~exist(inputs.resultsDirectory, 'dir')
     mkdir(inputs.resultsDirectory)
 end
@@ -48,8 +48,10 @@ end
 writeToSto(stateLabels, values.time, [values.statePositions ...
     values.stateVelocities values.stateAccelerations], ...
     fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_states.sto")));
+writeToSto(inputs.coordinateNames, values.time, values.controlJerks, ...
+    fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_jerks.sto")));
 if strcmp(inputs.controllerType, 'synergy')
-    controlLabels = inputs.coordinateNames;
+    controlLabels = {};
     for i = 1 : length(inputs.osimx.synergyGroups)
         for j = 1 : inputs.osimx.synergyGroups{i}.numSynergies
             controlLabels{end + 1} = convertStringsToChars( ...
@@ -57,17 +59,17 @@ if strcmp(inputs.controllerType, 'synergy')
                 "_", num2str(j)));
         end
     end
-    commands = values.controlSynergyActivations;
-    writeToSto(controlLabels, values.time, [values.controlJerks ...
-        commands], fullfile(inputs.resultsDirectory, ...
+    writeToSto(controlLabels, values.time, values.controlSynergyActivations, ...
+        fullfile(inputs.resultsDirectory, ...
         strcat(inputs.trialName, "_synergyCommands.sto")));
-elseif strcmp(inputs.controllerType, 'torque')
-    controlLabels = inputs.coordinateNames;
-    for i = 1 : inputs.numTorqueControls
-        controlLabels{end + 1} = strcat('torqueControl', num2str(i));
+end
+if ~isempty(inputs.torqueControllerCoordinateNames)
+    controlLabels = {};
+    for i = 1 : length(inputs.torqueControllerCoordinateNames)
+        controlLabels{end + 1} = inputs.torqueControllerCoordinateNames{i};
     end
-    writeToSto(controlLabels, values.time, [values.controlJerks ...
-        values.controlTorques], fullfile(inputs.resultsDirectory, ...
+    writeToSto(controlLabels, values.time, values.controlTorques, ...
+        fullfile(inputs.resultsDirectory, ...
         strcat(inputs.trialName, "_torqueControls.sto")));
 end
 delete(inputs.mexModel);

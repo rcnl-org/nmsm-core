@@ -42,7 +42,7 @@ values.controlJerks = control(:, 1 : inputs.numCoordinates);
 
 if strcmp(inputs.controllerType, 'torque')
     values.controlTorques = control(:, inputs.numCoordinates + 1 : ...
-        inputs.numCoordinates + inputs.numTorqueControls);
+        inputs.numCoordinates + length(inputs.torqueControllerCoordinateNames));
 else
     values.controlSynergyActivations = control(:, ...
         inputs.numCoordinates + 1 : inputs.numCoordinates + inputs.numSynergies);
@@ -102,7 +102,7 @@ if strcmp(inputs.toolName, "DesignOptimization")
                 phase.control, 1), 1) .* inputs.maxControl, ...
                 ones(size(phase.control, 1), 1) .* inputs.minControl);
             values.externalTorqueControls = controls(:, inputs.numCoordinates + ...
-                inputs.numTorqueControls + 1 : end);
+                length(inputs.torqueControllerCoordinateNames) + 1 : end);
         end
     end
     if isfield(inputs, 'userDefinedVariables')

@@ -30,24 +30,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTreatmentOptimizationValueStruct(phase, params)
+function values = getTreatmentOptimizationValueStruct(phase, inputs)
 
-values.time = scaleToOriginal(phase.time, params.maxTime, ...
-    params.minTime);
+values.time = scaleToOriginal(phase.time, inputs.maxTime, ...
+    inputs.minTime);
 state = scaleToOriginal(phase.state, ones(size(phase.state, 1), 1) .* ...
-    params.maxState, ones(size(phase.state, 1), 1) .* params.minState);
+    inputs.maxState, ones(size(phase.state, 1), 1) .* inputs.minState);
 control = scaleToOriginal(phase.control, ones(size(phase.control, 1), 1) .* ...
-    params.maxControl, ones(size(phase.control, 1), 1) .* params.minControl);
-values.statePositions = getCorrectStates(state, 1, params.numCoordinates);
-values.stateVelocities = getCorrectStates(state, 2, params.numCoordinates);
-values.stateAccelerations = getCorrectStates(state, 3, params.numCoordinates);
-values.controlJerks = control(:, 1 : params.numCoordinates);
+    inputs.maxControl, ones(size(phase.control, 1), 1) .* inputs.minControl);
+values.statePositions = getCorrectStates(state, 1, inputs.numCoordinates);
+values.stateVelocities = getCorrectStates(state, 2, inputs.numCoordinates);
+values.stateAccelerations = getCorrectStates(state, 3, inputs.numCoordinates);
+values.controlJerks = control(:, 1 : inputs.numCoordinates);
 
-if ~strcmp(params.controllerType, 'synergy')
-    values.controlTorques = control(:, params.numCoordinates + 1 : ...
-    params.numCoordinates + params.numTorqueControls);
+if ~strcmp(inputs.controllerType, 'synergy')
+    values.controlTorques = control(:, inputs.numCoordinates + 1 : ...
+    inputs.numCoordinates + length(inputs.torqueControllerCoordinateNames));
 else 
     values.controlSynergyActivations = control(:, ...
-    params.numCoordinates + 1 : params.numCoordinates + params.numSynergies);
+    inputs.numCoordinates + 1 : inputs.numCoordinates + inputs.numSynergies);
 end
 end

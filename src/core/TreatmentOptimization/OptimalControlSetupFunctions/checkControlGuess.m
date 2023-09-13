@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = checkControlAndParameterGuess(inputs)
+function inputs = checkControlGuess(inputs)
 if isfield(inputs.initialGuess, 'control')
     newControls = zeros(size(inputs.initialGuess.control, 1), 0);
     newLabels = string([]);
