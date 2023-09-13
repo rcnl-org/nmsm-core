@@ -30,5 +30,5 @@
 function saveVerificationOptimizationResults(solution, inputs)
 values = getVerificationOptimizationValueStruct( ...
     solution.solution.phase, inputs);
-saveCommonOptimalControlResults(solution, inputs, values)
+saveTreatmentOptimizationResults(solution, inputs, values)
 end

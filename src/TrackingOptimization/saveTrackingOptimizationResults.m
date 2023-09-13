@@ -30,7 +30,7 @@
 
 function saveTrackingOptimizationResults(solution, inputs)
 values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
-saveCommonOptimalControlResults(solution, inputs, values);
+saveTreatmentOptimizationResults(solution, inputs, values);
 if strcmp(inputs.controllerType, 'synergy')
     writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, ...
         inputs.numSynergies), [values.synergyWeights], ...
