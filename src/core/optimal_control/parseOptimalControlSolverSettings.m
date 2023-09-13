@@ -25,7 +25,9 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = parseOptimalControlSolverSettings( ...
-    settingsFileName, inputs)
+    tree, inputs)
+settingsFileName = getTextFromField(getFieldByNameOrError(tree, ...
+    'optimal_control_solver_settings_file'))
 solverSettingsTree = xml2struct(settingsFileName);
 verifyVersion(solverSettingsTree, "OptimalControlSolverSettings");
 tree = ...

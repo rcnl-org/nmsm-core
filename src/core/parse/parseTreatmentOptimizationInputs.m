@@ -30,12 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = parseTreatmentOptimizationInputs(tree)
-inputs.toolName = findToolName(tree);
-inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
-    'results_directory'));
-if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
-inputs.controllerType = parseControllerType(tree);
-inputs = parseModel(tree, inputs);
+inputs = parseBasicInputs(tree);
 inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
 inputs = parseController(tree, inputs);
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
@@ -49,6 +44,15 @@ inputs.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet') ...
     .RCNLConstraintTerm, inputs.controllerType, inputs.toolName);
 inputs.contactSurfaces = parseGroundContactSurfaces(inputs);
+end
+
+function inputs = parseBasicInputs(tree)
+inputs.toolName = findToolName(tree);
+inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
+    'results_directory'));
+if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
+inputs.controllerType = parseControllerType(tree);
+inputs = parseModel(tree, inputs);
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
