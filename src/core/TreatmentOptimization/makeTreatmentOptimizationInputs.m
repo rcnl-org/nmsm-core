@@ -34,7 +34,7 @@ inputs = makeExperimentalDataSplines(inputs);
 inputs = checkInitialGuess(inputs);
 inputs.makeMaxAllowableError = ...
     makeMaxAllowableError(inputs.toolName, inputs.costTerms);
-inputs = getPathConstraintBounds(inputs);
+inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
 end
