@@ -31,7 +31,7 @@
 
 function saveDesignOptimizationResults(solution, inputs)
 values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
-saveCommonOptimalControlResults(solution, inputs, values)
+saveTreatmentOptimizationResults(solution, inputs, values)
 if isfield(inputs, "systemFns")
     values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
     inputs.auxdata = inputs;
