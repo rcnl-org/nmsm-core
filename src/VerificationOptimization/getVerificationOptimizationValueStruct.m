@@ -29,10 +29,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getVerificationOptimizationValueStruct(inputs, params)
-values = getTreatmentOptimizationValueStruct(inputs, params);
-if strcmp(params.controllerType, 'synergy')
+function values = getVerificationOptimizationValueStruct(setup, inputs)
+values = getTreatmentOptimizationValueStruct(setup, inputs);
+if strcmp(inputs.controllerType, 'synergy')
     values.synergyWeights = getSynergyWeightsFromGroups(...
-        params.synergyWeightsGuess, params);
+        inputs.synergyWeights, inputs);
 end
 end
