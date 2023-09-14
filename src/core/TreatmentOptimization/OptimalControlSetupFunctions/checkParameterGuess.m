@@ -81,6 +81,7 @@ if strcmp(inputs.controllerType, 'synergy')
     end
 end
 end
+
 function inputs = getMuscleSynergiesInitialGuess(inputs)
 if isfield(inputs.initialGuess,"parameter") || isfield(inputs,"synergyWeights") 
     synergyWeights = getSynergyWeightsFromGroups(inputs.synergyWeightsGuess, inputs);

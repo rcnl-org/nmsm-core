@@ -31,6 +31,7 @@ function inputs = makeTreatmentOptimizationInputs(inputs, params)
 inputs = makeStateDerivatives(inputs, params);
 inputs = setupGroundContact(inputs);
 inputs = makeExperimentalDataSplines(inputs);
+inputs = makeSurrogateModel(inputs);
 inputs.maxAllowableError = ...
     makeMaxAllowableError(inputs.toolName, inputs.costTerms);
 inputs = makePathConstraintBounds(inputs);

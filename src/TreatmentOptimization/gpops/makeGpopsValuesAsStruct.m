@@ -57,14 +57,14 @@ if strcmp(inputs.toolName, "TrackingOptimization")
                 synergyWeights, inputs);
         else
             values.synergyWeights = getSynergyWeightsFromGroups(...
-                inputs.synergyWeightsGuess, inputs);
+                inputs.synergyWeights, inputs);
         end
     end
 end
 if strcmp(inputs.toolName, "VerificationOptimization")
     if strcmp(inputs.controllerType, 'synergy')
         values.synergyWeights = getSynergyWeightsFromGroups(...
-            inputs.synergyWeightsGuess, inputs);
+            inputs.synergyWeights, inputs);
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")

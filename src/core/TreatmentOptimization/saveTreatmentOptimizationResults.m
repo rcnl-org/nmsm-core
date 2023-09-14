@@ -63,7 +63,7 @@ if strcmp(inputs.controllerType, 'synergy')
         fullfile(inputs.resultsDirectory, ...
         strcat(inputs.trialName, "_synergyCommands.sto")));
 end
-if ~isempty(inputs.torqueControllerCoordinateNames)
+if ~isempty(valueOrAlternate(inputs, "torqueControllerCoordinateNames", []))
     controlLabels = {};
     for i = 1 : length(inputs.torqueControllerCoordinateNames)
         controlLabels{end + 1} = inputs.torqueControllerCoordinateNames{i};

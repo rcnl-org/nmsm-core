@@ -71,7 +71,9 @@ end
 if isfield(inputs, "initialTorqueControls")
     controls = [controls, inputs.initialTorqueControls];
 else
-    controls = [controls, inputs.experimentalJointMoments];
+    if ~isempty(valueOrAlternate(inputs, "torqueControllerCoordinateNames", []))
+        controls = [controls, inputs.experimentalJointMoments];
+    end
 end
 guess.phase.control = scaleToBounds(controls, inputs.maxControl, ...
     inputs.minControl);

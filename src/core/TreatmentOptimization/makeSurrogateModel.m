@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function parses and scales the design variables specific to
-% Tracking Optimization. If the model is synergy driven, synergy weights 
-% are properly calculated if they are fixed or being optimized.
+% This function prepares the inputs for the all treatment optimization
+% modules (tracking, verification, and design optimization.
 %
 % (struct, struct) -> (struct)
-% Design variables specific to Tracking Optimization are parsed and scaled
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,17 +27,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTrackingOptimizationValueStruct(phase, params)
-values = getTreatmentOptimizationValueStruct(phase, params);
-if strcmp(params.controllerType, 'synergy')
-    if params.optimizeSynergyVectors
-        synergyWeights = scaleToOriginal(phase.parameter(1,:), ...
-            params.maxParameter, params.minParameter);
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            synergyWeights, params);
-    else
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            params.synergyWeights, params);
+function inputs = makeSurrogateModel(inputs)
+if strcmp(inputs.controllerType, 'synergy') 
+    for i = 1 : length(inputs.coordinateNames)
+        for j = 1 : length(inputs.surrogateModelCoordinateNames)
+            if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
+                inputs.surrogateModelIndex(j) = i;
+            end
+        end 
+    end
+    inputs.dofsActuatedIndex = [];
+    for i = 1 : length(inputs.inverseDynamicMomentLabels)
+        for j = 1 : length(inputs.surrogateModelCoordinateNames)
+            if strcmp(inputs.inverseDynamicMomentLabels(i), ...
+                    strcat(inputs.surrogateModelCoordinateNames(j), '_moment'))
+                inputs.dofsActuatedIndex(end+1) = j;
+            end
+        end 
     end
 end
 end
