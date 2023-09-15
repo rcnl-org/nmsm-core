@@ -31,8 +31,7 @@
 function cost = calcTrackingSynergyVectorsDiscrete(synergyWeights, ...
     params, costTerm)
 
-origSynergyWeights = getSynergyWeightsFromGroups(...
-            params.synergyWeightsGuess, params);
+origSynergyWeights = params.initialSynergyWeights;
 origSynergyWeights(origSynergyWeights==0) = [];
 synergyWeights(synergyWeights==0) = [];
 cost = calcTrackingCostArrayTerm(synergyWeights, ...

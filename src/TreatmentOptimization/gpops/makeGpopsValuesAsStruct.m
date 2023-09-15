@@ -53,18 +53,15 @@ if strcmp(inputs.toolName, "TrackingOptimization")
         if inputs.optimizeSynergyVectors
             synergyWeights = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
-            values.synergyWeights = getSynergyWeightsFromGroups(...
-                synergyWeights, inputs);
+            values.synergyWeights = synergyWeights;
         else
-            values.synergyWeights = getSynergyWeightsFromGroups(...
-                inputs.synergyWeights, inputs);
+            values.synergyWeights = inputs.synergyWeights;
         end
     end
 end
 if strcmp(inputs.toolName, "VerificationOptimization")
     if strcmp(inputs.controllerType, 'synergy')
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            inputs.synergyWeights, inputs);
+        values.synergyWeights = inputs.synergyWeights;
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
@@ -74,12 +71,9 @@ if strcmp(inputs.toolName, "DesignOptimization")
             values.synergyWeights = scaleToOriginal(phase.parameter(1, ...
                 1 : inputs.numSynergyWeights), ...
                 inputs.maxParameter, inputs.minParameter);
-            values.synergyWeights = getSynergyWeightsFromGroups(...
-                values.synergyWeights, inputs);
             numParameters = inputs.numSynergyWeights;
         else
-            values.synergyWeights = getSynergyWeightsFromGroups(...
-                inputs.synergyWeightsGuess, inputs);
+            values.synergyWeights = inputs.synergyWeights;
         end
         if inputs.splineSynergyActivations.dim > 1
             values.controlSynergyActivations = ...
