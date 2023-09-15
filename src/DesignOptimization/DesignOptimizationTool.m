@@ -42,8 +42,8 @@ end
 
 function inputs = setupMuscleSynergies(inputs)
 if strcmp(inputs.controllerType, 'synergy')
-    inputs.splineSynergyActivations = spaps(inputs.initialGuess.time, ...
-        inputs.initialGuess.control(:, inputs.numCoordinates + 1:end)', 0.0000001);
-    inputs.synergyLabels = inputs.initialGuess.controlLabels(:, inputs.numCoordinates + 1:end);
+    inputs.splineSynergyActivations = spaps(inputs.initialTime, ...
+        inputs.initialSynergyControls', 0.0000001);
+    inputs.synergyLabels = inputs.initialSynergyControlsLabels;
 end
 end
