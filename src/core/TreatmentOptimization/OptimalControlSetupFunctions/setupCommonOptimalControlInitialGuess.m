@@ -43,7 +43,7 @@ else
     guess.phase.time = scaleToBounds(inputs.experimentalTime, inputs.maxTime, ...
         inputs.minTime);
 end
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
     if isfield(inputs.initialGuess, 'control')
         guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
             inputs.maxControl, inputs.minControl);
@@ -51,12 +51,11 @@ if strcmp(inputs.controllerType, 'synergy_driven')
         guess.phase.control = scaleToBounds([inputs.experimentalJointJerks ...
             inputs.synergyActivationsGuess], inputs.maxControl, inputs.minControl);
     end
-    if isfield(inputs, "optimizeSynergyVectors") && ...
-            inputs.optimizeSynergyVectors
+    if inputs.optimizeSynergyVectors
         guess.parameter = scaleToBounds(inputs.synergyWeightsGuess, ...
             inputs.maxParameter, inputs.minParameter);
     end
-elseif strcmp(inputs.controllerType, 'torque_driven')
+elseif strcmp(inputs.controllerType, 'torque')
     if isfield(inputs.initialGuess, 'control')
         guess.phase.control = scaleToBounds(inputs.initialGuess.control, ...
             inputs.maxControl, inputs.minControl);

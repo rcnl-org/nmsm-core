@@ -36,7 +36,7 @@ model = Model(modelFileName);
 buildFromExisting = false;
 if isfield(inputs, 'osimxFileName')
     if isfile(inputs.osimxFileName)
-        osimx = parseOsimxFile(inputs.osimxFileName);
+        osimx = parseOsimxFile(inputs.osimxFileName, model);
         [~, name, ~] = fileparts(inputs.osimxFileName);
         outfile = fullfile(resultsDirectory, strcat(name, "_ncp.xml"));
         buildFromExisting = true;

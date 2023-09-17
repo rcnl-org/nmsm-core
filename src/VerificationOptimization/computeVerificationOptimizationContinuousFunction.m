@@ -2,7 +2,7 @@
 %
 % This function computes the dynamic constraints, path constraints (if any)
 % and cost function terms (if any) for verification optimization.
-% 
+%
 % (struct) -> (struct)
 %
 
@@ -33,7 +33,7 @@ function modeledValues = computeVerificationOptimizationContinuousFunction(input
 values = getVerificationOptimizationValueStruct(inputs.phase, inputs.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, inputs.auxdata);
 modeledValues = calcSynergyBasedModeledValues(values, inputs.auxdata, modeledValues);
-modeledValues.dynamics = calcVerificationOptimizationDynamicsConstraint(values, inputs.auxdata);
+modeledValues.dynamics = calcDynamicConstraint(values, inputs.auxdata);
 path = calcVerificationOptimizationPathConstraint(values, modeledValues, inputs.auxdata);
 if ~isempty(path)
     modeledValues.path = path;

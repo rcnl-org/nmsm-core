@@ -27,7 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = parseOsimxFile(osimxFileName)
+function osimx = parseOsimxFile(osimxFileName, model)
 
 if strcmp(osimxFileName, "")
     osimx = struct();
@@ -86,6 +86,11 @@ if(isstruct(rcnlMuscleSetTree))
             osimx.muscles.(muscle.Attributes.name).maxIsometricForce = str2double(muscle.max_isometric_force.Text);
         end
     end
+end
+
+rcnlSynergySetTree = getFieldByName(tree, "RCNLSynergySet");
+if isstruct(rcnlSynergySetTree)
+    osimx.synergyGroups = parseSynergyGroups(tree, model);
 end
 end
 

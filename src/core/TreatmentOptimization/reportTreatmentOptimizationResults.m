@@ -37,7 +37,7 @@ if isfield(inputs, 'userDefinedVariables')
     end
 end
 values = getTreatmentOptimizationValueStruct(solution.solution.phase, inputs);
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
 % plot Muscle Activations
 plotMuscleActivations(solution.muscleActivations, values.time, ...
     inputs.experimentalMuscleActivations, inputs.experimentalTime, ...

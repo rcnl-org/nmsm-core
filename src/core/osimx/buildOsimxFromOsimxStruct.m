@@ -1,8 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the output of parseOsimxFile(filename) and produces
-% a struct that can passed directly into writeOsimxFile() and replicate the
-% input file.
+% This function takes the output of parseOsimxFile(filename, model) and 
+% produces a struct that can passed directly into writeOsimxFile() and 
+% replicate the input file.
 %
 % This function is most commonly used to add values to an existing .osimx
 % file.
