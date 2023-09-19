@@ -32,13 +32,12 @@ function [inputs, params] = ...
     parseDesignOptimizationSettingsTree(settingsTree)
 inputs = parseTreatmentOptimizationInputs(settingsTree);
 inputs = parseDesignSettings(settingsTree, inputs);
-inputs = getInputs(settingsTree, inputs);
+inputs = parseUserDefinedFunctions(settingsTree, inputs);
 params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
-inputs = updateMuscleModelProperties(inputs);
 end
 
-function inputs = getInputs(tree, inputs)
+function inputs = parseUserDefinedFunctions(tree, inputs)
 import org.opensim.modeling.Storage
 inputs.systemFns = parseSpaceSeparatedList(tree, "model_functions");
 parameterTree = getFieldByNameOrError(tree, "RCNLParameterTermSet");

@@ -30,10 +30,9 @@
 % ----------------------------------------------------------------------- %
 
 function saveDesignOptimizationResults(solution, inputs)
-values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
+values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
 saveTreatmentOptimizationResults(solution, inputs, values)
 if isfield(inputs, "systemFns")
-    values = getDesignOptimizationValueStruct(solution.solution.phase, inputs);
     inputs.auxdata = inputs;
     inputs = updateSystemFromUserDefinedFunctions(inputs, values);
     model = Model(inputs.auxdata.model);

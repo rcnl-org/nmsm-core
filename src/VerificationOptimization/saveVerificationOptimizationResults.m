@@ -28,7 +28,7 @@
 % ----------------------------------------------------------------------- %
 
 function saveVerificationOptimizationResults(solution, inputs)
-values = getVerificationOptimizationValueStruct( ...
+values = makeGpopsValuesAsStruct( ...
     solution.solution.phase, inputs);
 saveTreatmentOptimizationResults(solution, inputs, values)
 if strcmp(inputs.controllerType, 'synergy')
