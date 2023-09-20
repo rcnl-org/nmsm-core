@@ -30,17 +30,17 @@
 
 function inputs = makeStateDerivatives(inputs, params)
 jointAnglesSpline = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointAngles, eps, [], 3);
+    inputs.experimentalJointAngles', eps, [], 3);
 inputs.experimentalJointVelocities = fnval(fnder(jointAnglesSpline, 1), ...
-    inputs.experimentalTime);
+    inputs.experimentalTime)';
 jointVelocitiesSpline = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointVelocities, eps, [], 3);
+    inputs.experimentalJointVelocities', eps, [], 3);
 inputs.experimentalJointAccelerations = fnval( ...
-    fnder(jointVelocitiesSpline, 1), inputs.experimentalTime);
+    fnder(jointVelocitiesSpline, 1), inputs.experimentalTime)';
 jointAccelerationsSpline = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointAccelerations, eps, [], 3);
+    inputs.experimentalJointAccelerations', eps, [], 3);
 inputs.experimentalJointJerks = fnval(fnder(jointAccelerationsSpline, ...
-    1), inputs.experimentalTime);
+    1), inputs.experimentalTime)';
 
 % points = length(inputs.experimentalTime);
 % interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);
