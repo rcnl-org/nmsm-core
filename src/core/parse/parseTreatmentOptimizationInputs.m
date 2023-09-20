@@ -50,6 +50,8 @@ inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = parseControllerType(tree);
 inputs = parseModel(tree, inputs);
+inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
+    "states_coordinate_list");
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
