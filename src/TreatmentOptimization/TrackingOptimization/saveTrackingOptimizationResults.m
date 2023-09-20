@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function sets up the input variables and mex files (or parallel 
-% matlab function) for the main function verification optimization.
+% This function saves and prints the unscaled results from Tracking
+% Optimization.
 %
-% (struct, struct) -> (struct, struct)
-% Inputs for the main function are setup
+% (struct, struct) -> (None)
+% Prints tracking optimization results
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,11 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [output, inputs] = VerificationOptimization(inputs, params)
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
+function saveTrackingOptimizationResults(solution, inputs)
+values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
+saveTreatmentOptimizationResults(solution, inputs, values);
 if strcmp(inputs.controllerType, 'synergy')
+    writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, ...
+        inputs.numSynergies), [values.synergyWeights], ...
+        fullfile(inputs.resultsDirectory, "synergyWeights.sto"));
+    writeToSto(inputs.muscleLabels, values.time, ...
+        solution.muscleActivations, ...
+        fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_combinedActivations.sto")));
 end
-output = computeVerificationOptimizationMainFunction(inputs, params);
 end
-
