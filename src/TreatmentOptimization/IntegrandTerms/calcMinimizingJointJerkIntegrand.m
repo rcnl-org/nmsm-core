@@ -27,10 +27,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointJerkIntegrand(jointJerks, params, ...
-    coordinateName)
+function cost = calcMinimizingJointJerkIntegrand(jointJerks, inputs, ...
+    costTerm)
 
-indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
-    coordinateName));
-cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
+indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
+    costTerm.coordinate));
+% cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 10);
+cost = jointJerks(:, indx) / maximumAllowableError;
 end
