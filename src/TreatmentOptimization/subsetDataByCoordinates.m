@@ -1,10 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the experimental and
-% predicted inverse dynamic moments for the specified coordinate.
+% This convenience function simply returns the subset of values that are
+% included in the second coordinate list from the first. This is ordered
+% assuming Treatment Optimization ordering, not Model Personalization
+% ordering.
 %
-% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
-%
+% (matrix, array of string, array of string) -> (matrix)
+% return a set of setup values common to all optimal control problems
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,26 +30,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicLoadsIntegrand(inputs, time, ...
-    inverseDynamicMoments, loadName)
-
-loadName = erase(loadName, '_moment');
-loadName = erase(loadName, '_force');
-indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
-    loadName));
-
-if inputs.splineJointMoments.dim > 1
-    experimentalJointMoments = fnval(inputs.splineJointMoments, time)';
-else
-    experimentalJointMoments = fnval(inputs.splineJointMoments, time);
+function output = subsetDataByCoordinates(data, coordinateNames, ...
+    subsetOfCoordinateNames)
+includedSubset = ismember(coordinateNames, subsetOfCoordinateNames);
+output = data(:, includedSubset);
 end
 
-momentLabelsNoSuffix = erase(inputs.inverseDynamicMomentLabels, '_moment');
-momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
-if size(inverseDynamicMoments, 2) ~= size(experimentalJointMoments, 2)
-    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
-end
-cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
-    inverseDynamicMoments, indx);
-end

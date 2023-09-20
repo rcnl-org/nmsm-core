@@ -36,7 +36,7 @@ if isfield(inputs, 'userDefinedVariables')
             inputs.userDefinedVariables{i}.lower_bounds)
     end
 end
-values = getTreatmentOptimizationValueStruct(solution.solution.phase, inputs);
+values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
 if strcmp(inputs.controllerType, 'synergy')
 % plot Muscle Activations
 plotMuscleActivations(solution.muscleActivations, values.time, ...
@@ -61,10 +61,12 @@ if isfield(inputs, 'enableExternalTorqueControl')
             inputs.externalControlTorqueNames, ["External" "Torque Controls"]);
     end
 end
+jointAngles = subsetDataByCoordinates(inputs.experimentalJointAngles, ...
+    inputs.coordinateNames, inputs.statesCoordinateNames);
 % plot joint angles
 plotResultsWithComparison(values.statePositions, values.time, ...
-    inputs.experimentalJointAngles, inputs.experimentalTime, ...
-    strcat(inputs.coordinateNames, ' [rad]'), ["Joint" "Angles [rad]"]);
+    jointAngles, inputs.experimentalTime, ...
+    strcat(inputs.statesCoordinateNames, ' [rad]'), ["Joint" "Angles [rad]"]);
 % plot joint moments
 plotResultsWithComparison(solution.inverseDynamicMoments, values.time, ...
     inputs.experimentalJointMoments, inputs.experimentalTime, ...

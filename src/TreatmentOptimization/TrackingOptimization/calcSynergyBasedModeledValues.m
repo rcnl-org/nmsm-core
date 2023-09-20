@@ -18,7 +18,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -41,7 +41,7 @@ if strcmp(inputs.controllerType, 'synergy')
         jointAngles, jointVelocities);
     inputs.muscleTendonLength = permute(inputs.muscleTendonLength, [3 2 1]);
     inputs.muscleTendonVelocity = permute(inputs.muscleTendonVelocity, [3 2 1]);
-    inputs.momentArms = permute(inputs.momentArms, [ 4 2 3 1]);
+    inputs.momentArms = permute(inputs.momentArms, [4 2 3 1]);
     [modeledValues.normalizedFiberLength, modeledValues.normalizedFiberVelocity] = ...
         calcNormalizedMuscleFiberLengthsAndVelocities(inputs, ...
         ones(1, inputs.numMuscles), ones(1, inputs.numMuscles));
@@ -63,14 +63,14 @@ muscleActivations = values.controlSynergyActivations * values.synergyWeights;
 muscleActivations = permute(muscleActivations, [3 2 1]);
 end
 
-function [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, params)
-for i = 1:params.numMuscles
+function [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, inputs)
+for i = 1 : inputs.numMuscles
     counter = 1;
-    for j = 1:length(params.coordinateNames)
-        for k = 1:length(params.surrogateModelLabels{i})
-            if strcmp(params.coordinateNames(j), params.surrogateModelLabels{i}{k})
-                jointAngles{i}(:,counter) = values.statePositions(:,j);
-                jointVelocities{i}(:,counter) = values.stateVelocities(:,j);
+    for j = 1:length(inputs.coordinateNames)
+        for k = 1:length(inputs.surrogateModelLabels{i})
+            if strcmp(inputs.coordinateNames(j), inputs.surrogateModelLabels{i}{k})
+                jointAngles{i}(:, counter) = values.positions(:, j);
+                jointVelocities{i}(:, counter) = values.velocities(:, j);
                 counter = counter + 1;
             end
         end
