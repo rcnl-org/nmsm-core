@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This function takes a properly formatted XML file and runs the
+% Design Optimization module and saves the results correctly for
+% use in the OpenSim GUI.
 %
-% (struct) -> (struct)
-% parses shared controller settings from XML tree
+% (string) -> (None)
+% Run DesignOptimization from settings file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +29,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
-
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
+function DesignOptimizationTool(settingsFileName)
+settingsTree = xml2struct(settingsFileName);
+verifyVersion(settingsTree, "DesignOptimizationTool");
+[inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
+inputs = setupMuscleSynergies(inputs);
+inputs = makeTreatmentOptimizationInputs(inputs, params);
+outputs = solveOptimalControlProblem(inputs, params);
+reportTreatmentOptimizationResults(outputs, inputs);
+saveDesignOptimizationResults(outputs, inputs);
 end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
+
+function inputs = setupMuscleSynergies(inputs)
+if strcmp(inputs.controllerType, 'synergy')
+    inputs.splineSynergyActivations = spaps(inputs.initialTime, ...
+        inputs.initialSynergyControls', 0.0000001);
+    inputs.synergyLabels = inputs.initialSynergyControlsLabels;
 end
 end

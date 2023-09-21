@@ -1,11 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% If the model is synergy driven, this function tracks the difference
+% between original and current synergy activation controls. If the model is
+% torque driven, this function tracks the difference between inverse
+% dynamics moments and current torque controls.
 %
-% (struct) -> (struct)
-% parses shared controller settings from XML tree
+% (struct, struct, Array of number, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +30,30 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
+function cost = calcTrackingControllerIntegrand(auxdata, values, time, ...
+    controllerName)
 
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
-end
+switch auxdata.controllerType
+    case 'synergy'
+        indx = find(strcmp(convertCharsToStrings( ...
+            auxdata.synergyLabels), controllerName));
+        synergyActivations = ...
+            fnval(auxdata.splineSynergyActivations, time)';
+        cost = calcTrackingCostArrayTerm(synergyActivations, ...
+            values.controlSynergyActivations, indx);
+    case 'torque'
+        indx1 = find(strcmp(convertCharsToStrings( ...
+            auxdata.inverseDynamicMomentLabels), controllerName));
+        indx2 = find(strcmp(convertCharsToStrings( ...
+            strcat(auxdata.torqueControllerCoordinateNames, '_moment')), ...
+            controllerName));
+        if auxdata.splineJointMoments.dim > 1
+            experimentalJointMoments = ...
+                fnval(auxdata.splineJointMoments, time)';
+        else
+            experimentalJointMoments = ...
+                fnval(auxdata.splineJointMoments, time);
+        end
+        cost = experimentalJointMoments(:, indx1) - ...
+            values.controlTorques(:, indx2);
 end

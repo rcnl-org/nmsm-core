@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This function saves and prints the unscaled results from 
+% Design Optimization. An osim model may also be printed if model specific
+% values were optimized
 %
-% (struct) -> (struct)
-% parses shared controller settings from XML tree
+% (struct, struct) -> (None)
+% Prints design optimization results
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +29,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
-
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
+function saveDesignOptimizationResults(solution, inputs)
+values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
+saveTreatmentOptimizationResults(solution, inputs, values)
+if isfield(inputs, "systemFns")
+    inputs.auxdata = inputs;
+    inputs = updateSystemFromUserDefinedFunctions(inputs, values);
+    model = Model(inputs.auxdata.model);
+    model.print(strrep(inputs.mexModel, '_inactiveMuscles.osim', 'DesignOpt.osim'));
 end
 end

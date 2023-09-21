@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reformats synergy weights from a number array to a 2D
-% matrix.
+% This function sets up the common bounds for an optimal control problem
+% and is used by Tracking Optimization, Verification Optimization, and
+% Design Optimization
 %
-% (Array of number, struct) -> (2D matrix)
-% Returns synergy weights as a 2D matrix
+% () => ()
+% return a set of setup values common to all optimal control problems
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,21 +29,35 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function synergyWeightsReformatted = getSynergyWeightsFromGroups(...
-    synergyWeights, inputs)
-synergyWeightsReformatted = zeros(inputs.numSynergies, inputs.numMuscles);
-valuesIndex = 1;
-row = 1;
-column = 1; % the sum of the muscles in the previous synergy groups
-for i = 1:length(inputs.synergyGroups)
-    for j = 1: inputs.synergyGroups{i}.numSynergies
-        synergyWeightsReformatted(row, column : ...
-            column + length(inputs.synergyGroups{i}.muscleNames) - 1) = ...
-            synergyWeights(valuesIndex : ...
-            valuesIndex + length(inputs.synergyGroups{i}.muscleNames) - 1);
-        valuesIndex = valuesIndex + length(inputs.synergyGroups{i}.muscleNames);
-        row = row + 1;
-    end
-    column = column + length(inputs.synergyGroups{i}.muscleNames);
+function bounds = setupCommonOptimalControlBounds(inputs, params)
+% setup time bounds
+bounds.phase.initialtime.lower = -0.5;
+bounds.phase.initialtime.upper = -0.5;
+bounds.phase.finaltime.lower = 0.5;
+bounds.phase.finaltime.upper = 0.5;
+% setup state bounds
+bounds.phase.initialstate.lower = -0.5 * ones(1, length(inputs.minState));
+bounds.phase.initialstate.upper = 0.5 * ones(1, length(inputs.minState));
+bounds.phase.finalstate.lower = -0.5 * ones(1, length(inputs.minState));
+bounds.phase.finalstate.upper = 0.5 * ones(1, length(inputs.minState));
+bounds.phase.state.lower = -0.5 * ones(1, length(inputs.minState));
+bounds.phase.state.upper = 0.5 * ones(1, length(inputs.minState));
+% setup path constraint bounds
+bounds.phase.path.lower = -0.5 * ones(1, length(inputs.minPath));
+bounds.phase.path.upper = 0.5 * ones(1, length(inputs.minPath));
+% setup control bounds
+bounds.phase.control.lower = -0.5 * ones(1, length(inputs.minControl));
+bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
+% setup integral bounds
+bounds.phase.integral.lower = zeros(1, length(inputs.maxAllowableError));
+bounds.phase.integral.upper = inputs.gpops.integralBound * ...
+    ones(1, length(inputs.maxAllowableError));
+% setup terminal constraint bounds
+if ~isempty(inputs.minTerminal)
+    bounds.eventgroup.lower = inputs.minTerminal;
+end
+if ~isempty(inputs.maxTerminal)
+    bounds.eventgroup.upper = inputs.maxTerminal;
 end
 end
+

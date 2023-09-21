@@ -26,7 +26,7 @@
 
 function setup = convertToGpopsSynergyDrivenInputs(inputs, params)
 bounds = setupProblemBounds(inputs, params);
-guess = setupCommonOptimalControlInitialGuess(inputs);
+guess = setupGpopsInitialGuess(inputs);
 if strcmp(inputs.toolName, "DesignOptimization")
     guess = addUserDefinedTermsToGuess(guess, inputs);
 end
@@ -61,10 +61,6 @@ if strcmp(inputs.toolName, "DesignOptimization")
             bounds.parameter.upper = [bounds.parameter.upper, ...
                 0.5];
         end
-    end
-    if isfield(inputs, "finalTimeRange")
-        bounds.phase.finaltime.lower = guess.phase.time(end) - (0.5 - guess.phase.time(end));
-        bounds.phase.finaltime.upper = 0.5;
     end
 end
 end

@@ -30,9 +30,8 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = parseTorqueController(tree, inputs)
-inputs.controlTorqueNames = parseSpaceSeparatedList(tree, ...
-    "torque_controller_coordinate_list");
+inputs.torqueControllerCoordinateNames = parseSpaceSeparatedList(tree, ...
+    "coordinate_list");
 inputs.maxControlTorquesMultiple = parseDoubleOrAlternate(tree, ...
     'torque_controls_range_scale_factor', 1);
-inputs.numTorqueControls = length(inputs.controlTorqueNames);
 end

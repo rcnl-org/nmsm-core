@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This function parses and scales the design variables specific to
+% Tracking Optimization. If the model is synergy driven, synergy weights 
+% are properly calculated if they are fixed or being optimized.
 %
-% (struct) -> (struct)
-% parses shared controller settings from XML tree
+% (struct, struct) -> (struct)
+% Design variables specific to Tracking Optimization are parsed and scaled
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +29,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
-
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
+function values = getTrackingOptimizationValueStruct(phase, inputs)
+values = getTreatmentOptimizationValueStruct(phase, inputs);
+if strcmp(inputs.controllerType, 'synergy')
+    if inputs.optimizeSynergyVectors
+        synergyWeights = scaleToOriginal(phase.parameter(1,:), ...
+            inputs.maxParameter, inputs.minParameter);
+        values.synergyWeights = synergyWeights;
+    else
+        values.synergyWeights = inputs.synergyWeights;
+    end
 end
 end

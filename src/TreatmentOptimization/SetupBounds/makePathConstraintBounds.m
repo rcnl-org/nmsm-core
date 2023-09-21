@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This function gathers the maximum and minimum bounds for all path
+% constraint terms.
 %
 % (struct) -> (struct)
-% parses shared controller settings from XML tree
+% Computes max and min path bounds
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +28,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
-
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
+function inputs = makePathConstraintBounds(inputs)
+inputs.maxPath = [];
+inputs.minPath = [];
+for i = 1:length(inputs.path)
+    constraintTerm = inputs.path{i};
+    if constraintTerm.isEnabled
+        inputs.maxPath = cat(2, inputs.maxPath, ...
+            constraintTerm.maxError);
+        inputs.minPath = cat(2, inputs.minPath, ...
+            constraintTerm.minError);
+    end
 end
 end

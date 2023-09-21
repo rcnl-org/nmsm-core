@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This function prepares the inputs for the all treatment optimization
+% modules (tracking, verification, and design optimization.
 %
-% (struct) -> (struct)
-% parses shared controller settings from XML tree
+% (struct, struct) -> (struct)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,18 +27,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
-
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
+function inputs = makeSurrogateModel(inputs)
+if strcmp(inputs.controllerType, 'synergy') 
+    for i = 1 : length(inputs.coordinateNames)
+        for j = 1 : length(inputs.surrogateModelCoordinateNames)
+            if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
+                inputs.surrogateModelIndex(j) = i;
+            end
+        end 
+    end
+    inputs.dofsActuatedIndex = [];
+    for i = 1 : length(inputs.inverseDynamicMomentLabels)
+        for j = 1 : length(inputs.surrogateModelCoordinateNames)
+            if strcmp(inputs.inverseDynamicMomentLabels(i), ...
+                    strcat(inputs.surrogateModelCoordinateNames(j), '_moment'))
+                inputs.dofsActuatedIndex(end+1) = j;
+            end
+        end 
+    end
 end
 end

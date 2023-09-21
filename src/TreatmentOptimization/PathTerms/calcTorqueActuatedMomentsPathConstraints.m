@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This function calculates the difference between the inverse dynamic
+% moments and the torque based control for the specified coordinate.
+% Applicable only if the model is torque driven.
 %
-% (struct) -> (struct)
-% parses shared controller settings from XML tree
+% (struct, struct, 2D matrix, Array of string) -> (Array of number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +29,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
+function pathTerm = calcTorqueActuatedMomentsPathConstraints(inputs, ...
+    modeledValues, controlTorques, loadName)
 
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
-end
+loadName = erase(loadName, '_moment');
+loadName = erase(loadName, '_force');
+indx1 = find(cellfun(@isequal, inputs.coordinateNames, ...
+    repmat({loadName}, 1, length(inputs.coordinateNames))));
+indx2 = find(strcmp(inputs.torqueControllerCoordinateNames, loadName));
+pathTerm = modeledValues.inverseDynamicMoments(:, indx1) - ...
+    controlTorques(:, indx2);
 end

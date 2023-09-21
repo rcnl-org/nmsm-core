@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This function gathers the maximum and minimum bounds for all continuous
+% cost term function values.
 %
 % (struct) -> (struct)
-% parses shared controller settings from XML tree
+% Computes max and min integral bounds
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +28,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
+function maxAllowableError = makeMaxAllowableError(toolName, costTerms)
+[~, continuousAllowedTypes] = generateCostTermStruct("continuous", toolName);
+[~, discreteAllowedTypes] = generateCostTermStruct("discrete", toolName);
 
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
+maxAllowableError = [];
+for i = 1:length(costTerms)
+    costTerm = costTerms{i};
+    if costTerm.isEnabled
+        if any(ismember(costTerm.type, continuousAllowedTypes)) && ...
+                ~strcmp(costTerm.type, "user_defined")
+            maxAllowableError = cat(2, maxAllowableError, ...
+                costTerm.maxAllowableError);
+        elseif strcmp(costTerm.type, "user_defined")
+            if strcmp(costTerm.cost_term_type, "continuous")
+                maxAllowableError = cat(2, maxAllowableError, ...
+                    costTerm.maxAllowableError);
+            end
+        elseif ~any(ismember(costTerm.type, continuousAllowedTypes)) || ...
+                    ~any(ismember(costTerm.type, discreteAllowedTypes))
+            throw(MException('', ['Cost term type ' costTerm.type ...
+                ' does not exist for this tool.']))
+        end
+    end
 end
 end

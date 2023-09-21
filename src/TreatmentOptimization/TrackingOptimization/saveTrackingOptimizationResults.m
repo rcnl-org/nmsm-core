@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This function saves and prints the unscaled results from Tracking
+% Optimization.
 %
-% (struct) -> (struct)
-% parses shared controller settings from XML tree
+% (struct, struct) -> (None)
+% Prints tracking optimization results
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
-
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
+function saveTrackingOptimizationResults(solution, inputs)
+values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
+saveTreatmentOptimizationResults(solution, inputs, values);
+if strcmp(inputs.controllerType, 'synergy')
+    writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, ...
+        inputs.numSynergies), [values.synergyWeights], ...
+        fullfile(inputs.resultsDirectory, "synergyWeights.sto"));
+    writeToSto(inputs.muscleLabels, values.time, ...
+        solution.muscleActivations, ...
+        fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_combinedActivations.sto")));
 end
 end

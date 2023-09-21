@@ -1,11 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This convenience function simply returns the subset of values that are
+% included in the second coordinate list from the first. This is ordered
+% assuming Treatment Optimization ordering, not Model Personalization
+% ordering.
 %
-% (struct) -> (struct)
-% parses shared controller settings from XML tree
+% (matrix, array of string, array of string) -> (matrix)
+% return a set of setup values common to all optimal control problems
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,18 +30,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
+function output = subsetDataByCoordinates(data, coordinateNames, ...
+    subsetOfCoordinateNames)
+includedSubset = ismember(coordinateNames, subsetOfCoordinateNames);
+output = data(:, includedSubset);
+end
 
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
-end
-end

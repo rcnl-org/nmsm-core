@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% This function calculates the difference between the experimental and
+% predicted inverse dynamic moments for the specified coordinate.
 %
-% (struct) -> (struct)
-% parses shared controller settings from XML tree
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +28,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
+function cost = calcTrackingInverseDynamicLoadsIntegrand(inputs, time, ...
+    inverseDynamicMoments, loadName)
 
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
+loadName = erase(loadName, '_moment');
+loadName = erase(loadName, '_force');
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
+    loadName));
+
+if inputs.splineJointMoments.dim > 1
+    experimentalJointMoments = fnval(inputs.splineJointMoments, time)';
+else
+    experimentalJointMoments = fnval(inputs.splineJointMoments, time);
 end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
+
+momentLabelsNoSuffix = erase(inputs.inverseDynamicMomentLabels, '_moment');
+momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
+includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
+if size(inverseDynamicMoments, 2) ~= size(experimentalJointMoments, 2)
+    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
 end
+cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
+    inverseDynamicMoments, indx);
 end

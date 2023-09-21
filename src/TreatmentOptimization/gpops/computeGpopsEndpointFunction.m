@@ -70,9 +70,6 @@ else
 end
 
 continuousObjective = sum(setup.phase.integral) / length(setup.phase.integral);
-if isfield(setup.auxdata, "finalTimeRange")
-    continuousObjective = continuousObjective / values.time(end);
-end
 
 output.objective = continuousObjective + discreteObjective;
 end
