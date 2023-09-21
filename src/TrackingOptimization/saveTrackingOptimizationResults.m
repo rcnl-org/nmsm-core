@@ -31,12 +31,12 @@
 function saveTrackingOptimizationResults(solution, inputs)
 values = getTrackingOptimizationValueStruct(solution.solution.phase, inputs);
 saveCommonOptimalControlResults(solution, inputs, values);
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
     writeToSto(inputs.muscleLabels, linspace(1, inputs.numSynergies, ...
         inputs.numSynergies), [values.synergyWeights], ...
-        fullfile(inputs.resultsDirectory, "parameterSolution.sto"));
+        fullfile(inputs.resultsDirectory, "synergyWeights.sto"));
     writeToSto(inputs.muscleLabels, values.time, ...
         solution.muscleActivations, ...
-        fullfile(inputs.resultsDirectory, "optimal", "muscleActivations.sto"));
+        fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_combinedActivations.sto")));
 end
 end

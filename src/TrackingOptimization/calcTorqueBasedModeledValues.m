@@ -16,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,25 +30,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modeledValues = calcTorqueBasedModeledValues(values, params)
-appliedLoads = [zeros(length(values.time), params.numTotalMuscles)];
-if ~isempty(params.contactSurfaces)
+function modeledValues = calcTorqueBasedModeledValues(values, inputs)
+appliedLoads = [zeros(length(values.time), ...
+    inputs.model.getForceSet().getMuscles().getSize())];
+if ~isempty(inputs.contactSurfaces)
     clear pointKinematics
     [springPositions, springVelocities] = getSpringLocations( ...
-        values.time, values.statePositions, values.stateVelocities, params);
+        values.time, values.statePositions, values.stateVelocities, inputs);
     modeledValues.bodyLocations = getBodyLocations(values.time, ....
-        values.statePositions, values.stateVelocities, params);
+        values.statePositions, values.stateVelocities, inputs);
     groundReactions = calcFootGroundReactions(springPositions, ...
-        springVelocities, params, modeledValues.bodyLocations);
+        springVelocities, inputs, modeledValues.bodyLocations);
     groundReactionsBody = tranferGroundReactionMoments( ...
-        modeledValues.bodyLocations, groundReactions, params);
+        modeledValues.bodyLocations, groundReactions, inputs);
     modeledValues.groundReactionsLab = calcGroundReactionsLab(groundReactions);
     appliedLoads = [appliedLoads groundReactionsBody];
 end
 modeledValues.inverseDynamicMoments = inverseDynamics(values.time, ...
     values.statePositions, values.stateVelocities, ...
-    values.stateAccelerations, params.coordinateNames, appliedLoads, ...
-    params.mexModel);
+    values.stateAccelerations, inputs.coordinateNames, appliedLoads, ...
+    inputs.mexModel);
 end
 
 function [springPositions, springVelocities] = getSpringLocations(time, ....

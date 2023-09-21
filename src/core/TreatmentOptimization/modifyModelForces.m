@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,11 +30,8 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = modifyModelForces(inputs)
-if ~isa(inputs.model, 'org.opensim.modeling.Model')
-    model = Model(inputs.model);
-end
-[model, inputs] = disableModelMuscles(inputs, model);
+[model, inputs] = disableModelMuscles(inputs, inputs.model);
 model = addContactSurfaceActuators(inputs, model);
-inputs.mexModel = strcat(strrep(inputs.model,'.osim',''), '_inactiveMuscles.osim');
+inputs.mexModel = strcat(strrep(inputs.modelFileName,'.osim',''), '_inactiveMuscles.osim');
 model.print(inputs.mexModel);
 end

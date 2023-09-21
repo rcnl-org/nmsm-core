@@ -33,7 +33,17 @@ function DesignOptimizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "DesignOptimizationTool");
 [inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
-[outputs, inputs] = DesignOptimization(inputs, params);
+inputs = setupMuscleSynergies(inputs);
+inputs = makeTreatmentOptimizationInputs(inputs, params);
+outputs = solveOptimalControlProblem(inputs, params);
 reportTreatmentOptimizationResults(outputs, inputs);
 saveDesignOptimizationResults(outputs, inputs);
+end
+
+function inputs = setupMuscleSynergies(inputs)
+if strcmp(inputs.controllerType, 'synergy')
+    inputs.splineSynergyActivations = spaps(inputs.initialGuess.time/inputs.initialGuess.time(end), ...
+        inputs.initialGuess.control(:, inputs.numCoordinates + 1:end)', 0.0000001);
+    inputs.synergyLabels = inputs.initialGuess.controlLabels(:, inputs.numCoordinates + 1:end);
+end
 end

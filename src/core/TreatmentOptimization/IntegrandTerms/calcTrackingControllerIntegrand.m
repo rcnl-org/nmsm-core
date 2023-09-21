@@ -34,14 +34,14 @@ function cost = calcTrackingControllerIntegrand(auxdata, values, time, ...
     controllerName)
 
 switch auxdata.controllerType
-    case 'synergy_driven'
+    case 'synergy'
         indx = find(strcmp(convertCharsToStrings( ...
             auxdata.synergyLabels), controllerName));
         synergyActivations = ...
-            fnval(auxdata.splineSynergyActivations, time/time(end))';
+            fnval(auxdata.splineSynergyActivations, time)';
         cost = calcTrackingCostArrayTerm(synergyActivations, ...
             values.controlSynergyActivations, indx);
-    case 'torque_driven'
+    case 'torque'
         indx1 = find(strcmp(convertCharsToStrings( ...
             auxdata.inverseDynamicMomentLabels), controllerName));
         indx2 = find(strcmp(convertCharsToStrings( ...
@@ -49,10 +49,10 @@ switch auxdata.controllerType
             controllerName));
         if auxdata.splineJointMoments.dim > 1
             experimentalJointMoments = ...
-                fnval(auxdata.splineJointMoments, time/time(end))';
+                fnval(auxdata.splineJointMoments, time)';
         else
             experimentalJointMoments = ...
-                fnval(auxdata.splineJointMoments, time/time(end));
+                fnval(auxdata.splineJointMoments, time);
         end
         cost = experimentalJointMoments(:, indx1) - ...
             values.controlTorques(:, indx2);

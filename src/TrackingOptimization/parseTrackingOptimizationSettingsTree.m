@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,62 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, params, resultsDirectory] = ...
+function [inputs, params] = ...
     parseTrackingOptimizationSettingsTree(settingsTree)
-inputs = getTreatmentOptimizationInputs(settingsTree);
-inputs = getDesignVariableBounds(settingsTree, inputs);
-params = getParams(settingsTree);
+inputs = parseTreatmentOptimizationInputs(settingsTree);
+params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 end
 
-function inputs = getDesignVariableBounds(tree, inputs)
-designVariableTree = getFieldByNameOrError(tree, ...
-    'RCNLDesignVariableBoundsTerms');
-jointPositionsMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_positions_multiple');
-if(isstruct(jointPositionsMultiple))
-    inputs.statePositionsMultiple = getDoubleFromField(jointPositionsMultiple);
-end
-jointVelocitiesMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_velocities_multiple');
-if(isstruct(jointVelocitiesMultiple))
-    inputs.stateVelocitiesMultiple = getDoubleFromField(jointVelocitiesMultiple);
-end
-jointAccelerationsMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_accelerations_multiple');
-if(isstruct(jointAccelerationsMultiple))
-    inputs.stateAccelerationsMultiple = ...
-        getDoubleFromField(jointAccelerationsMultiple);
-end
-jointJerkMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_jerks_multiple');
-if(isstruct(jointJerkMultiple))
-    inputs.controlJerksMultiple = getDoubleFromField(jointJerkMultiple);
-end
-if strcmp(inputs.controllerType, 'synergy_driven')
-maxControlSynergyActivations = getFieldByNameOrError(designVariableTree, ...
-    'synergy_activations_max');
-if(isstruct(maxControlSynergyActivations))
-    inputs.maxControlSynergyActivations = ...
-        getDoubleFromField(maxControlSynergyActivations);
-end
-maxParameterSynergyWeights = getFieldByNameOrError(designVariableTree, ...
-    'synergy_weights_max');
-if(isstruct(maxParameterSynergyWeights))
-    inputs.maxParameterSynergyWeights = ...
-        getDoubleFromField(maxParameterSynergyWeights);
-end
-else 
-maxControlTorques = getFieldByNameOrError(designVariableTree, ...
-    'torque_controls_max');
-if(isstruct(maxControlTorques))
-    inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
-end
-end
-inputs.toolName = "TrackingOptimization";
-end
-
-function params = getParams(tree)
-params.solverSettings = getOptimalControlSolverSettings(...
-    getTextFromField(getFieldByName(tree, 'optimal_control_settings_file')));
-end

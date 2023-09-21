@@ -30,20 +30,16 @@
 
 function [inputs, params] = ...
     parseDesignOptimizationSettingsTree(settingsTree)
-inputs = getInputs(settingsTree);
-params = getParams(settingsTree);
+inputs = parseTreatmentOptimizationInputs(settingsTree);
+inputs = parseDesignSettings(settingsTree, inputs);
+inputs = getInputs(settingsTree, inputs);
+params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 inputs = updateMuscleModelProperties(inputs);
 end
 
-function inputs = getInputs(tree)
+function inputs = getInputs(tree, inputs)
 import org.opensim.modeling.Storage
-inputs = getTreatmentOptimizationInputs(tree);
-inputs = getDesignVariableBounds(tree, inputs);
-if strcmpi(inputs.controllerType, 'synergy_driven')
-inputs.synergyWeights = parseTreatmentOptimizationStandard(...
-    {getTextFromField(getFieldByName(tree, 'synergy_vectors_file'))});
-end
 inputs.systemFns = parseSpaceSeparatedList(tree, "model_functions");
 parameterTree = getFieldByNameOrError(tree, "RCNLParameterTermSet");
 if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
@@ -54,55 +50,8 @@ else
 end
 end
 
-function inputs = getDesignVariableBounds(tree, inputs)
-designVariableTree = getFieldByNameOrError(tree, ...
-    'RCNLDesignVariableBoundsTerms');
-jointPositionsMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_positions_multiple');
-if(isstruct(jointPositionsMultiple))
-    inputs.statePositionsMultiple = getDoubleFromField(jointPositionsMultiple);
-end
-jointVelocitiesMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_velocities_multiple');
-if(isstruct(jointVelocitiesMultiple))
-    inputs.stateVelocitiesMultiple = getDoubleFromField(jointVelocitiesMultiple);
-end
-jointAccelerationsMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_accelerations_multiple');
-if(isstruct(jointAccelerationsMultiple))
-    inputs.stateAccelerationsMultiple = ...
-        getDoubleFromField(jointAccelerationsMultiple);
-end
-jointJerkMultiple = getFieldByNameOrError(designVariableTree, ...
-    'joint_jerks_multiple');
-if(isstruct(jointJerkMultiple))
-    inputs.controlJerksMultiple = getDoubleFromField(jointJerkMultiple);
-end
-if strcmp(inputs.controllerType, 'synergy_driven')
-maxControlSynergyActivations = getFieldByNameOrError(designVariableTree, ...
-    'synergy_activations_max');
-if(isstruct(maxControlSynergyActivations))
-    inputs.maxControlSynergyActivations = ...
-        getDoubleFromField(maxControlSynergyActivations);
-end
-if inputs.optimizeSynergyVectors
-    maxParameterSynergyWeights = getFieldByNameOrError(designVariableTree, ...
-        'synergy_weights_max');
-    if(isstruct(maxParameterSynergyWeights))
-        inputs.maxParameterSynergyWeights = ...
-            getDoubleFromField(maxParameterSynergyWeights);
-    end
-end
-else 
-maxControlTorques = getFieldByName(designVariableTree, ...
-    'torque_controls_multiple');
-if(isstruct(maxControlTorques))
-    inputs.maxControlTorquesMultiple = getDoubleFromField(maxControlTorques);
-else
-    inputs.maxControlTorquesMultiple = 1;
-end
-end
-finalTimeRange = getFieldByName(designVariableTree, ...
+function inputs = parseDesignSettings(tree, inputs)
+finalTimeRange = getFieldByName(tree, ...
     'final_time_range');
 if(isstruct(finalTimeRange))
     inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
@@ -115,13 +64,8 @@ if inputs.enableExternalTorqueControl
     inputs.numExternalTorqueControls = ...
         length(inputs.externalControlTorqueNames);
     inputs.maxExternalTorqueControls = getDoubleFromField( ...
-        getFieldByNameOrError(designVariableTree, ...
+        getFieldByNameOrError(tree, ...
         'external_torque_control_multiple'));
 end
-inputs.toolName = "DesignOptimization";
 end
 
-function params = getParams(tree)
-params.solverSettings = getOptimalControlSolverSettings(...
-    getTextFromField(getFieldByName(tree, 'optimal_control_settings_file')));
-end

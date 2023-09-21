@@ -32,7 +32,7 @@ function inputs = getStateDerivatives(inputs)
 points = length(inputs.experimentalTime);
 interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);
 numNodes = splFitWithCutoff(inputs.experimentalTime', ...
-    inputs.experimentalJointAngles', 10, 5);
+    inputs.experimentalJointAngles', 4, 5);
 [N, Np, Npp] = BSplineMatrices(5, numNodes, points, interval);
 Nodes = N\inputs.experimentalJointAngles;
 inputs.experimentalJointVelocities = Np * Nodes;

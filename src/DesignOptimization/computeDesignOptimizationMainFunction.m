@@ -50,7 +50,7 @@ end
 function bounds = setupProblemBounds(inputs, params, guess)
 bounds = setupCommonOptimalControlBounds(inputs, params);
 % setup parameter bounds
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
     if inputs.optimizeSynergyVectors
         bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
@@ -74,6 +74,7 @@ if isfield(inputs, "finalTimeRange")
     bounds.phase.finaltime.upper = 0.5;
 end
 end
+
 function guess = addUserDefinedTermsToGuess(guess, inputs)
 for i = 1:length(inputs.userDefinedVariables)
     variable = inputs.userDefinedVariables{i};

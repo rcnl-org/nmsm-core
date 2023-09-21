@@ -33,7 +33,7 @@ modelFileName = inputs.bodyModel;
 model = Model(modelFileName);
 
 if isfile(osimxFileName)
-    osimx = parseOsimxFile(inputs.inputOsimxFile);
+    osimx = parseOsimxFile(inputs.inputOsimxFile, model);
     [~, name, ~] = fileparts(inputs.inputOsimxFile);
     outfile = fullfile(resultsDirectory, strcat(name, "_gcp.xml"));
 else

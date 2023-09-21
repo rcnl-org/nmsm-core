@@ -31,7 +31,7 @@
 function [output, inputs] = DesignOptimization(inputs, params)
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 initializeMexOrMatlabParallelFunctions(inputs.mexModel);
-if strcmp(inputs.controllerType, 'synergy_driven')
+if strcmp(inputs.controllerType, 'synergy')
     inputs = setupMuscleSynergies(inputs);
 end
 if inputs.enableExternalTorqueControl
@@ -39,13 +39,15 @@ if inputs.enableExternalTorqueControl
 end
 output = computeDesignOptimizationMainFunction(inputs, params);
 end
+
 function inputs = setupMuscleSynergies(inputs)
-inputs.splineSynergyActivations = spaps(inputs.initialGuess.time/inputs.initialGuess.time(end), ...
+inputs.splineSynergyActivations = spaps(inputs.initialGuess.time, ...
     inputs.initialGuess.control(:, inputs.numCoordinates + 1 : ...
     inputs.numCoordinates + inputs.numSynergies)', 0.0000001);
 inputs.synergyLabels = inputs.initialGuess.controlLabels(:, ...
     inputs.numCoordinates + 1 : inputs.numCoordinates + inputs.numSynergies);
 end
+
 function inputs = setupExternalTorqueControls(inputs)
 if size(inputs.initialGuess.control, 2) ~= length(inputs.maxControl)
     inputs.initialGuess.control = [inputs.initialGuess.control ...
