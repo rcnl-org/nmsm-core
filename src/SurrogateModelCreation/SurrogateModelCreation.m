@@ -46,11 +46,11 @@ end
 
 function inputs = getData(inputs)
 
-tree.trial_prefixes = inputs.trialPrefixes;
+tree.trial_prefixes = inputs.trialName;
 prefixes = findPrefixes(tree.trial_prefixes, inputs.dataDirectory);
-inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
-    inputs.surrogateModelCoordinateNames);
-inputs.numMuscles = length(inputs.muscleNames);
+% inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
+%     inputs.surrogateModelCoordinateNames);
+% inputs.numMuscles = length(inputs.muscleNames);
 
 inverseKinematicsFileNames = findFileListFromPrefixList(fullfile( ...
     inputs.dataDirectory, "IKData"), prefixes);
@@ -72,6 +72,9 @@ directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
     inputs.dataDirectory, "MAData"), prefixes);
 [inputs.muscleTendonLengths, inputs.muscleTendonColumnNames] = ...
     parseFileFromDirectories(directories, "Length.sto", Model(inputs.model));
+inputs.muscleNames = findMusclesFromSynergyGroups(inputs);
+inputs.surrogateModelCoordinateNames = findSurrogateModelCoordinates( ...
+    inputs, directories);
 inputs.muscleTendonLengths = findSpecificMusclesInData( ...
     inputs.muscleTendonLengths, inputs.muscleTendonColumnNames, ...
     inputs.muscleNames);
@@ -106,6 +109,33 @@ for i=2:length(files)
     [~, ~, data] = parseMotToComponents(osimModel, ...
         Storage(files(i)));
     cells(i, :, :) = data;
+end
+end
+
+function coordinates = findSurrogateModelCoordinates(inputs, ...
+    directories)
+coordinates = string([]);
+includedMuscles = ismember(inputs.muscleTendonColumnNames, ...
+    inputs.muscleNames);
+[data, fullCoordinates] = parseMomentArms(directories, ...
+    Model(inputs.model));
+for i = 1 : length(fullCoordinates)
+    if any(any(any(data(:, i, includedMuscles, :) > inputs.epsilon)))
+        coordinates(end+1) = fullCoordinates(i);
+    end
+end
+end
+
+function muscleNames = findMusclesFromSynergyGroups(inputs)
+muscleNames = string([]);
+model = Model(inputs.model);
+for i = 1 : length(inputs.synergyGroups)
+    group = model.getForceSet.getGroup( ...
+        inputs.synergyGroups{i}.muscleGroupName).getMembers();
+    for j = 0 : group.getSize() - 1
+        muscleNames(end+1) = convertCharsToStrings( ...
+            group.get(j).getName.toCharArray');
+    end
 end
 end
 
