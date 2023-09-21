@@ -46,6 +46,7 @@ switch toolFields{1}
             "Invalid settings file type. Valid types include " + ...
             "TrackingOptimizationTool, VerificationOptimizationTool," + ...
             " and DesignOptimizationTool.")
+end
 inputs.plotResults = true;
 SurrogateModelCreation(inputs);
 end
