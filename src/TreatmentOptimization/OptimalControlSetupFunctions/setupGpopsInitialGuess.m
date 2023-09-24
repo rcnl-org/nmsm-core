@@ -40,7 +40,11 @@ end
 
 function guess = setupInitialStatesGuess(inputs, guess)
 if isfield(inputs, "initialStates")
-    guess.phase.state = scaleToBounds(inputs.initialStates, ...
+    states = subsetInitialStatesDataByCoordinates( ...
+        inputs.initialStates, ...
+        inputs.initialStatesLabels, ...
+        inputs.statesCoordinateNames);
+    guess.phase.state = scaleToBounds(states, ...
         inputs.maxState, inputs.minState);
     guess.phase.time = scaleToBounds(inputs.initialTime, inputs.maxTime, ...
         inputs.minTime);
@@ -101,4 +105,17 @@ if valueOrAlternate(inputs, "optimizeSynergyVectors", false)
     guess.parameter = scaleToBounds(inputs.synergyWeights, ...
         inputs.maxParameter, inputs.minParameter);
 end
+end
+
+function output = subsetInitialStatesDataByCoordinates(data, ...
+    coordinateNames, subsetOfCoordinateNames)
+includedSubset = ismember(coordinateNames, subsetOfCoordinateNames);
+numCoordinates = length(includedSubset) / 3;
+for i = 1:numCoordinates
+    if includedSubset(i)
+        includedSubset(i + numCoordinates) = true;
+        includedSubset(i + (2 * numCoordinates)) = true;
+    end
+end
+output = data(:, includedSubset);
 end

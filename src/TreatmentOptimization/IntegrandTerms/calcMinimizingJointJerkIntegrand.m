@@ -32,8 +32,13 @@ function cost = calcMinimizingJointJerkIntegrand(jointJerks, inputs, ...
 
 indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
     costTerm.coordinate));
+if isempty(indx)
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", costTerm.coordinate, " is not in the ", ...
+        "<states_coordinate_list>")))
+end
 % cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
-maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 10);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 10000);
 cost = jointJerks(:, indx) / maximumAllowableError;
 end
