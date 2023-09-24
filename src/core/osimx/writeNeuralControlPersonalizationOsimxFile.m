@@ -30,7 +30,7 @@
 
 function writeNeuralControlPersonalizationOsimxFile(inputs, ...
     resultsDirectory, precalInputs)
-modelFileName = inputs.model;
+modelFileName = inputs.modelFileName;
 model = Model(modelFileName);
 
 buildFromExisting = false;
