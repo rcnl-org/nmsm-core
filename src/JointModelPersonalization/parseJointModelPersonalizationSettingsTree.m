@@ -80,13 +80,21 @@ end
 end
 
 function output = getTask(model, tree)
-output.markerFile = tree.marker_file_name.Text;
+output.markerFile = parseElementTextByName(tree, "marker_file_name");
+output.anatomicalMarkers = getBooleanLogicFromField( ...
+    getFieldByName(tree, "anatomical_markers"));
 timeRange = getFieldByName(tree, 'time_range');
 if(isstruct(timeRange))
     timeRange = strsplit(timeRange.Text, ' ');
     output.startTime = str2double(timeRange{1});
     output.finishTime = str2double(timeRange{2});
 end
+try
+markerNames = parseSpaceSeparatedList(tree, "marker_names");
+if ~isempty(markerNames)
+    output.markerNames = markerNames;
+end
+catch; end
 output.parameters = {};
 if(isstruct(getFieldByName(tree, "JMPJointSet")))
     output.parameters = getJointParameters(tree.JMPJointSet);
