@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTrackingInverseDynamicLoadsIntegrand(inputs, time, ...
-    inverseDynamicMoments, loadName)
+    inverseDynamicsMoments, loadName)
 
 loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
@@ -42,12 +42,12 @@ else
     experimentalJointMoments = fnval(inputs.splineJointMoments, time);
 end
 
-momentLabelsNoSuffix = erase(inputs.inverseDynamicMomentLabels, '_moment');
+momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
 momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
 includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
-if size(inverseDynamicMoments, 2) ~= size(experimentalJointMoments, 2)
+if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
     experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
 end
 cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
-    inverseDynamicMoments, indx);
+    inverseDynamicsMoments, indx);
 end

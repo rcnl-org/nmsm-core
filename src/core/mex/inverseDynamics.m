@@ -2,8 +2,8 @@
 %
 % This function uses a mex file or a matlab function with parallel workers
 % to calculate inverse dynamics moments.
-% 
-% (Array of number, 2D matrix, 2D matrix, 2D matrix, Cell, 2D matrix, 
+%
+% (Array of number, 2D matrix, 2D matrix, 2D matrix, Cell, 2D matrix,
 % Array of string) -> (2D matrix)
 % Returns inverse dynamic moments
 
@@ -29,15 +29,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inverseDynamicMoments = inverseDynamics(time, jointAngles, ...
+function inverseDynamicsMoments = inverseDynamics(time, jointAngles, ...
     jointVelocities, jointAccelerations, coordinateLabels, appliedLoads, ...
     modelName)
 if isequal(mexext, 'mexw64')
-    inverseDynamicMoments = inverseDynamicsMexWindows(time, jointAngles, ...
+    inverseDynamicsMoments = inverseDynamicsMexWindows(time, jointAngles, ...
         jointVelocities, jointAccelerations, coordinateLabels, ...
         appliedLoads);
 else
-    inverseDynamicMoments = inverseDynamicsMatlabParallel(time, ...
+    inverseDynamicsMoments = inverseDynamicsMatlabParallel(time, ...
         jointAngles, jointVelocities, jointAccelerations, coordinateLabels, ...
         appliedLoads, modelName);
 end

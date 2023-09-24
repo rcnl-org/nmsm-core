@@ -3,8 +3,8 @@
 % This function uses OpenSim's inverse dynamics solver to calculate inverse
 % dynamics moments. Parallel workers are used to speed up computational
 % time.
-% 
-% (Array of number, 2D matrix, 2D matrix, 2D matrix, Cell, 2D matrix, 
+%
+% (Array of number, 2D matrix, 2D matrix, 2D matrix, Cell, 2D matrix,
 % Array of string) -> (2D matrix)
 % Returns inverse dynamic moments
 
@@ -30,7 +30,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inverseDynamicMoments = inverseDynamicsMatlabParallel(time, ...
+function inverseDynamicsMoments = inverseDynamicsMatlabParallel(time, ...
     jointAngles, jointVelocities, jointAccelerations, coordinateLabels, ...
     appliedLoads, modelName)
 
@@ -40,24 +40,24 @@ numControls = size(appliedLoads,2);
 numCoords = length(coordinateLabels);
 % Split time points into parallel problems
 numWorkers = gcp().NumWorkers;
-inverseDynamicJobs = cell(1, numWorkers);
+inverseDynamicsJobs = cell(1, numWorkers);
 parfor worker = 1:numWorkers
-    inverseDynamicJobs{worker} = idWorkerHelper(modelName, numPts, ...
+    inverseDynamicsJobs{worker} = idWorkerHelper(modelName, numPts, ...
         numControls, numCoords, numWorkers, ...
         time, jointAngles, jointVelocities, jointAccelerations, ...
         coordinateLabels,appliedLoads,worker);
 end
-inverseDynamicMoments = inverseDynamicJobs{1};
+inverseDynamicsMoments = inverseDynamicsJobs{1};
 for job = 2 : numWorkers
-    inverseDynamicMoments = cat(1, inverseDynamicMoments, ...
-        inverseDynamicJobs{job});
+    inverseDynamicsMoments = cat(1, inverseDynamicsMoments, ...
+        inverseDynamicsJobs{job});
 end
 end
-function inverseDynamicJobs = idWorkerHelper(modelName, numPts, ...
+function inverseDynamicsJobs = idWorkerHelper(modelName, numPts, ...
     numControls, numCoords, numWorkers, time, jointAngles, ...
     jointVelocities, jointAccelerations, coordinateLabels, appliedLoads, ...
     worker)
-    
+
 import org.opensim.modeling.*;
 persistent osimModel;
 persistent osimState;
@@ -67,7 +67,7 @@ if isempty(osimModel)
     osimState = osimModel.initSystem();
     inverseDynamicsSolver = InverseDynamicsSolver(osimModel);
 end
-inverseDynamicJobs = [];
+inverseDynamicsJobs = [];
 start = round((numPts/numWorkers) * (worker-1)) + 1;
 stop = round((numPts/numWorkers) * (worker));
 for j = start : stop
@@ -98,7 +98,7 @@ for j = start : stop
     osimModel.setControls(osimState, newControls);
     osimModel.markControlsAsValid(osimState);
     osimModel.realizeDynamics(osimState);
-    
+
     accelsVec = Vector(osimState.getNQ, 0);
     includedQIndex = 1;
     for i=0:osimState.getNQ-1
@@ -107,10 +107,10 @@ for j = start : stop
             accelsVec.set(i, accelsTempVec(includedQIndex));
             includedQIndex = includedQIndex + 1;
 %         end
-    end    
+    end
     IDLoadsVec = inverseDynamicsSolver.solve(osimState, accelsVec);
     for i=0 : numCoords - 1
-        inverseDynamicJobs(j-start + 1, i + 1) = IDLoadsVec.get(i);
+        inverseDynamicsJobs(j-start + 1, i + 1) = IDLoadsVec.get(i);
     end
 end
 end

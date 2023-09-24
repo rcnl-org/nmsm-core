@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function checks that the initial guess parameters file is in the 
+% This function checks that the initial guess parameters file is in the
 % correct order
 %
 % (struct) -> (struct)
@@ -29,10 +29,10 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = checkParameterGuess(inputs)
-if isfield(inputs.initialGuess, 'parameter') || isfield(inputs,"synergyWeights") 
+if isfield(inputs.initialGuess, 'parameter') || isfield(inputs,"synergyWeights")
     if isfield(inputs.initialGuess, 'parameter')
         inputs.synergyWeightsGuess = inputs.initialGuess.parameter;
-    elseif isfield(inputs,"synergyWeights") 
+    elseif isfield(inputs,"synergyWeights")
         inputs.synergyWeightsGuess = inputs.synergyWeights;
     end
 
@@ -41,14 +41,14 @@ if isfield(inputs.initialGuess, 'parameter') || isfield(inputs,"synergyWeights")
         for j = 1 : inputs.numMuscles
             for k = 1 : length(inputs.synergyGroups{i}.muscleNames)
                 if strcmpi(inputs.muscleNames(j), inputs.synergyGroups{i}.muscleNames(k))
-                    if i <= 1 
+                    if i <= 1
                         parameterIndex(i, k) = j;
                     else
                         parameterIndex(i, k + length(inputs.synergyGroups{i}.muscleNames)) = j;
                     end
                 end
             end
-        end 
+        end
     end
     synergyWeightsFlattened = [];
     numSynergiesIndex = 0;
@@ -61,31 +61,31 @@ if isfield(inputs.initialGuess, 'parameter') || isfield(inputs,"synergyWeights")
     end
     inputs.synergyWeightsGuess = synergyWeightsFlattened;
 end
-if strcmp(inputs.controllerType, 'synergy') 
+if strcmp(inputs.controllerType, 'synergy')
     inputs = getMuscleSynergiesInitialGuess(inputs);
     for i = 1 : length(inputs.coordinateNames)
         for j = 1 : length(inputs.surrogateModelCoordinateNames)
             if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
                 inputs.surrogateModelIndex(j) = i;
             end
-        end 
+        end
     end
     inputs.dofsActuatedIndex = [];
-    for i = 1 : length(inputs.inverseDynamicMomentLabels)
+    for i = 1 : length(inputs.inverseDynamicsMomentLabels)
         for j = 1 : length(inputs.surrogateModelCoordinateNames)
-            if strcmp(inputs.inverseDynamicMomentLabels(i), ...
+            if strcmp(inputs.inverseDynamicsMomentLabels(i), ...
                     strcat(inputs.surrogateModelCoordinateNames(j), '_moment'))
                 inputs.dofsActuatedIndex(end+1) = j;
             end
-        end 
+        end
     end
 end
 end
 
 function inputs = getMuscleSynergiesInitialGuess(inputs)
-if isfield(inputs.initialGuess,"parameter") || isfield(inputs,"synergyWeights") 
+if isfield(inputs.initialGuess,"parameter") || isfield(inputs,"synergyWeights")
     synergyWeights = getSynergyWeightsFromGroups(inputs.synergyWeightsGuess, inputs);
-    inputs.synergyActivationsGuess = inputs.experimentalMuscleActivations / synergyWeights;    
+    inputs.synergyActivationsGuess = inputs.experimentalMuscleActivations / synergyWeights;
 else
     inputs.mtpActivationsColumnNames = inputs.muscleLabels;
     inputs.mtpActivations = permute(inputs.experimentalMuscleActivations, [3 2 1]);
