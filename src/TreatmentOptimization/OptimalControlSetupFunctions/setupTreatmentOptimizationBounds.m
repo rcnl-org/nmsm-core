@@ -29,7 +29,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function bounds = setupCommonOptimalControlBounds(inputs, params)
+function bounds = setupTreatmentOptimizationBounds(inputs, params)
 % setup time bounds
 bounds.phase.initialtime.lower = -0.5;
 bounds.phase.initialtime.upper = -0.5;
@@ -58,6 +58,22 @@ if ~isempty(inputs.minTerminal)
 end
 if ~isempty(inputs.maxTerminal)
     bounds.eventgroup.upper = inputs.maxTerminal;
+end
+if strcmp(inputs.toolName, "DesignOptimization")
+    for i = 1:length(inputs.userDefinedVariables)
+        lower = -0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
+        upper = 0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
+        if ~isfield(bounds, "parameter") || ...
+                ~isfield(bounds.parameter, "lower")
+            bounds.parameter.lower = lower;
+            bounds.parameter.upper = upper;
+        else
+            bounds.parameter.lower = [bounds.parameter.lower, ...
+                lower];
+            bounds.parameter.upper = [bounds.parameter.upper, ...
+                upper];
+        end
+    end
 end
 end
 

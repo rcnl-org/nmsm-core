@@ -33,14 +33,23 @@ jointAnglesSpline = spaps(inputs.experimentalTime, ...
     inputs.experimentalJointAngles', eps, [], 3);
 inputs.experimentalJointVelocities = fnval(fnder(jointAnglesSpline, 1), ...
     inputs.experimentalTime)';
+if length(inputs.statesCoordinateNames) == 1
+    inputs.experimentalJointVelocities = inputs.experimentalJointVelocities';
+end
 jointVelocitiesSpline = spaps(inputs.experimentalTime, ...
     inputs.experimentalJointVelocities', eps, [], 3);
 inputs.experimentalJointAccelerations = fnval( ...
     fnder(jointVelocitiesSpline, 1), inputs.experimentalTime)';
+if length(inputs.statesCoordinateNames) == 1
+    inputs.experimentalJointAccelerations = inputs.experimentalJointAccelerations';
+end
 jointAccelerationsSpline = spaps(inputs.experimentalTime, ...
     inputs.experimentalJointAccelerations', eps, [], 3);
 inputs.experimentalJointJerks = fnval(fnder(jointAccelerationsSpline, ...
     1), inputs.experimentalTime)';
+if length(inputs.statesCoordinateNames) == 1
+    inputs.experimentalJointJerks = inputs.experimentalJointJerks';
+end
 
 % points = length(inputs.experimentalTime);
 % interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);

@@ -44,9 +44,28 @@ parameterTree = getFieldByNameOrError(tree, "RCNLParameterTermSet");
 if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
     inputs.userDefinedVariables = parseRcnlCostTermSet( ...
         parameterTree.RCNLParameterTerm);
+    for i = 1:length(inputs.userDefinedVariables)
+
+        inputs.userDefinedVariables{i}.initial_values = ...
+            stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.initial_values);
+        inputs.userDefinedVariables{i}.upper_bounds = ...
+            stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.upper_bounds);
+        inputs.userDefinedVariables{i}.lower_bounds = ...
+            stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.lower_bounds);
+    end
 else
     inputs.userDefinedVariables = {};
 end
+end
+
+function output = stringToSpaceSeparatedList(string)
+if isnumeric(string)
+    output = string;
+    return;
+end
+string = strtrim(string);
+output = strsplit(string, ' ');
+output = str2double(output);
 end
 
 function inputs = parseDesignSettings(tree, inputs)

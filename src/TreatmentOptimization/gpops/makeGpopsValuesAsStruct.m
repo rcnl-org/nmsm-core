@@ -105,11 +105,15 @@ if strcmp(inputs.toolName, "DesignOptimization")
         %         end
     end
     if isfield(inputs, 'userDefinedVariables')
+        counter = 1;
         for i = 1:length(inputs.userDefinedVariables)
-            values.(inputs.userDefinedVariables{i}.type)(i) = scaleToOriginal( ...
-                phase.parameter(1, i + numParameters), ...
+            numParameters = length(inputs.userDefinedVariables{i}.initial_values);
+            values.parameters.(inputs.userDefinedVariables{i}.type) ...
+                = scaleToOriginal( ...
+                phase.parameter(counter : counter + numParameters - 1), ...
                 inputs.userDefinedVariables{i}.upper_bounds, ...
                 inputs.userDefinedVariables{i}.lower_bounds);
+            counter = counter + numParameters;
         end
     end
 end
@@ -120,6 +124,11 @@ function [positions, velocities, accelerations] = recombineFullState( ...
 positions = fnval(inputs.splineJointAngles, values.time)';
 velocities = fnval(inputs.splineJointVelocities, values.time)';
 accelerations = fnval(inputs.splineJointAccelerations, values.time)';
+if length(inputs.statesCoordinateNames) == 1
+    positions = positions';
+    velocities = velocities';
+    accelerations = accelerations';
+end
 for i = 1:length(inputs.coordinateNames)
     index = find(ismember( ...
         inputs.statesCoordinateNames, inputs.coordinateNames{i}));
