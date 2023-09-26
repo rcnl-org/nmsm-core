@@ -38,23 +38,23 @@
 % -----------------------------------------------------------------------
 
 function [newMuscleTendonLengths, newMomentArms, ...
-    newMuscleTendonVelocities] = calcSurrogateModel(params, jointAngles, ...
+    newMuscleTendonVelocities] = calcSurrogateModel(inputs, jointAngles, ...
     jointVelocities)
 
 newMomentArms = zeros(size(jointAngles{1}, 1), ...
-    length(params.coordinateNames), size(jointAngles, 2));
+    length(inputs.coordinateNames), size(jointAngles, 2));
 for i = 1 : size(jointAngles, 2)
     % Get A matrix
     matrix = PatientSpecificSurrogateModel(jointAngles{i}, jointVelocities{i}, i);
     % Caculate new muscle tendon lengths and moment arms
-    vector = matrix * params.coefficients{i};
+    vector = matrix * inputs.coefficients{i};
     newMuscleTendonLengths(:, i) = vector(1 : size(jointAngles{i}, 1));
     newMuscleTendonVelocities(:, i) = vector(1 + ...
         size(jointAngles{i}, 1) : size(jointAngles{i}, 1) * 2);
     index = 2;
-    for j = 1 : length(params.coordinateNames)
-        for k = 1 : length(params.surrogateModelLabels{i})
-            if strcmp(params.coordinateNames(j), params.surrogateModelLabels{i}(k))
+    for j = 1 : length(inputs.coordinateNames)
+        for k = 1 : length(inputs.surrogateModelLabels{i})
+            if strcmp(inputs.coordinateNames(j), inputs.surrogateModelLabels{i}(k))
                 newMomentArms(:, j, i) = vector(size(jointAngles{i}, 1) * ...
                     index + 1 : size(jointAngles{i}, 1) * (index + 1));
                 index = index + 1;

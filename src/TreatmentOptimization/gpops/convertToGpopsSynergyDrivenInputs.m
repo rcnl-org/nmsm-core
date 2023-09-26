@@ -26,7 +26,7 @@
 
 function setup = convertToGpopsSynergyDrivenInputs(inputs, params)
 bounds = setupProblemBounds(inputs, params);
-guess = setupCommonOptimalControlInitialGuess(inputs);
+guess = setupGpopsInitialGuess(inputs);
 if strcmp(inputs.toolName, "DesignOptimization")
     guess = addUserDefinedTermsToGuess(guess, inputs);
 end
@@ -40,7 +40,7 @@ checkInitialGuess(guess, inputs, ...
 end
 
 function bounds = setupProblemBounds(inputs, params)
-bounds = setupCommonOptimalControlBounds(inputs, params);
+bounds = setupTreatmentOptimizationBounds(inputs, params);
 % setup parameter bounds
 if strcmp(inputs.controllerType, 'synergy')
     if inputs.optimizeSynergyVectors
@@ -48,37 +48,5 @@ if strcmp(inputs.controllerType, 'synergy')
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
 end
-if strcmp(inputs.toolName, "DesignOptimization")
-    for i = 1:length(inputs.userDefinedVariables)
-        variable = inputs.userDefinedVariables{i};
-        if ~isfield(bounds, "parameter") || ...
-                ~isfield(bounds.parameter, "lower")
-            bounds.parameter.lower = [-0.5];
-            bounds.parameter.upper = [0.5];
-        else
-            bounds.parameter.lower = [bounds.parameter.lower, ...
-                -0.5];
-            bounds.parameter.upper = [bounds.parameter.upper, ...
-                0.5];
-        end
-    end
-    if isfield(inputs, "finalTimeRange")
-        bounds.phase.finaltime.lower = guess.phase.time(end) - (0.5 - guess.phase.time(end));
-        bounds.phase.finaltime.upper = 0.5;
-    end
-end
 end
 
-function guess = addUserDefinedTermsToGuess(guess, inputs)
-for i = 1:length(inputs.userDefinedVariables)
-    variable = inputs.userDefinedVariables{i};
-    if ~isfield(guess, "parameter")
-        guess.parameter = [];
-    end
-    guess.parameter = [guess.parameter, ...
-        scaleToBounds( ...
-        variable.initial_values, ...
-        variable.upper_bounds, ...
-        variable.lower_bounds)];
-end
-end

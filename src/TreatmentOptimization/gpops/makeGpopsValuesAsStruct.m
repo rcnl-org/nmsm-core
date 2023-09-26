@@ -35,17 +35,22 @@ state = scaleToOriginal(phase.state, ones(size(phase.state, 1), 1) .* ...
     inputs.maxState, ones(size(phase.state, 1), 1) .* inputs.minState);
 control = scaleToOriginal(phase.control, ones(size(phase.control, 1), 1) .* ...
     inputs.maxControl, ones(size(phase.control, 1), 1) .* inputs.minControl);
-values.statePositions = getCorrectStates(state, 1, inputs.numCoordinates);
-values.stateVelocities = getCorrectStates(state, 2, inputs.numCoordinates);
-values.stateAccelerations = getCorrectStates(state, 3, inputs.numCoordinates);
-values.controlJerks = control(:, 1 : inputs.numCoordinates);
-
+values.statePositions = getCorrectStates( ...
+    state, 1, length(inputs.statesCoordinateNames));
+values.stateVelocities = getCorrectStates( ...
+    state, 2, length(inputs.statesCoordinateNames));
+values.stateAccelerations = getCorrectStates( ...
+    state, 3, length(inputs.statesCoordinateNames));
+values.controlJerks = control(:, 1 : length(inputs.statesCoordinateNames));
+[values.positions, values.velocities, ...
+    values.accelerations] = recombineFullState(values, inputs);
 if strcmp(inputs.controllerType, 'torque')
     values.controlTorques = control(:, inputs.numCoordinates + 1 : ...
-        inputs.numCoordinates + inputs.numTorqueControls);
+        inputs.numCoordinates + length(inputs.torqueControllerCoordinateNames));
 else
     values.controlSynergyActivations = control(:, ...
-        inputs.numCoordinates + 1 : inputs.numCoordinates + inputs.numSynergies);
+        length(inputs.statesCoordinateNames) + 1 : ...
+        length(inputs.statesCoordinateNames) + inputs.numSynergies);
 end
 
 if strcmp(inputs.toolName, "TrackingOptimization")
@@ -53,18 +58,15 @@ if strcmp(inputs.toolName, "TrackingOptimization")
         if inputs.optimizeSynergyVectors
             synergyWeights = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
-            values.synergyWeights = getSynergyWeightsFromGroups(...
-                synergyWeights, inputs);
+            values.synergyWeights = synergyWeights;
         else
-            values.synergyWeights = getSynergyWeightsFromGroups(...
-                inputs.synergyWeightsGuess, inputs);
+            values.synergyWeights = inputs.synergyWeights;
         end
     end
 end
 if strcmp(inputs.toolName, "VerificationOptimization")
     if strcmp(inputs.controllerType, 'synergy')
-        values.synergyWeights = getSynergyWeightsFromGroups(...
-            inputs.synergyWeightsGuess, inputs);
+        values.synergyWeights = inputs.synergyWeights;
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
@@ -74,44 +76,66 @@ if strcmp(inputs.toolName, "DesignOptimization")
             values.synergyWeights = scaleToOriginal(phase.parameter(1, ...
                 1 : inputs.numSynergyWeights), ...
                 inputs.maxParameter, inputs.minParameter);
-            values.synergyWeights = getSynergyWeightsFromGroups(...
-                values.synergyWeights, inputs);
             numParameters = inputs.numSynergyWeights;
         else
-            values.synergyWeights = getSynergyWeightsFromGroups(...
-                inputs.synergyWeightsGuess, inputs);
+            values.synergyWeights = inputs.synergyWeights;
         end
-        if inputs.splineSynergyActivations.dim > 1
-            values.controlSynergyActivations = ...
-                fnval(inputs.splineSynergyActivations, values.time)';
-        else
-            values.controlSynergyActivations = ...
-                fnval(inputs.splineSynergyActivations, values.time);
-        end
-        if inputs.enableExternalTorqueControl
-            controls = scaleToOriginal(phase.control, ones(size( ...
-                phase.control, 1), 1) .* inputs.maxControl, ...
-                ones(size(phase.control, 1), 1) .* inputs.minControl);
-            values.externalTorqueControls = controls(:, inputs.numCoordinates + ...
-                inputs.numSynergies + 1 : end);
-        end
-    else
-        if isfield(inputs, "enableExternalTorqueControl") && ...
-                inputs.enableExternalTorqueControl
-            controls = scaleToOriginal(phase.control, ones(size( ...
-                phase.control, 1), 1) .* inputs.maxControl, ...
-                ones(size(phase.control, 1), 1) .* inputs.minControl);
-            values.externalTorqueControls = controls(:, inputs.numCoordinates + ...
-                inputs.numTorqueControls + 1 : end);
-        end
+        %         if inputs.splineSynergyActivations.dim > 1
+        %             values.controlSynergyActivations = ...
+        %                 fnval(inputs.splineSynergyActivations, values.time)';
+        %         else
+        %             values.controlSynergyActivations = ...
+        %                 fnval(inputs.splineSynergyActivations, values.time);
+        %         end
+        %         if inputs.enableExternalTorqueControl
+        %             controls = scaleToOriginal(phase.control, ones(size( ...
+        %                 phase.control, 1), 1) .* inputs.maxControl, ...
+        %                 ones(size(phase.control, 1), 1) .* inputs.minControl);
+        %             values.externalTorqueControls = controls(:, inputs.numCoordinates + ...
+        %                 inputs.numSynergies + 1 : end);
+        %         end
+        %     else
+        %         if isfield(inputs, "enableExternalTorqueControl") && ...
+        %                 inputs.enableExternalTorqueControl
+        %             controls = scaleToOriginal(phase.control, ones(size( ...
+        %                 phase.control, 1), 1) .* inputs.maxControl, ...
+        %                 ones(size(phase.control, 1), 1) .* inputs.minControl);
+        %             values.externalTorqueControls = controls(:, inputs.numCoordinates + ...
+        %                 length(inputs.torqueControllerCoordinateNames) + 1 : end);
+        %         end
     end
     if isfield(inputs, 'userDefinedVariables')
+        counter = 1;
         for i = 1:length(inputs.userDefinedVariables)
-            values.(inputs.userDefinedVariables{i}.type)(i) = scaleToOriginal( ...
-                phase.parameter(1, i + numParameters), ...
+            numParameters = length(inputs.userDefinedVariables{i}.initial_values);
+            values.parameters.(inputs.userDefinedVariables{i}.type) ...
+                = scaleToOriginal( ...
+                phase.parameter(counter : counter + numParameters - 1), ...
                 inputs.userDefinedVariables{i}.upper_bounds, ...
                 inputs.userDefinedVariables{i}.lower_bounds);
+            counter = counter + numParameters;
         end
+    end
+end
+end
+
+function [positions, velocities, accelerations] = recombineFullState( ...
+    values, inputs)
+positions = fnval(inputs.splineJointAngles, values.time)';
+velocities = fnval(inputs.splineJointVelocities, values.time)';
+accelerations = fnval(inputs.splineJointAccelerations, values.time)';
+if length(inputs.statesCoordinateNames) == 1
+    positions = positions';
+    velocities = velocities';
+    accelerations = accelerations';
+end
+for i = 1:length(inputs.coordinateNames)
+    index = find(ismember( ...
+        inputs.statesCoordinateNames, inputs.coordinateNames{i}));
+    if ~isempty(index)
+        positions(:, i) = values.statePositions(:, index);
+        velocities(:, i) = values.stateVelocities(:, index);
+        accelerations(:, i) = values.stateAccelerations(:, index);
     end
 end
 end
