@@ -32,7 +32,7 @@ for i = 1:inputs.numMuscles
     for j = 1:length(inputs.coordinateNames)
         for k = 1:length(inputs.surrogateModelCoordinateNames)
             if strcmp(inputs.coordinateNames(j), inputs.surrogateModelCoordinateNames(k))
-                if range(inputs.momentArms(:,k,i)) > inputs.epsilon
+                if max(abs(inputs.momentArms(:,k,i))) > inputs.epsilon
                     inputs.surrogateModelLabels{i}(counter) = ...
                         inputs.coordinateNames(j);
                     inputs.muscleSpecificJointAngles{i}(:,counter) = ...

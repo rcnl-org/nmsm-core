@@ -30,13 +30,13 @@
 
 function writeNeuralControlPersonalizationOsimxFile(inputs, ...
     resultsDirectory, precalInputs)
-modelFileName = inputs.model;
+modelFileName = inputs.modelFileName;
 model = Model(modelFileName);
 
 buildFromExisting = false;
 if isfield(inputs, 'osimxFileName')
     if isfile(inputs.osimxFileName)
-        osimx = parseOsimxFile(inputs.osimxFileName);
+        osimx = parseOsimxFile(inputs.osimxFileName, model);
         [~, name, ~] = fileparts(inputs.osimxFileName);
         outfile = fullfile(resultsDirectory, strcat(name, "_ncp.xml"));
         buildFromExisting = true;
@@ -68,12 +68,13 @@ for i = 1:length(inputs.muscleTendonColumnNames)
         osimx.muscles.(inputs.muscleTendonColumnNames(i)) ...
             .tendonSlackLength = inputs.tendonSlackLength(i);
     end
-    if precalInputs.optimizeIsometricMaxForce && ...
+    if isstruct(precalInputs) && precalInputs.optimizeIsometricMaxForce && ...
             ~isfield(osimx.muscles.(inputs.muscleTendonColumnNames(i)), "maxIsometricForce")
         osimx.muscles.(inputs.muscleTendonColumnNames(i)) ...
             .maxIsometricForce = inputs.maxIsometricForce(i);
     end
 end
+osimx.synergyGroups = inputs.synergyGroups;
 
 writeOsimxFile(buildOsimxFromOsimxStruct(osimx), outfile)
 end

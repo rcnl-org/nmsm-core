@@ -27,14 +27,14 @@
 
 function reportSurrogateModel(inputs)
 
-[newMuscleTendonLengths, newMomentArms] = ...
+[newMuscleTendonLengths, newMomentArms, newMuscleTendonVelocities] = ...
     calcSurrogateModel(inputs, inputs.muscleSpecificJointAngles, ...
-    inputs.muscleSpecificJointAngles);
+    inputs.muscleSpecificJointVelocities);
 plotSurrogateModelFitting(inputs, newMuscleTendonLengths, ...
-    newMomentArms);
+    newMomentArms, newMuscleTendonVelocities);
 end
 function plotSurrogateModelFitting(inputs, newMuscleTendonLengths, ...
-    newMomentArms)
+    newMomentArms, newMuscleTendonVelocities)
 
 nplots = ceil(sqrt(inputs.numMuscles));
 % Plot muscle tendon lengths
@@ -49,6 +49,25 @@ if i > inputs.numMuscles - nplots; xlabel('Data Points');
 else xticklabels(''); end
 if ismember(i, 1 : nplots : inputs.numMuscles)
     ylabel({'Muscle','Tendon Lengths'});
+else yticklabels(''); end
+if i == inputs.numMuscles
+    legend('Original', 'Predicted'); 
+end
+end
+
+nplots = ceil(sqrt(inputs.numMuscles));
+% Plot muscle tendon velocities
+figure('name', 'Muscle Tendon Velocities')
+for i = 1 : inputs.numMuscles
+subplot(nplots, nplots, i)
+plotData(inputs.muscleTendonVelocities(:, i), newMuscleTendonVelocities(:, i), ...
+    inputs.muscleNames{i})
+axis([1 size(inputs.muscleTendonVelocities, 1) min(inputs.muscleTendonVelocities,  [], ...
+    'all') max(inputs.muscleTendonVelocities,  [], 'all')])
+if i > inputs.numMuscles - nplots; xlabel('Data Points'); 
+else xticklabels(''); end
+if ismember(i, 1 : nplots : inputs.numMuscles)
+    ylabel({'Muscle','Tendon Velocities'});
 else yticklabels(''); end
 if i == inputs.numMuscles
     legend('Original', 'Predicted'); 

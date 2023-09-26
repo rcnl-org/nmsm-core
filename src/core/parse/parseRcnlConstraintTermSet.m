@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Parses XML settings for a RCNLCostTermSet, adding all fields included in 
-% the xml block.  
+% Parses XML settings for a RCNLCostTermSet, adding all fields included in
+% the xml block.
 %
 % (struct) -> (struct)
 % Parses settings from a RCNLCostTermSet.
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2022 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,8 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function costTerms = parseRcnlConstraintTermSet(tree)
-costTerms = cell(1, length(tree));
+function [path, terminal] = parseRcnlConstraintTermSet(tree, toolName, ...
+    controllerType)
+path = {};
+terminal = {};
 for term = 1:length(tree)
     if length(tree) == 1
         currentTerm = tree;
@@ -37,14 +39,20 @@ for term = 1:length(tree)
         currentTerm = tree{term};
     end
     % Find general cost term elements
-    costTerms{term}.type = getTextFromField(getFieldByNameOrError( ...
+    tempTerm.type = getTextFromField(getFieldByNameOrError( ...
         currentTerm, 'type'));
+    [isValid, isPath] = isTypeValid(tempTerm.type, controllerType, toolName);
+    if ~isValid
+        throw(MException("ConstraintTermSet:InvalidType", ...
+            strcat(tempTerm.type, " is not a valid constraint", ...
+            " term for tool ", toolName)));
+    end
     enabled = getTextFromField(getFieldByNameOrAlternate( ...
         currentTerm, 'is_enabled', 'false'));
-    costTerms{term}.isEnabled = strcmpi(enabled, 'true');
-    costTerms{term}.maxError = str2double(getTextFromField( ...
+    tempTerm.isEnabled = strcmpi(enabled, 'true');
+    tempTerm.maxError = str2double(getTextFromField( ...
         getFieldByNameOrAlternate(currentTerm, 'max_error', '1')));
-      costTerms{term}.minError = str2double(getTextFromField( ...
+    tempTerm.minError = str2double(getTextFromField( ...
         getFieldByNameOrAlternate(currentTerm, 'min_error', '-1')));
     % Find other cost term elements
     termElements = fieldnames(currentTerm);
@@ -60,9 +68,28 @@ for term = 1:length(tree)
             elseif ~isnan(str2double(contents))
                 contents = str2double(contents);
             end
-            costTerms{term}.(termElements{element}) = contents;
+            tempTerm.(termElements{element}) = contents;
         end
-    end 
+    end
+    if isPath
+        path{end + 1} = tempTerm;
+    else
+        terminal{end + 1} = tempTerm;
+    end
 end
 end
 
+function [isValid, isPath] = isTypeValid(type, toolName, controllerType)
+[~, allowedTypes] = ...
+    generateConstraintTermStruct("path", controllerType, ...
+    toolName);
+isPath = true;
+isValid = any(strcmp(type, allowedTypes));
+if ~isValid
+    [~, allowedTypes] = ...
+        generateConstraintTermStruct("terminal", controllerType, ...
+        toolName);
+    isPath = false;
+    isValid = any(strcmp(type, allowedTypes));
+end
+end
