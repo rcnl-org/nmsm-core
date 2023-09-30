@@ -35,11 +35,11 @@ inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
 inputs = parseController(tree, inputs);
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs = parseOptimalControlSolverSettings(tree, inputs);
-inputs.costTerms = parseRcnlCostTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
-[inputs.path, inputs.terminal] = parseRcnlConstraintTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLConstraintTermSet') ...
-    .RCNLConstraintTerm, inputs.controllerType, inputs.toolName);
+inputs.costTerms = parseRcnlCostTermSetHelper( ...
+    getFieldByNameOrError(tree, 'RCNLCostTermSet'));
+[inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
+    getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
+    inputs.controllerType, inputs.toolName);
 inputs.contactSurfaces = parseGroundContactSurfaces(inputs);
 end
 
@@ -66,5 +66,24 @@ if strcmp(inputs.controllerType, "synergy")
            strcat("<RCNLSynergySet> must be specified in the", ...
            " osimx file for <RCNLSynergyController>. Have you run NCP yet?")))
     end
+end
+end
+
+function costTerms = parseRcnlCostTermSetHelper(tree)
+if isfield(tree, "RCNLCostTerm")
+    costTerms = parseRcnlCostTermSet(tree.RCNLCostTerm);
+else
+    costTerms = parseRcnlCostTermSet({});
+end
+end
+
+function [path, terminal] = parseRcnlConstraintTermSetHelper(tree, ...
+    controllerType, toolName)
+if isfield(tree, "RCNLConstraintTerm")
+    [path, terminal] = parseRcnlConstraintTermSet( ...
+        tree.RCNLConstraintTerm, toolName, controllerType);
+else
+    [path, terminal] = parseRcnlConstraintTermSet({}, controllerType, ...
+        toolName);
 end
 end
