@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% Design Optimization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function stores the initial control torques as a spline for use
+% in cost terms for Treatment Optimization
 %
 % (string) -> (None)
-% Run DesignOptimization from settings file
+% Spline input control torques
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,14 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function DesignOptimizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "DesignOptimizationTool");
-[inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
-inputs = setupMuscleSynergies(inputs);
-inputs = setupTorqueControls(inputs);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-outputs = solveOptimalControlProblem(inputs, params);
-reportTreatmentOptimizationResults(outputs, inputs);
-saveDesignOptimizationResults(outputs, inputs);
+function inputs = setupTorqueControls(inputs)
+if isfield(inputs, "torqueControllerCoordinateNames")
+inputs.splineTorqueControls = spaps(inputs.initialTime, ...
+    inputs.initialTorqueControls', 0.0000001);
+inputs.torqueLabels = inputs.initialTorqueControlsLabels;
+end
 end

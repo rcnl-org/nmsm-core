@@ -34,6 +34,7 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "VerificationOptimizationTool");
 [inputs, params] = parseVerificationOptimizationSettingsTree(settingsTree);
 inputs = setupMuscleSynergies(inputs);
+inputs = setupTorqueControls(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 outputs = solveOptimalControlProblem(inputs, params);
 reportTreatmentOptimizationResults(outputs, inputs);
