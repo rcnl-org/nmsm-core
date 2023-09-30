@@ -41,9 +41,10 @@ for i = 1 : inputs.numSynergies
 end
 plotResultsWithOutComparison(values.controlSynergyActivations, values.time, ...
     synergyTitles, ["Synergy" "Activations"]);
-else
+end
 % plot torque controls
-plotResultsWithOutComparison(values.controlTorques, values.time, ...
+if isfield(inputs, 'torqueControllerCoordinateNames')
+plotResultsWithOutComparison(values.torqueControls, values.time, ...
     inputs.torqueControllerCoordinateNames, ["Torque" "Controls"]);
 end
 % plot external torque controls
