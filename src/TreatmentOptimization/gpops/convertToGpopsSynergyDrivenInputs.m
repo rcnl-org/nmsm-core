@@ -27,9 +27,6 @@
 function setup = convertToGpopsSynergyDrivenInputs(inputs, params)
 bounds = setupProblemBounds(inputs, params);
 guess = setupGpopsInitialGuess(inputs);
-if strcmp(inputs.toolName, "DesignOptimization")
-    guess = addUserDefinedTermsToGuess(guess, inputs);
-end
 initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 setup = setupGpopsSettings(inputs, ...
     bounds, guess, params, ...
