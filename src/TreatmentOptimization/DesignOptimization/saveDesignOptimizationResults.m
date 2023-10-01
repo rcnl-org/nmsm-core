@@ -54,10 +54,10 @@ if isfield(inputs, 'userDefinedVariables')
         counter = counter + numParameters;
         valuesStr = num2str(parameterResults(1));
         for j = 2:length(parameterResults)
-            strcat(valuesStr, " ", num2str(parameterResults(j)));
+            valuesStr = strcat(valuesStr, " ", num2str(parameterResults(j)));
         end
         parameters.NMSMPipelineDocument.RCNLParameters{i}.RCNLParameterSet.type = inputs.userDefinedVariables{i}.type;
-        parameters.NMSMPipelineDocument.RCNLParameters{i}.RCNLParameterSet.values = valuesStr;
+        parameters.NMSMPipelineDocument.RCNLParameters{i}.RCNLParameterSet.values = convertStringsToChars(valuesStr);
         struct2xml(parameters, fullfile(inputs.resultsDirectory, ...
             strcat(inputs.trialName, "_parameterSolution.xml")));
     end
