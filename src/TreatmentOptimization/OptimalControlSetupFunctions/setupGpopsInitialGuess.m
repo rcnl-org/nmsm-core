@@ -102,17 +102,27 @@ end
 
 function guess = setupInitialParametersGuess(inputs, guess)
 if valueOrAlternate(inputs, "optimizeSynergyVectors", false)
-    guess.parameter = scaleToBounds(inputs.synergyWeights, ...
-        inputs.maxParameter, inputs.minParameter);
+    guess.parameter = [];
+    for i = 1 : length(inputs.synergyGroups)
+        for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
+            index = find(ismember(inputs.synergyWeightsLabels, ...
+                inputs.synergyGroups{i}.muscleNames{j}));
+            guess.parameter(end + 1) = inputs.synergyWeights(i, index);
+        end
+    end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
-    guess.parameter = [];
     for i = 1:length(inputs.userDefinedVariables)
-        guess.parameter = [guess.parameter, scaleToBounds( ...
-            inputs.userDefinedVariables{i}.initial_values, ...
-            inputs.userDefinedVariables{i}.upper_bounds, ...
-            inputs.userDefinedVariables{i}.lower_bounds)];
+        if ~isfield(guess, "parameter")
+            guess.parameter = [];
+        end
+        guess.parameter = [guess.parameter, ...
+            inputs.userDefinedVariables{i}.initial_values];
     end
+end
+if isfield(guess, "parameter")
+    guess.parameter = scaleToBounds(guess.parameter, inputs.maxParameter, ...
+        inputs.minParameter);
 end
 end
 
