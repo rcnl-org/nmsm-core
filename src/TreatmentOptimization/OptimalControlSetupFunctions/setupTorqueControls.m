@@ -29,7 +29,8 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = setupTorqueControls(inputs)
-if isfield(inputs, "torqueControllerCoordinateNames")
+if isfield(inputs, "torqueControllerCoordinateNames") && ...
+        ~isempty(inputs.torqueControllerCoordinateNames)
 inputs.splineTorqueControls = spaps(inputs.initialTime, ...
     inputs.initialTorqueControls', 0.0000001);
 inputs.torqueLabels = inputs.initialTorqueControlsLabels;
