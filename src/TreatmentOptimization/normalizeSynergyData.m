@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% Design Optimization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function ensures the synergy weights are normalized to sum to one
+% and the synergy commands are scaled in proportion
 %
-% (string) -> (None)
-% Run DesignOptimization from settings file
+% (struct) -> (struct)
+% scale synergy weights and commands for sum of weights to equal one
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,15 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function DesignOptimizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "DesignOptimizationTool");
-[inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
-inputs = normalizeSynergyData(inputs);
-inputs = setupMuscleSynergies(inputs);
-inputs = setupTorqueControls(inputs);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-outputs = solveOptimalControlProblem(inputs, params);
-reportTreatmentOptimizationResults(outputs, inputs);
-saveDesignOptimizationResults(outputs, inputs);
+function inputs = normalizeSynergyData(inputs)
+if strcmp(inputs.controllerType, "synergy")
+    for i = 1:size(inputs.synergyWeights, 1)
+        total = sum(inputs.synergyWeights(i, :));
+        inputs.synergyWeights(i, :) = ...
+            inputs.synergyWeights(i, :) / total;
+        inputs.initialSynergyControls(:, i) = ...
+            inputs.initialSynergyControls(:, i) * total;
+    end
 end
+end
+
