@@ -31,6 +31,11 @@
 function [inputs, params] = ...
     parseVerificationOptimizationSettingsTree(settingsTree)
 inputs = parseTreatmentOptimizationInputs(settingsTree);
+if isfield(inputs, "optimizeSynergyVectors") && ...
+        inputs.optimizeSynergyVectors
+    throw(MException('VerificationOptimizationTool:parseVerificationOptimizationSettingsTree', ...
+        'Verification Optimization does not support synergy vector optimization.'));
+end
 params = parseTreatmentOptimizationParams(settingsTree);
 inputs = modifyModelForces(inputs);
 end
