@@ -24,17 +24,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = convertFromGpopsTorqueDrivenOutputs(solution, ...
-    inputs, params)
-solution = solution.result.solution;
-solution.auxdata = inputs;
-if isfield(solution, 'parameter')
-    solution.phase.parameter = [solution.parameter];
+function setup = convertToGpopsInputs(inputs, params)
+bounds = setupTreatmentOptimizationBounds(inputs, params);
+guess = setupGpopsInitialGuess(inputs);
+initializeMexOrMatlabParallelFunctions(inputs.mexModel);
+setup = setupGpopsSettings(inputs, ...
+    bounds, guess, params, ...
+    @computeGpopsContinuousFunction, ...
+    @computeGpopsEndpointFunction);
+checkInitialGuess(guess, inputs, ...
+    @computeGpopsContinuousFunction);
 end
-if isfield(inputs, "optimizeSynergyVectors")
-    solution.phase.parameter = solution.parameter;
-end
-output = computeGpopsContinuousFunction(solution);
-output.solution = solution;
-end
-
