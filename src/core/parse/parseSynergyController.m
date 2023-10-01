@@ -32,7 +32,6 @@
 function inputs = parseSynergyController(tree, inputs)
 inputs.synergyGroups = inputs.osimx.synergyGroups;
 inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
-inputs.numSynergyWeights = getNumSynergyWeights(inputs.synergyGroups);
 inputs.surrogateModelCoordinateNames = parseSpaceSeparatedList(tree, ...
     "states_coordinate_list");
 inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
@@ -49,8 +48,9 @@ inputs.optimizeSynergyVectors = getBooleanLogic(...
     parseElementTextByNameOrAlternate(tree, "optimize_synergy_vectors", 0));
 inputs.maxControlSynergyActivations = parseDoubleOrAlternate(tree, ...
     'maximum_allowable_synergy_activation', 10);
-inputs.maxParameterSynergyWeights = parseDoubleOrAlternate(tree, ...
-    'maximum_allowable_synergy_vector_weight', 2);
+if ~isfield(inputs, "torqueControllerCoordinateNames")
+    inputs.torqueControllerCoordinateNames = [];
+end
 inputs = getModelOrOsimxInputs(inputs);
 end
 
