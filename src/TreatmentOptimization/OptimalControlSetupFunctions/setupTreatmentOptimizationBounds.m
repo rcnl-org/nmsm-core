@@ -59,6 +59,12 @@ end
 if ~isempty(inputs.maxTerminal)
     bounds.eventgroup.upper = inputs.maxTerminal;
 end
+if strcmp(inputs.controllerType, 'synergy')
+    if inputs.optimizeSynergyVectors
+        bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
+        bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
+    end
+end
 if strcmp(inputs.toolName, "DesignOptimization")
     for i = 1:length(inputs.userDefinedVariables)
         lower = -0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));

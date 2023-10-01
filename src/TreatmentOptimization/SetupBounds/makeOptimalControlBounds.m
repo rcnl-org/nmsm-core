@@ -18,7 +18,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -90,9 +90,26 @@ if strcmp(inputs.controllerType, 'synergy')
     inputs.minControl = [inputs.minControl zeros(1, inputs.numSynergies)];
 
     if inputs.optimizeSynergyVectors
-        inputs.maxParameter = inputs.maxParameterSynergyWeights * ...
-            ones(1, inputs.numSynergyWeights);
-        inputs.minParameter = zeros(1, inputs.numSynergyWeights);
+        numParameters = 0;
+        for i = 1 : length(inputs.synergyGroups)
+            numParameters = numParameters + ...
+                inputs.synergyGroups{i}.numSynergies * ...
+                length(inputs.synergyGroups{i}.muscleNames);
+        end
+        inputs.maxParameter = ones(1, numParameters);
+        inputs.minParameter = zeros(1, numParameters);
+    end
+end
+if strcmp(inputs.toolName, "DesignOptimization")
+    if ~isfield(inputs, "maxParameter")
+        inputs.maxParameter = [];
+        inputs.minParameter = [];
+    end
+    for i = 1:length(inputs.userDefinedVariables)
+        inputs.maxParameter = [inputs.maxParameter ...
+            inputs.userDefinedVariables{i}.upper_bounds];
+        inputs.minParameter = [inputs.minParameter ...
+            inputs.userDefinedVariables{i}.lower_bounds];
     end
 end
 if isfield(inputs, "torqueControllerCoordinateNames")
