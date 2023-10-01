@@ -38,7 +38,11 @@ inputs = makeControlBounds(inputs);
 end
 
 function inputs = makeStateBounds(inputs)
-inputs.maxTime = max(inputs.experimentalTime);
+if isfield(inputs, "finalTimeRange")
+    inputs.maxTime = max(inputs.experimentalTime) + inputs.finalTimeRange;
+else
+    inputs.maxTime = max(inputs.experimentalTime);
+end
 inputs.minTime = min(inputs.experimentalTime);
 
 stateJointAngles = subsetDataByCoordinates( ...

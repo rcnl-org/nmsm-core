@@ -35,6 +35,12 @@ bounds.phase.initialtime.lower = -0.5;
 bounds.phase.initialtime.upper = -0.5;
 bounds.phase.finaltime.lower = 0.5;
 bounds.phase.finaltime.upper = 0.5;
+if isfield(inputs, "finalTimeRange")
+    scaledTime = scaleToBounds(inputs.initialTime, inputs.maxTime, ...
+        inputs.minTime);
+    bounds.phase.finaltime.lower = ...
+        scaledTime(end) - (0.5 - scaledTime(end));
+end
 % setup state bounds
 bounds.phase.initialstate.lower = -0.5 * ones(1, length(inputs.minState));
 bounds.phase.initialstate.upper = 0.5 * ones(1, length(inputs.minState));
