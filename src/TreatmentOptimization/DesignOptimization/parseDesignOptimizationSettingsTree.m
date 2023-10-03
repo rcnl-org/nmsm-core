@@ -34,7 +34,6 @@ inputs = parseTreatmentOptimizationInputs(settingsTree);
 inputs = parseDesignSettings(settingsTree, inputs);
 inputs = parseUserDefinedFunctions(settingsTree, inputs);
 params = parseTreatmentOptimizationParams(settingsTree);
-inputs = modifyModelForces(inputs);
 end
 
 function inputs = parseUserDefinedFunctions(tree, inputs)

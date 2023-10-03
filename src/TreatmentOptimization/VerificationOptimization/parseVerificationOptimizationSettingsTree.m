@@ -37,7 +37,6 @@ if isfield(inputs, "optimizeSynergyVectors") && ...
         'Verification Optimization does not support synergy vector optimization.'));
 end
 params = parseTreatmentOptimizationParams(settingsTree);
-inputs = modifyModelForces(inputs);
 end
 
 

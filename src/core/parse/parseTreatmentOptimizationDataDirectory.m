@@ -65,9 +65,18 @@ function inputs = parseExperimentalData(tree, inputs, dataDirectory)
     fullfile(dataDirectory, "IKData"), inputs.trialName, inputs.model);
 inputs.coordinateNames = cellstr(inputs.coordinateNames);
 inputs.experimentalTime = experimentalTime - experimentalTime(1);
-if exist(fullfile(dataDirectory, "GRFData"), 'dir')
-    inputs.grfFileName = findFileListFromPrefixList(...
-        fullfile(dataDirectory, "GRFData"), prefix);
+if isfield(inputs.osimx, 'groundContact') && ...
+        isfield(inputs.osimx.groundContact, 'contactSurface')
+    inputs.contactSurfaces = inputs.osimx.groundContact.contactSurface;
+    for surfaceIndex = 1:length(inputs.contactSurfaces)
+        [inputs.contactSurfaces{surfaceIndex} ...
+            .experimentalGroundReactionForces, ...
+            inputs.contactSurfaces{surfaceIndex} ...
+            .experimentalGroundReactionMoments, ...
+            inputs.contactSurfaces{surfaceIndex} ...
+            .electricalCenter] = parseGroundReactionDataWithoutTime( ...
+            inputs, dataDirectory, surfaceIndex);
+    end
 end
 end
 
@@ -124,5 +133,34 @@ if ~strcmp(previousResultsDirectory, "")
     end
 else
     [data, labels, time] = parseTrialData(dataDirectory, trialName, model);
+end
+end
+
+function [forces, moments, ec] = parseGroundReactionDataWithoutTime( ...
+    inputs, dataDirectory, surfaceIndex)
+import org.opensim.modeling.Storage
+[grfData, grfColumnNames, ~] = parseTrialDataTryDirectories( ...
+    fullfile(inputs.previousResultsDirectory, "GRFData"), ...
+    fullfile(dataDirectory, "GRFData"), inputs.trialName, inputs.model);
+for i=1:size(grfColumnNames')
+    label = grfColumnNames(i);
+    for j = 1:3
+        if strcmpi(label, inputs.osimx.groundContact ...
+                .contactSurface{surfaceIndex}.forceColumns(j))
+            forces(:, j) = grfData(:, i);
+        end
+        if strcmpi(label, inputs.osimx.groundContact ...
+                .contactSurface{surfaceIndex}.momentColumns(j))
+            moments(:, j) = grfData(:, i);
+        end
+        if strcmpi(label, inputs.osimx.groundContact ...
+                .contactSurface{surfaceIndex}.electricalCenterColumns(j))
+            ec(:, j) = grfData(:, i);
+        end
+    end
+end
+if any([isnan(forces) isnan(moments) isnan(ec)])
+    throw(MException('', ['Unable to parse GRF file, check that ' ...
+        'all necessary column labels are present']))
 end
 end
