@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% calcStateDerivatives() requires evenly spaced points for the b-spline
+% makeStateDerivatives() requires evenly spaced points for the b-spline
 % derivatives. This function should be used to make the points evenly
 % spaced via splining
 %
