@@ -30,29 +30,23 @@
 function reportTreatmentOptimizationResults(solution, inputs)
 values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
 if strcmp(inputs.controllerType, 'synergy')
-% plot Muscle Activations
-plotMuscleActivations(solution.muscleActivations, values.time, ...
-    inputs.experimentalMuscleActivations, inputs.experimentalTime, ...
-    inputs.muscleLabels);
-% plot synergy activations
-synergyTitles = {};
-for i = 1 : inputs.numSynergies
-    synergyTitles{end + 1} = strcat('synergy activation', num2str(i));
-end
-plotResultsWithOutComparison(values.controlSynergyActivations, values.time, ...
-    synergyTitles, ["Synergy" "Activations"]);
+    % plot Muscle Activations
+    plotMuscleActivations(solution.muscleActivations, values.time, ...
+        inputs.experimentalMuscleActivations, inputs.experimentalTime, ...
+        inputs.muscleLabels);
+    % plot synergy activations
+    synergyTitles = {};
+    for i = 1 : inputs.numSynergies
+        synergyTitles{end + 1} = strcat('synergy activation', num2str(i));
+    end
+    plotResultsWithOutComparison(values.controlSynergyActivations, values.time, ...
+        synergyTitles, ["Synergy" "Activations"]);
 end
 % plot torque controls
-if isfield(inputs, 'torqueControllerCoordinateNames')
-plotResultsWithOutComparison(values.torqueControls, values.time, ...
-    inputs.torqueControllerCoordinateNames, ["Torque" "Controls"]);
-end
-% plot external torque controls
-if isfield(inputs, 'enableExternalTorqueControl')
-    if inputs.enableExternalTorqueControl
-        plotResultsWithOutComparison(values.externalTorqueControls, values.time, ...
-            inputs.externalControlTorqueNames, ["External" "Torque Controls"]);
-    end
+if isfield(inputs, 'torqueControllerCoordinateNames') && ...
+        ~isempty(inputs.torqueControllerCoordinateNames)
+    plotResultsWithOutComparison(values.torqueControls, values.time, ...
+        inputs.torqueControllerCoordinateNames, ["Torque" "Controls"]);
 end
 jointAngles = subsetDataByCoordinates(inputs.experimentalJointAngles, ...
     inputs.coordinateNames, inputs.statesCoordinateNames);
@@ -66,12 +60,12 @@ plotResultsWithComparison(solution.inverseDynamicsMoments, values.time, ...
     strcat(inputs.inverseDynamicsMomentLabels, ' [Nm]'), ["Joint" "Moments"]);
 % plot ground reactions
 for i = 1:length(inputs.contactSurfaces)
-plotResultsWithComparison(solution.groundReactionsLab.forces{i}, values.time, ...
-    inputs.contactSurfaces{i}.experimentalGroundReactionForces, inputs.experimentalTime, ...
-    ["GRFx", "GRFy", "GRFz"], ["Ground" "Reaction Forces"]);
-plotResultsWithComparison(solution.groundReactionsLab.moments{i}, values.time, ...
-    inputs.contactSurfaces{i}.experimentalGroundReactionMoments, inputs.experimentalTime, ...
-    ["GRTx", "GRTy", "GRTz"], ["Ground" "Reaction Moments"]);
+    plotResultsWithComparison(solution.groundReactionsLab.forces{i}, values.time, ...
+        inputs.contactSurfaces{i}.experimentalGroundReactionForces, inputs.experimentalTime, ...
+        ["GRFx", "GRFy", "GRFz"], ["Ground" "Reaction Forces"]);
+    plotResultsWithComparison(solution.groundReactionsLab.moments{i}, values.time, ...
+        inputs.contactSurfaces{i}.experimentalGroundReactionMoments, inputs.experimentalTime, ...
+        ["GRTx", "GRTy", "GRTz"], ["Ground" "Reaction Moments"]);
 end
 
 % if strcmp(inputs.toolName, 'DesignOptimization')
@@ -87,13 +81,13 @@ function plotMuscleActivations(muscleActivations, time, ...
 figure('name', 'Muscle Activations')
 nplots = ceil(sqrt(size(muscleActivations, 2)));
 for i = 1 : size(muscleActivations,2)
-subplot(nplots, nplots, i)
-plot(time, muscleActivations(:, i)); hold on
-plot(experimentalTime, experimentalMuscleActivations(:, i), 'r')
-axis([0 experimentalTime(end) 0 1])
-title(muscleLabels(i))
-figureXLabels(numel(muscleLabels), nplots, i, "Time")
-figureYLabels(numel(muscleLabels), nplots, i, ["Muscle" "Activation"])
+    subplot(nplots, nplots, i)
+    plot(time, muscleActivations(:, i)); hold on
+    plot(experimentalTime, experimentalMuscleActivations(:, i), 'r')
+    axis([0 experimentalTime(end) 0 1])
+    title(muscleLabels(i))
+    figureXLabels(numel(muscleLabels), nplots, i, "Time")
+    figureYLabels(numel(muscleLabels), nplots, i, ["Muscle" "Activation"])
 end
 end
 function plotResultsWithComparison(solutionData, solutionTime, ...
@@ -102,12 +96,12 @@ function plotResultsWithComparison(solutionData, solutionTime, ...
 figure('name', strjoin(figureTitle))
 nplots = ceil(sqrt(numel(labels)));
 for i = 1 : size(solutionData,2)
-subplot(nplots, nplots, i)
-plot(solutionTime, solutionData(:, i)); hold on
-plot(experimentalTime, experimentalData(:, i), 'r')
-xlim([0 experimentalTime(end)])
-title(strrep(labels(i), "_", " "))
-figureXLabels(numel(labels), nplots, i, "Time")
+    subplot(nplots, nplots, i)
+    plot(solutionTime, solutionData(:, i)); hold on
+    plot(experimentalTime, experimentalData(:, i), 'r')
+    xlim([0 experimentalTime(end)])
+    title(strrep(labels(i), "_", " "))
+    figureXLabels(numel(labels), nplots, i, "Time")
 end
 end
 function plotResultsWithOutComparison(solutionData, solutionTime, ...
@@ -115,11 +109,11 @@ function plotResultsWithOutComparison(solutionData, solutionTime, ...
 
 figure('name', strjoin(figureTitle))
 for i = 1 : size(solutionData,2)
-subplot(numel(labels), 1, i)
-plot(solutionTime, solutionData(:, i)); hold on
-xlim([0 solutionTime(end)])
-title(labels(i))
-figureXLabels(numel(labels), 1, i, "Time")
+    subplot(numel(labels), 1, i)
+    plot(solutionTime, solutionData(:, i)); hold on
+    xlim([0 solutionTime(end)])
+    title(labels(i))
+    figureXLabels(numel(labels), 1, i, "Time")
 end
 end
 function figureXLabels(numTotalPlots, numColumnPlots, plotIndex, xLabel)
