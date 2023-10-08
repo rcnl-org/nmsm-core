@@ -77,6 +77,8 @@ if isfield(inputs.osimx, 'groundContact') && ...
             .electricalCenter] = parseGroundReactionDataWithoutTime( ...
             inputs, dataDirectory, surfaceIndex);
     end
+else
+inputs.contactSurfaces = {};
 end
 end
 
