@@ -30,7 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = modifyModelForces(inputs)
-[model, inputs] = disableModelMuscles(inputs, inputs.model);
+model = disableModelMuscles(inputs.model);
 model = addContactSurfaceActuators(inputs, model);
 inputs.mexModel = strcat(strrep(inputs.modelFileName,'.osim',''), '_inactiveMuscles.osim');
 model.print(inputs.mexModel);
