@@ -27,9 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointPowerIntegrand(jointVelocity, ...
+function cost = calcMinimizingJointPowerIntegrand(jointVelocity, time, ...
     jointMoment, params, loadName)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
 indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
@@ -43,4 +44,7 @@ if isequal(mexext, 'mexw64')
 end
 jointPower = jointMoment(:, indx) .* jointVelocity(:, indx);
 cost = calcMinimizingCostArrayTerm(jointPower);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

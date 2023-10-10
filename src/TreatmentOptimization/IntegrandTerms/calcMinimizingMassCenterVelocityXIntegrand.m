@@ -27,9 +27,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingMassCenterVelocityXIntegrand(values, params)
-
+function cost = calcMinimizingMassCenterVelocityXIntegrand(values, ...
+    time, params)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 massCenterVelocity = calcMassCenterVelocity(values, params.model, ...
     params.coordinateNames);
 cost = calcMinimizingCostArrayTerm(massCenterVelocity(:, 1));
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

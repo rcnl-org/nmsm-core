@@ -27,9 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointJerkIntegrand(jointJerks, inputs, ...
-    costTerm)
-
+function cost = calcMinimizingJointJerkIntegrand(jointJerks, time, ...
+    inputs, costTerm)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
     costTerm.coordinate));
 if isempty(indx)
@@ -41,4 +42,7 @@ end
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 10000);
 cost = jointJerks(:, indx) / maximumAllowableError;
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

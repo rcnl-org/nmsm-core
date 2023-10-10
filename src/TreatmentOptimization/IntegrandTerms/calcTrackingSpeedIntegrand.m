@@ -30,7 +30,8 @@
 
 function cost = calcTrackingSpeedIntegrand(auxdata, time, ...
     stateVelocities, coordinateName)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 indx = find(strcmp(convertCharsToStrings(auxdata.statesCoordinateNames), ...
     coordinateName));
 if isempty(indx)
@@ -46,4 +47,8 @@ end
 
 cost = calcTrackingCostArrayTerm(experimentalJointVelocities, ...
     stateVelocities, indx);
+    
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

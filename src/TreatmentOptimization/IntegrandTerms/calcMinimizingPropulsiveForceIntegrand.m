@@ -28,8 +28,9 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcMinimizingPropulsiveForceIntegrand(modeledValues, ...
-    params, costTerm)
-
+    time, params, costTerm)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", false);
 for i = 1:length(params.contactSurfaces)
     if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
         propulsiveForce = getPropulsiveForce(...
@@ -37,4 +38,7 @@ for i = 1:length(params.contactSurfaces)
     end
 end
 cost = calcMinimizingCostArrayTerm(propulsiveForce);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end
