@@ -57,13 +57,13 @@ osimx = parseOsimxFile(osimxFileName, inputs.model);
 if strcmp(inputs.controllerType, "synergy")
     if strcmp(osimxFileName, "")
         throw(MException("", ...
-           strcat("<input_osimx_file> must be specified", ...
-           " for <RCNLSynergyController>")))
+            strcat("<input_osimx_file> must be specified", ...
+            " for <RCNLSynergyController>")))
     end
     if ~isfield(osimx, "synergyGroups")
         throw(MException("", ...
-           strcat("<RCNLSynergySet> must be specified in the", ...
-           " osimx file for <RCNLSynergyController>. Have you run NCP yet?")))
+            strcat("<RCNLSynergySet> must be specified in the", ...
+            " osimx file for <RCNLSynergyController>. Have you run NCP yet?")))
     end
 end
 end
@@ -86,3 +86,4 @@ else
         toolName);
 end
 end
+
