@@ -36,8 +36,8 @@ initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 inputs = setupGroundContact(inputs);
 inputs = makeExperimentalDataSplines(inputs);
 inputs = makeSurrogateModel(inputs);
-inputs.maxAllowableError = ...
-    makeMaxAllowableError(inputs.toolName, inputs.costTerms);
+[inputs.continuousMaxAllowableError, inputs.discreteMaxAllowableError] ...
+    = makeMaxAllowableError(inputs.toolName, inputs.costTerms);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);

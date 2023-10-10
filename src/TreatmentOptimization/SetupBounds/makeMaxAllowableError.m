@@ -28,23 +28,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function maxAllowableError = makeMaxAllowableError(toolName, costTerms)
+function [continuousMaxAllowableError, discreteMaxAllowableError] = ...
+    makeMaxAllowableError(toolName, costTerms)
 [~, continuousAllowedTypes] = generateCostTermStruct("continuous", toolName);
 [~, discreteAllowedTypes] = generateCostTermStruct("discrete", toolName);
 
-maxAllowableError = [];
+continuousMaxAllowableError = [];
+discreteMaxAllowableError = [];
 for i = 1:length(costTerms)
     costTerm = costTerms{i};
     if costTerm.isEnabled
         if any(ismember(costTerm.type, continuousAllowedTypes)) && ...
                 ~strcmp(costTerm.type, "user_defined")
-            maxAllowableError = cat(2, maxAllowableError, ...
-                costTerm.maxAllowableError);
+            continuousMaxAllowableError = cat(2, ...
+                continuousMaxAllowableError, costTerm.maxAllowableError);
         elseif strcmp(costTerm.type, "user_defined")
             if strcmp(costTerm.cost_term_type, "continuous")
-                maxAllowableError = cat(2, maxAllowableError, ...
+                continuousMaxAllowableError = cat(2, ...
+                    continuousMaxAllowableError, ...
                     costTerm.maxAllowableError);
             end
+        elseif any(ismember(costTerm.type, discreteAllowedTypes))
+            discreteMaxAllowableError = cat(2, ...
+                discreteMaxAllowableError, costTerm.maxAllowableError);
         elseif ~any(ismember(costTerm.type, continuousAllowedTypes)) || ...
                     ~any(ismember(costTerm.type, discreteAllowedTypes))
             throw(MException('', ['Cost term type ' costTerm.type ...

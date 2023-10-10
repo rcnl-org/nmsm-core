@@ -34,8 +34,8 @@ guess = struct();
 guess = setupInitialStatesGuess(inputs, guess);
 guess = setupInitialControlsGuess(inputs, guess);
 guess = setupInitialParametersGuess(inputs, guess);
-guess.phase.integral = scaleToBounds(1e1, inputs.maxAllowableError, ...
-    zeros(size(inputs.maxAllowableError)));
+guess.phase.integral = scaleToBounds(1e1, inputs.continuousMaxAllowableError, ...
+    zeros(size(inputs.continuousMaxAllowableError)));
 end
 
 function guess = setupInitialStatesGuess(inputs, guess)
