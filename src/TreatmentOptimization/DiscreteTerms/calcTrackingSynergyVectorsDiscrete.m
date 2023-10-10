@@ -36,5 +36,5 @@ origSynergyWeights(origSynergyWeights==0) = [];
 synergyWeights(synergyWeights==0) = [];
 cost = calcTrackingCostArrayTerm(synergyWeights, ...
     origSynergyWeights, 1:size(synergyWeights, 2));
-cost = cost(:) / costTerm.maxAllowableError;
+cost = cost(:);
 end
