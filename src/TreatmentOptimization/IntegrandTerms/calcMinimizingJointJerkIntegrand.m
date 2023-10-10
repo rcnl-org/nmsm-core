@@ -39,7 +39,7 @@ if isempty(indx)
         "<states_coordinate_list>")))
 end
 % cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
-cost = jointJerks(:, indx) / maximumAllowableError;
+cost = jointJerks(:, indx);
 if normalizeByFinalTime
     cost = cost / time(end);
 end
