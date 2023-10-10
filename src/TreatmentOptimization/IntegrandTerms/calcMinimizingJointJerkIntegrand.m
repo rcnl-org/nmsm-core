@@ -39,8 +39,6 @@ if isempty(indx)
         "<states_coordinate_list>")))
 end
 % cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
-maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 10000);
 cost = jointJerks(:, indx) / maximumAllowableError;
 if normalizeByFinalTime
     cost = cost / time(end);
