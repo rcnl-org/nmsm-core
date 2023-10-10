@@ -27,8 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointPowerIntegrand(jointVelocity, time, ...
-    jointMoment, params, loadName)
+function cost = calcMinimizingJointPowerIntegrand(costTerm, ...
+    jointVelocity, time, jointMoment, params, loadName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
 loadName = erase(loadName, '_moment');

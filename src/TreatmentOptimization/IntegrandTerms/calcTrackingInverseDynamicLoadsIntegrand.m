@@ -28,8 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicLoadsIntegrand(inputs, time, ...
-    inverseDynamicsMoments, loadName)
+function cost = calcTrackingInverseDynamicLoadsIntegrand(costTerm, ...
+    inputs, time, inverseDynamicsMoments, loadName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
 loadName = erase(loadName, '_moment');
