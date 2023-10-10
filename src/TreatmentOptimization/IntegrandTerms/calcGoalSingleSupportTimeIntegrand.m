@@ -28,25 +28,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGoalSingleSupportTimeIntegrand(values, ...
+function cost = calcGoalSingleSupportTimeIntegrand(time, ...
     modeledValues, params, costTerm)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", false);
 errorCenter = valueOrAlternate(costTerm, "error_center", 0.38);
 for i = 1:length(params.contactSurfaces)
     if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
         if i == 1
             singleSupportTime = calcSingleSupportTime( ...
                 modeledValues.groundReactionsLab.forces{i + 1}(:, 2), ...
-                values.time);
+                time);
         else
             singleSupportTime = calcSingleSupportTime( ...
                 modeledValues.groundReactionsLab.forces{i - 1}(:, 2), ...
-                values.time);
+                time);
         end
     end
 end
-percentSingleSupportTime = singleSupportTime / values.time(end);
+percentSingleSupportTime = singleSupportTime / time(end);
 cost = calcTrackingCostArrayTerm(percentSingleSupportTime * ...
-    ones(length(values.time), 1), errorCenter * ...
-    ones(length(values.time), 1), 1);
+    ones(length(time), 1), errorCenter * ...
+    ones(length(time), 1), 1);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

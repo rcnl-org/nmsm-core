@@ -30,7 +30,8 @@
 
 function cost = calcTrackingExternalMomentsIntegrand(params, ...
     groundReactionMoments, time, loadName)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 for i = 1:length(params.contactSurfaces)
     indx = find(strcmp(convertCharsToStrings(params.contactSurfaces{i}. ...
         momentColumns), loadName));
@@ -48,5 +49,8 @@ for i = 1:length(params.contactSurfaces)
             experimentalGroundReactions, groundReactionMoments{i}, ...
             indx);
     end
+end
+if normalizeByFinalTime
+    cost = cost / time(end);
 end
 end

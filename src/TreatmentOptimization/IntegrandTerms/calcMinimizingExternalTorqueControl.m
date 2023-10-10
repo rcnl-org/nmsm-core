@@ -29,9 +29,13 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcMinimizingExternalTorqueControl(...
-    externalTorqueControl, params, coordinate)
-
+    externalTorqueControl, time, params, coordinate)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 indx = find(strcmp(convertCharsToStrings( ...
     params.externalControlTorqueNames), coordinate));
 cost = calcMinimizingCostArrayTerm(externalTorqueControl(:, indx));
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

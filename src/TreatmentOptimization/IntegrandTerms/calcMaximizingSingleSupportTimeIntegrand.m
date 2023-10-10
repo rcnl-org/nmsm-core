@@ -27,22 +27,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMaximizingSingleSupportTimeIntegrand(values, ...
+function cost = calcMaximizingSingleSupportTimeIntegrand(time, ...
     modeledValues, params, costTerm)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", false);
 for i = 1:length(params.contactSurfaces)
     if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
         if i == 1
             singleSupportTime = calcSingleSupportTime( ...
                 modeledValues.groundReactionsLab.forces{i + 1}(:, 2), ...
-                values.time);
+                time);
         else
             singleSupportTime = calcSingleSupportTime( ...
                 modeledValues.groundReactionsLab.forces{i - 1}(:, 2), ...
-                values.time);
+                time);
         end
     end
 end
 cost = calcMaximizingCostArrayTerm(singleSupportTime * ...
-    ones(length(values.time), 1));
+    ones(length(time), 1));
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

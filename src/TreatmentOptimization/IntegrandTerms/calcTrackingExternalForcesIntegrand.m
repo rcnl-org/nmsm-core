@@ -30,7 +30,8 @@
 
 function cost = calcTrackingExternalForcesIntegrand(params, ...
     groundReactionsForces, time, forceName)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 for i = 1:length(params.contactSurfaces)
     indx = find(strcmp(convertCharsToStrings(params.contactSurfaces{i}. ...
         forceColumns), forceName));
@@ -48,5 +49,8 @@ for i = 1:length(params.contactSurfaces)
             experimentalGroundReactions, groundReactionsForces{i}, ...
             indx);
     end
+end
+if normalizeByFinalTime
+    cost = cost / time(end);
 end
 end
