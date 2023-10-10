@@ -1,9 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function prepares the inputs for the all treatment optimization
-% modules (tracking, verification, and design optimization.
+% This function parses the settings tree resulting from xml2struct from the
+% settings XML file common to all treatment optimizatin modules (trackning,
+% verification, and design optimization).
 %
-% (struct, struct) -> (struct)
+% (struct) -> (struct, struct)
+% returns the input values for all treatment optimization modules
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,20 +29,31 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = makeTreatmentOptimizationInputs(inputs, params)
-inputs = makeStateDerivatives(inputs, params);
-inputs.contactSurfaces = prepareGroundContactSurfaces( ...
-    inputs.modelFileName, inputs.contactSurfaces);
-inputs = modifyModelForces(inputs);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
-inputs = setupGroundContact(inputs);
-inputs = makeExperimentalDataSplines(inputs);
-inputs = makeSurrogateModel(inputs);
-[inputs.continuousMaxAllowableError, inputs.discreteMaxAllowableError] ...
-    = makeMaxAllowableError(inputs.toolName, inputs.costTerms);
-inputs = makeMarkerTracking(inputs);
-inputs = makePathConstraintBounds(inputs);
-inputs = makeTerminalConstraintBounds(inputs);
-inputs = makeOptimalControlBounds(inputs);
+function inputs = makeMarkerTracking(inputs)
+names = string([]);
+locations = [];
+bodies = [];
+for i = 1:length(inputs.costTerms)
+    costTerm = inputs.costTerms{i};
+    if strcmp(costTerm.type, "marker_position_tracking")
+        names(end + 1) = convertCharsToStrings(inputs.model.getMarkerSet().get( ...
+            costTerm.marker).getName().toCharArray()');
+        locations = cat(1, locations, ...
+            Vec3ToArray(inputs.model.getMarkerSet().get(...
+            costTerm.marker).get_location()));
+        bodies(end + 1) = inputs.model.getBodySet().getIndex( ...
+            getMarkerBodyName(inputs.model, costTerm.marker));
+    end
+end
+inputs.trackedMarkerNames = names;
+inputs.trackedMarkerLocations = locations;
+inputs.trackedMarkerBodyIndices = bodies;
+inputs.experimentalMarkerPositions = pointKinematics( ...
+    inputs.experimentalTime, inputs.experimentalJointAngles, ...
+    inputs.experimentalJointVelocities, inputs.trackedMarkerLocations, ...
+    inputs.trackedMarkerBodyIndices, inputs.mexModel, ...
+    inputs.coordinateNames);
+inputs.splineMarkerPositions = spaps(inputs.experimentalTime, ...
+    inputs.experimentalMarkerPositions', 0.0000001);
 end
 
