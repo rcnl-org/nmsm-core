@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the inverse dynamic
-% moments and the sum of the torque and synergy controller produced moments
-% for the specified coordinate.
+% makeStateDerivatives() requires evenly spaced points for the b-spline
+% derivatives. This function should be used to make the points evenly
+% spaced via splining
 %
-% (struct, struct, string) -> (number)
-%
+% (struct, struct) -> (None)
+% Splines results to make them evenly spaced
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,24 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function pathTerm = calcStateControlPathConstraint(inputs, ...
-    modeledValues, torqueControls, loadName)
-inverseDynamicsIndex = find(strcmp(convertCharsToStrings(inputs.inverseDynamicsMomentLabels), ...
-    loadName));
-synergyIndex = find(strcmp(strcat(inputs.surrogateModelCoordinateNames, ...
-    '_moment'), loadName));
-torqueIndex = find(strcmp(strcat(inputs.torqueControllerCoordinateNames, ...
-    '_moment'), loadName));
-if isempty(synergyIndex)
-    synergyLoad = 0;
-else
-    synergyLoad = modeledValues.muscleJointMoments(:, synergyIndex);
+function [newTime, evenlySpacedData] = splineToEvenlySpaced(time, data)
+newTime = linspace(time(1), time(end), length(time));
+spline = spaps(time, data', 1e-7);
+evenlySpacedData = fnval(spline, newTime)';
 end
-if isempty(torqueIndex)
-    torqueLoad = 0;
-else
-    torqueLoad = torqueControls(:, torqueIndex);
-end
-pathTerm = modeledValues.inverseDynamicsMoments(:, inverseDynamicsIndex) - ...
-    (synergyLoad + torqueLoad);
-end
+

@@ -63,6 +63,7 @@ if strcmp(setup.auxdata.toolName, "DesignOptimization")
         generateCostTermStruct("discrete", "DesignOptimization");
     discrete = calcTreatmentOptimizationCost( ...
         costTermCalculations, allowedTypes, values, modeledValues, setup.auxdata);
+    discrete = discrete ./ setup.auxdata.discreteMaxAllowableError;
     discreteObjective = sum(discrete) / length(discrete);
     if isnan(discreteObjective); discreteObjective = 0; end
 else

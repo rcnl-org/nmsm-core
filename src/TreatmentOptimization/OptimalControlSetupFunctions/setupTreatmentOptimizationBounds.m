@@ -55,9 +55,9 @@ bounds.phase.path.upper = 0.5 * ones(1, length(inputs.minPath));
 bounds.phase.control.lower = -0.5 * ones(1, length(inputs.minControl));
 bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
 % setup integral bounds
-bounds.phase.integral.lower = zeros(1, length(inputs.maxAllowableError));
+bounds.phase.integral.lower = zeros(1, length(inputs.continuousMaxAllowableError));
 bounds.phase.integral.upper = inputs.gpops.integralBound * ...
-    ones(1, length(inputs.maxAllowableError));
+    ones(1, length(inputs.continuousMaxAllowableError));
 % setup terminal constraint bounds
 if ~isempty(inputs.minTerminal)
     bounds.eventgroup.lower = inputs.minTerminal;

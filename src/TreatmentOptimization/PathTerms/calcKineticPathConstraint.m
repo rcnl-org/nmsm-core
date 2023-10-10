@@ -1,8 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function minimizes the trailing limb for the specified foot. 
+% This function calculates the difference between the inverse dynamic
+% moments and the sum of the torque and synergy controller produced moments
+% for the specified coordinate.
 %
-% (struct, struct, struct, struct) -> (Array of number)
+% (struct, struct, string) -> (number)
 %
 
 % ----------------------------------------------------------------------- %
@@ -13,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,21 +29,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingTrailingLimbAngleIntegrand(values, time, ...
-    modeledValues, params, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-for i = 1:length(params.contactSurfaces)
-    if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
-        normalForce = ...
-            modeledValues.groundReactionsLab.forces{i}(:, 2) - 20;
-    end
+function pathTerm = calcKineticPathConstraint(inputs, ...
+    modeledValues, torqueControls, loadName)
+inverseDynamicsIndex = find(strcmp(convertCharsToStrings(inputs.inverseDynamicsMomentLabels), ...
+    loadName));
+synergyIndex = find(strcmp(strcat(inputs.surrogateModelCoordinateNames, ...
+    '_moment'), loadName));
+torqueIndex = find(strcmp(strcat(inputs.torqueControllerCoordinateNames, ...
+    '_moment'), loadName));
+if isempty(synergyIndex)
+    synergyLoad = 0;
+else
+    synergyLoad = modeledValues.muscleJointMoments(:, synergyIndex);
 end
-trailingLimbAngle = calcTrailingLimb(costTerm, values, ...
-    normalForce, params);
-cost = calcMinimizingCostArrayTerm(trailingLimbAngle * ...
-    ones(length(time), 1));
-if normalizeByFinalTime
-    cost = cost / time(end);
+if isempty(torqueIndex)
+    torqueLoad = 0;
+else
+    torqueLoad = torqueControls(:, torqueIndex);
 end
+pathTerm = modeledValues.inverseDynamicsMoments(:, inverseDynamicsIndex) - ...
+    (synergyLoad + torqueLoad);
 end

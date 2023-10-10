@@ -30,9 +30,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingControllerIntegrand(auxdata, values, time, ...
-    controllerName)
-
+function cost = calcTrackingControllerIntegrand(costTerm, auxdata, ...
+    values, time, controllerName)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 if strcmp(auxdata.controllerType, 'synergy')
     indx = find(strcmp(convertCharsToStrings( ...
         auxdata.synergyLabels), controllerName));
@@ -58,4 +59,7 @@ else
 end
 cost = experimentalJointMoments(:, indx1) - ...
     values.torqueControls(:, indx2);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

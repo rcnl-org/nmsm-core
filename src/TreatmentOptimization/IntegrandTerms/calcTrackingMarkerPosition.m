@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function minimizes the trailing limb for the specified foot. 
+% This function calculates the error in marker tracking
 %
-% (struct, struct, struct, struct) -> (Array of number)
-%
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+% returns the distance between the experimental and calculated markers.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,21 +27,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingTrailingLimbAngleIntegrand(values, time, ...
-    modeledValues, params, costTerm)
+function cost = calcTrackingMarkerPosition(costTerm, time, ...
+    markerPositions, auxdata)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-for i = 1:length(params.contactSurfaces)
-    if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
-        normalForce = ...
-            modeledValues.groundReactionsLab.forces{i}(:, 2) - 20;
-    end
+indx = find(strcmp(convertCharsToStrings(auxdata.trackedMarkerNames), ...
+    costTerm.marker)) * 3 - 2;
+if isempty(indx)
+    throw(MException('CostTermError:MarkerDoesNotExist', ...
+        strcat("Marker ", costTerm.marker, " is not in the ", ...
+        "list of tracked markers")))
 end
-trailingLimbAngle = calcTrailingLimb(costTerm, values, ...
-    normalForce, params);
-cost = calcMinimizingCostArrayTerm(trailingLimbAngle * ...
-    ones(length(time), 1));
+experimentalMarkerPositions = ...
+    fnval(auxdata.splineMarkerPositions, time)';
+cost = calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
+    markerPositions, indx);
+cost = cost + calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
+    markerPositions, indx + 1);
+cost = cost + calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
+    markerPositions, indx + 2);
 if normalizeByFinalTime
     cost = cost / time(end);
 end
 end
+

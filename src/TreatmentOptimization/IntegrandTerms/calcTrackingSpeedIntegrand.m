@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function gathers the maximum and minimum bounds for all continuous
-% cost term function values.
+% This function calculates the difference between the experimental and
+% predicted joint angles for the specified coordinate. 
 %
-% (struct) -> (struct)
-% Computes max and min integral bounds
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,34 +28,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [continuousMaxAllowableError, discreteMaxAllowableError] = ...
-    makeMaxAllowableError(toolName, costTerms)
-[~, continuousAllowedTypes] = generateCostTermStruct("continuous", toolName);
-[~, discreteAllowedTypes] = generateCostTermStruct("discrete", toolName);
+function cost = calcTrackingSpeedIntegrand(costTerm, auxdata, time, ...
+    stateVelocities, coordinateName)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
+indx = find(strcmp(convertCharsToStrings(auxdata.statesCoordinateNames), ...
+    coordinateName));
+if isempty(indx)
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", coordinateName, " is not in the ", ...
+        "<states_coordinate_list>")))
+end
+if auxdata.splineJointVelocities.dim > 1
+    experimentalJointVelocities = fnval(auxdata.splineJointVelocities, time)';
+else
+    experimentalJointVelocities = fnval(auxdata.splineJointVelocities, time);
+end
 
-continuousMaxAllowableError = [];
-discreteMaxAllowableError = [];
-for i = 1:length(costTerms)
-    costTerm = costTerms{i};
-    if costTerm.isEnabled
-        if any(ismember(costTerm.type, continuousAllowedTypes)) && ...
-                ~strcmp(costTerm.type, "user_defined")
-            continuousMaxAllowableError = cat(2, ...
-                continuousMaxAllowableError, costTerm.maxAllowableError);
-        elseif strcmp(costTerm.type, "user_defined")
-            if strcmp(costTerm.cost_term_type, "continuous")
-                continuousMaxAllowableError = cat(2, ...
-                    continuousMaxAllowableError, ...
-                    costTerm.maxAllowableError);
-            end
-        elseif any(ismember(costTerm.type, discreteAllowedTypes))
-            discreteMaxAllowableError = cat(2, ...
-                discreteMaxAllowableError, costTerm.maxAllowableError);
-        elseif ~any(ismember(costTerm.type, continuousAllowedTypes)) || ...
-                    ~any(ismember(costTerm.type, discreteAllowedTypes))
-            throw(MException('', ['Cost term type ' costTerm.type ...
-                ' does not exist for this tool.']))
-        end
-    end
+cost = calcTrackingCostArrayTerm(experimentalJointVelocities, ...
+    stateVelocities, indx);
+    
+if normalizeByFinalTime
+    cost = cost / time(end);
 end
 end
