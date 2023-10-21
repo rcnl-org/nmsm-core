@@ -25,7 +25,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [c,ceq] = calcMuscleTendonNonLinearConstraints(values, ...
+function [c, ceq] = calcMuscleTendonNonLinearConstraints(values, ...
     primaryValues, isIncluded, experimentalData, params)
 
 ceq = [];
