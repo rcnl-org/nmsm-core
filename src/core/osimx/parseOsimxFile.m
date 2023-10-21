@@ -103,8 +103,12 @@ contactSurface.forceColumns = parseSpaceSeparatedList(tree, "force_columns");
 contactSurface.momentColumns = parseSpaceSeparatedList(tree, "moment_columns");
 contactSurface.electricalCenterColumns = parseSpaceSeparatedList(tree, "electrical_center_columns");
 
-contactSurface.toesCoordinateName = getFieldByNameOrError(tree, "toes_coordinate").Text;
-contactSurface.toesJointName = getFieldByNameOrError(tree, "toes_joint").Text;
+hindfootBodyName = getFieldByName(tree, "hindfoot_body").Text;
+if ~hindfootBodyName
+    throw(MException('', "<toes_coordinate> is replaced by <hindfoot_body> in the osimx file. Please update your osimx file."))
+else
+contactSurface.hindfootBodyName = hindfootBodyName;
+end
 
 contactSurface.toeMarker = getFieldByNameOrError(tree, "toe_marker").Text;
 contactSurface.medialMarker = getFieldByNameOrError(tree, "medial_marker").Text;

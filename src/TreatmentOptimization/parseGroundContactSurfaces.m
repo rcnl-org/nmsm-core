@@ -61,25 +61,34 @@ for i=1:length(contactSurfaces)
 end
 end
 
-function output = getParentChildSprings(osimModel, contactSurfaces)
-output = contactSurfaces;
-output.parentSpringPointsOnBody = [];
-output.parentSpringConstants = [];
-output.childSpringPointsOnBody = [];
-output.childSpringConstants = [];
-[output.parentBodyName, output.childBodyName] = ...
-    getJointBodyNames(osimModel, contactSurfaces.toesJointName);
-for j = 1:length(contactSurfaces.springs)
-    if strcmp(contactSurfaces.springs{j}.parentBody, output.parentBodyName)
-        output.parentSpringPointsOnBody(end+1, :) = ...
-            contactSurfaces.springs{j}.location;
-        output.parentSpringConstants(end+1) = ...
-            contactSurfaces.springs{j}.springConstant;
-    elseif strcmp(contactSurfaces.springs{j}.parentBody, output.childBodyName)
-        output.childSpringPointsOnBody(end+1, :) = ...
-            contactSurfaces.springs{j}.location;
-        output.childSpringConstants(end+1) = ...
-            contactSurfaces.springs{j}.springConstant;
+function contactSurface = getParentChildSprings(osimModel, contactSurface)
+contactSurface.parentSpringPointsOnBody = [];
+contactSurface.parentSpringConstants = [];
+contactSurface.childSpringPointsOnBody = [];
+contactSurface.childSpringConstants = [];
+joints = getBodyJointNames(osimModel, contactSurface.hindfootBodyName);
+assert(length(joints) == 2, ...
+    "Treatment Optimization supports two segment foot models only");
+for i = 1 : length(joints)
+    [parent, ~] = getJointBodyNames(osimModel, joints(i));
+    if strcmp(parent, contactSurface.hindfootBodyName)
+        contactSurface.toesJointName = joints(i);
+        break
+    end
+end
+[contactSurface.parentBodyName, contactSurface.childBodyName] = ...
+    getJointBodyNames(osimModel, contactSurface.toesJointName);
+for j = 1:length(contactSurface.springs)
+    if strcmp(contactSurface.springs{j}.parentBody, contactSurface.parentBodyName)
+        contactSurface.parentSpringPointsOnBody(end+1, :) = ...
+            contactSurface.springs{j}.location;
+        contactSurface.parentSpringConstants(end+1) = ...
+            contactSurface.springs{j}.springConstant;
+    elseif strcmp(contactSurface.springs{j}.parentBody, contactSurface.childBodyName)
+        contactSurface.childSpringPointsOnBody(end+1, :) = ...
+            contactSurface.springs{j}.location;
+        contactSurface.childSpringConstants(end+1) = ...
+            contactSurface.springs{j}.springConstant;
     end
 end
 end
