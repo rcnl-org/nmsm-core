@@ -29,8 +29,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function adjustBodyScaling(model, bodyName, value, anatomicalMarkers)
-
+function [body, joint, coordinate] = adjustBodyScaling(model, bodyName, value, anatomicalMarkers)
+body = bodyName;
+joint = "";
+coordinate = 0;
 if ~anatomicalMarkers
     markers = getMarkersFromBody(model, bodyName);
     markerLocations = {};

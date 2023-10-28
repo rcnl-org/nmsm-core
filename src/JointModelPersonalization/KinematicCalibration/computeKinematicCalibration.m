@@ -55,9 +55,9 @@ end
 function [lowerBounds, upperBounds] = prepareKinematicCalibrationBounds(...
     initialValues, params)
 lowerBounds = valueOrAlternate(params, 'lowerBounds', ...
-    initialValues - 0.1); 
+    initialValues - 10); 
 upperBounds = valueOrAlternate(params, 'upperBounds', ...
-    initialValues + 0.1);
+    initialValues + 10);
 end
 
 % (struct) -> (struct)

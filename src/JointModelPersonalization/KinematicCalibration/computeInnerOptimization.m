@@ -37,7 +37,7 @@ if isempty(model)
 end
 modelCopy = Model(model);
 for i = 1:length(values)
-    functions{i}(values(i), modelCopy);
+    functions{i}(round(values(i), 10), modelCopy);
 end
 markersReference = makeJmpMarkerRef(modelCopy, markerFileName, params);
 error = computeInnerOptimizationHeuristic(modelCopy, markersReference, ...
