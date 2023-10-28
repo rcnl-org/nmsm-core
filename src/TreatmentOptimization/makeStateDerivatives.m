@@ -29,39 +29,17 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeStateDerivatives(inputs, params)
-jointAnglesSpline = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointAngles', eps, [], 3);
-inputs.experimentalJointVelocities = fnval(fnder(jointAnglesSpline, 1), ...
-    inputs.experimentalTime)';
-if length(inputs.statesCoordinateNames) == 1
-    inputs.experimentalJointVelocities = inputs.experimentalJointVelocities';
-end
-jointVelocitiesSpline = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointVelocities', eps, [], 3);
-inputs.experimentalJointAccelerations = fnval( ...
-    fnder(jointVelocitiesSpline, 1), inputs.experimentalTime)';
-if length(inputs.statesCoordinateNames) == 1
-    inputs.experimentalJointAccelerations = inputs.experimentalJointAccelerations';
-end
-jointAccelerationsSpline = spaps(inputs.experimentalTime, ...
-    inputs.experimentalJointAccelerations', eps, [], 3);
-inputs.experimentalJointJerks = fnval(fnder(jointAccelerationsSpline, ...
-    1), inputs.experimentalTime)';
-if length(inputs.statesCoordinateNames) == 1
-    inputs.experimentalJointJerks = inputs.experimentalJointJerks';
-end
-
-% points = length(inputs.experimentalTime);
-% interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);
-% cutoffFrequency = ...
-%     valueOrAlternate(params, "experimentalBSplineCutoffFrequency", 6);
-% numNodes = splFitWithCutoff(inputs.experimentalTime', ...
-%     inputs.experimentalJointAngles', cutoffFrequency, 5);
-% [N, Np, Npp] = BSplineMatrices(5, numNodes, points, interval);
-% Nodes = N\inputs.experimentalJointAngles;
-% inputs.experimentalJointVelocities = Np * Nodes;
-% inputs.experimentalJointAccelerations = Npp * Nodes;
-% inputs.experimentalJointJerks = calcBSplineDerivative( ...
-%     inputs.experimentalTime, inputs.experimentalJointAccelerations, ...
-%     2, numNodes);
+points = length(inputs.experimentalTime);
+interval = inputs.experimentalTime(2) - inputs.experimentalTime(1);
+cutoffFrequency = ...
+    valueOrAlternate(params, "experimentalBSplineCutoffFrequency", 6);
+numNodes = splFitWithCutoff(inputs.experimentalTime', ...
+    inputs.experimentalJointAngles', cutoffFrequency, 5);
+[N, Np, Npp] = BSplineMatrices(5, numNodes, points, interval);
+Nodes = N\inputs.experimentalJointAngles;
+inputs.experimentalJointVelocities = Np * Nodes;
+inputs.experimentalJointAccelerations = Npp * Nodes;
+inputs.experimentalJointJerks = calcBSplineDerivative( ...
+    inputs.experimentalTime, inputs.experimentalJointAccelerations, ...
+    2, numNodes);
 end

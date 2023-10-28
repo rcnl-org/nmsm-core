@@ -32,18 +32,18 @@
 function model = addContactSurfaceActuators(inputs, model)
 import org.opensim.modeling.Vec3
 for i = 1:length(inputs.contactSurfaces)
-addPointActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(1, 0, 0));
-addPointActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(0, 1, 0));
-addPointActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(0, 0, 1));
-addPointActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(1, 0, 0));
-addPointActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(0, 1, 0));
-addPointActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(0, 0, 1));
-addTorqueActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(1, 0, 0));
-addTorqueActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(0, 1, 0));
-addTorqueActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(0, 0, 1));
-addTorqueActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(1, 0, 0));
-addTorqueActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(0, 1, 0));
-addTorqueActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(0, 0, 1));
+    addPointActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(1, 0, 0));
+    addPointActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(0, 1, 0));
+    addPointActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(0, 0, 1));
+    addPointActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(1, 0, 0));
+    addPointActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(0, 1, 0));
+    addPointActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(0, 0, 1));
+    addTorqueActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(1, 0, 0));
+    addTorqueActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(0, 1, 0));
+    addTorqueActuator(model, string(inputs.contactSurfaces{i}.parentBodyName), Vec3(0, 0, 1));
+    addTorqueActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(1, 0, 0));
+    addTorqueActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(0, 1, 0));
+    addTorqueActuator(model, string(inputs.contactSurfaces{i}.childBodyName), Vec3(0, 0, 1));
 end
 end
 function addPointActuator(model, bodyName, direction)

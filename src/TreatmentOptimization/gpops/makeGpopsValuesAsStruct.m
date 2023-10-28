@@ -44,23 +44,32 @@ values.stateAccelerations = getCorrectStates( ...
 values.controlJerks = control(:, 1 : length(inputs.statesCoordinateNames));
 [values.positions, values.velocities, ...
     values.accelerations] = recombineFullState(values, inputs);
-if strcmp(inputs.controllerType, 'torque')
-    values.controlTorques = control(:, inputs.numCoordinates + 1 : ...
-        inputs.numCoordinates + length(inputs.torqueControllerCoordinateNames));
-else
+if strcmp(inputs.controllerType, 'synergy')
     values.controlSynergyActivations = control(:, ...
         length(inputs.statesCoordinateNames) + 1 : ...
         length(inputs.statesCoordinateNames) + inputs.numSynergies);
 end
+values.torqueControls = control(:, ...
+    inputs.numCoordinates + 1 + inputs.numSynergies : ...
+    inputs.numCoordinates + inputs.numSynergies + ...
+    length(inputs.torqueControllerCoordinateNames));
 
 if strcmp(inputs.toolName, "TrackingOptimization")
     if strcmp(inputs.controllerType, 'synergy')
+        values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
-            synergyWeights = scaleToOriginal(phase.parameter(1,:), ...
+            parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
-            values.synergyWeights = synergyWeights;
-        else
-            values.synergyWeights = inputs.synergyWeights;
+            counter = 1;
+            for i = 1 : length(inputs.synergyGroups)
+                for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
+                    index = find(ismember(inputs.synergyWeightsLabels, ...
+                        inputs.synergyGroups{i}.muscleNames{j}));
+                    values.synergyWeights(i, index) = ...
+                        parameters(counter);
+                    counter = counter + 1;
+                end
+            end
         end
     end
 end
@@ -70,50 +79,32 @@ if strcmp(inputs.toolName, "VerificationOptimization")
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
-    numParameters = 0;
+    counter = 1;
     if strcmp(inputs.controllerType, 'synergy')
+        values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
-            values.synergyWeights = scaleToOriginal(phase.parameter(1, ...
-                1 : inputs.numSynergyWeights), ...
+            parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
-            numParameters = inputs.numSynergyWeights;
-        else
-            values.synergyWeights = inputs.synergyWeights;
+            for i = 1 : length(inputs.synergyGroups)
+                for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
+                    index = find(ismember(inputs.synergyWeightsLabels, ...
+                        inputs.synergyGroups{i}.muscleNames{j}));
+                    values.synergyWeights(i, index) = ...
+                        parameters(counter);
+                    counter = counter + 1;
+                end
+            end
         end
-        %         if inputs.splineSynergyActivations.dim > 1
-        %             values.controlSynergyActivations = ...
-        %                 fnval(inputs.splineSynergyActivations, values.time)';
-        %         else
-        %             values.controlSynergyActivations = ...
-        %                 fnval(inputs.splineSynergyActivations, values.time);
-        %         end
-        %         if inputs.enableExternalTorqueControl
-        %             controls = scaleToOriginal(phase.control, ones(size( ...
-        %                 phase.control, 1), 1) .* inputs.maxControl, ...
-        %                 ones(size(phase.control, 1), 1) .* inputs.minControl);
-        %             values.externalTorqueControls = controls(:, inputs.numCoordinates + ...
-        %                 inputs.numSynergies + 1 : end);
-        %         end
-        %     else
-        %         if isfield(inputs, "enableExternalTorqueControl") && ...
-        %                 inputs.enableExternalTorqueControl
-        %             controls = scaleToOriginal(phase.control, ones(size( ...
-        %                 phase.control, 1), 1) .* inputs.maxControl, ...
-        %                 ones(size(phase.control, 1), 1) .* inputs.minControl);
-        %             values.externalTorqueControls = controls(:, inputs.numCoordinates + ...
-        %                 length(inputs.torqueControllerCoordinateNames) + 1 : end);
-        %         end
     end
     if isfield(inputs, 'userDefinedVariables')
-        counter = 1;
+        parameters = scaleToOriginal(phase.parameter(1,:), ...
+            inputs.maxParameter, inputs.minParameter);
         for i = 1:length(inputs.userDefinedVariables)
-            numParameters = length(inputs.userDefinedVariables{i}.initial_values);
             values.parameters.(inputs.userDefinedVariables{i}.type) ...
-                = scaleToOriginal( ...
-                phase.parameter(counter : counter + numParameters - 1), ...
-                inputs.userDefinedVariables{i}.upper_bounds, ...
-                inputs.userDefinedVariables{i}.lower_bounds);
-            counter = counter + numParameters;
+                = parameters(counter : counter + ...
+                length(inputs.userDefinedVariables{i}.initial_values) - 1);
+            counter = counter + ...
+                length(inputs.userDefinedVariables{i}.initial_values);
         end
     end
 end

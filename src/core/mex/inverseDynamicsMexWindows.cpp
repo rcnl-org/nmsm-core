@@ -43,16 +43,14 @@ using namespace std;
 
 //______________________________________________________________________________
 
-static Model *osimModel[numThreads];
-static State *osimState[numThreads];
-static InverseDynamicsSolver *idSolver[numThreads];
+static Model *osimModel;
+static State *osimState;
+static InverseDynamicsSolver *idSolver;
 static bool modelIsLoaded = false;
 
 void ClearMemory(void){
-    for (int i = 0; i < numThreads; i++){
-		delete osimModel[i];
-		delete idSolver[i];
-	}
+	delete osimModel;
+	delete idSolver;
     modelIsLoaded = false;
     mexPrintf("Cleared memory from inverseDynamics mex file.\n");
 }
@@ -82,11 +80,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
         std::streambuf* oldCoutStreamBuf = std::cout.rdbuf();
 		std::ostringstream strCout;
 		std::cout.rdbuf(strCout.rdbuf());
-        for (int i = 0; i < numThreads; i++){
-			osimModel[i] = new Model(modelName); 
-			osimState[i] = &osimModel[i]->initSystem();
-			idSolver[i] = new InverseDynamicsSolver(*osimModel[i]);
-		}  
+			osimModel = new Model(modelName); 
+			osimState = &osimModel->initSystem();
+			idSolver = new InverseDynamicsSolver(*osimModel);
 		std::cout.rdbuf(oldCoutStreamBuf);
         modelIsLoaded = true;
     }
@@ -97,7 +93,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 		const int numPts = mxGetM(prhs[0]);
         const int numQs = mxGetN(prhs[1]);
 		const int numControls = mxGetN(prhs[5]);
-        const int numCoords = osimState[0]->getNQ();
+        const int numCoords = osimState[0].getNQ();
 
         double *time = mxGetPr(prhs[0]);
         vector<vector<double>> q = mexArrayToVector(prhs[1]);
@@ -106,7 +102,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
         vector<vector<double>> u = mexArrayToVector(prhs[5]);
 
         const mxArray *cellElementPtr;
-        char* c_array;
         mwIndex k;
         mwSize numLabels, buflen;
         numLabels = mxGetNumberOfElements(prhs[4]);
@@ -115,33 +110,24 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
         plhs[0] = mxCreateDoubleMatrix(numPts,numCoords,mxREAL);
 		double *idLoads = mxGetPr(plhs[0]);
 
-        int numMarkers = osimModel[0]->getNumMarkers();       
- 		mwSize dimensions[3];
- 		dimensions[0] = numPts;
- 		dimensions[1] = numMarkers;
- 		dimensions[2] = 3; 
- 		plhs[1] = mxCreateNumericArray(3, dimensions, mxDOUBLE_CLASS, mxREAL);
- 		double* MarkerGlobalPos = mxGetPr(plhs[1]);
-
-        #pragma omp parallel for num_threads(numThreads)
         for (int i = 0; i < numPts; ++i){
-            int thread_id = omp_get_thread_num();
-            osimState[thread_id]->setTime(time[i]);
+            osimState->setTime(time[i]);
 
             for (int k = 0; k < numLabels; k++){
                 cellElementPtr = mxGetCell(prhs[4], k);
                 buflen = mxGetN(cellElementPtr)*sizeof(mxChar) + 1;
+                char* c_array;
                 c_array = (char *)  mxCalloc(buflen, sizeof(char));
                 status = mxGetString(cellElementPtr, c_array, buflen);
-                osimModel[thread_id]->getCoordinateSet().get(c_array).setValue(*osimState[thread_id], q[i][k], false);
-                osimModel[thread_id]->getCoordinateSet().get(c_array).setSpeedValue(*osimState[thread_id], qp[i][k]);
+                osimModel->getCoordinateSet().get(c_array).setValue(*osimState, q[i][k], false);
+                osimModel->getCoordinateSet().get(c_array).setSpeedValue(*osimState, qp[i][k]);
                 mxFree(c_array);
             }
-            osimModel[thread_id]->realizeVelocity(*osimState[thread_id]);
+            osimModel->realizeVelocity(*osimState);
 
             Vector AccelsVec(numCoords, 0.0);
             for (int j = 0; j < numCoords; j++){
-                double StateQ = osimState[thread_id]->getQ().get(j);
+                double StateQ = osimState->getQ().get(j);
                 for (int k = 0; k < numQs; k++){
                     if (abs(q[i][k] - StateQ) <= 1e-6){
                         AccelsVec.set(j, qpp[i][k]);
@@ -153,26 +139,16 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
             for (int j = 0; j < numControls; j++){
                 newControls.set(j, u[i][j]);
             }
-            osimModel[thread_id]->setControls(*osimState[thread_id], newControls);
-            osimModel[thread_id]->markControlsAsValid(*osimState[thread_id]);
-            osimModel[thread_id]->realizeDynamics(*osimState[thread_id]);
+            osimModel->setControls(*osimState, newControls);
+            osimModel->markControlsAsValid(*osimState);
+            osimModel->realizeDynamics(*osimState);
             
             Vector IDLoadsVec;
-            IDLoadsVec = idSolver[thread_id]->solve(*osimState[thread_id], AccelsVec);
+            IDLoadsVec = idSolver->solve(*osimState, AccelsVec);
             for (int j = 0; j < numCoords; j++){
 				idLoads[i + numPts * j] = IDLoadsVec[j]; 
 			}
-        
-            Vec3 tempMarkerGlobalPos;
-            for(int j = 0; j < numMarkers; j++){
-                Marker& tempRefMarker = osimModel[thread_id]->getMarkerSet().get(j);
-                const PhysicalFrame& tempRefMarkerParentBody = tempRefMarker.getParentFrame();
-                Vec3 tempMarkerLocalPos = tempRefMarker.get_location();
-                osimModel[thread_id]->getSimbodyEngine().getPosition(*osimState[thread_id], tempRefMarkerParentBody, tempMarkerLocalPos, tempMarkerGlobalPos);
-                for (int k = 0; k < 3; k++){
-                    MarkerGlobalPos[numPts * (j + k * numMarkers) + i] = tempMarkerGlobalPos(k);
-                }
-            }   
+           
         }
 		q.clear();
 		qp.clear();

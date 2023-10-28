@@ -33,6 +33,7 @@ function TrackingOptimizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "TrackingOptimizationTool");
 [inputs, params] = parseTrackingOptimizationSettingsTree(settingsTree);
+inputs = normalizeSynergyData(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 outputs = solveOptimalControlProblem(inputs, params);
 reportTreatmentOptimizationResults(outputs, inputs);

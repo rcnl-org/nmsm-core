@@ -28,9 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMuscleActivationIntegrand(muscleActivations, ...
-    time, params, muscleName)
-
+function cost = calcTrackingMuscleActivationIntegrand(costTerm, ...
+    muscleActivations, time, params, muscleName)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
     muscleName));
 
@@ -45,4 +46,7 @@ end
 experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
 cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
     muscleActivations, indx);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

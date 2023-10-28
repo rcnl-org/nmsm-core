@@ -27,9 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMaximizingStepLengthIntegrand(values, modeledValues,...
+function cost = calcMaximizingStepLengthIntegrand(time, modeledValues,...
     params, costTerm)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 for i = 1:length(params.contactSurfaces)
     if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
         if i == 1
@@ -46,5 +47,8 @@ for i = 1:length(params.contactSurfaces)
     end
 end
 cost = calcMaximizingCostArrayTerm(stepLength * ...
-    ones(length(values.time), 1));
+    ones(length(time), 1));
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

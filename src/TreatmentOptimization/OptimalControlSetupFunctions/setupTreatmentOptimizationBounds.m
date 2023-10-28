@@ -35,6 +35,12 @@ bounds.phase.initialtime.lower = -0.5;
 bounds.phase.initialtime.upper = -0.5;
 bounds.phase.finaltime.lower = 0.5;
 bounds.phase.finaltime.upper = 0.5;
+if isfield(inputs, "finalTimeRange")
+    scaledTime = scaleToBounds(inputs.initialTime, inputs.maxTime, ...
+        inputs.minTime);
+    bounds.phase.finaltime.lower = ...
+        scaledTime(end) - (0.5 - scaledTime(end));
+end
 % setup state bounds
 bounds.phase.initialstate.lower = -0.5 * ones(1, length(inputs.minState));
 bounds.phase.initialstate.upper = 0.5 * ones(1, length(inputs.minState));
@@ -49,15 +55,21 @@ bounds.phase.path.upper = 0.5 * ones(1, length(inputs.minPath));
 bounds.phase.control.lower = -0.5 * ones(1, length(inputs.minControl));
 bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
 % setup integral bounds
-bounds.phase.integral.lower = zeros(1, length(inputs.maxAllowableError));
+bounds.phase.integral.lower = zeros(1, length(inputs.continuousMaxAllowableError));
 bounds.phase.integral.upper = inputs.gpops.integralBound * ...
-    ones(1, length(inputs.maxAllowableError));
+    ones(1, length(inputs.continuousMaxAllowableError));
 % setup terminal constraint bounds
 if ~isempty(inputs.minTerminal)
     bounds.eventgroup.lower = inputs.minTerminal;
 end
 if ~isempty(inputs.maxTerminal)
     bounds.eventgroup.upper = inputs.maxTerminal;
+end
+if strcmp(inputs.controllerType, 'synergy')
+    if inputs.optimizeSynergyVectors
+        bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
+        bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
+    end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
     for i = 1:length(inputs.userDefinedVariables)

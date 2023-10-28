@@ -28,9 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicLoadsIntegrand(inputs, time, ...
-    inverseDynamicsMoments, loadName)
-
+function cost = calcTrackingInverseDynamicLoadsIntegrand(costTerm, ...
+    inputs, time, inverseDynamicsMoments, loadName)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
 indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
@@ -50,4 +51,7 @@ if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
 end
 cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
     inverseDynamicsMoments, indx);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

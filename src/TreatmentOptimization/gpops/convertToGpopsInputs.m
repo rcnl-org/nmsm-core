@@ -24,13 +24,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function setup = convertToGpopsSynergyDrivenInputs(inputs, params)
-bounds = setupProblemBounds(inputs, params);
+function setup = convertToGpopsInputs(inputs, params)
+bounds = setupTreatmentOptimizationBounds(inputs, params);
 guess = setupGpopsInitialGuess(inputs);
-if strcmp(inputs.toolName, "DesignOptimization")
-    guess = addUserDefinedTermsToGuess(guess, inputs);
-end
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 setup = setupGpopsSettings(inputs, ...
     bounds, guess, params, ...
     @computeGpopsContinuousFunction, ...
@@ -38,15 +34,3 @@ setup = setupGpopsSettings(inputs, ...
 checkInitialGuess(guess, inputs, ...
     @computeGpopsContinuousFunction);
 end
-
-function bounds = setupProblemBounds(inputs, params)
-bounds = setupTreatmentOptimizationBounds(inputs, params);
-% setup parameter bounds
-if strcmp(inputs.controllerType, 'synergy')
-    if inputs.optimizeSynergyVectors
-        bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
-        bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
-    end
-end
-end
-

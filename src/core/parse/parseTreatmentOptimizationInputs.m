@@ -35,12 +35,11 @@ inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
 inputs = parseController(tree, inputs);
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs = parseOptimalControlSolverSettings(tree, inputs);
-inputs.costTerms = parseRcnlCostTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
-[inputs.path, inputs.terminal] = parseRcnlConstraintTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLConstraintTermSet') ...
-    .RCNLConstraintTerm, inputs.controllerType, inputs.toolName);
-inputs.contactSurfaces = parseGroundContactSurfaces(inputs);
+inputs.costTerms = parseRcnlCostTermSetHelper( ...
+    getFieldByNameOrError(tree, 'RCNLCostTermSet'));
+[inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
+    getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
+    inputs.controllerType, inputs.toolName);
 end
 
 function inputs = parseBasicInputs(tree)
@@ -58,13 +57,33 @@ osimx = parseOsimxFile(osimxFileName, inputs.model);
 if strcmp(inputs.controllerType, "synergy")
     if strcmp(osimxFileName, "")
         throw(MException("", ...
-           strcat("<input_osimx_file> must be specified", ...
-           " for <RCNLSynergyController>")))
+            strcat("<input_osimx_file> must be specified", ...
+            " for <RCNLSynergyController>")))
     end
     if ~isfield(osimx, "synergyGroups")
         throw(MException("", ...
-           strcat("<RCNLSynergySet> must be specified in the", ...
-           " osimx file for <RCNLSynergyController>. Have you run NCP yet?")))
+            strcat("<RCNLSynergySet> must be specified in the", ...
+            " osimx file for <RCNLSynergyController>. Have you run NCP yet?")))
     end
 end
 end
+
+function costTerms = parseRcnlCostTermSetHelper(tree)
+if isfield(tree, "RCNLCostTerm")
+    costTerms = parseRcnlCostTermSet(tree.RCNLCostTerm);
+else
+    costTerms = parseRcnlCostTermSet({});
+end
+end
+
+function [path, terminal] = parseRcnlConstraintTermSetHelper(tree, ...
+    controllerType, toolName)
+if isfield(tree, "RCNLConstraintTerm")
+    [path, terminal] = parseRcnlConstraintTermSet( ...
+        tree.RCNLConstraintTerm, toolName, controllerType);
+else
+    [path, terminal] = parseRcnlConstraintTermSet({}, controllerType, ...
+        toolName);
+end
+end
+
