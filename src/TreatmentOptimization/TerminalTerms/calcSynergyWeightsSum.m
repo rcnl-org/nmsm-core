@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,22 +30,17 @@
 function synergyWeightsSum = calcSynergyWeightsSum(synergyWeights, ...
     synergyGroups, synergyGroupName)
 
-numSynergiesIndex(1) = 0;
-numMusclesIndex(1) = 0;
+counter = 1;
 for i = 1 : length(synergyGroups)
-    temp = find(strcmp(convertCharsToStrings(synergyGroups{i}.muscleGroupName), ...
-        synergyGroupName));
-    if ~isempty(temp)
-        indx = i;
+    if strcmp(synergyGroups{i}.muscleGroupName, synergyGroupName)
+        break;
     end
+    counter = counter + synergyGroups{i}.numSynergies;
 end
-for j = 1 : indx
-    numSynergiesIndex(end+1) = numSynergiesIndex(end) + ...
-        synergyGroups{j}.numSynergies;
-    numMusclesIndex(end+1) = numMusclesIndex(end) + ...
-        size(synergyGroups{j}.muscleNames, 2);
+
+numSynergies = synergyGroups{i}.numSynergies;
+synergyWeightsSum = zeros(numSynergies, 1);
+for j = counter : counter + numSynergies - 1
+    synergyWeightsSum(j - counter + 1) = sum(synergyWeights(j, :));
 end
-synergyWeightsSum = sum(synergyWeights(1 + numSynergiesIndex(end-1): ...
-    numSynergiesIndex(end), 1 + numMusclesIndex(end-1) : ...
-    numMusclesIndex(end)), 2)';
 end

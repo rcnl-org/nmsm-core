@@ -29,13 +29,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcStepLengthAsymmetryIntegrand(values, modeledValues,...
+function cost = calcStepLengthAsymmetryIntegrand(time, modeledValues,...
     params, costTerm)
 
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 1);
 stepLengthAsymmetry = calcStepLengthAsymmetry(modeledValues,...
     params, costTerm.reference_body);
 cost = calcTrackingCostArrayTerm(stepLengthAsymmetry * ...
-    ones(length(values.time), 1), errorCenter * ...
-    ones(length(values.time), 1), 1);
+    ones(length(time), 1), errorCenter * ...
+    ones(length(time), 1), 1);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

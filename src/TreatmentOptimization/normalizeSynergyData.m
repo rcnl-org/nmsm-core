@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function ensures the synergy weights are normalized to sum to one
+% and the synergy commands are scaled in proportion
 %
+% (struct) -> (struct)
+% scale synergy weights and commands for sum of weights to equal one
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -24,20 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = convertFromGpopsSynergyDrivenOutputs(solution, ...
-    inputs, params)
-solution = solution.result.solution;
-solution.auxdata = inputs;
-if strcmp(inputs.toolName, "DesignOptimization")
-    if isfield(solution, 'parameter')
-        solution.phase.parameter = [solution.parameter];
-    end
-else
-    if inputs.optimizeSynergyVectors
-        solution.phase.parameter = solution.parameter;
+function inputs = normalizeSynergyData(inputs)
+if strcmp(inputs.controllerType, "synergy")
+    for i = 1:size(inputs.synergyWeights, 1)
+        total = sum(inputs.synergyWeights(i, :));
+        inputs.synergyWeights(i, :) = ...
+            inputs.synergyWeights(i, :) / total;
+        inputs.initialSynergyControls(:, i) = ...
+            inputs.initialSynergyControls(:, i) * total;
     end
 end
-output = computeGpopsContinuousFunction(solution);
-output.solution = solution;
 end
 

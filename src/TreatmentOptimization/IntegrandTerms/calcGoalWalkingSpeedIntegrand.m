@@ -29,13 +29,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGoalWalkingSpeedIntegrand(modeledValues,...
-    params, costTerm)
-
+function cost = calcGoalWalkingSpeedIntegrand(modeledValues, values, ...
+    time, params, costTerm)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 1.3);
 strideLength = calcStrideLength(values, modeledValues,...
     params);
 speed = strideLength / values.time(end);
 cost = calcTrackingCostArrayTerm(speed * ones(length(values.time), 1), ...
     errorCenter * ones(length(values.time), 1), 1);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

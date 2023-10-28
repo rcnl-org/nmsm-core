@@ -57,9 +57,20 @@ end
 % Prepares optimization values specific to a foot.
 function surface = prepareInputsForFoot(surface, inputs, ...
     meanMarkerLocations, surfaceNumber)
-surface.toesJointName = char(Model(inputs.bodyModel ...
-    ).getCoordinateSet().get(surface.toesCoordinateName).getJoint( ...
-    ).getName());
+model = Model(inputs.bodyModel);
+joints = getBodyJointNames(model, surface.hindfootBodyName);
+assert(length(joints) == 2, "GCP supports two segment foot models only");
+for i = 1 : length(joints)
+    [parent, ~] = getJointBodyNames(model, joints(i));
+    if strcmp(parent, surface.hindfootBodyName)
+        surface.toesJointName = joints(i);
+        break
+    end
+end
+assert(model.getJointSet().get(surface.toesJointName) ...
+    .numCoordinates() == 1, "GCP toes joint must be a pin joint");
+surface.toesCoordinateName = model.getJointSet() ...
+    .get(surface.toesJointName).getCoordinate().getName().toCharArray()';
 [surface.hindfootBodyName, surface.toesBodyName] = ...
     getJointBodyNames(Model(inputs.bodyModel), surface.toesJointName);
 surface.coordinatesOfInterest = findGCPFreeCoordinates(...

@@ -32,6 +32,5 @@ function [inputs, params] = ...
     parseTrackingOptimizationSettingsTree(settingsTree)
 inputs = parseTreatmentOptimizationInputs(settingsTree);
 params = parseTreatmentOptimizationParams(settingsTree);
-inputs = modifyModelForces(inputs);
 end
 

@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -34,7 +34,6 @@ inputs = parseTreatmentOptimizationInputs(settingsTree);
 inputs = parseDesignSettings(settingsTree, inputs);
 inputs = parseUserDefinedFunctions(settingsTree, inputs);
 params = parseTreatmentOptimizationParams(settingsTree);
-inputs = modifyModelForces(inputs);
 end
 
 function inputs = parseUserDefinedFunctions(tree, inputs)
@@ -45,7 +44,6 @@ if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
     inputs.userDefinedVariables = parseRcnlCostTermSet( ...
         parameterTree.RCNLParameterTerm);
     for i = 1:length(inputs.userDefinedVariables)
-
         inputs.userDefinedVariables{i}.initial_values = ...
             stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.initial_values);
         inputs.userDefinedVariables{i}.upper_bounds = ...
@@ -73,17 +71,6 @@ finalTimeRange = getFieldByName(tree, ...
     'final_time_range');
 if(isstruct(finalTimeRange))
     inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
-end
-inputs.enableExternalTorqueControl = getBooleanLogicFromField( ...
-    getFieldByName(tree, "enable_external_torque_controls"));
-if inputs.enableExternalTorqueControl
-    inputs.externalControlTorqueNames = parseSpaceSeparatedList(tree, ...
-        "external_control_coordinate_list");
-    inputs.numExternalTorqueControls = ...
-        length(inputs.externalControlTorqueNames);
-    inputs.maxExternalTorqueControls = getDoubleFromField( ...
-        getFieldByNameOrError(tree, ...
-        'external_torque_control_multiple'));
 end
 end
 

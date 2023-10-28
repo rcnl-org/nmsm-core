@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function calculates the difference between the experimental and
+% predicted joint angles for the specified coordinate. 
 %
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -10,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -24,28 +28,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function setup = convertToGpopsTorqueDrivenInputs(inputs, params)
-bounds = setupProblemBounds(inputs, params);
-guess = setupGpopsInitialGuess(inputs);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
-setup = setupGpopsSettings(inputs, ...
-    bounds, guess, params, ...
-    @computeGpopsContinuousFunction, ...
-    @computeGpopsEndpointFunction);
-checkInitialGuess(guess, inputs, ...
-    @computeGpopsContinuousFunction);
+function cost = calcTrackingSpeedIntegrand(costTerm, auxdata, time, ...
+    stateVelocities, coordinateName)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
+indx = find(strcmp(convertCharsToStrings(auxdata.statesCoordinateNames), ...
+    coordinateName));
+if isempty(indx)
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", coordinateName, " is not in the ", ...
+        "<states_coordinate_list>")))
+end
+if auxdata.splineJointVelocities.dim > 1
+    experimentalJointVelocities = fnval(auxdata.splineJointVelocities, time)';
+else
+    experimentalJointVelocities = fnval(auxdata.splineJointVelocities, time);
 end
 
-function bounds = setupProblemBounds(inputs, params)
-bounds = setupTreatmentOptimizationBounds(inputs, params);
-% setup parameter bounds
-if strcmp(inputs.controllerType, 'synergy')
-    if inputs.optimizeSynergyVectors
-        bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
-        bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
-    end
+cost = calcTrackingCostArrayTerm(experimentalJointVelocities, ...
+    stateVelocities, indx);
+    
+if normalizeByFinalTime
+    cost = cost / time(end);
 end
 end
-
-
-

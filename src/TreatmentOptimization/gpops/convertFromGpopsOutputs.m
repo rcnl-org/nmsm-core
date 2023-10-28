@@ -24,15 +24,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = convertFromGpopsTorqueDrivenOutputs(solution, ...
+function output = convertFromGpopsOutputs(solution, ...
     inputs, params)
 solution = solution.result.solution;
 solution.auxdata = inputs;
-if isfield(solution, 'parameter')
+if isfield(inputs, "optimizeSynergyVectors") && ...
+        inputs.optimizeSynergyVectors
     solution.phase.parameter = [solution.parameter];
-end
-if isfield(inputs, "optimizeSynergyVectors")
-    solution.phase.parameter = solution.parameter;
+else
+    if strcmp(inputs.toolName, "DesignOptimization")
+        if isfield(solution, 'parameter')
+            solution.phase.parameter = [solution.parameter];
+        end
+    end
 end
 output = computeGpopsContinuousFunction(solution);
 output.solution = solution;

@@ -32,7 +32,7 @@ function integrand = calcGpopsIntegrand(values, modeledValues, inputs)
     generateCostTermStruct("continuous", inputs.toolName);
 integrand = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedTypes, values, modeledValues, inputs);
-integrand = integrand ./ inputs.maxAllowableError;
+integrand = integrand ./ inputs.continuousMaxAllowableError;
 integrand = integrand .^ 2;
 end
 

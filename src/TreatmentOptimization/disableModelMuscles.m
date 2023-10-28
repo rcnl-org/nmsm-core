@@ -27,8 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [model, inputs] = disableModelMuscles(inputs, model)
-import org.opensim.modeling.Model
+function model = disableModelMuscles(model)
 for i = 0:model.getForceSet().getMuscles().getSize()-1
     if model.getForceSet().getMuscles().get(i).get_appliesForce()
         model.getForceSet().getMuscles().get(i).set_appliesForce(0);

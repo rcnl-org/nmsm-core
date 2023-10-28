@@ -33,17 +33,11 @@ function DesignOptimizationTool(settingsFileName)
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "DesignOptimizationTool");
 [inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
+inputs = normalizeSynergyData(inputs);
 inputs = setupMuscleSynergies(inputs);
+inputs = setupTorqueControls(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 outputs = solveOptimalControlProblem(inputs, params);
 reportTreatmentOptimizationResults(outputs, inputs);
 saveDesignOptimizationResults(outputs, inputs);
-end
-
-function inputs = setupMuscleSynergies(inputs)
-if strcmp(inputs.controllerType, 'synergy')
-    inputs.splineSynergyActivations = spaps(inputs.initialTime, ...
-        inputs.initialSynergyControls', 0.0000001);
-    inputs.synergyLabels = inputs.initialSynergyControlsLabels;
-end
 end
