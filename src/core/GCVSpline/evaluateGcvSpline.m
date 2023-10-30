@@ -38,7 +38,7 @@ values = zeros(1, length(time));
 
 if isstring(columnLabel) || ischar(columnLabel)
     columnLabel = splineSet.getIndex(columnLabel);
-    assert(index > -1, "The specified coordinate is not included in" + ...
+    assert(columnLabel > -1, "The specified coordinate is not included in" + ...
         " the spline set.")
 end
 
