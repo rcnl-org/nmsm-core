@@ -43,7 +43,7 @@ for i=1:length(fileNames)
     for j=1:size(timePairs, 1)
         [filepath, name, ext] = fileparts(fileNames(i));
         [newData, newTime] = cutData(data, time, timePairs(j,1), ...
-            timePairs(j,2), numRows);
+            timePairs(j,2), numRows, columnNames);
         newFileName = insertAfter(name, prefix, "_" + num2str(j));
         writeToSto(columnNames, newTime, newData', fullfile(filepath, ...
             newFileName + ext));
@@ -52,8 +52,9 @@ end
 end
 
 function [newData, newTime] = cutData(data, time, startTime, endTime, ...
-    numRows)
+    numRows, columnNames)
 newTime = linspace(startTime, endTime, numRows);
-newData = spline(time, data, newTime);
+splineSet = makeGcvSplineSet(time, data, columnNames);
+newData = evaluateGcvSplines(splineSet, columnNames, newTime)';
 end
 
