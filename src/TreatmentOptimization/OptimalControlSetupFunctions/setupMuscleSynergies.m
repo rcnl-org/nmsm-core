@@ -30,8 +30,9 @@
 
 function inputs = setupMuscleSynergies(inputs)
 if strcmp(inputs.controllerType, 'synergy')
-    inputs.splineSynergyActivations = spaps(inputs.initialTime, ...
-        inputs.initialSynergyControls', 0.0000001);
+    inputs.splineSynergyActivations = makeGcvSplineSet( ...
+        inputs.initialTime, inputs.initialSynergyControls', ...
+        inputs.initialSynergyControlsLabels);
     inputs.synergyLabels = inputs.initialSynergyControlsLabels;
 end
 end
