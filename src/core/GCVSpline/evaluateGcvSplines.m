@@ -32,21 +32,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = evaluateGcvSpline(splineSet, columnLabel, time, ...
+function values = evaluateGcvSplines(splineSet, columnLabels, time, ...
     derivative)
-values = zeros(1, length(time));
+values = zeros(length(time), length(columnLabels));
 
-if isstring(columnLabel) || ischar(columnLabel)
-    columnLabel = splineSet.getIndex(columnLabel);
-    assert(columnLabel > -1, "The specified coordinate is not included in" + ...
-        " the spline set.")
+if iscell(columnLabels)
+    columnLabels = string(columnLabels);
+end
+if isstring(columnLabels) || ischar(columnLabels)
+    for i = 1 : length(columnLabels)
+        columnLabels(i) = splineSet.getIndex(columnLabels(i));
+        assert(str2double(columnLabels(i)) > -1, "The specified coordinate is not included in" + ...
+            " the spline set.")
+    end
+    columnLabels = str2double(columnLabels);
 end
 
 if nargin < 4
     derivative = 0;
 end
 
-for i = 1 : length(time)
-    values(i) = splineSet.evaluate(columnLabel, derivative, time(i));
+for i = 1 : length(columnLabels)
+    for j = 1 : length(time)
+        values(j, i) = splineSet.evaluate(columnLabels(i), derivative, time(j));
+    end
 end
 end
