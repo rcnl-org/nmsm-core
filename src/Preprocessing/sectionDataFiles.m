@@ -33,12 +33,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function sectionDataFiles(fileNames, timePairs, numRows, prefix)
+function sectionDataFiles(fileNames, timePairs, numRows, prefix, ...
+    filesToFilter, cutoffFrequency)
 import org.opensim.modeling.Storage
 for i=1:length(fileNames)
     storage = Storage(fileNames(i));
     data = storageToDoubleMatrix(storage);
     time = findTimeColumn(storage);
+    if filesToFilter(i)
+        data = lowpassFilter(time, data', 4, cutoffFrequency, 0);
+    end
     columnNames = getStorageColumnNames(storage);
     for j=1:size(timePairs, 1)
         [filepath, name, ext] = fileparts(fileNames(i));

@@ -54,6 +54,7 @@ trialName = getFieldByNameOrAlternate(outputSettings, 'trialPrefix', ...
     'trial');
 outputDir = getFieldByNameOrAlternate(outputSettings, ...
     'resultsDirectory', 'preprocessed');
+cutoffFrequency = valueOrAlternate(inputSettings, 'cutoffFrequency', 6);
 
 model = Model(model);
 ikOutputDir = 'IKData';
@@ -90,16 +91,19 @@ if included.emg
     preprocessDataFile(emgFileName, outputDir, emgOutputDir, trialName)
 end
 
-filesToSection = makeFilesToSection(outputDir, ikOutputDir, ...
-    idOutputDir, maOutputDir, grfOutputDir, trialName, coordinates, ...
-    included);
-sectionDataFiles(filesToSection, timePairs, 101, trialName);
+[filesToSection, filesToFilter] = makeFilesToSection(outputDir, ...
+    ikOutputDir, idOutputDir, maOutputDir, grfOutputDir, trialName, ...
+    coordinates, included);
+sectionDataFiles(filesToSection, timePairs, rowsPerTrial, trialName, ...
+    filesToFilter, cutoffFrequency);
 
-numBufferRows = calcNumPaddingFrames(timePairs);
-paddedTimePairs = addBufferToTimePairs(timePairs, numBufferRows);
+numBufferRows = calcNumPaddingFrames(timePairs, rowsPerTrial);
+paddedTimePairs = addBufferToTimePairs(timePairs, numBufferRows, ...
+    rowsPerTrial);
 sectionDataFiles( ...
     [fullfile(outputDir, emgOutputDir, trialName + ".sto")], ...
-    paddedTimePairs, (2 * numBufferRows) + 101, trialName)
+    paddedTimePairs, (2 * numBufferRows) + rowsPerTrial, trialName, ...
+    false, cutoffFrequency);
 for i=1:length(filesToSection)
     delete(filesToSection(i));
 end
@@ -167,34 +171,40 @@ for i = 0 : model.getCoordinateSet().getSize() - 1
 end
 end
 
-function filesToSection = makeFilesToSection(outputDir, ikOutputDir, ...
-    idOutputDir, maOutputDir, grfOutputDir, trialName, coordinates, ...
-    included)
+function [filesToSection, filesToFilter] = makeFilesToSection( ...
+    outputDir, ikOutputDir, idOutputDir, maOutputDir, grfOutputDir, ...
+    trialName, coordinates, included)
 filesToSection = [];
+filesToFilter = [];
 if included.ma
     filesToSection = [ ...
         fullfile(outputDir, maOutputDir, trialName + ...
         "_Length.sto"), ...
         fullfile(outputDir, maOutputDir, trialName + ...
         "_Velocity.sto")];
+    filesToFilter = [true, false];
 end
 if included.ik
     filesToSection(end+1) = ...
         fullfile(outputDir, ikOutputDir, trialName + ".sto");
+    filesToFilter(end+1) = true;
 end
 if included.id
     filesToSection(end+1) = ...
         fullfile(outputDir, idOutputDir, trialName + ".sto");
+    filesToFilter(end+1) = true;
 end
 if included.grf
     filesToSection(end+1) = fullfile(outputDir, grfOutputDir, ...
         trialName + ".sto");
+    filesToFilter(end+1) = false;
 end
 for i=1:length(coordinates)
     if isfile(fullfile(outputDir, maOutputDir, ...
             trialName + "_MomentArm_" + coordinates(i) + ".sto"))
         filesToSection(end+1) = fullfile(outputDir, maOutputDir, ...
             trialName + "_MomentArm_" + coordinates(i) + ".sto");
+        filesToFilter(end+1) = true;
     end
 end
 end
@@ -232,8 +242,8 @@ function throwCantFindMAFileException(fileName)
 throw(MException('', "Cannot find Muscle Analysis file for " + fileName));
 end
 
-function numFramesBuffer = calcNumPaddingFrames(timePairs)
-normalizedNumDataPoints = 101;
+function numFramesBuffer = calcNumPaddingFrames(timePairs, ...
+    normalizedNumDataPoints)
 shortestTrialLength = timePairs(1,2) - timePairs(1,1);
 for i=2:size(timePairs, 1)
     if(timePairs(i,2) - timePairs(i,1) < shortestTrialLength)
@@ -244,8 +254,8 @@ timePerFrame = shortestTrialLength / (normalizedNumDataPoints-1);
 numFramesBuffer = ceil(0.2 / timePerFrame);
 end
 
-function newTimePairs = addBufferToTimePairs(timePairs, numBufferRows)
-rowsPerTrial = 101;
+function newTimePairs = addBufferToTimePairs(timePairs, numBufferRows, ...
+    rowsPerTrial)
 for i=1:size(timePairs, 1)
     trialTime = timePairs(i,2) - timePairs(i,1);
     timePairs(i,1) = timePairs(i,1) - (numBufferRows / ...
