@@ -55,6 +55,7 @@ trialName = getFieldByNameOrAlternate(outputSettings, 'trialPrefix', ...
 outputDir = getFieldByNameOrAlternate(outputSettings, ...
     'resultsDirectory', 'preprocessed');
 cutoffFrequency = valueOrAlternate(inputSettings, 'cutoffFrequency', 6);
+rowsPerTrial = valueOrAlternate(inputSettings, 'rowsPerTrial', 101);
 
 model = Model(model);
 ikOutputDir = 'IKData';
