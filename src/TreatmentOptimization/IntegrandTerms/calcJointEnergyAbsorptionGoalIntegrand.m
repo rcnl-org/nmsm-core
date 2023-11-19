@@ -45,7 +45,7 @@ if isequal(mexext, 'mexw64')
 end
 jointPower = jointMoment(:, indx) .* jointVelocity(:, indx);
 
-cost = imag(sqrt((jointPower - costTerm.errorCenter) / ...
+cost = real(sqrt((-jointPower - costTerm.errorCenter) / ...
     costTerm.maxAllowableError));
 
 if normalizeByFinalTime
