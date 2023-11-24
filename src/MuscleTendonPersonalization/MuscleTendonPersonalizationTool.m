@@ -46,10 +46,11 @@ end
 
 optimizedParams = MuscleTendonPersonalization(inputs, params);
 if params.performMuscleTendonLengthInitialization
-    reportMuscleTendonPersonalizationResults(optimizedParams, ...
-        inputs, precalInputs);
+    saveMuscleTendonOptimizationParams(".\mtpResults\Analysis", ...
+        optimizedParams, inputs, precalInputs)
 else
-    reportMuscleTendonPersonalizationResults(optimizedParams, inputs);
+    saveMuscleTendonOptimizationParams(".\mtpResults\Analysis", ...
+        optimizedParams, inputs)
 end
 
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
@@ -63,8 +64,10 @@ results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
 saveMuscleTendonPersonalizationResults(inputs.model, ...
     inputs.osimxFileName, inputs.prefixes, inputs.coordinateNames, ...
     finalValues, results, resultsDirectory, inputs.muscleTendonColumnNames);
-save("params.mat", "params")
-save("optimizedParams.mat", "optimizedParams")
-save("precalInputs.mat", "precalInputs")
-save("inputs.mat", "inputs")
+% saveMuscleTendonOptimizationResults(optimizedParams, inputs, precalInputs, ...
+%     ".\mtpResults\Analysis")
+% save("params.mat", "params")
+% save("optimizedParams.mat", "optimizedParams")
+% save("precalInputs.mat", "precalInputs")
+% save("inputs.mat", "inputs")
 end
