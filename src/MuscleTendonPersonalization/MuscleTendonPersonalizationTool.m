@@ -35,7 +35,6 @@ verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
-
 if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
@@ -43,15 +42,18 @@ if isstruct(precalInputs)
 else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
-
 optimizedParams = MuscleTendonPersonalization(inputs, params);
+
 if params.performMuscleTendonLengthInitialization
+    % reportMuscleTendonPersonalizationResults(optimizedParams, inputs, precalInputs);
     saveMuscleTendonOptimizationParams(".\mtpResults\Analysis", ...
         optimizedParams, inputs, precalInputs)
 else
     saveMuscleTendonOptimizationParams(".\mtpResults\Analysis", ...
         optimizedParams, inputs)
 end
+
+reportMuscleTendonPersonalizationResults2(".\mtpResults\Analysis");
 
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
 if precalInputs.optimizeIsometricMaxForce
@@ -64,10 +66,4 @@ results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
 saveMuscleTendonPersonalizationResults(inputs.model, ...
     inputs.osimxFileName, inputs.prefixes, inputs.coordinateNames, ...
     finalValues, results, resultsDirectory, inputs.muscleTendonColumnNames);
-% saveMuscleTendonOptimizationResults(optimizedParams, inputs, precalInputs, ...
-%     ".\mtpResults\Analysis")
-% save("params.mat", "params")
-% save("optimizedParams.mat", "optimizedParams")
-% save("precalInputs.mat", "precalInputs")
-% save("inputs.mat", "inputs")
 end
