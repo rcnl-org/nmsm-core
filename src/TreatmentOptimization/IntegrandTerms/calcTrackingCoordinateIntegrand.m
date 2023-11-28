@@ -46,7 +46,9 @@ else
 end
 
 assert(all([any(auxdata.statesCoordinateNames == coordinateName), ...
-    any(string(auxdata.coordinateNames) == coordinateName)]));
+    any(string(auxdata.coordinateNames) == coordinateName)]), ...
+    "Tracked coordinate must exist in states and experimental data: " ...
+    + coordinateName);
 stateIndex = auxdata.statesCoordinateNames == coordinateName;
 experimentalIndex = string(auxdata.coordinateNames) == coordinateName;
 
