@@ -45,8 +45,13 @@ else
     experimentalJointAngles = fnval(auxdata.splineJointAngles, time);
 end
 
-cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...
-    statePositions, indx);
+assert(all([any(auxdata.statesCoordinateNames == coordinateName), ...
+    any(string(auxdata.coordinateNames) == coordinateName)]));
+stateIndex = auxdata.statesCoordinateNames == coordinateName;
+experimentalIndex = string(auxdata.coordinateNames) == coordinateName;
+
+cost = calcTrackingCostArrayTerm(experimentalJointAngles(:, stateIndex),...
+    statePositions(:, experimentalIndex), 1);
 
 if normalizeByFinalTime
     cost = cost / time(end);
