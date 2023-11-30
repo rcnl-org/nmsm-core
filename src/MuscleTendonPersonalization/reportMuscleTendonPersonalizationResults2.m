@@ -33,15 +33,15 @@ function reportMuscleTendonPersonalizationResults2(resultsDirectory)
     % Read from STO files and call individual functions
     plotMuscleExcitationsAndActivations(resultsDirectory);
     % ...
-    % plotPassiveForceCurves();
+    plotPassiveForceCurves(resultsDirectory);
     % % ...
-    % plotPassiveMomentCurves();
+    plotPassiveMomentCurves(resultsDirectory);
     % % ...
-    % plotJointMoments();
+    plotJointMoments(resultsDirectory);
     % % ...
-    % plotHillTypeMuscleParams();
+    % plotHillTypeMuscleParams(resultsDirectory);
     % % ...
-    % plotNormalizedFiberLengths();
+    plotNormalizedFiberLengths(resultsDirectory);
 
 end
 

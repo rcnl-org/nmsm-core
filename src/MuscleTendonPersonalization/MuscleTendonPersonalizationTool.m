@@ -45,7 +45,7 @@ end
 optimizedParams = MuscleTendonPersonalization(inputs, params);
 
 if params.performMuscleTendonLengthInitialization
-    % reportMuscleTendonPersonalizationResults(optimizedParams, inputs, precalInputs);
+    reportMuscleTendonPersonalizationResults(optimizedParams, inputs, precalInputs);
     saveMuscleTendonOptimizationParams(".\mtpResults\Analysis", ...
         optimizedParams, inputs, precalInputs)
 else
