@@ -29,19 +29,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function reportMuscleTendonPersonalizationResults2(resultsDirectory)
-    
-    % Read from STO files and call individual functions
     plotMuscleExcitationsAndActivations(resultsDirectory);
-    % ...
     plotPassiveForceCurves(resultsDirectory);
-    % % ...
     plotPassiveMomentCurves(resultsDirectory);
-    % % ...
     plotJointMoments(resultsDirectory);
-    % % ...
-    % plotHillTypeMuscleParams(resultsDirectory);
-    % % ...
+    plotHillTypeMuscleParams(resultsDirectory);
     plotNormalizedFiberLengths(resultsDirectory);
-
 end
 

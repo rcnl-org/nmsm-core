@@ -1,7 +1,7 @@
-function [outputArg1,outputArg2] = plotHillTypeMuscleParams(inputArg1,inputArg2)
-%UNTITLED5 Summary of this function goes here
-%   Detailed explanation goes here
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+function plotHillTypeMuscleParams(resultsDirectory)
+    [paramLabels, params] = extractSavedData(resultsDirectory, "muscleModelParameters");
+
+    
+
 end
 
