@@ -33,7 +33,7 @@ function reportMuscleTendonPersonalizationResults2(resultsDirectory)
     plotPassiveForceCurves(resultsDirectory);
     plotPassiveMomentCurves(resultsDirectory);
     plotJointMoments(resultsDirectory);
-    plotHillTypeMuscleParams(resultsDirectory);
     plotNormalizedFiberLengths(resultsDirectory);
+    plotHillTypeMuscleParams(resultsDirectory);
 end
 

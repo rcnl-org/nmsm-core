@@ -3,7 +3,7 @@ function plotMuscleExcitationsAndActivations(resultsDirectory)
 [~, activations] = extractSavedData(resultsDirectory, "muscleActivations");
 [~, excitationsSynx] = extractSavedData(resultsDirectory, "muscleExcitationsSynx");
 [~, activationsSynx] = extractSavedData(resultsDirectory, "muscleActivationsSynx");
-
+muscleNames = strrep(muscleNames, '_', ' ');
 meanExcitations = mean(excitations, 3);
 stdExcitations = std(excitations,[], 3);
 meanActivations = mean(activations, 3);
@@ -27,8 +27,9 @@ stdActivationsSynx = std(activationsSynx,[], 3);
 % 
 % plotMtpData(data, plotOptions);
 
-figure()
-set(gcf,'Position',[750,400,950,700])
+figure(Name = "Muscle Excitations and Activations")
+sgtitle("Muscle Excitations and Activations", Fontsize=14)
+set(gcf, Position=[750,400,1050,800])
 t = 1:1:size(meanExcitations,1);
 numWindows = ceil(sqrt(numel(muscleNames)));
 for i = 1:numel(muscleNames)
@@ -58,9 +59,9 @@ for i = 1:numel(muscleNames)
         flipud((meanActivationsSynx(:,i)-stdActivationsSynx(:,i)))];
     fill([t, fliplr(t)]', activationSynxFillRegion, 'b', FaceAlpha=0.2, ...
         EdgeColor='none', HandleVisibility='off')
-
+    set(gca, fontsize=11)
     axis([1 size(meanExcitations, 1) 0 1])
-    title(muscleNames(i), FontSize=10, interpreter='latex');
+    title(muscleNames(i), FontSize=12);
     if i == 1
         legend ('Excitation(without residual)', ...
             'Excitation(with residual)', ...

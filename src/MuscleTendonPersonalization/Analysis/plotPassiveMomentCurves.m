@@ -1,7 +1,7 @@
 function plotPassiveMomentCurves(resultsDirectory)
 [momentNames, passiveMomentsExperimental] = extractSavedData(resultsDirectory, "passiveJointMomentsExperimental");
 [~, passiveMomentsModel] = extractSavedData(resultsDirectory, "passiveJointMomentsModeled");
-
+momentNames = strrep(momentNames, '_', ' ');
 meanPassiveMomentsExperimental = mean(passiveMomentsExperimental, 3);
 stdPassiveMomentsExperimental = std(passiveMomentsExperimental, [], 3);
 meanPassiveMomentsModel = mean(passiveMomentsModel, 3);
@@ -25,8 +25,9 @@ minMoment = min([min(meanPassiveMomentsExperimental, [], 'all'), ...
 
 numWindows = ceil(sqrt(numel(momentNames)));
 t = 1:1:size(meanPassiveMomentsModel,1);
-figure()
-set(gcf,'Position',[750,400,950,700])
+figure(Name = "Passive Moment Curves")
+sgtitle("Passive Moment Curves", Fontsize=14)
+set(gcf, Position=[750,400,1050,800])
 
 for i = 1:numel(momentNames)
     subplot(numWindows, numWindows, i)
@@ -44,8 +45,15 @@ for i = 1:numel(momentNames)
     fill([t, fliplr(t)]', fillRegionModel, 'b', FaceAlpha=0.2, ...
         EdgeColor='none', HandleVisibility='off')
     hold off
-
+    set(gca, fontsize=11)
+    title(momentNames(i), FontSize=12)
     axis([1 size(meanPassiveMomentsModel, 1) minMoment maxMoment])
+    if mod(i,4) == 1
+        ylabel("Moment [Nm]")
+    end
+    if i>numel(momentNames)-numWindows
+        xlabel("Time Points")
+    end
 end
 
 end

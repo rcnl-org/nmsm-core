@@ -1,6 +1,6 @@
 function plotPassiveForceCurves(resultsDirectory)
 [muscleNames, passiveForce] = extractSavedData(resultsDirectory, "passiveForcesExperimental");
-
+muscleNames = strrep(muscleNames, '_', ' ');
 meanPassiveForce = mean(passiveForce, 3);
 stdPassiveForce = std(passiveForce, [], 3);
 maxForce = max(meanPassiveForce, [], 'all');
@@ -16,8 +16,9 @@ numWindows = ceil(sqrt(numel(muscleNames)));
 % 
 % plotMtpData(data, plotOptions);
 
-figure()
-set(gcf,'Position',[750,400,950,700])
+figure(Name = "Passive Force Curves")
+sgtitle("Passive Force Curves", Fontsize=14)
+set(gcf, Position=[750,400,1050,800])
 t = 1:1:size(meanPassiveForce,1);
 for i = 1:numel(muscleNames)
     subplot(numWindows, numWindows, i)
@@ -29,8 +30,9 @@ for i = 1:numel(muscleNames)
     fill([t, fliplr(t)]', fillRegion, 'b', FaceAlpha=0.2, ...
         EdgeColor='none', HandleVisibility='off')
     hold off
+    set(gca, fontsize=11)
     axis([1 size(meanPassiveForce, 1) 0 maxForce])
-    title(muscleNames(i), FontSize=10, interpreter='latex');
+    title(muscleNames(i), FontSize=12);
     if mod(i,3) == 1
         ylabel("Magnitude")
     end

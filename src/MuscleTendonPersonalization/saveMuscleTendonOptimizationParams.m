@@ -52,7 +52,7 @@ saveAnalysisData(mtpInputs.muscleNames, mtpInputs.prefixes, results.normalizedFi
 saveJointMomentData(mtpInputs, results, resultsSynx, resultsSynxNoResiduals, ...
     resultsDirectory);
 
-saveMuscleModelParameters(finalValues, fullfile(resultsDirectory, ...
+saveMuscleModelParameters(mtpInputs, finalValues, fullfile(resultsDirectory, ...
     "muscleModelParameters"));
 end
 
@@ -186,20 +186,21 @@ saveAnalysisData(mtpInputs.coordinateNames, mtpInputs.prefixes, ...
     "\inverseDynamicsJointMoments"), "_inverseDynamicsJointMoments.sto")
 end
 
-function saveMuscleModelParameters(finalValues, resultsDirectory)
+function saveMuscleModelParameters(mtpInputs, finalValues, resultsDirectory)
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
-columnLabels = ["Activation Time Constant", "Activation Nonlinearity", ...
-    "Electromechanical Time Delay", "EMG Scaling Factor", ...
-    "Optimal Fiber Length Scaling Factor", "Tendon Slack Length Scaling Factor"];
+columnLabels = mtpInputs.muscleNames;
+% columnLabels = ["Activation Time Constant", "Activation Nonlinearity", ...
+%     "Electromechanical Time Delay", "EMG Scaling Factor", ...
+%     "Optimal Fiber Length Scaling Factor", "Tendon Slack Length Scaling Factor"];
 
 dataPoints = [finalValues.activationTimeConstants;
     finalValues.activationNonlinearityConstants;
     finalValues.electromechanicalDelays;
     finalValues.emgScaleFactors;
     finalValues.optimalFiberLengthScaleFactors;
-    finalValues.tendonSlackLengthScaleFactors]';
+    finalValues.tendonSlackLengthScaleFactors];
 
 writeToSto(columnLabels, 1:1:size(dataPoints,1), dataPoints, ...
     fullfile(resultsDirectory, "muscleModelParameters.sto"));

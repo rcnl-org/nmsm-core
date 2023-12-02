@@ -2,7 +2,7 @@ function plotJointMoments(resultsDirectory)
     [jointLabels, idMoments] = extractSavedData(resultsDirectory, "inverseDynamicsJointMoments");
     [~, noResidualMoments] = extractSavedData(resultsDirectory, "modelJointMomentsNoSynx");
     [~, withResidualMoments] = extractSavedData(resultsDirectory, "modelJointMomentsSynx");
-
+    jointLabels = strrep(jointLabels, '_', ' ');
     meanIdMoments = mean(idMoments, 3);
     stdIdMoments = std(idMoments, [], 3);
     meanNoResidualMoments = mean(noResidualMoments, 3);
@@ -29,8 +29,9 @@ function plotJointMoments(resultsDirectory)
     % 
     % plotMtpData(data, plotOptions)
 
-    figure()
-    set(gcf,'Position',[750,400,950,700])
+    figure(Name = "Joint Moments")
+    sgtitle("Joint Moments", Fontsize=14)
+    set(gcf, Position=[750,400,1050,800])
     t = 1:1:size(meanIdMoments,1);
     numWindows = numel(jointLabels);
     for i=1:numel(jointLabels)
@@ -48,6 +49,7 @@ function plotJointMoments(resultsDirectory)
         fill([t, fliplr(t)]', idFillRegion, 'r', FaceAlpha=0.2, ...
             EdgeColor='none', HandleVisibility='off')
         hold off
+        title(jointLabels(i), fontsize=12)
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment No Residual", "Mean Inverse Dynamics Moment")
@@ -67,12 +69,15 @@ function plotJointMoments(resultsDirectory)
         fill([t, fliplr(t)]', idFillRegion, 'r', FaceAlpha=0.2, ...
             EdgeColor='none', HandleVisibility='off')
         hold off
+        set(gca, fontsize=11)
+        title(jointLabels(i), FontSize=12)
+        xlabel("Time Point")
+        axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment With Residual", "Mean Inverse Dynamics Moment")
             ylabel("Joint Moment [Nm]")
         end
-        xlabel("Time Point")
-        axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
+        
     end
 end
 
