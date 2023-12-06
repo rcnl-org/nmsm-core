@@ -52,7 +52,7 @@ else
         optimizedParams, inputs)
 end
 
-reportMuscleTendonPersonalizationResults2(".\mtpResults\Analysis");
+reportMuscleTendonPersonalizationResults(".\mtpResults\Analysis");
 
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
 if precalInputs.optimizeIsometricMaxForce
