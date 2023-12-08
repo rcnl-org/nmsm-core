@@ -20,7 +20,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                               %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -40,40 +40,17 @@ function [muscleTendonLength, muscleTendonVelocity, momentArms] = ...
     polynomialExpressionMuscleTendonVelocity, ...
     polynomialExpressionMomentArms, coefficients)
 
-% Values are set to match symbolic expressions in polynomials
-for i = 1 : size(jointAngles, 2)
-    eval(['theta' num2str(i) ' = jointAngles(:,' num2str(i) ');']);
-    eval(['thetaDot' num2str(i) ' = jointVelocities(:,' num2str(i) ');']);
-end
-muscleTendonLengthMatrix = zeros(size(jointAngles, 1), ...
-    size(polynomialExpressionMomentArms, 2));
-muscleTendonVelocityMatrix = zeros(size(jointVelocities, 1), ...
-    size(polynomialExpressionMomentArms, 2));
-momentArmsMatrix = zeros(size(jointAngles, 1), size(jointAngles, 2), ...
-    size(polynomialExpressionMomentArms, 2));
-for j = 1 : size(polynomialExpressionMomentArms, 2)
-    muscleTendonLengthMatrix(:, j) = ...
-        eval(polynomialExpressionMuscleTendonLength(1, j)) .* ...
-        ones(size(jointAngles, 1), 1);
-    muscleTendonVelocityMatrix(:, j) = ...
-        eval(polynomialExpressionMuscleTendonVelocity(1, j)) .* ...
-        ones(size(jointAngles, 1), 1);
-    for k = 1 : size(jointAngles, 2)
-        momentArmsMatrix(:, k, j) = ...
-            eval(polynomialExpressionMomentArms(k, j)) .* ...
-            ones(size(jointAngles, 1), 1);
-    end                 
-end
-fullMatrix = [muscleTendonLengthMatrix; muscleTendonVelocityMatrix; ...
-    reshape(momentArmsMatrix, [], ...
-    size(polynomialExpressionMomentArms, 2))];
+muscleTendonLength = zeros(size(jointAngles, 1), 1);
+muscleTendonVelocity = zeros(size(jointAngles, 1), 1);
+momentArms = zeros(size(jointAngles)).';
 
-modeledValues = fullMatrix * coefficients;
-muscleTendonLength = modeledValues(1 : size(jointAngles, 1));
-muscleTendonVelocity = modeledValues(1 + size(jointAngles, 1) : ...
-    size(jointAngles, 1) * 2);
-for i = 1 : size(jointAngles, 2)
-    momentArms(:, i) = modeledValues(1 + size(jointAngles, 1) * (1 + i) ...
-        : size(jointAngles, 1) * (2 + i));
+for i = 1 : size(jointAngles, 1)
+    positionArgs = num2cell(jointAngles(i, :));
+    velocityArgs = [positionArgs num2cell(jointVelocities(i, :))];
+    muscleTendonLength(i) = polynomialExpressionMuscleTendonLength(positionArgs{:}) * coefficients;
+    muscleTendonVelocity(i) = polynomialExpressionMuscleTendonVelocity(velocityArgs{:}) * coefficients;
+    momentArms(:, i) = polynomialExpressionMomentArms(positionArgs{:}) * coefficients;
 end
+
+momentArms = momentArms.';
 end
