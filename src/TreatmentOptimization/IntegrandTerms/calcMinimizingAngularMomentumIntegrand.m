@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function minimizes the whole body angular momentum for the specified
-% axes.
+% axis.
 %
 % (2D matrix, struct, Array of string) -> (Array of number)
 % 
@@ -32,22 +32,15 @@ function cost = calcMinimizingAngularMomentumIntegrand( ...
     modeledValues, time, costTerm)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-axes = ["x" "y" "z"];
 
-assert(isfield(costTerm, 'axes'), "Angular momentum minimization " + ...
-    "requires an 'axes' field in the cost term settings.")
+assert(isfield(costTerm, 'axis'), "Angular momentum minimization " + ...
+    "requires an 'axis' field in the cost term settings.")
 
-indices = [];
-for substring = 1:3
-    if contains(costTerm.axes, axes(substring), 'IgnoreCase', true)
-        indices(end+1) = substring;
-    end
-end
+index = find(strcmpi(costTerm.axis, ["x" "y" "z"]));
+assert(~isempty(index), "Angular momentum axis must be X, Y, or Z, but "...
+    + costTerm.axis + "was given.");
 
-assert(~isempty(indices), "Angular momentum axes must include X, Y " + ...
-    "or Z, but " + costTerm.axes + "was given.");
-
-cost = modeledValues.angularMomentum(:, indices);
+cost = modeledValues.angularMomentum(:, index);
 if normalizeByFinalTime
     cost = cost / time(end);
 end
