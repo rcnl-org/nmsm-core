@@ -37,8 +37,8 @@ assert(isfield(costTerm, 'axis'), "Angular momentum minimization " + ...
     "requires an 'axis' field in the cost term settings.")
 
 index = find(strcmpi(costTerm.axis, ["x" "y" "z"]));
-assert(~isempty(index), "Angular momentum axis must be X, Y, or Z, but "...
-    + costTerm.axis + "was given.");
+assert(~isempty(index), "Angular momentum axis must be X, Y, or Z, " + ...
+    "but '" + costTerm.axis + "' was given.");
 
 cost = modeledValues.angularMomentum(:, index);
 if normalizeByFinalTime
