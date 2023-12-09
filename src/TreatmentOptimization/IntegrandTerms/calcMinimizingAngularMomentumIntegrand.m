@@ -34,6 +34,9 @@ normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
 axes = ["x" "y" "z"];
 
+assert(isfield(costTerm, 'axes'), "Angular momentum minimization " + ...
+    "requires an 'axes' field in the cost term settings.")
+
 indices = [];
 for substring = 1:3
     if contains(costTerm.axes, axes(substring), 'IgnoreCase', true)
