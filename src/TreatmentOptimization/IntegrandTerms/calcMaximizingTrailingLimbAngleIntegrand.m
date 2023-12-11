@@ -27,9 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMaximizingTrailingLimbAngleIntegrand(values, ...
+function cost = calcMaximizingTrailingLimbAngleIntegrand(values, time, ...
     modeledValues, params, costTerm)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 for i = 1:length(params.contactSurfaces)
     if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
         normalForce = ...
@@ -40,4 +41,7 @@ trailingLimbAngle = calcTrailingLimb(costTerm, values, ...
     normalForce, params);
 cost = calcMaximizingCostArrayTerm(trailingLimbAngle * ...
     ones(length(values.time), 1));
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

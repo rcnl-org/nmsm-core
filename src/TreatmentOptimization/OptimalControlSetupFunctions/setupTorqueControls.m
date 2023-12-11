@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function stores the initial control torques as a spline for use
+% in cost terms for Treatment Optimization
 %
+% (string) -> (None)
+% Spline input control torques
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -24,20 +28,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = convertFromGpopsSynergyDrivenOutputs(solution, ...
-    inputs, params)
-solution = solution.result.solution;
-solution.auxdata = inputs;
-if strcmp(inputs.toolName, "DesignOptimization")
-    if isfield(solution, 'parameter')
-        solution.phase.parameter = [solution.parameter];
-    end
-else
-    if inputs.optimizeSynergyVectors
-        solution.phase.parameter = solution.parameter;
-    end
+function inputs = setupTorqueControls(inputs)
+if isfield(inputs, "torqueControllerCoordinateNames") && ...
+        ~isempty(inputs.torqueControllerCoordinateNames)
+inputs.splineTorqueControls = spaps(inputs.initialTime, ...
+    inputs.initialTorqueControls', 0.0000001);
+inputs.torqueLabels = inputs.initialTorqueControlsLabels;
 end
-output = computeGpopsContinuousFunction(solution);
-output.solution = solution;
 end
-

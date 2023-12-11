@@ -28,11 +28,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingCoordinateIntegrand(auxdata, time, ...
+function cost = calcTrackingCoordinateIntegrand(costTerm, auxdata, time, ...
     statePositions, coordinateName)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 indx = find(strcmp(convertCharsToStrings(auxdata.coordinateNames), ...
     coordinateName));
+if isempty(indx)
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", coordinateName, " is not in the ", ...
+        "<states_coordinate_list>")))
+end
 if auxdata.splineJointAngles.dim > 1
     experimentalJointAngles = fnval(auxdata.splineJointAngles, time)';
 else
@@ -41,4 +47,8 @@ end
 
 cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...
     statePositions, indx);
+
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

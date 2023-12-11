@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function solverSettings = parseGpopsSolverSettings(settingsTree)
-solverSettings.optimizationFileName = 'trackingOptimizationOutputFile.txt';
+solverSettings.optimizationFileName = 'TreatmentOptimization';
 solverSettings.derivativeSupplier = parseTextOrAlternate( ...
     settingsTree, 'setup_derivatives_supplier', 'sparseFD');
 solverSettings.derivativeLevel = parseTextOrAlternate( ...

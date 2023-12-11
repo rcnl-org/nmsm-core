@@ -29,11 +29,16 @@
 
 function inputs = makeTreatmentOptimizationInputs(inputs, params)
 inputs = makeStateDerivatives(inputs, params);
+inputs.contactSurfaces = prepareGroundContactSurfaces( ...
+    inputs.modelFileName, inputs.contactSurfaces);
+inputs = modifyModelForces(inputs);
+initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 inputs = setupGroundContact(inputs);
 inputs = makeExperimentalDataSplines(inputs);
 inputs = makeSurrogateModel(inputs);
-inputs.maxAllowableError = ...
-    makeMaxAllowableError(inputs.toolName, inputs.costTerms);
+[inputs.continuousMaxAllowableError, inputs.discreteMaxAllowableError] ...
+    = makeMaxAllowableError(inputs.toolName, inputs.costTerms);
+inputs = makeMarkerTracking(inputs);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);

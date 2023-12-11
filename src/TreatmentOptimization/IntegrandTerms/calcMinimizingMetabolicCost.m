@@ -26,10 +26,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingMetabolicCost(values, modeledValues, ...
-    params)
-
+function cost = calcMinimizingMetabolicCost(costTerm, values, time, ...
+    modeledValues, params)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", false);
 metabolicCost = calcMetabolicCost(values.time, ...
     values.statePositions, modeledValues.muscleActivations, params);
 cost = calcMinimizingCostArrayTerm(metabolicCost);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

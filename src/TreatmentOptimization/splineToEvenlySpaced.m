@@ -1,6 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% makeStateDerivatives() requires evenly spaced points for the b-spline
+% derivatives. This function should be used to make the points evenly
+% spaced via splining
 %
+% (struct, struct) -> (None)
+% Splines results to make them evenly spaced
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -24,17 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = convertFromGpopsTorqueDrivenOutputs(solution, ...
-    inputs, params)
-solution = solution.result.solution;
-solution.auxdata = inputs;
-if isfield(solution, 'parameter')
-    solution.phase.parameter = [solution.parameter];
-end
-if isfield(inputs, "optimizeSynergyVectors")
-    solution.phase.parameter = solution.parameter;
-end
-output = computeGpopsContinuousFunction(solution);
-output.solution = solution;
+function [newTime, evenlySpacedData] = splineToEvenlySpaced(time, data)
+newTime = linspace(time(1), time(end), length(time));
+spline = spaps(time, data', 1e-7);
+evenlySpacedData = fnval(spline, newTime)';
 end
 

@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the starting and final
-% inverse dynamic moment for the specified coordinate. 
+% inverse dynamic moment for the specified coordinate.
 %
 % (2D matrix, Cell, Array of string) -> (Number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,8 +29,8 @@
 % ----------------------------------------------------------------------- %
 
 function rootSegmentResidualsPeriodicity = calcRootSegmentResidualsPeriodicity( ...
-    inverseDynamicMoments, inverseDynamicMomentLabels, loadNames)
-indx = find(strcmp(convertCharsToStrings(inverseDynamicMomentLabels), ...
+    inverseDynamicsMoments, inverseDynamicsMomentLabels, loadNames)
+indx = find(strcmp(convertCharsToStrings(inverseDynamicsMomentLabels), ...
     loadNames));
-rootSegmentResidualsPeriodicity = diff(inverseDynamicMoments(:, indx));
+rootSegmentResidualsPeriodicity = diff(inverseDynamicsMoments(:, indx));
 end

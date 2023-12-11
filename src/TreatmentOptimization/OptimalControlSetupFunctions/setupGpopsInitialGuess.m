@@ -34,13 +34,17 @@ guess = struct();
 guess = setupInitialStatesGuess(inputs, guess);
 guess = setupInitialControlsGuess(inputs, guess);
 guess = setupInitialParametersGuess(inputs, guess);
-guess.phase.integral = scaleToBounds(1e1, inputs.maxAllowableError, ...
-    zeros(size(inputs.maxAllowableError)));
+guess.phase.integral = scaleToBounds(1e1, inputs.continuousMaxAllowableError, ...
+    zeros(size(inputs.continuousMaxAllowableError)));
 end
 
 function guess = setupInitialStatesGuess(inputs, guess)
 if isfield(inputs, "initialStates")
-    guess.phase.state = scaleToBounds(inputs.initialStates, ...
+    states = subsetInitialStatesDataByCoordinates( ...
+        inputs.initialStates, ...
+        inputs.initialStatesLabels, ...
+        inputs.statesCoordinateNames);
+    guess.phase.state = scaleToBounds(states, ...
         inputs.maxState, inputs.minState);
     guess.phase.time = scaleToBounds(inputs.initialTime, inputs.maxTime, ...
         inputs.minTime);
@@ -70,9 +74,9 @@ if isfield(inputs, "initialJerks")
     controls = inputs.initialJerks;
 else
     stateJointJerks = subsetDataByCoordinates( ...
-    inputs.experimentalJointJerks, ...
-    inputs.coordinateNames, ...
-    inputs.statesCoordinateNames);
+        inputs.experimentalJointJerks, ...
+        inputs.coordinateNames, ...
+        inputs.statesCoordinateNames);
 
     controls = stateJointJerks;
 end
@@ -89,7 +93,11 @@ if isfield(inputs, "initialTorqueControls")
     controls = [controls, inputs.initialTorqueControls];
 else
     if ~isempty(valueOrAlternate(inputs, "torqueControllerCoordinateNames", []))
-        controls = [controls, inputs.experimentalJointMoments];
+        stateTorqueControls = subsetDataByCoordinates( ...
+            inputs.experimentalJointMoments, ...
+            inputs.coordinateNames, ...
+            inputs.torqueControllerCoordinateNames);
+        controls = [controls, stateTorqueControls];
     end
 end
 guess.phase.control = scaleToBounds(controls, inputs.maxControl, ...
@@ -98,7 +106,39 @@ end
 
 function guess = setupInitialParametersGuess(inputs, guess)
 if valueOrAlternate(inputs, "optimizeSynergyVectors", false)
-    guess.parameter = scaleToBounds(inputs.synergyWeights, ...
-        inputs.maxParameter, inputs.minParameter);
+    guess.parameter = [];
+    for i = 1 : length(inputs.synergyGroups)
+        for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
+            index = find(ismember(inputs.synergyWeightsLabels, ...
+                inputs.synergyGroups{i}.muscleNames{j}));
+            guess.parameter(end + 1) = inputs.synergyWeights(i, index);
+        end
+    end
 end
+if strcmp(inputs.toolName, "DesignOptimization")
+    for i = 1:length(inputs.userDefinedVariables)
+        if ~isfield(guess, "parameter")
+            guess.parameter = [];
+        end
+        guess.parameter = [guess.parameter, ...
+            inputs.userDefinedVariables{i}.initial_values];
+    end
+end
+if isfield(guess, "parameter")
+    guess.parameter = scaleToBounds(guess.parameter, inputs.maxParameter, ...
+        inputs.minParameter);
+end
+end
+
+function output = subsetInitialStatesDataByCoordinates(data, ...
+    coordinateNames, subsetOfCoordinateNames)
+includedSubset = ismember(coordinateNames, subsetOfCoordinateNames);
+numCoordinates = length(includedSubset) / 3;
+for i = 1:numCoordinates
+    if includedSubset(i)
+        includedSubset(i + numCoordinates) = true;
+        includedSubset(i + (2 * numCoordinates)) = true;
+    end
+end
+output = data(:, includedSubset);
 end

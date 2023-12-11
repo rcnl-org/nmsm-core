@@ -32,6 +32,6 @@ function outputModel = adjustModelFromOptimizerOutput(model, functions, ...
     values)
 outputModel = Model(model);
 for i = 1:length(values)
-    functions{i}(values(i), outputModel);
+    functions{i}(round(values(i), 10), outputModel);
 end
 end

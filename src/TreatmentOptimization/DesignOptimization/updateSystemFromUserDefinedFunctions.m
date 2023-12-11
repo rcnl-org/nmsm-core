@@ -29,8 +29,10 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = updateSystemFromUserDefinedFunctions(inputs, values)
-for i = 1:length(inputs.auxdata.systemFns)
-    func = str2func(inputs.auxdata.systemFns(i));
-    inputs = func(inputs, values);
+if getFieldByName(inputs.auxdata, "systemFns")
+    for i = 1:length(inputs.auxdata.systemFns)
+        func = str2func(inputs.auxdata.systemFns(i));
+        inputs = func(inputs, values);
+    end
 end
 end

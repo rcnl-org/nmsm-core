@@ -5,7 +5,7 @@
 % Applicable only if the model is torque driven.
 %
 % (struct, struct, 2D matrix, Array of string) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,13 +30,13 @@
 % ----------------------------------------------------------------------- %
 
 function pathTerm = calcTorqueActuatedMomentsPathConstraints(inputs, ...
-    modeledValues, controlTorques, loadName)
+    modeledValues, torqueControls, loadName)
 
 loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
 indx1 = find(cellfun(@isequal, inputs.coordinateNames, ...
     repmat({loadName}, 1, length(inputs.coordinateNames))));
 indx2 = find(strcmp(inputs.torqueControllerCoordinateNames, loadName));
-pathTerm = modeledValues.inverseDynamicMoments(:, indx1) - ...
-    controlTorques(:, indx2);
+pathTerm = modeledValues.inverseDynamicsMoments(:, indx1) - ...
+    torqueControls(:, indx2);
 end

@@ -1,11 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function parses and scales the design variables specific to
-% Verification Optimization. If the model is synergy driven, synergy 
-% weights are properly calculated and fixed.
 %
-% (struct, struct) -> (struct)
-% Design variables specific to Verification Optimization are parsed and scaled
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +10,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,10 +24,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getVerificationOptimizationValueStruct(setup, inputs)
-values = getTreatmentOptimizationValueStruct(setup, inputs);
-if strcmp(inputs.controllerType, 'synergy')
-    values.synergyWeights = getSynergyWeightsFromGroups(...
-        inputs.synergyWeights, inputs);
+function output = convertFromGpopsOutputs(solution, ...
+    inputs, params)
+solution = solution.result.solution;
+solution.auxdata = inputs;
+if isfield(inputs, "optimizeSynergyVectors") && ...
+        inputs.optimizeSynergyVectors
+    solution.phase.parameter = [solution.parameter];
+else
+    if strcmp(inputs.toolName, "DesignOptimization")
+        if isfield(solution, 'parameter')
+            solution.phase.parameter = [solution.parameter];
+        end
+    end
 end
+output = computeGpopsContinuousFunction(solution);
+output.solution = solution;
 end
+

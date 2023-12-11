@@ -27,10 +27,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMaximizingMuscleActivationIntegrand(...
+function cost = calcMaximizingMuscleActivationIntegrand(costTerm, time, ...
     muscleActivations, params, muscleName)
-
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
     muscleName));
 cost = calcMaximizingCostArrayTerm(muscleActivations(:, indx));
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

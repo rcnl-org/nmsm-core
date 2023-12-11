@@ -4,7 +4,7 @@
 % specified by the user for the specified root semgment loads.
 %
 % (Array of string, Cell, 2D matrix) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function pathTerm = calcRootSegmentResidualsPathConstraints(loadName, ...
-    inverseDynamicMomentLabels, inverseDynamicMoments)
-pathTerm = inverseDynamicMoments(:, ...
-    find(strcmp(inverseDynamicMomentLabels, loadName)));
+    inverseDynamicsMomentLabels, inverseDynamicsMoments)
+pathTerm = inverseDynamicsMoments(:, ...
+    find(strcmp(inverseDynamicsMomentLabels, loadName)));
 end

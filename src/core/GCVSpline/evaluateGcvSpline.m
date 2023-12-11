@@ -1,12 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function parses and scales the design variables common to all 
-% treatment optimization modules (tracking, verification, and design 
-% optimization). Time, states, and controls are parsed and scaled back to
-% their original values.
+% Evaluates a GCV spline for its fitted values or a derivative at a set of
+% time points. The spline to evaluate is chosen by the given column label,
+% which can be provided as either an integer (the raw index in the spline
+% set) or a string defining a column label that should exist in the spline
+% set. The derivative level is given as an integer (0 for position, 1 for
+% velocity, 2 for acceleration, etc.). 
 %
-% (struct, struct) -> (struct)
-% Design variables common to all treatment optimization modules are parsed
+% (GCVSplineSet, string OR int, Array of double, int) -> (Array of double)
+% Evaluate GCV spline values or derivatives at a set of time points.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +18,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,24 +32,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = getTreatmentOptimizationValueStruct(phase, inputs)
+function values = evaluateGcvSpline(splineSet, columnLabel, time, ...
+    derivative)
+values = zeros(1, length(time));
 
-values.time = scaleToOriginal(phase.time, inputs.maxTime, ...
-    inputs.minTime);
-state = scaleToOriginal(phase.state, ones(size(phase.state, 1), 1) .* ...
-    inputs.maxState, ones(size(phase.state, 1), 1) .* inputs.minState);
-control = scaleToOriginal(phase.control, ones(size(phase.control, 1), 1) .* ...
-    inputs.maxControl, ones(size(phase.control, 1), 1) .* inputs.minControl);
-values.statePositions = getCorrectStates(state, 1, inputs.numCoordinates);
-values.stateVelocities = getCorrectStates(state, 2, inputs.numCoordinates);
-values.stateAccelerations = getCorrectStates(state, 3, inputs.numCoordinates);
-values.controlJerks = control(:, 1 : inputs.numCoordinates);
+if isstring(columnLabel) || ischar(columnLabel)
+    columnLabel = splineSet.getIndex(columnLabel);
+    assert(columnLabel > -1, "The specified coordinate is not included in" + ...
+        " the spline set.")
+end
 
-if ~strcmp(inputs.controllerType, 'synergy')
-    values.controlTorques = control(:, inputs.numCoordinates + 1 : ...
-    inputs.numCoordinates + length(inputs.torqueControllerCoordinateNames));
-else 
-    values.controlSynergyActivations = control(:, ...
-    inputs.numCoordinates + 1 : inputs.numCoordinates + inputs.numSynergies);
+if nargin < 4
+    derivative = 0;
+end
+
+for i = 1 : length(time)
+    values(i) = splineSet.evaluate(columnLabel, derivative, time(i));
 end
 end

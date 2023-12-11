@@ -18,7 +18,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -38,7 +38,11 @@ inputs = makeControlBounds(inputs);
 end
 
 function inputs = makeStateBounds(inputs)
-inputs.maxTime = max(inputs.experimentalTime);
+if isfield(inputs, "finalTimeRange")
+    inputs.maxTime = max(inputs.experimentalTime) + inputs.finalTimeRange;
+else
+    inputs.maxTime = max(inputs.experimentalTime);
+end
 inputs.minTime = min(inputs.experimentalTime);
 
 stateJointAngles = subsetDataByCoordinates( ...
@@ -78,41 +82,60 @@ stateJointJerks = subsetDataByCoordinates( ...
     inputs.coordinateNames, ...
     inputs.statesCoordinateNames);
 
-maxControlJerks = max(stateJointJerks) + ...
+inputs.maxControl = max(stateJointJerks) + ...
     inputs.controlJerksMultiple * range(stateJointJerks);
-minControlJerks = min(stateJointJerks) - ...
+inputs.minControl = min(stateJointJerks) - ...
     inputs.controlJerksMultiple * range(stateJointJerks);
 
 if strcmp(inputs.controllerType, 'synergy')
     maxControlSynergyActivations = inputs.maxControlSynergyActivations * ...
         ones(1, inputs.numSynergies);
-    inputs.maxControl = [maxControlJerks maxControlSynergyActivations];
-    inputs.minControl = [minControlJerks zeros(1, inputs.numSynergies)];
+    inputs.maxControl = [inputs.maxControl maxControlSynergyActivations];
+    inputs.minControl = [inputs.minControl zeros(1, inputs.numSynergies)];
 
     if inputs.optimizeSynergyVectors
-        inputs.maxParameter = inputs.maxParameterSynergyWeights * ...
-            ones(1, inputs.numSynergyWeights);
-        inputs.minParameter = zeros(1, inputs.numSynergyWeights);
+        numParameters = 0;
+        for i = 1 : length(inputs.synergyGroups)
+            numParameters = numParameters + ...
+                inputs.synergyGroups{i}.numSynergies * ...
+                length(inputs.synergyGroups{i}.muscleNames);
+        end
+        inputs.maxParameter = ones(1, numParameters);
+        inputs.minParameter = zeros(1, numParameters);
+    end
+end
+if strcmp(inputs.toolName, "DesignOptimization")
+    if ~isfield(inputs, "maxParameter")
+        inputs.maxParameter = [];
+        inputs.minParameter = [];
+    end
+    for i = 1:length(inputs.userDefinedVariables)
+        inputs.maxParameter = [inputs.maxParameter ...
+            inputs.userDefinedVariables{i}.upper_bounds];
+        inputs.minParameter = [inputs.minParameter ...
+            inputs.userDefinedVariables{i}.lower_bounds];
     end
 end
 if isfield(inputs, "torqueControllerCoordinateNames")
+    maxTorqueControls = [];
+    minTorqueControls = [];
     for i = 1:length(inputs.torqueControllerCoordinateNames)
         indx = find(strcmp(convertCharsToStrings( ...
-            inputs.inverseDynamicMomentLabels), ...
+            inputs.inverseDynamicsMomentLabels), ...
             strcat(inputs.torqueControllerCoordinateNames(i), '_moment')));
         if isempty(indx)
             indx = find(strcmp(convertCharsToStrings( ...
-                inputs.inverseDynamicMomentLabels), ...
+                inputs.inverseDynamicsMomentLabels), ...
                 strcat(inputs.torqueControllerCoordinateNames(i), '_force')));
         end
-        maxControlTorques(i) = max(inputs.experimentalJointMoments(:, ...
-            indx)) + inputs.maxControlTorquesMultiple * ...
+        maxTorqueControls(i) = max(inputs.experimentalJointMoments(:, ...
+            indx)) + inputs.maxTorqueControlsMultiple * ...
             range(inputs.experimentalJointMoments(:, indx));
-        minControlTorques(i) = min(inputs.experimentalJointMoments(:, ...
-            indx)) - inputs.maxControlTorquesMultiple * ...
+        minTorqueControls(i) = min(inputs.experimentalJointMoments(:, ...
+            indx)) - inputs.maxTorqueControlsMultiple * ...
             range(inputs.experimentalJointMoments(:, indx));
     end
-    inputs.maxControl = [maxControlJerks maxControlTorques];
-    inputs.minControl = [minControlJerks minControlTorques];
+    inputs.maxControl = [inputs.maxControl maxTorqueControls];
+    inputs.minControl = [inputs.minControl minTorqueControls];
 end
 end

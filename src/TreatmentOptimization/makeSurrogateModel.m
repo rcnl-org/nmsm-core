@@ -28,22 +28,22 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeSurrogateModel(inputs)
-if strcmp(inputs.controllerType, 'synergy') 
+if strcmp(inputs.controllerType, 'synergy')
     for i = 1 : length(inputs.coordinateNames)
         for j = 1 : length(inputs.surrogateModelCoordinateNames)
             if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
                 inputs.surrogateModelIndex(j) = i;
             end
-        end 
+        end
     end
     inputs.dofsActuatedIndex = [];
-    for i = 1 : length(inputs.inverseDynamicMomentLabels)
+    for i = 1 : length(inputs.inverseDynamicsMomentLabels)
         for j = 1 : length(inputs.surrogateModelCoordinateNames)
-            if strcmp(inputs.inverseDynamicMomentLabels(i), ...
+            if strcmp(inputs.inverseDynamicsMomentLabels(i), ...
                     strcat(inputs.surrogateModelCoordinateNames(j), '_moment'))
                 inputs.dofsActuatedIndex(end+1) = j;
             end
-        end 
+        end
     end
 end
 end

@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function checks that the initial guess states file is in the correct
-% order
+% This function stores the initial synergy activations as a spline for use
+% in cost terms for Treatment Optimization
 %
-% (struct) -> (struct)
-%
+% (string) -> (None)
+% Spline input synergy activations
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,16 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = checkStateGuess(inputs)
-if isfield(inputs.initialGuess, 'state')
-    for i = 1 : inputs.numCoordinates
-        for j = 1 : length(inputs.initialGuess.stateLabels)
-            if strcmpi(inputs.coordinateNames(i), inputs.initialGuess.stateLabels(j))
-                stateIndex(i) = j;
-            end
-        end 
-    end
-    inputs.initialGuess.state = inputs.initialGuess.state(:, [stateIndex ...
-    stateIndex + inputs.numCoordinates stateIndex + inputs.numCoordinates * 2]);
+function inputs = setupMuscleSynergies(inputs)
+if strcmp(inputs.controllerType, 'synergy')
+    inputs.splineSynergyActivations = spaps(inputs.initialTime, ...
+        inputs.initialSynergyControls', 0.0000001);
+    inputs.synergyLabels = inputs.initialSynergyControlsLabels;
 end
 end

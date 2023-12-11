@@ -1,12 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the inverse dynamic
-% moments and the muscle produced moments with the aid of an external 
+% moments and the muscle produced moments with the aid of an external
 % torque controller for the specified coordinate. Applicable only if the
 % model is synergy driven and if an external torque controller is present.
 %
 % (struct, struct, 2D matrix, Array of string) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,16 +32,16 @@
 
 function pathTerm = ...
     calcMuscleActuatedMomentsWithExternalAidPathConstraints(params, ...
-    modeledValues, externalControlTorques, coordinate)
+    modeledValues, externalTorqueControls, coordinate)
 
-indx1 = find(strcmp(convertCharsToStrings(params.inverseDynamicMomentLabels), ...
+indx1 = find(strcmp(convertCharsToStrings(params.inverseDynamicsMomentLabels), ...
     [coordinate '_moment']));
 indx2 = find(strcmp(params.surrogateModelCoordinateNames, ...
      coordinate));
 indx3 = find(strcmp(params.externalControlTorqueNames, ...
      coordinate));
 
-pathTerm = modeledValues.inverseDynamicMoments(:, indx1) - ...
+pathTerm = modeledValues.inverseDynamicsMoments(:, indx1) - ...
     (modeledValues.muscleJointMoments(:, indx2) + ...
-    externalControlTorques(:, indx3));
+    externalTorqueControls(:, indx3));
 end

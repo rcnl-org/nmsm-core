@@ -28,8 +28,9 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcMaximizingBreakingForceIntegrand(modeledValues, ...
-    params, costTerm)
-
+    time, params, costTerm)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", false);
 for i = 1:length(params.contactSurfaces)
     if params.contactSurfaces{i}.isLeftFoot == costTerm.is_left_foot
         breakingForce = getBreakingForce( ...
@@ -37,4 +38,7 @@ for i = 1:length(params.contactSurfaces)
     end
 end
 cost = calcMaximizingCostArrayTerm(breakingForce);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

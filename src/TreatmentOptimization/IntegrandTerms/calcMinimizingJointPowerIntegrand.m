@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates and minimizes the joint power for the specified
-% coordinate. 
+% coordinate.
 %
 % (2D matrix, 2D matrix, struct, Array of string) -> (Array of number)
 
@@ -27,14 +27,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointPowerIntegrand(jointVelocity, ...
-    jointMoment, params, loadName)
-
+function cost = calcMinimizingJointPowerIntegrand(costTerm, ...
+    jointVelocity, time, jointMoment, params, loadName)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
 loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
 indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
     loadName));
-momentLabelsNoSuffix = erase(params.inverseDynamicMomentLabels, '_moment');
+momentLabelsNoSuffix = erase(params.inverseDynamicsMomentLabels, '_moment');
 momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
 includedJointMomentCols = ismember(momentLabelsNoSuffix, ...
     convertCharsToStrings(params.coordinateNames));
@@ -43,4 +44,7 @@ if isequal(mexext, 'mexw64')
 end
 jointPower = jointMoment(:, indx) .* jointVelocity(:, indx);
 cost = calcMinimizingCostArrayTerm(jointPower);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end
