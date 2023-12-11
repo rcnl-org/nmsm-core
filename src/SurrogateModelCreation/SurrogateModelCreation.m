@@ -48,8 +48,10 @@ function inputs = getData(inputs)
 
 tree.trial_prefixes = inputs.trialName;
 prefixes = findPrefixes(tree.trial_prefixes, inputs.dataDirectory);
-inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
-    inputs.surrogateModelCoordinateNames);
+if ~isfield(inputs, 'muscleNames')
+    inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
+        inputs.surrogateModelCoordinateNames);
+end
 inputs.numMuscles = length(inputs.muscleNames);
 
 inverseKinematicsFileNames = findFileListFromPrefixList(fullfile( ...
