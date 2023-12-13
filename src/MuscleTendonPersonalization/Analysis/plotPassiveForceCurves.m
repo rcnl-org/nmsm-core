@@ -1,31 +1,22 @@
 function plotPassiveForceCurves(resultsDirectory)
-[muscleNames, passiveForce] = extractSavedData(resultsDirectory, "passiveForcesExperimental");
+[muscleNames, passiveForce] = extractSavedData( ...
+    resultsDirectory, "passiveForcesExperimental");
 muscleNames = strrep(muscleNames, '_', ' ');
 meanPassiveForce = mean(passiveForce, 3);
 stdPassiveForce = std(passiveForce, [], 3);
 maxForce = max(meanPassiveForce, [], 'all');
 numWindows = ceil(sqrt(numel(muscleNames)));
 
-% data.mean = {meanPassiveForce};
-% data.std = {stdPassiveForce};
-% data.labels = muscleNames;
-% plotOptions.colors = ["b-"];
-% plotOptions.axisLimits = [1 size(meanPassiveForce, 1), 0, maxForce];
-% plotOptions.xlabel = "Time Points";
-% plotOptions.ylabel = "Force [N]";
-% 
-% plotMtpData(data, plotOptions);
-
-figure(Name = "Passive Force Curves")
-sgtitle("Passive Force Curves", Fontsize=14)
-set(gcf, Position=[750,400,1050,800])
+figure(Name = "Passive Force Curves", ...
+    Units='normalized', ...
+    Position=[0.1 0.1 0.8 0.8])
 t = 1:1:size(meanPassiveForce,1);
 for i = 1:numel(muscleNames)
     subplot(numWindows, numWindows, i)
     hold on
     plot(meanPassiveForce(:,i), 'b-', linewidth=2)
 
-    fillRegion = [(meanPassiveForce(:,i)+stdPassiveForce(:,i)); 
+    fillRegion = [(meanPassiveForce(:,i)+stdPassiveForce(:,i));
         flipud((meanPassiveForce(:,i)-stdPassiveForce(:,i)))];
     fill([t, fliplr(t)]', fillRegion, 'b', FaceAlpha=0.2, ...
         EdgeColor='none', HandleVisibility='off')

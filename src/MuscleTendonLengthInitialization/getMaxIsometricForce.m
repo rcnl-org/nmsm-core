@@ -30,7 +30,6 @@ function maxIsometricForce = getMaxIsometricForce(experimentalData, values)
 
 scaledOptimalFiberLength = experimentalData.optimalFiberLength .* ...
     values.optimalFiberLengthScaleFactors;
-
 if experimentalData.optimizeIsometricMaxForce
     scaledMaximumMuscleStress = experimentalData.maximumMuscleStress .* ...
         values.maximumMuscleStressScaleFactor;

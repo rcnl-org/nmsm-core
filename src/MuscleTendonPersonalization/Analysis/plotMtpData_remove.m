@@ -1,4 +1,4 @@
-function plotMtpData(data, options)
+function plotMtpData_remove(data, options)
     figure()
     set(gcf,'Position',[750,400,950,700])
     t = 1:1:size(data.mean{1},1);

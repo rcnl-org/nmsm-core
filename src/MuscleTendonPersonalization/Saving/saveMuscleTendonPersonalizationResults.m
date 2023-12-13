@@ -30,32 +30,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveMuscleTendonPersonalizationResults(modelFileName, ...
-    osimxFileName, prefixes, coordinateNames, finalValues, results, ...
-    resultsDirectory, muscleColumnNames)
-
-model = Model(modelFileName);
-% muscleColumnNames = getEnabledMusclesInOrder(model);
-if ~exist(resultsDirectory, "dir")
-    mkdir(resultsDirectory);
+function saveMuscleTendonPersonalizationResults(mtpInputs, finalValues, ...
+    modeledValues, resultsStruct, resultsDirectory, precalInputs)
+results = resultsStruct.results;
+resultsSynx = resultsStruct.resultsSynx;
+resultsSynxNoResiduals = resultsStruct.resultsSynxNoResiduals;
+analysisDirectory = fullfile(resultsDirectory, "Analysis");
+if nargin < 6
+    precalInputs = [];
 end
-if ~exist(fullfile(resultsDirectory, "muscleActivations"), "dir")
-    mkdir(fullfile(resultsDirectory, "muscleActivations"));
+if ~isempty(precalInputs)
+    savePassiveMomentData(precalInputs, modeledValues, analysisDirectory);
+    savePassiveForceData(mtpInputs, modeledValues, results, resultsSynx, ...
+        resultsSynxNoResiduals, analysisDirectory);
 end
-if ~exist(fullfile(resultsDirectory, "modelMoments"), "dir")
-    mkdir(fullfile(resultsDirectory, "modelMoments"));
-end
-for i = 1:size(results.muscleActivations, 1)
-    % Need to figure out how to print out individuals file names for each trial
-    writeToSto(muscleColumnNames, results.time(i, :), ...
-        squeeze(results.muscleActivations(i, :, :))', fullfile(resultsDirectory, ...
-        "muscleActivations", strcat(prefixes(i), "_muscleActivations", ".sto")));
-    writeToSto(coordinateNames, results.time(i, :), ...
-        squeeze(results.muscleJointMoments(i, :, :))', fullfile(resultsDirectory, ...
-        "modelMoments", strcat(prefixes(i), "_modelMoments", ".sto")));
-end
-muscleNames = getMusclesFromCoordinates(model, coordinateNames);
-writeMuscleTendonPersonalizationOsimxFile(modelFileName, osimxFileName, ...
+saveActivationAndExcitationData(mtpInputs, results, resultsSynx, analysisDirectory);
+writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, results.normalizedFiberLength, ...
+    fullfile(analysisDirectory, "normalizedFiberLengths"), "_normalizedFiberLengths.sto")
+saveJointMomentData(mtpInputs, results, resultsSynx, resultsSynxNoResiduals, ...
+    analysisDirectory);
+saveMuscleModelParameters(mtpInputs, finalValues, fullfile(analysisDirectory, ...
+    "muscleModelParameters"));
+model = Model(mtpInputs.model);
+muscleNames = getMusclesFromCoordinates(model, mtpInputs.coordinateNames);
+writeMuscleTendonPersonalizationOsimxFile(mtpInputs.model, mtpInputs.osimxFileName, ...
     finalValues, muscleNames, resultsDirectory);
 end
-

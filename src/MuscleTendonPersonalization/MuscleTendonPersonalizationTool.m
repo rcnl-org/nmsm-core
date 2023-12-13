@@ -43,26 +43,15 @@ else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
 optimizedParams = MuscleTendonPersonalization(inputs, params);
-
 if params.performMuscleTendonLengthInitialization
-    saveMuscleTendonOptimizationParams(".\mtpResults\Analysis", ...
-        optimizedParams, inputs, precalInputs)
+    [finalValues, resultsStruct, modeledValues] = ...
+        getMtpResultsToSave(inputs, params, optimizedParams, precalInputs);
+    saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
+        resultsStruct, resultsDirectory, precalInputs);
 else
-    saveMuscleTendonOptimizationParams(".\mtpResults\Analysis", ...
-        optimizedParams, inputs)
+    [finalValues, resultsStruct, modeledValues] = ...
+        getMtpResultsToSave(inputs, params, optimizedParams);
+    saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
+        resultsStruct, resultsDirectory);
 end
-
-reportMuscleTendonPersonalizationResults(".\mtpResults\Analysis");
-
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
-if precalInputs.optimizeIsometricMaxForce
-    finalValues.maxIsometricForce = inputs.maxIsometricForce;
-end
-results = calcMtpSynXModeledValues(finalValues, inputs, params);
-
-results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
-    end - inputs.numPaddingFrames);
-saveMuscleTendonPersonalizationResults(inputs.model, ...
-    inputs.osimxFileName, inputs.prefixes, inputs.coordinateNames, ...
-    finalValues, results, resultsDirectory, inputs.muscleTendonColumnNames);
 end

@@ -1,6 +1,8 @@
 function plotPassiveMomentCurves(resultsDirectory)
-[momentNames, passiveMomentsExperimental] = extractSavedData(resultsDirectory, "passiveJointMomentsExperimental");
-[~, passiveMomentsModel] = extractSavedData(resultsDirectory, "passiveJointMomentsModeled");
+[momentNames, passiveMomentsExperimental] = extractSavedData( ...
+    resultsDirectory, "passiveJointMomentsExperimental");
+[~, passiveMomentsModel] = extractSavedData( ...
+    resultsDirectory, "passiveJointMomentsModeled");
 momentNames = strrep(momentNames, '_', ' ');
 meanPassiveMomentsExperimental = mean(passiveMomentsExperimental, 3);
 stdPassiveMomentsExperimental = std(passiveMomentsExperimental, [], 3);
@@ -11,23 +13,11 @@ maxMoment = max([max(meanPassiveMomentsExperimental, [], 'all'), ...
 minMoment = min([min(meanPassiveMomentsExperimental, [], 'all'), ...
     min(meanPassiveMomentsModel, [], 'all')]);
 
-% data.mean = {meanPassiveMomentsExperimental, meanPassiveMomentsModel};
-% data.std = {stdPassiveMomentsExperimental, stdPassiveMomentsModel};
-% data.labels = momentNames;
-% 
-% plotOptions.colors = ["b-", "r-"];
-% plotOptions.legend = ["Experimental", "Model"];
-% plotOptions.axisLimits = [1 size(meanPassiveMomentsModel, 1) minMoment maxMoment];
-% plotOptions.xlabel = "Time Points";
-% plotOptions.ylabel = "Moment [Nm]";
-% 
-% plotMtpData(data, plotOptions);
-
 numWindows = ceil(sqrt(numel(momentNames)));
 t = 1:1:size(meanPassiveMomentsModel,1);
-figure(Name = "Passive Moment Curves")
-sgtitle("Passive Moment Curves", Fontsize=14)
-set(gcf, Position=[750,400,1050,800])
+figure(Name = "Passive Moment Curves", ...
+    Units='normalized', ...
+    Position=[0.1 0.1 0.8 0.8])
 
 for i = 1:numel(momentNames)
     subplot(numWindows, numWindows, i)
@@ -36,11 +26,11 @@ for i = 1:numel(momentNames)
     plot(meanPassiveMomentsExperimental(:,i), 'b-', linewidth=2)
     plot(meanPassiveMomentsModel(:,i), 'r-', linewidth=2)
 
-    fillRegionExperimental = [(meanPassiveMomentsExperimental(:,i)+stdPassiveMomentsExperimental(:,i)); 
+    fillRegionExperimental = [(meanPassiveMomentsExperimental(:,i)+stdPassiveMomentsExperimental(:,i));
         flipud((meanPassiveMomentsExperimental(:,i)-stdPassiveMomentsExperimental(:,i)))];
     fill([t, fliplr(t)]', fillRegionExperimental, 'b', FaceAlpha=0.2, ...
         EdgeColor='none', HandleVisibility='off')
-    fillRegionModel = [(meanPassiveMomentsModel(:,i)+stdPassiveMomentsModel(:,i)); 
+    fillRegionModel = [(meanPassiveMomentsModel(:,i)+stdPassiveMomentsModel(:,i));
         flipud((meanPassiveMomentsModel(:,i)-stdPassiveMomentsModel(:,i)))];
     fill([t, fliplr(t)]', fillRegionModel, 'b', FaceAlpha=0.2, ...
         EdgeColor='none', HandleVisibility='off')
@@ -55,6 +45,5 @@ for i = 1:numel(momentNames)
         xlabel("Time Points")
     end
 end
-
 end
 

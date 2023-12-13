@@ -1,8 +1,12 @@
 function plotMuscleExcitationsAndActivations(resultsDirectory)
-[muscleNames, excitations] = extractSavedData(resultsDirectory, "muscleExcitations");
-[~, activations] = extractSavedData(resultsDirectory, "muscleActivations");
-[~, excitationsSynx] = extractSavedData(resultsDirectory, "muscleExcitationsSynx");
-[~, activationsSynx] = extractSavedData(resultsDirectory, "muscleActivationsSynx");
+[muscleNames, excitations] = extractSavedData( ...
+    resultsDirectory, "muscleExcitations");
+[~, activations] = extractSavedData( ...
+    resultsDirectory, "muscleActivations");
+[~, excitationsSynx] = extractSavedData( ...
+    resultsDirectory, "muscleExcitationsSynx");
+[~, activationsSynx] = extractSavedData( ...
+    resultsDirectory, "muscleActivationsSynx");
 muscleNames = strrep(muscleNames, '_', ' ');
 meanExcitations = mean(excitations, 3);
 stdExcitations = std(excitations,[], 3);
@@ -13,23 +17,10 @@ stdExcitationsSynx = std(excitationsSynx,[], 3);
 meanActivationsSynx = mean(activationsSynx, 3);
 stdActivationsSynx = std(activationsSynx,[], 3);
 
-% data.mean = {meanExcitations, meanExcitationsSynx, meanActivations, meanActivationsSynx};
-% data.std = {stdExcitations, stdExcitationsSynx, stdActivations, stdActivationsSynx};
-% data.labels = muscleNames;
-% plotOptions.colors = ["b-", "b--", "r-", "r--"];
-% plotOptions.legend = ["Excitation(without residual)", ...
-%             "Excitation(with residual)", ...
-%             "Activation(without residual)", ...
-%             "Activation(with residual)"];
-% plotOptions.axisLimits = [1 size(meanExcitations, 1) 0 1];
-% plotOptions.xlabel = "Time Points";
-% plotOptions.ylabel = "Magnitude";
-% 
-% plotMtpData(data, plotOptions);
+figure(Name = "Muscle Excitations and Activations", ...
+    Units='normalized', ...
+    Position=[0.1 0.1 0.8 0.8])
 
-figure(Name = "Muscle Excitations and Activations")
-sgtitle("Muscle Excitations and Activations", Fontsize=14)
-set(gcf, Position=[750,400,1050,800])
 t = 1:1:size(meanExcitations,1);
 numWindows = ceil(sqrt(numel(muscleNames)));
 for i = 1:numel(muscleNames)
@@ -75,5 +66,4 @@ for i = 1:numel(muscleNames)
         xlabel("Time Points")
     end
 end
-
 end
