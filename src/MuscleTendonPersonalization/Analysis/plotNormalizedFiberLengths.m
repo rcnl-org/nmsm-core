@@ -1,5 +1,5 @@
 function plotNormalizedFiberLengths(resultsDirectory)
-[muscleNames, normalizedFiberLengths] = extractSavedData( ...
+[muscleNames, normalizedFiberLengths] = extractMtpDataFromSto( ...
     resultsDirectory, "normalizedFiberLengths");
 muscleNames = strrep(muscleNames, '_', ' ');
 meanFiberLengths = mean(normalizedFiberLengths, 3);

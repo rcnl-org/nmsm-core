@@ -36,6 +36,7 @@ results = resultsStruct.results;
 resultsSynx = resultsStruct.resultsSynx;
 resultsSynxNoResiduals = resultsStruct.resultsSynxNoResiduals;
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
+
 if nargin < 6
     precalInputs = [];
 end

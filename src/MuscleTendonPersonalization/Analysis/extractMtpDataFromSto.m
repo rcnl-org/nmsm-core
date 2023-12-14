@@ -1,10 +1,10 @@
-function [columnNames, data] = extractSavedData(resultsDirectoryParent, resultsDirectoryChild)
+function [columnNames, data] = extractMtpDataFromSto(resultsDirectoryParent, resultsDirectoryChild)
     import org.opensim.modeling.Storage
     if exist(fullfile(resultsDirectoryParent, resultsDirectoryChild), "dir")
         dataDir = dir(fullfile(resultsDirectoryParent, resultsDirectoryChild));
         dataFiles = {dataDir(3:end).name};
     else
-        fprintf("%s not found", resultsDirectoryChild);
+        fprintf("%s not found\n", resultsDirectoryChild);
         return
     end
     data = cell(1, numel(dataFiles));

@@ -1,5 +1,5 @@
 function plotPassiveForceCurves(resultsDirectory)
-[muscleNames, passiveForce] = extractSavedData( ...
+[muscleNames, passiveForce] = extractMtpDataFromSto( ...
     resultsDirectory, "passiveForcesExperimental");
 muscleNames = strrep(muscleNames, '_', ' ');
 meanPassiveForce = mean(passiveForce, 3);
