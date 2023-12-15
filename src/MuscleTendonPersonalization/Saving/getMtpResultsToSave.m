@@ -34,6 +34,7 @@ function [finalValues, resultsStruct, modeledValues] = ...
 finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
 if nargin < 4
     modeledValues = [];
+    precalInputs = [];
 else
     tempValues.optimalFiberLengthScaleFactors = ...
         mtpInputs.optimalFiberLength ./ precalInputs.optimalFiberLength;
@@ -47,9 +48,6 @@ else
     end
 end
 
-if precalInputs.optimizeIsometricMaxForce
-    finalValues.maxIsometricForce = mtpInputs.maxIsometricForce;
-end
 results = calcMtpModeledValues(finalValues, mtpInputs, struct());
 results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
     end - mtpInputs.numPaddingFrames);
