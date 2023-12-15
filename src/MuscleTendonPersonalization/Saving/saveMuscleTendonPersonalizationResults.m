@@ -1,11 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
+% 
+% This function takes the input, finalValues, result structs and writes to
+% the appropriate .osimx muscle model, .sto joint moments, .sto muscle 
+% activations & excitations, .sto Hill-Type muscle-tendon model parameter, 
+% .sto passive forces, and .sto passive moment files. The model is included 
+% in instances where the results are relative to the original model, which 
+% is used for reference.
 %
-% This function takes the result struct and writes the values to the
-% appropriate .osimx muscle model, .mot muscle moment, and .sto muscle
-% activation files. The model is included in instances where the results
-% are relative to the original model, which is used for reference.
-%
-% (Model, struct, string, string, string) -> (None)
+% (struct, struct, struct, struct, string, struct) -> (None)
 % Saves results in the struct to the given filenames
 
 % ----------------------------------------------------------------------- %
@@ -16,7 +18,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Marleny Vega, Claire V. Hammond, Robert Salati               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
