@@ -42,5 +42,6 @@ inputs = makeMarkerTracking(inputs);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
+inputs.surrogateMuscles = SurrogateModelCreation(inputs);
 end
 
