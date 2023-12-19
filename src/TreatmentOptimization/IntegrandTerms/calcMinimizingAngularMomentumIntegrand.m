@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function uses a mex file or a matlab function with parallel workers
-% to calculate inverse dynamics moments.
+% This function minimizes the whole body angular momentum for the specified
+% axis.
 %
-% (Array of number, 2D matrix, 2D matrix, 2D matrix, Cell, 2D matrix,
-% Array of string) -> (2D matrix)
-% Returns inverse dynamic moments
+% (2D matrix, struct, Array of string) -> (Array of number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams, Marleny Vega                               %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,31 +28,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inverseDynamicsMoments, angularMomentum] = inverseDynamics( ...
-    time, jointAngles, jointVelocities, jointAccelerations, ...
-    coordinateLabels, appliedLoads, modelName)
-if isequal(mexext, 'mexw64')
-    if nargout == 1
-        inverseDynamicsMoments = ...
-            inverseDynamicsAngularMomentumMexWindows(time, jointAngles, ...
-            jointVelocities, jointAccelerations, coordinateLabels, ...
-            appliedLoads);
-    else
-        [inverseDynamicsMoments, angularMomentum] = ...
-            inverseDynamicsAngularMomentumMexWindows(time, jointAngles, ...
-            jointVelocities, jointAccelerations, coordinateLabels, ...
-            appliedLoads);
-    end
-else
-    if nargout == 1
-        inverseDynamicsMoments = inverseDynamicsMatlabParallel(time, ...
-            jointAngles, jointVelocities, jointAccelerations, ...
-            coordinateLabels, appliedLoads, modelName);
-    else
-        [inverseDynamicsMoments, angularMomentum] = ...
-            inverseDynamicsMatlabParallel(time, ...
-            jointAngles, jointVelocities, jointAccelerations, ...
-            coordinateLabels, appliedLoads, modelName);
-    end
+function cost = calcMinimizingAngularMomentumIntegrand( ...
+    modeledValues, time, costTerm)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
+
+assert(isfield(costTerm, 'axis'), "Angular momentum minimization " + ...
+    "requires an 'axis' field in the cost term settings.")
+
+index = find(strcmpi(costTerm.axis, ["x" "y" "z"]));
+assert(~isempty(index), "Angular momentum axis must be X, Y, or Z, " + ...
+    "but '" + costTerm.axis + "' was given.");
+
+cost = modeledValues.angularMomentum(:, index);
+if normalizeByFinalTime
+    cost = cost / time(end);
 end
 end
