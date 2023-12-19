@@ -43,7 +43,7 @@ for i = 1 : size(synergyCommands, 1)
         )
     tempMoments = permute(moments(i, :, :), [3 1 2]);
     momentColumns = inputs.coordinateNames;
-    model = Model(inputs.model);
+    model = Model(inputs.modelFileName);
     for j = 1:length(momentColumns)
         if strcmpi(model.getCoordinateSet.get(momentColumns(j)).getMotionType.toString.toCharArray', 'Rotational')
             momentColumns(j) = momentColumns(j) + "_moment";
