@@ -96,7 +96,8 @@ if strcmp(inputs.toolName, "DesignOptimization")
             end
         end
     end
-    if isfield(inputs, 'userDefinedVariables')
+    if isfield(inputs, 'userDefinedVariables') && ...
+            ~isempty(inputs.userDefinedVariables)
         parameters = scaleToOriginal(phase.parameter(1,:), ...
             inputs.maxParameter, inputs.minParameter);
         for i = 1:length(inputs.userDefinedVariables)
