@@ -37,11 +37,12 @@ resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
+inputs = rmfield(inputs, "model");
 end
 
 function inputs = getInputs(tree)
 inputs = parseMtpNcpSharedInputs(tree);
-inputs.synergyGroups = parseSynergyGroups(tree, Model(inputs.model));
+inputs.synergyGroups = parseSynergyGroups(tree, inputs.model);
 inputs = matchMuscleNamesFromCoordinatesAndSynergyGroups(inputs);
 inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.maxIsometricForce, inputs.optimalFiberLength, ...
@@ -100,7 +101,6 @@ end
 end
 
 function params = getParams(tree, model, inputs)
-model = Model(model);
 params = struct();
 params.activationGroupNames = parseSpaceSeparatedList(tree, ...
     'activation_muscle_groups');

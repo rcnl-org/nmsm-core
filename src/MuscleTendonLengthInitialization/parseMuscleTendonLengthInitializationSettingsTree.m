@@ -35,6 +35,7 @@ if strcmp(getFieldByNameOrError(settingsTree, ...
     inputs = getInputs(settingsTree);
     inputs = getMtpModelInputs(inputs);
     inputs = getMuscleVolume(inputs);
+    inputs = rmfield(inputs, "model");
 else
     inputs = false;
 end
@@ -143,10 +144,12 @@ inputs.normalizedFiberLengthGroups = groupNamesToGroups( ...
     normalizedFiberLengthGroupNames, inputs.model);
 inputs.numMuscleGroups = numel(inputs.normalizedFiberLengthGroups);
 numMuscles = length(inputs.muscleNames);
+lowestIndex = min(cell2mat(inputs.normalizedFiberLengthGroups));
 for i = 1 : inputs.numMuscleGroups
     for j = 1 : numel(inputs.normalizedFiberLengthGroups{i})
         inputs.groupedMaxNormalizedFiberLength(...
-            inputs.normalizedFiberLengthGroups{i}(j)) = i;
+            inputs.normalizedFiberLengthGroups{i}(j) ...
+            - lowestIndex + 1) = i;
     end
 end
 inputs.numMusclesIndividual = 0;

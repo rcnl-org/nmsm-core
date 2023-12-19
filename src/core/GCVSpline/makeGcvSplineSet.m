@@ -33,8 +33,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function splineSet = makeGcvSplineSet(time, data, columnLabels, degree, ...
-    smoothingParameter)
+function splineSet = makeGcvSplineSet(time, data, columnLabels, degree)
 import org.opensim.modeling.*
 
 if length(time) ~= size(data, 1)
@@ -56,11 +55,5 @@ elseif isempty(degree)
     degree = 5;
 end
 
-if nargin < 5
-    smoothingParameter = 0;
-elseif isempty(smoothingParameter)
-    smoothingParameter = 0;
-end
-
-splineSet = GCVSplineSet(table, labels, degree, smoothingParameter);
+splineSet = GCVSplineSet(table, labels, degree);
 end

@@ -113,14 +113,12 @@ end
 
 function [positions, velocities, accelerations] = recombineFullState( ...
     values, inputs)
-positions = fnval(inputs.splineJointAngles, values.time)';
-velocities = fnval(inputs.splineJointVelocities, values.time)';
-accelerations = fnval(inputs.splineJointAccelerations, values.time)';
-if length(inputs.statesCoordinateNames) == 1
-    positions = positions';
-    velocities = velocities';
-    accelerations = accelerations';
-end
+positions = evaluateGcvSplines(inputs.splineJointAngles, ...
+    inputs.coordinateNames, values.time);
+velocities = evaluateGcvSplines(inputs.splineJointAngles, ...
+    inputs.coordinateNames, values.time, 1);
+accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
+    inputs.coordinateNames, values.time, 2);
 for i = 1:length(inputs.coordinateNames)
     index = find(ismember( ...
         inputs.statesCoordinateNames, inputs.coordinateNames{i}));
