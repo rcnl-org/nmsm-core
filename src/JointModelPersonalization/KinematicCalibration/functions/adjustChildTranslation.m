@@ -28,7 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function adjustChildTranslation(model, jointName, coordinateNum, value)
+function [body, joint, coordinate] = adjustChildTranslation(model, jointName, coordinateNum, value)
+body = "child_translation";
+joint = jointName;
+coordinate = coordinateNum;
 import org.opensim.modeling.*
 frame = model.getJointSet().get(jointName).getChildFrame();
 offsetFrame = PhysicalOffsetFrame.safeDownCast(frame);

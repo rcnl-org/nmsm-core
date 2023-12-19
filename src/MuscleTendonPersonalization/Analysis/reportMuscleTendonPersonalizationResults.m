@@ -32,12 +32,185 @@
 function reportMuscleTendonPersonalizationResults(optimizedParams, ...
     mtpInputs, precalInputs)
 if nargin < 3; precalInputs = []; end
-[finalValues, results, resultsSynx, resultsSynxNoResiduals] = ...
-    getValuesToReport(mtpInputs, precalInputs, optimizedParams);
 if ~isempty(precalInputs)
     plotMuscleTendonLengthInitializationResults(precalInputs, mtpInputs)
 end
+if isfield(mtpInputs, "synergyExtrapolation")
+    reportSynX(optimizedParams, mtpInputs, precalInputs)
+else
+    reportNoSynX(optimizedParams, mtpInputs, precalInputs)
+end
+end
 
+function reportNoSynX(optimizedParams, mtpInputs, precalInputs)
+[finalValues, results] = ...
+    getValuesToReportNoSynX(mtpInputs, precalInputs, optimizedParams);
+printJointMomentMatchingError(results.muscleJointMoments, ...
+    mtpInputs.inverseDynamicsMoments);
+makeExcitationAndActivationPlotsNoSynX(results, mtpInputs);
+makeModelParameterPlotsNoSynX(finalValues, mtpInputs)
+makeTaskSpecificMomentMatchingPlotsNoSynX(...
+    permute(results.muscleJointMoments, [3 1 2]), ...
+    permute(mtpInputs.inverseDynamicsMoments, [3 1 2]), ...
+    mtpInputs.coordinateNames)
+% makeTaskSpecificNormalizedFiberLengthsPlots( ...
+%     permute(resultsSynx.normalizedFiberLength, [3 1 2]), ...
+%     mtpInputs, mtpInputs.synergyExtrapolation)
+end
+
+function [finalValues, results] = getValuesToReportNoSynX(mtpInputs, ...
+    precalInputs, optimizedParams)
+finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7), mtpInputs);
+results = calcMtpModeledValues(finalValues, mtpInputs, struct());
+results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
+    end - mtpInputs.numPaddingFrames);
+results.muscleExcitations = results.muscleExcitations(:, :, ...
+    mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
+if ~isempty(precalInputs)
+finalOptimalFiberLength = ...
+    finalValues.optimalFiberLengthScaleFactors .* mtpInputs.optimalFiberLength;
+finalValues.optimalFiberLengthScaleFactors = ...
+    finalOptimalFiberLength ./ precalInputs.optimalFiberLength;
+finalTendonSlackLength = ...
+    finalValues.tendonSlackLengthScaleFactors .* mtpInputs.tendonSlackLength;
+finalValues.tendonSlackLengthScaleFactors = ...
+    finalTendonSlackLength ./ precalInputs.tendonSlackLength;
+end
+end
+
+function makeExcitationAndActivationPlotsNoSynX(results, ...
+    experimentalData)
+
+muscleLabels = experimentalData.muscleNames;
+
+muscleExcitations = results.muscleExcitations(:, :, :);
+muscleActivations = results.muscleActivations(:, :, :);
+meanMuscleExcitation = permute(mean(muscleExcitations, 1), [3 2 1]);
+stdMuscleExcitation = permute(std(muscleExcitations, [], 1), [3 2 1]);
+meanMuscleActivation = permute(mean(muscleActivations, 1), [3 2 1]);
+stdMuscleActivation = permute(std(muscleActivations, [], 1), [3 2 1]);
+
+t = 1 : size(meanMuscleExcitation, 1);
+nplot = ceil(sqrt(numel(muscleLabels)));
+for j = 1 : numel(muscleLabels)
+    subplot(nplot,nplot,j);
+    plot(meanMuscleExcitation(:, j), 'b-', 'LineWidth', 2); hold on
+    fill([t'; flipud(t')], ...
+    [meanMuscleExcitation(:, j) - stdMuscleExcitation(:, j); ...
+    flipud(meanMuscleExcitation(:, j) + stdMuscleExcitation(:, j))], ...
+    'b', 'linestyle', 'None', 'FaceAlpha', 0.5);
+    hold on
+    plot(meanMuscleActivation(:, j), 'r-', 'LineWidth', 2); hold on
+    fill([t'; flipud(t')], ...
+    [meanMuscleActivation(:, j) - stdMuscleActivation(:, j); ...
+    flipud(meanMuscleActivation(:, j) + stdMuscleActivation(:, j))], ...
+    'r', 'linestyle', 'None', 'FaceAlpha', 0.5);
+    axis([1 size(meanMuscleExcitation, 1) 0 1])
+    title(muscleLabels{j});
+    if j == 1
+        legend ('Excitation(without residual)', '', ...
+            'Activation(without residual)', '');
+    end
+end
+set(gca, 'FontSize', 12)
+end
+
+function makeModelParameterPlotsNoSynX(finalValues, experimentalData)
+
+muscleLabels = experimentalData.muscleNames;
+
+In_width = 0.145; % witdth of each subplot
+figure('name', 'Model Parameters', 'units', 'normalized', ...
+    'outerposition', [0 0 1 1]);
+for subplotElement = 1 : 6
+    subplotTight(1, 6, subplotElement, [0.04, 0.001]);
+    switch subplotElement 
+        case 1 %activationTimeConstant
+            bar(1 : numel(muscleLabels), finalValues.activationTimeConstants, ...
+                'barwidth', 0.8, 'Horizontal', 'on', 'FaceAlpha', 0.6); 
+            hold on;
+            title('Activation Time Constant (cs)')
+            pos_in = get(gca, 'Position');
+            pos_in(3) = In_width;
+            pos_in(1) = pos_in(1) + 0.05;
+            set(gca, 'YTick', 1 : numel(muscleLabels), 'yTickLabel', ...
+                muscleLabels, 'Fontsize', 11, 'Position', pos_in);
+        case 2 %activationNonlinearity
+            bar(finalValues.activationNonlinearityConstants, 'Horizontal', 'on', ...
+                'barwidth', 0.8, 'FaceAlpha', 0.6);
+            title('Activation Nonlinearity')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [], 'Position', pos_in, ...
+                'Fontsize', 11);
+        case 3 %timeDelay
+            bar(finalValues.electromechanicalDelays, 'Horizontal', 'on', 'barwidth', 0.8, ...
+                'FaceAlpha', 0.6);
+            title('Electromechanical Time Delay (ds)')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [],'Position', pos_in, ...
+                'Fontsize', 11);
+        case 4 % emgScalingFactor
+            bar(finalValues.emgScaleFactors, 'Horizontal', 'on', 'barwidth', 0.8, ...
+                'FaceAlpha', 0.6);
+            title('Emg Scaling Factor')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [],'Position', pos_in, ...
+                'Fontsize', 11);
+        case 5 %muscleOptimalLength
+            bar(finalValues.optimalFiberLengthScaleFactors, 'Horizontal', 'on', 'barwidth', ...
+                0.8, 'FaceAlpha', 0.6);
+            title('Optimal Fiber Length Scaling Factor')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [],'Position', pos_in, ...
+                'Fontsize', 11);
+        case 6 %tendonSlackLength            
+            bar(finalValues.tendonSlackLengthScaleFactors, 'Horizontal', 'on', 'barwidth', ...
+                0.8, 'FaceAlpha', 0.6);
+            title('Tendon Slack Length Scaling Factor')
+            pos_in(1) = pos_in(1) + pos_in(3) + 0.015;
+            set(gca, 'YTick', [], 'yTickLabel', [],'Position', pos_in, ...
+                'Fontsize', 11);
+    end
+end
+end
+
+function makeTaskSpecificMomentMatchingPlotsNoSynX(jointMoments, ...
+    inverseDynamicsMoments, coordinates)
+
+figure('name', ['Joint moments']);
+meanJointMoments = squeeze(mean(jointMoments, 2));
+stdJointMoments = squeeze(std(jointMoments, [], 2));
+meaninverseDynamicsMoments = squeeze(mean(inverseDynamicsMoments, 2));
+stdinverseDynamicsMoments = squeeze(std(inverseDynamicsMoments, [], 2));
+t = 1 : size(jointMoments,1);
+for j = 1:size(jointMoments,3)
+subplot(2, size(jointMoments, 3), j);
+plot(-meanJointMoments(:, j), 'r', 'LineWidth', 2); hold on
+fill([t'; flipud(t')], ...
+    [-meanJointMoments(:,j) - stdJointMoments(:,j); ...
+    flipud(-meanJointMoments(:, j) + stdJointMoments(:, j))], ...
+    'r', 'linestyle', 'None', 'FaceAlpha', 0.5);
+subplot(2, size(jointMoments, 3), j); 
+plot(-meaninverseDynamicsMoments(:, j), 'k', 'LineWidth', 2);
+fill([t'; flipud(t')], ...
+    [-meaninverseDynamicsMoments(:, j) - stdinverseDynamicsMoments(:, j); ...
+    flipud(-meaninverseDynamicsMoments(:, j) + stdinverseDynamicsMoments(:, j))], ...
+    'k', 'linestyle', 'None', 'FaceAlpha', 0.5);
+title({[strrep(coordinates{j}, '_', ' ') ],'Moment (N-m)'});
+xlabel('Time Frames'); axis([0 100 -80 120]);
+if j == 1; ylabel('Moment (N-m)');
+elseif j == numel(coordinates)
+    lgd = legend("");
+    lgd.Orientation ='horizontal';
+    lgd.NumColumns = 2;
+end
+set(gca, 'FontSize', 12)
+end
+end
+
+function reportSynX(optimizedParams, mtpInputs, precalInputs)
+[finalValues, results, resultsSynx, resultsSynxNoResiduals] = ...
+    getValuesToReport(mtpInputs, precalInputs, optimizedParams);
 printJointMomentMatchingError(resultsSynx.muscleJointMoments, ...
     mtpInputs.inverseDynamicsMoments);
 makeExcitationAndActivationPlots(results, resultsSynx, mtpInputs, ...
@@ -53,11 +226,11 @@ makeTaskSpecificNormalizedFiberLengthsPlots( ...
     permute(resultsSynx.normalizedFiberLength, [3 1 2]), ...
     mtpInputs, mtpInputs.synergyExtrapolation)
 end
+
 function [finalValues, results, resultsSynx, resultsSynxNoResiduals] = ...
     getValuesToReport(mtpInputs, precalInputs, optimizedParams)
 
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
-save('finalvalues.mat', 'finalValues')
+finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7), mtpInputs);
 resultsSynx = calcMtpSynXModeledValues(finalValues, mtpInputs, struct());
 finalValues.synergyWeights(mtpInputs.numberOfExtrapolationWeights + 1 : end) = 0;
 resultsSynxNoResiduals = calcMtpSynXModeledValues(finalValues, mtpInputs, struct());
@@ -166,6 +339,7 @@ fprintf(['The mean absolute errors (MAEs) between model-predicted ' ...
     'and inverse dynamic moments are: \n' ]);
 fprintf(['\n ' num2str(jointMomentsMae) ' \n']);
 end
+
 function makeExcitationAndActivationPlots(results, resultsSynx, ...
     experimentalData, synergyParameters)
 
@@ -184,6 +358,7 @@ plotMuscleExcitationsAndActivations(...
     muscleLabels)
 end
 end
+
 function plotMuscleExcitationsAndActivations(muscleExcitations, ...
     muscleExcitationsSynx, muscleActivations, muscleActivationsSynx, ...
     muscleLabels)
@@ -328,6 +503,7 @@ end
 
 if nargout == 1;vargout=h; end
 end
+
 function makeTaskSpecificMomentMatchingPlots(jointMoments, jointMomentsSynx, ...
     inverseDynamicsMoments, coordinates, synergyParameters)
 
@@ -344,6 +520,7 @@ plotJointMoments(jointMomentsSynx(:, synergyParameters.trialIndex{i}, :), ...
     {'','Predicted (with residual excitations)','','Inverse dynamics'});
 end
 end
+
 function plotJointMoments(jointMoments, inverseDynamicsMoments, taskName, ...
     coordinates, subplotIndex, legendName)
 
@@ -376,6 +553,7 @@ end
 set(gca, 'FontSize', 12)
 end
 end
+
 function makeTaskSpecificNormalizedFiberLengthsPlots(...
     normalizedFiberLengths, experimentalData, synergyParameters)
 

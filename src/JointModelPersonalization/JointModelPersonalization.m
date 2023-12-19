@@ -34,11 +34,12 @@ verifyParams(params);
 outputModel = Model(inputs.model);
 for i=1:length(inputs.tasks)
     functions = makeFunctions(inputs.tasks{i}.parameters, ...
-        inputs.tasks{i}.scaling, inputs.tasks{i}.markers);
-    params.markerNames = getMarkersOnJoints(outputModel, ...
+        inputs.tasks{i}.scaling, inputs.tasks{i}.markers, ...
+        inputs.tasks{i}.anatomicalMarkers);
+    params.markerNames = getMarkersInTask(outputModel, ...
         inputs.tasks{i});
     taskParams = mergeStructs(inputs.tasks{i}, params);
-    optimizedValues = computeKinematicCalibration(inputs.model, ...
+    optimizedValues = computeKinematicCalibration(inputs.modelFileName, ...
         inputs.tasks{i}.markerFile, functions, inputs.desiredError, ...
         taskParams);
     outputModel = adjustModelFromOptimizerOutput(outputModel, ...
@@ -97,14 +98,16 @@ if(isfield(params, fieldName))
 end
 end
 
-function functions = makeFunctions(parameters, scaling, markers)
+function functions = makeFunctions(...
+    parameters, scaling, markers, anatomicalMarkers)
 functions = {};
 for i=1:length(parameters)
     p = parameters{i};
     functions{i} = makeJointFunction(p{1}, p{2}, p{3}, p{4});
 end
 for i=1:length(scaling)
-    functions{end + 1} = makeScalingFunction(scaling(i));
+    functions{end + 1} = makeScalingFunction( ...
+        scaling(i), anatomicalMarkers);
 end
 for i=1:length(markers)
     marker = markers{i};
@@ -122,8 +125,12 @@ for i=1:length(markers)
 end
 end
 
-function markerNames = getMarkersOnJoints(model, task)
+function markerNames = getMarkersInTask(model, task)
 import org.opensim.modeling.*
+if isfield(task, "markerNames")
+    markerNames = task.markerNames;
+    return
+end
 parameters = task.parameters;
 bodies = task.scaling;
 markerNames = {};

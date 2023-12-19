@@ -54,4 +54,19 @@ else
     saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory);
 end
+finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7), inputs);
+if precalInputs.optimizeIsometricMaxForce
+    finalValues.maxIsometricForce = inputs.maxIsometricForce;
+end
+if isfield(inputs, "synergyExtrapolation")
+    results = calcMtpSynXModeledValues(finalValues, inputs, params);
+else
+    results = calcMtpModeledValues(finalValues, inputs, params);
+end
+
+results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
+    end - inputs.numPaddingFrames);
+saveMuscleTendonPersonalizationResults(inputs.modelFileName, ...
+    inputs.osimxFileName, inputs.prefixes, inputs.coordinateNames, ...
+    finalValues, results, resultsDirectory, inputs.muscleTendonColumnNames);
 end

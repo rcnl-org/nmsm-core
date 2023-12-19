@@ -28,6 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function fn = makeScalingFunction(bodyName)
-fn = @(value, model) adjustBodyScaling(model, bodyName, value);
+function fn = makeScalingFunction(bodyName, anatomicalMarkers)
+fn = @(value, model) adjustBodyScaling( ...
+    model, bodyName, value, anatomicalMarkers);
 end
