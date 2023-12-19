@@ -38,6 +38,8 @@ function [columnNames, data] = extractMtpDataFromSto(resultsDirectory)
         dataFiles = {dataDir(3:end).name};
     else
         fprintf("%s not found\n", resultsDirectory);
+        columnNames = [];
+        data = [];
         return
     end
     data = cell(1, numel(dataFiles));

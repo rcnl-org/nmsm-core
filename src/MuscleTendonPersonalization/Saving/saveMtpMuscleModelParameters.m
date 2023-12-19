@@ -1,12 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function saves experimental passive force data, modeled passive 
-% force data without SynX, with SynX, and with SynX with no residuals to
-% their appropriate .sto files in a directory specified by
-% resultsDirectory.
+% This function saves optimized Hill-type muscle-tendon model parameters
+% output by MTP to a .sto file in a directory specified by
+% resultsDirectory. Each row in the .sto file corresponds to a parameter.
+% In order from top to bottom, these are: activation time constants, 
+% activation nonlinearity constants, electromechanical delays, emg scale
+% factors, optimal fiber length scale factors, tendon slack length scale
+% factors. 
 %
 % (struct, struct, struct, struct, struct, string) -> (None)
-% Saves passive force data to .sto files.
+% Saves joint moment data to .sto files.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,18 +33,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function savePassiveForceData(mtpInputs, modeledValues, results, resultsSynx, ...
-    resultsSynxNoResiduals, resultsDirectory)
-writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
-    modeledValues.passiveForce, strcat(resultsDirectory, ...
-    "\passiveForcesExperimental"), "_passiveForcesExperimental.sto");
-writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
-    results.passiveForce, strcat(resultsDirectory, ...
-    "\passiveForcesModel"), "_passiveForcesModel.sto");
-writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
-    resultsSynx.passiveForce, strcat(resultsDirectory, ...
-    "\passiveForcesModelSynx"), "_passiveForcesModelSynx.sto");
-writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
-    resultsSynxNoResiduals.passiveForce, strcat(resultsDirectory, ...
-    "\passiveForcesModelSynxNoResiduals"), "_passiveForcesModelSynxNoResiduals.sto");
+function saveMtpMuscleModelParameters(mtpInputs, finalValues, resultsDirectory)
+if ~exist(resultsDirectory, "dir")
+    mkdir(resultsDirectory);
+end
+columnLabels = mtpInputs.muscleNames;
+dataPoints = [finalValues.activationTimeConstants;
+    finalValues.activationNonlinearityConstants;
+    finalValues.electromechanicalDelays;
+    finalValues.emgScaleFactors;
+    finalValues.optimalFiberLengthScaleFactors;
+    finalValues.tendonSlackLengthScaleFactors];
+writeToSto(columnLabels, 1:1:size(dataPoints,1), dataPoints, ...
+    fullfile(resultsDirectory, "muscleModelParameters.sto"));
 end

@@ -32,30 +32,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveMuscleTendonPersonalizationResults(mtpInputs, finalValues, ...
+function saveMtpMuscleTendonPersonalizationResults(mtpInputs, finalValues, ...
     modeledValues, resultsStruct, resultsDirectory, precalInputs)
-results = resultsStruct.results;
-resultsSynx = resultsStruct.resultsSynx;
-resultsSynxNoResiduals = resultsStruct.resultsSynxNoResiduals;
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
-
+if exist(analysisDirectory, "dir")
+    rmdir(analysisDirectory, 's')
+end
 if nargin < 6
     precalInputs = [];
 end
 if ~isempty(precalInputs)
-    savePassiveMomentData(precalInputs, modeledValues, analysisDirectory);
-    savePassiveForceData(mtpInputs, modeledValues, results, resultsSynx, ...
-        resultsSynxNoResiduals, analysisDirectory);
+    saveMtpPassiveMomentData(precalInputs, modeledValues, analysisDirectory);
+    saveMtpPassiveForceData(mtpInputs, modeledValues, resultsStruct, analysisDirectory);
 end
-saveActivationAndExcitationData(mtpInputs, results, resultsSynx, analysisDirectory);
-writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, results.normalizedFiberLength, ...
+saveMtpActivationAndExcitationData(mtpInputs, resultsStruct, analysisDirectory);
+writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, resultsStruct.results.normalizedFiberLength, ...
     fullfile(analysisDirectory, "normalizedFiberLengths"), "_normalizedFiberLengths.sto")
-saveJointMomentData(mtpInputs, results, resultsSynx, resultsSynxNoResiduals, ...
-    analysisDirectory);
-saveMuscleModelParameters(mtpInputs, finalValues, fullfile(analysisDirectory, ...
+saveMtpJointMomentData(mtpInputs, resultsStruct, analysisDirectory);
+saveMtpMuscleModelParameters(mtpInputs, finalValues, fullfile(analysisDirectory, ...
     "muscleModelParameters"));
 model = Model(mtpInputs.model);
 muscleNames = getMusclesFromCoordinates(model, mtpInputs.coordinateNames);
-writeMuscleTendonPersonalizationOsimxFile(mtpInputs.model, mtpInputs.osimxFileName, ...
+writeMuscleTendonPersonalizationOsimxFile(mtpInputs.modelFileName, mtpInputs.osimxFileName, ...
     finalValues, muscleNames, resultsDirectory);
 end

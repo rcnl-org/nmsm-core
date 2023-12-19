@@ -1,15 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function saves optimized Hill-type muscle-tendon model parameters
-% output by MTP to a .sto file in a directory specified by
-% resultsDirectory. Each row in the .sto file corresponds to a parameter.
-% In order from top to bottom, these are: activation time constants, 
-% activation nonlinearity constants, electromechanical delays, emg scale
-% factors, optimal fiber length scale factors, tendon slack length scale
-% factors. 
+% This function reads .sto files created by
+% saveMuscleTendonPersonalizationResults.m containing normalized fiber
+% lengths and creates plots of them.
 %
-% (struct, struct, struct, struct, struct, string) -> (None)
-% Saves joint moment data to .sto files.
+% (string) -> (None)
+% Plot normalized fiber lengths from file.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -19,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Robert Salati                                                %
+% Author(s): Di Ao, Marleny Vega, Robert Salati                           %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -32,18 +28,39 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
+function plotMtpNormalizedFiberLengths(resultsDirectory)
+analysisDirectory = fullfile(resultsDirectory, "Analysis");
+[muscleNames, normalizedFiberLengths] = extractMtpDataFromSto( ...
+    fullfile(analysisDirectory, "normalizedFiberLengths"));
+muscleNames = strrep(muscleNames, '_', ' ');
+meanFiberLengths = mean(normalizedFiberLengths, 3);
+stdFiberLengths = std(normalizedFiberLengths, [], 3);
 
-function saveMuscleModelParameters(mtpInputs, finalValues, resultsDirectory)
-if ~exist(resultsDirectory, "dir")
-    mkdir(resultsDirectory);
+figure(Name = "Normalized Fiber Lengths", ...
+    Units='normalized', ...
+    Position=[0.1 0.1 0.8 0.8])
+time = 1:1:size(meanFiberLengths,1);
+numWindows = ceil(sqrt(numel(muscleNames)));
+passiveLower = ones(size(time))*0.7;
+passiveUpper = ones(size(time));
+
+for i=1:numel(muscleNames)
+    subplot(numWindows, numWindows, i);
+    hold on
+    plotMeanAndStd(meanFiberLengths(:,i), stdFiberLengths(:,i), time, 'b-')
+    plot(time, passiveUpper, 'r--', LineWidth=2);
+    plot(time, passiveLower, 'r--', LineWidth=2);
+    hold off
+    set(gca, fontsize=11)
+    axis([1 size(meanFiberLengths, 1) 0 1.5])
+    title(muscleNames(i), FontSize=12);
+    if mod(i,3) == 1
+        ylabel('Normalized Fiber Length', FontSize=12)
+    end
+    if i>numel(muscleNames)-numWindows
+        xlabel("Time Points", FontSize=12)
+    end
 end
-columnLabels = mtpInputs.muscleNames;
-dataPoints = [finalValues.activationTimeConstants;
-    finalValues.activationNonlinearityConstants;
-    finalValues.electromechanicalDelays;
-    finalValues.emgScaleFactors;
-    finalValues.optimalFiberLengthScaleFactors;
-    finalValues.tendonSlackLengthScaleFactors];
-writeToSto(columnLabels, 1:1:size(dataPoints,1), dataPoints, ...
-    fullfile(resultsDirectory, "muscleModelParameters.sto"));
+
 end
+

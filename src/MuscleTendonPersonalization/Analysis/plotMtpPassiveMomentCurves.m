@@ -29,11 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotPassiveMomentCurves(resultsDirectory)
+function plotMtpPassiveMomentCurves(resultsDirectory)
+analysisDirectory = fullfile(resultsDirectory, "Analysis");
 [momentNames, passiveMomentsExperimental] = extractMtpDataFromSto( ...
-    fullfile(resultsDirectory, "passiveJointMomentsExperimental"));
+    fullfile(analysisDirectory, "passiveJointMomentsExperimental"));
 [~, passiveMomentsModel] = extractMtpDataFromSto( ...
-    fullfile(resultsDirectory, "passiveJointMomentsModeled"));
+    fullfile(analysisDirectory, "passiveJointMomentsModeled"));
 momentNames = strrep(momentNames, '_', ' ');
 meanPassiveMomentsExperimental = mean(passiveMomentsExperimental, 3);
 stdPassiveMomentsExperimental = std(passiveMomentsExperimental, [], 3);

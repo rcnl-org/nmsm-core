@@ -46,27 +46,13 @@ optimizedParams = MuscleTendonPersonalization(inputs, params);
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
         getMtpResultsToSave(inputs, params, optimizedParams, precalInputs);
-    saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
+    saveMtpMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory, precalInputs);
 else
     [finalValues, resultsStruct, modeledValues] = ...
         getMtpResultsToSave(inputs, params, optimizedParams);
-    saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
+    saveMtpMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory);
 end
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7), inputs);
-if precalInputs.optimizeIsometricMaxForce
-    finalValues.maxIsometricForce = inputs.maxIsometricForce;
-end
-if isfield(inputs, "synergyExtrapolation")
-    results = calcMtpSynXModeledValues(finalValues, inputs, params);
-else
-    results = calcMtpModeledValues(finalValues, inputs, params);
-end
-
-results.time = inputs.emgTime(:, inputs.numPaddingFrames + 1 : ...
-    end - inputs.numPaddingFrames);
-saveMuscleTendonPersonalizationResults(inputs.modelFileName, ...
-    inputs.osimxFileName, inputs.prefixes, inputs.coordinateNames, ...
-    finalValues, results, resultsDirectory, inputs.muscleTendonColumnNames);
+printMtpJointMomentMatchingError(resultsDirectory);
 end

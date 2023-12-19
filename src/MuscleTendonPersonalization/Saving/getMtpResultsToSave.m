@@ -31,7 +31,7 @@
 
 function [finalValues, resultsStruct, modeledValues] = ...
     getMtpResultsToSave(mtpInputs, params, optimizedParams, precalInputs)
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7));
+finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7), mtpInputs);
 if nargin < 4
     modeledValues = [];
     precalInputs = [];
@@ -53,16 +53,20 @@ results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
     end - mtpInputs.numPaddingFrames);
 results.muscleExcitations = results.muscleExcitations(:, :, ...
     mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
-resultsSynx = calcMtpSynXModeledValues(finalValues, mtpInputs, params);
-resultsSynx.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
-    end - mtpInputs.numPaddingFrames);
-resultsSynx.muscleExcitations = resultsSynx.muscleExcitations(:, :, ...
-    mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
-finalValues.synergyWeights(mtpInputs.numberOfExtrapolationWeights + 1 : end) = 0;
-resultsSynxNoResiduals = calcMtpSynXModeledValues(finalValues, mtpInputs, struct());
-resultsStruct = struct("results", results, ...
-    "resultsSynx", resultsSynx, ...
-    "resultsSynxNoResiduals", resultsSynxNoResiduals);
+if isfield(mtpInputs, "synergyExtrapolation")
+    resultsSynx = calcMtpSynXModeledValues(finalValues, mtpInputs, params);
+    resultsSynx.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
+        end - mtpInputs.numPaddingFrames);
+    resultsSynx.muscleExcitations = resultsSynx.muscleExcitations(:, :, ...
+        mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
+    finalValues.synergyWeights(mtpInputs.numberOfExtrapolationWeights + 1 : end) = 0;
+    resultsSynxNoResiduals = calcMtpSynXModeledValues(finalValues, mtpInputs, struct());
+    resultsStruct = struct("results", results, ...
+        "resultsSynx", resultsSynx, ...
+        "resultsSynxNoResiduals", resultsSynxNoResiduals);
+else
+    resultsStruct = struct("results", results);
+end
 if ~isempty(precalInputs)
 finalOptimalFiberLength = ...
     finalValues.optimalFiberLengthScaleFactors .* mtpInputs.optimalFiberLength;

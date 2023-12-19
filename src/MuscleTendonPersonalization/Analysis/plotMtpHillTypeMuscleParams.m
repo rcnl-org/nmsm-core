@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function reads .sto files created by
-% saveMuscleTendonPersonalizationResults.m containing passive force curves 
-% and creates plots of them.
-%   
+% saveMuscleTendonPersonalizationResults.m containing optimized Hill-type
+% muscle-tendon model parameters and creates a bar plot of them.
+%
 % (string) -> (None)
-% Plot passive force curves from file.
+% Plot Hill-Type Muscle-Tendon model parameters from file.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,37 +28,30 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotPassiveForceCurves(resultsDirectory)
-[muscleNames, passiveForce] = extractMtpDataFromSto( ...
-    fullfile(resultsDirectory, "passiveForcesExperimental"));
+function plotMtpHillTypeMuscleParams(resultsDirectory)
+analysisDirectory = fullfile(resultsDirectory, "Analysis");
+[muscleNames, params] = extractMtpDataFromSto( ...
+    fullfile(analysisDirectory, "muscleModelParameters"));
 muscleNames = strrep(muscleNames, '_', ' ');
-meanPassiveForce = mean(passiveForce, 3);
-stdPassiveForce = std(passiveForce, [], 3);
-maxForce = max(meanPassiveForce, [], 'all');
-numWindows = ceil(sqrt(numel(muscleNames)));
-
-figure(Name = "Passive Force Curves", ...
+figure(Name = "Muscle Model Parameters", ...
     Units='normalized', ...
     Position=[0.1 0.1 0.8 0.8])
-t = 1:1:size(meanPassiveForce,1);
-for i = 1:numel(muscleNames)
-    subplot(numWindows, numWindows, i)
-    hold on
-    plot(meanPassiveForce(:,i), 'b-', linewidth=2)
 
-    fillRegion = [(meanPassiveForce(:,i)+stdPassiveForce(:,i));
-        flipud((meanPassiveForce(:,i)-stdPassiveForce(:,i)))];
-    fill([t, fliplr(t)]', fillRegion, 'b', FaceAlpha=0.2, ...
-        EdgeColor='none', HandleVisibility='off')
-    hold off
-    set(gca, fontsize=11)
-    axis([1 size(meanPassiveForce, 1) 0 maxForce])
-    title(muscleNames(i), FontSize=12);
-    if mod(i,3) == 1
-        ylabel("Magnitude")
-    end
-    if i>numel(muscleNames)-numWindows
-        xlabel("Time Points")
+paramLabels = ["Activation Time Constant", ...
+    "Activation Nonlinearity", ...
+    "Electromechanical Time Delay", ...
+    "EMG Scaling Factor", ...
+    "Optimal Fiber Length Scaling Factor", ...
+    "Tendon Slack Length Scaling Factor"];
+for i = 1 : numel(paramLabels)
+    subplot(1, 6, i)
+    barh(params(i,:))
+
+    title(textwrap(paramLabels(i), 20), FontSize=12)
+    if i == 1
+        set(gca, yticklabels = muscleNames, fontsize=11);
+    else
+        set(gca, yticklabels = [], fontsize=11);
     end
 end
-
+end
