@@ -89,21 +89,28 @@ if(isstruct(timeRange))
     output.startTime = str2double(timeRange{1});
     output.finishTime = str2double(timeRange{2});
 end
+
 try
-markerNames = parseSpaceSeparatedList(tree, "marker_names");
-if ~isempty(markerNames)
-    output.markerNames = markerNames;
-end
+    markerNames = parseSpaceSeparatedList(tree, "marker_names");
+    if ~isempty(markerNames)
+        output.markerNames = markerNames;
+    end
 catch; end
+try
+    freeMarkers = parseSpaceSeparatedList(tree, "free_markers");
+catch
+    freeMarkers = [];
+end
+
 output.parameters = {};
 if(isstruct(getFieldByName(tree, "JMPJointSet")))
     output.parameters = getJointParameters(tree.JMPJointSet);
 end
 output.scaling = [];
 output.markers = [];
-if(isstruct(getFieldByName(tree, "JMPBodySet")))
+if isstruct(getFieldByName(tree, "JMPBodySet")) || ~isempty(freeMarkers)
     [output.scaling, output.markers] = ...
-        getBodyParameters(tree.JMPBodySet, model);
+        getBodyParameters(tree.JMPBodySet, model, freeMarkers);
 end
 translationBounds = getFieldByName(tree, 'translation_bounds');
 if(isstruct(translationBounds))
@@ -178,7 +185,7 @@ end
 end
 
 function [scaling, markers] = getBodyParameters( ...
-    bodySetTree, model)
+    bodySetTree, model, freeMarkers)
 if isfield(bodySetTree, "JMPBody")
     bodyTree = bodySetTree.JMPBody;
     scaling = getScalingBodies(bodyTree);
@@ -187,6 +194,7 @@ else
     scaling = string([]);
     markers = {};
 end
+markers = addFreeMarkers(markers, freeMarkers);
 end
 
 function inputs = getScalingBodies(bodyTree)
@@ -230,6 +238,21 @@ for i=1:length(bodyTree)
                 end
             end
         end
+    end
+end
+
+end
+
+function markers = addFreeMarkers(markers, freeMarkers)
+for i = 1:length(freeMarkers)
+    axesToBeAdded = ["x", "y", "z"];
+    for j = 1:length(markers)
+        if markers{j}(1) == freeMarkers(i) && any(ismember(axesToBeAdded, markers{j}(2)))
+            axesToBeAdded = axesToBeAdded(~ismember(axesToBeAdded, markers{j}(2)));
+        end
+    end
+    for j = 1:length(axesToBeAdded)
+        markers{end+1} = [freeMarkers(i), axesToBeAdded(j)];
     end
 end
 end
