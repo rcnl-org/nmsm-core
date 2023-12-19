@@ -30,25 +30,30 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = parseTreatmentOptimizationInputs(tree)
+inputs = parseBasicInputs(tree);
+inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
+inputs = parseController(tree, inputs);
+inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
+inputs = parseOptimalControlSolverSettings(tree, inputs);
+inputs.costTerms = parseRcnlCostTermSetHelper( ...
+    getFieldByNameOrError(tree, 'RCNLCostTermSet'));
+if isequal(mexext, 'mexw64') 
+    inputs.calculateAngularMomentum = ...
+        any(strcmp(cellfun(@(term) term.type, inputs.costTerms, ...
+        'UniformOutput', false), {'angular_momentum_minimization'}));
+end
+[inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
+    getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
+    inputs.controllerType, inputs.toolName);
+end
+
+function inputs = parseBasicInputs(tree)
 inputs.toolName = findToolName(tree);
 inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
     'results_directory'));
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = parseControllerType(tree);
 inputs = parseModel(tree, inputs);
-inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
-inputs = parseController(tree, inputs);
-inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
-inputs.initialGuess = parseInitialGuess(inputs);
-inputs = parseOptimalControlSolverSettings( ...
-    getTextFromField(getFieldByNameOrError(tree, ...
-    'optimal_control_solver_settings_file')), inputs);
-inputs.costTerms = parseRcnlCostTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
-[inputs.path, inputs.terminal] = parseRcnlConstraintTermSet( ...
-    getFieldByNameOrError(tree, 'RCNLConstraintTermSet') ...
-    .RCNLConstraintTerm, inputs.controllerType, inputs.toolName);
-inputs.contactSurfaces = parseGroundContactSurfaces(inputs);
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
@@ -57,13 +62,33 @@ osimx = parseOsimxFile(osimxFileName, inputs.model);
 if strcmp(inputs.controllerType, "synergy")
     if strcmp(osimxFileName, "")
         throw(MException("", ...
-           strcat("<input_osimx_file> must be specified", ...
-           " for <RCNLSynergyController>")))
+            strcat("<input_osimx_file> must be specified", ...
+            " for <RCNLSynergyController>")))
     end
     if ~isfield(osimx, "synergyGroups")
         throw(MException("", ...
-           strcat("<RCNLSynergySet> must be specified in the", ...
-           " osimx file for <RCNLSynergyController>. Have you run NCP yet?")))
+            strcat("<RCNLSynergySet> must be specified in the", ...
+            " osimx file for <RCNLSynergyController>. Have you run NCP yet?")))
     end
 end
 end
+
+function costTerms = parseRcnlCostTermSetHelper(tree)
+if isfield(tree, "RCNLCostTerm")
+    costTerms = parseRcnlCostTermSet(tree.RCNLCostTerm);
+else
+    costTerms = parseRcnlCostTermSet({});
+end
+end
+
+function [path, terminal] = parseRcnlConstraintTermSetHelper(tree, ...
+    controllerType, toolName)
+if isfield(tree, "RCNLConstraintTerm")
+    [path, terminal] = parseRcnlConstraintTermSet( ...
+        tree.RCNLConstraintTerm, toolName, controllerType);
+else
+    [path, terminal] = parseRcnlConstraintTermSet({}, controllerType, ...
+        toolName);
+end
+end
+

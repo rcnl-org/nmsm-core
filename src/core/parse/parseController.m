@@ -32,12 +32,12 @@
 function inputs = parseController(tree, inputs)
 inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
     inputs);
-inputs.statesCoordinates = parseSpaceSeparatedList(tree, ...
+inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
     "states_coordinate_list");
 
 torqueTree = getFieldByName(tree, "RCNLTorqueController");
 if isstruct(torqueTree)
-    inputs = parseTorqueController(tree, inputs);
+    inputs = parseTorqueController(torqueTree, inputs);
 end
 synergyTree = getFieldByName(tree, "RCNLSynergyController");
 if isstruct(synergyTree)

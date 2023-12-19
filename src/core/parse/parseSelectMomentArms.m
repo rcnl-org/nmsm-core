@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,22 +25,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cells = parseSelectMomentArms(directories, coordinateNames, muscleNames)
+function cells = parseSelectMomentArms(directory, coordinateNames, muscleNames)
 import org.opensim.modeling.Storage
-firstTrial = parseSpecificMuscleAnalysisCoordinates(directories(1), ...
+firstTrial = parseSpecificMuscleAnalysisCoordinates(directory, ...
     coordinateNames, muscleNames);
-cells = zeros([length(directories) size(firstTrial)]);
+cells = zeros([1 size(firstTrial)]);
 cells(1, :, :, :) = firstTrial;
-for i=2:length(directories)
-    cells(i, :, :, :) = parseSpecificMuscleAnalysisCoordinates(directories(i), ...
-        coordinateNames, muscleNames);
-end
 end
 
 function cells = parseSpecificMuscleAnalysisCoordinates(inputDirectory, ...
     coordinateNames, muscleNames)
 import org.opensim.modeling.Storage
-coordFileNames = findSpecificMuscleAnalysisCoordinateFiles(inputDirectory, coordinateNames);
+coordFileNames = findSpecificMuscleAnalysisCoordinateFiles( ...
+    inputDirectory, coordinateNames);
 firstFile = storageToDoubleMatrix(Storage(coordFileNames(1)));
 columnNames = getStorageColumnNames(Storage(coordFileNames(1)));
 cells = zeros([length(coordFileNames) size(firstFile)]);

@@ -49,6 +49,9 @@ for i=1:length(springConstants)
     ymax = 1e-2;
     Kval = springConstants(i);
     height = height - springRestingLength;
+    if height > 0.354237930036971
+        height = 0.354237930036971;
+    end
     numFrames = length(height);
     v = ones(numFrames, 1)' .* ((Kval + klow) ./ (Kval - klow));
     s = ones(numFrames, 1)' .* ((Kval - klow) ./ 2);

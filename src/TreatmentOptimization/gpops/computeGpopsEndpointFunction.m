@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeGpopsEndpointFunction(setup)
-if ~isempty(setup.auxdata.terminal) || strcmp(setup.auxdata.toolName, "DesignOptimization")
+if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.terminal)) || strcmp(setup.auxdata.toolName, "DesignOptimization")
     setup.phase.state = [setup.phase.initialstate; setup.phase.finalstate];
     setup.phase.time = [setup.phase.initialtime; setup.phase.finaltime];
     setup.phase.control = ones(size(setup.phase.time,1),length(setup.auxdata.minControl));
@@ -45,7 +45,7 @@ if ~isempty(setup.auxdata.terminal) || strcmp(setup.auxdata.toolName, "DesignOpt
         modeledValues);
 end
 
-if ~isempty(setup.auxdata.terminal)
+if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.terminal))
     [constraintTermCalculations, allowedTypes] = ...
         generateConstraintTermStruct("terminal", ...
         setup.auxdata.controllerType, setup.auxdata.toolName);
@@ -63,6 +63,7 @@ if strcmp(setup.auxdata.toolName, "DesignOptimization")
         generateCostTermStruct("discrete", "DesignOptimization");
     discrete = calcTreatmentOptimizationCost( ...
         costTermCalculations, allowedTypes, values, modeledValues, setup.auxdata);
+    discrete = discrete ./ setup.auxdata.discreteMaxAllowableError;
     discreteObjective = sum(discrete) / length(discrete);
     if isnan(discreteObjective); discreteObjective = 0; end
 else
@@ -70,9 +71,6 @@ else
 end
 
 continuousObjective = sum(setup.phase.integral) / length(setup.phase.integral);
-if isfield(setup.auxdata, "finalTimeRange")
-    continuousObjective = continuousObjective / values.time(end);
-end
 
 output.objective = continuousObjective + discreteObjective;
 end

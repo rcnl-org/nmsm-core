@@ -25,5 +25,6 @@
 % ----------------------------------------------------------------------- %
 
 function params = parseTreatmentOptimizationParams(tree)
-params = struct();
+params.experimentalBSplineCutoffFrequency = ...
+    parseDoubleOrAlternate(tree, "experimental_bspline_cutoff_frequency", 6);
 end

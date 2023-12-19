@@ -70,7 +70,8 @@ residualExcitations = getResidualMuscleExcitation(params, ...
     experimentalData.numberOfExtrapolationWeights + 1 : end));
 % Insert unmeasured muscle excitations from SynX
 emgData = updateEmgSignals(params.missingEmgChannelGroups, ...
-    experimentalData.emgDataExpanded, unmeasuredEmgSignals);
+    experimentalData.emgDataExpanded, unmeasuredEmgSignals, ...
+    experimentalData.normalizedFiberLengthGroups);
 % muscleExcitations are scaled processed Emg signals
 emgData = emgData .* emgScalingFactor;
 % Distribute residual excitations
@@ -153,11 +154,12 @@ residualExcitations = concatResidualExcitations;
 end
 
 function emgData = updateEmgSignals(missingEmgChannelGroups, emgData, ...
-    unmeasuredEmgSignals)
+    unmeasuredEmgSignals, normalizedFiberLengthGroups)
 
+lowestIndex = min(cell2mat(normalizedFiberLengthGroups)) - 1;
 for i = 1 : size(missingEmgChannelGroups, 2)
     for j = 1 : size(missingEmgChannelGroups{i}, 2)
-        emgData(:, missingEmgChannelGroups{i}(1, j), :) = ...
+        emgData(:, missingEmgChannelGroups{i}(1, j) - lowestIndex, :) = ...
             unmeasuredEmgSignals(:, i, :);
     end
 end
