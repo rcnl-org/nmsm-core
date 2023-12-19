@@ -1,14 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Evaluates a GCV spline for its fitted values or a derivative at a set of
-% time points. The spline to evaluate is chosen by the given column label,
-% which can be provided as either an integer (the raw index in the spline
-% set) or a string defining a column label that should exist in the spline
-% set. The derivative level is given as an integer (0 for position, 1 for
-% velocity, 2 for acceleration, etc.). 
+% This function calculates the error in braking impulse for the side 
+% defined in the cost term. Only the braking impulse (negative) is
+% included in the output. 
 %
-% (GCVSplineSet, string OR int, Array of double, int) -> (Array of double)
-% Evaluate GCV spline values or derivatives at a set of time points.
+% (struct, Array of double, struct, struct) -> (Array of double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,21 +28,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = evaluateGcvSpline(splineSet, columnLabel, time, ...
-    derivative)
-values = zeros(1, length(time));
-
-if isstring(columnLabel) || ischar(columnLabel)
-    columnLabel = splineSet.getIndex(columnLabel);
-    assert(columnLabel > -1, "The specified coordinate is not included in" + ...
-        " the spline set.")
+function cost = calcBrakingImpulseGoalIntegrand(modeledValues, ...
+    time, inputs, costTerm)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", false);
+braking = [];
+for i = 1:length(inputs.contactSurfaces)
+    if inputs.contactSurfaces{i}.isLeftFoot == strcmpi(costTerm.side, "left")
+        braking = -modeledValues.groundReactionsLab.forces{i}(:,1);
+    end
 end
-
-if nargin < 4
-    derivative = 0;
-end
-
-for i = 1 : length(time)
-    values(i) = splineSet.evaluate(columnLabel, derivative, time(i));
+assert(~isempty(braking), "Unable to find braking force.")
+cost = real(sqrt((braking - costTerm.errorCenter) / ...
+    costTerm.maxAllowableError));
+if normalizeByFinalTime
+    cost = cost / time(end);
 end
 end

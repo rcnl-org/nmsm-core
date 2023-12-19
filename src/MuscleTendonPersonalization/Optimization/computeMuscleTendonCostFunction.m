@@ -26,10 +26,16 @@
 % ----------------------------------------------------------------------- %
 
 function cost = computeMuscleTendonCostFunction(secondaryValues, ...
-    primaryValues, isIncluded, experimentalData, params)
-values = makeMtpValuesAsStruct(secondaryValues, primaryValues, isIncluded);
-synxModeledValues = calcMtpSynXModeledValues(values, experimentalData, params);
-modeledValues = calcMtpModeledValues(values, experimentalData, params);
-cost = calcMtpCost(values, synxModeledValues, modeledValues, ...
-    experimentalData, params);
+    primaryValues, isIncluded, inputs, params)
+values = makeMtpValuesAsStruct(secondaryValues, primaryValues, ...
+    isIncluded, inputs);
+modeledValues = calcMtpModeledValues(values, inputs, params);
+if isfield(inputs, "synergyExtrapolation")
+    synxModeledValues = calcMtpSynXModeledValues(values, inputs, params);
+    cost = calcMtpCost(values, synxModeledValues, modeledValues, ...
+        inputs, params);
+else
+    cost = calcMtpCost(values, struct(), modeledValues, ...
+        inputs, params);
+end
 end

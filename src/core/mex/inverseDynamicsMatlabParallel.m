@@ -30,9 +30,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inverseDynamicsMoments = inverseDynamicsMatlabParallel(time, ...
-    jointAngles, jointVelocities, jointAccelerations, coordinateLabels, ...
-    appliedLoads, modelName)
+function [inverseDynamicsMoments, angularMomentum] = ...
+    inverseDynamicsMatlabParallel(time, jointAngles, jointVelocities, ...
+    jointAccelerations, coordinateLabels, appliedLoads, modelName)
 
 % Get the number of coords and markers
 numPts = size(time,1);
@@ -41,19 +41,40 @@ numCoords = length(coordinateLabels);
 % Split time points into parallel problems
 numWorkers = gcp().NumWorkers;
 inverseDynamicsJobs = cell(1, numWorkers);
-parfor worker = 1:numWorkers
-    inverseDynamicsJobs{worker} = idWorkerHelper(modelName, numPts, ...
-        numControls, numCoords, numWorkers, ...
-        time, jointAngles, jointVelocities, jointAccelerations, ...
-        coordinateLabels,appliedLoads,worker);
+if nargout > 1
+    angularMomentumJobs = cell(1, numWorkers);
+    parfor worker = 1:numWorkers
+        [inverseDynamicsJobs{worker}, angularMomentumJobs{worker}] = ...
+            idWorkerHelper(modelName, numPts, ...
+            numControls, numCoords, numWorkers, ...
+            time, jointAngles, jointVelocities, jointAccelerations, ...
+            coordinateLabels,appliedLoads,worker);
+    end
+else
+    parfor worker = 1:numWorkers
+        inverseDynamicsJobs{worker} = idWorkerHelper(modelName, numPts, ...
+            numControls, numCoords, numWorkers, ...
+            time, jointAngles, jointVelocities, jointAccelerations, ...
+            coordinateLabels,appliedLoads,worker);
+    end
 end
+
 inverseDynamicsMoments = inverseDynamicsJobs{1};
 for job = 2 : numWorkers
     inverseDynamicsMoments = cat(1, inverseDynamicsMoments, ...
         inverseDynamicsJobs{job});
 end
+if nargout > 1
+    angularMomentum = angularMomentumJobs{1};
+    for job = 2 : numWorkers
+        angularMomentum = cat(1, angularMomentum, ...
+            angularMomentumJobs{job});
+    end
 end
-function inverseDynamicsJobs = idWorkerHelper(modelName, numPts, ...
+end
+
+function [inverseDynamicsJobs, angularMomentumJobs] = ...
+    idWorkerHelper(modelName, numPts, ...
     numControls, numCoords, numWorkers, time, jointAngles, ...
     jointVelocities, jointAccelerations, coordinateLabels, appliedLoads, ...
     worker)
@@ -68,6 +89,7 @@ if isempty(osimModel)
     inverseDynamicsSolver = InverseDynamicsSolver(osimModel);
 end
 inverseDynamicsJobs = [];
+angularMomentumJobs = [];
 start = round((numPts/numWorkers) * (worker-1)) + 1;
 stop = round((numPts/numWorkers) * (worker));
 for j = start : stop
@@ -82,6 +104,17 @@ for j = start : stop
         end
     end
     osimModel.realizeVelocity(osimState);
+
+    % Whole body angular momentum
+    if nargout > 1
+        momentum = osimModel.getMatterSubsystem() ...
+            .calcSystemCentralMomentum(osimState);
+        angularMomentum = momentum.get(0);
+        for i = 0 : 2
+            angularMomentumJobs(j-start + 1, i + 1) = angularMomentum.get(i);
+        end
+    end
+    
     accelsTempVec = zeros(1, osimState.getNQ());
     for i=1:osimState.getNQ
         StateQ = osimState.getQ.get(i-1);

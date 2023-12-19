@@ -39,7 +39,9 @@ for i=1:length(isIncluded)
             primaryValues, isIncluded, i);
         newPrimaryValues{i} = secondaryValues(startIndex:endIndex);
     else
-        newPrimaryValues{i} = primaryValues{i};
+        if i ~= 7
+            newPrimaryValues{i} = primaryValues{i};
+        end
     end
 end
 end

@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the joint velocities, accelerations, and jerk
-% based of the experimental joint angles using 5th degree GCV splines.
+% This function minimizes the whole body angular momentum for the specified
+% axis.
 %
-% (struct) -> (struct)
-% Returns state derivatives
+% (2D matrix, struct, Array of string) -> (Array of number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Spencer Williams, Claire V. Hammond            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,16 +28,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = makeStateDerivatives(inputs, params)
-inputs.splineJointAngles = makeGcvSplineSet(inputs.experimentalTime, ...
-    inputs.experimentalJointAngles', inputs.coordinateNames);
-inputs.experimentalJointVelocities = evaluateGcvSplines( ...
-    inputs.splineJointAngles, inputs.coordinateNames, ...
-    inputs.experimentalTime, 1);
-inputs.experimentalJointAccelerations = evaluateGcvSplines( ...
-    inputs.splineJointAngles, inputs.coordinateNames, ...
-    inputs.experimentalTime, 2);
-inputs.experimentalJointJerks = evaluateGcvSplines( ...
-    inputs.splineJointAngles, inputs.coordinateNames, ...
-    inputs.experimentalTime, 3);
+function cost = calcMinimizingAngularMomentumIntegrand( ...
+    modeledValues, time, costTerm)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
+
+assert(isfield(costTerm, 'axis'), "Angular momentum minimization " + ...
+    "requires an 'axis' field in the cost term settings.")
+
+index = find(strcmpi(costTerm.axis, ["x" "y" "z"]));
+assert(~isempty(index), "Angular momentum axis must be X, Y, or Z, " + ...
+    "but '" + costTerm.axis + "' was given.");
+
+cost = modeledValues.angularMomentum(:, index);
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

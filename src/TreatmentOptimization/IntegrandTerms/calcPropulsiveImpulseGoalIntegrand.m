@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the joint velocities, accelerations, and jerk
-% based of the experimental joint angles using 5th degree GCV splines.
+% This function calculates the error in propulsive impulse for the side 
+% defined in the cost term. Only the positive impulse (propulsive) is
+% included in the output. 
 %
-% (struct) -> (struct)
-% Returns state derivatives
+% (struct, Array of double, struct, struct) -> (Array of double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Spencer Williams, Claire V. Hammond            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,16 +28,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = makeStateDerivatives(inputs, params)
-inputs.splineJointAngles = makeGcvSplineSet(inputs.experimentalTime, ...
-    inputs.experimentalJointAngles', inputs.coordinateNames);
-inputs.experimentalJointVelocities = evaluateGcvSplines( ...
-    inputs.splineJointAngles, inputs.coordinateNames, ...
-    inputs.experimentalTime, 1);
-inputs.experimentalJointAccelerations = evaluateGcvSplines( ...
-    inputs.splineJointAngles, inputs.coordinateNames, ...
-    inputs.experimentalTime, 2);
-inputs.experimentalJointJerks = evaluateGcvSplines( ...
-    inputs.splineJointAngles, inputs.coordinateNames, ...
-    inputs.experimentalTime, 3);
+function cost = calcPropulsiveImpulseGoalIntegrand(modeledValues, ...
+    time, inputs, costTerm)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", false);
+propulsiveForce = [];
+for i = 1:length(inputs.contactSurfaces)
+    if inputs.contactSurfaces{i}.isLeftFoot == strcmpi(costTerm.side, "left")
+        propulsiveForce = modeledValues.groundReactionsLab.forces{i}(:,1);
+    end
+end
+assert(~isempty(propulsiveForce), "Unable to find propulsive force.")
+cost = real(sqrt((propulsiveForce - costTerm.errorCenter) / ...
+    costTerm.maxAllowableError));
+if normalizeByFinalTime
+    cost = cost / time(end);
+end
 end

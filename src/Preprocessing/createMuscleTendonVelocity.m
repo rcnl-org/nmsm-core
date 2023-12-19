@@ -33,20 +33,15 @@ function createMuscleTendonVelocity(muscleTendonLengthFileName, ...
 storage = org.opensim.modeling.Storage(muscleTendonLengthFileName);
 lengthData = storageToDoubleMatrix(storage);
 time = findTimeColumn(storage);
-isLongFile = length(time) > 200;
+columnNames = getStorageColumnNames(storage);
 
-if isLongFile
-    numNodes = splFitWithCutoff(time(1:200), lengthData(:, 1:200), ...
-        cutoffFrequency, 4);
-    numNodes = numNodes * length(time) / 200;
-else
-    numNodes = splFitWithCutoff(time, lengthData, cutoffFrequency, 4);
-end
-velocityData = calcBSplineDerivative(time, lengthData, 4, numNodes);
+lengthData = lowpassFilter(time, lengthData', 4, cutoffFrequency, 0);
+splineSet = makeGcvSplineSet(time, lengthData, columnNames);
+velocityData = evaluateGcvSplines(splineSet, columnNames, time, 1)';
 
 [filepath, name, ext] = fileparts(muscleTendonLengthFileName);
 name = strrep(name, "_Length", "");
-writeToSto(getStorageColumnNames(storage), time, velocityData', ...
+writeToSto(columnNames, time, velocityData', ...
     fullfile(filepath, strcat(name, "_Velocity", ext)));
 
 end

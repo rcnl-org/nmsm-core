@@ -26,11 +26,11 @@
 % ----------------------------------------------------------------------- %
 
 function [c, ceq] = calcMuscleTendonNonLinearConstraints(values, ...
-    primaryValues, isIncluded, experimentalData, params)
+    primaryValues, isIncluded, inputs, params)
 
 ceq = [];
-values = makeMtpValuesAsStruct(values, primaryValues, isIncluded);
-modeledValues = calcMtpModeledValues(values, experimentalData, struct());
+values = makeMtpValuesAsStruct(values, primaryValues, isIncluded, inputs);
+modeledValues = calcMtpModeledValues(values, inputs, struct());
 softmaxlmtildaCon = log(sum(exp(500 * ...
     (modeledValues.normalizedFiberLength - 1.3)), [1 3])) / 500; % max lmtilda less than 1.5
 softminlmtildaCon = log(sum(exp(500 * (0.3 - ...
