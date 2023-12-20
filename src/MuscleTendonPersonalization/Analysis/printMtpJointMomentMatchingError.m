@@ -32,7 +32,7 @@
 function printMtpJointMomentMatchingError(resultsDirectory)
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
 [jointMomentLabels, muscleJointMoments] = extractMtpDataFromSto( ...
-    fullfile(analysisDirectory, "modelJointMomentsSynx"));
+    fullfile(resultsDirectory, "modelMoments"));
 [~, inverseDynamicsMoments] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "inverseDynamicsJointMoments"));
 jointMomentsRmse = zeros(size(jointMomentLabels));

@@ -30,31 +30,42 @@
 % ----------------------------------------------------------------------- %
 function plotMtpPassiveForceCurves(resultsDirectory)
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
-[muscleNames, passiveForce] = extractMtpDataFromSto( ...
+[muscleNames, experimentalForce] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "passiveForcesExperimental"));
+if exist(fullfile(analysisDirectory, "passiveForcesModelSynx"), "dir")
+    [~, modelForce] = extractMtpDataFromSto(...
+        fullfile(analysisDirectory, "passiveForcesModelSynx"));
+else
+    [~, modelForce] = extractMtpDataFromSto(...
+        fullfile(analysisDirectory, "passiveForcesModel"));
+end
 muscleNames = strrep(muscleNames, '_', ' ');
-meanPassiveForce = mean(passiveForce, 3);
-stdPassiveForce = std(passiveForce, [], 3);
-maxForce = max(meanPassiveForce, [], 'all');
+meanExperimentalForce = mean(experimentalForce, 3);
+stdExperimentalForce = std(experimentalForce, [], 3);
+meanModelForce = mean(modelForce, 3);
+stdModelForce = std(modelForce, [], 3);
+maxForce = max( ...
+    [max(meanModelForce, [], 'all'), ...
+    max(meanExperimentalForce, [], 'all')]);
 numWindows = ceil(sqrt(numel(muscleNames)));
 
 figure(Name = "Passive Force Curves", ...
     Units='normalized', ...
     Position=[0.1 0.1 0.8 0.8])
-t = 1:1:size(meanPassiveForce,1);
+time = 1:1:size(meanExperimentalForce,1);
 for i = 1:numel(muscleNames)
     subplot(numWindows, numWindows, i)
     hold on
-    plot(meanPassiveForce(:,i), 'b-', linewidth=2)
-
-    fillRegion = [(meanPassiveForce(:,i)+stdPassiveForce(:,i));
-        flipud((meanPassiveForce(:,i)-stdPassiveForce(:,i)))];
-    fill([t, fliplr(t)]', fillRegion, 'b', FaceAlpha=0.2, ...
-        EdgeColor='none', HandleVisibility='off')
+    plotMeanAndStd(meanExperimentalForce(:,i), stdExperimentalForce(:,i), ...
+        time, 'k-')
+    plotMeanAndStd(meanModelForce(:,i), stdModelForce(:,i), time, 'r-');
     hold off
     set(gca, fontsize=11)
-    axis([1 size(meanPassiveForce, 1) 0 maxForce])
+    axis([1 numel(time) 0 maxForce])
     title(muscleNames(i), FontSize=12);
+    if i == 1
+        legend("Experimental", "Model")
+    end
     if mod(i,3) == 1
         ylabel("Magnitude")
     end
