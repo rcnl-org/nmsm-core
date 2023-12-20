@@ -1,8 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function saves optimized Hill-type muscle-tendon model parameters
+% output by MTP to a .sto file in a directory specified by
+% resultsDirectory. Each row in the .sto file corresponds to a parameter.
+% In order from top to bottom, these are: activation time constants, 
+% activation nonlinearity constants, electromechanical delays, emg scale
+% factors, optimal fiber length scale factors, tendon slack length scale
+% factors. 
 %
-% (struct, array of number) -> (array of number)
-% returns the maximum isometric force for MuscleTendonLengthInitialization
+% (struct, struct, struct, struct, struct, string) -> (None)
+% Saves joint moment data to .sto files.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -12,7 +19,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -26,17 +33,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function maxIsometricForce = getMaxIsometricForce(experimentalData, values)
-
-scaledOptimalFiberLength = experimentalData.optimalFiberLength .* ...
-    values.optimalFiberLengthScaleFactors;
-if experimentalData.optimizeIsometricMaxForce
-    scaledMaximumMuscleStress = experimentalData.maximumMuscleStress .* ...
-        values.maximumMuscleStressScaleFactor;
-    maxIsometricForce = calcMaxIsometricForce( ...
-        experimentalData.muscleVolume, scaledOptimalFiberLength, ...
-        scaledMaximumMuscleStress);
-else 
-    maxIsometricForce = experimentalData.maxIsometricForce;
+function saveMtpMuscleModelParameters(mtpInputs, finalValues, resultsDirectory)
+if ~exist(resultsDirectory, "dir")
+    mkdir(resultsDirectory);
 end
+columnLabels = mtpInputs.muscleNames;
+dataPoints = [finalValues.activationTimeConstants;
+    finalValues.activationNonlinearityConstants;
+    finalValues.electromechanicalDelays;
+    finalValues.emgScaleFactors;
+    finalValues.optimalFiberLengthScaleFactors;
+    finalValues.tendonSlackLengthScaleFactors];
+writeToSto(columnLabels, 1:1:size(dataPoints,1), dataPoints, ...
+    fullfile(resultsDirectory, "muscleModelParameters.sto"));
 end

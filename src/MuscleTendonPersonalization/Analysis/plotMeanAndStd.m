@@ -1,8 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function takes a mean and standard deviation and plots the mean with
+% a solid line and shades +/- 1 standard deviation from the mean. 
 %
-% (struct, array of number) -> (array of number)
-% returns the maximum isometric force for MuscleTendonLengthInitialization
+% (Array), (Array), (Array), (String) -> (None)
+% Plot passive moment curves from file.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -12,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,18 +27,9 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-
-function maxIsometricForce = getMaxIsometricForce(experimentalData, values)
-
-scaledOptimalFiberLength = experimentalData.optimalFiberLength .* ...
-    values.optimalFiberLengthScaleFactors;
-if experimentalData.optimizeIsometricMaxForce
-    scaledMaximumMuscleStress = experimentalData.maximumMuscleStress .* ...
-        values.maximumMuscleStressScaleFactor;
-    maxIsometricForce = calcMaxIsometricForce( ...
-        experimentalData.muscleVolume, scaledOptimalFiberLength, ...
-        scaledMaximumMuscleStress);
-else 
-    maxIsometricForce = experimentalData.maxIsometricForce;
-end
+function plotMeanAndStd(mean, std, time, color)
+    plot(time, mean, color, linewidth=2)
+    FillRegion = [(mean+std); flipud(mean-std)];
+    fill([time, fliplr(time)]', FillRegion, color, FaceAlpha=0.2, ...
+        EdgeColor='none', HandleVisibility='off')
 end

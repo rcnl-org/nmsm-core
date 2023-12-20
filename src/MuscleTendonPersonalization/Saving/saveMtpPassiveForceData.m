@@ -1,8 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function saves experimental passive force data, modeled passive 
+% force data without SynX, with SynX, and with SynX with no residuals to
+% their appropriate .sto files in a directory specified by
+% resultsDirectory.
 %
-% (struct, array of number) -> (array of number)
-% returns the maximum isometric force for MuscleTendonLengthInitialization
+% (struct, struct, struct, struct, struct, string) -> (None)
+% Saves passive force data to .sto files.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -12,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -26,17 +30,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function maxIsometricForce = getMaxIsometricForce(experimentalData, values)
-
-scaledOptimalFiberLength = experimentalData.optimalFiberLength .* ...
-    values.optimalFiberLengthScaleFactors;
-if experimentalData.optimizeIsometricMaxForce
-    scaledMaximumMuscleStress = experimentalData.maximumMuscleStress .* ...
-        values.maximumMuscleStressScaleFactor;
-    maxIsometricForce = calcMaxIsometricForce( ...
-        experimentalData.muscleVolume, scaledOptimalFiberLength, ...
-        scaledMaximumMuscleStress);
-else 
-    maxIsometricForce = experimentalData.maxIsometricForce;
+function saveMtpPassiveForceData(mtpInputs, modeledValues, resultsStruct, ...
+    resultsDirectory)
+writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
+    modeledValues.passiveForce, strcat(resultsDirectory, ...
+    "\passiveForcesExperimental"), "_passiveForcesExperimental.sto");
+writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
+    resultsStruct.results.passiveForce, strcat(resultsDirectory, ...
+    "\passiveForcesModel"), "_passiveForcesModel.sto");
+if isfield(mtpInputs, "synergyExtrapolation")
+    writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
+        resultsStruct.resultsSynx.passiveForce, strcat(resultsDirectory, ...
+        "\passiveForcesModelSynx"), "_passiveForcesModelSynx.sto");
+    writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
+        resultsStruct.resultsSynxNoResiduals.passiveForce, strcat(resultsDirectory, ...
+        "\passiveForcesModelSynxNoResiduals"), "_passiveForcesModelSynxNoResiduals.sto");
 end
 end
