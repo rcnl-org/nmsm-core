@@ -49,6 +49,9 @@ for i=1:length(springConstants)
     ymax = 1e-2;
     Kval = springConstants(i);
     height = height - springRestingLength;
+    if height < 0
+        height = -(abs(height)^1.5);
+    end
     if height > 0.354237930036971
         height = 0.354237930036971;
     end
