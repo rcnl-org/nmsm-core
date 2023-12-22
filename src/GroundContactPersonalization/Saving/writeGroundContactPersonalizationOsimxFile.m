@@ -88,7 +88,7 @@ end
 
 function spring = addGcpSpring(inputs, foot, springNumber)
     spring.name = "spring_marker_" + springNumber;
-    model = Model("footModel_" + foot + ".osim");
+    model = Model("footModelSpheres_" + foot + ".osim");
     springMarker = model.getMarkerSet.get(spring.name);
     spring.parentBody = getMarkerBodyName(model, spring.name);
     spring.location = Vec3ToArray(springMarker.get_location());
