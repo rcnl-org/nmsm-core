@@ -31,7 +31,6 @@
 #include <OpenSim/OpenSim.h>
 #include <InverseDynamicsSolver.h>
 #include <string.h>
-#include <omp.h> //
 #include <matrix.h>
 #include <iostream> 
 #include <vector>
