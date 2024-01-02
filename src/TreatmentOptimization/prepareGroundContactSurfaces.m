@@ -50,6 +50,16 @@ contactSurface.parentSpringPointsOnBody = [];
 contactSurface.parentSpringConstants = [];
 contactSurface.childSpringPointsOnBody = [];
 contactSurface.childSpringConstants = [];
+joints = getBodyJointNames(osimModel, contactSurface.hindfootBodyName);
+assert(length(joints) == 2, ...
+    "Treatment Optimization supports two segment foot models only");
+for i = 1 : length(joints)
+    [parent, ~] = getJointBodyNames(osimModel, joints(i));
+    if strcmp(parent, contactSurface.hindfootBodyName)
+        contactSurface.toesJointName = joints(i);
+        break
+    end
+end
 [contactSurface.parentBodyName, contactSurface.childBodyName] = ...
     getJointBodyNames(osimModel, contactSurface.toesJointName);
 for j = 1:length(contactSurface.springs)
