@@ -39,8 +39,7 @@ if isempty(indx)
         strcat("Coordinate ", coordinateName, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-experimentalJointVelocities = evaluateGcvSplines( ...
-    inputs.splineJointAngles, inputs.coordinateNames, time, 1);
+experimentalJointVelocities = inputs.splinedJointSpeeds;
 
 cost = calcTrackingCostArrayTerm(experimentalJointVelocities, ...
     stateVelocities, indx);

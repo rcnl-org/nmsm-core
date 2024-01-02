@@ -26,6 +26,7 @@
 
 function output = solveOptimalControlProblem(inputs, params)
 setup = convertToGpopsInputs(inputs, params);
+setup = preSplineGpopsInputs(setup);
 solution = gpops2(setup);
 output = convertFromGpopsOutputs(solution, ...
     inputs, params);

@@ -34,7 +34,7 @@ inputs.contactSurfaces = prepareGroundContactSurfaces( ...
 inputs = modifyModelForces(inputs);
 initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 inputs = setupGroundContact(inputs);
-inputs = makeExperimentalDataSplines(inputs);
+% inputs = makeExperimentalDataSplines(inputs);
 inputs = makeSurrogateModel(inputs);
 [inputs.continuousMaxAllowableError, inputs.discreteMaxAllowableError] ...
     = makeMaxAllowableError(inputs.toolName, inputs.costTerms);
