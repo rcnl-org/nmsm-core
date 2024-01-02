@@ -66,7 +66,7 @@ for i = 1:numel(muscleNames)
     if i == 1
         legend("Experimental", "Model")
     end
-    if mod(i,3) == 1
+    if mod(i,numWindows) == 1
         ylabel("Magnitude")
     end
     if i>numel(muscleNames)-numWindows

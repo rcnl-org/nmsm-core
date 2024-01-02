@@ -95,7 +95,7 @@ for i=1:numel(jointLabels)
     end
 
     if ~isempty(meanMomentsSynx)
-        subplot(numRows, numColumns, i+3)
+        subplot(numRows, numColumns, i+numColumns)
         hold on
         plotMeanAndStd(meanMomentsSynx(:,i), stdMomentsSynx(:,i), time, 'r-')
         plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
@@ -111,7 +111,7 @@ for i=1:numel(jointLabels)
     end
 
     if ~isempty(meanMomentsSynxNoResidual)
-        subplot(numRows, numColumns, i+6)
+        subplot(numRows, numColumns, i+2*numColumns)
         hold on
         plotMeanAndStd(meanMomentsSynxNoResidual(:,i), stdMomentsSynxNoResidual(:,i), time, 'r-')
         plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
