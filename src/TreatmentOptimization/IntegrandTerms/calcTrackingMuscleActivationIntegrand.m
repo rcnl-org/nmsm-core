@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the experimental and
-% predicted muscle activations for the specified muscle. 
+% predicted muscle activations for the specified muscle.
 %
 % (2D matrix, Array of number, struct, Array of string) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -34,7 +34,12 @@ normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
 indx = find(strcmp(convertCharsToStrings(inputs.muscleNames), ...
     muscleName));
-experimentalMuscleActivations = inputs.splinedMuscleActivations;
+if size(time) == size(inputs.collocationTimeOriginal)
+    experimentalMuscleActivations = inputs.splinedMuscleActivations;
+else
+    experimentalMuscleActivations = evaluateGcvSplines( ...
+        inputs.splineMuscleActivations, inputs.muscleNames, time);
+end
 cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
     muscleActivations, indx);
 if normalizeByFinalTime

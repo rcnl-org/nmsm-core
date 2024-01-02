@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the experimental and
-% predicted ground reaction forces for the specified force. 
+% predicted ground reaction forces for the specified force.
 %
 % (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -36,7 +36,14 @@ for i = 1:length(inputs.contactSurfaces)
     indx = find(strcmp(convertCharsToStrings(inputs.contactSurfaces{i}. ...
         forceColumns), forceName));
     if ~isempty(indx)
-        experimentalGroundReactions = inputs.splinedGroundReactionForces{i};
+        if size(time) == size(inputs.collocationTimeOriginal)
+            experimentalGroundReactions = inputs.splinedGroundReactionForces{i};
+        else
+            experimentalGroundReactions = ...
+                evaluateGcvSplines( ...
+                params.splineExperimentalGroundReactionForces{i}, 0:2, ...
+                time);
+        end
         cost = calcTrackingCostArrayTerm(...
             experimentalGroundReactions, groundReactionsForces{i}, ...
             indx);
