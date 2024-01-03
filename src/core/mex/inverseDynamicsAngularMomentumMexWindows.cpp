@@ -43,14 +43,16 @@ using namespace std;
 
 //______________________________________________________________________________
 
-static Model *osimModel;
-static State *osimState;
-static InverseDynamicsSolver *idSolver;
+static Model *osimModel[numThreads];
+static State *osimState[numThreads];
+static InverseDynamicsSolver *idSolver[numThreads];
 static bool modelIsLoaded = false;
 
 void ClearMemory(void){
-	delete osimModel;
-	delete idSolver;
+    for (int i = 0; i < numThreads; i++){
+		delete osimModel[i];
+		delete idSolver[i];
+	}
     modelIsLoaded = false;
     mexPrintf("Cleared memory from inverseDynamics mex file.\n");
 }
@@ -80,9 +82,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
         std::streambuf* oldCoutStreamBuf = std::cout.rdbuf();
 		std::ostringstream strCout;
 		std::cout.rdbuf(strCout.rdbuf());
-			osimModel = new Model(modelName); 
-			osimState = &osimModel->initSystem();
-			idSolver = new InverseDynamicsSolver(*osimModel);
+        for (int i = 0; i < numThreads; i++){
+			osimModel[i] = new Model(modelName); 
+			osimState[i] = &osimModel[i]->initSystem();
+			idSolver[i] = new InverseDynamicsSolver(*osimModel[i]);
+		}  
 		std::cout.rdbuf(oldCoutStreamBuf);
         modelIsLoaded = true;
     }
@@ -93,7 +97,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 		const int numPts = mxGetM(prhs[0]);
         const int numQs = mxGetN(prhs[1]);
 		const int numControls = mxGetN(prhs[5]);
-        const int numCoords = osimState[0].getNQ();
+        const int numCoords = osimState[0]->getNQ();
 
         double *time = mxGetPr(prhs[0]);
         vector<vector<double>> q = mexArrayToVector(prhs[1]);
@@ -101,35 +105,35 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
         vector<vector<double>> qpp = mexArrayToVector(prhs[3]);
         vector<vector<double>> u = mexArrayToVector(prhs[5]);
 
-        const mxArray *cellElementPtr;
         mwIndex k;
         mwSize numLabels, buflen;
         numLabels = mxGetNumberOfElements(prhs[4]);
-        int status;
 
         plhs[0] = mxCreateDoubleMatrix(numPts,numCoords,mxREAL);
 		double *idLoads = mxGetPr(plhs[0]);
-        plhs[1] = mxCreateDoubleMatrix(numPts, 3, mxREAL);
+ 		plhs[1] = mxCreateDoubleMatrix(numPts, 3, mxREAL);
         double* angularMomentum = mxGetPr(plhs[1]);
 
+        #pragma omp parallel for num_threads(numThreads)
         for (int i = 0; i < numPts; ++i){
-            osimState->setTime(time[i]);
-
+            int thread_id = omp_get_thread_num();
+            osimState[thread_id]->setTime(time[i]);
+			
             for (int k = 0; k < numLabels; k++){
+				const mxArray *cellElementPtr;
                 cellElementPtr = mxGetCell(prhs[4], k);
                 buflen = mxGetN(cellElementPtr)*sizeof(mxChar) + 1;
                 char* c_array;
                 c_array = (char *)  mxCalloc(buflen, sizeof(char));
-                status = mxGetString(cellElementPtr, c_array, buflen);
-                osimModel->getCoordinateSet().get(c_array).setValue(*osimState, q[i][k], false);
-                osimModel->getCoordinateSet().get(c_array).setSpeedValue(*osimState, qp[i][k]);
+                int status = mxGetString(cellElementPtr, c_array, buflen);
+                osimModel[thread_id]->getCoordinateSet().get(c_array).setValue(*osimState[thread_id], q[i][k], false);
+                osimModel[thread_id]->getCoordinateSet().get(c_array).setSpeedValue(*osimState[thread_id], qp[i][k]);
                 mxFree(c_array);
             }
-            osimModel->realizeVelocity(*osimState);
 
-            // Whole body angular momentum
+            osimModel[thread_id]->realizeVelocity(*osimState[thread_id]);
             if (nlhs > 1) {
-                SpatialVec momentum = osimModel->getMatterSubsystem().calcSystemCentralMomentum(*osimState);
+                SpatialVec momentum = osimModel[thread_id]->getMatterSubsystem().calcSystemCentralMomentum(*osimState[thread_id]);
                 Vec3 angularMomentumPoint = momentum.get(0);
                 for (int j = 0; j <= 2; j++) {
                     angularMomentum[i + numPts * j] = angularMomentumPoint.get(j);
@@ -138,7 +142,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 
             Vector AccelsVec(numCoords, 0.0);
             for (int j = 0; j < numCoords; j++){
-                double StateQ = osimState->getQ().get(j);
+                double StateQ = osimState[thread_id]->getQ().get(j);
                 for (int k = 0; k < numQs; k++){
                     if (abs(q[i][k] - StateQ) <= 1e-6){
                         AccelsVec.set(j, qpp[i][k]);
@@ -150,20 +154,19 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
             for (int j = 0; j < numControls; j++){
                 newControls.set(j, u[i][j]);
             }
-            osimModel->setControls(*osimState, newControls);
-            osimModel->markControlsAsValid(*osimState);
-            osimModel->realizeDynamics(*osimState);
+            osimModel[thread_id]->setControls(*osimState[thread_id], newControls);
+            osimModel[thread_id]->markControlsAsValid(*osimState[thread_id]);
+            osimModel[thread_id]->realizeDynamics(*osimState[thread_id]);
             
             Vector IDLoadsVec;
-            IDLoadsVec = idSolver->solve(*osimState, AccelsVec);
+            IDLoadsVec = idSolver[thread_id]->solve(*osimState[thread_id], AccelsVec);
             for (int j = 0; j < numCoords; j++){
 				idLoads[i + numPts * j] = IDLoadsVec[j]; 
 			}
-           
         }
-		q.clear();
-		qp.clear();
-		qpp.clear();
-		u.clear();
+		//q.clear();
+		//qp.clear();
+		//qpp.clear();
+		//u.clear();
     }   
 }
