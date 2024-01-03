@@ -36,8 +36,12 @@ loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
 indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
     loadName));
-experimentalJointMoments = evaluateGcvSplines( ...
-    inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
+if size(time) == size(inputs.collocationTimeOriginal)
+    experimentalJointMoments = inputs.splinedJointMoments;
+else
+    experimentalJointMoments = evaluateGcvSplines( ...
+        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
+end
 momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
 momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
 includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));

@@ -24,9 +24,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function output = solveOptimalControlProblem(inputs, params)
+function [inputs, output] = solveOptimalControlProblem(inputs, params)
 setup = convertToGpopsInputs(inputs, params);
 solution = gpops2(setup);
+inputs = setup.auxdata;
 output = convertFromGpopsOutputs(solution, ...
     inputs, params);
 end
