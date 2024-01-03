@@ -111,6 +111,7 @@ tempSetup.scales.method = 'none';
 tempSetup.mesh.phase.colpoints = setup.mesh.phase.colpoints;
 tempSetup.mesh.phase.fraction = setup.mesh.phase.fraction;
 tempSetup.mesh.maxiterations = 0;
+tempSetup.displaylevel = 0;
 end
 
 function output = continuous(input)
