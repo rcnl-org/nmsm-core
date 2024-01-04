@@ -55,7 +55,8 @@ for i = 1:6
     hold on
     plot(time, model, "blue", "LineWidth", 2)
     error = rms(experimental - model);
-    title(titles(i) + newline + " RMSE: " + error)
+    maxAbsError = max(abs(experimental - model));
+    title(titles(i) + newline + " RMSE: " + error + newline + " MAE: " + maxAbsError)
     xlabel('Time')
     if i == 1
         ylabel('Force (N)')
