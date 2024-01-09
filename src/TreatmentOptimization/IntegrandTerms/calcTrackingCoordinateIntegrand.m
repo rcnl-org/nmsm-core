@@ -29,10 +29,10 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTrackingCoordinateIntegrand(costTerm, inputs, time, ...
-    statePositions, coordinateName)
+    positions, coordinateName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
     coordinateName));
 if isempty(indx)
     throw(MException('CostTermError:CoordinateNotInState', ...
@@ -46,7 +46,7 @@ else
         inputs.splineJointAngles, inputs.coordinateNames, time);
 end
 cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...
-    statePositions, indx);
+    positions, indx);
 
 if normalizeByFinalTime
     cost = cost / time(end);

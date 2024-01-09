@@ -29,10 +29,10 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTrackingSpeedIntegrand(costTerm, inputs, time, ...
-    stateVelocities, coordinateName)
+    velocities, coordinateName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
     coordinateName));
 if isempty(indx)
     throw(MException('CostTermError:CoordinateNotInState', ...
@@ -47,7 +47,7 @@ else
 end
 
 cost = calcTrackingCostArrayTerm(experimentalJointVelocities, ...
-    stateVelocities, indx);
+    velocities, indx);
 
 if normalizeByFinalTime
     cost = cost / time(end);
