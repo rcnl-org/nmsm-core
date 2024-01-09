@@ -65,6 +65,7 @@ function inputs = parseExperimentalData(tree, inputs, dataDirectory)
     fullfile(dataDirectory, "IKData"), inputs.trialName, inputs.model);
 inputs.coordinateNames = cellstr(inputs.coordinateNames);
 inputs.experimentalTime = experimentalTime - experimentalTime(1);
+inputs.initialTime = inputs.experimentalTime;
 if isfield(inputs.osimx, 'groundContact') && ...
         isfield(inputs.osimx.groundContact, 'contactSurface')
     inputs.contactSurfaces = inputs.osimx.groundContact.contactSurface;
