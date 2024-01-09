@@ -50,7 +50,7 @@ for i = 1 : size(jointAngles, 2)
     index = 1;
     for j = 1 : length(inputs.coordinateNames)
         for k = 1 : length(inputs.surrogateModelLabels{i})
-            if strcmp(inputs.coordinateNames(j), inputs.surrogateModelLabels{i}(k))
+            if strcmp(inputs.coordinateNames(j), inputs.surrogateModelLabels{i}{k})
                 newMomentArms(:, j, i) = momentArms(:, index);
                 index = index + 1;
             end
