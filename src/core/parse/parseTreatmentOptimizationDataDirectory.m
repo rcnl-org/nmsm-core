@@ -142,9 +142,12 @@ end
 function [forces, moments, ec] = parseGroundReactionDataWithoutTime( ...
     inputs, dataDirectory, surfaceIndex)
 import org.opensim.modeling.Storage
-[grfData, grfColumnNames, ~] = parseTrialDataTryDirectories( ...
+[grfData, grfColumnNames, grfTime] = parseTrialDataTryDirectories( ...
     fullfile(inputs.previousResultsDirectory, "GRFData"), ...
     fullfile(dataDirectory, "GRFData"), inputs.trialName, inputs.model);
+forces = NaN(length(grfTime), 3);
+moments = NaN(length(grfTime), 3);
+ec = NaN(length(grfTime), 3);
 for i=1:size(grfColumnNames')
     label = grfColumnNames(i);
     for j = 1:3
