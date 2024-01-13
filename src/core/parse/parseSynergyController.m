@@ -33,7 +33,7 @@ function inputs = parseSynergyController(tree, inputs)
 inputs.synergyGroups = inputs.osimx.synergyGroups;
 inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
 inputs.surrogateModelCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
+    "surrogate_model_coordinate_list");
 inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
     inputs.surrogateModelCoordinateNames);
 inputs.numMuscles = length(inputs.muscleNames);
