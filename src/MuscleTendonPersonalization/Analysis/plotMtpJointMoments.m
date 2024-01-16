@@ -86,6 +86,7 @@ for i=1:numel(jointLabels)
         plotMeanAndStd(meanMoments(:,i), stdMoments(:,i), time, 'r-')
         plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
         hold off
+        set(gca, fontsize=11)
         title(jointLabels(i), fontsize=12)
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
@@ -93,7 +94,6 @@ for i=1:numel(jointLabels)
             ylabel("Joint Moment [Nm]")
         end
     end
-
     if ~isempty(meanMomentsSynx)
         subplot(numRows, numColumns, i+numColumns)
         hold on
@@ -102,14 +102,12 @@ for i=1:numel(jointLabels)
         hold off
         set(gca, fontsize=11)
         title(jointLabels(i), FontSize=12)
-        xlabel("Time Point")
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment Synx", "Mean Inverse Dynamics Moment")
             ylabel("Joint Moment [Nm]")
         end
     end
-
     if ~isempty(meanMomentsSynxNoResidual)
         subplot(numRows, numColumns, i+2*numColumns)
         hold on
@@ -118,12 +116,12 @@ for i=1:numel(jointLabels)
         hold off
         set(gca, fontsize=11)
         title(jointLabels(i), FontSize=12)
-        xlabel("Time Point")
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment Synx No Residual", "Mean Inverse Dynamics Moment")
             ylabel("Joint Moment [Nm]")
         end
     end
+    xlabel("Time Point")
 end
 end
