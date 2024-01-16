@@ -32,7 +32,13 @@
 
 function output = subsetDataByCoordinates(data, coordinateNames, ...
     subsetOfCoordinateNames)
-includedSubset = ismember(coordinateNames, subsetOfCoordinateNames);
+includedSubset = [];
+for i = 1 : length(subsetOfCoordinateNames)
+    temp = find(coordinateNames == subsetOfCoordinateNames(i));
+    assert(~isempty(temp), subsetOfCoordinateNames(i) + ...
+        " is not a coordinate in the IK data");
+    includedSubset(end + 1) = temp;
+end
 output = data(:, includedSubset);
 end
 

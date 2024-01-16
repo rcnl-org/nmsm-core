@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the experimental and
-% predicted joint angles for the specified coordinate. 
+% predicted joint angles for the specified coordinate.
 %
 % (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,20 +29,24 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTrackingCoordinateIntegrand(costTerm, inputs, time, ...
-    statePositions, coordinateName)
+    positions, coordinateName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
     coordinateName));
 if isempty(indx)
     throw(MException('CostTermError:CoordinateNotInState', ...
         strcat("Coordinate ", coordinateName, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-experimentalJointAngles = evaluateGcvSplines( ...
-    inputs.splineJointAngles, inputs.coordinateNames, time);
+if size(time) == size(inputs.collocationTimeOriginal)
+    experimentalJointAngles = inputs.splinedJointAngles;
+else
+    experimentalJointAngles = evaluateGcvSplines( ...
+        inputs.splineJointAngles, inputs.coordinateNames, time);
+end
 cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...
-    statePositions, indx);
+    positions, indx);
 
 if normalizeByFinalTime
     cost = cost / time(end);

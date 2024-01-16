@@ -65,6 +65,7 @@ function inputs = parseExperimentalData(tree, inputs, dataDirectory)
     fullfile(dataDirectory, "IKData"), inputs.trialName, inputs.model);
 inputs.coordinateNames = cellstr(inputs.coordinateNames);
 inputs.experimentalTime = experimentalTime - experimentalTime(1);
+inputs.initialTime = inputs.experimentalTime;
 if isfield(inputs.osimx, 'groundContact') && ...
         isfield(inputs.osimx.groundContact, 'contactSurface')
     inputs.contactSurfaces = inputs.osimx.groundContact.contactSurface;
@@ -141,9 +142,12 @@ end
 function [forces, moments, ec] = parseGroundReactionDataWithoutTime( ...
     inputs, dataDirectory, surfaceIndex)
 import org.opensim.modeling.Storage
-[grfData, grfColumnNames, ~] = parseTrialDataTryDirectories( ...
+[grfData, grfColumnNames, grfTime] = parseTrialDataTryDirectories( ...
     fullfile(inputs.previousResultsDirectory, "GRFData"), ...
     fullfile(dataDirectory, "GRFData"), inputs.trialName, inputs.model);
+forces = NaN(length(grfTime), 3);
+moments = NaN(length(grfTime), 3);
+ec = NaN(length(grfTime), 3);
 for i=1:size(grfColumnNames')
     label = grfColumnNames(i);
     for j = 1:3
