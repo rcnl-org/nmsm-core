@@ -58,14 +58,6 @@ for i=1:length(springConstants)
     constant = -s .* (v .* ymax - c .* log(cosh((ymax + h) ./ c)));
     freglyVerticalGrf = -s .* (v .* height - c .* ...
         log(cosh((height + h) ./ c))) - constant;
-    % Account for potential errors in force model
-    if isnan(freglyVerticalGrf) || isinf(freglyVerticalGrf) || freglyVerticalGrf > 1e8
-        freglyVerticalGrf = 1e7;
-    end
-    % freglyVerticalGrf(isnan(freglyVerticalGrf)) = ...
-    %     min(min(freglyVerticalGrf));
-    % freglyVerticalGrf(isinf(freglyVerticalGrf)) = ...
-    %     min(min(freglyVerticalGrf));
     springForces(2, i) = freglyVerticalGrf * (1 + dampingFactor * ...
         verticalVelocity);
     modeledVerticalGrf = modeledVerticalGrf + springForces(2, i);
