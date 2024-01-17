@@ -47,6 +47,11 @@ if isempty(torqueIndex)
 else
     torqueLoad = torqueControls(:, torqueIndex);
 end
+if length(synergyLoad) == 1 && length(torqueLoad) == 1 && ...
+        torqueLoad == 0 && synergyLoad == 0
+    throw(MException('', "kinetic path constraint load is not a" + ...
+        " synergy driven or torque driven coordinate"))
+end
 pathTerm = modeledValues.inverseDynamicsMoments(:, inverseDynamicsIndex) - ...
     (synergyLoad + torqueLoad);
 end
