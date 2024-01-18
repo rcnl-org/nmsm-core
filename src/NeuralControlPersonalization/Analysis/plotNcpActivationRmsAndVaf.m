@@ -30,7 +30,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotNcpActivationRmsAndVaf(weightsFile, commandsFile, mtpActivationsFile)
+function plotNcpActivationRmsAndVaf(weightsFile, commandsFile, ...
+    mtpActivationsFile)
 import org.opensim.modeling.Storage
 weightsStorage = Storage(weightsFile);
 ncpMuscleNames = getStorageColumnNames(weightsStorage);
@@ -47,7 +48,6 @@ mtpActivations = storageToDoubleMatrix(mtpStorage);
     intersect(ncpMuscleNames, mtpMuscleNames);
 ncpSubset = ncpActivations(ncpIndices, :);
 mtpSubset = mtpActivations(mtpIndices, :);
-
 
 rmsError = zeros(1, length(sharedMuscleNames));
 for i = 1 : length(sharedMuscleNames)
