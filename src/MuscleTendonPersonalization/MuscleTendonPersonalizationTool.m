@@ -43,6 +43,15 @@ else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
 optimizedParams = MuscleTendonPersonalization(inputs, params);
+save("optimizedParams.mat", 'optimizedParams')
+save("precalInputs.mat", "precalInputs")
+save("inputs.mat", "inputs")
+save("params.mat", "params")
+resultsDirectory = "mtpResultsRight3";
+load("optimizedParams.mat")
+load("inputs.mat")
+load("params.mat")
+load("precalInputs.mat")
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
         getMtpResultsToSave(inputs, params, optimizedParams, precalInputs);
