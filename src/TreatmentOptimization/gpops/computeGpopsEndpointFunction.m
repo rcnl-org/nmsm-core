@@ -70,7 +70,11 @@ else
     discreteObjective = 0;
 end
 
-continuousObjective = sum(setup.phase.integral) / length(setup.phase.integral);
+if isfield(setup.phase, "integral") && any(isnan(setup.phase.integral))
+    continuousObjective = sum(setup.phase.integral) / length(setup.phase.integral);
+else
+    continuousObjective = 0;
+end
 
 output.objective = continuousObjective + discreteObjective;
 end
