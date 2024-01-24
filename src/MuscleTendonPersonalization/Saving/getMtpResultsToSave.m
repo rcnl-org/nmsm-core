@@ -36,6 +36,7 @@ if nargin < 4
     modeledValues = [];
     precalInputs = [];
 else
+    updatedMaxIsometricForce = precalInputs.optimizeIsometricMaxForce;
     tempValues.optimalFiberLengthScaleFactors = ...
         mtpInputs.optimalFiberLength ./ precalInputs.optimalFiberLength;
     tempValues.tendonSlackLengthScaleFactors = ...
@@ -43,7 +44,7 @@ else
     precalInputs.maxIsometricForce = mtpInputs.maxIsometricForce;
     precalInputs.optimizeIsometricMaxForce = 0;
     modeledValues = calcMuscleTendonLengthInitializationModeledValues(tempValues, precalInputs);
-    if precalInputs.optimizeIsometricMaxForce
+    if updatedMaxIsometricForce
         finalValues.maxIsometricForce = mtpInputs.maxIsometricForce;
     end
 end
