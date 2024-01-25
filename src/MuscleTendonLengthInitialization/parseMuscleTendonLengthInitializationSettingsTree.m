@@ -53,7 +53,6 @@ end
 function inputs = getPassiveData(tree, inputs)
 import org.opensim.modeling.Storage
 passiveInputDirectory = getFieldByName(tree, 'passive_data_input_directory').Text;
-inputs.passiveInputDirectory = passiveInputDirectory;
 inputs.passiveMomentDataExists = 0;
 if (~isempty(passiveInputDirectory))
     if isfolder(passiveInputDirectory)
