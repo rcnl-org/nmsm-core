@@ -35,8 +35,16 @@ inverseDynamicsIndex = find(strcmp(convertCharsToStrings(inputs.inverseDynamicsM
     loadName));
 synergyIndex = find(strcmp(strcat(inputs.surrogateModelCoordinateNames, ...
     '_moment'), loadName));
+if isempty(synergyIndex)
+    synergyIndex = find(strcmp(strcat(inputs.surrogateModelCoordinateNames, ...
+    '_force'), loadName));
+end
 torqueIndex = find(strcmp(strcat(inputs.torqueControllerCoordinateNames, ...
     '_moment'), loadName));
+if isempty(torqueIndex)
+   torqueIndex = find(strcmp(strcat(inputs.torqueControllerCoordinateNames, ...
+    '_force'), loadName)); 
+end
 if isempty(synergyIndex)
     synergyLoad = 0;
 else
