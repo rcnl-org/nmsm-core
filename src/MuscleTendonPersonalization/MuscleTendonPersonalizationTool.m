@@ -30,28 +30,30 @@
 % ----------------------------------------------------------------------- %
 
 function MuscleTendonPersonalizationTool(settingsFileName)
-% settingsTree = xml2struct(settingsFileName);
-% verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
-% [inputs, params, resultsDirectory] = ...
-%     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-% precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
-% if isstruct(precalInputs)
-%     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
-%     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
-%         optimizedInitialGuess);
-% else
-%     precalInputs = struct('optimizeIsometricMaxForce', false);
-% end
-% optimizedParams = MuscleTendonPersonalization(inputs, params);
+settingsTree = xml2struct(settingsFileName);
+verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
+[inputs, params, resultsDirectory] = ...
+    parseMuscleTendonPersonalizationSettingsTree(settingsTree);
+precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+precalInputs2 = precalInputs;
+save("inputsCopy.mat", "precalInputs2")
+if isstruct(precalInputs)
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
+    inputs = updateMtpInitialGuess(inputs, precalInputs, ...
+        optimizedInitialGuess);
+else
+    precalInputs = struct('optimizeIsometricMaxForce', false);
+end
+optimizedParams = MuscleTendonPersonalization(inputs, params);
 % save("optimizedParams.mat", 'optimizedParams')
 % save("precalInputs.mat", "precalInputs")
 % save("inputs.mat", "inputs")
 % save("params.mat", "params")
-resultsDirectory = "mtpResultsRight3";
-load("optimizedParams.mat")
-load("inputs.mat")
-load("params.mat")
-load("precalInputs.mat")
+% resultsDirectory = "mtpResultsRight3";
+% load("optimizedParams.mat")
+% load("inputs.mat")
+% load("params.mat")
+% load("precalInputs.mat")
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
         getMtpResultsToSave(inputs, params, optimizedParams, precalInputs);

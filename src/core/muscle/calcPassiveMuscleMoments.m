@@ -54,10 +54,18 @@ expandedParallelComponentOfPennationAngle = ones(1, 1, length( ...
     parallelComponentOfPennationAngle), 1);
 expandedParallelComponentOfPennationAngle(1, 1, :, 1) = ...
     parallelComponentOfPennationAngle;
-momentArms = readMomentArmsForPlotting(experimentalData);
-passiveModelMoments = momentArms .* ...
+
+% momentArms = experimentalData.momentArms(:, indices, :, :);
+% temp = momentArms;
+% momentArms(:,5,:,:) = temp(:, 1, :, :);
+% momentArms(:,2,:,:) = temp(:, 2, :, :);
+% momentArms(:,1,:,:) = temp(:, 3, :, :);
+% momentArms(:,3,:,:) = temp(:, 4, :, :);
+% momentArms(:,4,:,:) = temp(:, 5, :, :);
+% momentArms(:,6,:,:) = temp(:, 6, :, :);
+passiveModelMoments = experimentalData.momentArms .* ...
     expandedMaxIsometricForce .* expandedPassiveForce .* ...
     expandedParallelComponentOfPennationAngle;
-
 passiveModelMoments = permute(sum(passiveModelMoments, 3), [1 2 4 3]);
+max(passiveModelMoments, [], 'all')
 end
