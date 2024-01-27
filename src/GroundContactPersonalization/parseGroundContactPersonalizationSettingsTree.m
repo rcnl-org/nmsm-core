@@ -164,11 +164,11 @@ end
 function task = getFootData(tree)
 task.isLeftFoot = strcmpi('true', ...
     getFieldByNameOrError(tree, 'is_left_foot').Text);
-hindfootBodyName = getFieldByName(tree, "hindfoot_body").Text;
+hindfootBodyName = getFieldByName(tree, "hindfoot_body");
 if ~hindfootBodyName
     throw(MException('', "<toes_coordinate> is replaced by <hindfoot_body> in the GCP settings file."))
 else
-    task.hindfootBodyName = hindfootBodyName;
+    task.hindfootBodyName = hindfootBodyName.Text;
 end
 task.markerNames.toe = getFieldByNameOrError(tree, ...
     'toe_marker').Text;
