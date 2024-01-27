@@ -165,7 +165,7 @@ function task = getFootData(tree)
 task.isLeftFoot = strcmpi('true', ...
     getFieldByNameOrError(tree, 'is_left_foot').Text);
 hindfootBodyName = getFieldByName(tree, "hindfoot_body");
-if ~hindfootBodyName
+if ~isstruct(hindfootBodyName)
     throw(MException('', "<toes_coordinate> is replaced by <hindfoot_body> in the GCP settings file."))
 else
     task.hindfootBodyName = hindfootBodyName.Text;
@@ -248,6 +248,7 @@ end
 
 % Gets cost terms and design variables included in each task.
 function output = getOptimizationTasks(tree)
+output = {};
 tasks = getFieldByNameOrError(tree, 'GCPTaskList');
 counter = 1;
 gcpTasks = orderByIndex(tasks.GCPTask);
