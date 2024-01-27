@@ -130,6 +130,7 @@ ikSolver.setAccuracy(1e-6);
 % make new kinematics *run ik solver*
 
 kinematicsReporter = org.opensim.modeling.Kinematics(model);
+kinematicsReporter.setInDegrees(false); 
 state.setTime(timePoints(1));
 ikSolver.assemble(state);
 kinematicsReporter.begin(state);
