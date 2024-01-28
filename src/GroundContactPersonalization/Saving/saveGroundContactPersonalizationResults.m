@@ -39,9 +39,9 @@ writeOptimizedFootKinematicsToSto(inputs, resultsDirectory, name);
 writeReplacedExperimentalGroundReactionsToSto(inputs, ... 
     resultsDirectory, name);
 writeOptimizedGroundReactionsToSto(inputs, params, resultsDirectory, name);
-writeCombinedOptimizedGroundReactionsToSto(inputs, params, resultsDirectory);
-writeFullBodyKinematicsFromGcp(inputs, params, resultsDirectory);
 writeGroundContactPersonalizationOsimxFile(inputs, resultsDirectory, ...
     osimxFileName);
+writeCombinedOptimizedGroundReactionsToSto(inputs, params, resultsDirectory);
+writeFullBodyKinematicsFromGcp(inputs, params, resultsDirectory);
 end
 

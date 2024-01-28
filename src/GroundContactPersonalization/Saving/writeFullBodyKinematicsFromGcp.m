@@ -67,7 +67,7 @@ end
 % make ikdata
 
 trcFromMotParams.trcFileName = "preGcp.trc";
-trcFromMotParams.dataRate = 1;
+trcFromMotParams.dataRate = .00001;
 TrcFromMot(inputs.bodyModel, inputs.motionFileName, trcFromMotParams)
 
 % load trc file
