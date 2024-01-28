@@ -42,16 +42,16 @@ stateLabels = inputs.statesCoordinateNames;
 for i = 1 : length(inputs.statesCoordinateNames)
     stateLabels{end + 1} = strcat(inputs.statesCoordinateNames{i}, '_u');
 end
-for i = 1 : length(inputs.statesCoordinateNames)
-    stateLabels{end + 1} = strcat(inputs.statesCoordinateNames{i}, '_dudt');
-end
+% for i = 1 : length(inputs.statesCoordinateNames)
+%     stateLabels{end + 1} = strcat(inputs.statesCoordinateNames{i}, '_dudt');
+% end
 [time, data] = splineToEvenlySpaced(values.time, [values.statePositions ...
-    values.stateVelocities values.stateAccelerations]);
+    values.stateVelocities]);
 writeToSto(stateLabels, time, data, ...
     fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_states.sto")));
-[time, jerks] = splineToEvenlySpaced(values.time, values.controlJerks);
-writeToSto(inputs.statesCoordinateNames, time, jerks, ...
-    fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_jerks.sto")));
+[time, accelerations] = splineToEvenlySpaced(values.time, values.controlAccelerations);
+writeToSto(inputs.statesCoordinateNames, time, accelerations, ...
+    fullfile(inputs.resultsDirectory, strcat(inputs.trialName, "_accelerations.sto")));
 if strcmp(inputs.controllerType, 'synergy')
     controlLabels = {};
     for i = 1 : length(inputs.osimx.synergyGroups)
