@@ -20,7 +20,7 @@ dataRate = dataRateOrError(params);
 table = makeTimeSeriesTableVec3(model, dataRate);
 applyValuesFromStorage(model, state, storage, table, params);
 trcFileAdapter = org.opensim.modeling.TRCFileAdapter();
-trcFileAdapter.write(table, trcFileNameOrDefault(params))
+trcFileAdapter.write(table, trcFileNameOrDefault(params));
 end
 
 % (struct) -> (number)

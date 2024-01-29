@@ -14,7 +14,7 @@ value = dbl.get(row);
 %         applyGaussian(value, params, 'rotationNoise')*3.14/180);
 
 %     coord.setValue(state, applyGaussian(value,params, 'translationNoise'));
-coord.setValue(state, value)
+coord.setValue(state, value);
 end
 
 function output = applyGaussian(value, params, fieldName)

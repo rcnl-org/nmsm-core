@@ -8,12 +8,12 @@
 function table = makeTimeSeriesTableVec3(model, dataRate)
 import org.opensim.modeling.*
 table = TimeSeriesTableVec3();
-table.addTableMetaDataString("DataRate", num2str(dataRate))
-table.addTableMetaDataString("Units", "m")
+table.addTableMetaDataString("DataRate", num2str(dataRate));
+table.addTableMetaDataString("Units", "m");
 labels = StdVectorString();
 for i=0:model.getMarkerSet().getSize()-1
-    labels.add(model.getMarkerSet().get(i).getName())
+    labels.add(model.getMarkerSet().get(i).getName());
 end
-table.setColumnLabels(labels)
+table.setColumnLabels(labels);
 end
 

@@ -146,5 +146,7 @@ if ~exist(fullfile(resultsDirectory, "IKData"), "dir")
 end
 kinematicsReporter.getPositionStorage().print( ...
     fullfile(resultsDirectory, "IKData", outfile));
+delete "postGcp.trc"
+delete "preGcp.trc"
 end
 
