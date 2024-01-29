@@ -146,6 +146,11 @@ if ~exist(fullfile(resultsDirectory, "IKData"), "dir")
 end
 kinematicsReporter.getPositionStorage().print( ...
     fullfile(resultsDirectory, "IKData", outfile));
+[columnNames, time, data] = parseMotToComponents(model, ...
+    Storage(fullfile(resultsDirectory, "IKData", outfile)));
+data = lowpassFilter(time, data, 4, 6, 0);
+writeToSto(columnNames, timePoints, data, ...
+    fullfile(resultsDirectory, "IKData", outfile));
 delete "postGcp.trc"
 delete "preGcp.trc"
 end
