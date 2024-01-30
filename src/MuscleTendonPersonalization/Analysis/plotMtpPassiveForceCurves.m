@@ -30,43 +30,29 @@
 % ----------------------------------------------------------------------- %
 function plotMtpPassiveForceCurves(resultsDirectory)
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
-[muscleNames, experimentalForce] = extractMtpDataFromSto( ...
-    fullfile(analysisDirectory, "passiveForcesExperimental"));
-if exist(fullfile(analysisDirectory, "passiveForcesModelSynx"), "dir")
-    [~, modelForce] = extractMtpDataFromSto(...
-        fullfile(analysisDirectory, "passiveForcesModelSynx"));
-else
-    [~, modelForce] = extractMtpDataFromSto(...
-        fullfile(analysisDirectory, "passiveForcesModel"));
-end
+
+[muscleNames, modelForce] = extractMtpDataFromSto(...
+    fullfile(analysisDirectory, "passiveForcesModel"));
+
 muscleNames = strrep(muscleNames, '_', ' ');
-meanExperimentalForce = mean(experimentalForce, 3);
-stdExperimentalForce = std(experimentalForce, [], 3);
 meanModelForce = mean(modelForce, 3);
 stdModelForce = std(modelForce, [], 3);
-maxForce = max( ...
-    [max(meanModelForce, [], 'all'), ...
-    max(meanExperimentalForce, [], 'all')]);
+maxForce = max(meanModelForce,[], 'all');
 numWindows = ceil(sqrt(numel(muscleNames)));
 
 figure(Name = "Passive Force Curves", ...
     Units='normalized', ...
     Position=[0.1 0.1 0.8 0.8])
-time = 1:1:size(meanExperimentalForce,1);
+time = 1:1:size(meanModelForce,1);
 for i = 1:numel(muscleNames)
     subplot(numWindows, numWindows, i)
     hold on
-    plotMeanAndStd(meanExperimentalForce(:,i), stdExperimentalForce(:,i), ...
-        time, 'k-')
-    plotMeanAndStd(meanModelForce(:,i), stdModelForce(:,i), time, 'r-');
+    plotMeanAndStd(meanModelForce(:,i), stdModelForce(:,i), time, 'b-');
     hold off
     set(gca, fontsize=11)
     axis([1 numel(time) 0 maxForce])
     title(muscleNames(i), FontSize=12);
-    if i == 1
-        legend("Experimental", "Model")
-    end
-    if mod(i,3) == 1
+    if mod(i,numWindows) == 1
         ylabel("Magnitude")
     end
     if i>numel(muscleNames)-numWindows
