@@ -85,7 +85,10 @@ if (~isempty(passiveInputDirectory))
         inputs.passiveMuscleTendonLengthColumnNames = inputs.passiveMuscleTendonLengthColumnNames(includedIndices);
         [~, ~, momentCoordinateIndices] = intersect(inputs.coordinateNames, ...
             inputs.passiveMomentArmCoordinates, 'stable');
-
+        if isempty(momentCoordinateIndices)
+            [~, ~, momentCoordinateIndices] = intersect(inputs.coordinateNames, ...
+            strcat(inputs.passiveMomentArmCoordinates,"_moment"), 'stable');
+        end
         inputs.passiveMomentArms = inputs.passiveMomentArms(:, momentCoordinateIndices, includedIndices, :);
         
         inputs.passiveMuscleTendonLength = inputs.passiveMuscleTendonLength(:, includedIndices, :);
