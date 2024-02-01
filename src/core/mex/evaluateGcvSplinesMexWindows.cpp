@@ -99,7 +99,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 
         for (int i = 0; i < numColumns; ++i) {
             for (int j = 0; j < numPts; ++i) {
-                values[j + numPts * i] = *splineSet.evaluate(columns[i], *derivative, time[j]);
+                values[j + numPts * i] = splineSet->evaluate(columns[i], *derivative, time[j]);
             }
         }
 
