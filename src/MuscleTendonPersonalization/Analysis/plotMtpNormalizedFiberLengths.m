@@ -54,8 +54,8 @@ for i=1:numel(muscleNames)
     set(gca, fontsize=11)
     axis([1 size(meanFiberLengths, 1) 0 1.5])
     title(muscleNames(i), FontSize=12);
-    if mod(i,3) == 1
-        ylabel('Normalized Fiber Length', FontSize=12)
+    if mod(i,numWindows) == 1
+        ylabel(textwrap("Normalized Fiber Length",10), FontSize=12)
     end
     if i>numel(muscleNames)-numWindows
         xlabel("Time Points", FontSize=12)

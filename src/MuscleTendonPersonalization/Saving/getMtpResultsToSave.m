@@ -61,10 +61,8 @@ if isfield(mtpInputs, "synergyExtrapolation")
     resultsSynx.muscleExcitations = resultsSynx.muscleExcitations(:, :, ...
         mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
     finalValues.synergyWeights(mtpInputs.numberOfExtrapolationWeights + 1 : end) = 0;
-    resultsSynxNoResiduals = calcMtpSynXModeledValues(finalValues, mtpInputs, struct());
     resultsStruct = struct("results", results, ...
-        "resultsSynx", resultsSynx, ...
-        "resultsSynxNoResiduals", resultsSynxNoResiduals);
+        "resultsSynx", resultsSynx);
 else
     resultsStruct = struct("results", results);
 end

@@ -49,13 +49,14 @@ figureSize = figureWidth * figureHeight;
 [modeledColumns, modeledTime, modeledMoments] = parseMotToComponents( ...
     org.opensim.modeling.Model(), Storage(modeledMomentsFile));
 
-includedColumns = ismember(experimentalColumns, modeledColumns);
+includedColumns = logical(ismember(experimentalColumns, modeledColumns) ...
+    + ismember(experimentalColumns + "_moment", modeledColumns));
 experimentalMoments = experimentalMoments(includedColumns, :);
 experimentalColumns = experimentalColumns(includedColumns);
 
 subplotNumber = 1;
 hasLegend = false;
-figure(figureNumber)
+% figure(figureNumber)
 figureIndex = 1;
 for i = 1:length(experimentalColumns)
     if i > figureSize * figureIndex
@@ -65,8 +66,11 @@ for i = 1:length(experimentalColumns)
         hasLegend = false;
     end
     subplot(figureHeight, figureWidth, subplotNumber)
-    plot(experimentalTime, experimentalMoments(i, :), 'LineWidth', 2)
+    plot(modeledTime, experimentalMoments(i, :), 'LineWidth', 2)
     modeledIndex = find(experimentalColumns(i) == modeledColumns);
+    if isempty(modeledIndex)
+        modeledIndex = find(experimentalColumns(i) + "_moment" == modeledColumns);
+    end
     if ~isempty(modeledIndex)
         hold on
         plot(modeledTime, modeledMoments(modeledIndex, :), 'LineWidth', 2);

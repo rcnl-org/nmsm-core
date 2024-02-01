@@ -39,7 +39,8 @@ if isempty(indx)
         strcat("Coordinate ", coordinateName, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-if size(time) == size(inputs.collocationTimeOriginal)
+if size(time) == size(inputs.collocationTimeOriginal) && ...
+        all(time == inputs.collocationTimeOriginal)
     experimentalJointVelocities = inputs.splinedJointSpeeds;
 else
     experimentalJointVelocities = evaluateGcvSplines( ...

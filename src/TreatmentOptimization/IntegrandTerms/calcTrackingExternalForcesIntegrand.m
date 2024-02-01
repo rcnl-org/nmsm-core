@@ -36,7 +36,8 @@ for i = 1:length(inputs.contactSurfaces)
     indx = find(strcmp(convertCharsToStrings(inputs.contactSurfaces{i}. ...
         forceColumns), forceName));
     if ~isempty(indx)
-        if size(time) == size(inputs.collocationTimeOriginal)
+        if size(time) == size(inputs.collocationTimeOriginal) && ...
+        all(time == inputs.collocationTimeOriginal)
             experimentalGroundReactions = inputs.splinedGroundReactionForces{i};
         else
             experimentalGroundReactions = ...
