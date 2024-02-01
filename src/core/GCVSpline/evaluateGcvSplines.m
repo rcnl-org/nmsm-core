@@ -5,7 +5,7 @@
 % which can be provided as either an integer (the raw index in the spline
 % set) or a string defining a column label that should exist in the spline
 % set. The derivative level is given as an integer (0 for position, 1 for
-% velocity, 2 for acceleration, etc.). 
+% velocity, 2 for acceleration, etc.).
 %
 % (GCVSplineSet, string OR int, Array of double, int) -> (Array of double)
 % Evaluate GCV spline values or derivatives at a set of time points.
@@ -52,9 +52,14 @@ if nargin < 4
     derivative = 0;
 end
 
-for i = 1 : length(columnLabels)
-    for j = 1 : length(time)
-        values(j, i) = splineSet.evaluate(columnLabels(i), derivative, time(j));
+if isequal(mexext, 'mexw64')
+    values = evaluateGcvSplinesMexWindows(splineSet, columnLabels, time, ...
+        derivative);
+else
+    for i = 1 : length(columnLabels)
+        for j = 1 : length(time)
+            values(j, i) = splineSet.evaluate(columnLabels(i), derivative, time(j));
+        end
     end
 end
 end

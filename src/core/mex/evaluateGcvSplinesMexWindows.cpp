@@ -91,19 +91,22 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
         vector<int> columns = mexArrayToVectorInt(prhs[1], numColumns);
         vector<double> time = mexArrayToVectorDouble(prhs[2], numPts);
 
-        GCVSplineSet *splineSet = (GCVSplineSet *) mxGetPr(prhs[0]);
-        int *derivative = (int *) mxGetPr(prhs[3]);
+        mexPrintf(typeid(dynamic_cast<GCVSplineSet*>(mxGetPr(prhs[0]))).name());
 
-        plhs[0] = mxCreateDoubleMatrix(numPts,numColumns,mxREAL);
-		double *values = mxGetPr(plhs[0]);
+        GCVSplineSet *splineSet = dynamic_cast<GCVSplineSet*>(mxGetPr(prhs[0]));
 
-        for (int i = 0; i < numColumns; ++i) {
-            for (int j = 0; j < numPts; ++i) {
-                values[j + numPts * i] = splineSet->evaluate(columns[i], *derivative, time[j]);
-            }
-        }
+        // int derivative = mxGetScalar(prhs[3]);
 
-		columns.clear();
-		time.clear();
+        // plhs[0] = mxCreateDoubleMatrix(numPts,numColumns,mxREAL);
+		// double *values = mxGetPr(plhs[0]);
+
+        // for (int i = 0; i < numColumns; i++) {
+        //     for (int j = 0; j < numPts; j++) {
+        //         values[j + numPts * i] = splineSet->evaluate(columns[i], 0, time[j]);
+        //     }
+        // }
+
+		// columns.clear();
+		// time.clear();
     }   
 }
