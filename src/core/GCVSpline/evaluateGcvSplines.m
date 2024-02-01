@@ -52,14 +52,14 @@ if nargin < 4
     derivative = 0;
 end
 
-if isequal(mexext, 'mexw64')
-    values = evaluateGcvSplinesMexWindows(splineSet, columnLabels, time, ...
-        derivative);
-else
-    for i = 1 : length(columnLabels)
-        for j = 1 : length(time)
-            values(j, i) = splineSet.evaluate(columnLabels(i), derivative, time(j));
-        end
+% if isequal(mexext, 'mexw64')
+%     values = evaluateGcvSplinesMexWindows(splineSet, columnLabels, time, ...
+%         derivative);
+% else
+for i = 1 : length(columnLabels)
+    for j = 1 : length(time)
+        values(j, i) = splineSet.evaluate(columnLabels(i), derivative, time(j));
     end
 end
+% end
 end
