@@ -28,51 +28,42 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationActivations(experimentalActivationsFile, ...
-    modelActivationsFile, figureWidth, figureHeight)
-if nargin < 3
-    figureWidth = 8;
+function plotTreatmentOptimizationSynergyControls(controlsFile, ...
+    figureWidth, figureHeight)
+if nargin < 2
+    figureWidth = 4;
 end
-if nargin < 4
-    figureHeight = 8;
+if nargin < 3
+    figureHeight = 4;
 end
 figureSize = figureWidth * figureHeight;
 import org.opensim.modeling.Storage
-experimentalActivationsStorage = Storage(experimentalActivationsFile);
-muscleLabels = getStorageColumnNames(experimentalActivationsStorage);
-experimentalActivations = storageToDoubleMatrix(experimentalActivationsStorage)';
-experimentalTime = findTimeColumn(experimentalActivationsStorage);
-if experimentalTime(1) ~= 0
-    experimentalTime = experimentalTime - experimentalTime(1);
+controlsStorage = Storage(controlsFile);
+controlLabels = getStorageColumnNames(controlsStorage);
+controls = storageToDoubleMatrix(controlsStorage)';
+time = findTimeColumn(controlsStorage);
+if time(1) ~= 0
+    time = time - time(1);
 end
-modelActivationsStorage = Storage(modelActivationsFile);
-modelActivations = storageToDoubleMatrix(modelActivationsStorage)';
-modelTime = findTimeColumn(modelActivationsStorage);
-if modelTime(1) ~= 0
-    modelTime = modelTime - modelTime(1);
-end
-figure(Name="Treatment Optimization Activations", ...
+figure(Name="Treatment Optimization Controls", ...
     Units='normalized', ...
     Position=[0 0 1 1])
 subplotNumber = 1;
 figureNumber = 1;
-for i=1:numel(muscleLabels)
+for i=1:numel(controlLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Activations", ...
+        figure(Name="Treatment Optimization Controls", ...
             Units='normalized', ...
             Position=[0 0 1 1])
         subplotNumber = 1;
     end
     subplot(figureWidth, figureHeight, subplotNumber)
     hold on
-    plot(experimentalTime, experimentalActivations(:, i))
-    plot(modelTime, modelActivations(:, i))
+    plot(time, controls(:, i));
     hold off
-    title(strrep(muscleLabels(i), "_", " "));
-    if subplotNumber == 1
-        legend("Experimental Activations", "Model Activations")
-    end
+    title(strrep(controlLabels(i), "_", " "));
+    xlim([0, time(end)])
     subplotNumber = subplotNumber + 1;
 end
 end
