@@ -78,11 +78,13 @@ for i=1:numel(momentAxes)
     else
         title(strrep(momentAxes(i), "_", " "))
     end
-
-    xlim([0, experimentalTime(end)])
+    
+    
     if subplotNumber==1
         legend("Experimental Moments", "Model Moments")
     end
+
+    xlim([0, experimentalTime(end)])
     % if subplotNumber > figureSize-figureHeight
     %     xlabel("Time [s]")
     % end

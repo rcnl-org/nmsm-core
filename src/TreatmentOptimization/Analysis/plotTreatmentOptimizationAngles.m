@@ -28,15 +28,63 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationAngles(anglesFile, ...
-    figureWidth, figureHeight)
-    if nargin < 3
-        figureWidth = 8;
+function plotTreatmentOptimizationAngles(experimentalAnglesFile, ...
+    modelAnglesFile, figureWidth, figureHeight)
+% Get these to degrees instead of radians
+if nargin < 3
+    figureWidth = 8;
+end
+if nargin < 4
+    figureHeight = 8;
+end
+figureSize = figureWidth * figureHeight;
+import org.opensim.modeling.Storage
+experimentalAnglesStorage = Storage(experimentalAnglesFile);
+angleLabels = getStorageColumnNames(experimentalAnglesStorage);
+experimentalAngles = storageToDoubleMatrix(experimentalAnglesStorage)';
+experimentalAngles = experimentalAngles .* 180/pi;
+experimentalTime = findTimeColumn(experimentalAnglesStorage);
+if experimentalTime(1) ~= 0
+    experimentalTime = experimentalTime - experimentalTime(1);
+end
+modelAnglesStorage = Storage(modelAnglesFile);
+modelAngles = storageToDoubleMatrix(modelAnglesStorage)';
+modelAngles = modelAngles .* 180/pi;
+modelTime = findTimeColumn(modelAnglesStorage);
+if modelTime(1) ~= 0
+    modelTime = modelTime - modelTime(1);
+end
+
+figure(Name = "Treatment Optimization Angles", ...
+    Units='normalized', ...
+    Position=[0 0 1 1])
+subplotNumber = 1;
+figureNumber = 1;
+for i=1:numel(angleLabels)
+    if i > figureSize * figureNumber
+        figureNumber = figureNumber + 1;
+        figure(Name="Treatment Optimization Angles", ...
+            Units='normalized', ...
+            Position=[0 0 1 1])
+        subplotNumber = 1;
     end
-    if nargin < 4
-        figureHeight = 8;
+    subplot(figureWidth, figureHeight, subplotNumber)
+    hold on
+    plot(experimentalTime, experimentalAngles(:, i));
+    plot(modelTime, modelAngles(:, i));
+    hold off
+    title(strrep(angleLabels(i), "_", " "));
+    
+    if subplotNumber==1
+        legend("Experimental Angles", "Model Angles")
     end
-    figureSize = figureWidth * figureHeight;
-    import org.opensim.modeling.Storage
+
+    xlim([0, experimentalTime(end)])
+    maxAngle = max([experimentalAngles(:, i); modelAngles(:, i)],[], "all");
+    minAngle = min([experimentalAngles(:, i); modelAngles(:, i)],[], "all");
+    if maxAngle-minAngle < 10
+        ylim([(maxAngle+minAngle)/2-5, (maxAngle+minAngle)/2+5])
+    end
+    subplotNumber = subplotNumber + 1;
 end
 
