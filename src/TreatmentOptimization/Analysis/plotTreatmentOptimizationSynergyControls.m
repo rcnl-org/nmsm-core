@@ -30,13 +30,7 @@
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationSynergyControls(controlsFile, ...
     figureWidth, figureHeight)
-if nargin < 2
-    figureWidth = 4;
-end
-if nargin < 3
-    figureHeight = 4;
-end
-figureSize = figureWidth * figureHeight;
+
 import org.opensim.modeling.Storage
 controlsStorage = Storage(controlsFile);
 controlLabels = getStorageColumnNames(controlsStorage);
@@ -45,7 +39,15 @@ time = findTimeColumn(controlsStorage);
 if time(1) ~= 0
     time = time - time(1);
 end
-figure(Name="Treatment Optimization Controls", ...
+
+if nargin < 3
+    figureWidth = ceil(sqrt(numel(controlLabels)));
+end
+if nargin < 4
+    figureHeight = ceil(sqrt(numel(controlLabels)));
+end
+figureSize = figureWidth * figureHeight;
+figure(Name="Treatment Optimization Synergy Controls", ...
     Units='normalized', ...
     Position=[0 0 1 1])
 subplotNumber = 1;
@@ -53,17 +55,18 @@ figureNumber = 1;
 for i=1:numel(controlLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Controls", ...
+        figure(Name="Treatment Optimization Synergy Controls", ...
             Units='normalized', ...
             Position=[0 0 1 1])
         subplotNumber = 1;
     end
-    subplot(figureWidth, figureHeight, subplotNumber)
+    subplot(figureHeight, figureWidth, subplotNumber)
     hold on
     plot(time, controls(:, i));
     hold off
     title(strrep(controlLabels(i), "_", " "));
     xlim([0, time(end)])
+    ylim([0, 1])
     subplotNumber = subplotNumber + 1;
 end
 end

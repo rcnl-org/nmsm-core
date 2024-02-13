@@ -28,67 +28,64 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationDynamics(experimentalMomentsFile, ...
-    modelMomentsFile, figureWidth, figureHeight)
-if nargin < 3
-    figureWidth = 8;
-end
-if nargin < 4
-    figureHeight = 8;
-end
-figureSize = figureWidth * figureHeight;
+function plotTreatmentOptimizationJointAngles(experimentalAnglesFile, ...
+    modelAnglesFile, figureWidth, figureHeight)
+
 import org.opensim.modeling.Storage
-experimentalMomentsStorage = Storage(experimentalMomentsFile);
-momentAxes = getStorageColumnNames(experimentalMomentsStorage);
-experimentalMoments = storageToDoubleMatrix(experimentalMomentsStorage)';
-experimentalTime = findTimeColumn(experimentalMomentsStorage);
+experimentalAnglesStorage = Storage(experimentalAnglesFile);
+angleLabels = getStorageColumnNames(experimentalAnglesStorage);
+experimentalAngles = storageToDoubleMatrix(experimentalAnglesStorage)';
+experimentalAngles = experimentalAngles .* 180/pi;
+experimentalTime = findTimeColumn(experimentalAnglesStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
-modelMomentsStorage = Storage(modelMomentsFile);
-modelMoments = storageToDoubleMatrix(modelMomentsStorage)';
-modelTime = findTimeColumn(modelMomentsStorage);
+modelAnglesStorage = Storage(modelAnglesFile);
+modelAngles = storageToDoubleMatrix(modelAnglesStorage)';
+modelAngles = modelAngles .* 180/pi;
+modelTime = findTimeColumn(modelAnglesStorage);
 if modelTime(1) ~= 0
     modelTime = modelTime - modelTime(1);
 end
 
-figure(Name="Treatment Optimization Moments", ...
+if nargin < 3
+    figureWidth = ceil(sqrt(numel(angleLabels)));
+end
+if nargin < 4
+    figureHeight = ceil(sqrt(numel(angleLabels)));
+end
+figureSize = figureWidth * figureHeight;
+
+figure(Name = "Treatment Optimization Joint Angles", ...
     Units='normalized', ...
     Position=[0 0 1 1])
 subplotNumber = 1;
 figureNumber = 1;
-for i=1:numel(momentAxes)
+for i=1:numel(angleLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Moments", ...
+        figure(Name="Treatment Optimization Joint Angles", ...
             Units='normalized', ...
             Position=[0 0 1 1])
         subplotNumber = 1;
     end
-    subplot(figureWidth, figureHeight, subplotNumber)
+    subplot(figureHeight, figureWidth, subplotNumber)
     hold on
-    plot(experimentalTime, experimentalMoments(:, i));
-    plot(modelTime, modelMoments(:, i));
+    plot(experimentalTime, experimentalAngles(:, i));
+    plot(modelTime, modelAngles(:, i));
     hold off
-
-    if contains(momentAxes(i), "moment")
-        title(strcat(strrep(momentAxes(i), "_", " "), " [Nm]"))
-    elseif contains(momentAxes(i), "force")
-        title(strcat(strrep(momentAxes(i), "_", " "), " [N]"))
-    else
-        title(strrep(momentAxes(i), "_", " "))
-    end
-    
+    title(strrep(angleLabels(i), "_", " "));
     
     if subplotNumber==1
-        legend("Experimental Moments", "Model Moments")
+        legend("Experimental", "Model")
     end
 
     xlim([0, experimentalTime(end)])
-    % if subplotNumber > figureSize-figureHeight
-    %     xlabel("Time [s]")
-    % end
+    maxAngle = max([experimentalAngles(:, i); modelAngles(:, i)],[], "all");
+    minAngle = min([experimentalAngles(:, i); modelAngles(:, i)],[], "all");
+    if maxAngle-minAngle < 10
+        ylim([(maxAngle+minAngle)/2-10, (maxAngle+minAngle)/2+10])
+    end
     subplotNumber = subplotNumber + 1;
-end
 end
 

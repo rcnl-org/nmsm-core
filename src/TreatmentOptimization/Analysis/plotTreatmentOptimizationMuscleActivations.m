@@ -28,15 +28,9 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationActivations(experimentalActivationsFile, ...
+function plotTreatmentOptimizationMuscleActivations(experimentalActivationsFile, ...
     modelActivationsFile, figureWidth, figureHeight)
-if nargin < 3
-    figureWidth = 8;
-end
-if nargin < 4
-    figureHeight = 8;
-end
-figureSize = figureWidth * figureHeight;
+
 import org.opensim.modeling.Storage
 experimentalActivationsStorage = Storage(experimentalActivationsFile);
 muscleLabels = getStorageColumnNames(experimentalActivationsStorage);
@@ -51,7 +45,16 @@ modelTime = findTimeColumn(modelActivationsStorage);
 if modelTime(1) ~= 0
     modelTime = modelTime - modelTime(1);
 end
-figure(Name="Treatment Optimization Activations", ...
+
+if nargin < 3
+    figureWidth = ceil(sqrt(numel(muscleLabels)));
+end
+if nargin < 4
+    figureHeight = ceil(sqrt(numel(muscleLabels)));
+end
+figureSize = figureWidth * figureHeight;
+
+figure(Name="Treatment Optimization Muscle Activations", ...
     Units='normalized', ...
     Position=[0 0 1 1])
 subplotNumber = 1;
@@ -59,21 +62,20 @@ figureNumber = 1;
 for i=1:numel(muscleLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Activations", ...
-            Units='normalized', ...
-            Position=[0 0 1 1])
+        figure(Name="Treatment Optimization Muscle Activations")
         subplotNumber = 1;
     end
-    subplot(figureWidth, figureHeight, subplotNumber)
+    subplot(figureHeight, figureWidth, subplotNumber)
     hold on
     plot(experimentalTime, experimentalActivations(:, i))
     plot(modelTime, modelActivations(:, i))
     hold off
     title(strrep(muscleLabels(i), "_", " "));
     if subplotNumber == 1
-        legend("Experimental Activations", "Model Activations")
+        legend("Experimental", "Model")
     end
+    xlim([0, experimentalTime(end)]);
+    ylim([0 1])
     subplotNumber = subplotNumber + 1;
 end
 end
-
