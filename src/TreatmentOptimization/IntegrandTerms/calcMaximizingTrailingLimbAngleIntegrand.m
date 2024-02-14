@@ -40,7 +40,7 @@ end
 trailingLimbAngle = calcTrailingLimb(costTerm, values, ...
     normalForce, params);
 cost = calcMaximizingCostArrayTerm(trailingLimbAngle * ...
-    ones(length(values.time), 1));
+    ones(length(time), 1));
 if normalizeByFinalTime
     cost = cost / time(end);
 end

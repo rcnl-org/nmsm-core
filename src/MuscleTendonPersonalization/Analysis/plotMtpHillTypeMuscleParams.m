@@ -45,13 +45,15 @@ paramLabels = ["Activation Time Constant", ...
     "Tendon Slack Length Scaling Factor"];
 for i = 1 : numel(paramLabels)
     subplot(1, 6, i)
-    barh(params(i,:))
+    barh(1:numel(muscleNames), params(i,:))
 
     title(textwrap(paramLabels(i), 20), FontSize=12)
     if i == 1
-        set(gca, yticklabels = muscleNames, fontsize=11);
+        yticks(1:numel(muscleNames))
+        yticklabels(muscleNames)
     else
-        set(gca, yticklabels = [], fontsize=11);
+        yticks([])
+        yticklabels([])
     end
 end
 end

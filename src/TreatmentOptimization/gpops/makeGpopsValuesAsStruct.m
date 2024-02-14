@@ -39,11 +39,12 @@ values.statePositions = getCorrectStates( ...
     state, 1, length(inputs.statesCoordinateNames));
 values.stateVelocities = getCorrectStates( ...
     state, 2, length(inputs.statesCoordinateNames));
-values.stateAccelerations = getCorrectStates( ...
-    state, 3, length(inputs.statesCoordinateNames));
-values.controlJerks = control(:, 1 : length(inputs.statesCoordinateNames));
-[values.positions, values.velocities, ...
-    values.accelerations] = recombineFullState(values, inputs);
+% values.stateAccelerations = getCorrectStates( ...
+%     state, 3, length(inputs.statesCoordinateNames));
+values.controlAccelerations = control(:, 1 : length(inputs.statesCoordinateNames));
+% [values.positions, values.velocities, values.accelerations] = recombineFullState(values, inputs);
+[values.positions, values.velocities] = recombineFullState(values, inputs);
+values.accelerations = recombineFullAccelerations(values, inputs);
 if strcmp(inputs.controllerType, 'synergy')
     values.controlSynergyActivations = control(:, ...
         length(inputs.statesCoordinateNames) + 1 : ...
@@ -111,21 +112,45 @@ if strcmp(inputs.toolName, "DesignOptimization")
 end
 end
 
-function [positions, velocities, accelerations] = recombineFullState( ...
+% function [positions, velocities, accelerations] = recombineFullState( ...
+%     values, inputs)
+function [positions, velocities] = recombineFullState( ...
     values, inputs)
-positions = evaluateGcvSplines(inputs.splineJointAngles, ...
-    inputs.coordinateNames, values.time);
-velocities = evaluateGcvSplines(inputs.splineJointAngles, ...
-    inputs.coordinateNames, values.time, 1);
-accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
-    inputs.coordinateNames, values.time, 2);
+if size(values.time) == size(inputs.collocationTimeOriginal)
+    positions = inputs.splinedJointAngles;
+    velocities = inputs.splinedJointSpeeds;
+    accelerations = inputs.splinedJointAccelerations;
+else
+    positions = evaluateGcvSplines(inputs.splineJointAngles, ...
+        inputs.coordinateNames, values.time);
+    velocities = evaluateGcvSplines(inputs.splineJointAngles, ...
+        inputs.coordinateNames, values.time, 1);
+    % accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
+    %     inputs.coordinateNames, values.time, 2);
+end
 for i = 1:length(inputs.coordinateNames)
     index = find(ismember( ...
         inputs.statesCoordinateNames, inputs.coordinateNames{i}));
     if ~isempty(index)
         positions(:, i) = values.statePositions(:, index);
         velocities(:, i) = values.stateVelocities(:, index);
-        accelerations(:, i) = values.stateAccelerations(:, index);
+        % accelerations(:, i) = values.stateAccelerations(:, index);
+    end
+end
+end
+
+function accelerations = recombineFullAccelerations(values, inputs)
+if size(values.time) == size(inputs.collocationTimeOriginal)
+    accelerations = inputs.splinedJointAccelerations;
+else
+    accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
+        inputs.coordinateNames, values.time, 2);
+end
+for i = 1:length(inputs.coordinateNames)
+    index = find(ismember( ...
+        inputs.statesCoordinateNames, inputs.coordinateNames{i}));
+    if ~isempty(index)
+        accelerations(:, i) = values.controlAccelerations(:, index);
     end
 end
 end

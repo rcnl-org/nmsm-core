@@ -46,14 +46,6 @@ else
     modelMomentsSynx = [];
 end
 
-if exist(fullfile(analysisDirectory, "modelJointMomentsSynxNoResiduals"), "dir")
-    [~, modelMomentsSynxNoResiduals] = extractMtpDataFromSto( ...
-        fullfile(analysisDirectory, "modelJointMomentsSynxNoResiduals"));
-    numRows = numRows + 1;
-else
-    modelMomentsSynxNoResiduals = [];
-end
-
 jointLabels = strrep(jointLabels, '_', ' ');
 meanIdMoments = mean(idMoments, 3);
 stdIdMoments = std(idMoments, [], 3);
@@ -61,18 +53,14 @@ meanMoments = mean(modelMoments, 3);
 stdMoments = std(modelMoments, [], 3);
 meanMomentsSynx = mean(modelMomentsSynx, 3);
 stdMomentsSynx = std(modelMomentsSynx, [], 3);
-meanMomentsSynxNoResidual = mean(modelMomentsSynxNoResiduals, 3);
-stdMomentsSynxNoResidual = std(modelMomentsSynxNoResiduals, [], 3);
 maxMoment = max([ ...
     max(meanIdMoments, [], "all"), ...
     max(meanMoments, [], "all"), ...
-    max(meanMomentsSynx, [], "all"), ...
-    max(meanMomentsSynxNoResidual, [], "all")]);
+    max(meanMomentsSynx, [], "all")]);
 minMoment = min([ ...
     min(meanIdMoments, [], "all"), ...
     min(meanMoments, [], "all"), ...
-    min(meanMomentsSynx, [], "all"), ...
-    min(meanMomentsSynxNoResidual, [], "all")]);
+    min(meanMomentsSynx, [], "all")]);
 
 figure(Name = "Joint Moments", ...
     Units='normalized', ...
@@ -86,6 +74,7 @@ for i=1:numel(jointLabels)
         plotMeanAndStd(meanMoments(:,i), stdMoments(:,i), time, 'r-')
         plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
         hold off
+        set(gca, fontsize=11)
         title(jointLabels(i), fontsize=12)
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
@@ -93,37 +82,20 @@ for i=1:numel(jointLabels)
             ylabel("Joint Moment [Nm]")
         end
     end
-
     if ~isempty(meanMomentsSynx)
-        subplot(numRows, numColumns, i+3)
+        subplot(numRows, numColumns, i+numColumns)
         hold on
         plotMeanAndStd(meanMomentsSynx(:,i), stdMomentsSynx(:,i), time, 'r-')
         plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
         hold off
         set(gca, fontsize=11)
         title(jointLabels(i), FontSize=12)
-        xlabel("Time Point")
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment Synx", "Mean Inverse Dynamics Moment")
             ylabel("Joint Moment [Nm]")
         end
     end
-
-    if ~isempty(meanMomentsSynxNoResidual)
-        subplot(numRows, numColumns, i+6)
-        hold on
-        plotMeanAndStd(meanMomentsSynxNoResidual(:,i), stdMomentsSynxNoResidual(:,i), time, 'r-')
-        plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
-        hold off
-        set(gca, fontsize=11)
-        title(jointLabels(i), FontSize=12)
-        xlabel("Time Point")
-        axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
-        if i == 1
-            legend("Mean Moment Synx No Residual", "Mean Inverse Dynamics Moment")
-            ylabel("Joint Moment [Nm]")
-        end
-    end
+    xlabel("Time Point")
 end
 end

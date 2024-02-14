@@ -32,7 +32,7 @@
 
 function prefixes = findPrefixes(tree, inputDirectory)
 prefixField = getFieldByName(tree, 'trial_prefixes');
-if(isstruct(prefixField) && length(prefixField.Text) > 0)
+if isstruct(prefixField) && length(prefixField.Text) > 0
     prefixes = strsplit(prefixField.Text, ' ');
 else
     files = dir(fullfile(inputDirectory, "IDData"));

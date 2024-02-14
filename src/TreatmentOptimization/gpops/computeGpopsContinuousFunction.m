@@ -48,4 +48,7 @@ if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.path))
         modeledValues.path, setup.auxdata.maxPath, setup.auxdata.minPath);
 end
 modeledValues.integrand = calcGpopsIntegrand(values, modeledValues, setup.auxdata);
+if isempty(modeledValues.integrand)
+    modeledValues = rmfield(modeledValues, "integrand");
+end
 end

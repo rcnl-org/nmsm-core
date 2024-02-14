@@ -64,7 +64,7 @@ for i = 1:numel(momentNames)
     if i == 1
         legend("Experimental", "Model")
     end
-    if mod(i,4) == 1
+    if mod(i,numWindows) == 1
         ylabel("Moment [Nm]")
     end
     if i>numel(momentNames)-numWindows

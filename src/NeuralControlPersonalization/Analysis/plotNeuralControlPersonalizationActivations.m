@@ -59,7 +59,7 @@ end
 figureNumber = 1;
 subplotNumber = 1;
 hasLegend = false;
-figure(1)
+% figure(1)
 for i = 1:size(muscleActivations, 1)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;

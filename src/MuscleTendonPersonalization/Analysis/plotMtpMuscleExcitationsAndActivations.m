@@ -69,13 +69,13 @@ numWindows = ceil(sqrt(numel(muscleNames)));
 for i = 1:numel(muscleNames)
     subplot(numWindows, numWindows, i);
     hold on
-    plotMeanAndStd(meanExcitations(:,i), stdExcitations, time, 'b-');
+    plotMeanAndStd(meanExcitations(:,i), stdExcitations(:,i), time, 'b-');
     plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), time, 'r-');
     if ~isempty(meanExcitationsSynx)
-        plotMeanAndStd(meanExcitationsSynx(:,i), stdExcitationsSynx, time, 'b--');
+        plotMeanAndStd(meanExcitationsSynx(:,i), stdExcitationsSynx(:,i), time, 'b--');
     end
     if ~isempty(meanActivationsSynx)
-        plotMeanAndStd(meanActivationsSynx(:,i), stdActivationsSynx, time, 'r--');
+        plotMeanAndStd(meanActivationsSynx(:,i), stdActivationsSynx(:,i), time, 'r--');
     end
     set(gca, fontsize=11)
     axis([1 size(meanExcitations, 1) 0 1])
@@ -86,7 +86,7 @@ for i = 1:numel(muscleNames)
             'Excitation(with residual)', ...
             'Activation(with residual)');
     end
-    if mod(i,3) == 1
+    if mod(i,numWindows) == 1
         ylabel("Magnitude")
     end
     if i>numel(muscleNames)-numWindows

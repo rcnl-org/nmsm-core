@@ -36,6 +36,7 @@ if nargin < 4
     modeledValues = [];
     precalInputs = [];
 else
+    updatedMaxIsometricForce = precalInputs.optimizeIsometricMaxForce;
     tempValues.optimalFiberLengthScaleFactors = ...
         mtpInputs.optimalFiberLength ./ precalInputs.optimalFiberLength;
     tempValues.tendonSlackLengthScaleFactors = ...
@@ -43,7 +44,7 @@ else
     precalInputs.maxIsometricForce = mtpInputs.maxIsometricForce;
     precalInputs.optimizeIsometricMaxForce = 0;
     modeledValues = calcMuscleTendonLengthInitializationModeledValues(tempValues, precalInputs);
-    if precalInputs.optimizeIsometricMaxForce
+    if updatedMaxIsometricForce
         finalValues.maxIsometricForce = mtpInputs.maxIsometricForce;
     end
 end
@@ -60,10 +61,8 @@ if isfield(mtpInputs, "synergyExtrapolation")
     resultsSynx.muscleExcitations = resultsSynx.muscleExcitations(:, :, ...
         mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
     finalValues.synergyWeights(mtpInputs.numberOfExtrapolationWeights + 1 : end) = 0;
-    resultsSynxNoResiduals = calcMtpSynXModeledValues(finalValues, mtpInputs, struct());
     resultsStruct = struct("results", results, ...
-        "resultsSynx", resultsSynx, ...
-        "resultsSynxNoResiduals", resultsSynxNoResiduals);
+        "resultsSynx", resultsSynx);
 else
     resultsStruct = struct("results", results);
 end
