@@ -38,24 +38,28 @@ muscleNames = strrep(muscleNames, '_', ' ');
 meanModelForce = mean(modelForce, 3);
 stdModelForce = std(modelForce, [], 3);
 maxForce = max(meanModelForce,[], 'all');
-numWindows = ceil(sqrt(numel(muscleNames)));
+time = 1:1:size(meanModelForce,1);
 
+figureWidth = ceil(sqrt(numel(muscleNames)));
+figureHeight = ceil(numel(muscleNames)/figureWidth);
 figure(Name = "Passive Force Curves", ...
     Units='normalized', ...
-    Position=[0.1 0.1 0.8 0.8])
-time = 1:1:size(meanModelForce,1);
+    Position=[0.05 0.05 0.9 0.85])
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
+
 for i = 1:numel(muscleNames)
-    subplot(numWindows, numWindows, i)
+    nexttile(i);
     hold on
     plotMeanAndStd(meanModelForce(:,i), stdModelForce(:,i), time, 'b-');
     hold off
     set(gca, fontsize=11)
     axis([1 numel(time) 0 maxForce])
     title(muscleNames(i), FontSize=12);
-    if mod(i,numWindows) == 1
+    if mod(i,figureWidth) == 1
         ylabel("Magnitude")
     end
-    if i>numel(muscleNames)-numWindows
+    if i>numel(muscleNames)-figureWidth
         xlabel("Time Points")
     end
 end

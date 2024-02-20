@@ -33,14 +33,14 @@ function plotTreatmentOptimizationGroundReactions(experimentalGroundReactionFile
 
 import org.opensim.modeling.Storage
 experimentalGRStorage = Storage(experimentalGroundReactionFile);
-experimentalGRLabels = getStorageColumnNames(experimentalGRStorage);
+experimentalLabels = getStorageColumnNames(experimentalGRStorage);
 experimentalGR = storageToDoubleMatrix(experimentalGRStorage)';
 experimentalTime = findTimeColumn(experimentalGRStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
 modelGRStorage = Storage(modelGroundReactionFile);
-modelGRLabels = getStorageColumnNames(modelGRStorage);
+modelLabels = getStorageColumnNames(modelGRStorage);
 modelGR = storageToDoubleMatrix(modelGRStorage)';
 modelTime = findTimeColumn(modelGRStorage);
 if modelTime(1) ~= 0
@@ -48,19 +48,19 @@ if modelTime(1) ~= 0
 end
 
 % Check both GR files are in the same order.
-experimentalForcePlate1 = contains(experimentalGRLabels, "1");
-modelForcePlate1 = contains(modelGRLabels, "1");
+experimentalForcePlate1 = contains(experimentalLabels, "1");
+modelForcePlate1 = contains(modelLabels, "1");
 if experimentalForcePlate1 ~= modelForcePlate1
     temp = modelGR;
     modelGR(:, ~experimentalForcePlate1) = modelGR(:, experimentalForcePlate1);
     modelGR(:, experimentalForcePlate1) = temp(:, ~experimentalForcePlate1);
 end
 
-momentIndices = contains(experimentalGRLabels, "_m");
-forceIndices = contains(experimentalGRLabels, "_v");
+momentIndices = contains(experimentalLabels, "_m");
+forceIndices = contains(experimentalLabels, "_v");
 includedIndices = momentIndices | forceIndices;
 
-experimentalGRLabels = experimentalGRLabels(includedIndices);
+experimentalLabels = experimentalLabels(includedIndices);
 modelGR = modelGR(:, includedIndices);
 experimentalGR = experimentalGR(:, includedIndices);
 
@@ -75,18 +75,27 @@ figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Ground Reactions")
 subplotNumber = 1;
 figureNumber = 1;
-for i=1:numel(experimentalGRLabels)
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
+xlabel(t, "Time [s]")
+ylabel(t, "Ground Reactions")
+for i=1:numel(experimentalLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Ground Reactions")
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Time [s]")
+        ylabel(t, "Ground Reactions")
         subplotNumber = 1;
     end
-    subplot(figureHeight, figureWidth, subplotNumber)
+    nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalGR(:, i));
-    plot(modelTime, modelGR(:, i))
+    plot(experimentalTime, experimentalGR(:, i), LineWidth=2);
+    plot(modelTime, modelGR(:, i), LineWidth=2);
     hold off
-    title(strrep(experimentalGRLabels(i), "_", " "))
+    title(sprintf("%s \n RMSE: %d", ...
+    strrep(experimentalLabels(i), "_", " "), 0))
     if subplotNumber==1
         legend("Experimental", "Model")
     end

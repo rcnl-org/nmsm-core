@@ -41,6 +41,7 @@ end
 if nargin < 6
     precalInputs = [];
 end
+
 if ~isempty(precalInputs)
     saveMtpPassiveMomentData(precalInputs, modeledValues, analysisDirectory);
     saveMtpPassiveForceData(mtpInputs, resultsStruct, analysisDirectory);
@@ -53,6 +54,7 @@ writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
 saveMtpJointMomentData(mtpInputs, resultsStruct, analysisDirectory);
 saveMtpMuscleModelParameters(mtpInputs, finalValues, ...
     fullfile(analysisDirectory, "muscleModelParameters"));
+save(fullfile(analysisDirectory, "mtpInputs.mat"), "mtpInputs");
 model = Model(mtpInputs.model);
 muscleNames = getMusclesFromCoordinates(model, mtpInputs.coordinateNames);
 writeMuscleTendonPersonalizationOsimxFile(mtpInputs.modelFileName, ...

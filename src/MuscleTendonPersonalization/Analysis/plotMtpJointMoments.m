@@ -30,7 +30,8 @@
 % ----------------------------------------------------------------------- %
 function plotMtpJointMoments(resultsDirectory)
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
-numRows = 1;
+% Include max allowable error, and rmse
+figureHeight = 1;
 
 [jointLabels, idMoments] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "inverseDynamicsJointMoments"));
@@ -38,10 +39,12 @@ numRows = 1;
 [~, modelMoments] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "modelJointMoments"));
 
+load(fullfile(analysisDirectory, "mtpInputs.mat"), "mtpInputs");
+
 if exist(fullfile(analysisDirectory, "modelJointMomentsSynx"), "dir")
     [~, modelMomentsSynx] = extractMtpDataFromSto( ...
         fullfile(analysisDirectory, "modelJointMomentsSynx"));
-    numRows = numRows + 1;
+    figureHeight = figureHeight + 1;
 else
     modelMomentsSynx = [];
 end
@@ -64,18 +67,24 @@ minMoment = min([ ...
 
 figure(Name = "Joint Moments", ...
     Units='normalized', ...
-    Position=[0.1 0.1 0.8 0.8])
+    Position=[0.05 0.05 0.9 0.85])
 time = 1:1:size(meanIdMoments,1);
-numColumns = numel(jointLabels);
+figureWidth = numel(jointLabels);
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
 for i=1:numel(jointLabels)
     if ~isempty(meanMoments)
-        subplot(numRows, numColumns, i);
+        nexttile(i);
         hold on
         plotMeanAndStd(meanMoments(:,i), stdMoments(:,i), time, 'r-')
         plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
         hold off
         set(gca, fontsize=11)
-        title(jointLabels(i), fontsize=12)
+        rmse = rms(meanMoments(:,i) - meanIdMoments(:,i));
+        mae = mtpInputs.tasks{1}.costTerms{1}.maxAllowableError;
+        
+        title(sprintf("%s \n RMSE: %.4f, MAE: %f", ...
+            jointLabels(i), rmse, mae), fontsize=12)
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment No Synx", "Mean Inverse Dynamics Moment")
@@ -83,13 +92,16 @@ for i=1:numel(jointLabels)
         end
     end
     if ~isempty(meanMomentsSynx)
-        subplot(numRows, numColumns, i+numColumns)
+        nexttile(i+figureWidth);
         hold on
         plotMeanAndStd(meanMomentsSynx(:,i), stdMomentsSynx(:,i), time, 'r-')
         plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
         hold off
         set(gca, fontsize=11)
-        title(jointLabels(i), FontSize=12)
+        rmse = rms(meanMomentsSynx(:,i) - meanIdMoments(:,i));
+        mae = mtpInputs.synergyExtrapolation.costTerms{1}.maxAllowableError; 
+        title(sprintf("%s \n RMSE: %.4f, MAE: %f", ...
+            jointLabels(i), rmse, mae), fontsize=12)
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment Synx", "Mean Inverse Dynamics Moment")

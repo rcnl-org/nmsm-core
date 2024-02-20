@@ -33,7 +33,7 @@ function plotTreatmentOptimizationTorqueControls(controlsFile, ...
 
 import org.opensim.modeling.Storage
 controlsStorage = Storage(controlsFile);
-controlLabels = getStorageColumnNames(controlsStorage);
+labels = getStorageColumnNames(controlsStorage);
 controls = storageToDoubleMatrix(controlsStorage)';
 time = findTimeColumn(controlsStorage);
 if time(1) ~= 0
@@ -41,32 +41,43 @@ if time(1) ~= 0
 end
 
 if nargin < 3
-    figureWidth = ceil(sqrt(numel(controlLabels)));
-end
-if nargin < 4
-    figureHeight = ceil(sqrt(numel(controlLabels)));
+    figureWidth = ceil(sqrt(numel(labels)));
+    figureHeight = ceil(numel(labels)/figureWidth);
+elseif nargin < 4
+    figureHeight = ceil(numel(labels)/figureWidth);
 end
 figureSize = figureWidth * figureHeight;
 
 figure(Name="Treatment Optimization Torque Controls", ...
     Units='normalized', ...
-    Position=[0 0 1 1])
+    Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
 figureNumber = 1;
-for i=1:numel(controlLabels)
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
+xlabel(t, "Time [s]")
+ylabel(t, "Torque Controls [Nm]")
+for i=1:numel(labels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Torque Controls", ...
             Units='normalized', ...
-            Position=[0 0 1 1])
+            Position=[0.05 0.05 0.9 0.85])
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Time [s]")
+        ylabel(t, "Torque Controls [Nm]")
         subplotNumber = 1;
     end
-    subplot(figureHeight, figureWidth, subplotNumber)
+    nexttile(subplotNumber);
     hold on
-    plot(time, controls(:, i));
+    plot(time, controls(:, i), LineWidth=2);
     hold off
-    title(strrep(controlLabels(i), "_", " "));
+    title(strrep(labels(i), "_", " "));
     xlim([0, time(end)])
+    % if subplotNumber > figureSize-figureHeight
+    %     xlabel("Time [s]")
+    % end
     subplotNumber = subplotNumber + 1;
 end
 end

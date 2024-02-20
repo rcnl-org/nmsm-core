@@ -33,7 +33,7 @@ function plotTreatmentOptimizationJointAngles(experimentalAnglesFile, ...
 
 import org.opensim.modeling.Storage
 experimentalAnglesStorage = Storage(experimentalAnglesFile);
-angleLabels = getStorageColumnNames(experimentalAnglesStorage);
+labels = getStorageColumnNames(experimentalAnglesStorage);
 experimentalAngles = storageToDoubleMatrix(experimentalAnglesStorage)';
 experimentalAngles = experimentalAngles .* 180/pi;
 experimentalTime = findTimeColumn(experimentalAnglesStorage);
@@ -49,33 +49,42 @@ if modelTime(1) ~= 0
 end
 
 if nargin < 3
-    figureWidth = ceil(sqrt(numel(angleLabels)));
-end
-if nargin < 4
-    figureHeight = ceil(sqrt(numel(angleLabels)));
+    figureWidth = ceil(sqrt(numel(labels)));
+    figureHeight = ceil(numel(labels)/figureWidth);
+elseif nargin < 4
+    figureHeight = ceil(numel(labels)/figureWidth);
 end
 figureSize = figureWidth * figureHeight;
 
 figure(Name = "Treatment Optimization Joint Angles", ...
     Units='normalized', ...
-    Position=[0 0 1 1])
+    Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
 figureNumber = 1;
-for i=1:numel(angleLabels)
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
+xlabel(t, "Time [s]")
+ylabel(t, "Joint Angle [deg]")
+for i=1:numel(labels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Joint Angles", ...
             Units='normalized', ...
-            Position=[0 0 1 1])
+            Position=[0.05 0.05 0.9 0.85])
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Time [s]")
+        ylabel(t, "Joint Angle [deg]")
         subplotNumber = 1;
     end
-    subplot(figureHeight, figureWidth, subplotNumber)
+    nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalAngles(:, i));
-    plot(modelTime, modelAngles(:, i));
+    plot(experimentalTime, experimentalAngles(:, i), LineWidth=2);
+    plot(modelTime, modelAngles(:, i), LineWidth=2);
     hold off
-    title(strrep(angleLabels(i), "_", " "));
-    
+    title(sprintf("%s \n RMSE: %d", ...
+        strrep(labels(i), "_", " "), 0));
+
     if subplotNumber==1
         legend("Experimental", "Model")
     end
@@ -86,6 +95,9 @@ for i=1:numel(angleLabels)
     if maxAngle-minAngle < 10
         ylim([(maxAngle+minAngle)/2-10, (maxAngle+minAngle)/2+10])
     end
+
+    % if subplotNumber > figureSize-figureHeight
+    %     xlabel("Time [s]")
+    % end
     subplotNumber = subplotNumber + 1;
 end
-

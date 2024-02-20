@@ -33,7 +33,7 @@ function plotTreatmentOptimizationMuscleActivations(experimentalActivationsFile,
 
 import org.opensim.modeling.Storage
 experimentalActivationsStorage = Storage(experimentalActivationsFile);
-muscleLabels = getStorageColumnNames(experimentalActivationsStorage);
+labels = getStorageColumnNames(experimentalActivationsStorage);
 experimentalActivations = storageToDoubleMatrix(experimentalActivationsStorage)';
 experimentalTime = findTimeColumn(experimentalActivationsStorage);
 if experimentalTime(1) ~= 0
@@ -47,30 +47,41 @@ if modelTime(1) ~= 0
 end
 
 if nargin < 3
-    figureWidth = ceil(sqrt(numel(muscleLabels)));
-end
-if nargin < 4
-    figureHeight = ceil(sqrt(numel(muscleLabels)));
+    figureWidth = ceil(sqrt(numel(labels)));
+    figureHeight = ceil(numel(labels)/figureWidth);
+elseif nargin < 4
+    figureHeight = ceil(numel(labels)/figureWidth);
 end
 figureSize = figureWidth * figureHeight;
 
 figure(Name="Treatment Optimization Muscle Activations", ...
     Units='normalized', ...
-    Position=[0 0 1 1])
+    Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
 figureNumber = 1;
-for i=1:numel(muscleLabels)
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
+xlabel(t, "Time [s]")
+ylabel(t, "Muscle Activations")
+for i=1:numel(labels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Muscle Activations")
+        figure(Name="Treatment Optimization Muscle Activations", ...
+            Units='normalized', ...
+            Position=[0.05 0.05 0.9 0.85])
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Time [s]")
+        ylabel(t, "Muscle Activations")
         subplotNumber = 1;
     end
-    subplot(figureHeight, figureWidth, subplotNumber)
+    nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalActivations(:, i))
-    plot(modelTime, modelActivations(:, i))
+    plot(experimentalTime, experimentalActivations(:, i), LineWidth=2)
+    plot(modelTime, modelActivations(:, i), LineWidth=2)
     hold off
-    title(strrep(muscleLabels(i), "_", " "));
+    title(sprintf("%s \n RMSE: %d", ...
+        strrep(labels(i), "_", " "), 0));
     if subplotNumber == 1
         legend("Experimental", "Model")
     end

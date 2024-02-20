@@ -33,7 +33,7 @@ function plotTreatmentOptimizationJointLoads(experimentalMomentsFile, ...
 
 import org.opensim.modeling.Storage
 experimentalMomentsStorage = Storage(experimentalMomentsFile);
-momentLabels = getStorageColumnNames(experimentalMomentsStorage);
+labels = getStorageColumnNames(experimentalMomentsStorage);
 experimentalMoments = storageToDoubleMatrix(experimentalMomentsStorage)';
 experimentalTime = findTimeColumn(experimentalMomentsStorage);
 if experimentalTime(1) ~= 0
@@ -47,38 +47,49 @@ if modelTime(1) ~= 0
 end
 
 if nargin < 3
-    figureWidth = ceil(sqrt(numel(momentLabels)));
-end
-if nargin < 4
-    figureHeight = ceil(sqrt(numel(momentLabels)));
+    figureWidth = ceil(sqrt(numel(labels)));
+    figureHeight = ceil(numel(labels)/figureWidth);
+elseif nargin < 4
+    figureHeight = ceil(numel(labels)/figureWidth);
 end
 figureSize = figureWidth * figureHeight;
 
 figure(Name="Treatment Optimization Joint Loads", ...
     Units='normalized', ...
-    Position=[0 0 1 1])
+    Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
 figureNumber = 1;
-for i=1:numel(momentLabels)
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
+xlabel(t, "Time [s]")
+ylabel(t, "Joint Load")
+for i=1:numel(labels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Joint Loads", ...
             Units='normalized', ...
-            Position=[0 0 1 1])
+            Position=[0.05 0.05 0.9 0.85])
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Time [s]")
+        ylabel(t, "Joint Load")
         subplotNumber = 1;
     end
-    subplot(figureHeight, figureWidth, subplotNumber)
+    nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalMoments(:, i));
-    plot(modelTime, modelMoments(:, i));
+    plot(experimentalTime, experimentalMoments(:, i), LineWidth=2);
+    plot(modelTime, modelMoments(:, i), LineWidth=2);
     hold off
 
-    if contains(momentLabels(i), "moment")
-        title(strcat(strrep(momentLabels(i), "_", " "), " [Nm]"))
-    elseif contains(momentLabels(i), "force")
-        title(strcat(strrep(momentLabels(i), "_", " "), " [N]"))
+    if contains(labels(i), "moment")
+        title(sprintf("%s \n RMSE: %d", ...
+            strcat(strrep(labels(i), "_", " "), " [Nm]"), 0))
+    elseif contains(labels(i), "force")
+        title(sprintf("%s \n RMSE: %d", ...
+            strcat(strrep(labels(i), "_", " "), " [N]"), 0))
     else
-        title(strrep(momentLabels(i), "_", " "))
+        title(sprintf("%s \n RMSE: %d", ...
+            strrep(labels(i), "_", " "), 0))
     end
     
     if subplotNumber==1
@@ -86,14 +97,14 @@ for i=1:numel(momentLabels)
     end
 
     xlim([0, experimentalTime(end)])
-    % if subplotNumber > figureSize-figureHeight
-    %     xlabel("Time [s]")
-    % end
     maxLoad = max([experimentalMoments(:, i); modelMoments(:, i)],[], "all");
     minLoad = min([experimentalMoments(:, i); modelMoments(:, i)],[], "all");
     if maxLoad-minLoad < 10
         ylim([(maxLoad+minLoad)/2-10, (maxLoad+minLoad)/2+10])
     end
+    % if subplotNumber > figureSize-figureHeight
+    %     xlabel("Time [s]")
+    % end
     subplotNumber = subplotNumber + 1;
 end
 end

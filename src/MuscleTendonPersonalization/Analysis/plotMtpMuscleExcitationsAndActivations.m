@@ -59,37 +59,41 @@ meanExcitationsSynx = mean(excitationsSynx, 3);
 stdExcitationsSynx = std(excitationsSynx,[], 3);
 meanActivationsSynx = mean(activationsSynx, 3);
 stdActivationsSynx = std(activationsSynx,[], 3);
+time = 1:1:size(meanExcitations,1);
 
+figureWidth = ceil(sqrt(numel(muscleNames)));
+figureHeight = ceil(numel(muscleNames)/figureWidth);
 figure(Name = "Muscle Excitations and Activations", ...
     Units='normalized', ...
-    Position=[0.1 0.1 0.8 0.8])
+    Position=[0.05 0.05 0.9 0.85])
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
 
-time = 1:1:size(meanExcitations,1);
-numWindows = ceil(sqrt(numel(muscleNames)));
 for i = 1:numel(muscleNames)
-    subplot(numWindows, numWindows, i);
+    nexttile(i);
     hold on
-    plotMeanAndStd(meanExcitations(:,i), stdExcitations(:,i), time, 'b-');
-    plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), time, 'r-');
     if ~isempty(meanExcitationsSynx)
-        plotMeanAndStd(meanExcitationsSynx(:,i), stdExcitationsSynx(:,i), time, 'b--');
-    end
-    if ~isempty(meanActivationsSynx)
-        plotMeanAndStd(meanActivationsSynx(:,i), stdActivationsSynx(:,i), time, 'r--');
+        plotMeanAndStd(meanExcitations(:,i), stdExcitations(:,i), time, 'b--');
+        plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), time, 'r--');
+        plotMeanAndStd(meanExcitationsSynx(:,i), stdExcitationsSynx(:,i), time, 'b-');
+        plotMeanAndStd(meanActivationsSynx(:,i), stdActivationsSynx(:,i), time, 'r-');
+    else
+        plotMeanAndStd(meanExcitations(:,i), stdExcitations(:,i), time, 'b-');
+        plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), time, 'r-');
     end
     set(gca, fontsize=11)
     axis([1 size(meanExcitations, 1) 0 1])
     title(muscleNames(i), FontSize=12);
     if i == 1
-        legend ('Excitation(without residual)', ...
-            'Activation(without residual)', ...
-            'Excitation(with residual)', ...
-            'Activation(with residual)');
+        legend ('Excitation (No SynX)', ...
+            'Activation (No SynX)', ...
+            'Excitation (With SynX)', ...
+            'Activation (With SynX)');
     end
-    if mod(i,numWindows) == 1
+    if mod(i,figureWidth) == 1
         ylabel("Magnitude")
     end
-    if i>numel(muscleNames)-numWindows
+    if i>numel(muscleNames)-figureWidth
         xlabel("Time Points")
     end
 end
