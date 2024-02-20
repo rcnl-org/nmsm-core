@@ -73,8 +73,8 @@ end
 end
 
 function guess = setupInitialControlsGuess(inputs, guess)
-if isfield(inputs, "initialJerks")
-    controls = inputs.initialJerks;
+if isfield(inputs, "initialAccelerations")
+    controls = inputs.initialAccelerations;
 else
     stateJointAccelerations = subsetDataByCoordinates( ...
         inputs.experimentalJointAccelerations, ...
