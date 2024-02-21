@@ -94,8 +94,12 @@ for i=1:numel(experimentalLabels)
     plot(experimentalTime, experimentalGR(:, i), LineWidth=2);
     plot(modelTime, modelGR(:, i), LineWidth=2);
     hold off
-    title(sprintf("%s \n RMSE: %d", ...
-    strrep(experimentalLabels(i), "_", " "), 0))
+    resampledExperimental = downsample( ...
+        interp(experimentalGR(:, i), length(modelGR(:, i))), ...
+        length(experimentalGR(:, i)));
+    rmse = rms(resampledExperimental - modelGR(:, i));
+    title(sprintf("%s \n RMSE: %.4f", ...
+    strrep(experimentalLabels(i), "_", " "), rmse))
     if subplotNumber==1
         legend("Experimental", "Model")
     end

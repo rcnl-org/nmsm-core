@@ -83,7 +83,11 @@ for i = 1:numel(muscleNames)
     end
     set(gca, fontsize=11)
     axis([1 size(meanExcitations, 1) 0 1])
-    title(muscleNames(i), FontSize=12);
+    if (max(meanExcitations(:, i)) == 0)
+        title(strcat(muscleNames(i), " *"), FontSize=12);
+    else
+        title(muscleNames(i), FontSize=12);
+    end
     if i == 1
         legend ('Excitation (No SynX)', ...
             'Activation (No SynX)', ...

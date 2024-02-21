@@ -80,16 +80,21 @@ for i=1:numel(labels)
     plot(experimentalTime, experimentalMoments(:, i), LineWidth=2);
     plot(modelTime, modelMoments(:, i), LineWidth=2);
     hold off
-
+    
+    resampledExperimental = downsample( ...
+        interp(experimentalMoments(:, i), length(modelMoments(:, i))), ...
+        length(experimentalMoments(:, i)));
+    rmse = rms(resampledExperimental - modelMoments(:, i));
+    
     if contains(labels(i), "moment")
-        title(sprintf("%s \n RMSE: %d", ...
-            strcat(strrep(labels(i), "_", " "), " [Nm]"), 0))
+        title(sprintf("%s \n RMSE: %.4f", ...
+            strcat(strrep(labels(i), "_", " "), " [Nm]"), rmse))
     elseif contains(labels(i), "force")
-        title(sprintf("%s \n RMSE: %d", ...
-            strcat(strrep(labels(i), "_", " "), " [N]"), 0))
+        title(sprintf("%s \n RMSE: %.4f", ...
+            strcat(strrep(labels(i), "_", " "), " [N]"), rmse))
     else
-        title(sprintf("%s \n RMSE: %d", ...
-            strrep(labels(i), "_", " "), 0))
+        title(sprintf("%s \n RMSE: %.4f", ...
+            strrep(labels(i), "_", " "), rmse))
     end
     
     if subplotNumber==1

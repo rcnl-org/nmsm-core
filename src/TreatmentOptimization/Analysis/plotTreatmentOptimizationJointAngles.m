@@ -82,8 +82,12 @@ for i=1:numel(labels)
     plot(experimentalTime, experimentalAngles(:, i), LineWidth=2);
     plot(modelTime, modelAngles(:, i), LineWidth=2);
     hold off
-    title(sprintf("%s \n RMSE: %d", ...
-        strrep(labels(i), "_", " "), 0));
+    resampledExperimental = downsample( ...
+        interp(experimentalAngles(:, i), length(modelAngles(:, i))), ...
+        length(experimentalAngles(:, i)));
+    rmse = rms(resampledExperimental - modelAngles(:, i));
+    title(sprintf("%s \n RMSE: %.4f", ...
+        strrep(labels(i), "_", " "), rmse));
 
     if subplotNumber==1
         legend("Experimental", "Model")

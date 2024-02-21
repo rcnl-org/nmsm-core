@@ -80,8 +80,12 @@ for i=1:numel(labels)
     plot(experimentalTime, experimentalActivations(:, i), LineWidth=2)
     plot(modelTime, modelActivations(:, i), LineWidth=2)
     hold off
-    title(sprintf("%s \n RMSE: %d", ...
-        strrep(labels(i), "_", " "), 0));
+    resampledExperimental = downsample( ...
+        interp(experimentalActivations(:, i), length(modelActivations(:, i))), ...
+        length(experimentalActivations(:, i)));
+    rmse = rms(resampledExperimental - modelActivations(:, i));
+    title(sprintf("%s \n RMSE: %.4f", ...
+        strrep(labels(i), "_", " "), rmse));
     if subplotNumber == 1
         legend("Experimental", "Model")
     end
