@@ -1,8 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads .sto files created by
-% saveMuscleTendonPersonalizationResults.m containing inverse dynamics
-% joint moments and model joint moments and creates plots of them.
+% This function reads one .sto file for treatment optimization torque 
+% controls and plots it. There are 2 optional arguments for figure width
+% and figure height. If no optional arguments are given, the figure size is
+% automatically adjusted to fit all data on one plot. Giving just figure
+% width imposes the width and fits the height to fit on one plot. Giving
+% both arguments will impose both figure height and width, and create
+% multiple plots as needed.
 %
 % (string) -> (None)
 % Plot joint moment curves from file.
