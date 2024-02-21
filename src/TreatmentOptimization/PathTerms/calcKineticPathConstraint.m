@@ -33,7 +33,11 @@ function pathTerm = calcKineticPathConstraint(inputs, ...
     modeledValues, torqueControls, loadName)
 inverseDynamicsIndex = find(strcmp(convertCharsToStrings(inputs.inverseDynamicsMomentLabels), ...
     loadName));
-synergyIndex = find(inputs.dofsActuatedIndex == inverseDynamicsIndex);
+if strcmpi(inputs.controllerType, "synergy")
+    synergyIndex = find(inputs.dofsActuatedIndex == inverseDynamicsIndex);
+else
+    synergyIndex = [];
+end
 torqueIndex = find(strcmp(strcat(inputs.torqueControllerCoordinateNames, ...
     '_moment'), loadName));
 if isempty(torqueIndex)
