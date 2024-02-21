@@ -38,7 +38,7 @@ end
 
 function inputs = parseUserDefinedFunctions(tree, inputs)
 import org.opensim.modeling.Storage
-if getFieldByName(tree, "model_functions")
+if ~(getFieldByNameOrAlternate(tree, "model_functions", "none") == "none")
     inputs.systemFns = parseSpaceSeparatedList(tree, "model_functions");
 end
 parameterTree = getFieldByName(tree, "RCNLParameterTermSet");
