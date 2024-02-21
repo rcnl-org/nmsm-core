@@ -59,15 +59,19 @@ end
 figureNumber = 1;
 subplotNumber = 1;
 hasLegend = false;
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
 % figure(1)
 for i = 1:size(muscleActivations, 1)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(figureNumber)
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
         subplotNumber = 1;
         hasLegend = false;
     end
-    subplot(figureHeight, figureWidth, subplotNumber)
+    nexttile(subplotNumber)
     plot(time, muscleActivations(i, :), 'LineWidth', 2)
     mtpIndex = find(muscleNames(i) == mtpMuscleNames);
     if ~isempty(mtpIndex)

@@ -39,8 +39,6 @@ figureHeight = 1;
 [~, modelMoments] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "modelJointMoments"));
 
-% load(fullfile(analysisDirectory, "mtpInputs.mat"), "mtpInputs");
-
 if exist(fullfile(analysisDirectory, "modelJointMomentsSynx"), "dir")
     [~, modelMomentsSynx] = extractMtpDataFromSto( ...
         fullfile(analysisDirectory, "modelJointMomentsSynx"));
@@ -81,10 +79,6 @@ for i=1:numel(jointLabels)
         hold off
         set(gca, fontsize=11)
         rmse = rms(meanMoments(:,i) - meanIdMoments(:,i));
-        % mae = mtpInputs.tasks{1}.costTerms{1}.maxAllowableError;
-        
-        % title(sprintf("%s \n RMSE: %.4f, MAE: %f", ...
-        %     jointLabels(i), rmse, mae), fontsize=12)
         title(sprintf("%s \n RMSE: %.4f", ...
             jointLabels(i), rmse), fontsize=12)
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
@@ -101,9 +95,6 @@ for i=1:numel(jointLabels)
         hold off
         set(gca, fontsize=11)
         rmse = rms(meanMomentsSynx(:,i) - meanIdMoments(:,i));
-        % mae = mtpInputs.synergyExtrapolation.costTerms{1}.maxAllowableError; 
-        % title(sprintf("%s \n RMSE: %.4f, MAE: %f", ...
-        %     jointLabels(i), rmse, mae), fontsize=12)
         title(sprintf("%s \n RMSE: %.4f", ...
             jointLabels(i), rmse), fontsize=12)
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])

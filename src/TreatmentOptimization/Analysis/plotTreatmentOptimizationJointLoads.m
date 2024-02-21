@@ -32,19 +32,25 @@ function plotTreatmentOptimizationJointLoads(experimentalMomentsFile, ...
     modelMomentsFile, figureWidth, figureHeight)
 
 import org.opensim.modeling.Storage
-experimentalMomentsStorage = Storage(experimentalMomentsFile);
-labels = getStorageColumnNames(experimentalMomentsStorage);
-experimentalMoments = storageToDoubleMatrix(experimentalMomentsStorage)';
-experimentalTime = findTimeColumn(experimentalMomentsStorage);
+experimentalLoadsStorage = Storage(experimentalMomentsFile);
+labels = getStorageColumnNames(experimentalLoadsStorage);
+experimentalLoads = storageToDoubleMatrix(experimentalLoadsStorage)';
+experimentalTime = findTimeColumn(experimentalLoadsStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
-modelMomentsStorage = Storage(modelMomentsFile);
-modelMoments = storageToDoubleMatrix(modelMomentsStorage)';
-modelTime = findTimeColumn(modelMomentsStorage);
+modelLoadsStorage = Storage(modelMomentsFile);
+modelLoads = storageToDoubleMatrix(modelLoadsStorage)';
+modelTime = findTimeColumn(modelLoadsStorage);
 if modelTime(1) ~= 0
     modelTime = modelTime - modelTime(1);
 end
+
+% Spline experimental time to the same time points as the model. 
+experimentalSpline = makeGcvSplineSet(experimentalTime, ... 
+    experimentalLoads, labels);
+resampledExperimental = evaluateGcvSplines(experimentalSpline, ...
+    labels, modelTime);
 
 if nargin < 3
     figureWidth = ceil(sqrt(numel(labels)));
@@ -77,14 +83,10 @@ for i=1:numel(labels)
     end
     nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalMoments(:, i), LineWidth=2);
-    plot(modelTime, modelMoments(:, i), LineWidth=2);
+    plot(experimentalTime, experimentalLoads(:, i), LineWidth=2);
+    plot(modelTime, modelLoads(:, i), LineWidth=2);
     hold off
-    
-    resampledExperimental = downsample( ...
-        interp(experimentalMoments(:, i), length(modelMoments(:, i))), ...
-        length(experimentalMoments(:, i)));
-    rmse = rms(resampledExperimental - modelMoments(:, i));
+    rmse = rms(resampledExperimental(:, i) - modelLoads(:, i));
     
     if contains(labels(i), "moment")
         title(sprintf("%s \n RMSE: %.4f", ...
@@ -102,11 +104,16 @@ for i=1:numel(labels)
     end
 
     xlim([0, experimentalTime(end)])
-    maxLoad = max([experimentalMoments(:, i); modelMoments(:, i)],[], "all");
-    minLoad = min([experimentalMoments(:, i); modelMoments(:, i)],[], "all");
+    maxLoad = max([experimentalLoads(:, i); modelLoads(:, i)],[], "all");
+    minLoad = min([experimentalLoads(:, i); modelLoads(:, i)],[], "all");
     if maxLoad-minLoad < 10
         ylim([(maxLoad+minLoad)/2-10, (maxLoad+minLoad)/2+10])
+    else
+        ylim([ ...
+            min([modelLoads(1:end-1, i); experimentalLoads(:, i)])-5, ...
+            max([modelLoads(1:end-1, i); experimentalLoads(:, i)])+5])
     end
+   
     % if subplotNumber > figureSize-figureHeight
     %     xlabel("Time [s]")
     % end

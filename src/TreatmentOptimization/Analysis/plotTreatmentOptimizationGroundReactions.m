@@ -64,6 +64,12 @@ experimentalLabels = experimentalLabels(includedIndices);
 modelGR = modelGR(:, includedIndices);
 experimentalGR = experimentalGR(:, includedIndices);
 
+% Spline experimental time to the same time points as the model. 
+experimentalSpline = makeGcvSplineSet(experimentalTime, ... 
+    experimentalGR, experimentalLabels);
+resampledExperimental = evaluateGcvSplines(experimentalSpline, ...
+    experimentalLabels, modelTime);
+
 if nargin < 3
     figureWidth = 3;
 end
@@ -94,10 +100,7 @@ for i=1:numel(experimentalLabels)
     plot(experimentalTime, experimentalGR(:, i), LineWidth=2);
     plot(modelTime, modelGR(:, i), LineWidth=2);
     hold off
-    resampledExperimental = downsample( ...
-        interp(experimentalGR(:, i), length(modelGR(:, i))), ...
-        length(experimentalGR(:, i)));
-    rmse = rms(resampledExperimental - modelGR(:, i));
+    rmse = rms(resampledExperimental(:, i) - modelGR(:, i));
     title(sprintf("%s \n RMSE: %.4f", ...
     strrep(experimentalLabels(i), "_", " "), rmse))
     if subplotNumber==1

@@ -46,6 +46,12 @@ if modelTime(1) ~= 0
     modelTime = modelTime - modelTime(1);
 end
 
+% Spline experimental time to the same time points as the model. 
+experimentalSpline = makeGcvSplineSet(experimentalTime, ... 
+    experimentalActivations, labels);
+resampledExperimental = evaluateGcvSplines(experimentalSpline, ...
+    labels, modelTime);
+
 if nargin < 3
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
@@ -80,10 +86,7 @@ for i=1:numel(labels)
     plot(experimentalTime, experimentalActivations(:, i), LineWidth=2)
     plot(modelTime, modelActivations(:, i), LineWidth=2)
     hold off
-    resampledExperimental = downsample( ...
-        interp(experimentalActivations(:, i), length(modelActivations(:, i))), ...
-        length(experimentalActivations(:, i)));
-    rmse = rms(resampledExperimental - modelActivations(:, i));
+    rmse = rms(resampledExperimental(:, i) - modelActivations(:, i));
     title(sprintf("%s \n RMSE: %.4f", ...
         strrep(labels(i), "_", " "), rmse));
     if subplotNumber == 1

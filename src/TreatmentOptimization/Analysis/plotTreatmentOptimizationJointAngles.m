@@ -48,6 +48,12 @@ if modelTime(1) ~= 0
     modelTime = modelTime - modelTime(1);
 end
 
+% Spline experimental time to the same time points as the model. 
+experimentalSpline = makeGcvSplineSet(experimentalTime, ... 
+    experimentalAngles, labels);
+resampledExperimental = evaluateGcvSplines(experimentalSpline, ...
+    labels, modelTime);
+
 if nargin < 3
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
@@ -62,7 +68,7 @@ figure(Name = "Treatment Optimization Joint Angles", ...
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='Compact', Padding='Compact');
+    TileSpacing='compact', Padding='compact');
 xlabel(t, "Time [s]")
 ylabel(t, "Joint Angle [deg]")
 for i=1:numel(labels)
@@ -82,10 +88,7 @@ for i=1:numel(labels)
     plot(experimentalTime, experimentalAngles(:, i), LineWidth=2);
     plot(modelTime, modelAngles(:, i), LineWidth=2);
     hold off
-    resampledExperimental = downsample( ...
-        interp(experimentalAngles(:, i), length(modelAngles(:, i))), ...
-        length(experimentalAngles(:, i)));
-    rmse = rms(resampledExperimental - modelAngles(:, i));
+    rmse = rms(resampledExperimental(:, i) - modelAngles(:, i));
     title(sprintf("%s \n RMSE: %.4f", ...
         strrep(labels(i), "_", " "), rmse));
 
