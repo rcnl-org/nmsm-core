@@ -43,7 +43,14 @@ inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
 if strcmp(inputs.controllerType, "synergy") 
-    inputs.surrogateMuscles = SurrogateModelCreation(inputs);
+    if isfile("surrogateMuscles.mat")
+        inputs.surrogateMuscles = load("surrogateMuscles.mat").surrogateMuscles;
+    else
+        inputs.surrogateMuscles = SurrogateModelCreation(inputs);
+        surrogateMuscles = inputs.surrogateMuscles;
+        save("surrogateMuscles.mat", "surrogateMuscles");
+    end
+
 end
 end
 
