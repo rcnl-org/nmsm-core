@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function returns an integrand cost for metabolic cost normalized by
-% time. 
+% distance. 
 %
 % (struct, struct, struct, struct) -> (Array of double)
 
@@ -33,8 +33,17 @@ assert(isfield(modeledValues, 'muscleActivations'), "Muscle " + ...
     "activations are required for metabolic cost calculations.")
 rawCost = calcMetabolicCost(values.time, values.positions, ...
     modeledValues.muscleActivations, inputs);
-speed = calcMassCenterVelocity(values, inputs.model, ...
+massCenterVelocity = calcMassCenterVelocity(values, inputs.model, ...
     inputs.coordinateNames);
-cost = (rawCost - costTerm.errorCenter) / costTerm.maxAllowableError ...
-    / values.time(end) / speed;
+massCenterVelocity = massCenterVelocity(1);
+beltSpeed = 0;
+if ~isempty(inputs.contactSurfaces)
+    for i = 1 : length(inputs.contactSurfaces)
+        beltSpeed = beltSpeed + inputs.contactSurfaces{i}.beltSpeed;
+    end
+    beltSpeed = beltSpeed / length(inputs.contactSurfaces);
+end
+
+cost = (rawCost - costTerm.errorCenter) / values.time(end) ...
+    / (massCenterVelocity + beltSpeed);
 end
