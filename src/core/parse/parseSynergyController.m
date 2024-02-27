@@ -61,5 +61,9 @@ if ~isfield(inputs, "torqueControllerCoordinateNames")
     inputs.torqueControllerCoordinateNames = [];
 end
 inputs = getModelOrOsimxInputs(inputs);
+inputs.saveSurrogate = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'save_surrogate_model', false));
+inputs.loadSurrogate = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'load_surrogate_model', false));
 end
 
