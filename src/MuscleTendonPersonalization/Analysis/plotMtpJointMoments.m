@@ -79,8 +79,9 @@ for i=1:numel(jointLabels)
         hold off
         set(gca, fontsize=11)
         rmse = rms(meanMoments(:,i) - meanIdMoments(:,i));
-        title(sprintf("%s \n RMSE: %.4f", ...
-            jointLabels(i), rmse), fontsize=12)
+        mae = mean(abs(meanMoments(:,i) - meanIdMoments(:,i)));
+        title(sprintf("%s \n RMSE: %.4f, MAE: %.4f", ...
+            jointLabels(i), rmse, mae), fontsize=12)
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment No Synx", "Mean Inverse Dynamics Moment")
@@ -95,8 +96,9 @@ for i=1:numel(jointLabels)
         hold off
         set(gca, fontsize=11)
         rmse = rms(meanMomentsSynx(:,i) - meanIdMoments(:,i));
-        title(sprintf("%s \n RMSE: %.4f", ...
-            jointLabels(i), rmse), fontsize=12)
+        mae = mean(abs(meanMomentsSynx(:,i) - meanIdMoments(:,i)));
+        title(sprintf("%s \n RMSE: %.4f, MAE: %.4f", ...
+            jointLabels(i), rmse, mae), fontsize=12)
         axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment Synx", "Mean Inverse Dynamics Moment")

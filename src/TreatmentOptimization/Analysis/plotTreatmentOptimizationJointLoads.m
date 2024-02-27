@@ -91,6 +91,7 @@ for i=1:numel(labels)
     plot(modelTime, modelLoads(:, i), LineWidth=2);
     hold off
     rmse = rms(resampledExperimental(:, i) - modelLoads(:, i));
+    mae = mean(abs(resampledExperimental(:, i) - modelLoads(:, i)));
     
     if contains(labels(i), "moment")
         title(sprintf("%s \n RMSE: %.4f", ...

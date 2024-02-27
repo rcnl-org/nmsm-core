@@ -32,32 +32,32 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationJointAngles(experimentalAnglesFile, ...
-    modelAnglesFiles, figureWidth, figureHeight)
+function plotTreatmentOptimizationMuscleActivationsMulti(experimentalFile, ...
+    modelFiles, figureWidth, figureHeight)
 
 import org.opensim.modeling.Storage
-experimentalAnglesStorage = Storage(experimentalAnglesFile);
-labels = getStorageColumnNames(experimentalAnglesStorage);
-experimentalAngles = storageToDoubleMatrix(experimentalAnglesStorage)';
-experimentalAngles = experimentalAngles .* 180/pi;
-experimentalTime = findTimeColumn(experimentalAnglesStorage);
+experimentalStorage = Storage(experimentalFile);
+labels = getStorageColumnNames(experimentalStorage);
+experimentalData = storageToDoubleMatrix(experimentalStorage)';
+experimentalTime = findTimeColumn(experimentalStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
-modelAnglesStorage = Storage(modelAnglesFiles);
-modelAngles = storageToDoubleMatrix(modelAnglesStorage)';
-modelAngles = modelAngles .* 180/pi;
-modelTime = findTimeColumn(modelAnglesStorage);
-if modelTime(1) ~= 0
-    modelTime = modelTime - modelTime(1);
+modelData = {};
+for i=1:numel(modelFiles)
+    modelStorage = Storage(modelFiles(i));
+    modelData{i} = storageToDoubleMatrix(modelStorage)';
+    modelTime{i} = findTimeColumn(modelStorage);
 end
 
 % Spline experimental time to the same time points as the model. 
 experimentalSpline = makeGcvSplineSet(experimentalTime, ... 
-    experimentalAngles, labels);
-resampledExperimental = evaluateGcvSplines(experimentalSpline, ...
-    labels, modelTime);
-
+    experimentalData, labels);
+resampledExperimental = {};
+for i = 1 : numel(modelFiles)
+    resampledExperimental{i}= evaluateGcvSplines(experimentalSpline, ...
+        labels, modelTime{i});
+end
 if nargin < 3
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
@@ -65,8 +65,7 @@ elseif nargin < 4
     figureHeight = ceil(numel(labels)/figureWidth);
 end
 figureSize = figureWidth * figureHeight;
-
-figure(Name = "Treatment Optimization Joint Angles", ...
+figure(Name = "Treatment Optimization Muscle Activations", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
@@ -74,41 +73,40 @@ figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Time [s]")
-ylabel(t, "Joint Angle [deg]")
+ylabel(t, "Muscle Activations")
 for i=1:numel(labels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Joint Angles", ...
+        figure(Name="Treatment Optimization Muscle Activations", ...
             Units='normalized', ...
             Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Time [s]")
-        ylabel(t, "Joint Angle [deg]")
+        ylabel(t, "Muscle Activations")
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalAngles(:, i), LineWidth=2);
-    plot(modelTime, modelAngles(:, i), LineWidth=2);
+    plot(experimentalTime, experimentalData(:, i), LineWidth=2);
+    for j = 1 : numel(modelFiles)
+        plot(modelTime{j}, modelData{j}(:, i), LineWidth=2);
+    end
     hold off
-    rmse = rms(resampledExperimental(:, i) - modelAngles(:, i));
-    title(sprintf("%s \n RMSE: %.4f", ...
-        strrep(labels(i), "_", " "), rmse));
-
+    titleString = [sprintf("%s", strrep(labels(i), "_", " "))];
+    for j = 1 : numel(modelFiles)
+        rmse = rms(resampledExperimental{j}(:, i) - modelData{j}(:, i));
+        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+    end
+    title(titleString)
     if subplotNumber==1
-        legend("Experimental", "Model")
+        legendValues = "Experimental";
+        for j = 1 : numel(modelFiles)
+            legendValues(j+1) = strcat("Model ", num2str(j));
+        end
+        legend(legendValues)
     end
-
     xlim([0, experimentalTime(end)])
-    maxAngle = max([experimentalAngles(:, i); modelAngles(:, i)],[], "all");
-    minAngle = min([experimentalAngles(:, i); modelAngles(:, i)],[], "all");
-    if maxAngle-minAngle < 10
-        ylim([(maxAngle+minAngle)/2-10, (maxAngle+minAngle)/2+10])
-    end
-
-    % if subplotNumber > figureSize-figureHeight
-    %     xlabel("Time [s]")
-    % end
+    ylim([0, 1])
     subplotNumber = subplotNumber + 1;
 end
