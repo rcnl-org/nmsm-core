@@ -73,8 +73,8 @@ end
 end
 
 function guess = setupInitialControlsGuess(inputs, guess)
-if isfield(inputs, "initialJerks")
-    controls = inputs.initialJerks;
+if isfield(inputs, "initialAccelerations")
+    controls = inputs.initialAccelerations;
 else
     stateJointAccelerations = subsetDataByCoordinates( ...
         inputs.experimentalJointAccelerations, ...
@@ -136,11 +136,10 @@ end
 function output = subsetInitialStatesDataByCoordinates(data, ...
     coordinateNames, subsetOfCoordinateNames)
 includedSubset = ismember(coordinateNames, subsetOfCoordinateNames);
-numCoordinates = length(includedSubset) / 3;
+numCoordinates = length(includedSubset) / 2;
 for i = 1:numCoordinates
     if includedSubset(i)
         includedSubset(i + numCoordinates) = true;
-        includedSubset(i + (2 * numCoordinates)) = true;
     end
 end
 output = data(:, includedSubset);

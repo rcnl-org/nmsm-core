@@ -29,9 +29,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [newTime, evenlySpacedData] = splineToEvenlySpaced(time, data)
-newTime = linspace(time(1), time(end), length(time));
-spline = spaps(time, data', 1e-7);
-evenlySpacedData = fnval(spline, newTime)';
+function newData = splineToExperimentalTime(time, data, ...
+    newTime)
+gcvSplineSet = makeGcvSplineSet(time(1 : end - 1), ...
+    data(1 : end - 1, :), string([1:size(data, 2)]));
+newData = evaluateGcvSplines( gcvSplineSet, string([1:size(data, 2)]), ...
+    newTime-newTime(1), 0);
 end
 
