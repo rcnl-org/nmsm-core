@@ -63,7 +63,7 @@ if nargin < 3
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
 elseif nargin < 4
-    figureHeight = ceil(numel(labels)/figureWidth);
+    figureHeight = ceil(sqrt(numel(labels)));
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Angles", ...
@@ -103,7 +103,8 @@ for i=1:numel(labels)
     if subplotNumber==1
         legendValues = "Experimental";
         for j = 1 : numel(modelFiles)
-            legendValues(j+1) = strcat("Model ", num2str(j));
+            splitFileName = split(modelFiles(j), ["/", "\"]);
+            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
         legend(legendValues)
     end

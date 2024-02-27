@@ -37,26 +37,49 @@ function plotTreatmentOptimizationGroundReactionsMulti(experimentalFile, ...
 
 import org.opensim.modeling.Storage
 experimentalStorage = Storage(experimentalFile);
-labels = getStorageColumnNames(experimentalStorage);
+experimentalLabels = getStorageColumnNames(experimentalStorage);
 experimentalData = storageToDoubleMatrix(experimentalStorage)';
 experimentalTime = findTimeColumn(experimentalStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
-modelData = {};
-for i=1:numel(modelFiles)
-    modelStorage = Storage(modelFiles(i));
-    modelData{i} = storageToDoubleMatrix(modelStorage)';
-    modelTime{i} = findTimeColumn(modelStorage);
+for j = 1 : numel(modelFiles)
+    modelStorage = Storage(modelFiles(j));
+    modelData{j} = storageToDoubleMatrix(modelStorage)';
+    modelLabels{j} = getStorageColumnNames(modelStorage);
+    modelTime{j} = findTimeColumn(modelStorage);
+end
+
+experimentalMomentIndices = contains(experimentalLabels, ["_m", "M"]);
+experimentalForceIndices = contains(experimentalLabels, ["_v", "F"]);
+experimentalIncludedIndices = experimentalMomentIndices | experimentalForceIndices;
+experimentalData = experimentalData(:, experimentalIncludedIndices);
+experimentalLabels = experimentalLabels(experimentalIncludedIndices);
+experimentalForcePlate1 = contains(experimentalLabels, "1");
+for j = 1 : numel(modelFiles) 
+    modelMomentIndices = contains(modelLabels{j}, "_m");
+    modelForceIndices = contains(modelLabels{j}, "_v");
+    modelIncludedIndices = modelMomentIndices | modelForceIndices;
+    modelData{j} = modelData{j}(:, modelIncludedIndices);
+    modelLabels{j} = modelLabels{j}(modelIncludedIndices);
+    modelForcePlate1 = contains(modelLabels{j}, "1");
+    % modelData{j} = modelData{j}(:, ~modelForcePlate1);
+    if experimentalForcePlate1 ~= modelForcePlate1
+        temp = modelData{j};
+        modelData{j}(:, ~experimentalForcePlate1) = ...
+            modelData{j}(:, experimentalForcePlate1);
+        modelData{j}(:, experimentalForcePlate1) = ...
+            temp(:, ~experimentalForcePlate1);
+    end
 end
 
 % Spline experimental time to the same time points as the model. 
 experimentalSpline = makeGcvSplineSet(experimentalTime, ... 
-    experimentalData, labels);
+    experimentalData, experimentalLabels);
 resampledExperimental = {};
 for i = 1 : numel(modelFiles)
     resampledExperimental{i} = evaluateGcvSplines(experimentalSpline, ...
-        labels, modelTime{i});
+        experimentalLabels, modelTime{i});
 end
 if nargin < 3
     figureWidth = 3;
@@ -74,7 +97,8 @@ t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Time [s]")
 ylabel(t, "Ground Reaction")
-for i=1:numel(labels)
+title(t, "Force Plate 2")
+for i=1:numel(experimentalLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Ground Reactions", ...
@@ -93,7 +117,7 @@ for i=1:numel(labels)
         plot(modelTime{j}, modelData{j}(:, i), LineWidth=2);
     end
     hold off
-    titleString = [sprintf("%s", strrep(labels(i), "_", " "))];
+    titleString = [sprintf("%s", strrep(experimentalLabels(i), "_", " "))];
     for j = 1 : numel(modelFiles)
         rmse = rms(resampledExperimental{j}(:, i) - modelData{j}(:, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
@@ -102,7 +126,8 @@ for i=1:numel(labels)
     if subplotNumber==1
         legendValues = "Experimental";
         for j = 1 : numel(modelFiles)
-            legendValues(j+1) = strcat("Model ", num2str(j));
+            splitFileName = split(modelFiles(j), ["/", "\"]);
+            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
         legend(legendValues)
     end
