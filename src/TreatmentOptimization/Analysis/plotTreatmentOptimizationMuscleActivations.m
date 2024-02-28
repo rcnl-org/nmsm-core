@@ -104,7 +104,14 @@ for i=1:numel(labels)
     end
     title(titleString)
     if subplotNumber==1
-        legendValues = "Experimental";
+        splitFileName = split(experimentalFile, ["/", "\"]);
+        for k = 1 : numel(splitFileName)
+            if ~strcmp(splitFileName(k), "..")
+                legendValues = sprintf("%s (T)", ...
+                    strrep(splitFileName(k), "_", " "));
+                break
+            end
+        end
         for j = 1 : numel(modelFiles)
             splitFileName = split(modelFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
