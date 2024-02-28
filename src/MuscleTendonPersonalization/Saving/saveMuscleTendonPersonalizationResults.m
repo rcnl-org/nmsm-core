@@ -41,6 +41,7 @@ end
 if nargin < 6
     precalInputs = [];
 end
+
 if ~isempty(precalInputs)
     saveMtpPassiveMomentData(precalInputs, modeledValues, analysisDirectory);
 end

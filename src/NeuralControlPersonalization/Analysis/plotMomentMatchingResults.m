@@ -58,14 +58,18 @@ subplotNumber = 1;
 hasLegend = false;
 % figure(figureNumber)
 figureIndex = 1;
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='compact', Padding='compact');
 for i = 1:length(experimentalColumns)
     if i > figureSize * figureIndex
         figureIndex = figureIndex + 1;
         figure(figureNumber + figureIndex - 1)
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='compact', Padding='compact');
         subplotNumber = 1;
         hasLegend = false;
     end
-    subplot(figureHeight, figureWidth, subplotNumber)
+    nexttile(subplotNumber)
     plot(modeledTime, experimentalMoments(i, :), 'LineWidth', 2)
     modeledIndex = find(experimentalColumns(i) == modeledColumns);
     if isempty(modeledIndex)
