@@ -42,8 +42,18 @@ inputs = makeMarkerTracking(inputs);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
-if strcmp(inputs.controllerType, "synergy") 
-    inputs.surrogateMuscles = SurrogateModelCreation(inputs);
+
+if strcmpi(inputs.controllerType, "synergy")
+    if inputs.loadSurrogate && isfile("surrogateMuscles.mat")
+        inputs.surrogateMuscles = load("surrogateMuscles.mat") ...
+            .surrogateMuscles;
+    else
+        inputs.surrogateMuscles = SurrogateModelCreation(inputs);
+    end
+    if inputs.saveSurrogate
+        surrogateMuscles = inputs.surrogateMuscles;
+        save("surrogateMuscles.mat", "surrogateMuscles");
+    end
 end
 end
 

@@ -45,8 +45,10 @@ modeledKinematics = ...
 time = findTimeColumn(Storage(experimentalKinematicsFileName));
 
 figure(plotNumber)
+t = tiledlayout(2, 4, ...
+    TileSpacing='compact', Padding='compact');
 for i = 1:7
-    subplot(2, 4, i)
+    nexttile(i)
     % Rotational coordinate data are converted to degrees. 
     if i <= 4
         experimental = rad2deg(experimentalKinematics(i, :));

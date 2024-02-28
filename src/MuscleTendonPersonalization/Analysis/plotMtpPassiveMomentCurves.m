@@ -44,30 +44,36 @@ maxMoment = max([max(meanMomentsExperimental, [], 'all'), ...
     max(meanMomentsModel, [], 'all')]);
 minMoment = min([min(meanMomentsExperimental, [], 'all'), ...
     min(meanMomentsModel, [], 'all')]);
-
-numWindows = ceil(sqrt(numel(momentNames)));
 time = 1:1:size(meanMomentsModel,1);
+
+figureWidth = ceil(sqrt(numel(momentNames)));
+figureHeight = ceil(numel(momentNames)/figureWidth);
+
 figure(Name = "Passive Moment Curves", ...
     Units='normalized', ...
-    Position=[0.1 0.1 0.8 0.8])
+    Position=[0.05 0.05 0.9 0.85])
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
 
 for i = 1:numel(momentNames)
-    subplot(numWindows, numWindows, i)
+    nexttile(i);
     hold on
     plotMeanAndStd(meanMomentsExperimental(:,i), stdMomentsExperimental(:,i), ...
         time, 'k-')
     plotMeanAndStd(meanMomentsModel(:,i), stdMomentsModel(:,i), time, 'r-')
     hold off
     set(gca, fontsize=11)
-    title(momentNames(i), FontSize=12)
+    rmse = rms(passiveMomentsExperimental(:,i) - passiveMomentsModel(:,i));
+    title(sprintf("%s \n RMSE: %.4f", ...
+        momentNames(i), rmse), FontSize=12)
     axis([1 size(meanMomentsModel, 1) minMoment maxMoment])
     if i == 1
         legend("Experimental", "Model")
     end
-    if mod(i,numWindows) == 1
+    if mod(i,figureWidth) == 1
         ylabel("Moment [Nm]")
     end
-    if i>numel(momentNames)-numWindows
+    if i>numel(momentNames)-figureWidth
         xlabel("Time Points")
     end
 end
