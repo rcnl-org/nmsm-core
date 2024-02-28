@@ -1,8 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function constructs B-spline nodes for specified time vector, spline
-%
-% (array of num, array of num, num, num) => (2d mat, 2d mat, 2d mat)
+% Constructs B-spline nodes for the given time vector and spline, using the
+% BSplineMatrices function.
+% 
+% (Array of double, Array of double, double, double) 
+% -> (Array of double, Array of double, Array of double)
+% Constructs B-spline nodes for a time vector and spline
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

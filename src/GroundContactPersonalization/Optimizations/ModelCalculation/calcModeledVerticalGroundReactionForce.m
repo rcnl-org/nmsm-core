@@ -49,17 +49,15 @@ for i=1:length(springConstants)
     ymax = 1e-2;
     Kval = springConstants(i);
     height = height - springRestingLength;
+    if height > 0.354237930036971
+        height = 0.354237930036971;
+    end
     numFrames = length(height);
     v = ones(numFrames, 1)' .* ((Kval + klow) ./ (Kval - klow));
     s = ones(numFrames, 1)' .* ((Kval - klow) ./ 2);
     constant = -s .* (v .* ymax - c .* log(cosh((ymax + h) ./ c)));
     freglyVerticalGrf = -s .* (v .* height - c .* ...
         log(cosh((height + h) ./ c))) - constant;
-    % Account for potential errors in force model
-    freglyVerticalGrf(isnan(freglyVerticalGrf)) = ...
-        min(min(freglyVerticalGrf));
-    freglyVerticalGrf(isinf(freglyVerticalGrf)) = ...
-        min(min(freglyVerticalGrf));
     springForces(2, i) = freglyVerticalGrf * (1 + dampingFactor * ...
         verticalVelocity);
     modeledVerticalGrf = modeledVerticalGrf + springForces(2, i);

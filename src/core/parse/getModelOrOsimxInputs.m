@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,6 +28,8 @@
 function inputs = getModelOrOsimxInputs(inputs)
 if ~isa(inputs.model, 'org.opensim.modeling.Model')
     model = Model(inputs.model);
+else
+    model = inputs.model;
 end
 inputs.optimalFiberLength = [];
 inputs.tendonSlackLength = [];
@@ -36,21 +38,24 @@ inputs.maxIsometricForce = [];
 for i = 1 : inputs.numMuscles
     if isfield(inputs.osimx, "muscles") && ...
             isfield(inputs.osimx.muscles, inputs.muscleNames(i))
-        if isnan(inputs.osimx.muscles.(inputs.muscleNames(i)).optimalFiberLength)
+        if ~isfield(inputs.osimx.muscles.(inputs.muscleNames(i)), ...
+                "optimalFiberLength")
             inputs.optimalFiberLength(end+1) = model.getForceSet(). ...
                 getMuscles().get(i-1).getOptimalFiberLength();
         else
             inputs.optimalFiberLength(end+1) = inputs.osimx.muscles. ...
                 (inputs.muscleNames(i)).optimalFiberLength;
         end
-        if isnan(inputs.osimx.muscles.(inputs.muscleNames(i)).tendonSlackLength)
+        if ~isfield(inputs.osimx.muscles.(inputs.muscleNames(i)), ...
+                "tendonSlackLength")
             inputs.tendonSlackLength(end+1) = model.getForceSet(). ...
                 getMuscles().get(i-1).getTendonSlackLength();
         else
             inputs.tendonSlackLength(end+1) = inputs.osimx.muscles. ...
                 (inputs.muscleNames(i)).tendonSlackLength;
         end
-        if isnan(inputs.osimx.muscles.(inputs.muscleNames(i)).maxIsometricForce)
+        if ~isfield(inputs.osimx.muscles.(inputs.muscleNames(i)), ...
+                "maxIsometricForce")
             inputs.maxIsometricForce(end+1) = model.getForceSet(). ...
                 getMuscles().get(i-1).getMaxIsometricForce();
         else

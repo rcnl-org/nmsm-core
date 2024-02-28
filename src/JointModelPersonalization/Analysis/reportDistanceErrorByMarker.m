@@ -38,8 +38,9 @@ for i=1:markersReference.getNumFrames() - 1 %start time is set so start with rec
     end
     addToRowToStorage(state, storage, error)
     frameCounter = frameCounter + 1;
-    state.setTime(times.get(markerTable.getNearestRowIndexForTime( ...
-        state.getTime() + 1/frequency)) - 0.000001);
+    time = times.get(markerTable.getNearestRowIndexForTime( ...
+        state.getTime() + 1/frequency - 0.00001));
+    state.setTime(double(time));
 end
 storage.print(outputSto);
 end

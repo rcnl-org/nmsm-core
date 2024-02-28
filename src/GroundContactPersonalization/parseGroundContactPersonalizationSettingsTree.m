@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Parses XML settings for Ground contact personalization to determine
-% intial inputs and parameters for optimization. 
+% intial inputs and parameters for optimization.
 %
 % (struct) -> (struct, struct, string)
 % Returns the input values for Ground Contact Personalization.
@@ -51,6 +51,16 @@ inputs.kinematicsFilterCutoff = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'kinematics_filter_cutoff', '6')));
 inputs.latchingVelocity = str2double(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'latching_velocity', '0.05')));
+inputs.gridWidth = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'grid_width', '5')));
+if isempty(inputs.gridWidth) || isnan(inputs.gridWidth)
+    inputs.gridWidth = 5;
+end
+inputs.gridHeight = str2double(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'grid_height', '15')));
+if isempty(inputs.gridHeight) || isnan(inputs.gridHeight)
+    inputs.gridHeight = 15;
+end
 if(~isempty(inputDirectory))
     try
         bodyModel = Model(inputs.bodyModel);
@@ -76,7 +86,7 @@ end
 
 % (struct, struct) -> (struct)
 % Gets inputs specific to each foot, such as experimental kinematics and
-% ground reactions and foot marker names. 
+% ground reactions and foot marker names.
 function output = getContactSurfaces(inputs, tree)
 contactSurfaces = getFieldByNameOrError(tree, 'GCPContactSurfaceSet') ...
     .GCPContactSurface;
@@ -102,7 +112,7 @@ end
 
 % (Model, string, struct) -> (struct)
 % Determines the first and last included time point based on the input
-% kinematics motion file and start and end times given for the foot. 
+% kinematics motion file and start and end times given for the foot.
 function task = getMotionTime(bodyModel, motionFile, task)
 import org.opensim.modeling.Storage
 [~, ikTime, ~] = parseMotToComponents(...
@@ -114,7 +124,7 @@ end
 
 % (Model, string, struct) -> (struct)
 % Parses ground reaction data from a file. This will throw an exception if
-% any needed column is missing. 
+% any needed column is missing.
 function task = getGroundReactions(bodyModel, grfFile, task)
 import org.opensim.modeling.Storage
 [grfColumnNames, grfTime, grfData] = parseMotToComponents(...
@@ -150,47 +160,51 @@ end
 
 % (struct, struct, struct) -> (struct)
 % Gets foot-specific options directly included in XML file, including
-% names of markers and ground reaction columns. 
+% names of markers and ground reaction columns.
 function task = getFootData(tree)
-    task.isLeftFoot = strcmpi('true', ...
-        getFieldByNameOrError(tree, 'is_left_foot').Text);
-    task.toesCoordinateName = getFieldByNameOrError(tree, ...
-        'toe_coordinate').Text;
-    task.markerNames.toe = getFieldByNameOrError(tree, ...
-        'toe_marker').Text;
-    task.markerNames.medial = getFieldByNameOrError(tree, ...
-        'medial_marker').Text;
-    task.markerNames.lateral = getFieldByNameOrError(tree, ...
-        'lateral_marker').Text;
-    task.markerNames.heel = getFieldByNameOrError(tree, ...
-        'heel_marker').Text;
-    task.markerNames.midfootSuperior = getFieldByNameOrError(tree, ...
-        'midfoot_superior_marker').Text;
-    task.startTime = str2double(getFieldByNameOrError(tree, ...
-        'start_time').Text);
-    task.endTime = str2double(getFieldByNameOrError(tree, ...
-        'end_time').Text);
-    task.beltSpeed = str2double(getFieldByNameOrError(tree, ...
-        'belt_speed').Text);
-    task.forceColumns = cell2mat(split(getFieldByNameOrError(tree, ...
-        'force_columns').Text));
-    task.momentColumns = cell2mat(split(getFieldByNameOrError(tree, ...
-        'moment_columns').Text));
-    task.electricalCenterColumns = cell2mat(split( ...
-        getFieldByNameOrError(tree, 'electrical_center_columns').Text));
+task.isLeftFoot = strcmpi('true', ...
+    getFieldByNameOrError(tree, 'is_left_foot').Text);
+hindfootBodyName = getFieldByName(tree, "hindfoot_body");
+if ~isstruct(hindfootBodyName)
+    throw(MException('', "<toes_coordinate> is replaced by <hindfoot_body> in the GCP settings file."))
+else
+    task.hindfootBodyName = hindfootBodyName.Text;
+end
+task.markerNames.toe = getFieldByNameOrError(tree, ...
+    'toe_marker').Text;
+task.markerNames.medial = getFieldByNameOrError(tree, ...
+    'medial_marker').Text;
+task.markerNames.lateral = getFieldByNameOrError(tree, ...
+    'lateral_marker').Text;
+task.markerNames.heel = getFieldByNameOrError(tree, ...
+    'heel_marker').Text;
+task.markerNames.midfootSuperior = getFieldByNameOrError(tree, ...
+    'midfoot_superior_marker').Text;
+task.startTime = str2double(getFieldByNameOrError(tree, ...
+    'start_time').Text);
+task.endTime = str2double(getFieldByNameOrError(tree, ...
+    'end_time').Text);
+task.beltSpeed = str2double(getFieldByNameOrError(tree, ...
+    'belt_speed').Text);
+task.forceColumns = cell2mat(split(getFieldByNameOrError(tree, ...
+    'force_columns').Text));
+task.momentColumns = cell2mat(split(getFieldByNameOrError(tree, ...
+    'moment_columns').Text));
+task.electricalCenterColumns = cell2mat(split( ...
+    getFieldByNameOrError(tree, 'electrical_center_columns').Text));
 end
 
 % (Array of double, Array of double) -> (None)
 % Confirms that the time points from ground reaction and kinematics data
-% match in length and value. 
+% match in length and value.
 function verifyTime(grfTime, ikTime)
-    if size(ikTime) ~= size(grfTime)
-        throw(MException('', ['IK and GRF time columns have ' ...
-            'different lengths']))
-    end
-    if any(abs(ikTime - grfTime) > 0.005)
-        throw(MException('', 'IK and GRF time points are not equal'))
-    end
+if size(ikTime) ~= size(grfTime)
+    throw(MException('', ['IK and GRF time columns have ' ...
+        'different lengths']))
+end
+if any(abs(ikTime - grfTime) > 0.005)
+    throw(MException('', 'IK and GRF time points are not equal'))
+end
 end
 
 % Parses initial values.
@@ -234,6 +248,7 @@ end
 
 % Gets cost terms and design variables included in each task.
 function output = getOptimizationTasks(tree)
+output = {};
 tasks = getFieldByNameOrError(tree, 'GCPTaskList');
 counter = 1;
 gcpTasks = orderByIndex(tasks.GCPTask);

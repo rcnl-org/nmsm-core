@@ -37,11 +37,12 @@ resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
+inputs = rmfield(inputs, "model");
 end
 
 function inputs = getInputs(tree)
 inputs = parseMtpNcpSharedInputs(tree);
-inputs.synergyGroups = getSynergyGroups(tree, Model(inputs.model));
+inputs.synergyGroups = parseSynergyGroups(tree, inputs.model);
 inputs = matchMuscleNamesFromCoordinatesAndSynergyGroups(inputs);
 inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 [inputs.maxIsometricForce, inputs.optimalFiberLength, ...
@@ -71,7 +72,7 @@ osimxFileName = getFieldByName(tree, "input_osimx_file");
 % if ~isstruct(osimxFileName) || isempty(osimxFileName.Text)
 %     throw(MException('', 'An input .osimx file is required if using data from MTP.'))
 % end
-inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text);
+inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text, inputs.model);
 % Remove activations of muscles from coordinates not included
 includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
     inputs.muscleTendonColumnNames);
@@ -100,7 +101,6 @@ end
 end
 
 function params = getParams(tree, model, inputs)
-model = Model(model);
 params = struct();
 params.activationGroupNames = parseSpaceSeparatedList(tree, ...
     'activation_muscle_groups');
@@ -130,29 +130,6 @@ params.maxIterations = str2double(getTextFromField(...
 params.maxFunctionEvaluations = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'max_function_evaluations', ...
     '1e6')));
-end
-
-function groups = getSynergyGroups(tree, model)
-synergySetTree = getFieldByNameOrError(tree, "RCNLSynergySet");
-groupsTree = getFieldByNameOrError(synergySetTree, "RCNLSynergy");
-groups = {};
-for i=1:length(groupsTree)
-    if(length(groupsTree) == 1)
-        group = groupsTree;
-    else
-        group = groupsTree{i};
-    end
-    groups{i}.numSynergies = ...
-        str2double(group.num_synergies.Text);
-    groupMembers = model.getForceSet().getGroup( ...
-        group.muscle_group_name.Text).getMembers();
-    muscleNames = string([]);
-    for j=0:groupMembers.getSize() - 1
-        muscleNames(end + 1) = groupMembers.get(j);
-    end
-    groups{i}.muscleNames = muscleNames;
-    groups{i}.muscleGroupName = group.muscle_group_name.Text;
-end
 end
 
 function [optimalFiberLengthScaleFactors, ...

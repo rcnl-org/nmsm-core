@@ -33,8 +33,12 @@
 function output = getFieldByNameOrAlternate(struct, field, alternative)
 output = getFieldByName(struct, field);
 if ~isnumeric(output) && ~isstruct(output)
-    if output == 0
-        output = alternative;
+    try
+        if output == 0
+            output = alternative;
+        end
+    catch
+        return
     end
 end
 end

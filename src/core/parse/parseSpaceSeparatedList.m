@@ -31,7 +31,11 @@
 
 function prefixes = parseSpaceSeparatedList(tree, elementName)
 prefixField = getFieldByName(tree, elementName);
-if ~isempty(prefixField.Text)
+if ~isfield(prefixField, "Text")
+    throw(MException('', strcat(elementName, " is not in the xml file.")))
+end
+prefixField.Text = strip(prefixField.Text);
+if ~isempty(convertStringsToChars(prefixField.Text))
     if(strcmp(prefixField.Text(1), ' '))
         prefixField.Text = prefixField.Text(2:end);
     end

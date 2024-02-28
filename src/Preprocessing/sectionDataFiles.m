@@ -33,17 +33,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function sectionDataFiles(fileNames, timePairs, numRows, prefix)
+function sectionDataFiles(fileNames, timePairs, numRows, prefix, ...
+    filesToFilter, cutoffFrequency)
 import org.opensim.modeling.Storage
 for i=1:length(fileNames)
     storage = Storage(fileNames(i));
     data = storageToDoubleMatrix(storage);
     time = findTimeColumn(storage);
+    if filesToFilter(i)
+        data = lowpassFilter(time, data', 4, cutoffFrequency, 0);
+    end
     columnNames = getStorageColumnNames(storage);
     for j=1:size(timePairs, 1)
         [filepath, name, ext] = fileparts(fileNames(i));
         [newData, newTime] = cutData(data, time, timePairs(j,1), ...
-            timePairs(j,2), numRows);
+            timePairs(j,2), numRows, columnNames);
         newFileName = insertAfter(name, prefix, "_" + num2str(j));
         writeToSto(columnNames, newTime, newData', fullfile(filepath, ...
             newFileName + ext));
@@ -52,8 +56,9 @@ end
 end
 
 function [newData, newTime] = cutData(data, time, startTime, endTime, ...
-    numRows)
+    numRows, columnNames)
 newTime = linspace(startTime, endTime, numRows);
-newData = spline(time, data, newTime);
+splineSet = makeGcvSplineSet(time, data, columnNames);
+newData = evaluateGcvSplines(splineSet, columnNames, newTime)';
 end
 

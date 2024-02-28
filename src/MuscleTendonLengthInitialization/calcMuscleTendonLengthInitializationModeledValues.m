@@ -52,4 +52,3 @@ if experimentalData.passiveMomentDataExists
         modeledValues.passiveNormalizedFiberLength);
 end
 end
-

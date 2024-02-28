@@ -29,12 +29,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function adjustBodyScaling(model, bodyName, value)
-
-markers = getMarkersFromBody(model, bodyName);
-markerLocations = {};
-for i = 1:length(markers)
-    markerLocations{i} = org.opensim.modeling.Vec3(model.getMarkerSet().get(markers{i}).get_location());
+function [body, joint, coordinate] = adjustBodyScaling(model, bodyName, value, anatomicalMarkers)
+body = bodyName;
+joint = "";
+coordinate = 0;
+if ~anatomicalMarkers
+    markers = getMarkersFromBody(model, bodyName);
+    markerLocations = {};
+    for i = 1:length(markers)
+        markerLocations{i} = org.opensim.modeling.Vec3( ...
+            model.getMarkerSet().get(markers{i}).get_location());
+    end
 end
 
 state = initializeState(model);
@@ -42,13 +47,16 @@ state = initializeState(model);
 scaleSet = org.opensim.modeling.ScaleSet();
 scale = org.opensim.modeling.Scale();
 scale.setSegmentName(bodyName);
-scale.setScaleFactors(org.opensim.modeling.Vec3(value));
+scale.setScaleFactors(org.opensim.modeling.Vec3(value / ...
+    getScalingParameterValue(model, bodyName)));
 scale.setApply(true);
 scaleSet.cloneAndAppend(scale);
 model.scale(state, scaleSet, true, -1.0);
 
-for i = 1:length(markers)
-    model.getMarkerSet().get(markers{i}).set_location(markerLocations{i});
+if ~anatomicalMarkers
+    for i = 1:length(markers)
+        model.getMarkerSet().get(markers{i}).set_location(markerLocations{i});
+    end
 end
 end
 

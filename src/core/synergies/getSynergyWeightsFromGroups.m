@@ -29,20 +29,20 @@
 % ----------------------------------------------------------------------- %
 
 function synergyWeightsReformatted = getSynergyWeightsFromGroups(...
-    synergyWeights, params)
-synergyWeightsReformatted = zeros(params.numSynergies, params.numMuscles);
+    synergyWeights, inputs)
+synergyWeightsReformatted = zeros(inputs.numSynergies, inputs.numMuscles);
 valuesIndex = 1;
 row = 1;
 column = 1; % the sum of the muscles in the previous synergy groups
-for i = 1:length(params.synergyGroups)
-    for j = 1: params.synergyGroups{i}.numSynergies
+for i = 1:length(inputs.synergyGroups)
+    for j = 1: inputs.synergyGroups{i}.numSynergies
         synergyWeightsReformatted(row, column : ...
-            column + length(params.synergyGroups{i}.muscleNames) - 1) = ...
+            column + length(inputs.synergyGroups{i}.muscleNames) - 1) = ...
             synergyWeights(valuesIndex : ...
-            valuesIndex + length(params.synergyGroups{i}.muscleNames) - 1);
-        valuesIndex = valuesIndex + length(params.synergyGroups{i}.muscleNames);
+            valuesIndex + length(inputs.synergyGroups{i}.muscleNames) - 1);
+        valuesIndex = valuesIndex + length(inputs.synergyGroups{i}.muscleNames);
         row = row + 1;
     end
-    column = column + length(params.synergyGroups{i}.muscleNames);
+    column = column + length(inputs.synergyGroups{i}.muscleNames);
 end
 end

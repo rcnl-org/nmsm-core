@@ -33,7 +33,7 @@ modelFileName = inputs.bodyModel;
 model = Model(modelFileName);
 
 if isfile(osimxFileName)
-    osimx = parseOsimxFile(inputs.inputOsimxFile);
+    osimx = parseOsimxFile(inputs.inputOsimxFile, model);
     [~, name, ~] = fileparts(inputs.inputOsimxFile);
     outfile = fullfile(resultsDirectory, strcat(name, "_gcp.xml"));
 else
@@ -61,9 +61,8 @@ for foot = 1:length(inputs.surfaces)
     newSurface.momentColumns = string(inputs.surfaces{foot}.momentColumns)';
     newSurface.electricalCenterColumns = string(inputs.surfaces{foot} ...
         .electricalCenterColumns)';
-    newSurface.toesCoordinateName = inputs.surfaces{foot} ...
-        .toesCoordinateName;
-    newSurface.toesJointName = inputs.surfaces{foot}.toesJointName;
+    newSurface.hindfootBodyName = inputs.surfaces{foot} ...
+        .hindfootBodyName;
     newSurface.toeMarker = inputs.surfaces{foot}.markerNames.toe;
     newSurface.medialMarker = inputs.surfaces{foot}.markerNames.medial;
     newSurface.lateralMarker = inputs.surfaces{foot}.markerNames.lateral;
