@@ -1,9 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns an integrand cost for metabolic cost normalized by
-% distance. 
+% This function returns a discrete cost for matching a goal walking speed.
+% This speed is defined relative to the ground. For example, with a subject
+% walking at 0.6 m/s on a treadmill, a goal of 0.2 m/s will seek a solution
+% with the subject walking at 0.8 m/s. 
 %
-% (struct, struct, struct, struct) -> (Array of double)
+% (struct, struct, struct) -> (double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
