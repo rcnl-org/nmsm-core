@@ -110,7 +110,7 @@ markerNames = string(strings);
 markerWeightSet = SetMarkerWeights();
 for i=1:length(markerNames)
     if any(ismember(fieldnames(footMarkerData), markerNames(i)))
-        markerWeightSet.cloneAndAppend(MarkerWeight(markerNames(i), 100.0));
+        markerWeightSet.cloneAndAppend(MarkerWeight(markerNames(i), 1000.0));
     else
         markerWeightSet.cloneAndAppend(MarkerWeight(markerNames(i), 1.0));
     end

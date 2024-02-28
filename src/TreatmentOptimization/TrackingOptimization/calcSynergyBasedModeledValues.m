@@ -52,8 +52,6 @@ if strcmp(inputs.controllerType, 'synergy')
     modeledValues.muscleJointMoments = permute(muscleJointMoments, [3 2 1]);
     modeledValues.muscleJointMoments = modeledValues.muscleJointMoments(:, ...
         inputs.surrogateModelIndex);
-    modeledValues.muscleJointMoments = modeledValues.muscleJointMoments(:, ...
-        inputs.dofsActuatedIndex);
     modeledValues.muscleActivations = permute(modeledValues.muscleActivations, [3 2 1]);
 end
 end
