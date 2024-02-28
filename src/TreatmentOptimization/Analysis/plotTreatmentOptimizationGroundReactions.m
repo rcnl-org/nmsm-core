@@ -1,15 +1,19 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads two .sto files: 1) experimental ground reactions, and 
-% 2) model ground reactions, and plots them. There are 2 optional arguments 
-% for figure width and figure height. If no optional arguments are given, 
-% the figure size is automatically adjusted to fit all data on one plot. 
-% Giving just figure width imposes the width and fits the height to fit on 
-% one plot. Giving both arguments will impose both figure height and width, 
-% and create multiple plots as needed.
+% This function reads .sto files for experimental and model ground
+% reactions and plots them. There is an option to plot multiple model files
+% by passing in a list of model file names.
 %
-% (string) -> (None)
-% Plot joint moment curves from file.
+% There are 2 optional arguments for figure width and figure height. If no
+% optional arguments are given, the figure size is automatically adjusted
+% to fit all data on one plot. Giving just figure width and no figure
+% height will set figure height to a default value and extra figures will
+% be created as needed. If both figure width and figure height are given,
+% the figure size will be fixed and extra figures will be created as
+% needed.
+%
+% (string) (List of strings) (int), (int) -> (None)
+% Plot experimental and model ground reactions from file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,48 +36,54 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationGroundReactions(experimentalGroundReactionFile, ...
-    modelGroundReactionFile, figureWidth, figureHeight)
+function plotTreatmentOptimizationGroundReactions(experimentalFile, ...
+    modelFiles, figureWidth, figureHeight)
 
 import org.opensim.modeling.Storage
-experimentalGRStorage = Storage(experimentalGroundReactionFile);
-experimentalLabels = getStorageColumnNames(experimentalGRStorage);
-experimentalGR = storageToDoubleMatrix(experimentalGRStorage)';
-experimentalTime = findTimeColumn(experimentalGRStorage);
+experimentalStorage = Storage(experimentalFile);
+experimentalLabels = getStorageColumnNames(experimentalStorage);
+experimentalData = storageToDoubleMatrix(experimentalStorage)';
+experimentalTime = findTimeColumn(experimentalStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
-modelGRStorage = Storage(modelGroundReactionFile);
-modelLabels = getStorageColumnNames(modelGRStorage);
-modelGR = storageToDoubleMatrix(modelGRStorage)';
-modelTime = findTimeColumn(modelGRStorage);
-if modelTime(1) ~= 0
-    modelTime = modelTime - modelTime(1);
+for j = 1 : numel(modelFiles)
+    modelStorage = Storage(modelFiles(j));
+    modelData{j} = storageToDoubleMatrix(modelStorage)';
+    modelLabels{j} = getStorageColumnNames(modelStorage);
+    modelTime{j} = findTimeColumn(modelStorage);
 end
 
-% Check both GR files are in the same order.
+experimentalMomentIndices = contains(experimentalLabels, ["_m", "M"]);
+experimentalForceIndices = contains(experimentalLabels, ["_v", "F"]);
+experimentalIncludedIndices = experimentalMomentIndices | experimentalForceIndices;
+experimentalData = experimentalData(:, experimentalIncludedIndices);
+experimentalLabels = experimentalLabels(experimentalIncludedIndices);
 experimentalForcePlate1 = contains(experimentalLabels, "1");
-modelForcePlate1 = contains(modelLabels, "1");
-if experimentalForcePlate1 ~= modelForcePlate1
-    temp = modelGR;
-    modelGR(:, ~experimentalForcePlate1) = modelGR(:, experimentalForcePlate1);
-    modelGR(:, experimentalForcePlate1) = temp(:, ~experimentalForcePlate1);
+for j = 1 : numel(modelFiles)
+    modelMomentIndices = contains(modelLabels{j}, "_m");
+    modelForceIndices = contains(modelLabels{j}, "_v");
+    modelIncludedIndices = modelMomentIndices | modelForceIndices;
+    modelData{j} = modelData{j}(:, modelIncludedIndices);
+    modelLabels{j} = modelLabels{j}(modelIncludedIndices);
+    modelForcePlate1 = contains(modelLabels{j}, "1");
+    if experimentalForcePlate1 ~= modelForcePlate1
+        temp = modelData{j};
+        modelData{j}(:, ~experimentalForcePlate1) = ...
+            modelData{j}(:, experimentalForcePlate1);
+        modelData{j}(:, experimentalForcePlate1) = ...
+            temp(:, ~experimentalForcePlate1);
+    end
 end
 
-momentIndices = contains(experimentalLabels, "_m");
-forceIndices = contains(experimentalLabels, "_v");
-includedIndices = momentIndices | forceIndices;
-
-experimentalLabels = experimentalLabels(includedIndices);
-modelGR = modelGR(:, includedIndices);
-experimentalGR = experimentalGR(:, includedIndices);
-
-% Spline experimental time to the same time points as the model. 
-experimentalSpline = makeGcvSplineSet(experimentalTime, ... 
-    experimentalGR, experimentalLabels);
-resampledExperimental = evaluateGcvSplines(experimentalSpline, ...
-    experimentalLabels, modelTime);
-
+% Spline experimental time to the same time points as the model.
+experimentalSpline = makeGcvSplineSet(experimentalTime, ...
+    experimentalData, experimentalLabels);
+resampledExperimental = {};
+for i = 1 : numel(modelFiles)
+    resampledExperimental{i} = evaluateGcvSplines(experimentalSpline, ...
+        experimentalLabels, modelTime{i});
+end
 if nargin < 3
     figureWidth = 3;
 end
@@ -81,37 +91,48 @@ if nargin < 4
     figureHeight = 2;
 end
 figureSize = figureWidth * figureHeight;
-
-figure(Name = "Treatment Optimization Ground Reactions")
+figure(Name = "Treatment Optimization Ground Reactions", ...
+    Units='normalized', ...
+    Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='Compact', Padding='Compact');
+    TileSpacing='compact', Padding='compact');
 xlabel(t, "Time [s]")
-ylabel(t, "Ground Reactions")
+ylabel(t, "Ground Reaction")
 for i=1:numel(experimentalLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Ground Reactions")
+        figure(Name="Treatment Optimization Ground Reactions", ...
+            Units='normalized', ...
+            Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Time [s]")
-        ylabel(t, "Ground Reactions")
+        ylabel(t, "Ground Reaction")
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalGR(:, i), LineWidth=2);
-    plot(modelTime, modelGR(:, i), LineWidth=2);
+    plot(experimentalTime, experimentalData(:, i), LineWidth=2);
+    for j = 1 : numel(modelFiles)
+        plot(modelTime{j}, modelData{j}(:, i), LineWidth=2);
+    end
     hold off
-    rmse = rms(resampledExperimental(:, i) - modelGR(:, i));
-    title(sprintf("%s \n RMSE: %.4f", ...
-    strrep(experimentalLabels(i), "_", " "), rmse))
+    titleString = [sprintf("%s", strrep(experimentalLabels(i), "_", " "))];
+    for j = 1 : numel(modelFiles)
+        rmse = rms(resampledExperimental{j}(:, i) - modelData{j}(:, i));
+        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+    end
+    title(titleString)
     if subplotNumber==1
-        legend("Experimental", "Model")
+        legendValues = "Experimental";
+        for j = 1 : numel(modelFiles)
+            splitFileName = split(modelFiles(j), ["/", "\"]);
+            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
+        end
+        legend(legendValues)
     end
     xlim([0, experimentalTime(end)])
     subplotNumber = subplotNumber + 1;
 end
-end
-

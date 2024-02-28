@@ -1,15 +1,19 @@
 % This function is part of the NMSM Pipeline, see file for full license.
-% 
-% This function reads two .sto files: 1) experimental angles, and 2) model
-% angles, and plots them. There are 2 optional arguments for figure width
-% and figure height. If no optional arguments are given, the figure size is
-% automatically adjusted to fit all data on one plot. Giving just figure
-% width imposes the width and fits the height to fit on one plot. Giving
-% both arguments will impose both figure height and width, and create
-% multiple plots as needed.
 %
-% (string) -> (None)
-% Plot joint moment curves from file.
+% This function reads .sto files for experimental and model joint angles
+% and plots them. There is an option to plot multiple model files by
+% passing in a list of model file names.
+%
+% There are 2 optional arguments for figure width and figure height. If no
+% optional arguments are given, the figure size is automatically adjusted
+% to fit all data on one plot. Giving just figure width and no figure
+% height will set figure height to a default value and extra figures will
+% be created as needed. If both figure width and figure height are given,
+% the figure size will be fixed and extra figures will be created as
+% needed.
+%
+% (string) (List of strings) (int), (int) -> (None)
+% Plot experimental and model joint angles from file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,40 +36,40 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationJointAngles(experimentalAnglesFile, ...
-    modelAnglesFiles, figureWidth, figureHeight)
+function plotTreatmentOptimizationJointAngles(experimentalFile, ...
+    modelFiles, figureWidth, figureHeight)
 
 import org.opensim.modeling.Storage
-experimentalAnglesStorage = Storage(experimentalAnglesFile);
-labels = getStorageColumnNames(experimentalAnglesStorage);
-experimentalAngles = storageToDoubleMatrix(experimentalAnglesStorage)';
-experimentalAngles = experimentalAngles .* 180/pi;
-experimentalTime = findTimeColumn(experimentalAnglesStorage);
+experimentalStorage = Storage(experimentalFile);
+labels = getStorageColumnNames(experimentalStorage);
+experimentalData = storageToDoubleMatrix(experimentalStorage)';
+experimentalData = experimentalData .* 180/pi;
+experimentalTime = findTimeColumn(experimentalStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
-modelAnglesStorage = Storage(modelAnglesFiles);
-modelAngles = storageToDoubleMatrix(modelAnglesStorage)';
-modelAngles = modelAngles .* 180/pi;
-modelTime = findTimeColumn(modelAnglesStorage);
-if modelTime(1) ~= 0
-    modelTime = modelTime - modelTime(1);
+modelData = {};
+for i=1:numel(modelFiles)
+    modelStorage = Storage(modelFiles(i));
+    modelData{i} = storageToDoubleMatrix(modelStorage)' .* 180/pi;
+    modelTime{i} = findTimeColumn(modelStorage);
 end
 
-% Spline experimental time to the same time points as the model. 
-experimentalSpline = makeGcvSplineSet(experimentalTime, ... 
-    experimentalAngles, labels);
-resampledExperimental = evaluateGcvSplines(experimentalSpline, ...
-    labels, modelTime);
-
+% Spline experimental time to the same time points as the model.
+experimentalSpline = makeGcvSplineSet(experimentalTime, ...
+    experimentalData, labels);
+resampledExperimental = {};
+for i = 1 : numel(modelFiles)
+    resampledExperimental{i}= evaluateGcvSplines(experimentalSpline, ...
+        labels, modelTime{i});
+end
 if nargin < 3
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
 elseif nargin < 4
-    figureHeight = ceil(numel(labels)/figureWidth);
+    figureHeight = ceil(sqrt(numel(labels)));
 end
 figureSize = figureWidth * figureHeight;
-
 figure(Name = "Treatment Optimization Joint Angles", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
@@ -89,26 +93,38 @@ for i=1:numel(labels)
     end
     nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalAngles(:, i), LineWidth=2);
-    plot(modelTime, modelAngles(:, i), LineWidth=2);
+    plot(experimentalTime, experimentalData(:, i), LineWidth=2);
+    for j = 1 : numel(modelFiles)
+        plot(modelTime{j}, modelData{j}(:, i), LineWidth=2);
+    end
     hold off
-    rmse = rms(resampledExperimental(:, i) - modelAngles(:, i));
-    title(sprintf("%s \n RMSE: %.4f", ...
-        strrep(labels(i), "_", " "), rmse));
-
+    titleString = [sprintf("%s", strrep(labels(i), "_", " "))];
+    for j = 1 : numel(modelFiles)
+        rmse = rms(resampledExperimental{j}(:, i) - modelData{j}(:, i));
+        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+    end
+    title(titleString)
     if subplotNumber==1
-        legend("Experimental", "Model")
+        legendValues = "Experimental";
+        for j = 1 : numel(modelFiles)
+            splitFileName = split(modelFiles(j), ["/", "\"]);
+            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
+        end
+        legend(legendValues)
     end
-
     xlim([0, experimentalTime(end)])
-    maxAngle = max([experimentalAngles(:, i); modelAngles(:, i)],[], "all");
-    minAngle = min([experimentalAngles(:, i); modelAngles(:, i)],[], "all");
-    if maxAngle-minAngle < 10
-        ylim([(maxAngle+minAngle)/2-10, (maxAngle+minAngle)/2+10])
+    maxData = [];
+    minData = [];
+    for j = 1 : numel(modelFiles)
+        maxData(j) = max(modelData{j}(:, i), [], "all");
+        minData(j) = min(modelData{j}(:, i), [], "all");
     end
-
-    % if subplotNumber > figureSize-figureHeight
-    %     xlabel("Time [s]")
-    % end
+    maxData(j+1) = max(experimentalData(:, i), [], "all");
+    minData(j+1) = min(experimentalData(:, i), [], "all");
+    yLimitUpper = max(maxData);
+    yLimitLower = min(minData);
+    if yLimitUpper - yLimitLower < 10
+        ylim([(yLimitUpper+yLimitLower)/2-10, (yLimitUpper+yLimitLower)/2+10])
+    end
     subplotNumber = subplotNumber + 1;
 end

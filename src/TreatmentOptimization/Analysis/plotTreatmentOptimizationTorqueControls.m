@@ -1,12 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads one .sto file for treatment optimization torque 
-% controls and plots it. There are 2 optional arguments for figure width
-% and figure height. If no optional arguments are given, the figure size is
-% automatically adjusted to fit all data on one plot. Giving just figure
-% width imposes the width and fits the height to fit on one plot. Giving
-% both arguments will impose both figure height and width, and create
-% multiple plots as needed.
+% This function reads one .sto file for treatment optimization torque
+% controls and plots it.
+%
+% There are 2 optional arguments for figure width and figure height. If no
+% optional arguments are given, the figure size is automatically adjusted
+% to fit all data on one plot. Giving just figure width and no figure
+% height will set figure height to a default value and extra figures will
+% be created as needed. If both figure width and figure height are given,
+% the figure size will be fixed and extra figures will be created as
+% needed.
 %
 % (string) -> (None)
 % Plot joint moment curves from file.
@@ -43,15 +46,13 @@ time = findTimeColumn(controlsStorage);
 if time(1) ~= 0
     time = time - time(1);
 end
-
-if nargin < 3
+if nargin < 2
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
-elseif nargin < 4
-    figureHeight = ceil(numel(labels)/figureWidth);
+elseif nargin < 3
+    figureHeight = ceil(sqrt(numel(labels)));
 end
 figureSize = figureWidth * figureHeight;
-
 figure(Name="Treatment Optimization Torque Controls", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
@@ -79,9 +80,6 @@ for i=1:numel(labels)
     hold off
     title(strrep(labels(i), "_", " "));
     xlim([0, time(end)])
-    % if subplotNumber > figureSize-figureHeight
-    %     xlabel("Time [s]")
-    % end
     subplotNumber = subplotNumber + 1;
 end
 end

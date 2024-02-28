@@ -37,6 +37,7 @@ end
 saveInverseKinematicsResults(inputs, values, inputs.resultsDirectory);
 saveInverseDynamicsResults(solution, inputs, values, inputs.resultsDirectory);
 saveGroundReactionResults(solution, inputs, values, inputs.resultsDirectory);
+saveExperimentalGroundReactions(inputs, inputs.resultsDirectory);
 
 stateLabels = inputs.statesCoordinateNames;
 for i = 1 : length(inputs.statesCoordinateNames)
@@ -142,4 +143,26 @@ if ~isempty(groundContactData)
     fullfile(inputs.resultsDirectory, "GRFData", ...
         strcat(inputs.trialName, ".sto")));
 end
+end
+
+function saveExperimentalGroundReactions(inputs, resultsDirectory)
+if isempty(inputs.contactSurfaces)
+    return
+end
+columnLabels = strings(1, 9*numel(inputs.contactSurfaces));
+dataToSave = zeros(size(inputs.experimentalTime, 1), numel(columnLabels));
+for surface = 1 : numel(inputs.contactSurfaces)
+    contactSurface = inputs.contactSurfaces{surface};
+    columnLabels((surface-1)*9+1:surface*9) = ...
+        [contactSurface.forceColumns', ...
+        contactSurface.momentColumns', ...
+        contactSurface.electricalCenterColumns'];
+    dataToSave(:, (surface-1)*9+1:surface*9) = ...
+        [contactSurface.experimentalGroundReactionForces, ...
+        contactSurface.experimentalGroundReactionMoments, ...
+        contactSurface.electricalCenter];    
+end
+writeToSto(columnLabels, inputs.experimentalTime, dataToSave, ...
+    fullfile(resultsDirectory, ...
+        strcat(inputs.trialName, "_replacedExperimentalGroundReactions.sto")));
 end
