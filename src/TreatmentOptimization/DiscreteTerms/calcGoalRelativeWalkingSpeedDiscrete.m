@@ -27,23 +27,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMetabolicCostPerDistanceGoalIntegrand( ...
-    modeledValues, values, inputs, costTerm)
-assert(isfield(modeledValues, 'muscleActivations'), "Muscle " + ...
-    "activations are required for metabolic cost calculations.")
-rawCost = calcMetabolicCost(values.time, values.positions, ...
-    modeledValues.muscleActivations, inputs);
+function cost = calcGoalRelativeWalkingSpeedDiscrete(values, inputs, ...
+    costTerm)
 massCenterVelocity = mean(calcMassCenterVelocity(values, inputs.model, ...
     inputs.coordinateNames), 1);
-massCenterVelocity = massCenterVelocity(1);
-beltSpeed = 0;
-if ~isempty(inputs.contactSurfaces)
-    for i = 1 : length(inputs.contactSurfaces)
-        beltSpeed = beltSpeed + inputs.contactSurfaces{i}.beltSpeed;
-    end
-    beltSpeed = beltSpeed / length(inputs.contactSurfaces);
-end
+rawCost = massCenterVelocity(1);
 
-cost = (rawCost - costTerm.errorCenter) / values.time(end) ...
-    / (massCenterVelocity + beltSpeed);
+cost = rawCost - costTerm.errorCenter;
 end
