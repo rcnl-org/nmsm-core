@@ -83,7 +83,7 @@ end
 % setup optimizer options struct to pass to fmincon
 function output = makeOptimizerOptions(params)
 output = optimset('UseParallel', true);
-output.MaxIter = valueOrAlternate(params, 'maxIterations', 10000);
+output.MaxIter = valueOrAlternate(params, 'maxIterations', 100);
 output.MaxFunEvals = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 100000000);
 output.Display = 'iter';

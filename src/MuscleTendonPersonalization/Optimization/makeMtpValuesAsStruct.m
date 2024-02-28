@@ -26,7 +26,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function values = makeMtpValuesAsStruct(secondaryValues, primaryValues, isIncluded)
+function values = makeMtpValuesAsStruct(secondaryValues, primaryValues, ...
+    isIncluded, inputs)
 valuesHelper.secondaryValues = secondaryValues;
 valuesHelper.primaryValues = primaryValues;
 valuesHelper.isIncluded = isIncluded;
@@ -36,7 +37,9 @@ values.activationNonlinearityConstants = findCorrectMtpValues(3, valuesHelper);
 values.emgScaleFactors = findCorrectMtpValues(4, valuesHelper);
 values.optimalFiberLengthScaleFactors = findCorrectMtpValues(5, valuesHelper);
 values.tendonSlackLengthScaleFactors = findCorrectMtpValues(6, valuesHelper);
-values.synergyWeights = findCorrectMtpValues(7, valuesHelper);
+if isfield(inputs, "synergyExtrapolation")
+    values.synergyWeights = findCorrectMtpValues(7, valuesHelper);
+end
 end
 
 function output = findCorrectMtpValues(index, valuesStruct)

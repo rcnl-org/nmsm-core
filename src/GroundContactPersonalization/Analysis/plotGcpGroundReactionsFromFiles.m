@@ -47,8 +47,10 @@ modeledGroundReactions = ...
 time = findTimeColumn(Storage(experimentalGroundReactionsFileName));
 
 figure(plotNumber)
+t = tiledlayout(2, 3, ...
+    TileSpacing='compact', Padding='compact');
 for i = 1:6
-    subplot(2, 3, i);
+    nexttile(i)
     experimental = experimentalGroundReactions(i, :);
     model = modeledGroundReactions(i, :);
     plot(time, experimental, "red", "LineWidth", 2)

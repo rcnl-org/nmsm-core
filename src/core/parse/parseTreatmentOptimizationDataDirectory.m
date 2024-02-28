@@ -16,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -31,74 +31,142 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
+[dataDirectory, inputs.previousResultsDirectory] = findDataDirectory(tree, inputs);
+inputs.trialName = parseTrialName(tree);
+inputs = parseExperimentalData(tree, inputs, dataDirectory);
+inputs = parseSynergyExperimentalData(tree, inputs, dataDirectory);
+inputs = parseInitialValues(tree, inputs);
+inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
+end
+
+function [dataDirectory, previousResultsDirectory] = ...
+    findDataDirectory(tree, inputs)
 dataDirectory = parseDataDirectory(tree);
-previousResultsDirectoryElement = getFieldByName(tree, 'previous_results_directory');
-if isstruct(previousResultsDirectoryElement)
-    previousResultsDirectory = previousResultsDirectoryElement.Text;
-else
-    previousResultsDirectory = [];
+previousResultsDirectory = ...
+    parseTextOrAlternate(tree, "previous_results_directory", "");
+if strcmp(previousResultsDirectory, "") && ...
+        strcmp(inputs.controllerType, 'synergy')
+    throw(MException("ParseError:RequiredElement", ...
+        strcat("Element <previous_results_directory> required", ...
+        " for <RCNLSynergyController>, this can be an NCP", ...
+        " or Treatment Optimization results directory")))
 end
-if strcmp(previousResultsDirectory, "")
-        previousResultsDirectory = [];
-end
-prefix = findPrefixes(tree, dataDirectory);
-
-if ~isempty(previousResultsDirectory) && ...
-        exist(fullfile(previousResultsDirectory, "optimal"), 'dir')
-    directory = findFirstLevelSubDirectoriesFromPrefixes( ...
-        previousResultsDirectory, "optimal");
-    if ~isempty(directory)
-        model = Model(inputs.model);
-        [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
-            parseTreatmentOptimizationData(directory, 'inverseDynamics', model);
-        [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
-            parseTreatmentOptimizationData(directory, 'inverseKinematics', model);
-        experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
-            directory, "inverseKinematics"))';
-        inputs.kinematicsFile = findFileListFromPrefixList(...
-            directory, "inverseKinematics");
-        inputs.experimentalTime = experimentalTime - experimentalTime(1);
-        if exist(fullfile(dataDirectory, "groundReactions"), 'dir')
-            inputs.grfFileName = findFileListFromPrefixList(...
-                directory, "groundReactions");
-        end
-        if strcmp(inputs.controllerType, 'synergy_driven')
-            [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
-                parseTreatmentOptimizationData(directory, 'muscleActivations', model);
-        end
-    end
-else
-    directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IDData");
-    model = Model(inputs.model);
-    [inputs.experimentalJointMoments, inputs.inverseDynamicMomentLabels] = ...
-        parseTreatmentOptimizationData(directory, prefix, model);
-    directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "IKData");
-    [inputs.experimentalJointAngles, inputs.coordinateNames] = ...
-        parseTreatmentOptimizationData(directory, prefix, model);
-    experimentalTime = parseTimeColumn(findFileListFromPrefixList(...
-        fullfile(dataDirectory, "IKData"), prefix))';
-    inputs.kinematicsFile = findFileListFromPrefixList( ...
-        fullfile(dataDirectory, "IKData"), prefix);
-    inputs.experimentalTime = experimentalTime - experimentalTime(1);
-    if exist(fullfile(dataDirectory, "GRFData"), 'dir')
-        inputs.grfFileName = findFileListFromPrefixList(...
-            fullfile(dataDirectory, "GRFData"), prefix);
-    end
-    if strcmp(inputs.controllerType, 'synergy_driven')
-        directory = findFirstLevelSubDirectoriesFromPrefixes(dataDirectory, "ActData");
-        [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
-            parseTreatmentOptimizationData(directory, prefix, model);
-    end
 end
 
-if strcmp(inputs.controllerType, 'synergy_driven')
-    directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-        dataDirectory, "MAData"), prefix);
-    inputs.momentArms = parseSelectMomentArms(directories, ...
+function inputs = parseExperimentalData(tree, inputs, dataDirectory)
+[inputs.experimentalJointMoments, ...
+    inputs.inverseDynamicsMomentLabels] = ...
+    parseTrialDataTryDirectories( ...
+    fullfile(inputs.previousResultsDirectory, "IDData"), ...
+    fullfile(dataDirectory, "IDData"), inputs.trialName, inputs.model);
+[inputs.experimentalJointAngles, inputs.coordinateNames, ...
+    experimentalTime] = parseTrialDataTryDirectories( ...
+    fullfile(inputs.previousResultsDirectory, "IKData"), ...
+    fullfile(dataDirectory, "IKData"), inputs.trialName, inputs.model);
+inputs.coordinateNames = cellstr(inputs.coordinateNames);
+inputs.experimentalTime = experimentalTime - experimentalTime(1);
+inputs.initialTime = inputs.experimentalTime;
+if isfield(inputs.osimx, 'groundContact') && ...
+        isfield(inputs.osimx.groundContact, 'contactSurface')
+    inputs.contactSurfaces = inputs.osimx.groundContact.contactSurface;
+    for surfaceIndex = 1:length(inputs.contactSurfaces)
+        [inputs.contactSurfaces{surfaceIndex} ...
+            .experimentalGroundReactionForces, ...
+            inputs.contactSurfaces{surfaceIndex} ...
+            .experimentalGroundReactionMoments, ...
+            inputs.contactSurfaces{surfaceIndex} ...
+            .electricalCenter] = parseGroundReactionDataWithoutTime( ...
+            inputs, dataDirectory, surfaceIndex);
+    end
+else
+inputs.contactSurfaces = {};
+end
+end
+
+function inputs = parseSynergyExperimentalData(tree, inputs, dataDirectory)
+if strcmp(inputs.controllerType, "synergy")
+    [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
+        parseTrialData(inputs.previousResultsDirectory, ...
+        strcat(inputs.trialName, "_combinedActivations"), inputs.model);
+    [inputs.synergyWeights, inputs.synergyWeightsLabels] = ...
+    parseTrialData(inputs.previousResultsDirectory, ...
+        "synergyWeights", inputs.model);
+    directory = fullfile(dataDirectory, "MAData", inputs.trialName);
+    inputs.momentArms = parseSelectMomentArms(directory, ...
         inputs.surrogateModelCoordinateNames, inputs.muscleNames);
     inputs.momentArms = reshape(permute(inputs.momentArms, [1 4 2 3]), [], ...
         length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
     inputs = getMuscleSpecificSurrogateModelData(inputs);
 end
-inputs.numCoordinates = size(inputs.experimentalJointAngles, 2);
+end
+
+function inputs = parseInitialValues(tree, inputs)
+initialGuess = [];
+try
+    [inputs.initialStates, inputs.initialStatesLabels, inputs.initialTime] = ...
+        parseTrialData(inputs.previousResultsDirectory, ...
+        strcat(inputs.trialName, "_states"), inputs.model);
+catch; end
+try
+    [inputs.initialAccelerations, inputs.initialAccelerationsLabels] = ...
+        parseTrialData(inputs.previousResultsDirectory, ...
+        strcat(inputs.trialName, "_accelerations"), inputs.model);
+catch; end
+try
+    [inputs.initialTorqueControls, inputs.initialTorqueControlsLabels] = ...
+        parseTrialData(inputs.previousResultsDirectory, ...
+        strcat(inputs.trialName, "_torqueControls"), inputs.model);
+catch;end
+if strcmp(inputs.controllerType, "synergy")
+    [inputs.initialSynergyControls, inputs.initialSynergyControlsLabels] = ...
+        parseTrialData(inputs.previousResultsDirectory, ...
+        strcat(inputs.trialName, "_synergyCommands"), inputs.model);
+end
+end
+
+function [data, labels, time] = parseTrialDataTryDirectories( ...
+    previousResultsDirectory, dataDirectory, trialName, model)
+if ~strcmp(previousResultsDirectory, "")
+    try
+        [data, labels, time] = parseTrialData(...
+            previousResultsDirectory, trialName, model);
+    catch
+        [data, labels, time] = parseTrialData( ...
+            dataDirectory, trialName, model);
+    end
+else
+    [data, labels, time] = parseTrialData(dataDirectory, trialName, model);
+end
+end
+
+function [forces, moments, ec] = parseGroundReactionDataWithoutTime( ...
+    inputs, dataDirectory, surfaceIndex)
+import org.opensim.modeling.Storage
+[grfData, grfColumnNames, grfTime] = parseTrialDataTryDirectories( ...
+    fullfile(inputs.previousResultsDirectory, "GRFData"), ...
+    fullfile(dataDirectory, "GRFData"), inputs.trialName, inputs.model);
+forces = NaN(length(grfTime), 3);
+moments = NaN(length(grfTime), 3);
+ec = NaN(length(grfTime), 3);
+for i=1:size(grfColumnNames')
+    label = grfColumnNames(i);
+    for j = 1:3
+        if strcmpi(label, inputs.osimx.groundContact ...
+                .contactSurface{surfaceIndex}.forceColumns(j))
+            forces(:, j) = grfData(:, i);
+        end
+        if strcmpi(label, inputs.osimx.groundContact ...
+                .contactSurface{surfaceIndex}.momentColumns(j))
+            moments(:, j) = grfData(:, i);
+        end
+        if strcmpi(label, inputs.osimx.groundContact ...
+                .contactSurface{surfaceIndex}.electricalCenterColumns(j))
+            ec(:, j) = grfData(:, i);
+        end
+    end
+end
+if any([isnan(forces) isnan(moments) isnan(ec)])
+    throw(MException('', ['Unable to parse GRF file, check that ' ...
+        'all necessary column labels are present']))
+end
 end

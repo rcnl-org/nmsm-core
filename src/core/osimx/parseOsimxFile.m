@@ -27,7 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function osimx = parseOsimxFile(osimxFileName)
+function osimx = parseOsimxFile(osimxFileName, model)
 
 if strcmp(osimxFileName, "")
     osimx = struct();
@@ -87,6 +87,11 @@ if(isstruct(rcnlMuscleSetTree))
         end
     end
 end
+
+rcnlSynergySetTree = getFieldByName(tree, "RCNLSynergySet");
+if isstruct(rcnlSynergySetTree)
+    osimx.synergyGroups = parseSynergyGroups(tree, model);
+end
 end
 
 function contactSurface = parseContactSurface(tree)
@@ -98,8 +103,12 @@ contactSurface.forceColumns = parseSpaceSeparatedList(tree, "force_columns");
 contactSurface.momentColumns = parseSpaceSeparatedList(tree, "moment_columns");
 contactSurface.electricalCenterColumns = parseSpaceSeparatedList(tree, "electrical_center_columns");
 
-contactSurface.toesCoordinateName = getFieldByNameOrError(tree, "toes_coordinate").Text;
-contactSurface.toesJointName = getFieldByNameOrError(tree, "toes_joint").Text;
+hindfootBodyName = getFieldByName(tree, "hindfoot_body");
+if ~isstruct(hindfootBodyName)
+    throw(MException('', "<toes_coordinate> is replaced by <hindfoot_body> in the osimx file. Please update your osimx file."))
+else
+contactSurface.hindfootBodyName = hindfootBodyName.Text;
+end
 
 contactSurface.toeMarker = getFieldByNameOrError(tree, "toe_marker").Text;
 contactSurface.medialMarker = getFieldByNameOrError(tree, "medial_marker").Text;
