@@ -36,14 +36,5 @@ if strcmp(inputs.controllerType, 'synergy')
             end
         end
     end
-    inputs.dofsActuatedIndex = [];
-    for i = 1 : length(inputs.inverseDynamicsMomentLabels)
-        for j = 1 : length(inputs.surrogateModelCoordinateNames)
-            if strcmp(inputs.inverseDynamicsMomentLabels(i), ...
-                    strcat(inputs.surrogateModelCoordinateNames(j), '_moment'))
-                inputs.dofsActuatedIndex(end+1) = j;
-            end
-        end
-    end
 end
 end

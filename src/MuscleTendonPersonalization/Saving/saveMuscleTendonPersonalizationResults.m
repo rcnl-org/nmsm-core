@@ -41,10 +41,11 @@ end
 if nargin < 6
     precalInputs = [];
 end
+
 if ~isempty(precalInputs)
     saveMtpPassiveMomentData(precalInputs, modeledValues, analysisDirectory);
-    saveMtpPassiveForceData(mtpInputs, resultsStruct, analysisDirectory);
 end
+saveMtpPassiveForceData(mtpInputs, resultsStruct, analysisDirectory);
 saveMtpActivationAndExcitationData(mtpInputs, resultsStruct, analysisDirectory);
 writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
     resultsStruct.results.normalizedFiberLength, ...
