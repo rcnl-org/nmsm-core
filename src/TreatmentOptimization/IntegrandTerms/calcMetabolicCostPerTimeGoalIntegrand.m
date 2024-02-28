@@ -1,15 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates kinematic symmetry, or the difference between 
-% two joint angles. Kinematic symmetry is calculated as the difference 
-% between one joint angle and the second joint angle with a 50% phase
-% shift. To use this term, an even number is encouraged for the
-% <setup_mesh_phase_intervals> tag in the optimal control settings.
-% Additionally, two coordinate names are required to calculate the
-% difference. 
+% This function returns an integrand cost for metabolic cost normalized by
+% time. 
 %
-% (2D matrix, struct, struct) -> (Array of number)
-%
+% (struct, struct, struct, struct) -> (Array of double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -19,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -33,21 +27,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcKinematicSymmetryIntegrand(statePositions, time, ...
-    auxdata, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-halfWayFrame = size(statePositions, 1)/2;
-
-indx1 = find(strcmp(convertCharsToStrings(auxdata.coordinateNames), ...
-    costTerm.coordinate1));
-indx2 = find(strcmp(convertCharsToStrings(auxdata.coordinateNames), ...
-    costTerm.coordinate2));
-
-cost = calcTrackingCostArrayTerm(statePositions(:,indx1), ...
-    [statePositions(1 + round(halfWayFrame):end, indx2); ...
-    statePositions(1:round(halfWayFrame), indx2)], 1);
-if normalizeByFinalTime
-    cost = cost / time(end);
-end
+function cost = calcMetabolicCostPerTimeGoalIntegrand( ...
+    modeledValues, values, inputs, costTerm)
+assert(isfield(modeledValues, 'muscleActivations'), "Muscle " + ...
+    "activations are required for metabolic cost calculations.")
+rawCost = calcMetabolicCost(values.time, values.positions, ...
+    modeledValues.muscleActivations, inputs);
+cost = (rawCost - costTerm.errorCenter) / values.time(end);
 end
