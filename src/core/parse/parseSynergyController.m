@@ -34,6 +34,10 @@ inputs.synergyGroups = inputs.osimx.synergyGroups;
 inputs.numSynergies = getNumSynergies(inputs.synergyGroups);
 inputs.surrogateModelCoordinateNames = parseSpaceSeparatedList(tree, ...
     "surrogate_model_coordinate_list");
+[~, ~, statesOrder] = intersect(inputs.statesCoordinateNames, ...
+    inputs.surrogateModelCoordinateNames, 'stable');
+inputs.surrogateModelCoordinateNames = ...
+    inputs.surrogateModelCoordinateNames(statesOrder);
 inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
     inputs.surrogateModelCoordinateNames);
 inputs.numMuscles = length(inputs.muscleNames);
@@ -61,5 +65,9 @@ if ~isfield(inputs, "torqueControllerCoordinateNames")
     inputs.torqueControllerCoordinateNames = [];
 end
 inputs = getModelOrOsimxInputs(inputs);
+inputs.saveSurrogate = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'save_surrogate_model', false));
+inputs.loadSurrogate = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'load_surrogate_model', false));
 end
 

@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function zeros out the negative portions of the anterior-posterior 
-% force to obtain the propulive force. 
+% This function returns an integrand cost for metabolic cost normalized by
+% time. 
 %
-% (struct, struct, struct) -> (Array of number)
-%
+% (struct, struct, struct, struct) -> (Array of double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,9 +27,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function propulsiveForce = getPropulsiveForce(anteroPosteriorForce)
-
-anteroPosteriorForce = anteroPosteriorForce - 10; % Noise buffer
-anteroPosteriorForce(anteroPosteriorForce<=0) = 0;
-propulsiveForce = anteroPosteriorForce;
+function cost = calcMetabolicCostPerTimeGoalIntegrand( ...
+    modeledValues, values, inputs, costTerm)
+assert(isfield(modeledValues, 'muscleActivations'), "Muscle " + ...
+    "activations are required for metabolic cost calculations.")
+rawCost = calcMetabolicCost(values.time, values.positions, ...
+    modeledValues.muscleActivations, inputs);
+cost = (rawCost - costTerm.errorCenter) / values.time(end);
 end

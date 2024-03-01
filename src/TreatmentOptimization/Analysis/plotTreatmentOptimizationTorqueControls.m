@@ -1,10 +1,18 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Plot muscle activations for one trial resulting from Neural Control 
-% Personalization from synergy weights and synergy commands output files. 
+% This function reads one .sto file for treatment optimization torque
+% controls and plots it.
 %
-% (string, string, string, double, double) -> (None)
-% Plot NCP muscle activations from weights and commands files. 
+% There are 2 optional arguments for figure width and figure height. If no
+% optional arguments are given, the figure size is automatically adjusted
+% to fit all data on one plot. Giving just figure width and no figure
+% height will set figure height to a default value and extra figures will
+% be created as needed. If both figure width and figure height are given,
+% the figure size will be fixed and extra figures will be created as
+% needed.
+%
+% (string) -> (None)
+% Plot joint moment curves from file.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +22,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                                             %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,64 +35,52 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-
-function plotNeuralControlPersonalizationActivations(weightsFile, ...
-    commandsFile, mtpActivationsFile, figureWidth, figureHeight)
-% Define number of 
-if nargin < 4
-    figureWidth = 8;
-end
-if nargin < 5
-    figureHeight = 8;
-end
-figureSize = figureWidth * figureHeight;
+function plotTreatmentOptimizationTorqueControls(controlsFile, ...
+    figureWidth, figureHeight)
 
 import org.opensim.modeling.Storage
-weightsStorage = Storage(weightsFile);
-muscleNames = getStorageColumnNames(weightsStorage);
-synergyWeights = storageToDoubleMatrix(weightsStorage);
-commandsStorage = Storage(commandsFile);
-time = findTimeColumn(commandsStorage);
-synergyCommands = storageToDoubleMatrix(commandsStorage);
-muscleActivations = synergyWeights * synergyCommands;
-
-if isstring(mtpActivationsFile) || ischar(mtpActivationsFile)
-    mtpStorage = Storage(mtpActivationsFile);
-    mtpMuscleNames = getStorageColumnNames(mtpStorage);
-    mtpActivations = storageToDoubleMatrix(mtpStorage);
-else
-    mtpMuscleNames = "";
+controlsStorage = Storage(controlsFile);
+labels = getStorageColumnNames(controlsStorage);
+controls = storageToDoubleMatrix(controlsStorage)';
+time = findTimeColumn(controlsStorage);
+if time(1) ~= 0
+    time = time - time(1);
 end
-
-figureNumber = 1;
+if nargin < 2
+    figureWidth = ceil(sqrt(numel(labels)));
+    figureHeight = ceil(numel(labels)/figureWidth);
+elseif nargin < 3
+    figureHeight = ceil(sqrt(numel(labels)));
+end
+figureSize = figureWidth * figureHeight;
+figure(Name="Treatment Optimization Torque Controls", ...
+    Units='normalized', ...
+    Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
-hasLegend = false;
+figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-% figure(1)
-for i = 1:size(muscleActivations, 1)
+xlabel(t, "Time [s]")
+ylabel(t, "Torque Controls [Nm]")
+for i=1:numel(labels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(figureNumber)
+        figure(Name="Treatment Optimization Torque Controls", ...
+            Units='normalized', ...
+            Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Time [s]")
+        ylabel(t, "Torque Controls [Nm]")
         subplotNumber = 1;
-        hasLegend = false;
     end
-    nexttile(subplotNumber)
-    plot(time, muscleActivations(i, :), 'LineWidth', 2)
-    mtpIndex = find(muscleNames(i) == mtpMuscleNames);
-    if ~isempty(mtpIndex)
-        hold on
-        plot(time, mtpActivations(mtpIndex, :), 'LineWidth', 2);
-        if ~hasLegend
-            legend("NCP Results", "Previous Activations")
-            hasLegend = true;
-        end
-        hold off
-    end
-    title(strrep(muscleNames(i), "_", " "))
-    ylim([0 1])
+    nexttile(subplotNumber);
+    hold on
+    plot(time, controls(:, i), LineWidth=2);
+    hold off
+    title(strrep(labels(i), "_", " "));
+    xlim([0, time(end)])
     subplotNumber = subplotNumber + 1;
 end
 end
+

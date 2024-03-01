@@ -35,17 +35,20 @@ analysisDirectory = fullfile(resultsDirectory, "Analysis");
 muscleNames = strrep(muscleNames, '_', ' ');
 meanFiberLengths = mean(normalizedFiberLengths, 3);
 stdFiberLengths = std(normalizedFiberLengths, [], 3);
-
-figure(Name = "Normalized Fiber Lengths", ...
-    Units='normalized', ...
-    Position=[0.1 0.1 0.8 0.8])
 time = 1:1:size(meanFiberLengths,1);
-numWindows = ceil(sqrt(numel(muscleNames)));
 passiveLower = ones(size(time))*0.7;
 passiveUpper = ones(size(time));
 
+figureWidth = ceil(sqrt(numel(muscleNames)));
+figureHeight = ceil(numel(muscleNames)/figureWidth);
+figure(Name = "Normalized Fiber Lengths", ...
+    Units='normalized', ...
+    Position=[0.05 0.05 0.9 0.85])
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
+
 for i=1:numel(muscleNames)
-    subplot(numWindows, numWindows, i);
+    nexttile(i);
     hold on
     plotMeanAndStd(meanFiberLengths(:,i), stdFiberLengths(:,i), time, 'b-')
     plot(time, passiveUpper, 'r--', LineWidth=2);
@@ -54,10 +57,10 @@ for i=1:numel(muscleNames)
     set(gca, fontsize=11)
     axis([1 size(meanFiberLengths, 1) 0 1.5])
     title(muscleNames(i), FontSize=12);
-    if mod(i,numWindows) == 1
+    if mod(i,figureWidth) == 1
         ylabel(textwrap("Normalized Fiber Length",10), FontSize=12)
     end
-    if i>numel(muscleNames)-numWindows
+    if i>numel(muscleNames)-figureWidth
         xlabel("Time Points", FontSize=12)
     end
 end
