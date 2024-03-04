@@ -119,7 +119,7 @@ for i=1:numel(labels)
         end
         legend(legendValues)
     end
-    xlim([0, experimentalTime(end)])
+    xlim("tight")
     maxData = [];
     minData = [];
     for j = 1 : numel(modelFiles)

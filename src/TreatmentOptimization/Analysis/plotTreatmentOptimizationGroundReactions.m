@@ -140,6 +140,6 @@ for i=1:numel(experimentalLabels)
         end
         legend(legendValues)
     end
-    xlim([0, experimentalTime(end)])
+    xlim("tight")
     subplotNumber = subplotNumber + 1;
 end

@@ -79,7 +79,7 @@ for i=1:numel(labels)
     plot(time, controls(:, i), LineWidth=2);
     hold off
     title(strrep(labels(i), "_", " "));
-    xlim([0, time(end)])
+    xlim("tight")
     subplotNumber = subplotNumber + 1;
 end
 end

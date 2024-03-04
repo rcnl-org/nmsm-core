@@ -118,7 +118,7 @@ for i=1:numel(labels)
         end
         legend(legendValues)
     end
-    xlim([0, experimentalTime(end)])
+    xlim("tight")
     ylim([0, 1])
     subplotNumber = subplotNumber + 1;
 end
