@@ -1,9 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function minimizes the metabolic cost.
+% This function calculates the difference between the slope of experimental 
+% and predicted inverse dynamic moments for the specified coordinate.
 %
-% (struct, struct, struct) -> (Array of number)
-% 
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+%
+
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
 % optimization of neuromusculoskeletal models through OpenSim. See        %
@@ -12,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -26,13 +28,32 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingMetabolicCost(costTerm, values, time, ...
-    modeledValues, params)
+function cost = calcTrackingInverseDynamicSlopeIntegrand(costTerm, ...
+    inputs, time, inverseDynamicsMoments, loadName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", false);
-metabolicCost = calcMetabolicCost(time, ...
-    values.statePositions, modeledValues.muscleActivations, params);
-cost = calcMinimizingCostArrayTerm(metabolicCost);
+    "normalize_by_final_time", true);
+indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        all(time == inputs.collocationTimeOriginal)
+    experimentalJointMoments = inputs.splinedJointMoments;
+else
+    experimentalJointMoments = evaluateGcvSplines( ...
+        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
+end
+if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
+    momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
+    momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
+    includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
+    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
+end
+
+timeDiff = diff(time);
+experimentalDiff = diff(experimentalJointMoments, 1) ./ timeDiff;
+experimentalDiff(end + 1, :) = 0;
+modeledDiff = diff(inverseDynamicsMoments, 1) ./ timeDiff;
+modeledDiff(end + 1, :) = 0;
+
+cost = calcTrackingCostArrayTerm(experimentalDiff, modeledDiff, indx);
 if normalizeByFinalTime
     cost = cost / time(end);
 end

@@ -53,7 +53,7 @@ for i = 1:numel(muscleNames)
     axis([1 numel(time) 0 maxForce])
     title(muscleNames(i), FontSize=12);
     if mod(i,numWindows) == 1
-        ylabel("Magnitude")
+        ylabel("Force [N]")
     end
     if i>numel(muscleNames)-numWindows
         xlabel("Time Points")

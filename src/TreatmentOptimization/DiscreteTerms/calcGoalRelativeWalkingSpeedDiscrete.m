@@ -1,15 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates kinematic symmetry, or the difference between 
-% two joint angles. Kinematic symmetry is calculated as the difference 
-% between one joint angle and the second joint angle with a 50% phase
-% shift. To use this term, an even number is encouraged for the
-% <setup_mesh_phase_intervals> tag in the optimal control settings.
-% Additionally, two coordinate names are required to calculate the
-% difference. 
+% This function returns a discrete cost for matching a goal walking speed.
+% This speed is defined relative to the ground. For example, with a subject
+% walking at 0.6 m/s on a treadmill, a goal of 0.2 m/s will seek a solution
+% with the subject walking at 0.8 m/s. 
 %
-% (2D matrix, struct, struct) -> (Array of number)
-%
+% (struct, struct, struct) -> (double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -19,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -33,21 +29,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcKinematicSymmetryIntegrand(statePositions, time, ...
-    auxdata, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-halfWayFrame = size(statePositions, 1)/2;
+function cost = calcGoalRelativeWalkingSpeedDiscrete(values, inputs, ...
+    costTerm)
+massCenterVelocity = mean(calcMassCenterVelocity(values, inputs.mexModel, ...
+    inputs.coordinateNames), 1);
+rawCost = massCenterVelocity(1);
 
-indx1 = find(strcmp(convertCharsToStrings(auxdata.coordinateNames), ...
-    costTerm.coordinate1));
-indx2 = find(strcmp(convertCharsToStrings(auxdata.coordinateNames), ...
-    costTerm.coordinate2));
-
-cost = calcTrackingCostArrayTerm(statePositions(:,indx1), ...
-    [statePositions(1 + round(halfWayFrame):end, indx2); ...
-    statePositions(1:round(halfWayFrame), indx2)], 1);
-if normalizeByFinalTime
-    cost = cost / time(end);
-end
+cost = rawCost - costTerm.errorCenter;
 end

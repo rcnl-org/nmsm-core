@@ -35,9 +35,9 @@ osimState.setTime(values.time(indx, 1));
 for k=1:size(coordinateNames,2)
     if ~osimModel.getCoordinateSet.get(coordinateNames{k}).get_locked
         osimModel.getCoordinateSet.get(coordinateNames{k}). ...
-            setValue(osimState, values.statePositions(indx, k));
+            setValue(osimState, values.positions(indx, k));
         osimModel.getCoordinateSet.get(coordinateNames{k}). ...
-            setSpeedValue(osimState, values.stateVelocities(indx, k));
+            setSpeedValue(osimState, values.velocities(indx, k));
     end
 end
 osimModel.realizeVelocity(osimState);
