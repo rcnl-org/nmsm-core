@@ -29,11 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newData = splineToExperimentalTime(time, data, ...
-    newTime)
+function [newTime, newData] = splineToEvenlySpaced(time, data, ...
+    numPoints)
 gcvSplineSet = makeGcvSplineSet(time(1 : end - 1), ...
-    data(1 : end - 1, :), string([1:size(data, 2)]));
-newData = evaluateGcvSplines( gcvSplineSet, string([1:size(data, 2)]), ...
-    newTime-newTime(1), 0);
+    data(1 : end - 1, :), string(1:size(data, 2)));
+newTime = linspace(time(1), time(end), numPoints);
+newData = evaluateGcvSplines( gcvSplineSet, string(1:size(data, 2)), ...
+    newTime, 0);
 end
 
