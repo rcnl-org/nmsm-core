@@ -38,6 +38,5 @@ inputs = setupMuscleSynergies(inputs);
 inputs = setupTorqueControls(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
-reportTreatmentOptimizationResults(outputs, inputs);
 saveVerificationOptimizationResults(outputs, inputs);
 end
