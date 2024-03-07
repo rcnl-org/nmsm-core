@@ -86,7 +86,7 @@ inputs.momentArms = parseSelectMomentArms(directory, ...
 inputs.momentArms = reshape(permute(inputs.momentArms, [1 4 2 3]), [], ...
     length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
 
-if(isempty(inputs.resultsDirectory))
+if(~isfield(inputs, 'resultsDirectory') || isempty(inputs.resultsDirectory))
     inputs.resultsDirectory = pwd;
 end
 end
