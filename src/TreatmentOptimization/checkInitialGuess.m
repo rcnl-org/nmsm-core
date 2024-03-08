@@ -30,7 +30,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function checkInitialGuess(guess, inputs, continuousFunction)
+function inputs = checkInitialGuess(guess, inputs, continuousFunction)
 initialGuess = guess;
 initialGuess.auxdata = inputs;
 if isfield(initialGuess,'parameter')
@@ -38,4 +38,15 @@ if isfield(initialGuess,'parameter')
 end
 output = continuousFunction(initialGuess);
 output.solution = initialGuess;
+if length(output.metabolicCost) == length(inputs.experimentalTime)
+cumulativeMetabolicCost = trapz(inputs.experimentalTime, ...
+    output.metabolicCost);
+inputs.initialMetabolicCost = cumulativeMetabolicCost;
+inputs.initialMassCenterVelocity = output.massCenterVelocity;
+end
+end
+
+function value = simpsons(time, data)
+h=time(2) - time(1);
+value = h/3*(data(1)+2*sum(data(3:2:end-2))+4*sum(data(2:2:end))+data(end));
 end

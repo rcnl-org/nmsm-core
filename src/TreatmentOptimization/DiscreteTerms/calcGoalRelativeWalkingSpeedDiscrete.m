@@ -29,11 +29,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGoalRelativeWalkingSpeedDiscrete(values, inputs, ...
-    costTerm)
-massCenterVelocity = mean(calcMassCenterVelocity(values, inputs.mexModel, ...
-    inputs.coordinateNames), 1);
-rawCost = massCenterVelocity(1);
+function cost = calcGoalRelativeWalkingSpeedDiscrete(values, ...
+    modeledValues, inputs, costTerm)
 
-cost = rawCost - costTerm.errorCenter;
+rawCost = modeledValues.massCenterVelocity;
+
+cost = ((rawCost - costTerm.errorCenter) ./ costTerm.maxAllowableError) .^ 2;
 end
