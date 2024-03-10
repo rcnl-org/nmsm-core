@@ -1,12 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function runs the continuous function to allow users to check that
-% the optimization has been setup correctly. Additionally, the user's
-% initial guesses are plotted to allow the user to visualize their initial 
-% guess. 
+% This function calculates the difference between the initial state 
+% position and current state position for the specified coordinate. 
+%
+% (2D matrix, Cell, struct) -> (Number)
 % 
-% (struct, struct, function handle) -> ()
-% Checks to that continuous function works and plots initial guess
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,20 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = checkInitialGuess(guess, inputs, continuousFunction)
-initialGuess = guess;
-initialGuess.auxdata = inputs;
-values = makeGpopsValuesAsStruct(guess.phase, inputs);
-inputs.initialStatePositions = values.statePositions;
-if isfield(initialGuess,'parameter')
-    initialGuess.phase.parameter = initialGuess.parameter;
+function initialStatePosition = calcInitialStatePosition( ...
+    statePositions, coordinateNames, auxdata, constraintTerm)
+indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
+    constraintTerm.coordinate));
+if isempty(indx)
+    throw(MException('ConstraintTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
+        "<states_coordinate_list>")))
 end
-output = continuousFunction(initialGuess);
-output.solution = initialGuess;
-if length(output.metabolicCost) == length(inputs.experimentalTime)
-cumulativeMetabolicCost = trapz(inputs.experimentalTime, ...
-    output.metabolicCost);
-inputs.initialMetabolicCost = cumulativeMetabolicCost;
-inputs.initialMassCenterVelocity = output.massCenterVelocity;
-end
+initialStatePosition = statePositions(1, indx) - ...
+    auxdata.initialStatePositions(1, indx);
 end
