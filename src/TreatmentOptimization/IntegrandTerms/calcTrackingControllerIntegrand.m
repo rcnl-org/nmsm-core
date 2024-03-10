@@ -34,6 +34,9 @@ function cost = calcTrackingControllerIntegrand(costTerm, inputs, ...
     values, time, controllerName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
+if normalizeByFinalTime
+    time = time * inputs.experimentalTime(end) / time(end);
+end
 if strcmp(inputs.controllerType, 'synergy')
     indx = find(strcmp(convertCharsToStrings( ...
         inputs.synergyLabels), controllerName));

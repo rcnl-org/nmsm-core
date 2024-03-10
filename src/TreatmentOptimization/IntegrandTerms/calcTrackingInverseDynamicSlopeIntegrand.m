@@ -32,6 +32,9 @@ function cost = calcTrackingInverseDynamicSlopeIntegrand(costTerm, ...
     inputs, time, inverseDynamicsMoments, loadName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
+if normalizeByFinalTime
+    time = time * inputs.experimentalTime(end) / time(end);
+end
 indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
         all(time == inputs.collocationTimeOriginal)
