@@ -37,7 +37,7 @@ if normalizeByFinalTime
 end
 indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        all(time == inputs.collocationTimeOriginal)
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
     experimentalJointMoments = inputs.splinedJointMoments;
 else
     experimentalJointMoments = evaluateGcvSplines( ...

@@ -43,7 +43,7 @@ if isempty(indx)
         "<states_coordinate_list>")))
 end
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        all(time == inputs.collocationTimeOriginal)
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
     experimentalJointVelocities = inputs.splinedJointSpeeds;
 else
     experimentalJointVelocities = evaluateGcvSplines( ...

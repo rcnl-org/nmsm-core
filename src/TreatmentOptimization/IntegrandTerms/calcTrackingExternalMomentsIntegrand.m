@@ -40,7 +40,7 @@ for i = 1:length(inputs.contactSurfaces)
         momentColumns), loadName));
     if ~isempty(indx)
         if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        all(time == inputs.collocationTimeOriginal)
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
             experimentalGroundReactions = inputs.splinedGroundReactionMoments{i};
         else
             experimentalGroundReactions = ...
