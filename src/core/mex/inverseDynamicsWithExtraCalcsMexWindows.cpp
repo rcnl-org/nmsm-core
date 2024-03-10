@@ -149,9 +149,11 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
             }
 
             if (i == 0) {
-                massCenterPositions[0] = osimModel[thread_id]->calcMassCenterVelocity(*osimState[thread_id]).get(0);
+                massCenterPositions[0] = 0;
+                //massCenterPositions[0] = osimModel[thread_id]->calcMassCenterVelocity(*osimState[thread_id]).get(0);
             } else if (i == numPts - 1) {
-                massCenterPositions[1] = osimModel[thread_id]->calcMassCenterVelocity(*osimState[thread_id]).get(0);
+                massCenterPositions[1] = 0;
+                //massCenterPositions[1] = osimModel[thread_id]->calcMassCenterVelocity(*osimState[thread_id]).get(0);
             }
 
             Vector AccelsVec(numCoords, 0.0);
