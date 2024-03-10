@@ -31,6 +31,9 @@ function cost = calcTrackingMarkerPosition(costTerm, time, ...
     markerPositions, inputs)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
+if normalizeByFinalTime
+    time = time * inputs.experimentalTime(end) / time(end);
+end
 indx = find(strcmp(convertCharsToStrings(inputs.trackedMarkerNames), ...
     costTerm.marker));
 if isempty(indx)

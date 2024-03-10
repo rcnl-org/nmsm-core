@@ -32,6 +32,9 @@ function cost = calcTrackingCoordinateIntegrand(costTerm, inputs, time, ...
     positions, coordinateName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
+if normalizeByFinalTime
+    time = time * inputs.experimentalTime(end) / time(end);
+end
 indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
     coordinateName));
 if isempty(indx)
