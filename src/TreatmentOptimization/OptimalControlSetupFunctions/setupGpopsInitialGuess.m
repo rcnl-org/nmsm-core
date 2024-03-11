@@ -133,6 +133,7 @@ end
 if isfield(guess, "parameter")
     guess.parameter = scaleToBounds(guess.parameter, inputs.maxParameter, ...
         inputs.minParameter);
+    guess.phase.parameter = guess.parameter;
 end
 end
 
