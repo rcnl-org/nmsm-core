@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,7 +25,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function SurrogateModelCreation(inputs)
+function surrogateMuscles = SurrogateModelCreation(inputs)
 
 inputs = getData(inputs);
 
@@ -34,55 +34,59 @@ if strcmpi(inputs.performLatinHyperCubeSampling, 'true')
         inputs.experimentalJointAngles] = performLhsSampling(inputs);
 end
 inputs = getMuscleSpecificSurrogateModelData(inputs);
-[inputs.polynomialExpressionMuscleTendonLengths, ...
-    inputs.polynomialExpressionMuscleTendonVelocities, ...
-    inputs.polynomialExpressionMomentArms, inputs.coefficients] = ...
-    createSurrogateModel(inputs.muscleSpecificJointAngles, ...
-    inputs.muscleTendonLengths, inputs.muscleSpecificMomentArms,  ...
-    inputs.polynomialDegree);
+surrogateMuscles = createSurrogateModel( ...
+    inputs.muscleSpecificJointAngles, inputs.muscleTendonLengths, ...
+    inputs.muscleSpecificMomentArms,  inputs.polynomialDegree);
 
-saveSurrogateModel(inputs);
-reportSurrogateModel(inputs);
+if valueOrAlternate(inputs, 'plotResults', false)
+    inputs.surrogateMuscles = surrogateMuscles;
+    reportSurrogateModel(inputs);
+end
 end
 
 function inputs = getData(inputs)
 
-tree.trial_prefixes = inputs.trialPrefixes;
+tree.trial_prefixes.Text = inputs.trialName;
 prefixes = findPrefixes(tree.trial_prefixes, inputs.dataDirectory);
-inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
-    inputs.surrogateModelCoordinateNames);
+if ~isfield(inputs, 'muscleNames')
+    inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
+        inputs.surrogateModelCoordinateNames);
+end
 inputs.numMuscles = length(inputs.muscleNames);
 
-inverseKinematicsFileNames = findFileListFromPrefixList(fullfile( ...
-    inputs.dataDirectory, "IKData"), prefixes);
-[inputs.experimentalJointAngles, inputs.coordinateNames] = ...
-    parseInverseKinematicsFile(inverseKinematicsFileNames, inputs.model);
-inputs.experimentalJointAngles =  ...
-    reshape(permute(inputs.experimentalJointAngles, [1 3 2]), [], ...
-    length(inputs.coordinateNames));
 
-directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
-    inputs.dataDirectory, "MAData"), prefixes);
+[inputs.experimentalJointAngles, inputs.coordinateNames, experimentalTime] = ...
+    parseTrialData(fullfile(inputs.dataDirectory, "IKData"), inputs.trialName, inputs.model);
+% inputs.experimentalJointAngles =  ...
+%     reshape(permute(inputs.experimentalJointAngles, [1 3 2]), [], ...
+%     length(inputs.coordinateNames));
+inputs.experimentalJointVelocities = calcBSplineDerivative( ...
+    experimentalTime, inputs.experimentalJointAngles, 5, 20);
+
+directory = fullfile(inputs.dataDirectory, "MAData", inputs.trialName);
 [inputs.muscleTendonLengths, inputs.muscleTendonColumnNames] = ...
-    parseFileFromDirectories(directories, "Length.sto", Model(inputs.model));
+    parseFileFromDirectories(directory, "Length.sto", inputs.model);
+% inputs.muscleNames = findMusclesFromSynergyGroups(inputs);
+% inputs.surrogateModelCoordinateNames = findSurrogateModelCoordinates( ...
+%     inputs, directories);
 inputs.muscleTendonLengths = findSpecificMusclesInData( ...
     inputs.muscleTendonLengths, inputs.muscleTendonColumnNames, ...
     inputs.muscleNames);
 inputs.muscleTendonLengths = reshape(permute(inputs.muscleTendonLengths, ...
     [1 3 2]), [], length(inputs.muscleNames));
 [inputs.muscleTendonVelocities, muscleTendonColumnNames] = ...
-    parseFileFromDirectories(directories, "Velocity.sto", Model(inputs.model));
+    parseFileFromDirectories(directory, "Velocity.sto", Model(inputs.model));
 inputs.muscleTendonVelocities = findSpecificMusclesInData( ...
     inputs.muscleTendonVelocities, muscleTendonColumnNames, ...
     inputs.muscleNames);
 inputs.muscleTendonVelocities = reshape(permute(inputs.muscleTendonVelocities, ...
     [1 3 2]), [], length(inputs.muscleNames));
-inputs.momentArms = parseSelectMomentArms(directories, ...
+inputs.momentArms = parseSelectMomentArms(directory, ...
     inputs.surrogateModelCoordinateNames, inputs.muscleNames);
 inputs.momentArms = reshape(permute(inputs.momentArms, [1 4 2 3]), [], ...
     length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
 
-if(isempty(inputs.resultsDirectory))
+if(~isfield(inputs, "resultsDirectory") || isempty(inputs.resultsDirectory))
     inputs.resultsDirectory = pwd;
 end
 end
@@ -99,6 +103,33 @@ for i=2:length(files)
     [~, ~, data] = parseMotToComponents(osimModel, ...
         Storage(files(i)));
     cells(i, :, :) = data;
+end
+end
+
+function coordinates = findSurrogateModelCoordinates(inputs, ...
+    directories)
+coordinates = string([]);
+includedMuscles = ismember(inputs.muscleTendonColumnNames, ...
+    inputs.muscleNames);
+[data, fullCoordinates] = parseMomentArms(directories, ...
+    Model(inputs.model));
+for i = 1 : length(fullCoordinates)
+    if any(any(any(data(:, i, includedMuscles, :) > inputs.epsilon)))
+        coordinates(end+1) = fullCoordinates(i);
+    end
+end
+end
+
+function muscleNames = findMusclesFromSynergyGroups(inputs)
+muscleNames = string([]);
+model = Model(inputs.model);
+for i = 1 : length(inputs.synergyGroups)
+    group = model.getForceSet.getGroup( ...
+        inputs.synergyGroups{i}.muscleGroupName).getMembers();
+    for j = 0 : group.getSize() - 1
+        muscleNames(end+1) = convertCharsToStrings( ...
+            group.get(j).getName.toCharArray');
+    end
 end
 end
 

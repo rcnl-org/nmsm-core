@@ -6,7 +6,7 @@ end
 
 function inputs = getInputs(tree)
 
-inputs.model = parseModel(tree);
+inputs = parseModel(tree, struct());
 inputs.osimxFileName = parseElementTextByName(tree, "input_osimx_file");
 inputs.coordinateNames = parseSpaceSeparatedList(tree, "coordinate_list");
 inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...

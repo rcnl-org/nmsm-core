@@ -31,29 +31,35 @@
 function error = computeInverseKinematicsSquaredError(model, ikSolver, ...
     markersReference, params)
 import org.opensim.modeling.*
-[state, numFrames, frequency, finishTime] = prepareFrameIterations(...
-    model, ikSolver, markersReference, params);
-markerTable = markersReference.getMarkerTable();
-times = markerTable.getIndependentColumn();
-error = [];
-frameCounter = 0;
-for i=1:numFrames %start time is set so start with recording error
-    ikSolver.track(state);
-    error = [error calculateFrameSquaredError(ikSolver)];
-    frameCounter = frameCounter + 1;
-    if(state.getTime() + 1/frequency > finishTime);break;end
-    time = times.get(markerTable.getNearestRowIndexForTime( ...
-        state.getTime() + 1/frequency - 0.00001));
-    state.setTime(double(time));
+persistent errorSize;
+try
+    [state, numFrames, frequency, finishTime] = prepareFrameIterations(...
+        model, ikSolver, markersReference, params);
+    markerTable = markersReference.getMarkerTable();
+    times = markerTable.getIndependentColumn();
+    error = [];
+    frameCounter = 0;
+    for i=1:numFrames %start time is set so start with recording error
+        ikSolver.track(state);
+        error = [error calculateFrameSquaredError(ikSolver)];
+        frameCounter = frameCounter + 1;
+        if(state.getTime() + 1/frequency > finishTime);break;end
+        time = times.get(markerTable.getNearestRowIndexForTime( ...
+            state.getTime() + 1/frequency - 0.00001));
+        state.setTime(double(time));
+    end
+    error = error / sqrt(frameCounter);
+    errorSize = size(error);
+catch
+    error = 1e2 * ones(errorSize);
 end
-error = error / sqrt(frameCounter);
 end
 
 % (Model, InverseKinematicsSolver, MarkersReference, struct) =>
 % (State, number, number, number)
 % Parses params for the IKSolver
 function [state, numFrames, frequency, finishTime] = ...
-        prepareFrameIterations(model, ikSolver, markersReference, params)
+    prepareFrameIterations(model, ikSolver, markersReference, params)
 state = initModelSystem(model);
 state.setTime(valueOrAlternate(params, 'startTime', ...
     markersReference.getValidTimeRange().get(0)));

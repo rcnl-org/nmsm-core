@@ -1,3 +1,5 @@
-function model = parseModel(tree)
-model = parseElementTextByName(tree, 'input_model_file');
+function inputs = parseModel(tree, inputs)
+fileName = parseElementTextByName(tree, 'input_model_file');
+inputs.model = Model(fileName);
+inputs.modelFileName = fileName;
 end

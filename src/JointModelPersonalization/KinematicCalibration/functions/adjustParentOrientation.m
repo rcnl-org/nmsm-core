@@ -28,7 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function adjustParentOrientation(model, jointName, coordinateNum, value)
+function [body, joint, coordinate] = adjustParentOrientation(model, jointName, coordinateNum, value)
+body = "parent_orientation";
+joint = jointName;
+coordinate = coordinateNum;
 import org.opensim.modeling.*
 frame = model.getJointSet().get(jointName).getParentFrame();
 offsetFrame = PhysicalOffsetFrame.safeDownCast(frame);
