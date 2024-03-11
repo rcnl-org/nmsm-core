@@ -39,7 +39,7 @@ end
 
 function inputs = makeStateBounds(inputs)
 if isfield(inputs, "finalTimeRange")
-    inputs.maxTime = max(inputs.experimentalTime) + inputs.finalTimeRange;
+    inputs.maxTime = inputs.finalTimeRange(2);
 else
     inputs.maxTime = max(inputs.experimentalTime);
 end
