@@ -36,6 +36,9 @@ guess = setupInitialControlsGuess(inputs, guess);
 guess = setupInitialParametersGuess(inputs, guess);
 guess.phase.integral = scaleToBounds(1e1, inputs.continuousMaxAllowableError, ...
     zeros(size(inputs.continuousMaxAllowableError)));
+if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
+    guess.phase.integral(:, end + 1) = 1;
+end
 end
 
 function guess = setupInitialStatesGuess(inputs, guess)
@@ -130,6 +133,7 @@ end
 if isfield(guess, "parameter")
     guess.parameter = scaleToBounds(guess.parameter, inputs.maxParameter, ...
         inputs.minParameter);
+    guess.phase.parameter = guess.parameter;
 end
 end
 

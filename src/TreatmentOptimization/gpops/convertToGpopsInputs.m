@@ -24,7 +24,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function setup = convertToGpopsInputs(inputs, params)
+function [setup, inputs] = convertToGpopsInputs(inputs, params)
 bounds = setupTreatmentOptimizationBounds(inputs, params);
 guess = setupGpopsInitialGuess(inputs);
 setup = setupGpopsSettings(inputs, ...
@@ -32,6 +32,12 @@ setup = setupGpopsSettings(inputs, ...
     @computeGpopsContinuousFunction, ...
     @computeGpopsEndpointFunction);
 setup = preSplineGpopsInputs(setup);
-checkInitialGuess(guess, setup.auxdata, ...
+inputs = checkInitialGuess(guess, setup.auxdata, ...
     @computeGpopsContinuousFunction);
+if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
+setup.bounds.phase.integral.lower(end + 1) = 0;
+setup.bounds.phase.integral.upper(end + 1) = (inputs.gpops.integralBound + 1) * ... 
+    max(inputs.initialMetabolicCost);
+setup.guess.phase.integral(end) = inputs.initialMetabolicCost;
+end
 end

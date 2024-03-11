@@ -1,8 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function minimizes the joint jerk for the specified coordinate.
+% This function calculates the difference between the initial state 
+% position and current state position for the specified coordinate. 
 %
-% (2D matrix, struct, Array of string) -> (Array of number)
+% (2D matrix, Cell, struct) -> (Number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -27,20 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointJerkIntegrand(jointJerks, time, ...
-    inputs, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
-    costTerm.coordinate));
+function initialStatePosition = calcInitialStatePosition( ...
+    statePositions, coordinateNames, auxdata, constraintTerm)
+indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
+    constraintTerm.coordinate));
 if isempty(indx)
-    throw(MException('CostTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", costTerm.coordinate, " is not in the ", ...
+    throw(MException('ConstraintTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-% cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
-cost = jointJerks(:, indx);
-if normalizeByFinalTime
-    cost = cost / time(end);
-end
+initialStatePosition = statePositions(1, indx) - ...
+    auxdata.initialStatePositions(1, indx);
 end

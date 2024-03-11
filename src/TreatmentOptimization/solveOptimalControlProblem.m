@@ -25,7 +25,8 @@
 % ----------------------------------------------------------------------- %
 
 function [inputs, output] = solveOptimalControlProblem(inputs, params)
-setup = convertToGpopsInputs(inputs, params);
+[setup, inputs] = convertToGpopsInputs(inputs, params);
+setup.auxdata = inputs;
 solution = gpops2(setup);
 inputs = setup.auxdata;
 output = convertFromGpopsOutputs(solution, ...
