@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1 - 2024-03-10
+## v1.1.0 - 2024-03-10
 
 ### Added
 - Joint Model Personalization (JMP) tasks can contain a `<marker_list>` explicitly naming markers to track
