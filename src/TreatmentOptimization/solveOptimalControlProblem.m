@@ -27,6 +27,7 @@
 function [inputs, output] = solveOptimalControlProblem(inputs, params)
 [setup, inputs] = convertToGpopsInputs(inputs, params);
 setup.auxdata = inputs;
+setup.derivatives.numsamples = sum(setup.mesh.phase.colpoints);
 solution = gpops2(setup);
 inputs = setup.auxdata;
 output = convertFromGpopsOutputs(solution, ...
