@@ -53,6 +53,9 @@ for j=1:numel(modelFiles)
     modelData{j} = storageToDoubleMatrix(modelStorage)';
     modelLabels{j} = getStorageColumnNames(modelStorage);
     modelTime{j} = findTimeColumn(modelStorage);
+    if modelTime{j} ~= 0
+        modelTime{j} = modelTime{j} - modelTime{j}(1);
+    end
     modelTime{j} = modelTime{j} / modelTime{j}(end);
 end
 

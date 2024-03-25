@@ -56,6 +56,9 @@ for j=1:numel(modelFiles)
     modelStorage = Storage(modelFiles(j));
     modelData{j} = storageToDoubleMatrix(modelStorage)';
     modelTime{j} = findTimeColumn(modelStorage);
+    if modelTime{j} ~= 0
+        modelTime{j} = modelTime{j} - modelTime{j}(1);
+    end
     modelTime{j} = modelTime{j} / modelTime{j}(end);
     for i = 1 : size(modelData{j}, 2)
         if model.getCoordinateSet().get(labels(i)).getMotionType() ...

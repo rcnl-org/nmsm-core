@@ -55,6 +55,9 @@ for j=1:numel(modelFiles)
     modelStorage = Storage(modelFiles(j));
     modelData{j} = storageToDoubleMatrix(modelStorage)';
     modelTime{j} = findTimeColumn(modelStorage);
+    if modelTime{j} ~= 0
+        modelTime{j} = modelTime{j} - modelTime{j}(1);
+    end
     modelTime{j} = modelTime{j} / modelTime{j}(end);
     % Crop data to get rid of edge effects
     modelTime{j} = modelTime{j}(1:end-1);
