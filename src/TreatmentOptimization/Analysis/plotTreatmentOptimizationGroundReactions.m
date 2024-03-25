@@ -47,11 +47,13 @@ experimentalTime = findTimeColumn(experimentalStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
+experimentalTime = experimentalTime / experimentalTime(end);
 for j = 1 : numel(modelFiles)
     modelStorage = Storage(modelFiles(j));
     modelData{j} = storageToDoubleMatrix(modelStorage)';
     modelLabels{j} = getStorageColumnNames(modelStorage);
     modelTime{j} = findTimeColumn(modelStorage);
+    modelTime{j} = modelTime{j} / modelTime{j}(end);
 end
 
 experimentalMomentIndices = contains(experimentalLabels, ["_m", "M"]);
@@ -98,7 +100,7 @@ subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Time [s]")
+xlabel(t, "Percent Movement [0-100%]")
 ylabel(t, "Ground Reaction")
 for i=1:numel(experimentalLabels)
     if i > figureSize * figureNumber
@@ -108,15 +110,15 @@ for i=1:numel(experimentalLabels)
             Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Time [s]")
+        xlabel(t, "Percent Movement [0-100%]")
         ylabel(t, "Ground Reaction")
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalData(:, i), LineWidth=2);
+    plot(experimentalTime*100, experimentalData(:, i), LineWidth=2);
     for j = 1 : numel(modelFiles)
-        plot(modelTime{j}, modelData{j}(:, i), LineWidth=2);
+        plot(modelTime{j}*100, modelData{j}(:, i), LineWidth=2);
     end
     hold off
     titleString = [sprintf("%s", strrep(experimentalLabels(i), "_", " "))];

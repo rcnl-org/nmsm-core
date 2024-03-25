@@ -47,18 +47,26 @@ experimentalTime = findTimeColumn(experimentalStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
-for i=1:numel(modelFiles)
-    modelStorage = Storage(modelFiles(i));
-    modelData{i} = storageToDoubleMatrix(modelStorage)';
-    modelTime{i} = findTimeColumn(modelStorage);
+experimentalTime = experimentalTime / experimentalTime(end);
+% Crop data to get rid of edge effects
+experimentalTime = experimentalTime(1:end-1);
+experimentalData = experimentalData(1:end-1, :);
+for j=1:numel(modelFiles)
+    modelStorage = Storage(modelFiles(j));
+    modelData{j} = storageToDoubleMatrix(modelStorage)';
+    modelTime{j} = findTimeColumn(modelStorage);
+    modelTime{j} = modelTime{j} / modelTime{j}(end);
+    % Crop data to get rid of edge effects
+    modelTime{j} = modelTime{j}(1:end-1);
+    modelData{j} = modelData{j}(1:end-1, :);
 end
 
 % Spline experimental time to the same time points as the model.
 experimentalSpline = makeGcvSplineSet(experimentalTime, ...
     experimentalData, labels);
-for i = 1 : numel(modelFiles)
-    resampledExperimental{i}= evaluateGcvSplines(experimentalSpline, ...
-        labels, modelTime{i});
+for j = 1 : numel(modelFiles)
+    resampledExperimental{j}= evaluateGcvSplines(experimentalSpline, ...
+        labels, modelTime{j});
 end
 if nargin < 3
     figureWidth = ceil(sqrt(numel(labels)));
@@ -74,7 +82,7 @@ subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Time [s]")
+xlabel(t, "Percent Movement [0-100%]")
 ylabel(t, "Joint Loads")
 for i=1:numel(labels)
     if i > figureSize * figureNumber
@@ -84,15 +92,15 @@ for i=1:numel(labels)
             Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Time [s]")
+        xlabel(t, "Percent Movement [0-100%]")
         ylabel(t, "Joint Loads")
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalData(:, i), LineWidth=2);
+    plot(experimentalTime*100, experimentalData(:, i), LineWidth=2);
     for j = 1 : numel(modelFiles)
-        plot(modelTime{j}, modelData{j}(:, i), LineWidth=2);
+        plot(modelTime{j}*100, modelData{j}(:, i), LineWidth=2);
     end
     hold off
     if contains(labels(i), "moment")

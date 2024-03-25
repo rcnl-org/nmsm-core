@@ -44,7 +44,7 @@ function [columnNames, data] = extractMtpDataFromSto(resultsDirectory)
     end
     data = cell(1, numel(dataFiles));
     for i = 1:numel(dataFiles)
-        dataStorage = Storage(fullfile(fullfile(resultsDirectory, dataFiles{i})));
+        dataStorage = Storage(fullfile(resultsDirectory, dataFiles{i}));
         columnNames = getStorageColumnNames(dataStorage);
         data{i} = storageToDoubleMatrix(dataStorage)';
     end

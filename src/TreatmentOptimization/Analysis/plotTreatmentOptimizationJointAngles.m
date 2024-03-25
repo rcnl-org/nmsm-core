@@ -44,25 +44,37 @@ model = Model(modelFileName);
 experimentalStorage = Storage(experimentalFile);
 labels = getStorageColumnNames(experimentalStorage);
 experimentalData = storageToDoubleMatrix(experimentalStorage)';
-experimentalData = experimentalData .* 180/pi;
+experimentalData = experimentalData;
 experimentalTime = findTimeColumn(experimentalStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
+experimentalTime = experimentalTime / experimentalTime(end);
+
 modelData = {};
-for i=1:numel(modelFiles)
-    modelStorage = Storage(modelFiles(i));
-    modelData{i} = storageToDoubleMatrix(modelStorage)' .* 180/pi;
-    modelTime{i} = findTimeColumn(modelStorage);
+for j=1:numel(modelFiles)
+    modelStorage = Storage(modelFiles(j));
+    modelData{j} = storageToDoubleMatrix(modelStorage)';
+    modelTime{j} = findTimeColumn(modelStorage);
+    modelTime{j} = modelTime{j} / modelTime{j}(end);
+    for i = 1 : size(modelData{j}, 2)
+        if model.getCoordinateSet().get(labels(i)).getMotionType() ...
+            .toString().toCharArray()' == "Rotational"
+            experimentalData(:, i) = experimentalData(:, i) * 180/pi;
+            for k = 1 : numel(modelFiles)
+                modelData{k}(:, i) = modelData{k}(:, i) * 180/pi;
+            end
+        end
+    end
 end
 
 % Spline experimental time to the same time points as the model.
 experimentalSpline = makeGcvSplineSet(experimentalTime, ...
     experimentalData, labels);
 resampledExperimental = {};
-for i = 1 : numel(modelFiles)
-    resampledExperimental{i}= evaluateGcvSplines(experimentalSpline, ...
-        labels, modelTime{i});
+for j = 1 : numel(modelFiles)
+    resampledExperimental{j}= evaluateGcvSplines(experimentalSpline, ...
+        labels, modelTime{j});
 end
 if nargin < 4
     figureWidth = ceil(sqrt(numel(labels)));
@@ -78,16 +90,9 @@ subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Time [s]")
+xlabel(t, "Percent Movement [0-100%]")
 ylabel(t, "Joint Angle [deg]")
 for i=1:numel(labels)
-    if model.getCoordinateSet().get(labels(i)).getMotionType() ...
-            .toString().toCharArray()' ~= "Rotational"
-        experimentalData(:, i) = experimentalData(:, i) * pi/180;
-        for j = 1 : numel(modelFiles)
-            modelData{j}(:, i) = modelData{j}(:, i) * pi/180;
-        end
-    end
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Joint Angles", ...
@@ -95,15 +100,15 @@ for i=1:numel(labels)
             Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Time [s]")
+        xlabel(t, "Percent Movement [0-100%]")
         ylabel(t, "Joint Angle [deg]")
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-        plot(experimentalTime, experimentalData(:, i), LineWidth=2);
+        plot(experimentalTime*100, experimentalData(:, i), LineWidth=2);
         for j = 1 : numel(modelFiles)
-            plot(modelTime{j}, modelData{j}(:, i), LineWidth=2);
+            plot(modelTime{j}*100, modelData{j}(:, i), LineWidth=2);
         end
     hold off
     titleString = [sprintf("%s", strrep(labels(i), "_", " "))];

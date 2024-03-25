@@ -46,6 +46,7 @@ time = findTimeColumn(controlsStorage);
 if time(1) ~= 0
     time = time - time(1);
 end
+time = time / time(end);
 if nargin < 2
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
@@ -60,7 +61,7 @@ subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "Time [s]")
+xlabel(t, "Percent Movement [0-100%]")
 ylabel(t, "Torque Controls [Nm]")
 for i=1:numel(labels)
     if i > figureSize * figureNumber
@@ -70,13 +71,13 @@ for i=1:numel(labels)
             Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Time [s]")
+        xlabel(t, "Percent Movement [0-100%]")
         ylabel(t, "Torque Controls [Nm]")
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-    plot(time, controls(:, i), LineWidth=2);
+    plot(time*100, controls(:, i), LineWidth=2);
     hold off
     title(strrep(labels(i), "_", " "));
     xlim("tight")
