@@ -50,7 +50,12 @@ if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
 experimentalTime = experimentalTime / experimentalTime(end);
-
+for i = 1 : size(experimentalData, 2)
+    if model.getCoordinateSet().get(labels(i)).getMotionType() ...
+        .toString().toCharArray()' == "Rotational"
+        experimentalData(:, i) = experimentalData(:, i) * 180/pi;
+    end
+end
 modelData = {};
 for j=1:numel(modelFiles)
     modelStorage = Storage(modelFiles(j));
@@ -63,10 +68,7 @@ for j=1:numel(modelFiles)
     for i = 1 : size(modelData{j}, 2)
         if model.getCoordinateSet().get(labels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
-            experimentalData(:, i) = experimentalData(:, i) * 180/pi;
-            for k = 1 : numel(modelFiles)
-                modelData{k}(:, i) = modelData{k}(:, i) * 180/pi;
-            end
+            modelData{j}(:, i) = modelData{j}(:, i) * 180/pi;
         end
     end
 end
