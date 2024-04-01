@@ -25,7 +25,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function surrogateMuscles = SurrogateModelCreation(inputs)
+function [surrogateMuscles, numArgs] = SurrogateModelCreation(inputs)
 
 inputs = getData(inputs);
 
@@ -34,7 +34,7 @@ if strcmpi(inputs.performLatinHyperCubeSampling, 'true')
         inputs.experimentalJointAngles] = performLhsSampling(inputs);
 end
 inputs = getMuscleSpecificSurrogateModelData(inputs);
-surrogateMuscles = createSurrogateModel( ...
+[surrogateMuscles, numArgs] = createSurrogateModel( ...
     inputs.muscleSpecificJointAngles, inputs.muscleTendonLengths, ...
     inputs.muscleSpecificMomentArms,  inputs.polynomialDegree);
 

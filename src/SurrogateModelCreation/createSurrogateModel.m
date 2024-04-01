@@ -38,9 +38,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function surrogateMuscles = createSurrogateModel(jointAngles, ...
+function [surrogateMuscles, numArgs] = createSurrogateModel(jointAngles, ...
     muscleTendonLengths, momentArms, polynomialDegree)
 surrogateMuscles = cell(1, size(muscleTendonLengths, 2));
+numArgs = ones(1, size(muscleTendonLengths, 2) * 3);
 % Create surorogate model for all muscles
 for i = 1 : size(muscleTendonLengths, 2)
 [polynomialExpressionMuscleTendonLengths, ... 
@@ -53,10 +54,14 @@ polynomialMuscleTendonLengths = matlabFunction(polynomialExpressionMuscleTendonL
 polynomialMuscleTendonVelocities = matlabFunction(polynomialExpressionMuscleTendonVelocities);
 polynomialMomentArms = matlabFunction(polynomialExpressionMomentArms);
 
-surrogateMuscles{i} = @(jointAngles, jointVelocities)evaluateSurrogate( ...
+numArgs(i * 3 - 2) = nargin(polynomialMuscleTendonLengths);
+numArgs(i * 3 - 1) = nargin(polynomialMuscleTendonVelocities);
+numArgs(i * 3) = nargin(polynomialMomentArms);
+
+surrogateMuscles{i} = @(jointAngles, jointVelocities, numArgs)evaluateSurrogate( ...
     jointAngles, jointVelocities, ...
     polynomialMuscleTendonLengths, ...
     polynomialMuscleTendonVelocities, ...
-    polynomialMomentArms, coefficients);
+    polynomialMomentArms, coefficients, numArgs(i * 3 - 2 : i * 3));
 end
 end
