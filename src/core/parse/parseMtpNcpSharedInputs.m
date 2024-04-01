@@ -44,6 +44,9 @@ for i = 1:length(inputs.inverseDynamicsMomentsColumnNames)
     if endsWith(inputs.inverseDynamicsMomentsColumnNames(i), "_moment")
         inputs.inverseDynamicsMomentsColumnNames(i) = extractBefore( ...
             inputs.inverseDynamicsMomentsColumnNames(i), "_moment");
+    elseif endsWith(inputs.inverseDynamicsMomentsColumnNames(i), "_force")
+        inputs.inverseDynamicsMomentsColumnNames(i) = extractBefore( ...
+            inputs.inverseDynamicsMomentsColumnNames(i), "_force");
     end
 end
 directories = findFirstLevelSubDirectoriesFromPrefixes(fullfile( ...
