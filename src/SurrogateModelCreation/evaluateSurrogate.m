@@ -56,29 +56,29 @@ momentArms = momentArms.';
 end
 
 function output = variableArgFn(fn, thetas, numArgs)
-switch numArgs
-    case 1
-        output = fn(thetas(1));
-    case 2
-        output = fn(thetas(1), thetas(2));
-    case 3
-        output = fn(thetas(1), thetas(2), thetas(3));
-    case 4
-        output = fn(thetas(1), thetas(2), thetas(3), thetas(4));
-    case 5
-        output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5));
-    case 6
-        output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6));
-    case 7
-        output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7));
-    case 8
-        output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7), thetas(8));
-    case 9
-        output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7), thetas(8), thetas(9));
-    case 10
-        output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7), thetas(8), thetas(9), thetas(10));
-    otherwise
-        throw(MException('',strcat('Muscle crosses too many joints!')))
+if numArgs == 1
+    output = fn(thetas(1));
+elseif numArgs == 2
+    output = fn(thetas(1), thetas(2));
+elseif numArgs == 3
+    output = fn(thetas(1), thetas(2), thetas(3));
+elseif numArgs == 4
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4));
+elseif numArgs == 5
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5));
+elseif numArgs == 6
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6));
+elseif numArgs == 7
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7));
+elseif numArgs == 8
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7), thetas(8));
+elseif numArgs == 9
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7), thetas(8), thetas(9));
+elseif numArgs == 10
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7), thetas(8), thetas(9), thetas(10));
+else
+    temp = num2cell(thetas);
+    output = fn(temp{:});
 end
 end
 

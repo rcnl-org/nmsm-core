@@ -63,6 +63,7 @@ function inputs = parseExperimentalData(tree, inputs, dataDirectory)
     experimentalTime] = parseTrialDataTryDirectories( ...
     fullfile(inputs.previousResultsDirectory, "IKData"), ...
     fullfile(dataDirectory, "IKData"), inputs.trialName, inputs.model);
+inputs.coordinateNamesStrings = inputs.coordinateNames;
 inputs.coordinateNames = cellstr(inputs.coordinateNames);
 inputs.experimentalTime = experimentalTime - experimentalTime(1);
 inputs.initialTime = inputs.experimentalTime;

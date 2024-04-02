@@ -54,6 +54,10 @@ polynomialMuscleTendonLengths = matlabFunction(polynomialExpressionMuscleTendonL
 polynomialMuscleTendonVelocities = matlabFunction(polynomialExpressionMuscleTendonVelocities);
 polynomialMomentArms = matlabFunction(polynomialExpressionMomentArms);
 
+polynomialMuscleTendonLengths = str2func(func2str(polynomialMuscleTendonLengths));
+polynomialMuscleTendonVelocities = str2func(func2str(polynomialMuscleTendonVelocities));
+polynomialMomentArms = str2func(func2str(polynomialMomentArms));
+
 numArgs(i * 3 - 2) = nargin(polynomialMuscleTendonLengths);
 numArgs(i * 3 - 1) = nargin(polynomialMuscleTendonVelocities);
 numArgs(i * 3) = nargin(polynomialMomentArms);
