@@ -67,7 +67,7 @@ for i = 1 : inputs.numMuscles
     counter = 1;
     for j = 1:length(inputs.coordinateNames)
         for k = 1:length(inputs.surrogateModelLabels{i})
-            if strcmp(inputs.coordinateNames(j), inputs.surrogateModelLabels{i}{k})
+            if strcmp(inputs.coordinateNamesStrings(j), inputs.surrogateModelLabels{i}(k))
                 jointAngles{i}(:, counter) = values.positions(:, j);
                 jointVelocities{i}(:, counter) = values.velocities(:, j);
                 counter = counter + 1;
