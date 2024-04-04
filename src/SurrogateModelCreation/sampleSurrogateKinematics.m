@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
 % 
+% 
+% (String, 2D Array of double, Array of string, double, double, double) 
+% -> (2D Array of double)
+% Use LHS sampling to find kinematics for surrogate model fitting. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -10,8 +13,8 @@
 % NMSM Pipeline is developed at Rice University and supported by the US   %
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
-% Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Spencer Williams                               %
+% Copyright (c) 2022 Rice University and the Authors                      %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,24 +28,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = getMuscleSpecificSurrogateModelData(inputs)
+function lhsKinematics = sampleSurrogateKinematics(modelFileName, ...
+    referenceKinematics, coordinateNames, samplePoints, angularPadding, ...
+    linearPadding)
+model = Model(modelFileName);
+assert(size(referenceKinematics, 2) == coordinateNames, "Unequal " + ...
+    "number of coordinate names and reference kinematics columns")
 
-for i = 1:inputs.numMuscles
-    counter = 1;
-    for j = 1:length(inputs.surrogateIkCoordinateNames)
-        for k = 1:length(inputs.surrogateModelCoordinateNames)
-            if strcmp(inputs.surrogateIkCoordinateNames(j), inputs.surrogateModelCoordinateNames(k))
-                if max(abs(inputs.surrogateModelMomentArms(:,k,i))) > inputs.epsilon
-                    inputs.surrogateModelLabels{i}(counter) = ...
-                        inputs.surrogateIkCoordinateNames(j);
-                    inputs.muscleSpecificJointAngles{i}(:,counter) = ...
-                        inputs.surrogateModelJointAngles(:,j);
-                    inputs.muscleSpecificMomentArms{i}(:,counter) = ...
-                        inputs.surrogateModelMomentArms(:,k,i);
-                    counter = counter + 1;
-                end
-            end
-        end
+padding = zeros(1, length(coordinateNames));
+for j = 1 : length(coordinateNames)
+    if model.getCoordinateSet().get(coordinateNames(j)) ...
+        .getMotionType().toString().toCharArray()' == "Rotational"
+        padding(j) = angularPadding;
+    else
+        padding(j) = linearPadding;
     end
+end
+
+lhsKinematics = zeros(size(referenceKinematics, 1) * samplePoints, ...
+    size(referenceKinematics, 2));
+for i = 1 : size(referenceKinematics, 1)
+    minima = referenceKinematics(i, :) - padding;
+    lhs = lhsdesign(samplePoints, length(padding)) .* ...
+        (2 * padding) + minima;
+    lhsKinematics((i - 1) * samplePoints + 1 : i * samplePoints, :) = lhs;
 end
 end

@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Spencer Williams                               %
+% Author(s): Marleny Vega, Spencer Williams, Claire V. Hammond            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,21 +25,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [surrogateMuscles, numArgs] = SurrogateModelCreation(inputs)
 
-inputs = getData(inputs);
+function inputs = SurrogateModelCreation(inputs)
 
-if strcmpi(inputs.performLatinHyperCubeSampling, 'true')
-    [inputs.muscleTendonLengths, inputs.momentArms, ... 
-        inputs.experimentalJointAngles] = performLhsSampling(inputs);
-end
+% inputs = getData(inputs);
+
 inputs = getMuscleSpecificSurrogateModelData(inputs);
-[surrogateMuscles, numArgs] = createSurrogateModel( ...
+[inputs.surrogateMuscles, inputs.surrogateMusclesNumArgs] = createSurrogateModel( ...
     inputs.muscleSpecificJointAngles, inputs.muscleTendonLengths, ...
     inputs.muscleSpecificMomentArms,  inputs.polynomialDegree);
 
 if valueOrAlternate(inputs, 'plotResults', false)
-    inputs.surrogateMuscles = surrogateMuscles;
     reportSurrogateModel(inputs);
 end
 end

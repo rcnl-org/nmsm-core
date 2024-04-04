@@ -50,7 +50,7 @@ if strcmpi(inputs.controllerType, "synergy")
         inputs.surrogateMusclesNumArgs = temp.surrogateMusclesNumArgs;
         
     else
-        [inputs.surrogateMuscles, inputs.surrogateMusclesNumArgs] = SurrogateModelCreation(inputs);
+        inputs = SurrogateModelCreation(inputs);
     end
     if inputs.saveSurrogate
         surrogateMuscles = inputs.surrogateMuscles;
