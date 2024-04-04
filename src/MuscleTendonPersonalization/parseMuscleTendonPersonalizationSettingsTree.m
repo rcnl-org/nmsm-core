@@ -54,7 +54,7 @@ dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
 inputs = parseEmgData(tree, inputs, dataDirectory);
 inputs.tasks = getTasks(tree);
 if strcmpi(getTextFromField(getFieldByNameOrAlternate( ...
-        getFieldByNameOrError(tree, "MTPSynergyExtrapolation"), ...
+        getFieldByNameOrError(tree, 'MTPSynergyExtrapolation'), ...
         'is_enabled', 'false')), 'true')
     inputs.synergyExtrapolation = getSynergyExtrapolationParameters(tree, ...
         inputs.model);
@@ -62,7 +62,7 @@ if strcmpi(getTextFromField(getFieldByNameOrAlternate( ...
         inputs.synergyExtrapolation, size(inputs.emgData, 1), inputs.prefixes);
 end
 inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
-if ~isfield(inputs, "emgSplines")
+if ~isfield(inputs, 'emgSplines')
     inputs.emgSplines = makeEmgSplines(inputs.emgTime, ...
         inputs.emgDataExpanded);
 end
@@ -71,7 +71,7 @@ end
 function inputs = parseEmgData(tree, inputs, dataDirectory)
 emgDataFileNames = findFileListFromPrefixList( ...
     fullfile(dataDirectory, "EMGData"), inputs.prefixes);
-collectedEmgGroupNames = parseSpaceSeparatedList(tree, "collected_emg_channel_muscle_groups");
+collectedEmgGroupNames = parseSpaceSeparatedList(tree, 'collected_emg_channel_muscle_groups');
 [inputs.fullEmgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
 collectedEmgGroupNamesMembers = ismember(inputs.emgDataColumnNames, collectedEmgGroupNames);
 inputs.emgData = inputs.fullEmgData(:, collectedEmgGroupNamesMembers, :);
@@ -143,10 +143,10 @@ end
 function synergyExtrapolation = ...
     getSynergyExtrapolationParameters(tree, model)
 groupNames = parseSpaceSeparatedList(tree, ...
-    "missing_emg_channel_muscle_groups");
+    'missing_emg_channel_muscle_groups');
 synergyExtrapolation.missingEmgChannelGroups = groupNamesToGroups( ...
     groupNames, model);
-synergyExtrapolationTree = getFieldByNameOrError(tree, "MTPSynergyExtrapolation");
+synergyExtrapolationTree = getFieldByNameOrError(tree, 'MTPSynergyExtrapolation');
 synergyExtrapolation.matrixFactorizationMethod = ...
     getFieldByName(synergyExtrapolationTree, 'matrix_factorization_method').Text;
 synergyExtrapolation.numberOfSynergies = ...

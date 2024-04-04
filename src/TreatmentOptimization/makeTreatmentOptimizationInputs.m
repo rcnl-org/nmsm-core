@@ -45,14 +45,17 @@ inputs = makeOptimalControlBounds(inputs);
 
 if strcmpi(inputs.controllerType, "synergy")
     if inputs.loadSurrogate && isfile("surrogateMuscles.mat")
-        inputs.surrogateMuscles = load("surrogateMuscles.mat") ...
-            .surrogateMuscles;
+        temp = load("surrogateMuscles.mat");
+        inputs.surrogateMuscles = temp.surrogateMuscles;
+        inputs.surrogateMusclesNumArgs = temp.surrogateMusclesNumArgs;
+        
     else
         inputs = SurrogateModelCreation(inputs);
     end
     if inputs.saveSurrogate
         surrogateMuscles = inputs.surrogateMuscles;
-        save("surrogateMuscles.mat", "surrogateMuscles");
+        surrogateMusclesNumArgs = inputs.surrogateMusclesNumArgs;
+        save("surrogateMuscles.mat", "surrogateMuscles", "surrogateMusclesNumArgs");
     end
 end
 end

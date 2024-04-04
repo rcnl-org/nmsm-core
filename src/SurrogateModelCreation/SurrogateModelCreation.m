@@ -25,12 +25,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
+
 function inputs = SurrogateModelCreation(inputs)
 
 % inputs = getData(inputs);
 
 inputs = getMuscleSpecificSurrogateModelData(inputs);
-inputs.surrogateMuscles = createSurrogateModel( ...
+[inputs.surrogateMuscles, inputs.surrogateMusclesNumArgs] = createSurrogateModel( ...
     inputs.muscleSpecificJointAngles, inputs.muscleTendonLengths, ...
     inputs.muscleSpecificMomentArms,  inputs.polynomialDegree);
 
