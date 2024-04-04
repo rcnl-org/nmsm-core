@@ -48,7 +48,7 @@ if strcmpi(inputs.controllerType, "synergy")
         inputs.surrogateMuscles = load("surrogateMuscles.mat") ...
             .surrogateMuscles;
     else
-        inputs.surrogateMuscles = SurrogateModelCreation(inputs);
+        inputs = SurrogateModelCreation(inputs);
     end
     if inputs.saveSurrogate
         surrogateMuscles = inputs.surrogateMuscles;
