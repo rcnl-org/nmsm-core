@@ -31,12 +31,12 @@
 % ----------------------------------------------------------------------- %
 
 function controllerType = parseControllerType(tree)
-synergy = getFieldByName(tree, "RCNLSynergyController");
+synergy = getFieldByName(tree, 'RCNLSynergyController');
 if isstruct(synergy)
     controllerType = "synergy";
     return
 end
-torque = getFieldByName(tree, "RCNLTorqueController");
+torque = getFieldByName(tree, 'RCNLTorqueController');
 if isstruct(torque)
     controllerType = "torque";
     return
