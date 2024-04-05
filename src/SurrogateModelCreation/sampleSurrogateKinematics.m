@@ -36,21 +36,27 @@ assert(size(referenceKinematics, 2) == length(coordinateNames), "Unequal " + ...
     "number of coordinate names and reference kinematics columns")
 
 padding = zeros(1, length(coordinateNames));
+maxValues = zeros(1, length(coordinateNames));
+minValues = zeros(1, length(coordinateNames));
 for j = 1 : length(coordinateNames)
-    if model.getCoordinateSet().get(coordinateNames(j)) ...
-        .getMotionType().toString().toCharArray()' == "Rotational"
+    coordinate = model.getCoordinateSet().get(coordinateNames(j));
+    if coordinate.getMotionType().toString().toCharArray()' == "Rotational"
         padding(j) = angularPadding;
     else
         padding(j) = linearPadding;
     end
+    maxValues(j) = coordinate.getRangeMax();
+    minValues(j) = coordinate.getRangeMin();
 end
 
 lhsKinematics = zeros(size(referenceKinematics, 1) * samplePoints, ...
     size(referenceKinematics, 2));
 for i = 1 : size(referenceKinematics, 1)
-    minima = referenceKinematics(i, :) - padding;
+    minima = max([referenceKinematics(i, :) - padding; minValues]);
+    maxima = min([referenceKinematics(i, :) + padding; maxValues]);
+
     lhs = lhsdesign(samplePoints, length(padding)) .* ...
-        (2 * padding) + minima;
+        (maxima - minima) + minima;
     lhsKinematics((i - 1) * samplePoints + 1 : i * samplePoints, :) = lhs;
 end
 end
