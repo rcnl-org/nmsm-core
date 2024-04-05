@@ -45,8 +45,13 @@ for j = 1 : length(coordinateNames)
     else
         padding(j) = linearPadding;
     end
-    maxValues(j) = coordinate.getRangeMax();
-    minValues(j) = coordinate.getRangeMin();
+    if coordinate.get_clamped()
+        maxValues(j) = coordinate.getRangeMax();
+        minValues(j) = coordinate.getRangeMin();
+    else
+        maxValues(j) = Inf;
+        minValues(j) = -Inf;
+    end
 end
 
 lhsKinematics = zeros(size(referenceKinematics, 1) * samplePoints, ...
