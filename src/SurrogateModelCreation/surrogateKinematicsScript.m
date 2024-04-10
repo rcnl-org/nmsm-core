@@ -1,8 +1,8 @@
 % Model (.osim) file used in Treatment Optimization
-modelFileName = fullfile("../JointModelPersonalization/RCNL_Model_UF_4_scaled_legScaling_knee_ankle.osim");
+modelFileName = fullfile("");
 
 % Reference kinematics file for coordinate sampling
-referenceKinematicsFile = fullfile("../preprocessing/preprocessed_right/IKData/gait_1.sto");
+referenceKinematicsFile = fullfile("");
 
 % Output directory name
 surrogateDataDirectoryName = fullfile("surrogateData");
@@ -18,6 +18,8 @@ settings.linearPadding = 0;
 
 % Padding ranges specific to coordinates. The deepest struct field name
 % must exactly match a coordinate name in the reference kinematics file.
+% Coordinates without a specified range will use positive and negative
+% default padding for their ranges. 
 % 
 % Example: settings.padding.hip_flexion_r = [-0.1, 0.2];
 settings.padding = struct();
