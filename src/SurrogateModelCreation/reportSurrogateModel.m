@@ -74,7 +74,7 @@ for i = 1 : inputs.numMuscles
     end
 end
 
-if plottingExperimental
+if plottingExperimental && isfield(inputs, 'muscleTendonVelocities')
     nplots = ceil(sqrt(inputs.numMuscles));
     % Plot muscle tendon velocities
     figure('name', 'Muscle Tendon Velocities')
