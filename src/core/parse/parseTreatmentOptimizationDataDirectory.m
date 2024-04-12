@@ -31,9 +31,10 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
-[trackedDirectory, inputs.initialGuessDirectory] = findDataDirectory(tree);
+[inputs.trackedDirectory, inputs.initialGuessDirectory] = ...
+    findDataDirectory(tree);
 inputs.trialName = parseTrialName(tree);
-inputs = parseExperimentalData(inputs, trackedDirectory);
+inputs = parseExperimentalData(inputs, inputs.trackedDirectory);
 inputs = parseSynergyExperimentalData(tree, inputs);
 inputs = parseInitialGuessData(inputs, inputs.initialGuessDirectory);
 inputs = parseInitialValues(inputs);
