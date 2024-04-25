@@ -61,7 +61,6 @@ subplotNumber = 1;
 hasLegend = false;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-% figure(1)
 for i = 1:size(muscleActivations, 1)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -72,16 +71,18 @@ for i = 1:size(muscleActivations, 1)
         hasLegend = false;
     end
     nexttile(subplotNumber)
-    plot(time, muscleActivations(i, :), 'LineWidth', 2)
     mtpIndex = find(muscleNames(i) == mtpMuscleNames);
     if ~isempty(mtpIndex)
         hold on
-        plot(time, mtpActivations(mtpIndex, :), 'LineWidth', 2);
-        if ~hasLegend
-            legend("NCP Results", "Previous Activations")
-            hasLegend = true;
-        end
-        hold off
+        plot(time, mtpActivations(mtpIndex, :), 'LineWidth', 2, ...
+            Color="#0072BD");
+    end
+    plot(time, muscleActivations(i, :), 'LineWidth', 2, ...
+        Color="#D95319")
+    hold off
+    if ~hasLegend
+        legend("Previous Activations", "NCP Results")
+        hasLegend = true;
     end
     title(strrep(muscleNames(i), "_", " "))
     ylim([0 1])
