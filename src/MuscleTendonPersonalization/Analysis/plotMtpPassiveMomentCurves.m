@@ -29,50 +29,80 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotMtpPassiveMomentCurves(resultsDirectory)
+function plotMtpPassiveMomentCurves(resultsDirectory, figureWidth, ...
+    figureHeight)
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
 [momentNames, passiveMomentsExperimental] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "passiveJointMomentsExperimental"));
 [~, passiveMomentsModel] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "passiveJointMomentsModeled"));
-momentNames = strrep(momentNames, '_', ' ');
-meanMomentsExperimental = mean(passiveMomentsExperimental, 3);
-stdMomentsExperimental = std(passiveMomentsExperimental, [], 3);
-meanMomentsModel = mean(passiveMomentsModel, 3);
-stdMomentsModel = std(passiveMomentsModel, [], 3);
-maxMoment = max([max(meanMomentsExperimental, [], 'all'), ...
-    max(meanMomentsModel, [], 'all')]);
-minMoment = min([min(meanMomentsExperimental, [], 'all'), ...
-    min(meanMomentsModel, [], 'all')]);
-time = 1:1:size(meanMomentsModel,1);
+columnsWithAllZeros = all(passiveMomentsExperimental == 0, 1);
+experimentalMomentFilesDirectory = dir(fullfile(analysisDirectory, ...
+    "passiveJointMomentsExperimental"));
+experimentalMomentFilesDirectory = experimentalMomentFilesDirectory(3:end);
+plotLabels = [];
+for i = 1 : size(passiveMomentsExperimental, 3)
+    trialPrefix = strrep(experimentalMomentFilesDirectory(i).name, ...
+        "passiveJointMomentsExperimental.sto", "");
+    plotLabels = [plotLabels, ...
+        strcat(trialPrefix, momentNames(~columnsWithAllZeros(:, :, i)))];
+end
+plotLabels = strrep(plotLabels, "_", " ");
+passiveMomentsModel = passiveMomentsModel(:, ~columnsWithAllZeros(1,:,:));
+passiveMomentsExperimental = ...
+    passiveMomentsExperimental(:, ~columnsWithAllZeros(1,:,:));
 
-figureWidth = ceil(sqrt(numel(momentNames)));
-figureHeight = ceil(numel(momentNames)/figureWidth);
-
-figure(Name = strcat(resultsDirectory, " Passive Moment Curves"), ...
+if nargin < 2
+    figureWidth = ceil(sqrt(numel(plotLabels)));
+    figureHeight = ceil(numel(plotLabels)/figureWidth);
+elseif nargin < 3
+    figureHeight = ceil(sqrt(numel(plotLabels)));
+end
+figureSize = figureWidth * figureHeight;
+figure(Name = strcat(resultsDirectory, " Passive Moment Matching"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+subplotNumber = 1;
+figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
+minMoment = min([ ...
+    min(passiveMomentsExperimental, [], "all"), ...
+    min(passiveMomentsModel, [], "all")]);
+maxMoment = max([ ...
+    max(passiveMomentsExperimental, [], "all"), ...
+    max(passiveMomentsModel, [], "all")]);
+xlabel(t, "Joint Position")
+ylabel(t, "Joint Moment [Nm]")
 
-for i = 1:numel(momentNames)
-    nexttile(i);
+for i = 1 : numel(plotLabels)
+    if i > figureSize * figureNumber
+        figureNumber = figureNumber + 1;
+        figure(Name="Treatment Optimization Joint Angles", ...
+            Units='normalized', ...
+            Position=[0.05 0.05 0.9 0.85])
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Percent Movement [0-100%]")
+        ylabel(t, "Joint Angle [deg]")
+        subplotNumber = 1;
+    end
+    nexttile(subplotNumber)
     hold on
-    plotMeanAndStd(meanMomentsExperimental(:,i), stdMomentsExperimental(:,i), ...
-        time, 'k-')
-    plotMeanAndStd(meanMomentsModel(:,i), stdMomentsModel(:,i), time, 'r-')
+    plot(passiveMomentsExperimental(:, i), ...
+        LineWidth=3, ...
+        Color = "k")
+    plot(passiveMomentsModel(:, i), ...
+        LineWidth=3, ...
+        Color = "r")
     hold off
-    set(gca, fontsize=11)
-    rmse = rms(passiveMomentsExperimental(:,i) - passiveMomentsModel(:,i));
-    title(sprintf("%s \n RMSE: %.4f", ...
-        momentNames(i), rmse), FontSize=12)
-    axis([time(1) time(end) minMoment maxMoment])
-    if i == 1
-        legend("Experimental", "Model")
+    title(plotLabels(i));
+    if subplotNumber == 1
+        legend("Experimental Moments", "Model Moments")
     end
-    if mod(i,figureWidth) == 1
-        ylabel("Moment [Nm]")
-    end
+    xlim([1 size(passiveMomentsExperimental, 1)])
+    ylim([minMoment, maxMoment])
+    subplotNumber = subplotNumber + 1;
 end
 end
 
