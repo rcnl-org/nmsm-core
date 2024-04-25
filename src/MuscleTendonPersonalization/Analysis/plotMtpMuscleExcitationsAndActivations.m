@@ -110,7 +110,6 @@ for i = 1:numel(muscleNames)
             time, "#D95319", '-');
     end
     set(gca, fontsize=11)
-    axis([time(1) time(end) 0 1])
     if (max(meanExcitations(:, i)) == 0)
         title(strcat(muscleNames(i), " *"), FontSize=12);
     else
@@ -122,6 +121,8 @@ for i = 1:numel(muscleNames)
             'Excitation (With SynX)', ...
             'Activation (With SynX)');
     end
+    xlim("tight")
+    ylim([0 1])
     subplotNumber = subplotNumber + 1;
 end
 end

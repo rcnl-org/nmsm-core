@@ -76,8 +76,9 @@ for i = 1:numel(muscleNames)
         "#0072BD");
     hold off
     set(gca, fontsize=11)
-    axis([time(1) time(end) 0 maxForce])
     title(muscleNames(i), FontSize=12);
+    xlim("tight")
+    ylim([0 maxForce])
     subplotNumber = subplotNumber + 1;
 end
 

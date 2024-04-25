@@ -85,6 +85,7 @@ for i = 1:size(muscleActivations, 1)
         hasLegend = true;
     end
     title(strrep(muscleNames(i), "_", " "))
+    xlim("tight")
     ylim([0 1])
     subplotNumber = subplotNumber + 1;
 end

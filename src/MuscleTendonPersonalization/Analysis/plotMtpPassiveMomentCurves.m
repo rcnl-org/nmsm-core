@@ -100,7 +100,7 @@ for i = 1 : numel(plotLabels)
     if subplotNumber == 1
         legend("Experimental Moments", "Model Moments")
     end
-    xlim([1 size(passiveMomentsExperimental, 1)])
+    xlim("tight")
     ylim([minMoment, maxMoment])
     subplotNumber = subplotNumber + 1;
 end

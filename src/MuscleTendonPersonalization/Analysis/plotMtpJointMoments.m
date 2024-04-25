@@ -123,7 +123,8 @@ for i=1:numel(jointLabels)
         mae = mean(abs(meanMoments(:,i) - meanIdMoments(:,i)));
         title(sprintf("%s \n RMSE: %.4f, MAE: %.4f", ...
             jointLabels(i), rmse, mae), fontsize=12)
-        axis([time(1) time(end) minMoment, maxMoment])
+        xlim("tight")
+        ylim([minMoment, maxMoment])
         if subplotNumber == 1
             legend("Mean Inverse Dynamics Moment", ...
                 "Mean Model Moment (No SynX)")

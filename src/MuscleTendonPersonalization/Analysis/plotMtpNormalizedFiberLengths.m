@@ -78,8 +78,9 @@ for i=1:numel(muscleNames)
     plot(time, passiveLower, 'r--', LineWidth=2);
     hold off
     set(gca, fontsize=11)
-    axis([time(1) time(end) 0 1.5])
     title(muscleNames(i), FontSize=12);
+    xlim("tight")
+    ylim([0 1.5])
     subplotNumber = subplotNumber + 1;
 end
 end
