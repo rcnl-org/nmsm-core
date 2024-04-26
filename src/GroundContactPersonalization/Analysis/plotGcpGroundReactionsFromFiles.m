@@ -53,14 +53,15 @@ for i = 1:6
     nexttile(i)
     experimental = experimentalGroundReactions(i, :);
     model = modeledGroundReactions(i, :);
-    plot(time, experimental, "red", "LineWidth", 2)
+    plot(time, experimental, Color="#0072BD", LineWidth=2)
     hold on
-    plot(time, model, "blue", "LineWidth", 2)
+    plot(time, model, Color="#D95319", LineWidth=2)
     error = rms(experimental - model);
     title(titles(i) + newline + " RMSE: " + error)
     xlabel('Time')
     if i == 1
         ylabel('Force (N)')
+        legend("Experimental", "Model")
     else if i == 4
         ylabel('Moment (N*m)')
     end
