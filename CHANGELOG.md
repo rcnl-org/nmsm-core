@@ -4,6 +4,9 @@
 ### Fixed
 - MTP now properly saves passive model moments when input passive moment data has multiple columns with non-zero data.
 
+### Changes
+- MTP, NCP, & GCP plots with multiple lines now follow the color convention: blue for experimental/tracked data, and orange for modeled data.
+
 ## v1.1.0 - 2024-03-10
 
 ### Added
