@@ -72,10 +72,13 @@ output = str2double(output);
 end
 
 function inputs = parseDesignSettings(tree, inputs)
-finalTimeRange = getFieldByName(tree, ...
+try
+finalTimeRange = parseSpaceSeparatedList(tree, ...
     'final_time_range');
-if(isstruct(finalTimeRange))
-    inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
+if(~isempty(finalTimeRange))
+    inputs.finalTimeRange = str2double(finalTimeRange);
+end
+catch
 end
 end
 

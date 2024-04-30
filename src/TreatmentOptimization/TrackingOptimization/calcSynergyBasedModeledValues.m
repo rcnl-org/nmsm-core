@@ -32,8 +32,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modeledValues = calcSynergyBasedModeledValues(values, inputs, ...
-    modeledValues)
+function modeledValues = calcSynergyBasedModeledValues(values, inputs)
 if strcmp(inputs.controllerType, 'synergy')
     [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, inputs);
     [inputs.muscleTendonLength, inputs.momentArms, ...
@@ -53,6 +52,8 @@ if strcmp(inputs.controllerType, 'synergy')
     modeledValues.muscleJointMoments = modeledValues.muscleJointMoments(:, ...
         inputs.surrogateModelIndex);
     modeledValues.muscleActivations = permute(modeledValues.muscleActivations, [3 2 1]);
+else
+    modeledValues.muscleActivations = [];
 end
 end
 

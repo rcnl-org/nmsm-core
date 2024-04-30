@@ -26,7 +26,7 @@ storage = Storage();
 names = ArrayStr();
 names.append('time');
 for i=1:length(markerNames)
-    names.append(markerNames{i});
+    names.append(ikSolver.getMarkerNameForIndex(i-1));
 end
 storage.setColumnLabels(names);
 
