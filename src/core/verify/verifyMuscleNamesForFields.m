@@ -1,9 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function returns an integrand cost for metabolic cost normalized by
-% distance. 
+% This function verifies that the strings in the input array are all valid
+% Matlab variable names. If any names are invalid, users will need to
+% change muscle names in their .osim model for it to be compatible with the
+% pipeline. 
 %
-% (struct, struct, struct, struct) -> (Array of double)
+% (Array of string) -> ()
+% returns nothing or throws an error if muscle names are invalid
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,23 +30,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMetabolicCostPerDistanceGoalIntegrand( ...
-    modeledValues, values, inputs, costTerm)
-assert(isfield(modeledValues, 'muscleActivations'), "Muscle " + ...
-    "activations are required for metabolic cost calculations.")
-rawCost = calcMetabolicCost(values.time, values.positions, ...
-    modeledValues.muscleActivations, inputs);
-massCenterVelocity = mean(calcMassCenterVelocity(values, inputs.model, ...
-    inputs.coordinateNames), 1);
-massCenterVelocity = massCenterVelocity(1);
-beltSpeed = 0;
-if ~isempty(inputs.contactSurfaces)
-    for i = 1 : length(inputs.contactSurfaces)
-        beltSpeed = beltSpeed + inputs.contactSurfaces{i}.beltSpeed;
-    end
-    beltSpeed = beltSpeed / length(inputs.contactSurfaces);
+function verifyMuscleNamesForFields(names)
+for name = names
+    assert(isvarname(name), "Muscle name " + name + " is not" + ...
+        " a valid MATLAB variable name. Variable names must contain " + ...
+        "only letters, numbers, and underscores, cannot start with a" + ...
+        " number, and must be fewer than 64 characters. This muscle " + ...
+        "should be renamed to be compatible with the NMSM Pipeline. ")
 end
-
-cost = (rawCost - costTerm.errorCenter) / values.time(end) ...
-    / (massCenterVelocity + beltSpeed);
 end

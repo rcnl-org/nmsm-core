@@ -63,7 +63,7 @@ time = 1:1:size(meanExcitations,1);
 
 figureWidth = ceil(sqrt(numel(muscleNames)));
 figureHeight = ceil(numel(muscleNames)/figureWidth);
-figure(Name = "Muscle Excitations and Activations", ...
+figure(Name = strcat(resultsDirectory, " Muscle Excitations and Activations"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
 t = tiledlayout(figureHeight, figureWidth, ...
@@ -82,7 +82,7 @@ for i = 1:numel(muscleNames)
         plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), time, 'r-');
     end
     set(gca, fontsize=11)
-    axis([1 size(meanExcitations, 1) 0 1])
+    axis([time(1) time(end) 0 1])
     if (max(meanExcitations(:, i)) == 0)
         title(strcat(muscleNames(i), " *"), FontSize=12);
     else

@@ -27,7 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointJerkIntegrand(jointJerks, time, ...
+function cost = calcMinimizingJointJerkIntegrand(jointAccelerations, time, ...
     inputs, costTerm)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
@@ -39,7 +39,8 @@ if isempty(indx)
         "<states_coordinate_list>")))
 end
 % cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
-cost = jointJerks(:, indx);
+cost = diff(jointAccelerations(:, indx));
+cost(end+1) = 0;
 if normalizeByFinalTime
     cost = cost / time(end);
 end
