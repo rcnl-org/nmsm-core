@@ -30,12 +30,29 @@
 
 function inputs = normalizeSynergyData(inputs)
 if strcmp(inputs.controllerType, "synergy")
-    for i = 1:size(inputs.synergyWeights, 1)
-        total = sum(inputs.synergyWeights(i, :));
-        inputs.synergyWeights(i, :) = ...
-            inputs.synergyWeights(i, :) / total;
-        inputs.initialSynergyControls(:, i) = ...
-            inputs.initialSynergyControls(:, i) * total;
+    method = lower(inputs.synergyNormalizationMethod);
+    switch method
+        case "sum"
+            for i = 1:size(inputs.synergyWeights, 1)
+                total = sum(inputs.synergyWeights(i, :)) / ...
+                    inputs.synergyNormalizationValue;
+                inputs.synergyWeights(i, :) = ...
+                    inputs.synergyWeights(i, :) / total;
+                inputs.initialSynergyControls(:, i) = ...
+                    inputs.initialSynergyControls(:, i) * total;
+            end
+        case "magnitude"
+            for i = 1:size(inputs.synergyWeights, 1)
+                total = norm(inputs.synergyWeights(i, :)) / ...
+                    inputs.synergyNormalizationValue;
+                inputs.synergyWeights(i, :) = ...
+                    inputs.synergyWeights(i, :) / total;
+                inputs.initialSynergyControls(:, i) = ...
+                    inputs.initialSynergyControls(:, i) * total;
+            end
+        otherwise
+            throw(MException('', "Only 'sum' and 'magnitude' are " + ...
+                "supported synergy normalization methods."))
     end
 end
 end
