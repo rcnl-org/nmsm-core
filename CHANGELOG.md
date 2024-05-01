@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.1 - 2024-xx-xx
+### Fixed
+- MTP now properly saves passive model moments when input passive moment data has multiple columns with non-zero data.
+
 ## v1.1.0 - 2024-03-10
 
 ### Added
