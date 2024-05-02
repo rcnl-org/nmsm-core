@@ -46,8 +46,8 @@ if ~buildFromExisting
     % reused
     osimx = buildMtpOsimxTemplate(...
         replace(model.getName().toCharArray',".","_dot_"), ...
-        modelFileName);
-    [~, name, ~] = fileparts(modelFileName);
+        inputs.modelFileName);
+    [~, name, ~] = fileparts(inputs.modelFileName);
     outfile = fullfile(resultsDirectory, strcat(name, "_ncp.xml"));
 end
 osimx.modelName = name;

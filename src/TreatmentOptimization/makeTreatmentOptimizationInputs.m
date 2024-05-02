@@ -28,6 +28,10 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeTreatmentOptimizationInputs(inputs, params)
+%calc collocation point times
+inputs = computeCollocationPointTimes(inputs);
+inputs = splineExperimentalToCollocationPoints(inputs);
+%spline experimental data to collocation point times
 inputs = makeStateDerivatives(inputs, params);
 inputs.contactSurfaces = prepareGroundContactSurfaces( ...
     inputs.modelFileName, inputs.contactSurfaces);
@@ -59,4 +63,3 @@ if strcmpi(inputs.controllerType, "synergy")
     end
 end
 end
-

@@ -35,6 +35,11 @@ setup = setupGpopsSettings(inputs, ...
 setup = preSplineGpopsInputs(setup);
 inputs = checkInitialGuess(guess, setup.auxdata, ...
     @computeGpopsContinuousFunction);
+setup.auxdata.initialIntegrand = inputs.initialIntegrand;
+setup = preSplineGpopsInputs(setup);
+setup.auxdata = rmfield(setup.auxdata, "initialIntegrand");
+global initialIntegral
+setup.guess.phase.integral = initialIntegral;
 [setup, inputs] = setupMetabolicCost(setup, inputs);
 end
 

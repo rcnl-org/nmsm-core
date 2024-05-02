@@ -34,8 +34,10 @@ guess = struct();
 guess = setupInitialStatesGuess(inputs, guess);
 guess = setupInitialControlsGuess(inputs, guess);
 guess = setupInitialParametersGuess(inputs, guess);
-guess.phase.integral = scaleToBounds(1e1, inputs.continuousMaxAllowableError, ...
-    zeros(size(inputs.continuousMaxAllowableError)));
+% guess.phase.integral = scaleToBounds(1, inputs.continuousMaxAllowableError, ...
+%     zeros(size(inputs.continuousMaxAllowableError)));
+guess.phase.integral = zeros(size(inputs.continuousMaxAllowableError));
+% guess.phase.integral = trapz(inputs.initialCost);
 if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
     guess.phase.integral(:, end + 1) = 1;
 end

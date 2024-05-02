@@ -36,6 +36,10 @@ indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
 cost = calcTrackingCostArrayTerm(zeros(size(inverseDynamicsMoments)), ...
     inverseDynamicsMoments, indx);
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end

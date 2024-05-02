@@ -40,6 +40,7 @@ if isfield(initialGuess,'parameter')
 end
 output = continuousFunction(initialGuess);
 output.solution = initialGuess;
+inputs.initialIntegrand = output.integrand;
 if length(output.metabolicCost) == length(inputs.experimentalTime)
 inputs.initialMetabolicCost = output.metabolicCost;
 inputs.initialMassCenterVelocity = output.massCenterVelocity;
