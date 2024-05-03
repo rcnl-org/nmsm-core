@@ -89,6 +89,12 @@ for surface = 1:length(inputs.surfaces)
             ymax = 1e-2;
             Kval = inputs.springConstants(j);
             height = height - restingSpringLength;
+            if height < 0
+                height = -(abs(height)^1.5);
+            end
+            if height > 0.354237930036971
+                height = 0.354237930036971;
+            end
             numFrames = length(height);
             v = ones(numFrames, 1)' .* ((Kval + klow) ./ (Kval - klow));
             s = ones(numFrames, 1)' .* ((Kval - klow) ./ 2);
