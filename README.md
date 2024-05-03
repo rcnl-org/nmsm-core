@@ -47,6 +47,8 @@ GCP creates a personalized contact array with varying spring constants for calcu
 
 ### Surrogate Model Creation
 
+The time varying quantities muscle-tendon lengths, muscle-tendon velocities, and moment arms are calculated using polynomial functions of the joint angles and velocities that share common coefficients.
+
 ### Tracking Optimization (TO)
 
 TO focuses on finding the optimal control strategies, either torque-driven or synergy-driven, that closely match the experimental motion, moments, external loads (if applicable), and muscle activity (if applicable). By minimizing the discrepancy between the predicted and experimental data, Tracking Optimization aims to reproduce the experimental movement.
@@ -73,6 +75,7 @@ No installation is required, following the instructions below, download the pack
     - Signal Processing Toolbox
 - OpenSim 4.4 or greater
 - [OpenSim MATLAB Bindings](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+with+Matlab)
+- [GPOPS-II Optimal Control Solver](https://www.gpops2.com/) (for Treatment Optimization, not used in Model Personalization)
 
 ### Step-by-Step
 - Navigate to the [NMSM Pipeline SimTK Project](https://simtk.org/projects/nmsm).

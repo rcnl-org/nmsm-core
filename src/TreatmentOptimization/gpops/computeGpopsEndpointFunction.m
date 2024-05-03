@@ -40,9 +40,15 @@ if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.terminal)) || strcmp(setup.a
     if strcmp(setup.auxdata.toolName, "DesignOptimization")
         setup = updateSystemFromUserDefinedFunctions(setup, values);
     end
-    modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata);
-    modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata, ...
+    modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
+    modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
         modeledValues);
+    if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
+        modeledValues.metabolicCost = setup.phase.integral(end);
+    end
+    if valueOrAlternate(setup.auxdata, 'calculateRelativeSpeed', false)
+        
+    end
 end
 
 if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.terminal))
@@ -63,7 +69,6 @@ if strcmp(setup.auxdata.toolName, "DesignOptimization")
         generateCostTermStruct("discrete", "DesignOptimization");
     discrete = calcTreatmentOptimizationCost( ...
         costTermCalculations, allowedTypes, values, modeledValues, setup.auxdata);
-    discrete = discrete ./ setup.auxdata.discreteMaxAllowableError;
     discreteObjective = sum(discrete) / length(discrete);
     if isnan(discreteObjective); discreteObjective = 0; end
 else
@@ -71,7 +76,12 @@ else
 end
 
 if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~isempty(setup.phase.integral)
-    continuousObjective = sum(setup.phase.integral) / length(setup.phase.integral);
+    if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
+        integral = setup.phase.integral(1:end-1);
+    else
+        integral = setup.phase.integral;
+    end
+    continuousObjective = sum(integral) / length(integral);
 else
     continuousObjective = 0;
 end

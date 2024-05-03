@@ -36,6 +36,5 @@ verifyVersion(settingsTree, "TrackingOptimizationTool");
 %inputs = normalizeSynergyData(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
-reportTreatmentOptimizationResults(outputs, inputs);
 saveTrackingOptimizationResults(outputs, inputs);
 end

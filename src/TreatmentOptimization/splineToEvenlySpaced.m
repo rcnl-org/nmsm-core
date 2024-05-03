@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function assigns the state positions and velocities to the OpenSim
-% model, for a single time frame.
+% makeStateDerivatives() requires evenly spaced points for the b-spline
+% derivatives. This function should be used to make the points evenly
+% spaced via splining
 %
-% (struct, Model, State, Cell, number) -> (Model, State)
-% 
+% (struct, struct) -> (None)
+% Splines results to make them evenly spaced
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,17 +29,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [osimModel, osimState] = setOsimStateBySingleFrame(values, ...
-    osimModel, osimState, coordinateNames, indx)
+function [newTime, newData] = splineToEvenlySpaced(time, data, ...
+    numPoints)
+newTime = time;
+newData = data;
+% gcvSplineSet = makeGcvSplineSet(time(1 : end - 1), ...
+%     data(1 : end - 1, :), string(1:size(data, 2)));
+% newTime = linspace(time(1), time(end), numPoints);
+% newData = evaluateGcvSplines( gcvSplineSet, string(1:size(data, 2)), ...
+%     newTime, 0);
+end
 
-osimState.setTime(values.time(indx, 1));
-for k=1:size(coordinateNames,2)
-    if ~osimModel.getCoordinateSet.get(coordinateNames{k}).get_locked
-        osimModel.getCoordinateSet.get(coordinateNames{k}). ...
-            setValue(osimState, values.positions(indx, k));
-        osimModel.getCoordinateSet.get(coordinateNames{k}). ...
-            setSpeedValue(osimState, values.velocities(indx, k));
-    end
-end
-osimModel.realizeVelocity(osimState);
-end

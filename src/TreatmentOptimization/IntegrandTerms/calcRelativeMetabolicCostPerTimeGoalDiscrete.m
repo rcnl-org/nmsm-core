@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                                             %
+% Author(s): Spencer Williams, Claire V. Hammond                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,11 +27,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMetabolicCostPerTimeGoalIntegrand( ...
+function cost = calcRelativeMetabolicCostPerTimeGoalDiscrete( ...
     modeledValues, values, inputs, costTerm)
-assert(isfield(modeledValues, 'muscleActivations'), "Muscle " + ...
-    "activations are required for metabolic cost calculations.")
-rawCost = calcMetabolicCost(values.time, values.positions, ...
-    modeledValues.muscleActivations, inputs);
-cost = (rawCost - costTerm.errorCenter) / values.time(end);
+currentMetabolicCost = modeledValues.metabolicCost / values.time(end);
+normalizedInitialMetabolicCost = inputs.initialMetabolicCost / ...
+    inputs.experimentalTime(end);
+rawCost = (currentMetabolicCost - normalizedInitialMetabolicCost) / ...
+    normalizedInitialMetabolicCost;
+assert(~any(isnan(rawCost)), "Relative metabolic cost is infinity, is the initial metabolic cost 0?")
+cost = ((rawCost - costTerm.errorCenter) ./ costTerm.maxAllowableError) .^ 2;
 end

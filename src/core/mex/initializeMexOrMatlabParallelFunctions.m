@@ -32,7 +32,7 @@
 function initializeMexOrMatlabParallelFunctions(modelFile)
 if isequal(mexext, 'mexw64')
     pointKinematicsMexWindows(modelFile);
-    inverseDynamicsAngularMomentumMexWindows(modelFile);
+    inverseDynamicsWithExtraCalcsMexWindows(modelFile);
 end
 clear inverseDynamicsMatlabParallel
 clear pointKinematicsMatlabParallel

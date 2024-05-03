@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% makeStateDerivatives() requires evenly spaced points for the b-spline
-% derivatives. This function should be used to make the points evenly
-% spaced via splining
+% This function calculates the difference between the initial state 
+% position and current state position for the specified coordinate. 
 %
-% (struct, struct) -> (None)
-% Splines results to make them evenly spaced
+% (2D matrix, Cell, struct) -> (Number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Marleny Vega                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,11 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function newData = splineToExperimentalTime(time, data, ...
-    newTime)
-gcvSplineSet = makeGcvSplineSet(time(1 : end - 1), ...
-    data(1 : end - 1, :), string([1:size(data, 2)]));
-newData = evaluateGcvSplines( gcvSplineSet, string([1:size(data, 2)]), ...
-    newTime-newTime(1), 0);
+function initialStatePosition = calcInitialStatePosition( ...
+    statePositions, coordinateNames, auxdata, constraintTerm)
+indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
+    constraintTerm.coordinate));
+if isempty(indx)
+    throw(MException('ConstraintTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
+        "<states_coordinate_list>")))
 end
-
+initialStatePosition = statePositions(1, indx) - ...
+    auxdata.initialStatePositions(1, indx);
+end

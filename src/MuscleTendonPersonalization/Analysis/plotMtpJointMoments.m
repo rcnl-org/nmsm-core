@@ -63,7 +63,7 @@ minMoment = min([ ...
     min(meanMoments, [], "all"), ...
     min(meanMomentsSynx, [], "all")]);
 
-figure(Name = "Joint Moments", ...
+figure(Name = strcat(resultsDirectory, " Joint Moments"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
 time = 1:1:size(meanIdMoments,1);
@@ -82,7 +82,7 @@ for i=1:numel(jointLabels)
         mae = mean(abs(meanMoments(:,i) - meanIdMoments(:,i)));
         title(sprintf("%s \n RMSE: %.4f, MAE: %.4f", ...
             jointLabels(i), rmse, mae), fontsize=12)
-        axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
+        axis([time(1) time(end) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment No Synx", "Mean Inverse Dynamics Moment")
             ylabel("Joint Moment [Nm]")
@@ -99,12 +99,12 @@ for i=1:numel(jointLabels)
         mae = mean(abs(meanMomentsSynx(:,i) - meanIdMoments(:,i)));
         title(sprintf("%s \n RMSE: %.4f, MAE: %.4f", ...
             jointLabels(i), rmse, mae), fontsize=12)
-        axis([0 size(meanIdMoments, 1) minMoment, maxMoment])
+        axis([time(1) time(end) minMoment, maxMoment])
         if i == 1
             legend("Mean Moment Synx", "Mean Inverse Dynamics Moment")
             ylabel("Joint Moment [Nm]")
         end
     end
-    xlabel("Time Point")
+    xlabel("Time Points")
 end
 end

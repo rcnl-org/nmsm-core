@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function assigns the state positions and velocities to the OpenSim
-% model, for a single time frame.
+% This function returns an integrand cost for metabolic cost normalized by
+% distance. 
 %
-% (struct, Model, State, Cell, number) -> (Model, State)
-% 
+% (struct, struct, struct, struct) -> (Array of double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams, Claire V. Hammond                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,17 +27,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [osimModel, osimState] = setOsimStateBySingleFrame(values, ...
-    osimModel, osimState, coordinateNames, indx)
+function cost = calcRelativeMetabolicCostPerDistanceGoalDiscrete( ...
+    modeledValues, values, inputs, costTerm)
 
-osimState.setTime(values.time(indx, 1));
-for k=1:size(coordinateNames,2)
-    if ~osimModel.getCoordinateSet.get(coordinateNames{k}).get_locked
-        osimModel.getCoordinateSet.get(coordinateNames{k}). ...
-            setValue(osimState, values.positions(indx, k));
-        osimModel.getCoordinateSet.get(coordinateNames{k}). ...
-            setSpeedValue(osimState, values.velocities(indx, k));
+beltSpeed = 0;
+if ~isempty(inputs.contactSurfaces)
+    for i = 1 : length(inputs.contactSurfaces)
+        beltSpeed = beltSpeed + inputs.contactSurfaces{i}.beltSpeed;
     end
+    beltSpeed = beltSpeed / length(inputs.contactSurfaces);
 end
-osimModel.realizeVelocity(osimState);
+
+currentMetabolicCost = modeledValues.metabolicCost / values.time(end) ...
+    / (modeledValues.massCenterVelocity + beltSpeed);
+normalizedInitialMetabolicCost = inputs.initialMetabolicCost / ...
+    inputs.experimentalTime(end) / (inputs.initialMassCenterVelocity + beltSpeed);
+
+rawCost = (currentMetabolicCost - normalizedInitialMetabolicCost) / ...
+    normalizedInitialMetabolicCost;
+assert(~any(isnan(rawCost)), "Relative metabolic cost is infinity, is the initial metabolic cost 0?")
+cost = ((rawCost - costTerm.errorCenter) ./ costTerm.maxAllowableError) .^ 2;
 end

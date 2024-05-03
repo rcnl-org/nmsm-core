@@ -36,37 +36,55 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationJointAngles(experimentalFile, ...
-    modelFiles, figureWidth, figureHeight)
+function plotTreatmentOptimizationJointAngles(modelFileName, ...
+    experimentalFile, modelFiles, figureWidth, figureHeight)
 
 import org.opensim.modeling.Storage
+model = Model(modelFileName);
 experimentalStorage = Storage(experimentalFile);
 labels = getStorageColumnNames(experimentalStorage);
 experimentalData = storageToDoubleMatrix(experimentalStorage)';
-experimentalData = experimentalData .* 180/pi;
+experimentalData = experimentalData;
 experimentalTime = findTimeColumn(experimentalStorage);
 if experimentalTime(1) ~= 0
     experimentalTime = experimentalTime - experimentalTime(1);
 end
+experimentalTime = experimentalTime / experimentalTime(end);
+for i = 1 : size(experimentalData, 2)
+    if model.getCoordinateSet().get(labels(i)).getMotionType() ...
+        .toString().toCharArray()' == "Rotational"
+        experimentalData(:, i) = experimentalData(:, i) * 180/pi;
+    end
+end
 modelData = {};
-for i=1:numel(modelFiles)
-    modelStorage = Storage(modelFiles(i));
-    modelData{i} = storageToDoubleMatrix(modelStorage)' .* 180/pi;
-    modelTime{i} = findTimeColumn(modelStorage);
+for j=1:numel(modelFiles)
+    modelStorage = Storage(modelFiles(j));
+    modelData{j} = storageToDoubleMatrix(modelStorage)';
+    modelTime{j} = findTimeColumn(modelStorage);
+    if modelTime{j} ~= 0
+        modelTime{j} = modelTime{j} - modelTime{j}(1);
+    end
+    modelTime{j} = modelTime{j} / modelTime{j}(end);
+    for i = 1 : size(modelData{j}, 2)
+        if model.getCoordinateSet().get(labels(i)).getMotionType() ...
+            .toString().toCharArray()' == "Rotational"
+            modelData{j}(:, i) = modelData{j}(:, i) * 180/pi;
+        end
+    end
 end
 
 % Spline experimental time to the same time points as the model.
 experimentalSpline = makeGcvSplineSet(experimentalTime, ...
     experimentalData, labels);
 resampledExperimental = {};
-for i = 1 : numel(modelFiles)
-    resampledExperimental{i}= evaluateGcvSplines(experimentalSpline, ...
-        labels, modelTime{i});
+for j = 1 : numel(modelFiles)
+    resampledExperimental{j}= evaluateGcvSplines(experimentalSpline, ...
+        labels, modelTime{j});
 end
-if nargin < 3
+if nargin < 4
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
-elseif nargin < 4
+elseif nargin < 5
     figureHeight = ceil(sqrt(numel(labels)));
 end
 figureSize = figureWidth * figureHeight;
@@ -77,7 +95,7 @@ subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Time [s]")
+xlabel(t, "Percent Movement [0-100%]")
 ylabel(t, "Joint Angle [deg]")
 for i=1:numel(labels)
     if i > figureSize * figureNumber
@@ -87,16 +105,16 @@ for i=1:numel(labels)
             Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Time [s]")
+        xlabel(t, "Percent Movement [0-100%]")
         ylabel(t, "Joint Angle [deg]")
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-    plot(experimentalTime, experimentalData(:, i), LineWidth=2);
-    for j = 1 : numel(modelFiles)
-        plot(modelTime{j}, modelData{j}(:, i), LineWidth=2);
-    end
+        plot(experimentalTime*100, experimentalData(:, i), LineWidth=2);
+        for j = 1 : numel(modelFiles)
+            plot(modelTime{j}*100, modelData{j}(:, i), LineWidth=2);
+        end
     hold off
     titleString = [sprintf("%s", strrep(labels(i), "_", " "))];
     for j = 1 : numel(modelFiles)
@@ -119,7 +137,7 @@ for i=1:numel(labels)
         end
         legend(legendValues)
     end
-    xlim([0, experimentalTime(end)])
+    xlim("tight")
     maxData = [];
     minData = [];
     for j = 1 : numel(modelFiles)
@@ -130,8 +148,14 @@ for i=1:numel(labels)
     minData(j+1) = min(experimentalData(:, i), [], "all");
     yLimitUpper = max(maxData);
     yLimitLower = min(minData);
-    if yLimitUpper - yLimitLower < 10
-        ylim([(yLimitUpper+yLimitLower)/2-10, (yLimitUpper+yLimitLower)/2+10])
+    if model.getCoordinateSet().get(labels(i)).getMotionType() ...
+            .toString().toCharArray()' == "Rotational"
+        minimum = 10;
+    else
+        minimum = 0.1;
+    end
+    if yLimitUpper - yLimitLower < minimum
+        ylim([(yLimitUpper+yLimitLower)/2-minimum, (yLimitUpper+yLimitLower)/2+minimum])
     end
     subplotNumber = subplotNumber + 1;
 end

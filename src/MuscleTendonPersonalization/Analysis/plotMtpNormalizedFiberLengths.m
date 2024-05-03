@@ -41,7 +41,7 @@ passiveUpper = ones(size(time));
 
 figureWidth = ceil(sqrt(numel(muscleNames)));
 figureHeight = ceil(numel(muscleNames)/figureWidth);
-figure(Name = "Normalized Fiber Lengths", ...
+figure(Name = strcat(resultsDirectory, " Normalized Fiber Lengths"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
 t = tiledlayout(figureHeight, figureWidth, ...
@@ -55,13 +55,13 @@ for i=1:numel(muscleNames)
     plot(time, passiveLower, 'r--', LineWidth=2);
     hold off
     set(gca, fontsize=11)
-    axis([1 size(meanFiberLengths, 1) 0 1.5])
+    axis([time(1) time(end) 0 1.5])
     title(muscleNames(i), FontSize=12);
     if mod(i,figureWidth) == 1
         ylabel(textwrap("Normalized Fiber Length",10), FontSize=12)
     end
     if i>numel(muscleNames)-figureWidth
-        xlabel("Time Points", FontSize=12)
+        xlabel("Time Points")
     end
 end
 

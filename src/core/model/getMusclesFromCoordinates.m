@@ -45,7 +45,7 @@ end
 
 function output = isMuscleInCoordinates(model, coordinates, muscle)
 if muscle.get_appliesForce()
-    path = muscle.get_GeometryPath().getPathPointSet();
+    path = muscle.getGeometryPath().getPathPointSet();
     for j = 0 : path.getSize() - 1
         bodyCoordinates = getCoordinatesFromBodies(model, ...
             path.get(j).getBodyName().toCharArray()');

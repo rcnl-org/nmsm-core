@@ -33,8 +33,8 @@ values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
 if strcmp(setup.auxdata.toolName, "DesignOptimization")
     setup = updateSystemFromUserDefinedFunctions(setup, values);
 end
-modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata);
-modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata, ...
+modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
+modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
     modeledValues);
 modeledValues.dynamics = calcDynamicConstraint(values, setup.auxdata);
 if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.path))
@@ -48,6 +48,9 @@ if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.path))
         modeledValues.path, setup.auxdata.maxPath, setup.auxdata.minPath);
 end
 modeledValues.integrand = calcGpopsIntegrand(values, modeledValues, setup.auxdata);
+if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
+    modeledValues.integrand(:, end+1) = modeledValues.metabolicCost;
+end
 if isempty(modeledValues.integrand)
     modeledValues = rmfield(modeledValues, "integrand");
 end

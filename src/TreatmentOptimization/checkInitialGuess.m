@@ -30,12 +30,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function checkInitialGuess(guess, inputs, continuousFunction)
+function inputs = checkInitialGuess(guess, inputs, continuousFunction)
 initialGuess = guess;
 initialGuess.auxdata = inputs;
+values = makeGpopsValuesAsStruct(guess.phase, inputs);
+inputs.initialStatePositions = values.statePositions;
 if isfield(initialGuess,'parameter')
     initialGuess.phase.parameter = initialGuess.parameter;
 end
 output = continuousFunction(initialGuess);
 output.solution = initialGuess;
+if length(output.metabolicCost) == length(inputs.experimentalTime)
+cumulativeMetabolicCost = trapz(inputs.experimentalTime, ...
+    output.metabolicCost);
+inputs.initialMetabolicCost = cumulativeMetabolicCost;
+inputs.initialMassCenterVelocity = output.massCenterVelocity;
+end
 end

@@ -28,8 +28,9 @@
 % ----------------------------------------------------------------------- %
 
 function model = disableModelMuscles(model)
-for i = 0:model.getForceSet().getMuscles().getSize()-1
-    if model.getForceSet().getMuscles().get(i).get_appliesForce()
-        model.getForceSet().getMuscles().get(i).set_appliesForce(0);
+    for i = 0:model.getForceSet().getMuscles().getSize()-1
+        if model.getForceSet().getMuscles().get(i).get_appliesForce()
+            model.getForceSet().getMuscles().get(i).set_appliesForce(0);
+        end
     end
 end
