@@ -65,6 +65,24 @@ if ~params.tasks{task}.designVariables(6)
         valuesStruct.(field) = inputs.surfaces{foot}.bSplineCoefficients;
     end
 end
+
+if params.tasks{task}.designVariables(7)
+    for foot = 1:length(inputs.surfaces)
+        field = "electricalCenter" + foot;
+        electricalCenterShift = valuesStruct.(field);
+        for i = 1 : size( ...
+                inputs.surfaces{foot}.experimentalGroundReactionMoments, 2)
+            inputs.surfaces{foot} ...
+                .experimentalGroundReactionMoments(:, i) = ...
+                inputs.surfaces{foot} ...
+                .experimentalGroundReactionMoments(:, i) + ...
+                cross([electricalCenterShift(1), 0, ...
+                electricalCenterShift(2)], inputs.surfaces{foot} ...
+                .experimentalGroundReactionForces(:, i));
+        end
+    end
+end
+
 cost = [];
 for foot = 1:length(inputs.surfaces)
     field = "bSplineCoefficients" + foot;
@@ -98,6 +116,9 @@ for i=1:length(fieldNameOrder)
         valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
             numel(inputs.surfaces{foot}.bSplineCoefficients) - 1);
         start = start + numel(inputs.surfaces{foot}.bSplineCoefficients);
+    elseif contains(fieldNameOrder(i), "electricalCenter")
+        valuesStruct.(fieldNameOrder(i)) = values(start : start + 1);
+        start = start + 2;
     else
         valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
             numel(inputs.(fieldNameOrder(i))) - 1);

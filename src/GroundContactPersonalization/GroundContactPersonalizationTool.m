@@ -35,6 +35,12 @@ verifyVersion(settingsTree, "GroundContactPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(settingsTree);
 results = GroundContactPersonalization(inputs, params);
+
+for foot = 1 : length(inputs.surfaces)
+    disp("Foot " + foot + " electrical center shift: ")
+    disp(inputs.surfaces{foot}.electricalCenterShift)
+end
+
 saveGroundContactPersonalizationResults(results, params, ...
     resultsDirectory, inputs.inputOsimxFile);
 end

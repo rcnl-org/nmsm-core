@@ -76,6 +76,13 @@ if (params.tasks{task}.designVariables(6))
         fieldNameOrder = [fieldNameOrder ("bSplineCoefficients" + foot)];
     end
 end
+if (params.tasks{task}.designVariables(7))
+    for foot = 1:length(inputs.surfaces)
+        initialValues = [initialValues ...
+            inputs.surfaces{foot}.electricalCenterShift];
+        fieldNameOrder = [fieldNameOrder ("electricalCenter" + foot)];
+    end
+end
 end
 
 % (struct) -> (Array of double, Array of double)
@@ -109,6 +116,12 @@ if (params.tasks{task}.designVariables(6))
             inputs.surfaces{foot}.bSplineCoefficients, 1, [])))];
         upperBounds = [upperBounds Inf(1, length(reshape(...
             inputs.surfaces{foot}.bSplineCoefficients, 1, [])))];
+    end
+end
+if (params.tasks{task}.designVariables(y))
+    for foot = 1:length(inputs.surfaces)
+        lowerBounds = [lowerBounds -Inf(1, 2)];
+        upperBounds = [upperBounds Inf(1, 2)];
     end
 end
 end
