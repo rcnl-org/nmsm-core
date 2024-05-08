@@ -118,7 +118,7 @@ if (params.tasks{task}.designVariables(6))
             inputs.surfaces{foot}.bSplineCoefficients, 1, [])))];
     end
 end
-if (params.tasks{task}.designVariables(y))
+if (params.tasks{task}.designVariables(7))
     for foot = 1:length(inputs.surfaces)
         lowerBounds = [lowerBounds -Inf(1, 2)];
         upperBounds = [upperBounds Inf(1, 2)];
