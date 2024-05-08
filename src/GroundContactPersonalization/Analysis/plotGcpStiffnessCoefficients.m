@@ -29,7 +29,7 @@ function plotGcpStiffnessCoefficients(modelFileName, osimxFileName, ...
     surfaceNumber)
 % Parse inputs
 [model, state] = Model(modelFileName);
-osimx = parseOsimxFile(osimxFileName);
+osimx = parseOsimxFile(osimxFileName, model);
 if nargin < 3
     surfaceNumber = 1;
 end
