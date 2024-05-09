@@ -98,8 +98,7 @@ end
 sectionDataFiles(filesToSection, timePairs, rowsPerTrial, trialName, ...
     filesToFilter, cutoffFrequency);
 
-% numBufferRows = calcNumPaddingFrames(timePairs, rowsPerTrial);
-numBufferRows = 19;
+numBufferRows = calcNumPaddingFrames(timePairs, rowsPerTrial);
 paddedTimePairs = addBufferToTimePairs(timePairs, numBufferRows, ...
     rowsPerTrial);
 sectionDataFiles( ...

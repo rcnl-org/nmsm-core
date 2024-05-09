@@ -80,9 +80,9 @@ end
 end
 
 function output = getTask(model, tree)
-output.markerFile = parseElementTextByName(tree, "marker_file_name");
+output.markerFile = parseElementTextByName(tree, 'marker_file_name');
 output.anatomicalMarkers = getBooleanLogicFromField( ...
-    getFieldByName(tree, "anatomical_markers"));
+    getFieldByName(tree, 'anatomical_markers'));
 timeRange = getFieldByName(tree, 'time_range');
 if(isstruct(timeRange))
     timeRange = strsplit(timeRange.Text, ' ');
@@ -91,24 +91,24 @@ if(isstruct(timeRange))
 end
 
 try
-    markerNames = parseSpaceSeparatedList(tree, "marker_names");
+    markerNames = parseSpaceSeparatedList(tree, 'marker_names');
     if ~isempty(markerNames)
         output.markerNames = markerNames;
     end
 catch; end
 try
-    freeMarkers = parseSpaceSeparatedList(tree, "free_markers");
+    freeMarkers = parseSpaceSeparatedList(tree, 'free_markers');
 catch
     freeMarkers = [];
 end
 
 output.parameters = {};
-if(isstruct(getFieldByName(tree, "JMPJointSet")))
+if(isstruct(getFieldByName(tree, 'JMPJointSet')))
     output.parameters = getJointParameters(tree.JMPJointSet);
 end
 output.scaling = [];
 output.markers = [];
-if isstruct(getFieldByName(tree, "JMPBodySet")) || ~isempty(freeMarkers)
+if isstruct(getFieldByName(tree, 'JMPBodySet')) || ~isempty(freeMarkers)
     [output.scaling, output.markers] = ...
         getBodyParameters(tree.JMPBodySet, model, freeMarkers);
 end
@@ -134,7 +134,7 @@ end
 % solve this problem, it's fine
 function inputs = getJointParameters(jointSetTree)
 inputs = {};
-if isfield(jointSetTree, "JMPJoint")
+if isfield(jointSetTree, 'JMPJoint')
     jointTree = jointSetTree.JMPJoint;
     counter = 1; % for index of parameter in output
     for i=1:length(jointTree)
@@ -186,7 +186,7 @@ end
 
 function [scaling, markers] = getBodyParameters( ...
     bodySetTree, model, freeMarkers)
-if isfield(bodySetTree, "JMPBody")
+if isfield(bodySetTree, 'JMPBody')
     bodyTree = bodySetTree.JMPBody;
     scaling = getScalingBodies(bodyTree);
     markers = getMarkers(bodyTree, model);
@@ -207,7 +207,7 @@ for i=1:length(bodyTree)
     end
     bodyName = body.Attributes.name;
     scaleBodies = strcmp(getFieldByNameOrError(body, ...
-        "scale_body").Text, "true");
+        'scale_body').Text, "true");
     if(scaleBodies)
         inputs(end + 1) = bodyName;
     end
@@ -224,7 +224,7 @@ for i=1:length(bodyTree)
         body = bodyTree{i};
     end
     bodyName = body.Attributes.name;
-    axesStrings = parseSpaceSeparatedList(body, "move_markers");
+    axesStrings = parseSpaceSeparatedList(body, 'move_markers');
     axes = zeros(1, 3);
     for j = 1:3
         axes(j) = axesStrings(j) == "true";
@@ -303,15 +303,15 @@ end
 
 function output = getParams(tree)
 output = struct();
-paramArgs = ["accuracy", "diff_min_change", "optimality_tolerance", ...
-    "function_tolerance", "step_tolerance", "max_function_evaluations"];
+paramArgs = {'accuracy', 'diff_min_change', 'optimality_tolerance', ...
+    'function_tolerance', 'step_tolerance', 'max_function_evaluations'};
 % name in matlab is different, use for output struct arg name
-paramName = ["accuracy", "diffMinChange", "optimalityTolerance", ...
-    "functionTolerance", "stepTolerance", "maxFunctionEvaluations"];
+paramName = {'accuracy', 'diffMinChange', 'optimalityTolerance', ...
+    'functionTolerance', 'stepTolerance', 'maxFunctionEvaluations'};
 for i=1:length(paramArgs)
-    value = getFieldByName(tree, paramArgs(i));
+    value = getFieldByName(tree, paramArgs{i});
     if(isstruct(value))
-        output.(paramName(i)) = str2double(value.Text);
+        output.(paramName{i}) = str2double(value.Text);
     end
 end
 end

@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the experimental and
-% predicted muscle activations for the specified muscle.
-%
-% (2D matrix, Array of number, struct, Array of string) -> (Array of number)
-%
+% 
+% 
+% (String, string, string, double, double, double) -> ()
+% Use LHS sampling to find kinematics for surrogate model fitting. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,8 +12,8 @@
 % NMSM Pipeline is developed at Rice University and supported by the US   %
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
-% Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Copyright (c) 2022 Rice University and the Authors                      %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,29 +27,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMuscleActivationIntegrand(costTerm, ...
-    muscleActivations, time, inputs, muscleName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
+function makeSurrogateModelKinematics(modelFileName, ...
+    kinematicsFileName, outputFileName, samplePoints, angularPadding, ...
+    linearPadding)
+if nargin < 6 || isempty(linearPadding)
+    linearPadding = 0;
 end
-indx = find(strcmp(convertCharsToStrings(inputs.muscleNames), ...
-    muscleName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalMuscleActivations = inputs.splinedMuscleActivations;
-else
-    experimentalMuscleActivations = evaluateGcvSplines( ...
-        inputs.splineMuscleActivations, inputs.muscleNames, time);
+if nargin < 5 || isempty(angularPadding)
+    angularPadding = 0;
 end
-cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
-    muscleActivations, indx);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
+if nargin < 4 || isempty(samplePoints)
+    samplePoints = 25;
 end
+
+[coordinateNames, ~, referenceKinematics] = parseMotToComponents( ...
+    Model(modelFileName), org.opensim.modeling.Storage( ...
+    kinematicsFileName));
+referenceKinematics = referenceKinematics';
+lhsKinematics = sampleSurrogateKinematics(modelFileName, ...
+    referenceKinematics, coordinateNames, samplePoints, angularPadding, ...
+    linearPadding);
+
+writeToSto(coordinateNames, (1 : size(lhsKinematics, 1)) * 1e-3, ...
+    lhsKinematics, outputFileName);
 end

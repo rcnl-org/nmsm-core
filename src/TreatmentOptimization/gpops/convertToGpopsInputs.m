@@ -31,13 +31,27 @@ setup = setupGpopsSettings(inputs, ...
     bounds, guess, params, ...
     @computeGpopsContinuousFunction, ...
     @computeGpopsEndpointFunction);
+
 setup = preSplineGpopsInputs(setup);
 inputs = checkInitialGuess(guess, setup.auxdata, ...
     @computeGpopsContinuousFunction);
+setup.auxdata.initialIntegrand = inputs.initialIntegrand;
+setup = preSplineGpopsInputs(setup);
+setup.auxdata = rmfield(setup.auxdata, "initialIntegrand");
+global initialIntegral
+setup.guess.phase.integral = initialIntegral;
+[setup, inputs] = setupMetabolicCost(setup, inputs);
+end
+
+function [setup, inputs] = setupMetabolicCost(setup, inputs)
 if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
-setup.bounds.phase.integral.lower(end + 1) = 0;
-setup.bounds.phase.integral.upper(end + 1) = (inputs.gpops.integralBound + 1) * ... 
-    max(inputs.initialMetabolicCost);
-setup.guess.phase.integral(end) = inputs.initialMetabolicCost;
+    setup.auxdata.initialMetabolicCost = inputs.initialMetabolicCost;
+    preSplineGpopsInputs(setup);
+    global initialMetabolicCost
+    inputs.initialMetabolicCost = initialMetabolicCost;
+    setup.bounds.phase.integral.lower(end + 1) = 0;
+    setup.bounds.phase.integral.upper(end + 1) = (inputs.gpops.integralBound + 1) * ...
+        max(inputs.initialMetabolicCost);
+    setup.guess.phase.integral(end) = inputs.initialMetabolicCost;
 end
 end

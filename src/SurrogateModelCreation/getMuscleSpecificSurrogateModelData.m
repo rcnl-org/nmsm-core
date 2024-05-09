@@ -29,20 +29,16 @@ function inputs = getMuscleSpecificSurrogateModelData(inputs)
 
 for i = 1:inputs.numMuscles
     counter = 1;
-    for j = 1:length(inputs.coordinateNames)
+    for j = 1:length(inputs.surrogateIkCoordinateNames)
         for k = 1:length(inputs.surrogateModelCoordinateNames)
-            if strcmp(inputs.coordinateNames(j), inputs.surrogateModelCoordinateNames(k))
-                if max(abs(inputs.momentArms(:,k,i))) > inputs.epsilon
+            if strcmp(inputs.surrogateIkCoordinateNames(j), inputs.surrogateModelCoordinateNames(k))
+                if max(abs(inputs.surrogateModelMomentArms(:,k,i))) > inputs.epsilon
                     inputs.surrogateModelLabels{i}(counter) = ...
-                        {convertStringsToChars(inputs.coordinateNames(j))};
+                        inputs.surrogateIkCoordinateNames(j);
                     inputs.muscleSpecificJointAngles{i}(:,counter) = ...
-                        inputs.experimentalJointAngles(:,j);
+                        inputs.surrogateModelJointAngles(:,j);
                     inputs.muscleSpecificMomentArms{i}(:,counter) = ...
-                        inputs.momentArms(:,k,i);
-                    if isfield(inputs, 'experimentalJointVelocities')
-                        inputs.muscleSpecificJointVelocities{i}(:,counter) = ...
-                            inputs.experimentalJointVelocities(:,j);
-                    end
+                        inputs.surrogateModelMomentArms(:,k,i);
                     counter = counter + 1;
                 end
             end

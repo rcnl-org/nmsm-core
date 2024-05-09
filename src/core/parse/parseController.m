@@ -35,11 +35,11 @@ inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
 inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
     "states_coordinate_list");
 
-torqueTree = getFieldByName(tree, "RCNLTorqueController");
+torqueTree = getFieldByName(tree, 'RCNLTorqueController');
 if isstruct(torqueTree)
     inputs = parseTorqueController(torqueTree, inputs);
 end
-synergyTree = getFieldByName(tree, "RCNLSynergyController");
+synergyTree = getFieldByName(tree, 'RCNLSynergyController');
 if isstruct(synergyTree)
     inputs = parseSynergyController(tree, inputs);
 end

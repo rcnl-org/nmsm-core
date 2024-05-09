@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                                             %
+% Author(s): Spencer Williams, Claire V. Hammond                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,7 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function SurrogateModelPreviewTool(settingsFileName)
+function SurrogateModelPreviewTool(settingsFileName, ...
+    plotSurrogateResults, plotExperimentalResults)
 settingsTree = xml2struct(settingsFileName);
 toolFields = fieldnames(settingsTree.NMSMPipelineDocument);
 switch toolFields{1} 
@@ -48,5 +49,7 @@ switch toolFields{1}
             " and DesignOptimizationTool.")
 end
 inputs.plotResults = true;
+inputs.plotSurrogateResults = plotSurrogateResults;
+inputs.plotExperimentalResults = plotExperimentalResults;
 SurrogateModelCreation(inputs);
 end

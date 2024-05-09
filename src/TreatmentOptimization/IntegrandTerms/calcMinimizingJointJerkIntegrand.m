@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the experimental and
-% predicted muscle activations for the specified muscle.
+% This function minimizes the joint jerk for the specified coordinate.
 %
-% (2D matrix, Array of number, struct, Array of string) -> (Array of number)
-%
+% (2D matrix, struct, Array of string) -> (Array of number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,24 +27,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMuscleActivationIntegrand(costTerm, ...
-    muscleActivations, time, inputs, muscleName)
+function cost = calcMinimizingJointJerkIntegrand(jointAccelerations, time, ...
+    inputs, costTerm)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
+indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
+    costTerm.coordinate));
+if isempty(indx)
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", costTerm.coordinate, " is not in the ", ...
+        "<states_coordinate_list>")))
 end
-indx = find(strcmp(convertCharsToStrings(inputs.muscleNames), ...
-    muscleName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalMuscleActivations = inputs.splinedMuscleActivations;
-else
-    experimentalMuscleActivations = evaluateGcvSplines( ...
-        inputs.splineMuscleActivations, inputs.muscleNames, time);
-end
-cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
-    muscleActivations, indx);
+% cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
+cost = diff(jointAccelerations(:, indx));
+cost(end+1) = 0;
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);

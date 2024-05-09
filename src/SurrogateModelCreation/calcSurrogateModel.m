@@ -46,11 +46,11 @@ newMomentArms = zeros(size(jointAngles{1}, 1), ...
 for i = 1 : size(jointAngles, 2)
     [newMuscleTendonLengths(:, i), newMuscleTendonVelocities(:, i), ...
         momentArms] = inputs.surrogateMuscles{i}(jointAngles{i}, ...
-        jointVelocities{i});
+        jointVelocities{i}, inputs.surrogateMusclesNumArgs);
     index = 1;
     for j = 1 : length(inputs.coordinateNames)
         for k = 1 : length(inputs.surrogateModelLabels{i})
-            if strcmp(inputs.coordinateNames(j), inputs.surrogateModelLabels{i}{k})
+            if strcmp(inputs.coordinateNamesStrings(j), inputs.surrogateModelLabels{i}(k))
                 newMomentArms(:, j, i) = momentArms(:, index);
                 index = index + 1;
             end

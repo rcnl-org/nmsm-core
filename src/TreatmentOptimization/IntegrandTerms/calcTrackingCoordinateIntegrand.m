@@ -32,8 +32,8 @@ function cost = calcTrackingCoordinateIntegrand(costTerm, inputs, time, ...
     positions, coordinateName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-if normalizeByFinalTime
-    time = time * inputs.experimentalTime(end) / time(end);
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
+    time = time * inputs.collocationTimeOriginal(end) / time(end);
 end
 indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
     coordinateName));
@@ -53,6 +53,10 @@ cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...
     positions, indx);
 
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end

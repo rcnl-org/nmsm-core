@@ -1,10 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the experimental and
-% predicted muscle activations for the specified muscle.
+% This function verifies that the strings in the input array are all valid
+% Matlab variable names. If any names are invalid, users will need to
+% change muscle names in their .osim model for it to be compatible with the
+% pipeline. 
 %
-% (2D matrix, Array of number, struct, Array of string) -> (Array of number)
-%
+% (Array of string) -> ()
+% returns nothing or throws an error if muscle names are invalid
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,29 +30,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMuscleActivationIntegrand(costTerm, ...
-    muscleActivations, time, inputs, muscleName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-indx = find(strcmp(convertCharsToStrings(inputs.muscleNames), ...
-    muscleName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalMuscleActivations = inputs.splinedMuscleActivations;
-else
-    experimentalMuscleActivations = evaluateGcvSplines( ...
-        inputs.splineMuscleActivations, inputs.muscleNames, time);
-end
-cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
-    muscleActivations, indx);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
+function verifyMuscleNamesForFields(names)
+for name = names
+    assert(isvarname(name), "Muscle name " + name + " is not" + ...
+        " a valid MATLAB variable name. Variable names must contain " + ...
+        "only letters, numbers, and underscores, cannot start with a" + ...
+        " number, and must be fewer than 64 characters. This muscle " + ...
+        "should be renamed to be compatible with the NMSM Pipeline. ")
 end
 end
