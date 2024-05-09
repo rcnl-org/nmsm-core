@@ -43,9 +43,7 @@ output = zeros(nCol, nRow);
 col = ArrayDouble();
 for i=1:nCol
     storage.getDataColumn(i-1, col);
-    for j=1:col.getSize()
-        output(i, j) = col.getitem(j-1);
-    end
+    output(i, :) = arrayDoubleToDoubleArray(col);
 end
 end
 

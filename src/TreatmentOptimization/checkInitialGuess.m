@@ -40,10 +40,9 @@ if isfield(initialGuess,'parameter')
 end
 output = continuousFunction(initialGuess);
 output.solution = initialGuess;
+inputs.initialIntegrand = output.integrand;
 if length(output.metabolicCost) == length(inputs.experimentalTime)
-cumulativeMetabolicCost = trapz(inputs.experimentalTime, ...
-    output.metabolicCost);
-inputs.initialMetabolicCost = cumulativeMetabolicCost;
+inputs.initialMetabolicCost = output.metabolicCost;
 inputs.initialMassCenterVelocity = output.massCenterVelocity;
 end
 end
