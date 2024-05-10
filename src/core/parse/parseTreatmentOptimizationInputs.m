@@ -69,6 +69,8 @@ inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = parseControllerType(tree);
 inputs = parseModel(tree, inputs);
+[~, state] = Model(inputs.model);
+inputs.mass = inputs.model.getTotalMass(state);
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
