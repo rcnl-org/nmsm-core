@@ -39,16 +39,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function primaryValues = MuscleTendonPersonalization(inputs, ...
+function results = MuscleTendonPersonalization(inputs, ...
     params)
-primaryValues = prepareInitialValues(inputs, params);
-inputs = finalizeInputs(inputs, primaryValues, params);
+inputs.primaryValues = prepareInitialValues(inputs, params);
+inputs = finalizeInputs(inputs, inputs.primaryValues, params);
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
 for i=1:length(inputs.tasks)
     [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
-        primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
+        inputs.primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
     taskParams = makeTaskParams(params);
     if isfield(inputs, "synergyExtrapolation")
         taskParams.costTerms = ...
@@ -58,17 +58,31 @@ for i=1:length(inputs.tasks)
             length(inputs.muscleNames), inputs.extrapolationCommands, ...
             permute(inputs.emgData, [3 1 2]));
         optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-            primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
+            inputs.primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
             taskUpperBounds, inputs, taskParams, optimizerOptions, A, b);
     else
         taskParams.costTerms = inputs.tasks{i}.costTerms;
         optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-            primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
+            inputs.primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
             taskUpperBounds, inputs, taskParams, optimizerOptions, [], []);
     end
-    primaryValues = updateDesignVariables(primaryValues, ...
+    inputs.primaryValues = updateDesignVariables(inputs.primaryValues, ...
         optimizedValues, inputs.tasks{i}.isIncluded);
+    
+    if numel(inputs.tasks) > 1
+        inputs = updateScaleFactors(inputs);
+    end
 end
+results = inputs;
+end
+
+function [inputs] = updateScaleFactors(inputs)
+    inputs.optimalFiberLength = inputs.optimalFiberLength .* ...
+        inputs.primaryValues{5};
+    inputs.tendonSlackLength = inputs.tendonSlackLength .* ...
+        inputs.primaryValues{6};
+    inputs.primaryValues{5} = ones(size(inputs.primaryValues{5}));
+    inputs.primaryValues{6} = ones(size(inputs.primaryValues{6}));
 end
 
 % (struct) -> (None)

@@ -30,49 +30,49 @@
 % ----------------------------------------------------------------------- %
 
 function [finalValues, resultsStruct, modeledValues] = ...
-    getMtpResultsToSave(mtpInputs, params, optimizedParams, precalInputs)
-finalValues = makeMtpValuesAsStruct([], optimizedParams, zeros(1, 7), mtpInputs);
-if nargin < 4
+    getMtpResultsToSave(params, mtpResults, precalInputs)
+finalValues = makeMtpValuesAsStruct([], mtpResults.primaryValues, zeros(1, 7), mtpResults);
+if nargin < 3
     modeledValues = [];
     precalInputs = [];
 else
     updatedMaxIsometricForce = precalInputs.optimizeIsometricMaxForce;
     tempValues.optimalFiberLengthScaleFactors = ...
-        mtpInputs.optimalFiberLength ./ precalInputs.optimalFiberLength;
+        mtpResults.optimalFiberLength ./ precalInputs.optimalFiberLength;
     tempValues.tendonSlackLengthScaleFactors = ...
-        mtpInputs.tendonSlackLength ./ precalInputs.tendonSlackLength;
-    precalInputs.maxIsometricForce = mtpInputs.maxIsometricForce;
+        mtpResults.tendonSlackLength ./ precalInputs.tendonSlackLength;
+    precalInputs.maxIsometricForce = mtpResults.maxIsometricForce;
     precalInputs.optimizeIsometricMaxForce = 0;
     modeledValues = calcMuscleTendonLengthInitializationModeledValues(tempValues, precalInputs);
     if updatedMaxIsometricForce
-        finalValues.maxIsometricForce = mtpInputs.maxIsometricForce;
+        finalValues.maxIsometricForce = mtpResults.maxIsometricForce;
     end
 end
 
-results = calcMtpModeledValues(finalValues, mtpInputs, struct());
-results.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
-    end - mtpInputs.numPaddingFrames);
-results.muscleExcitations = results.muscleExcitations(:, :, ...
-    mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
-if isfield(mtpInputs, "synergyExtrapolation")
-    resultsSynx = calcMtpSynXModeledValues(finalValues, mtpInputs, params);
-    resultsSynx.time = mtpInputs.emgTime(:, mtpInputs.numPaddingFrames + 1 : ...
-        end - mtpInputs.numPaddingFrames);
+tempVarName = calcMtpModeledValues(finalValues, mtpResults, struct());
+tempVarName.time = mtpResults.emgTime(:, mtpResults.numPaddingFrames + 1 : ...
+    end - mtpResults.numPaddingFrames);
+tempVarName.muscleExcitations = tempVarName.muscleExcitations(:, :, ...
+    mtpResults.numPaddingFrames + 1 : end - mtpResults.numPaddingFrames);
+if isfield(mtpResults, "synergyExtrapolation")
+    resultsSynx = calcMtpSynXModeledValues(finalValues, mtpResults, params);
+    resultsSynx.time = mtpResults.emgTime(:, mtpResults.numPaddingFrames + 1 : ...
+        end - mtpResults.numPaddingFrames);
     resultsSynx.muscleExcitations = resultsSynx.muscleExcitations(:, :, ...
-        mtpInputs.numPaddingFrames + 1 : end - mtpInputs.numPaddingFrames);
-    finalValues.synergyWeights(mtpInputs.numberOfExtrapolationWeights + 1 : end) = 0;
-    resultsStruct = struct("results", results, ...
+        mtpResults.numPaddingFrames + 1 : end - mtpResults.numPaddingFrames);
+    finalValues.synergyWeights(mtpResults.numberOfExtrapolationWeights + 1 : end) = 0;
+    resultsStruct = struct("results", tempVarName, ...
         "resultsSynx", resultsSynx);
 else
-    resultsStruct = struct("results", results);
+    resultsStruct = struct("results", tempVarName);
 end
 if ~isempty(precalInputs)
 finalOptimalFiberLength = ...
-    finalValues.optimalFiberLengthScaleFactors .* mtpInputs.optimalFiberLength;
+    finalValues.optimalFiberLengthScaleFactors .* mtpResults.optimalFiberLength;
 finalValues.optimalFiberLengthScaleFactors = ...
     finalOptimalFiberLength ./ precalInputs.optimalFiberLength;
 finalTendonSlackLength = ...
-    finalValues.tendonSlackLengthScaleFactors .* mtpInputs.tendonSlackLength;
+    finalValues.tendonSlackLengthScaleFactors .* mtpResults.tendonSlackLength;
 finalValues.tendonSlackLengthScaleFactors = ...
     finalTendonSlackLength ./ precalInputs.tendonSlackLength;
 end
