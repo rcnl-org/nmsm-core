@@ -68,10 +68,7 @@ for i=1:length(inputs.tasks)
     end
     inputs.primaryValues = updateDesignVariables(inputs.primaryValues, ...
         optimizedValues, inputs.tasks{i}.isIncluded);
-    
-    if numel(inputs.tasks) > 1
-        inputs = updateScaleFactors(inputs);
-    end
+    inputs = updateScaleFactors(inputs);
 end
 results = inputs;
 end

@@ -45,12 +45,12 @@ end
 results = MuscleTendonPersonalization(inputs, params);
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
-        getMtpResultsToSave(params, results, precalInputs);
+        getMtpResultsToSave(inputs, params, results, precalInputs);
     saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory, precalInputs);
 else
     [finalValues, resultsStruct, modeledValues] = ...
-        getMtpResultsToSave(params, results);
+        getMtpResultsToSave(inputs, params, results);
     saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory);
 end
