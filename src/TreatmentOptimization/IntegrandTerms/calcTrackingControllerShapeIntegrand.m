@@ -81,6 +81,5 @@ end
 end
 
 function output = getShape(values)
-output = values - mean(values);
-output = output / max(abs(output));
+output = values / max(abs(values));
 end
