@@ -30,22 +30,6 @@
 
 function cost = calcPropulsiveImpulseGoalIntegrand(modeledValues, ...
     time, inputs, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", false);
-propulsiveForce = [];
-for i = 1:length(inputs.contactSurfaces)
-    if inputs.contactSurfaces{i}.isLeftFoot == strcmpi(costTerm.side, "left")
-        propulsiveForce = modeledValues.groundReactionsLab.forces{i}(:,1);
-    end
-end
-assert(~isempty(propulsiveForce), "Unable to find propulsive force.")
-cost = real(sqrt((propulsiveForce - costTerm.errorCenter) / ...
-    costTerm.maxAllowableError));
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+cost = ((modeledValues.brakingImpulse - costTerm.errorCenter) ...
+    ./ costTerm.maxAllowableError) .^ 2;
 end
