@@ -41,6 +41,10 @@ setup.auxdata = rmfield(setup.auxdata, "initialIntegrand");
 global initialIntegral
 setup.guess.phase.integral = initialIntegral;
 [setup, inputs] = setupMetabolicCost(setup, inputs);
+numMissing = length(initialIntegral) - length(setup.bounds.phase.integral.lower);
+setup.bounds.phase.integral.lower(end + 1: end + numMissing) = 0;
+setup.bounds.phase.integral.upper(end + 1: end + numMissing) = ...
+    (inputs.gpops.integralBound + 1) * initialIntegral(end - numMissing + 1 : end);
 end
 
 function [setup, inputs] = setupMetabolicCost(setup, inputs)
@@ -55,3 +59,5 @@ if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
     setup.guess.phase.integral(end) = inputs.initialMetabolicCost;
 end
 end
+
+
