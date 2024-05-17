@@ -51,6 +51,16 @@ modeledValues.integrand = calcGpopsIntegrand(values, modeledValues, setup.auxdat
 if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
     modeledValues.integrand(:, end+1) = modeledValues.metabolicCost;
 end
+if valueOrAlternate(setup.auxdata, 'calculateBrakingImpulse', false)
+    modeledValues.integrand(:, ...
+        end+1:end + length(setup.auxdata.contactSurfaces)) = ...
+        modeledValues.brakingImpulse;
+end
+if valueOrAlternate(setup.auxdata, 'calculatePropulsiveImpulse', false)
+    modeledValues.integrand(:, ...
+        end+1:end + length(setup.auxdata.contactSurfaces)) = ...
+        modeledValues.propulsiveImpulse;
+end
 if isempty(modeledValues.integrand)
     modeledValues = rmfield(modeledValues, "integrand");
 end
