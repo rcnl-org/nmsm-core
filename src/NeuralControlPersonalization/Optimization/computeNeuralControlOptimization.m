@@ -36,11 +36,12 @@ numDesignVariables = length(initialValues);
 optimizerOptions = prepareOptimizerOptions(params);
 finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
     inputs, params), initialValues, [], [], synergyWeightEquations, ...
-    synergyWeightSums, lowerBounds, [], [], optimizerOptions);
-end
-
+    synergyWeightSums, lowerBounds, [], ...
+    @(values)makeActivationMagnitudeConstraints(values, inputs, params), ...
+    optimizerOptions);
 % Generate constraints for synergy weight vectors and design variable lower
 % bounds
+end
 function [synergyWeightEquations, synergyWeightSums, lowerBounds] = ...
     makeConstraints(inputs, numDesignVariables)
 synergyWeightEquations = zeros(inputs.numSynergies, numDesignVariables);
@@ -58,6 +59,19 @@ for i = 1:length(inputs.synergyGroups)
     end
 end
 lowerBounds = zeros(numDesignVariables, 1);
+end
+
+function [activationMagnitudeConstraint, activationEqualityConstraint] = ...
+    makeActivationMagnitudeConstraints(values, inputs, params)
+
+    activations = calcActivationsFromSynergyDesignVariables( ...
+        values, inputs, params);
+
+    upperBound = max(activations - 1, [], 3);
+    lowerBound = max(activations*-1, [], 3);
+
+    activationMagnitudeConstraint = reshape([upperBound, lowerBound], 1, []);
+    activationEqualityConstraint = 0;
 end
 
 % Set optimizer options from params struct
