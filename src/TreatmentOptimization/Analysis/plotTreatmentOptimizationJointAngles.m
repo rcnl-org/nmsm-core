@@ -37,36 +37,35 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationJointAngles(modelFileName, ...
-    experimentalFile, modelFiles, figureWidth, figureHeight)
+    trackedDataFile, modelDataFiles, figureWidth, figureHeight)
 
 import org.opensim.modeling.Storage
 model = Model(modelFileName);
-experimentalStorage = Storage(experimentalFile);
-labels = getStorageColumnNames(experimentalStorage);
-experimentalData = storageToDoubleMatrix(experimentalStorage)';
-experimentalData = experimentalData;
-experimentalTime = findTimeColumn(experimentalStorage);
-if experimentalTime(1) ~= 0
-    experimentalTime = experimentalTime - experimentalTime(1);
+trackedDataStorage = Storage(trackedDataFile);
+coordinateLabels = getStorageColumnNames(trackedDataStorage);
+trackedData = storageToDoubleMatrix(trackedDataStorage)';
+trackedDataTime = findTimeColumn(trackedDataStorage);
+if trackedDataTime(1) ~= 0
+    trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
-experimentalTime = experimentalTime / experimentalTime(end);
-for i = 1 : size(experimentalData, 2)
-    if model.getCoordinateSet().get(labels(i)).getMotionType() ...
+trackedDataTime = trackedDataTime / trackedDataTime(end);
+for i = 1 : size(trackedData, 2)
+    if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
         .toString().toCharArray()' == "Rotational"
-        experimentalData(:, i) = experimentalData(:, i) * 180/pi;
+        trackedData(:, i) = trackedData(:, i) * 180/pi;
     end
 end
 modelData = {};
-for j=1:numel(modelFiles)
-    modelStorage = Storage(modelFiles(j));
-    modelData{j} = storageToDoubleMatrix(modelStorage)';
-    modelTime{j} = findTimeColumn(modelStorage);
-    if modelTime{j} ~= 0
-        modelTime{j} = modelTime{j} - modelTime{j}(1);
+for j=1:numel(modelDataFiles)
+    modelDataStorage = Storage(modelDataFiles(j));
+    modelData{j} = storageToDoubleMatrix(modelDataStorage)';
+    modelDataTime{j} = findTimeColumn(modelDataStorage);
+    if modelDataTime{j} ~= 0
+        modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
     end
-    modelTime{j} = modelTime{j} / modelTime{j}(end);
+    modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
     for i = 1 : size(modelData{j}, 2)
-        if model.getCoordinateSet().get(labels(i)).getMotionType() ...
+        if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
             modelData{j}(:, i) = modelData{j}(:, i) * 180/pi;
         end
@@ -74,18 +73,18 @@ for j=1:numel(modelFiles)
 end
 
 % Spline experimental time to the same time points as the model.
-experimentalSpline = makeGcvSplineSet(experimentalTime, ...
-    experimentalData, labels);
-resampledExperimental = {};
-for j = 1 : numel(modelFiles)
-    resampledExperimental{j}= evaluateGcvSplines(experimentalSpline, ...
-        labels, modelTime{j});
+experimentalSpline = makeGcvSplineSet(trackedDataTime, ...
+    trackedData, coordinateLabels);
+resampledExperimentalData = {};
+for j = 1 : numel(modelDataFiles)
+    resampledExperimentalData{j}= evaluateGcvSplines(experimentalSpline, ...
+        coordinateLabels, modelDataTime{j});
 end
 if nargin < 4
-    figureWidth = ceil(sqrt(numel(labels)));
-    figureHeight = ceil(numel(labels)/figureWidth);
+    figureWidth = ceil(sqrt(numel(coordinateLabels)));
+    figureHeight = ceil(numel(coordinateLabels)/figureWidth);
 elseif nargin < 5
-    figureHeight = ceil(sqrt(numel(labels)));
+    figureHeight = ceil(sqrt(numel(coordinateLabels)));
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Angles", ...
@@ -97,7 +96,7 @@ t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Movement [0-100%]")
 ylabel(t, "Joint Angle [deg]")
-for i=1:numel(labels)
+for i=1:numel(coordinateLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Joint Angles", ...
@@ -111,19 +110,19 @@ for i=1:numel(labels)
     end
     nexttile(subplotNumber);
     hold on
-        plot(experimentalTime*100, experimentalData(:, i), LineWidth=2);
-        for j = 1 : numel(modelFiles)
-            plot(modelTime{j}*100, modelData{j}(:, i), LineWidth=2);
+        plot(trackedDataTime*100, trackedData(:, i), LineWidth=2);
+        for j = 1 : numel(modelDataFiles)
+            plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2);
         end
     hold off
-    titleString = [sprintf("%s", strrep(labels(i), "_", " "))];
-    for j = 1 : numel(modelFiles)
-        rmse = rms(resampledExperimental{j}(:, i) - modelData{j}(:, i));
+    titleString = [sprintf("%s", strrep(coordinateLabels(i), "_", " "))];
+    for j = 1 : numel(modelDataFiles)
+        rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
     title(titleString)
     if subplotNumber==1
-        splitFileName = split(experimentalFile, ["/", "\"]);
+        splitFileName = split(trackedDataFile, ["/", "\"]);
         for k = 1 : numel(splitFileName)
             if ~strcmp(splitFileName(k), "..")
                 legendValues = sprintf("%s (T)", ...
@@ -131,8 +130,8 @@ for i=1:numel(labels)
                 break
             end
         end
-        for j = 1 : numel(modelFiles)
-            splitFileName = split(modelFiles(j), ["/", "\"]);
+        for j = 1 : numel(modelDataFiles)
+            splitFileName = split(modelDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
         legend(legendValues)
@@ -140,15 +139,15 @@ for i=1:numel(labels)
     xlim("tight")
     maxData = [];
     minData = [];
-    for j = 1 : numel(modelFiles)
+    for j = 1 : numel(modelDataFiles)
         maxData(j) = max(modelData{j}(:, i), [], "all");
         minData(j) = min(modelData{j}(:, i), [], "all");
     end
-    maxData(j+1) = max(experimentalData(:, i), [], "all");
-    minData(j+1) = min(experimentalData(:, i), [], "all");
+    maxData(j+1) = max(trackedData(:, i), [], "all");
+    minData(j+1) = min(trackedData(:, i), [], "all");
     yLimitUpper = max(maxData);
     yLimitLower = min(minData);
-    if model.getCoordinateSet().get(labels(i)).getMotionType() ...
+    if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
         minimum = 10;
     else

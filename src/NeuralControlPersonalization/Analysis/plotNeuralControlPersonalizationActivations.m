@@ -30,15 +30,6 @@
 
 function plotNeuralControlPersonalizationActivations(weightsFile, ...
     commandsFile, mtpActivationsFile, figureWidth, figureHeight)
-% Define number of 
-if nargin < 4
-    figureWidth = 8;
-end
-if nargin < 5
-    figureHeight = 8;
-end
-figureSize = figureWidth * figureHeight;
-
 import org.opensim.modeling.Storage
 weightsStorage = Storage(weightsFile);
 muscleNames = getStorageColumnNames(weightsStorage);
@@ -56,12 +47,29 @@ else
     mtpMuscleNames = "";
 end
 
-figureNumber = 1;
+if nargin < 4
+    figureWidth = ceil(sqrt(numel(muscleNames)));
+    figureHeight = ceil(numel(muscleNames)/figureWidth);
+elseif nargin < 5
+    figureHeight = ceil(sqrt(numel(muscleNames)));
+end
+figureSize = figureWidth * figureHeight;
+splitFileName = split(weightsFile, ["/", "\"]);
+for k = 1 : numel(splitFileName)
+    if ~strcmp(splitFileName(k), "..")
+        figureName = splitFileName(k);
+        break
+    end
+end
+figure(Name = figureName, ...
+    Units='normalized', ...
+    Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
-hasLegend = false;
+figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-% figure(1)
+xlabel(t, "Time Points [s]")
+ylabel(t, "Muscle Activations")
 for i = 1:size(muscleActivations, 1)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -69,21 +77,26 @@ for i = 1:size(muscleActivations, 1)
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         subplotNumber = 1;
-        hasLegend = false;
     end
     nexttile(subplotNumber)
-    plot(time, muscleActivations(i, :), 'LineWidth', 2)
     mtpIndex = find(muscleNames(i) == mtpMuscleNames);
+    hold on
     if ~isempty(mtpIndex)
-        hold on
-        plot(time, mtpActivations(mtpIndex, :), 'LineWidth', 2);
-        if ~hasLegend
-            legend("NCP Results", "Previous Activations")
-            hasLegend = true;
+        plot(time, mtpActivations(mtpIndex, :), 'LineWidth', 2, ...
+            Color="#0072BD");
+    end
+    plot(time, muscleActivations(i, :), 'LineWidth', 2, ...
+        Color="#D95319")
+    hold off
+    if subplotNumber==1
+        if ~isempty(mtpIndex)
+            legend("MTP Activations", "NCP Activations")
+        else
+            legend("NCP Activations")
         end
-        hold off
     end
     title(strrep(muscleNames(i), "_", " "))
+    xlim("tight")
     ylim([0 1])
     subplotNumber = subplotNumber + 1;
 end

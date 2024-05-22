@@ -33,17 +33,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveMtpMuscleModelParameters(mtpInputs, finalValues, resultsDirectory)
+function saveMtpMuscleModelParameters(mtpInputs, finalValues, ...
+    precalInputs, resultsDirectory)
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
 columnLabels = mtpInputs.muscleNames;
-dataPoints = [finalValues.activationTimeConstants;
-    finalValues.activationNonlinearityConstants;
-    finalValues.electromechanicalDelays;
-    finalValues.emgScaleFactors;
-    finalValues.optimalFiberLengthScaleFactors;
-    finalValues.tendonSlackLengthScaleFactors];
+if precalInputs.useAbsoluteLengths
+    dataPoints = [finalValues.activationTimeConstants;
+        finalValues.activationNonlinearityConstants;
+        finalValues.electromechanicalDelays;
+        finalValues.emgScaleFactors;
+        precalInputs.optimalFiberLength - mtpInputs.optimalFiberLength;
+        precalInputs.tendonSlackLength - mtpInputs.tendonSlackLength];
+else
+    dataPoints = [finalValues.activationTimeConstants;
+        finalValues.activationNonlinearityConstants;
+        finalValues.electromechanicalDelays;
+        finalValues.emgScaleFactors;
+        finalValues.optimalFiberLengthScaleFactors;
+        finalValues.tendonSlackLengthScaleFactors];
+end
 writeToSto(columnLabels, 1:1:size(dataPoints,1), dataPoints, ...
     fullfile(resultsDirectory, "muscleModelParameters.sto"));
 end

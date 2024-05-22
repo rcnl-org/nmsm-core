@@ -72,6 +72,7 @@ for i = 1 : length(contactSurface.springs)
 end
 
 % Plot values
+figure(name = osimxFileName)
 scatter(springZ, springX, 200, stiffness, "filled")
 set(gca, 'DataAspectRatio', [1, 1, 1])
 title("Stiffness coefficients")

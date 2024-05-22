@@ -32,17 +32,6 @@
 function plotMomentMatchingResults(experimentalMomentsFile, ...
     modeledMomentsFile, figureWidth, figureHeight, figureNumber)
 import org.opensim.modeling.Storage
-if nargin < 3
-    figureWidth = 4;
-end
-if nargin < 4
-    figureHeight = 2;
-end
-if nargin < 5
-    figureNumber = 1;
-end
-figureSize = figureWidth * figureHeight;
-
 [experimentalColumns, experimentalTime, experimentalMoments] = ...
     parseMotToComponents(org.opensim.modeling.Model(), ...
     Storage(experimentalMomentsFile));
@@ -54,12 +43,35 @@ includedColumns = logical(ismember(experimentalColumns, modeledColumns) ...
 experimentalMoments = experimentalMoments(includedColumns, :);
 experimentalColumns = experimentalColumns(includedColumns);
 
+if nargin < 3
+    figureWidth = ceil(sqrt(numel(experimentalColumns)));
+    figureHeight = ceil(numel(experimentalColumns)/figureWidth);
+elseif nargin < 4
+    figureHeight = ceil(sqrt(numel(experimentalColumns)));
+end
+if nargin < 5
+    figureNumber = 1;
+end
+figureSize = figureWidth * figureHeight;
+splitFileName = split(modeledMomentsFile, ["/", "\"]);
+for k = 1 : numel(splitFileName)
+    if ~strcmp(splitFileName(k), "..")
+        figureName = splitFileName(k);
+        break
+    end
+end
+figure(Name = figureName, ...
+    Units='normalized', ...
+    Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
-hasLegend = false;
-% figure(figureNumber)
+figureNumber = 1;
 figureIndex = 1;
+hasLegend = false;
 t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='compact', Padding='compact');
+    TileSpacing='Compact', Padding='Compact');
+xlabel(t, "Time Points [s]")
+ylabel(t, "Joint Moments [Nm]")
+
 for i = 1:length(experimentalColumns)
     if i > figureSize * figureIndex
         figureIndex = figureIndex + 1;

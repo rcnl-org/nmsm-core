@@ -44,9 +44,14 @@ modeledKinematics = ...
     storageToDoubleMatrix(Storage(optimizedKinematicsFileName));
 time = findTimeColumn(Storage(experimentalKinematicsFileName));
 
-figure(plotNumber)
+splitFileName = split(optimizedKinematicsFileName, "_optimized");
+figureName = splitFileName(1);
+figure(Name = figureName, ...
+    Units='normalized', ...
+    Position=[0.05 0.05 0.9 0.85])
 t = tiledlayout(2, 4, ...
     TileSpacing='compact', Padding='compact');
+xlabel(t, "Time [s]")
 for i = 1:7
     nexttile(i)
     % Rotational coordinate data are converted to degrees. 
@@ -57,14 +62,14 @@ for i = 1:7
         experimental = experimentalKinematics(i, :);
         model = modeledKinematics(i, :);
     end
-    plot(time, experimental, "red", "LineWidth", 2)
+    plot(time, experimental, Color="#0072BD", LineWidth=2)
     hold on
-    plot(time, model, "blue", "LineWidth", 2)
+    plot(time, model, Color="#D95319", LineWidth=2)
     error = rms(experimental - model);
     title(coordinates(i) + newline + " RMSE: " + error)
-    xlabel('Time')
     if i == 1
         ylabel('Angle (deg)')
+        legend("Experimental", "Model")
     elseif i == 5
         ylabel('Translation (m)')
     end

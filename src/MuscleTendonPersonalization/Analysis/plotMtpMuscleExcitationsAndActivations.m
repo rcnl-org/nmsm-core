@@ -29,7 +29,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotMtpMuscleExcitationsAndActivations(resultsDirectory)
+function plotMtpMuscleExcitationsAndActivations(resultsDirectory, ...
+    figureWidth, figureHeight)
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
 [muscleNames, excitations] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "muscleExcitations"));
@@ -61,44 +62,67 @@ meanActivationsSynx = mean(activationsSynx, 3);
 stdActivationsSynx = std(activationsSynx,[], 3);
 time = 1:1:size(meanExcitations,1);
 
-figureWidth = ceil(sqrt(numel(muscleNames)));
-figureHeight = ceil(numel(muscleNames)/figureWidth);
-figure(Name = strcat(resultsDirectory, " Muscle Excitations and Activations"), ...
+if nargin < 2
+    figureWidth = ceil(sqrt(numel(muscleNames)));
+    figureHeight = ceil(numel(muscleNames)/figureWidth);
+elseif nargin < 3
+    figureHeight = ceil(sqrt(numel(muscleNames)));
+end
+figureSize = figureWidth * figureHeight;
+subplotNumber = 1;
+figureNumber = 1;
+figure(Name = strcat(resultsDirectory, ...
+        " Muscle Excitations and Activations"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-
+xlabel(t, "Percent Movement [0-100%]")
+ylabel(t, "Magnitude")
 for i = 1:numel(muscleNames)
-    nexttile(i);
+    if i > figureSize * figureNumber
+        figureNumber = figureNumber + 1;
+        figure(Name = strcat(resultsDirectory, ...
+                " Muscle Excitations and Activations"), ...
+            Units='normalized', ...
+            Position=[0.05 0.05 0.9 0.85])
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Percent Movement [0-100%]")
+        ylabel(t, "Magnitude")
+        subplotNumber = 1;
+    end
+    nexttile(subplotNumber);
     hold on
     if ~isempty(meanExcitationsSynx)
-        plotMeanAndStd(meanExcitations(:,i), stdExcitations(:,i), time, 'b--');
-        plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), time, 'r--');
-        plotMeanAndStd(meanExcitationsSynx(:,i), stdExcitationsSynx(:,i), time, 'b-');
-        plotMeanAndStd(meanActivationsSynx(:,i), stdActivationsSynx(:,i), time, 'r-');
+        plotMeanAndStd(meanExcitations(:,i), stdExcitations(:,i), ...
+            time, "#0072BD", '--');
+        plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), ...
+            time, "#D95319", '--');
+        plotMeanAndStd(meanExcitationsSynx(:,i), stdExcitationsSynx(:,i), ...
+            time, "#0072BD", '-');
+        plotMeanAndStd(meanActivationsSynx(:,i), stdActivationsSynx(:,i), ...
+            time, "#D95319", '-');
     else
-        plotMeanAndStd(meanExcitations(:,i), stdExcitations(:,i), time, 'b-');
-        plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), time, 'r-');
+        plotMeanAndStd(meanExcitations(:,i), stdExcitations(:,i), ...
+            time, "#0072BD", '-');
+        plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), ...
+            time, "#D95319", '-');
     end
     set(gca, fontsize=11)
-    axis([time(1) time(end) 0 1])
     if (max(meanExcitations(:, i)) == 0)
         title(strcat(muscleNames(i), " *"), FontSize=12);
     else
         title(muscleNames(i), FontSize=12);
     end
-    if i == 1
+    if subplotNumber == 1
         legend ('Excitation (No SynX)', ...
             'Activation (No SynX)', ...
             'Excitation (With SynX)', ...
             'Activation (With SynX)');
     end
-    if mod(i,figureWidth) == 1
-        ylabel("Magnitude")
-    end
-    if i>numel(muscleNames)-figureWidth
-        xlabel("Time Points")
-    end
+    xlim("tight")
+    ylim([0 1])
+    subplotNumber = subplotNumber + 1;
 end
 end

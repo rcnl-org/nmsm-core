@@ -41,11 +41,21 @@ for i = 1:length(costTerms)
                     throw(MException("", "Cannot use passive_joint_moment cost function type without passive data"))
                 end
             case "optimal_muscle_fiber_length"
-                cost = calcOptimalFiberLengthScaleFactorDeviationCost(values, ...
-                    costTerm);
+                if experimentalData.useAbsoluteLengths
+                    cost = calcOptimalFiberLengthAbsoluteDeviationCost( ...
+                        experimentalData, costTerm);
+                else
+                    cost = calcOptimalFiberLengthScaleFactorDeviationCost(values, ...
+                        costTerm);
+                end
             case "tendon_slack_length"
-                cost = calcTendonSlackLengthScaleFactorDeviationCost(values, ...
-                    costTerm);
+                if experimentalData.useAbsoluteLengths
+                    cost = calcTendonSlackLengthAbsoluteDeviationCost( ...
+                        experimentalData, costTerm);
+                else
+                    cost = calcTendonSlackLengthScaleFactorDeviationCost(values, ...
+                        costTerm);
+                end
             case "minimum_normalized_muscle_fiber_length"
                 cost = calcMinimumNormalizedFiberLengthDeviationCost(modeledValues, ...
                     experimentalData, costTerm);
