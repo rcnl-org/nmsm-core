@@ -1,5 +1,8 @@
 function inputs = computeCollocationPointTimes(inputs)
 
+inputs.experimentalTime = linspace(inputs.initialTime(1), ...
+    inputs.initialTime(end), length(inputs.experimentalTime));
+
 if isfield(inputs, "finalTimeRange")
     inputs.maxTime = inputs.finalTimeRange(2);
 else
