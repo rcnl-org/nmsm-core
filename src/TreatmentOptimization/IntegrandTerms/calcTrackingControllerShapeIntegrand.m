@@ -81,9 +81,5 @@ end
 end
 
 function output = getShape(values)
-temp = mean(abs(values)) + 2 * std(abs(values));
-if temp == 0
-    temp = eps;
-end
-output = values / temp;
+output = values / max(abs(values));
 end
