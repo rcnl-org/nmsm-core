@@ -51,8 +51,10 @@ if strcmp(inputs.controllerType, 'synergy')
         end
         experimentalControl = synergyActivations(:, indx);
         referenceControl = values.controlSynergyActivations(:, indx);
-        scaleFactor = referenceControl \ experimentalControl;
-        cost = experimentalControl - (referenceControl * scaleFactor);
+        coefficients = [referenceControl, ones(size(referenceControl))] \ experimentalControl;
+        scaleFactor = coefficients(1);
+        intercept = coefficients(2);
+        cost = experimentalControl - ((referenceControl * scaleFactor) + intercept);
         return
     end
 end
@@ -71,8 +73,10 @@ else
 end
 experimentalControl = experimentalJointMoments(:, indx1);
 referenceControl = values.torqueControls(:, indx2);
-scaleFactor = referenceControl \ experimentalControl;
-cost = experimentalControl - (referenceControl * scaleFactor);
+coefficients = [referenceControl, ones(size(referenceControl))] \ experimentalControl;
+scaleFactor = coefficients(1);
+intercept = coefficients(2);
+cost = experimentalControl - ((referenceControl * scaleFactor) + intercept);
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);
