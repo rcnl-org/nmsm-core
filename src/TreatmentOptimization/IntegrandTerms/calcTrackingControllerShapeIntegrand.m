@@ -49,10 +49,9 @@ if strcmp(inputs.controllerType, 'synergy')
                 evaluateGcvSplines(inputs.splineSynergyActivations, ...
                 inputs.synergyLabels, time);
         end
-        experimentalControl = synergyActivations(:, indx);
-        referenceControl = values.controlSynergyActivations(:, indx);
-        scaleFactor = referenceControl \ experimentalControl;
-        cost = experimentalControl - (referenceControl * scaleFactor);
+        experimentalControl = getShape(synergyActivations(:, indx));
+        referenceControl = getShape(values.controlSynergyActivations(:, indx));
+        cost = experimentalControl - referenceControl;
         return
     end
 end
@@ -69,10 +68,9 @@ else
         evaluateGcvSplines(inputs.splineTorqueControls, ...
         inputs.torqueLabels, time);
 end
-experimentalControl = experimentalJointMoments(:, indx1);
-referenceControl = values.torqueControls(:, indx2);
-scaleFactor = referenceControl \ experimentalControl;
-cost = experimentalControl - (referenceControl * scaleFactor);
+experimentalControl = getShape(experimentalJointMoments(:, indx1));
+referenceControl = getShape(values.torqueControls(:, indx2));
+cost = experimentalControl - referenceControl;
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);
@@ -80,4 +78,8 @@ if normalizeByFinalTime
         cost = cost / inputs.collocationTimeOriginal(end);
     end
 end
+end
+
+function output = getShape(values)
+output = values / max(abs(values));
 end
