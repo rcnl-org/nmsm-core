@@ -184,6 +184,9 @@ for term = 1:length(params.tasks{task}.costTerms)
                 rawCost = reshape(modeledValues.jointPositions(5:7, :) ...
                     - inputs.surfaces{foot}.experimentalJointPositions( ...
                     5:7, :), 1, []);
+            case "periodicity"
+                rawCost = calcFootPositionPeriodicityError( ...
+                    modeledValues.jointPositions, costTerm);
             case "vertical_grf"
                 rawCost = groundReactionForceValueErrors(2, :);
             case "vertical_grf_slope"
