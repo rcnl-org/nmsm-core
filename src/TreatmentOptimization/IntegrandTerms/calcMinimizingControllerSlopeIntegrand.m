@@ -48,8 +48,9 @@ if isempty(indx)
 end
 assert(~isempty(indx), "Controller " + controllerName + " is not a " + ...
     "synergy or torque controller.")
-cost = diff(control) ./ diff(time);
-cost(end + 1) = 0;
+tempSpline = spline(time, control);
+derivative = fnder(tempSpline, 1);
+cost = ppval(derivative, time);
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);
