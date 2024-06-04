@@ -53,38 +53,18 @@ scale.setApply(true);
 scaleSet.cloneAndAppend(scale);
 model.scale(state, scaleSet, true, -1.0);
 
-indicesForRemoval = [];
 for i = 0 : model.getConstraintSet().getSize() - 1
     parentStr = strsplit(string(model.getConstraintSet().get(i).getPropertyByName("socket_body_1").toString()), "/");
     parentStr = parentStr(end);
     childStr = strsplit(string(model.getConstraintSet().get(i).getPropertyByName("socket_body_2").toString()), "/");
     childStr = childStr(end);
     if strcmp(parentStr(end), bodyName)
-        scaledLocation1 = getScaledLocation(1, model.getConstraintSet().get(i).getPropertyByName("location_body_1").toString());
-        scaledLocation2 = getScaledLocation(scaleFactor, model.getConstraintSet().get(i).getPropertyByName("location_body_2").toString());
-        % model.getConstraintSet().remove(i);
-        indicesForRemoval(end + 1) = i;
-        model.addConstraint(org.opensim.modeling.PointConstraint(...
-            model.getBodySet().get(parentStr), ...
-            scaledLocation1, ...
-            model.getBodySet().get(childStr), ...
-            scaledLocation2 ...
-            ));
+        scaledLocation1 = getScaledLocation(scaleFactor, model.getConstraintSet().get(i).getPropertyByName("location_body_1").toString());
+        org.opensim.modeling.PointConstraint.safeDownCast(model.getConstraintSet().get(i)).set_location_body_1(scaledLocation1);
     elseif strcmp(childStr(end), bodyName)
-        scaledLocation1 = getScaledLocation(1, model.getConstraintSet().get(i).getPropertyByName("location_body_1").toString());
         scaledLocation2 = getScaledLocation(scaleFactor, model.getConstraintSet().get(i).getPropertyByName("location_body_2").toString());
-        % model.getConstraintSet().remove(i);
-        indicesForRemoval(end + 1) = i;
-        model.addConstraint(org.opensim.modeling.PointConstraint(...
-            model.getBodySet().get(parentStr), ...
-            scaledLocation1, ...
-            model.getBodySet().get(childStr), ...
-            scaledLocation2 ...
-            ));
+        org.opensim.modeling.PointConstraint.safeDownCast(model.getConstraintSet().get(i)).set_location_body_2(scaledLocation2);
     end
-end
-for i = 1:length(indicesForRemoval)
-    model.getConstraintSet().remove(indicesForRemoval(i));
 end
 
 if ~anatomicalMarkers
