@@ -31,12 +31,12 @@
 function inputs = parseMuscleTendonLengthInitializationSettingsTree( ...
     settingsTree)
 if strcmp(getFieldByNameOrError(settingsTree, ...
-        "MuscleTendonLengthInitialization").is_enabled.Text, "true")
+        'MuscleTendonLengthInitialization').is_enabled.Text, "true")
     inputs = getInputs(settingsTree);
     inputs = getMtpModelInputs(inputs);
     inputs = saveInitialLengthParameters(inputs);
     inputs = getMuscleVolume(inputs);
-    inputs = rmfield(inputs, "model");
+    inputs = rmfield(inputs, 'model');
 else
     inputs = false;
 end
@@ -44,7 +44,7 @@ end
 
 function inputs = getInputs(tree)
 inputs = parseMtpNcpSharedInputs(tree);
-inputs = getPassiveData(getFieldByNameOrError(tree, "MuscleTendonLengthInitialization"), inputs);
+inputs = getPassiveData(getFieldByNameOrError(tree, 'MuscleTendonLengthInitialization'), inputs);
 inputs = getTask(tree, inputs);
 
 inputs = getNormalizedFiberLengthSettings(tree, inputs);
@@ -153,7 +153,7 @@ end
 
 function inputs = getNormalizedFiberLengthSettings(tree, inputs)
 normalizedFiberLengthGroupNames = parseSpaceSeparatedList(tree, ...
-    "normalized_fiber_length_muscle_groups");
+    'normalized_fiber_length_muscle_groups');
 inputs.normalizedFiberLengthGroups = groupNamesToGroups( ...
     normalizedFiberLengthGroupNames, inputs.model);
 inputs.numMuscleGroups = numel(inputs.normalizedFiberLengthGroups);

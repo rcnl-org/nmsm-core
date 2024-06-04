@@ -29,7 +29,8 @@
 % ----------------------------------------------------------------------- %
 
 function dataDirectory = parseDataDirectory(tree)
-dataDirectoryElement = getFieldByNameOrError(tree, 'data_directory');
+dataDirectoryElement = getFieldByNameOrError(tree, ...
+    'tracked_quantities_directory');
 dataDirectory = dataDirectoryElement.Text;
 if isempty(dataDirectory)
     dataDirectory = pwd;

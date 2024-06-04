@@ -42,6 +42,10 @@ assert(~isempty(propulsiveForce), "Unable to find propulsive force.")
 cost = real(sqrt((propulsiveForce - costTerm.errorCenter) / ...
     costTerm.maxAllowableError));
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end

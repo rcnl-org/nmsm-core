@@ -28,8 +28,8 @@
 % ----------------------------------------------------------------------- %
 
 function groups = parseSynergyGroups(tree, model)
-synergySetTree = getFieldByNameOrError(tree, "RCNLSynergySet");
-groupsTree = getFieldByNameOrError(synergySetTree, "RCNLSynergy");
+synergySetTree = getFieldByNameOrError(tree, 'RCNLSynergySet');
+groupsTree = getFieldByNameOrError(synergySetTree, 'RCNLSynergy');
 groups = {};
 for i=1:length(groupsTree)
     if(length(groupsTree) == 1)

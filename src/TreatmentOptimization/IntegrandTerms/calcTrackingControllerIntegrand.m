@@ -34,7 +34,7 @@ function cost = calcTrackingControllerIntegrand(costTerm, inputs, ...
     values, time, controllerName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-if normalizeByFinalTime
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
     time = time * inputs.collocationTimeOriginal(end) / time(end);
 end
 if strcmp(inputs.controllerType, 'synergy')
@@ -70,6 +70,10 @@ end
 cost = experimentalJointMoments(:, indx1) - ...
     values.torqueControls(:, indx2);
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end
