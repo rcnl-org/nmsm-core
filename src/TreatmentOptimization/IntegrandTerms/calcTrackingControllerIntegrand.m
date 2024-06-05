@@ -34,7 +34,7 @@ function cost = calcTrackingControllerIntegrand(costTerm, inputs, ...
     values, time, controllerName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-if normalizeByFinalTime
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
     time = time * inputs.collocationTimeOriginal(end) / time(end);
 end
 if strcmp(inputs.controllerType, 'synergy')
@@ -49,7 +49,8 @@ if strcmp(inputs.controllerType, 'synergy')
                 evaluateGcvSplines(inputs.splineSynergyActivations, ...
                 inputs.synergyLabels, time);
         end
-        cost = calcTrackingCostArrayTerm(synergyActivations, ...
+        scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+        cost = calcTrackingCostArrayTerm(synergyActivations * scaleFactor, ...
             values.controlSynergyActivations, indx);
         return
     end
@@ -67,9 +68,14 @@ else
         evaluateGcvSplines(inputs.splineTorqueControls, ...
         inputs.torqueLabels, time);
 end
-cost = experimentalJointMoments(:, indx1) - ...
+scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+cost = (experimentalJointMoments(:, indx1) * scaleFactor) - ...
     values.torqueControls(:, indx2);
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end

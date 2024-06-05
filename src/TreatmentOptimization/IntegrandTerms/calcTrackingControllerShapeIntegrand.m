@@ -1,9 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the experimental and
-% predicted muscle activations for the specified muscle.
+% If the model is synergy driven, this function tracks the difference
+% between original and current synergy activation controls. If the model is
+% torque driven, this function tracks the difference between inverse
+% dynamics moments and current torque controls.
 %
-% (2D matrix, Array of number, struct, Array of string) -> (Array of number)
+% (struct, struct, Array of number, Array of string) -> (Array of number)
 %
 
 % ----------------------------------------------------------------------- %
@@ -28,24 +30,49 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMuscleActivationIntegrand(costTerm, ...
-    muscleActivations, time, inputs, muscleName)
+function cost = calcTrackingControllerShapeIntegrand(costTerm, inputs, ...
+    values, time, controllerName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
 if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
     time = time * inputs.collocationTimeOriginal(end) / time(end);
 end
-indx = find(strcmp(convertCharsToStrings(inputs.muscleNames), ...
-    muscleName));
+if strcmp(inputs.controllerType, 'synergy')
+    indx = find(strcmp(convertCharsToStrings( ...
+        inputs.synergyLabels), controllerName));
+    if ~isempty(indx)
+        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+                max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+            synergyActivations = inputs.splinedSynergyActivations;
+        else
+            synergyActivations = ...
+                evaluateGcvSplines(inputs.splineSynergyActivations, ...
+                inputs.synergyLabels, time);
+        end
+        experimentalControl = synergyActivations(:, indx);
+        referenceControl = values.controlSynergyActivations(:, indx);
+        scaleFactor = referenceControl \ experimentalControl;
+        cost = experimentalControl - (referenceControl * scaleFactor);
+        return
+    end
+end
+indx1 = find(strcmp(convertCharsToStrings( ...
+    strcat(inputs.torqueLabels, '_moment')), controllerName));
+indx2 = find(strcmp(convertCharsToStrings( ...
+    strcat(inputs.torqueControllerCoordinateNames, '_moment')), ...
+    controllerName));
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
         max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalMuscleActivations = inputs.splinedMuscleActivations;
+    experimentalJointMoments = inputs.splinedTorqueControls;
 else
-    experimentalMuscleActivations = evaluateGcvSplines( ...
-        inputs.splineMuscleActivations, inputs.muscleNames, time);
+    experimentalJointMoments = ...
+        evaluateGcvSplines(inputs.splineTorqueControls, ...
+        inputs.torqueLabels, time);
 end
-cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
-    muscleActivations, indx);
+experimentalControl = experimentalJointMoments(:, indx1);
+referenceControl = values.torqueControls(:, indx2);
+scaleFactor = referenceControl \ experimentalControl;
+cost = experimentalControl - (referenceControl * scaleFactor);
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);

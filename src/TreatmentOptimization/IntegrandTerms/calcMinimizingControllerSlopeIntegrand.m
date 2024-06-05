@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the experimental and
-% predicted muscle activations for the specified muscle.
+% 
 %
-% (2D matrix, Array of number, struct, Array of string) -> (Array of number)
-%
+% (struct, struct, Array of number, Array of string) -> (Array of number)
+% Minimizes the finite difference derivative of a control. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,24 +27,30 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMuscleActivationIntegrand(costTerm, ...
-    muscleActivations, time, inputs, muscleName)
+function cost = calcMinimizingControllerSlopeIntegrand(costTerm, inputs,...
+    values, time, controllerName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
+    "normalize_by_final_time", false);
+indx = [];
+if strcmp(inputs.controllerType, 'synergy')
+    indx = find(strcmp(convertCharsToStrings( ...
+        inputs.synergyLabels), controllerName));
+    control = values.controlSynergyActivations(:, indx);
 end
-indx = find(strcmp(convertCharsToStrings(inputs.muscleNames), ...
-    muscleName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalMuscleActivations = inputs.splinedMuscleActivations;
-else
-    experimentalMuscleActivations = evaluateGcvSplines( ...
-        inputs.splineMuscleActivations, inputs.muscleNames, time);
+if isempty(indx)
+    indx = find(strcmp(convertCharsToStrings( ...
+        strcat(inputs.torqueLabels, '_moment')), controllerName));
+    if isempty(indx)
+        indx = find(strcmp(convertCharsToStrings( ...
+            strcat(inputs.torqueLabels, '_force')), controllerName));
+    end
+    control = values.torqueControls(:, indx);
 end
-cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
-    muscleActivations, indx);
+assert(~isempty(indx), "Controller " + controllerName + " is not a " + ...
+    "synergy or torque controller.")
+tempSpline = spline(time, control);
+derivative = fnder(tempSpline, 1);
+cost = ppval(derivative, time);
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);

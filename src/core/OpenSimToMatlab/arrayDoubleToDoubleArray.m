@@ -30,9 +30,6 @@
 % ----------------------------------------------------------------------- %
 
 function doubleArray = arrayDoubleToDoubleArray(arrayDouble)
-doubleArray = zeros(1, arrayDouble.size());
-for i=0:arrayDouble.size()-1
-    doubleArray(i+1) = arrayDouble.getitem(i);
-end
+doubleArray = arrayDouble.getAsVector().getAsMat()';
 end
 

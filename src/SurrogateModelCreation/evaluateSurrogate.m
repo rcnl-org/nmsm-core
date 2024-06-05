@@ -4,13 +4,13 @@
 % coefficents. This function is only intended to be used as a saved
 % function handle, with one handle saved for each surrogate muscle. The
 % polynomials and coefficients belonging to each muscle are stored in the
-% handle. 
+% handle.
 %
-% (2D Array of double, 2D Array of double, Array of symbol, 
-% Array of symbol, 2D Array of symbol, 2D Array of double) -> 
+% (2D Array of double, 2D Array of double, Array of symbol,
+% Array of symbol, 2D Array of symbol, 2D Array of double) ->
 % (Array of double, Array of double, 2D Array of double)
 %
-% Evaluates the surrogate model for a single muscle. 
+% Evaluates the surrogate model for a single muscle.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -38,19 +38,47 @@ function [muscleTendonLength, muscleTendonVelocity, momentArms] = ...
     evaluateSurrogate(jointAngles, jointVelocities, ...
     polynomialExpressionMuscleTendonLength, ...
     polynomialExpressionMuscleTendonVelocity, ...
-    polynomialExpressionMomentArms, coefficients)
+    polynomialExpressionMomentArms, coefficients, numArgs)
 
 muscleTendonLength = zeros(size(jointAngles, 1), 1);
 muscleTendonVelocity = zeros(size(jointAngles, 1), 1);
 momentArms = zeros(size(jointAngles)).';
 
 for i = 1 : size(jointAngles, 1)
-    positionArgs = num2cell(jointAngles(i, :));
-    velocityArgs = [positionArgs num2cell(jointVelocities(i, :))];
-    muscleTendonLength(i) = polynomialExpressionMuscleTendonLength(positionArgs{:}) * coefficients;
-    muscleTendonVelocity(i) = polynomialExpressionMuscleTendonVelocity(velocityArgs{:}) * coefficients;
-    momentArms(:, i) = polynomialExpressionMomentArms(positionArgs{:}) * coefficients;
+    positionArgs = jointAngles(i, :);
+    velocityArgs = [positionArgs jointVelocities(i, :)];
+    muscleTendonLength(i) = variableArgFn(polynomialExpressionMuscleTendonLength, positionArgs, numArgs(1)) * coefficients;
+    muscleTendonVelocity(i) = variableArgFn(polynomialExpressionMuscleTendonVelocity, velocityArgs, numArgs(2)) * coefficients;
+    momentArms(:, i) = variableArgFn(polynomialExpressionMomentArms, positionArgs, numArgs(3)) * coefficients;
 end
 
 momentArms = momentArms.';
 end
+
+function output = variableArgFn(fn, thetas, numArgs)
+if numArgs == 1
+    output = fn(thetas(1));
+elseif numArgs == 2
+    output = fn(thetas(1), thetas(2));
+elseif numArgs == 3
+    output = fn(thetas(1), thetas(2), thetas(3));
+elseif numArgs == 4
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4));
+elseif numArgs == 5
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5));
+elseif numArgs == 6
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6));
+elseif numArgs == 7
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7));
+elseif numArgs == 8
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7), thetas(8));
+elseif numArgs == 9
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7), thetas(8), thetas(9));
+elseif numArgs == 10
+    output = fn(thetas(1), thetas(2), thetas(3), thetas(4), thetas(5), thetas(6), thetas(7), thetas(8), thetas(9), thetas(10));
+else
+    temp = num2cell(thetas);
+    output = fn(temp{:});
+end
+end
+

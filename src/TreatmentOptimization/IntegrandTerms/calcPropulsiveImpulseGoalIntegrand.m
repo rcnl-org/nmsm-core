@@ -1,8 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the error in propulsive impulse for the side 
+% This function calculates the error in propulsive impulse for the side
 % defined in the cost term. Only the positive impulse (propulsive) is
-% included in the output. 
+% included in the output.
 %
 % (struct, Array of double, struct, struct) -> (Array of double)
 
@@ -30,18 +30,10 @@
 
 function cost = calcPropulsiveImpulseGoalIntegrand(modeledValues, ...
     time, inputs, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", false);
-propulsiveForce = [];
 for i = 1:length(inputs.contactSurfaces)
-    if inputs.contactSurfaces{i}.isLeftFoot == strcmpi(costTerm.side, "left")
-        propulsiveForce = modeledValues.groundReactionsLab.forces{i}(:,1);
+    if i == costTerm.surface
+        cost = ((modeledValues.brakingImpulse(i) - costTerm.errorCenter) ...
+            ./ costTerm.maxAllowableError) .^ 2;
     end
-end
-assert(~isempty(propulsiveForce), "Unable to find propulsive force.")
-cost = real(sqrt((propulsiveForce - costTerm.errorCenter) / ...
-    costTerm.maxAllowableError));
-if normalizeByFinalTime
-    cost = cost / time(end);
 end
 end

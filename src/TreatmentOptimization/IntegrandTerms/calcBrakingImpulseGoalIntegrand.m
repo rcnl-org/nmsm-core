@@ -1,8 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the error in braking impulse for the side 
+% This function calculates the error in braking impulse for the side
 % defined in the cost term. Only the braking impulse (negative) is
-% included in the output. 
+% included in the output.
 %
 % (struct, Array of double, struct, struct) -> (Array of double)
 
@@ -30,18 +30,6 @@
 
 function cost = calcBrakingImpulseGoalIntegrand(modeledValues, ...
     time, inputs, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", false);
-braking = [];
-for i = 1:length(inputs.contactSurfaces)
-    if inputs.contactSurfaces{i}.isLeftFoot == strcmpi(costTerm.side, "left")
-        braking = -modeledValues.groundReactionsLab.forces{i}(:,1);
-    end
-end
-assert(~isempty(braking), "Unable to find braking force.")
-cost = real(sqrt((braking - costTerm.errorCenter) / ...
-    costTerm.maxAllowableError));
-if normalizeByFinalTime
-    cost = cost / time(end);
-end
+cost = ((modeledValues.brakingImpulse - costTerm.errorCenter) ...
+    ./ costTerm.maxAllowableError) .^ 2;
 end

@@ -43,11 +43,18 @@ if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.terminal)) || strcmp(setup.a
     modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
     modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
         modeledValues);
-    if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
-        modeledValues.metabolicCost = setup.phase.integral(end);
+    counter = 0;
+    if valueOrAlternate(setup.auxdata, 'calculatePropulsiveImpulse', false)
+        modeledValues.propulsiveImpulse = setup.phase.integral( ...
+            end - length(setup.auxdata.contactSurfaces) + 1 : end);
+        counter = counter + length(setup.auxdata.contactSurfaces);
     end
-    if valueOrAlternate(setup.auxdata, 'calculateRelativeSpeed', false)
-        
+    if valueOrAlternate(setup.auxdata, 'calculateBrakingImpulse', false)
+        modeledValues.brakingImpulse = setup.phase.integral( ...
+            end - length(setup.auxdata.contactSurfaces) - counter + 1 : end - counter);
+    end
+    if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
+        modeledValues.metabolicCost = setup.phase.integral(end - counter);
     end
 end
 
@@ -76,12 +83,25 @@ else
 end
 
 if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~isempty(setup.phase.integral)
+    integral = setup.phase.integral;
     if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
-        integral = setup.phase.integral(1:end-1);
-    else
-        integral = setup.phase.integral;
+        integral = integral(1:end-1);
     end
-    continuousObjective = sum(integral) / length(integral);
+    if valueOrAlternate(setup.auxdata, 'calculateBrakingImpulse', false)
+        for i = 1:length(setup.auxdata.contactSurfaces)
+            integral = integral(1:end-1);
+        end
+    end
+    if valueOrAlternate(setup.auxdata, 'calculatePropulsiveImpulse', false)
+        for i = 1:length(setup.auxdata.contactSurfaces)
+            integral = integral(1:end-1);
+        end
+    end
+    if isempty(integral)
+        continuousObjective = 0;
+    else
+        continuousObjective = sum(integral) / length(integral);
+    end
 else
     continuousObjective = 0;
 end

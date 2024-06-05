@@ -26,9 +26,9 @@
 % ----------------------------------------------------------------------- %
 
 function contactSurfaces = parseGroundContactSurfaces(inputs)
-contactSurfacesField = getFieldByName(inputs.osimx, "contactSurface");
+contactSurfacesField = getFieldByName(inputs.osimx, 'contactSurface');
 if (isstruct(contactSurfacesField) || iscell(contactSurfacesField)) && ...
-        isfield(inputs, "grfFileName")
+        isfield(inputs, 'grfFileName')
     contactSurfaces = prepareGroundContactSurfaces(inputs.model, ...
         contactSurfacesField, inputs.grfFileName);
 else
