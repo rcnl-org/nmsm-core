@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the GroundContactPersonalization function
-% such that an xml file can be passed and the resulting computation can be
-% completed according to the instructions of that file.
 %
-% (string) -> (None)
-% Run GroundContactPersonalization from settings file.
+%
+% (struct, struct) -> (Array of double)
+% Calculate error between experimental and adjusted electrical center. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,18 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function GroundContactPersonalizationTool(settingsFileName)
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "GroundContactPersonalizationTool");
-[inputs, params, resultsDirectory] = ...
-    parseGroundContactPersonalizationSettingsTree(settingsTree);
-results = GroundContactPersonalization(inputs, params);
-saveGroundContactPersonalizationResults(results, params, ...
-    resultsDirectory, inputs.inputOsimxFile);
-
-for foot = 1 : length(inputs.surfaces)
-    disp("Foot " + foot + " electrical center shift: ")
-    disp(results.surfaces{foot}.electricalCenterShift)
+function errors = calcElectricalCenterShiftError(inputs, values)
+errors = [];
+for i = 1 : length(inputs.surfaces)
+    field = "electricalCenter" + i;
+    errors = [errors, values.(field)];
 end
 end
-
