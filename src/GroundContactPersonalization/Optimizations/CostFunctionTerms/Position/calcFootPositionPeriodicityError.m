@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of double, struct) -> (double)
+% (Array of double, Array of double) -> (Array of double)
 % Calculate error in modeled foot coordinate periodicity. 
 
 % ----------------------------------------------------------------------- %
@@ -25,13 +25,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcFootPositionPeriodicityError(coordinates, costTerm)
-assert(isfield(costTerm, 'coordinate'), "Periodicity cost term must " + ...
-    "specify a <coordinate>")
-index = costTerm.coordinate;
-assert(ismember(index, 1:7), "Periodicity coordinate must be index 1-7")
-cost = coordinates(index, 1) - coordinates(index, end);
-if ismember(index, 1:4)
-    cost = rad2deg(cost);
-end
+function cost = calcFootPositionPeriodicityError(coordinates, experimental)
+difference = coordinates(:, 1) - coordinates(:, end);
+experimentalDifference = experimental(:, 1) - experimental(:, end);
+cost = difference ./ experimentalDifference;
 end
