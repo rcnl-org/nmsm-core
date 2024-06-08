@@ -29,7 +29,8 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = updateSystemFromUserDefinedFunctions(inputs, values)
-if valueOrAlternate(inputs.auxdata, 'systemFns', false)
+if isfield(inputs.auxdata, 'systemFns') && ...
+        ~isempty(inputs.auxdata.systemFns)
     for i = 1:length(inputs.auxdata.systemFns)
         func = str2func(inputs.auxdata.systemFns(i));
         inputs = func(inputs, values);
