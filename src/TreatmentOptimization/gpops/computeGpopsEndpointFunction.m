@@ -38,7 +38,7 @@ if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.terminal)) || strcmp(setup.a
     end
     values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
     if strcmp(setup.auxdata.toolName, "DesignOptimization")
-        setup = updateSystemFromUserDefinedFunctions(setup, values);
+        [setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
     end
     modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
     modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...

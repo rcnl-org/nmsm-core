@@ -28,12 +28,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = updateSystemFromUserDefinedFunctions(inputs, values)
+function [inputs, values] = updateSystemFromUserDefinedFunctions(inputs, values)
 if isfield(inputs.auxdata, 'systemFns') && ...
         ~isempty(inputs.auxdata.systemFns)
     for i = 1:length(inputs.auxdata.systemFns)
         func = str2func(inputs.auxdata.systemFns(i));
-        inputs = func(inputs, values);
+        [inputs, values] = func(inputs, values);
     end
 end
 end
