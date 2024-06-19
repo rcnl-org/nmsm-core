@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates a cost for minimizing control magnitude. 
+% This function calculates a cost for minimizing control magnitude.
 %
 % (struct, struct, Array of number, Array of string) -> (Array of number)
 %
@@ -39,6 +39,13 @@ if strcmp(inputs.controllerType, 'synergy')
         inputs.synergyLabels), controllerName));
     if ~isempty(indx)
         cost = values.controlSynergyActivations(:, indx);
+        if normalizeByFinalTime
+            if all(size(time) == size(inputs.collocationTimeOriginal))
+                cost = cost / time(end);
+            else
+                cost = cost / inputs.collocationTimeOriginal(end);
+            end
+        end
         return
     end
 end
