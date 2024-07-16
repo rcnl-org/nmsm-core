@@ -50,8 +50,16 @@ contactSurface.parentSpringPointsOnBody = [];
 contactSurface.parentSpringConstants = [];
 contactSurface.childSpringPointsOnBody = [];
 contactSurface.childSpringConstants = [];
-joints = getBodyJointNames(osimModel, contactSurface.hindfootBodyName);
-assert(length(joints) == 2, ...
+allJoints = getBodyJointNames(osimModel, contactSurface.hindfootBodyName);
+allowedBodies = unique(cellfun(@(spring) convertCharsToStrings(spring.parentBody), contactSurface.springs));
+joints = string([]);
+for i = 1 : length(allJoints)
+    [parent, child] = getJointBodyNames(osimModel, allJoints(i));
+    if any(allowedBodies == parent) && any(allowedBodies == child)
+        joints(end + 1) = allJoints(i);
+    end
+end
+assert(length(joints) == 1, ...
     "Treatment Optimization supports two segment foot models only");
 for i = 1 : length(joints)
     [parent, ~] = getJointBodyNames(osimModel, joints(i));
