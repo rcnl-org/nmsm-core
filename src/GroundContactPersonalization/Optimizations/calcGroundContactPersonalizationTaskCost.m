@@ -66,6 +66,17 @@ if ~params.tasks{task}.designVariables(6)
     end
 end
 
+for foot = 1 : length(inputs.surfaces)
+    for i = 1 : size(inputs.surfaces{foot} ...
+            .experimentalGroundReactionMoments, 2)
+        inputs.surfaces{foot}.experimentalGroundReactionMoments(:, i) = ...
+            inputs.surfaces{foot} ...
+            .experimentalGroundReactionMoments(:, i) + ...
+            cross([0; -valuesStruct.restingSpringLength; 0], ...
+            inputs.surfaces{foot}.experimentalGroundReactionForces(:, i));
+    end
+end
+
 if params.tasks{task}.designVariables(7)
     for foot = 1:length(inputs.surfaces)
         field = "electricalCenter" + foot;
