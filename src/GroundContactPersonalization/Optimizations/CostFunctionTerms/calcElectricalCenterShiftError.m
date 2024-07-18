@@ -28,9 +28,17 @@
 % ----------------------------------------------------------------------- %
 
 function errors = calcElectricalCenterShiftError(inputs, values)
-errors = [];
+errors = zeros(1, 3 * length(inputs.surfaces));
+index = 1;
 for i = 1 : length(inputs.surfaces)
-    field = "electricalCenter" + i;
-    errors = [errors, values.(field)];
+    field = "electricalCenterX" + i;
+    errors(index) = values.(field);
+    index = index + 1;
+    field = "electricalCenterY" + i;
+    errors(index) = values.(field);
+    index = index + 1;
+    field = "electricalCenterZ" + i;
+    errors(index) = values.(field);
+    index = index + 1;
 end
 end

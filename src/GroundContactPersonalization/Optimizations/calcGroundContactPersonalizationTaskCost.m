@@ -65,6 +65,27 @@ if ~params.tasks{task}.designVariables(6)
         valuesStruct.(field) = inputs.surfaces{foot}.bSplineCoefficients;
     end
 end
+if ~params.tasks{task}.designVariables(7)
+    for foot = 1:length(inputs.surfaces)
+        field = "electricalCenterX" + foot;
+        valuesStruct.(field) = ...
+            inputs.surfaces{foot}.electricalCenterShiftX;
+    end
+end
+if ~params.tasks{task}.designVariables(8)
+    for foot = 1:length(inputs.surfaces)
+        field = "electricalCenterY" + foot;
+        valuesStruct.(field) = ...
+            inputs.surfaces{foot}.electricalCenterShiftY;
+    end
+end
+if ~params.tasks{task}.designVariables(9)
+    for foot = 1:length(inputs.surfaces)
+        field = "electricalCenterZ" + foot;
+        valuesStruct.(field) = ...
+            inputs.surfaces{foot}.electricalCenterShiftZ;
+    end
+end
 
 for foot = 1 : length(inputs.surfaces)
     for i = 1 : size(inputs.surfaces{foot} ...
@@ -77,18 +98,21 @@ for foot = 1 : length(inputs.surfaces)
     end
 end
 
-if params.tasks{task}.designVariables(7)
+if any(params.tasks{task}.designVariables(7:9))
     for foot = 1:length(inputs.surfaces)
-        field = "electricalCenter" + foot;
-        electricalCenterShift = valuesStruct.(field);
+        fieldX = "electricalCenterX" + foot;
+        fieldY = "electricalCenterY" + foot;
+        fieldZ = "electricalCenterZ" + foot;
+        electricalCenterShift = [valuesStruct.(fieldX); ...
+            valuesStruct.(fieldY); valuesStruct.(fieldZ)];
+
         for i = 1 : size( ...
                 inputs.surfaces{foot}.experimentalGroundReactionMoments, 2)
             inputs.surfaces{foot} ...
                 .experimentalGroundReactionMoments(:, i) = ...
                 inputs.surfaces{foot} ...
                 .experimentalGroundReactionMoments(:, i) + ...
-                cross([electricalCenterShift(1); 0; ...
-                electricalCenterShift(2)], inputs.surfaces{foot} ...
+                cross(electricalCenterShift, inputs.surfaces{foot} ...
                 .experimentalGroundReactionForces(:, i));
         end
     end
@@ -127,9 +151,15 @@ for i=1:length(fieldNameOrder)
         valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
             numel(inputs.surfaces{foot}.bSplineCoefficients) - 1);
         start = start + numel(inputs.surfaces{foot}.bSplineCoefficients);
-    elseif contains(fieldNameOrder(i), "electricalCenter")
-        valuesStruct.(fieldNameOrder(i)) = values(start : start + 1);
-        start = start + 2;
+    elseif contains(fieldNameOrder(i), "electricalCenterX")
+        valuesStruct.(fieldNameOrder(i)) = values(start);
+        start = start + 1;
+    elseif contains(fieldNameOrder(i), "electricalCenterY")
+        valuesStruct.(fieldNameOrder(i)) = values(start);
+        start = start + 1;
+    elseif contains(fieldNameOrder(i), "electricalCenterZ")
+        valuesStruct.(fieldNameOrder(i)) = values(start);
+        start = start + 1;
     else
         valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
             numel(inputs.(fieldNameOrder(i))) - 1);

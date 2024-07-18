@@ -40,7 +40,9 @@ saveGroundContactPersonalizationResults(results, params, ...
 
 for foot = 1 : length(inputs.surfaces)
     disp("Foot " + foot + " electrical center shift: ")
-    disp(results.surfaces{foot}.electricalCenterShift)
+    disp([results.surfaces{foot}.electricalCenterShiftX, ...
+        results.surfaces{foot}.electricalCenterShiftY, ...
+        results.surfaces{foot}.electricalCenterShiftZ])
 end
 end
 
