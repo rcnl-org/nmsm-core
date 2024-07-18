@@ -29,7 +29,6 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeGpopsEndpointFunction(setup)
-if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.terminal)) || strcmp(setup.auxdata.toolName, "DesignOptimization")
     setup.phase.state = [setup.phase.initialstate; setup.phase.finalstate];
     setup.phase.time = [setup.phase.initialtime; setup.phase.finaltime];
     setup.phase.control = ones(size(setup.phase.time,1),length(setup.auxdata.minControl));
@@ -56,31 +55,25 @@ if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.terminal)) || strcmp(setup.a
     if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
         modeledValues.metabolicCost = setup.phase.integral(end - counter);
     end
+
+[constraintTermCalculations, allowedTypes] = ...
+    generateConstraintTermStruct("terminal", ...
+    setup.auxdata.controllerType, setup.auxdata.toolName);
+event = ...
+    calcGpopsConstraint(setup.auxdata.terminal, ...
+    constraintTermCalculations, allowedTypes, values, ...
+    modeledValues, setup.auxdata);
+if ~isempty(event)
+    output.eventgroup.event = event;
 end
 
-if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.terminal))
-    [constraintTermCalculations, allowedTypes] = ...
-        generateConstraintTermStruct("terminal", ...
-        setup.auxdata.controllerType, setup.auxdata.toolName);
-    event = ...
-        calcGpopsConstraint(setup.auxdata.terminal, ...
-        constraintTermCalculations, allowedTypes, values, ...
-        modeledValues, setup.auxdata);
-    if ~isempty(event)
-        output.eventgroup.event = event;
-    end
-end
+[costTermCalculations, allowedTypes] = ...
+    generateCostTermStruct("discrete", setup.auxdata.toolName);
+discrete = calcTreatmentOptimizationCost( ...
+    costTermCalculations, allowedTypes, values, modeledValues, setup.auxdata);
+discreteObjective = sum(discrete) / length(discrete);
+if isnan(discreteObjective); discreteObjective = 0; end
 
-if strcmp(setup.auxdata.toolName, "DesignOptimization")
-    [costTermCalculations, allowedTypes] = ...
-        generateCostTermStruct("discrete", "DesignOptimization");
-    discrete = calcTreatmentOptimizationCost( ...
-        costTermCalculations, allowedTypes, values, modeledValues, setup.auxdata);
-    discreteObjective = sum(discrete) / length(discrete);
-    if isnan(discreteObjective); discreteObjective = 0; end
-else
-    discreteObjective = 0;
-end
 
 if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~isempty(setup.phase.integral)
     integral = setup.phase.integral;

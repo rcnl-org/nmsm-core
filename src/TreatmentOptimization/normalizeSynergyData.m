@@ -37,6 +37,7 @@ if strcmp(inputs.controllerType, "synergy")
         inputs.initialSynergyControls(:, i) = ...
             inputs.initialSynergyControls(:, i) * total;
     end
+    inputs.initialSynergyWeights = inputs.synergyWeights;
 end
 end
 

@@ -1,9 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the original and current
-% synergy weights. 
+% This function calculates the sum of the specified synergy weight group.
 %
-% (2D matix, struct, struct) -> (Array of number)
+% (Array of number, struct, Array of string) -> (Number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,12 +27,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingSynergyVectorsDiscrete(synergyWeights, ...
-    inputs, costTerm)
+function synergyWeightsMagnitude = calcSynergyWeightsMagnitude(synergyWeights, ...
+    synergyGroups, synergyGroupName)
 
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+counter = 1;
+for i = 1 : length(synergyGroups)
+    if strcmp(synergyGroups{i}.muscleGroupName, synergyGroupName)
+        break;
+    end
+    counter = counter + synergyGroups{i}.numSynergies;
+end
 
-origSynergyWeights = inputs.initialSynergyWeights;
-rawCost = sum(abs(origSynergyWeights - synergyWeights), 'all');
-cost = ((rawCost - errorCenter) ./ costTerm.maxAllowableError) .^ 2;
+numSynergies = synergyGroups{i}.numSynergies;
+synergyWeightsMagnitude = zeros(numSynergies, 1);
+for j = counter : counter + numSynergies - 1
+    synergyWeightsMagnitude(j - counter + 1) = sqrt(sum(synergyWeights(j, :) .^ 2));
+end
+synergyWeightsMagnitude = synergyWeightsMagnitude';
 end
