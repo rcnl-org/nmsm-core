@@ -61,7 +61,9 @@ for foot = 1:length(inputs.surfaces)
 %         inputs.surfaces{foot}.time(1), inputs.surfaces{foot}.time(end), ...
 %         inputs.surfaces{foot}.isLeftFoot);
 %     markerPositions.midfootSuperior(2, :) = inputs.restingSpringLength;
-    data = [data inputs.surfaces{foot}.experimentalMomentCenter'];
+    center = inputs.surfaces{foot}.experimentalMomentCenter;
+    center(2, :) = inputs.restingSpringLength;
+    data = [data center'];
     writeToSto(columnLabels, inputs.surfaces{foot}.time, data, ...
         fullfile(resultsDirectory, strcat(modelName, "_Foot_", ...
             num2str(foot), "_replacedExperimentalGroundReactions.sto")));
