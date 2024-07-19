@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Saves a ground contact .osimx model and experimental and modeled
-% kinematics and ground reactions for each foot. 
+% This function saves electrical center shifts applied to experimental
+% ground reaction data. 
 %
-% (struct, struct, string) -> (None)
-% Save final Ground Contact Personalization results. 
+% (struct, string, string) -> (None)
+% Write experimental ground reactions to an OpenSim Storage file.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,25 +28,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveGroundContactPersonalizationResults(inputs, params, ...
-    resultsDirectory, osimxFileName)
-[~, name, ~] = fileparts(inputs.bodyModel);
-if ~exist(resultsDirectory, "dir")
-    mkdir(resultsDirectory);
-end
-writeExperimentalFootKinematicsToSto(inputs, resultsDirectory, name);
-writeOptimizedFootKinematicsToSto(inputs, resultsDirectory, name);
-writeReplacedExperimentalGroundReactionsToSto(inputs, ... 
-    resultsDirectory, name);
-writeOptimizedGroundReactionsToSto(inputs, params, resultsDirectory, name);
-writeGroundContactPersonalizationOsimxFile(inputs, resultsDirectory, ...
-    osimxFileName);
-writeCombinedOptimizedGroundReactionsToSto(inputs, params, ...
-    resultsDirectory);
-if any(cellfun(@(task) any(task.designVariables(7:9)), params.tasks))
-    writeExperimentalGroundReactionsNewElectricalCenterToSto(inputs, ...
-        resultsDirectory);
-end
-writeFullBodyKinematicsFromGcp(inputs, params, resultsDirectory);
-end
+function writeExperimentalGroundReactionsNewElectricalCenterToSto( ...
+    inputs, resultsDirectory)
+[~, name, ext] = fileparts(inputs.grfFileName);
+outfile = strcat("updatedElectricalCenter_", name, ext);
 
+storage = org.opensim.modeling.Storage(inputs.grfFileName);
+[columnNames, time, data] = parseMotToComponents( ...
+    Model(inputs.bodyModel), storage);
+
+for i = 1 : length(inputs.surfaces)
+    index = find(columnNames == convertCharsToStrings( ...
+        inputs.surfaces{i}.electricalCenterColumns(1, :)));
+    data(index, :) = data(index, :) + ...
+        inputs.surfaces{i}.electricalCenterShiftX;
+    index = find(columnNames == convertCharsToStrings( ...
+        inputs.surfaces{i}.electricalCenterColumns(2, :)));
+    data(index, :) = data(index, :) + ...
+        inputs.surfaces{i}.electricalCenterShiftY;
+    index = find(columnNames == convertCharsToStrings( ...
+        inputs.surfaces{i}.electricalCenterColumns(3, :)));
+    data(index, :) = data(index, :) + ...
+        inputs.surfaces{i}.electricalCenterShiftZ;
+end
+writeToSto(columnNames, time, data', ...
+    fullfile(resultsDirectory, "GRFData", outfile));
+end
