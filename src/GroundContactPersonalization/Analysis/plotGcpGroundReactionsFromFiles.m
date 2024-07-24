@@ -32,11 +32,6 @@
 function plotGcpGroundReactionsFromFiles( ...
     experimentalGroundReactionsFileName, ...
     optimizedGroundReactionsFileName, plotNumber)
-% The optional plot number argument allows users to generate multiple plots
-% without overwriting previous plots. By default, figure 1 is used. 
-if nargin < 3
-    plotNumber = 1;
-end
 titles = ["Anterior GRF" "Vertical GRF" "Lateral GRF" "X Moment" ...
     "Y Moment" "Z Moment"];
 import org.opensim.modeling.Storage
