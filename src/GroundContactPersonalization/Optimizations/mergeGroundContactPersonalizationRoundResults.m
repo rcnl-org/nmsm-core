@@ -65,10 +65,26 @@ if (params.tasks{task}.designVariables(6))
 end
 if (params.tasks{task}.designVariables(7))
     for foot = 1:length(inputs.surfaces)
-        electricalCenterShift = results(index : index + 1);
-        inputs.surfaces{foot}.electricalCenterShift = ...
-            electricalCenterShift;
-        index = index + 2;
+        electricalCenterShiftX = results(index);
+        inputs.surfaces{foot}.electricalCenterShiftX = ...
+            electricalCenterShiftX;
+        index = index + 1;
+    end
+end
+if (params.tasks{task}.designVariables(8))
+    for foot = 1:length(inputs.surfaces)
+        electricalCenterShiftY = results(index);
+        inputs.surfaces{foot}.electricalCenterShiftY = ...
+            electricalCenterShiftY;
+        index = index + 1;
+    end
+end
+if (params.tasks{task}.designVariables(9))
+    for foot = 1:length(inputs.surfaces)
+        electricalCenterShiftZ = results(index);
+        inputs.surfaces{foot}.electricalCenterShiftZ = ...
+            electricalCenterShiftZ;
+        index = index + 1;
     end
 end
 end

@@ -5,12 +5,18 @@
 
 % (Model, State, Storage, number, number) -> None
 % Sets value of state coordinates from a Storage object row and column
-function setValueFromStorage(model, state, storage, row, column, params)
+function setValueFromStorage(model, state, storage, row, column, ...
+    params, inDegrees)
 import org.opensim.modeling.*
 dbl = ArrayDouble();
 storage.getDataColumn(column-1, dbl);
 coord = getCoordinateFromName(model, storage.getColumnLabels.get(column));
 value = dbl.get(row);
+if inDegrees
+    if coord.getMotionType().toString().toCharArray()' == "Rotational"
+        value = deg2rad(value);
+    end
+end
 %         applyGaussian(value, params, 'rotationNoise')*3.14/180);
 
 %     coord.setValue(state, applyGaussian(value,params, 'translationNoise'));
