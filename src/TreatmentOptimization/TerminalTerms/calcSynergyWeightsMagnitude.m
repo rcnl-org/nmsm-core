@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function calculates the sum of the specified synergy weight group.
 %
+% (Array of number, struct, Array of string) -> (Number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -24,40 +27,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [setup, inputs] = convertToGpopsInputs(inputs, params)
-bounds = setupTreatmentOptimizationBounds(inputs, params);
-guess = setupGpopsInitialGuess(inputs);
-setup = setupGpopsSettings(inputs, ...
-    bounds, guess, params, ...
-    @computeGpopsContinuousFunction, ...
-    @computeGpopsEndpointFunction);
+function synergyWeightsMagnitude = calcSynergyWeightsMagnitude(synergyWeights, ...
+    synergyGroups, synergyGroupName)
 
-setup = preSplineGpopsInputs(setup);
-inputs = checkInitialGuess(guess, setup.auxdata, ...
-    @computeGpopsContinuousFunction);
-setup.auxdata.initialIntegrand = inputs.initialIntegrand;
-setup = preSplineGpopsInputs(setup);
-setup.auxdata = rmfield(setup.auxdata, "initialIntegrand");
-global initialIntegral
-setup.guess.phase.integral = initialIntegral;
-[setup, inputs] = setupMetabolicCost(setup, inputs);
-numMissing = length(initialIntegral) - length(setup.bounds.phase.integral.lower);
-setup.bounds.phase.integral.lower(end + 1: end + numMissing) = 0;
-setup.bounds.phase.integral.upper(end + 1: end + numMissing) = ...
-    (inputs.gpops.integralBound + 1) * initialIntegral(end - numMissing + 1 : end);
+counter = 1;
+for i = 1 : length(synergyGroups)
+    if strcmp(synergyGroups{i}.muscleGroupName, synergyGroupName)
+        break;
+    end
+    counter = counter + synergyGroups{i}.numSynergies;
 end
 
-function [setup, inputs] = setupMetabolicCost(setup, inputs)
-if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
-    setup.auxdata.initialMetabolicCost = inputs.initialMetabolicCost;
-    preSplineGpopsInputs(setup);
-    global initialMetabolicCost
-    inputs.initialMetabolicCost = initialMetabolicCost;
-    setup.bounds.phase.integral.lower(end + 1) = 0;
-    setup.bounds.phase.integral.upper(end + 1) = (inputs.gpops.integralBound + 1) * ...
-        max(inputs.initialMetabolicCost);
-    setup.guess.phase.integral(end) = inputs.initialMetabolicCost;
+numSynergies = synergyGroups{i}.numSynergies;
+synergyWeightsMagnitude = zeros(numSynergies, 1);
+for j = counter : counter + numSynergies - 1
+    synergyWeightsMagnitude(j - counter + 1) = sqrt(sum(synergyWeights(j, :) .^ 2));
 end
+synergyWeightsMagnitude = synergyWeightsMagnitude';
 end
-
-
