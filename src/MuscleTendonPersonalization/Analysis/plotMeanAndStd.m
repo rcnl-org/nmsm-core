@@ -27,9 +27,12 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotMeanAndStd(mean, std, time, color)
-    plot(time, mean, color, linewidth=2)
+function plotMeanAndStd(mean, std, time, color, lineStyle)
+    if nargin < 5
+        lineStyle = '-';
+    end
+    plot(time, mean, Color=color, linewidth=2, LineStyle=lineStyle)
     FillRegion = [(mean+std); flipud(mean-std)];
-    fill([time, fliplr(time)]', FillRegion, color, FaceAlpha=0.2, ...
-        EdgeColor='none', HandleVisibility='off')
+    fill([time, fliplr(time)]', FillRegion, 'k', FaceColor=color, ...
+        FaceAlpha=0.2, EdgeColor='none', HandleVisibility='off')
 end

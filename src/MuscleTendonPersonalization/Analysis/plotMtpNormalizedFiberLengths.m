@@ -28,7 +28,8 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotMtpNormalizedFiberLengths(resultsDirectory)
+function plotMtpNormalizedFiberLengths(resultsDirectory, figureWidth, ...
+    figureHeight)
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
 [muscleNames, normalizedFiberLengths] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "normalizedFiberLengths"));
@@ -39,31 +40,48 @@ time = 1:1:size(meanFiberLengths,1);
 passiveLower = ones(size(time))*0.7;
 passiveUpper = ones(size(time));
 
-figureWidth = ceil(sqrt(numel(muscleNames)));
-figureHeight = ceil(numel(muscleNames)/figureWidth);
-figure(Name = strcat(resultsDirectory, " Normalized Fiber Lengths"), ...
+if nargin < 2
+    figureWidth = ceil(sqrt(numel(muscleNames)));
+    figureHeight = ceil(numel(muscleNames)/figureWidth);
+elseif nargin < 3
+    figureHeight = ceil(sqrt(numel(muscleNames)));
+end
+figureSize = figureWidth * figureHeight;
+subplotNumber = 1;
+figureNumber = 1;
+figure(Name = strcat(resultsDirectory, ...
+        " Normalized Fiber Lengths"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-
+xlabel(t, "Percent Movement [0-100%]")
+ylabel(t, "Normalized Fiber Length")
 for i=1:numel(muscleNames)
-    nexttile(i);
+    if i > figureSize * figureNumber
+        figureNumber = figureNumber + 1;
+        figure(Name = strcat(resultsDirectory, ...
+                " Normalized Fiber Lengths"), ...
+            Units='normalized', ...
+            Position=[0.05 0.05 0.9 0.85])
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Percent Movement [0-100%]")
+        ylabel(t, "Normalized Fiber Length")
+        subplotNumber = 1;
+    end
+    nexttile(subplotNumber);
     hold on
-    plotMeanAndStd(meanFiberLengths(:,i), stdFiberLengths(:,i), time, 'b-')
+    plotMeanAndStd(meanFiberLengths(:,i), stdFiberLengths(:,i), ...
+        time, "#0072BD")
     plot(time, passiveUpper, 'r--', LineWidth=2);
     plot(time, passiveLower, 'r--', LineWidth=2);
     hold off
     set(gca, fontsize=11)
-    axis([time(1) time(end) 0 1.5])
     title(muscleNames(i), FontSize=12);
-    if mod(i,figureWidth) == 1
-        ylabel(textwrap("Normalized Fiber Length",10), FontSize=12)
-    end
-    if i>numel(muscleNames)-figureWidth
-        xlabel("Time Points")
-    end
+    xlim("tight")
+    ylim([0 1.5])
+    subplotNumber = subplotNumber + 1;
 end
-
 end
 
