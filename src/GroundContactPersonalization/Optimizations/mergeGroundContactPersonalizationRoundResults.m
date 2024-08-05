@@ -63,4 +63,28 @@ if (params.tasks{task}.designVariables(6))
         index = index + bSplineCoefficientLength;
     end
 end
+if (params.tasks{task}.designVariables(7))
+    for foot = 1:length(inputs.surfaces)
+        electricalCenterShiftX = results(index);
+        inputs.surfaces{foot}.electricalCenterShiftX = ...
+            electricalCenterShiftX;
+        index = index + 1;
+    end
+end
+if (params.tasks{task}.designVariables(8))
+    for foot = 1:length(inputs.surfaces)
+        electricalCenterShiftY = results(index);
+        inputs.surfaces{foot}.electricalCenterShiftY = ...
+            electricalCenterShiftY;
+        index = index + 1;
+    end
+end
+if (params.tasks{task}.designVariables(9))
+    for foot = 1:length(inputs.surfaces)
+        electricalCenterShiftZ = results(index);
+        inputs.surfaces{foot}.electricalCenterShiftZ = ...
+            electricalCenterShiftZ;
+        index = index + 1;
+    end
+end
 end
