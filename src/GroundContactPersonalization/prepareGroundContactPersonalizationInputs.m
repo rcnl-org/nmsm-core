@@ -119,6 +119,9 @@ surface.experimentalGroundReactionForcesSlope = calcBSplineDerivative( ...
 surface.jointKinematicsBSplines = makeJointKinematicsBSplines(...
     surface.time, 4, surface.splineNodes);
 surface.bSplineCoefficients = ones(surface.splineNodes, 7);
+surface.electricalCenterShiftX = 0;
+surface.electricalCenterShiftY = 0;
+surface.electricalCenterShiftZ = 0;
 end
 
 % (struct) -> (struct)

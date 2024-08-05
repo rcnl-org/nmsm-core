@@ -6,9 +6,11 @@
 % (Model, State, Storage, TimeSeriesTableVec3, number) -> None
 function applyValuesFromStorage(model, state, storage, table, params)
 import org.opensim.modeling.*
+inDegrees = storage.isInDegrees();
 for i=0:storage.getSize()-1
     for j=1:storage.getColumnLabels().size()-1
-        setValueFromStorage(model, state, storage, i, j, params);
+        setValueFromStorage(model, state, storage, i, j, params, ...
+            inDegrees);
         model.assemble(state);
     end
     model.assemble(state);

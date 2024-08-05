@@ -49,7 +49,8 @@ if strcmp(inputs.controllerType, 'synergy')
                 evaluateGcvSplines(inputs.splineSynergyActivations, ...
                 inputs.synergyLabels, time);
         end
-        cost = calcTrackingCostArrayTerm(synergyActivations, ...
+        scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+        cost = calcTrackingCostArrayTerm(synergyActivations * scaleFactor, ...
             values.controlSynergyActivations, indx);
         return
     end
@@ -67,7 +68,8 @@ else
         evaluateGcvSplines(inputs.splineTorqueControls, ...
         inputs.torqueLabels, time);
 end
-cost = experimentalJointMoments(:, indx1) - ...
+scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+cost = (experimentalJointMoments(:, indx1) * scaleFactor) - ...
     values.torqueControls(:, indx2);
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))

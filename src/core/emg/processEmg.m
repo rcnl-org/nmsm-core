@@ -58,6 +58,9 @@ emgData = filtfilt(b, a, emgData')';
 % Remove any negative EMG values that may still exist
 emgData(emgData < 0) = 0;
 
+% Offset
+emgData = emgData - ones(size(emgData, 1), 1) * min(emgData);
+
 % Normalize by maximum value for each channel
 emgData = emgData ./ max(emgData, [], 2);
 

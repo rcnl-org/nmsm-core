@@ -65,6 +65,59 @@ if ~params.tasks{task}.designVariables(6)
         valuesStruct.(field) = inputs.surfaces{foot}.bSplineCoefficients;
     end
 end
+if ~params.tasks{task}.designVariables(7)
+    for foot = 1:length(inputs.surfaces)
+        field = "electricalCenterX" + foot;
+        valuesStruct.(field) = ...
+            inputs.surfaces{foot}.electricalCenterShiftX;
+    end
+end
+if ~params.tasks{task}.designVariables(8)
+    for foot = 1:length(inputs.surfaces)
+        field = "electricalCenterY" + foot;
+        valuesStruct.(field) = ...
+            inputs.surfaces{foot}.electricalCenterShiftY;
+    end
+end
+if ~params.tasks{task}.designVariables(9)
+    for foot = 1:length(inputs.surfaces)
+        field = "electricalCenterZ" + foot;
+        valuesStruct.(field) = ...
+            inputs.surfaces{foot}.electricalCenterShiftZ;
+    end
+end
+
+for foot = 1 : length(inputs.surfaces)
+    for i = 1 : size(inputs.surfaces{foot} ...
+            .experimentalGroundReactionMoments, 2)
+        inputs.surfaces{foot}.experimentalGroundReactionMoments(:, i) = ...
+            inputs.surfaces{foot} ...
+            .experimentalGroundReactionMoments(:, i) + ...
+            cross([0; -valuesStruct.restingSpringLength; 0], ...
+            inputs.surfaces{foot}.experimentalGroundReactionForces(:, i));
+    end
+end
+
+if any(params.tasks{task}.designVariables(7:9))
+    for foot = 1:length(inputs.surfaces)
+        fieldX = "electricalCenterX" + foot;
+        fieldY = "electricalCenterY" + foot;
+        fieldZ = "electricalCenterZ" + foot;
+        electricalCenterShift = [valuesStruct.(fieldX); ...
+            valuesStruct.(fieldY); valuesStruct.(fieldZ)];
+
+        for i = 1 : size( ...
+                inputs.surfaces{foot}.experimentalGroundReactionMoments, 2)
+            inputs.surfaces{foot} ...
+                .experimentalGroundReactionMoments(:, i) = ...
+                inputs.surfaces{foot} ...
+                .experimentalGroundReactionMoments(:, i) + ...
+                cross(electricalCenterShift, inputs.surfaces{foot} ...
+                .experimentalGroundReactionForces(:, i));
+        end
+    end
+end
+
 cost = [];
 for foot = 1:length(inputs.surfaces)
     field = "bSplineCoefficients" + foot;
@@ -98,6 +151,15 @@ for i=1:length(fieldNameOrder)
         valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
             numel(inputs.surfaces{foot}.bSplineCoefficients) - 1);
         start = start + numel(inputs.surfaces{foot}.bSplineCoefficients);
+    elseif contains(fieldNameOrder(i), "electricalCenterX")
+        valuesStruct.(fieldNameOrder(i)) = values(start);
+        start = start + 1;
+    elseif contains(fieldNameOrder(i), "electricalCenterY")
+        valuesStruct.(fieldNameOrder(i)) = values(start);
+        start = start + 1;
+    elseif contains(fieldNameOrder(i), "electricalCenterZ")
+        valuesStruct.(fieldNameOrder(i)) = values(start);
+        start = start + 1;
     else
         valuesStruct.(fieldNameOrder(i)) = values(start:start + ...
             numel(inputs.(fieldNameOrder(i))) - 1);
@@ -163,6 +225,10 @@ for term = 1:length(params.tasks{task}.costTerms)
                 rawCost = reshape(modeledValues.jointPositions(5:7, :) ...
                     - inputs.surfaces{foot}.experimentalJointPositions( ...
                     5:7, :), 1, []);
+            case "kinematic_periodicity"
+                rawCost = calcFootPositionPeriodicityError( ...
+                    modeledValues.jointPositions, ...
+                    inputs.surfaces{foot}.experimentalJointPositions);
             case "vertical_grf"
                 rawCost = groundReactionForceValueErrors(2, :);
             case "vertical_grf_slope"
@@ -186,6 +252,9 @@ for term = 1:length(params.tasks{task}.costTerms)
                     modeledValues.gaussianWeights) / ...
                     costTerm.maxAllowableError) .^ 4 * ...
                     costTerm.maxAllowableError;
+            case "electrical_center_shift"
+                rawCost = calcElectricalCenterShiftError(inputs, ...
+                    valuesStruct);
             otherwise
                 throw(MException('', ['Cost term type ' costTerm.type ...
                     ' does not exist for this tool.']))
