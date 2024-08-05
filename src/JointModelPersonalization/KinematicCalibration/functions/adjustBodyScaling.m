@@ -53,19 +53,21 @@ scale.setApply(true);
 scaleSet.cloneAndAppend(scale);
 model.scale(state, scaleSet, true, -1.0);
 
-for i = 0 : model.getConstraintSet().getSize() - 1
-    parentStr = strsplit(string(model.getConstraintSet().get(i).getPropertyByName("socket_body_1").toString()), "/");
-    parentStr = parentStr(end);
-    childStr = strsplit(string(model.getConstraintSet().get(i).getPropertyByName("socket_body_2").toString()), "/");
-    childStr = childStr(end);
-    if strcmp(parentStr(end), bodyName)
-        scaledLocation1 = getScaledLocation(scaleFactor, model.getConstraintSet().get(i).getPropertyByName("location_body_1").toString());
-        org.opensim.modeling.PointConstraint.safeDownCast(model.getConstraintSet().get(i)).set_location_body_1(scaledLocation1);
-    elseif strcmp(childStr(end), bodyName)
-        scaledLocation2 = getScaledLocation(scaleFactor, model.getConstraintSet().get(i).getPropertyByName("location_body_2").toString());
-        org.opensim.modeling.PointConstraint.safeDownCast(model.getConstraintSet().get(i)).set_location_body_2(scaledLocation2);
+try
+    for i = 0 : model.getConstraintSet().getSize() - 1
+        parentStr = strsplit(string(model.getConstraintSet().get(i).getPropertyByName("socket_body_1").toString()), "/");
+        parentStr = parentStr(end);
+        childStr = strsplit(string(model.getConstraintSet().get(i).getPropertyByName("socket_body_2").toString()), "/");
+        childStr = childStr(end);
+        if strcmp(parentStr(end), bodyName)
+            scaledLocation1 = getScaledLocation(scaleFactor, model.getConstraintSet().get(i).getPropertyByName("location_body_1").toString());
+            org.opensim.modeling.PointConstraint.safeDownCast(model.getConstraintSet().get(i)).set_location_body_1(scaledLocation1);
+        elseif strcmp(childStr(end), bodyName)
+            scaledLocation2 = getScaledLocation(scaleFactor, model.getConstraintSet().get(i).getPropertyByName("location_body_2").toString());
+            org.opensim.modeling.PointConstraint.safeDownCast(model.getConstraintSet().get(i)).set_location_body_2(scaledLocation2);
+        end
     end
-end
+catch;end
 
 if ~anatomicalMarkers
     for i = 1:length(markers)
