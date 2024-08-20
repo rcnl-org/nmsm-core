@@ -1,17 +1,17 @@
-function plotMtpHillTypeMuscleParamsCompare(rightResultsDirectory, ...
-    leftResultsDirectory)
-    rightAnalysisDirectory = fullfile(rightResultsDirectory, "Analysis");
-    leftAnalysisDirectory = fullfile(leftResultsDirectory, "Analysis");
-    [muscleNames, rightParams] = extractMtpDataFromSto( ...
-        fullfile(rightAnalysisDirectory, "muscleModelParameters"));
-    [~, leftParams] = extractMtpDataFromSto( ...
-        fullfile(leftAnalysisDirectory, "muscleModelParameters"));
+function plotMtpHillTypeMuscleParamsCompare(resultsDirectory1, ...
+    resultsDirectory2)
+    analysisDirectory1 = fullfile(resultsDirectory1, "Analysis");
+    analysisDirectory2 = fullfile(resultsDirectory2, "Analysis");
+    [muscleNames, params1] = extractMtpDataFromSto( ...
+        fullfile(analysisDirectory1, "muscleModelParameters"));
+    [~, params2] = extractMtpDataFromSto( ...
+        fullfile(analysisDirectory2, "muscleModelParameters"));
     muscleNames = strrep(muscleNames, '_', ' ');
     figure(Name = strcat("Compare Muscle Model Parameters"), ...
         Units='normalized', ...
         Position=[0.05 0.05 0.9 0.85])
 
-if any(rightParams(5, :)<=0) | any(rightParams(6,:)<0)
+if any(params1(5, :)<=0) | any(params1(6,:)<0)
     paramLabels = ["Activation Time Constant", ...
         "Activation Nonlinearity", ...
         "Electromechanical Time Delay", ...
@@ -32,13 +32,13 @@ t = tiledlayout(1, 6, ...
 
 for i = 1 : numel(paramLabels)
     nexttile(i)
-    barh(1:numel(muscleNames), [rightParams(i,:); leftParams(i,:)]);
+    barh(1:numel(muscleNames), [params1(i,:); params2(i,:)]);
     
     title(textwrap(paramLabels(i), 20), FontSize=12)
     if i == 1
         yticks(1:numel(muscleNames))
         yticklabels(muscleNames)
-        legend("Right Leg", "Left Leg")
+        legend(resultsDirectory1, resultsDirectory2)
     else
         yticks([])
         yticklabels([])
