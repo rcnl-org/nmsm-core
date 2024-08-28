@@ -96,10 +96,10 @@ t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=18, FontName="Arial")
 ylabel(t, "Joint Angle [deg]", fontsize=18, FontName="Arial")
-plotTitles = ["Hip Flexion R", "Hip Adduction R", "Hip Rotation R", ...
-    "Knee Angle R", "Ankle Angle R", "Subtalar Angle R", ...
-    "Hip Flexion L", "Hip Adduction L", "Hip Rotation L", ...
-    "Knee Angle L", "Ankle Angle L", "Subtalar Angle L"];
+plotTitles = ["Hip Flexion", "Hip Adduction", "Hip Rotation", ...
+    "Knee Angle", "Ankle Angle", "Subtalar Angle", ...
+    "Hip Flexion", "Hip Adduction", "Hip Rotation", ...
+    "Knee Angle", "Ankle Angle", "Subtalar Angle"];
 for i=1:numel(coordinateLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -126,7 +126,7 @@ for i=1:numel(coordinateLabels)
     titleString = [sprintf("%s", strrep(plotTitles(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
-        titleString(j+1) = sprintf("RMSE: %.4f", rmse);
+        titleString(j+1) = sprintf("RMSD: %.1f", rmse);
     end
     title(titleString, fontsize=18, FontName="Arial")
     if subplotNumber==1

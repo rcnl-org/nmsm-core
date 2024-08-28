@@ -68,9 +68,9 @@ elseif nargin < 3
     figureHeight = ceil(sqrt(numel(labels)));
 end
 figureSize = figureWidth * figureHeight;
-labels = ["Right Leg 1", "Right Leg 2", "Right Leg 3", "Right Leg 4", ...
-    "Right Leg 5", "Right Leg 6", "Left Leg 1", "Left Leg 2", ...
-    "Left Leg 3", "Left Leg 4", "Left Leg 5", "Left Leg 6"];
+labels = ["Synergy 1", "Synergy 2", "Synergy 3", "Synergy 4", ...
+    "Synergy 5", "Synergy 6", "Synergy 1", "Synergy 2", ...
+    "Synergy 3", "Synergy 4", "Synergy 5", "Synergy 6"];
 figure(Name=figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.4])
@@ -126,7 +126,7 @@ for i=1:numel(labels)
     yticks([0 2 4 6])
     rmse = rms(controlsData{1}(:, i) - controlsData{2}(:, i));
     titleString = strrep(labels(i), "_", " ");
-    titleString(2) = sprintf("RMSE: %.4f", rmse);
+    titleString(2) = sprintf("RMSD: %.1f", rmse);
     title(titleString, fontsize=18, FontName="Arial");
     xlim("tight")
     subplotNumber = subplotNumber + 1;

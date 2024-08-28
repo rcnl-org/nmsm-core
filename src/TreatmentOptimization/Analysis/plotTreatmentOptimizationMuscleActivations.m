@@ -113,7 +113,7 @@ for i=1:numel(muscleLabels)
     titleString = [sprintf("%s", strrep(muscleLabels(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
-        titleString(j+1) = sprintf("RMSE: %.4f", rmse);
+        titleString(j+1) = sprintf("RMSD: %.1f", rmse);
     end
     title(titleString, fontsize=18, FontName="Arial")
     if subplotNumber==1

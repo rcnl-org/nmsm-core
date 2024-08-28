@@ -81,6 +81,15 @@ for j = 1 : numel(modelDataFiles)
     end
 end
 
+% trackedData = [trackedData(:, 1:3), trackedData(:, 7:9), trackedData(:, 4:6), trackedData(:, 10:12)];
+% trackedDataLabels = [trackedDataLabels(1:3), trackedDataLabels(7:9), trackedDataLabels(4:6), trackedDataLabels(10:12)];
+% modelData = modelData{1};
+% modelDataLabels = modelDataLabels{1};
+% modelData = [modelData(:, 1:3), modelData(:, 7:9), modelData(:, 4:6), modelData(:, 10:12)];
+% modelDataLabels = [modelDataLabels(1:3), modelDataLabels(7:9), modelDataLabels(4:6), modelDataLabels(10:12)];
+% modelData = {modelData};
+% modelDataLabels = {modelDataLabels};
+
 % Spline experimental time to the same time points as the model.
 experimentalSpline = makeGcvSplineSet(trackedDataTime, ...
     trackedData, trackedDataLabels);
@@ -98,7 +107,7 @@ end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Ground Reactions", ...
     Units='normalized', ...
-    Position=[0.05 0.05 0.425 0.4])
+    Position=[0.05 0.05 0.9 0.4])
 colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
@@ -139,13 +148,13 @@ for i=1:numel(trackedDataLabels)
     titleString = [titleStrings(i)];
     for j = 1 : numel(modelDataFiles)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
-        titleString(j+1) = sprintf("RMSE: %.4f", rmse);
+        titleString(j+1) = sprintf("RMSD: %.1f", rmse);
     end
     title(titleString, fontsize=18, FontName="Arial")
     if subplotNumber == 1
-        ylabel("Force [N]", fontsize=18, FontName="Arial")
-    elseif subplotNumber == 4
-        ylabel("Moment [Nm]", fontsize=18, FontName="Arial")
+        ylabel("Right Foot", fontsize=18, FontName="Arial")
+    elseif subplotNumber == 7
+        ylabel("Left Foot", fontsize=18, FontName="Arial")
     end
         
     if subplotNumber==4
@@ -165,37 +174,51 @@ for i=1:numel(trackedDataLabels)
         % legend(legendValues)
     end
     
-    if subplotNumber <= 3
-        for j = 1 : numel(modelDataFiles)
-            maxData(j) = max(modelData{j}(:, forceIndices), [], "all");
-            minData(j) = min(modelData{j}(:, forceIndices), [], "all");
-        end
-        maxData(j+1) = max(trackedData(:, forceIndices), [], "all");
-        minData(j+1) = min(trackedData(:, forceIndices), [], "all");
-        ylim([-200 1000])
-        yticks([0 500 1000])
-        % if any(subplotNumber==1 || subplotNumber==4)
-        %     yticks([0 500 1000])
-        % else
-        %     yticks([0 500 1000])
-        %     yticklabels({})
-        % end
-    else
-        for j = 1 : numel(modelDataFiles)
-            maxData(j) = max(modelData{j}(:, momentIndices), [], "all");
-            minData(j) = min(modelData{j}(:, momentIndices), [], "all");
-        end
-        maxData(j+1) = max(trackedData(:, momentIndices), [], "all");
-        minData(j+1) = min(trackedData(:, momentIndices), [], "all");
+    if i == 1 | i == 7
+        ylim([-150 150])
+    elseif i == 2 | i == 8
+        ylim([-5 1000])
+    elseif i == 3 | i == 9
+        ylim([-100 100])
+    elseif i == 4 | i == 10
+        ylim([-15 20])
+    elseif i == 5 | i == 11
+        ylim([-10 10])
+    elseif i == 6 | i == 12
         ylim([-60 40])
-        yticks([-40 0 40])
+    end
+
+    % if subplotNumber <= 3
+    %     for j = 1 : numel(modelDataFiles)
+    %         maxData(j) = max(modelData{j}(:, forceIndices), [], "all");
+    %         minData(j) = min(modelData{j}(:, forceIndices), [], "all");
+    %     end
+    %     maxData(j+1) = max(trackedData(:, forceIndices), [], "all");
+    %     minData(j+1) = min(trackedData(:, forceIndices), [], "all");
+    %     ylim([-200 1000])
+    %     yticks([0 500 1000])
+    %     % if any(subplotNumber==1 || subplotNumber==4)
+    %     %     yticks([0 500 1000])
+    %     % else
+    %     %     yticks([0 500 1000])
+    %     %     yticklabels({})
+    %     % end
+    % else
+    %     for j = 1 : numel(modelDataFiles)
+    %         maxData(j) = max(modelData{j}(:, momentIndices), [], "all");
+    %         minData(j) = min(modelData{j}(:, momentIndices), [], "all");
+    %     end
+    %     maxData(j+1) = max(trackedData(:, momentIndices), [], "all");
+    %     minData(j+1) = min(trackedData(:, momentIndices), [], "all");
+    %     ylim([-60 40])
+    %     yticks([-40 0 40])
         % if any(subplotNumber==1 || subplotNumber==4)
         %     yticks([0 500 1000])
         % else
         %     yticks([0 500 1000])
         %     yticklabels({})
         % end
-    end
+    % end
 
     % if any(subplotNumber==1 || subplotNumber==4)
     %     yticks([])
