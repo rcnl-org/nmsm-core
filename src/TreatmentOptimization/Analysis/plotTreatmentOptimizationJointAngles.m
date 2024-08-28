@@ -71,7 +71,6 @@ for j=1:numel(modelDataFiles)
         end
     end
 end
-
 % Spline experimental time to the same time points as the model.
 experimentalSpline = makeGcvSplineSet(trackedDataTime, ...
     trackedData, coordinateLabels);
@@ -89,13 +88,18 @@ end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Angles", ...
     Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
+    Position=[0.05 0.05 0.9 0.4])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Angle [deg]")
+xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=18, FontName="Arial")
+ylabel(t, "Joint Angle [deg]", fontsize=18, FontName="Arial")
+plotTitles = ["Hip Flexion R", "Hip Adduction R", "Hip Rotation R", ...
+    "Knee Angle R", "Ankle Angle R", "Subtalar Angle R", ...
+    "Hip Flexion L", "Hip Adduction L", "Hip Rotation L", ...
+    "Knee Angle L", "Ankle Angle L", "Subtalar Angle L"];
 for i=1:numel(coordinateLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -104,23 +108,27 @@ for i=1:numel(coordinateLabels)
             Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Joint Angle [deg]")
+        xlabel(t, "Percent Movement [0-100%]", fontsize=18, FontName="Arial")
+        ylabel(t, "Joint Angle [deg]", fontsize=18, FontName="Arial")
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-        plot(trackedDataTime*100, trackedData(:, i), LineWidth=2);
+        plot(trackedDataTime*100, trackedData(:, i), color=colors(1), LineWidth=3);
         for j = 1 : numel(modelDataFiles)
-            plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2);
+            plot(modelDataTime{j}*100, modelData{j}(:, i), color=colors(1+j), LineWidth=3);
         end
+        xticks([0 25 50 75 100])
+        ax = gca;
+        ax.FontSize=15;
+        ax.FontName="Arial";
     hold off
-    titleString = [sprintf("%s", strrep(coordinateLabels(i), "_", " "))];
+    titleString = [sprintf("%s", strrep(plotTitles(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
-        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+        titleString(j+1) = sprintf("RMSE: %.4f", rmse);
     end
-    title(titleString)
+    title(titleString, fontsize=18, FontName="Arial")
     if subplotNumber==1
         splitFileName = split(trackedDataFile, ["/", "\"]);
         for k = 1 : numel(splitFileName)
@@ -134,17 +142,18 @@ for i=1:numel(coordinateLabels)
             splitFileName = split(modelDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
-        legend(legendValues)
+        % legend(legendValues, fontSize=15)
     end
     xlim("tight")
     maxData = [];
     minData = [];
     for j = 1 : numel(modelDataFiles)
-        maxData(j) = max(modelData{j}(:, i), [], "all");
-        minData(j) = min(modelData{j}(:, i), [], "all");
+        maxData(j) = max(modelData{j}, [], "all");
+        minData(j) = min(modelData{j}, [], "all");
     end
-    maxData(j+1) = max(trackedData(:, i), [], "all");
-    minData(j+1) = min(trackedData(:, i), [], "all");
+    maxData(j+1) = max(trackedData, [], "all");
+    minData(j+1) = min(trackedData, [], "all");
+    % maxData = max()
     yLimitUpper = max(maxData);
     yLimitLower = min(minData);
     if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
@@ -153,8 +162,18 @@ for i=1:numel(coordinateLabels)
     else
         minimum = 0.1;
     end
-    if yLimitUpper - yLimitLower < minimum
-        ylim([(yLimitUpper+yLimitLower)/2-minimum, (yLimitUpper+yLimitLower)/2+minimum])
-    end
+    % if yLimitUpper - yLimitLower < minimum
+    %     ylim([(yLimitUpper+yLimitLower)/2-minimum, (yLimitUpper+yLimitLower)/2+minimum])
+    % end
+    ylim([-40 80])
+    % if any(subplotNumber == 1 || subplotNumber == 7)
+        yticks([-40 0 40 80])
+    % else
+    %     yticks([-40 0 40 80])
+    %     yticklabels({})
+    % end
+
+    % ylim([yLimitLower, yLimitUpper])
+    
     subplotNumber = subplotNumber + 1;
 end

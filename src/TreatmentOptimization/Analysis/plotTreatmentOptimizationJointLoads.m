@@ -81,12 +81,15 @@ figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Loads", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+ax = gca;
+ax.FontSize=12;
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Loads")
+xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=15)
+ylabel(t, "Joint Moments [Nm]", fontsize=15)
 for i=1:numel(jointLoadLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -101,10 +104,11 @@ for i=1:numel(jointLoadLabels)
     end
     nexttile(subplotNumber);
     hold on
-    plot(trackedDataTime*100, trackedData(:, i), LineWidth=2);
+    plot(trackedDataTime*100, trackedData(:, i), color=colors(1), LineWidth=2);
     for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2);
+        plot(modelDataTime{j}*100, modelData{j}(:, i), color=colors(1+j), LineWidth=2);
     end
+    xticks([0 25 50 75 100])
     hold off
     if contains(jointLoadLabels(i), "moment")
         titleString = [sprintf("%s [Nm]", strrep(jointLoadLabels(i), "_", " "))];
@@ -117,7 +121,7 @@ for i=1:numel(jointLoadLabels)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
-    title(titleString)
+    title(titleString, fontsize=12)
     if subplotNumber==1
         splitFileName = split(trackedDataFile, ["/", "\"]);
         for k = 1 : numel(splitFileName)
@@ -131,7 +135,7 @@ for i=1:numel(jointLoadLabels)
             splitFileName = split(modelDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
-        legend(legendValues)
+        % legend(legendValues)
     end
     xlim("tight")
     maxData = [];
@@ -149,5 +153,6 @@ for i=1:numel(jointLoadLabels)
     else
         ylim([yLimitLower, yLimitUpper]);
     end
+    % ylim([0 0.02])
     subplotNumber = subplotNumber + 1;
 end

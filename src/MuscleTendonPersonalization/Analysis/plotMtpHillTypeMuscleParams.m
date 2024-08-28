@@ -36,6 +36,7 @@ muscleNames = strrep(muscleNames, '_', ' ');
 figure(Name = strcat(resultsDirectory, " Muscle Model Parameters"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 
 if any(params(5, :)<=0) | any(params(6,:)<0)
     paramLabels = ["Activation Time Constant", ...
@@ -56,7 +57,7 @@ t = tiledlayout(1, 6, ...
     TileSpacing='Compact', Padding='Compact');
 for i = 1 : numel(paramLabels)
     nexttile(i)
-    barh(1:numel(muscleNames), params(i,:))
+    barh(1:numel(muscleNames), params(i,:), facecolor=colors(1));
 
     title(textwrap(paramLabels(i), 20), FontSize=12)
     if i == 1

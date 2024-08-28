@@ -60,11 +60,11 @@ for j=1:numel(modelDataFiles)
 end
 
 % Spline experimental time to the same time points as the model.
-experimentalDataaSpline = makeGcvSplineSet(trackedDataTime, ...
+experimentalDataSpline = makeGcvSplineSet(trackedDataTime, ...
     trackedData, muscleLabels);
 resampledExperimentalData = {};
 for j = 1 : numel(modelDataFiles)
-    resampledExperimentalData{j}= evaluateGcvSplines(experimentalDataaSpline, ...
+    resampledExperimentalData{j}= evaluateGcvSplines(experimentalDataSpline, ...
         muscleLabels, modelDataTime{j});
 end
 if nargin < 3
@@ -76,13 +76,16 @@ end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Muscle Activations", ...
     Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
+    Position=[0.05 0.05 0.9 0.4])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Muscle Activations")
+xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=18, FontName="Arial")
+ylabel(t, "Muscle Activations", fontsize=18, FontName="Arial")
+muscleLabels = ["Ext Dig Long R", "Iliacus R", "Psoas R", "Recfem R", "Soleus R", ...
+    "Ext Dig Long L", "Iliacus L", "Psoas L", "Recfem L", "Soleus L"];
 for i=1:numel(muscleLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -91,23 +94,28 @@ for i=1:numel(muscleLabels)
             Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Muscle Activations")
+        xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=15)
+        ylabel(t, "Muscle Activations", fontsize=15)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-    plot(trackedDataTime*100, trackedData(:, i), LineWidth=2);
+    plot(trackedDataTime*100, trackedData(:, i), color=colors(1), LineWidth=3);
     for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2);
+        plot(modelDataTime{j}*100, modelData{j}(:, i), color=colors(1+j), ...
+            LineWidth=3);
     end
+    xticks([0 25 50 75 100])
+    ax = gca;
+    ax.FontSize=15;
+    ax.FontName="Arial";
     hold off
     titleString = [sprintf("%s", strrep(muscleLabels(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
-        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+        titleString(j+1) = sprintf("RMSE: %.4f", rmse);
     end
-    title(titleString)
+    title(titleString, fontsize=18, FontName="Arial")
     if subplotNumber==1
         splitFileName = split(trackedDataFile, ["/", "\"]);
         for k = 1 : numel(splitFileName)
@@ -121,9 +129,9 @@ for i=1:numel(muscleLabels)
             splitFileName = split(modelDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
-        legend(legendValues)
+        % legend(legendValues)
     end
     xlim("tight")
-    ylim([0, 1])
+    ylim([0, 1.01])
     subplotNumber = subplotNumber + 1;
 end

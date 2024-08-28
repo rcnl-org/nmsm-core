@@ -98,39 +98,58 @@ end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Ground Reactions", ...
     Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
+    Position=[0.05 0.05 0.425 0.4])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Ground Reaction")
+xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=18, FontName="Arial")
+% ylabel(t, "Ground Reaction Force [N]", fontsize=15)
+titleStrings = ["Ground Force X", "Ground Force Y", "Ground Force Z", ...
+    "Ground Moment X", "Ground Moment Y", "Ground Moment Z", ...
+    "Ground Force X", "Ground Force Y", "Ground Force Z", ...
+    "Ground Moment X", "Ground Moment Y", "Ground Moment Z"];
+forceIndices = contains(titleStrings, "Force");
+momentIndices = contains(titleStrings, "Moment");
 for i=1:numel(trackedDataLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Ground Reactions", ...
             Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
+            Position=[0.05 0.05 0.425 0.4])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Ground Reaction")
+        xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=18, FontName="Arial")
+        % ylabel(t, "Ground Reaction")
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-    plot(trackedDataTime*100, trackedData(:, i), LineWidth=2);
+    plot(trackedDataTime(1:end)*100, trackedData(1:end, i), color=colors(1), LineWidth=3);
     for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2);
+        plot(modelDataTime{j}(1:end)*100, modelData{j}(1:end, i), color=colors(1+j), ...
+            LineWidth=3);
     end
+    xticks([0 25 50 75 100])
+    ax = gca;
+    ax.FontSize=15;
+    ax.FontName="Arial";
     hold off
-    titleString = [sprintf("%s", strrep(trackedDataLabels(i), "_", " "))];
+    titleString = [titleStrings(i)];
     for j = 1 : numel(modelDataFiles)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
-        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+        titleString(j+1) = sprintf("RMSE: %.4f", rmse);
     end
-    title(titleString)
-    if subplotNumber==1
+    title(titleString, fontsize=18, FontName="Arial")
+    if subplotNumber == 1
+        ylabel("Force [N]", fontsize=18, FontName="Arial")
+    elseif subplotNumber == 4
+        ylabel("Moment [Nm]", fontsize=18, FontName="Arial")
+    end
+        
+    if subplotNumber==4
+        % ylabel("Ground Reaction Moment [Nm]", fontsize=15, position=[-10 -35/2])
         splitFileName = split(trackedDataFile, ["/", "\"]);
         for k = 1 : numel(splitFileName)
             if ~strcmp(splitFileName(k), "..")
@@ -143,8 +162,46 @@ for i=1:numel(trackedDataLabels)
             splitFileName = split(modelDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
-        legend(legendValues)
+        % legend(legendValues)
     end
+    
+    if subplotNumber <= 3
+        for j = 1 : numel(modelDataFiles)
+            maxData(j) = max(modelData{j}(:, forceIndices), [], "all");
+            minData(j) = min(modelData{j}(:, forceIndices), [], "all");
+        end
+        maxData(j+1) = max(trackedData(:, forceIndices), [], "all");
+        minData(j+1) = min(trackedData(:, forceIndices), [], "all");
+        ylim([-200 1000])
+        yticks([0 500 1000])
+        % if any(subplotNumber==1 || subplotNumber==4)
+        %     yticks([0 500 1000])
+        % else
+        %     yticks([0 500 1000])
+        %     yticklabels({})
+        % end
+    else
+        for j = 1 : numel(modelDataFiles)
+            maxData(j) = max(modelData{j}(:, momentIndices), [], "all");
+            minData(j) = min(modelData{j}(:, momentIndices), [], "all");
+        end
+        maxData(j+1) = max(trackedData(:, momentIndices), [], "all");
+        minData(j+1) = min(trackedData(:, momentIndices), [], "all");
+        ylim([-60 40])
+        yticks([-40 0 40])
+        % if any(subplotNumber==1 || subplotNumber==4)
+        %     yticks([0 500 1000])
+        % else
+        %     yticks([0 500 1000])
+        %     yticklabels({})
+        % end
+    end
+
+    % if any(subplotNumber==1 || subplotNumber==4)
+    %     yticks([])
+    % yLimitUpper = max(maxData);
+    % yLimitLower = min(minData);
+    % ylim([yLimitLower, yLimitUpper])
     xlim("tight")
     subplotNumber = subplotNumber + 1;
 end
