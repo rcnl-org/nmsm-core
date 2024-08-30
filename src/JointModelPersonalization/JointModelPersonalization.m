@@ -36,8 +36,8 @@ for i=1:length(inputs.tasks)
     functions = makeFunctions(inputs.tasks{i}.parameters, ...
         inputs.tasks{i}.scaling, inputs.tasks{i}.markers, ...
         inputs.tasks{i}.anatomicalMarkers);
-    params.markerNames = getMarkersInTask(outputModel, ...
-        inputs.tasks{i});
+    [params.markerNames, params.markerWeights] = getMarkersInTask( ...
+        outputModel, inputs.tasks{i});
     taskParams = mergeStructs(inputs.tasks{i}, params);
     outputModelFileName = saveTempOutputModel(inputs.modelFileName, ...
         outputModel);
@@ -136,10 +136,11 @@ for i=1:length(markers)
 end
 end
 
-function markerNames = getMarkersInTask(model, task)
+function [markerNames, markerWeights] = getMarkersInTask(model, task)
 import org.opensim.modeling.*
 if isfield(task, "markerNames")
     markerNames = task.markerNames;
+    markerWeights = task.markerWeights;
     return
 end
 parameters = task.parameters;

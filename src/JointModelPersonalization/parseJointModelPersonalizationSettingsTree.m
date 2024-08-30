@@ -91,10 +91,16 @@ if(isstruct(timeRange))
 end
 
 try
-    markerNames = parseSpaceSeparatedList(tree, 'marker_names');
-    if ~isempty(markerNames)
+    markerWeightSet = getFieldByName(tree, 'JMPMarkerSet');
+    if isstruct(markerWeightSet) && isfield(markerWeightSet, 'JMPMarker')
+        [markerNames, markerWeights] = getJmpMarkers(markerWeightSet);
         output.markerNames = markerNames;
+        output.markerWeights = markerWeights;
     end
+    % markerNames = parseSpaceSeparatedList(tree, 'marker_names');
+    % if ~isempty(markerNames)
+    %     output.markerNames = markerNames;
+    % end
 catch; end
 try
     freeMarkers = parseSpaceSeparatedList(tree, 'free_markers');
@@ -314,4 +320,21 @@ for i=1:length(paramArgs)
         output.(paramName{i}) = str2double(value.Text);
     end
 end
+end
+
+function [markerNames, markerWeights] = getJmpMarkers(JMPMarkerSet)
+    markers = JMPMarkerSet.JMPMarker;
+    markerNames = [];
+    markerWeights = [];
+    for i = 1 : numel(markers)
+        markersInSet = parseSpaceSeparatedList(markers{i}, 'marker_name_list');
+        markerSetWeight = markers{i}.marker_weight;
+        if isstruct(markerSetWeight)
+            markerSetWeight = str2double(markerSetWeight.Text);
+        else
+            markerSetWeight = 1;
+        end
+        markerNames = [markerNames, markersInSet];
+        markerWeights = [markerWeights, ones(size(markersInSet))*markerSetWeight];
+    end
 end
