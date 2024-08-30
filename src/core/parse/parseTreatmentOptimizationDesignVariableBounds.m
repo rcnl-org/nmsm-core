@@ -10,7 +10,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -32,4 +32,10 @@ inputs.jointVelocitiesMultiple = parseDoubleOrAlternate(tree, ...
     'joint_velocity_range_scale_factor', 1.5);
 inputs.jointAccelerationsMultiple = parseDoubleOrAlternate(tree, ...
     'joint_acceleration_range_scale_factor', 1);
+inputs.jointPositionsMinRange = parseDoubleOrAlternate(tree, ...
+    'joint_position_minimum_range', 0);
+inputs.jointVelocitiesMinRange = parseDoubleOrAlternate(tree, ...
+    'joint_velocity_minimum_range', 0);
+inputs.jointAccelerationsMinRange = parseDoubleOrAlternate(tree, ...
+    'joint_acceleration_minimum_range', 0);
 end
