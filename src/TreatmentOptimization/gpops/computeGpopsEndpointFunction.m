@@ -93,7 +93,12 @@ if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~ise
     if isempty(integral)
         continuousObjective = 0;
     else
-        continuousObjective = sum(integral) / length(integral);
+        termCounts = grouptransform(cellfun(@(x) x.type, ...
+            setup.auxdata.costTerms, 'UniformOutput', false)', ...
+            cellfun(@(x) x.type, setup.auxdata.costTerms, ...
+            'UniformOutput', false)', @numel)';
+
+        continuousObjective = sum(integral ./ termCounts);
     end
 else
     continuousObjective = 0;
