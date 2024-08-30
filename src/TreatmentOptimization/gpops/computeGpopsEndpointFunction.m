@@ -98,7 +98,9 @@ if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~ise
             cellfun(@(x) x.type, setup.auxdata.costTerms, ...
             'UniformOutput', false)', @numel)';
 
-        continuousObjective = sum(integral ./ termCounts);
+        continuousObjective = sum(integral ./ termCounts) / ...
+            length(unique(cellfun(@(x) x.type, ...
+            setup.auxdata.costTerms, 'UniformOutput', false)));
     end
 else
     continuousObjective = 0;
