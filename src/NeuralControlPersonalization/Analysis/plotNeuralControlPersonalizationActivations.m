@@ -54,13 +54,8 @@ elseif nargin < 5
     figureHeight = ceil(sqrt(numel(muscleNames)));
 end
 figureSize = figureWidth * figureHeight;
-splitFileName = split(weightsFile, ["/", "\"]);
-for k = 1 : numel(splitFileName)
-    if ~strcmp(splitFileName(k), "..")
-        figureName = splitFileName(k);
-        break
-    end
-end
+splitFileName = split(commandsFile, "_synergyCommands.sto");
+figureName = splitFileName(1);
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
