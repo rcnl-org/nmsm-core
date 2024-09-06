@@ -47,11 +47,27 @@ state = initializeState(model);
 scaleSet = org.opensim.modeling.ScaleSet();
 scale = org.opensim.modeling.Scale();
 scale.setSegmentName(bodyName);
-scale.setScaleFactors(org.opensim.modeling.Vec3(value / ...
-    getScalingParameterValue(model, bodyName)));
+scaleFactor = value / getScalingParameterValue(model, bodyName);
+scale.setScaleFactors(org.opensim.modeling.Vec3(scaleFactor));
 scale.setApply(true);
 scaleSet.cloneAndAppend(scale);
 model.scale(state, scaleSet, true, -1.0);
+
+try
+    for i = 0 : model.getConstraintSet().getSize() - 1
+        parentStr = strsplit(string(model.getConstraintSet().get(i).getPropertyByName("socket_body_1").toString()), "/");
+        parentStr = parentStr(end);
+        childStr = strsplit(string(model.getConstraintSet().get(i).getPropertyByName("socket_body_2").toString()), "/");
+        childStr = childStr(end);
+        if strcmp(parentStr(end), bodyName)
+            scaledLocation1 = getScaledLocation(scaleFactor, model.getConstraintSet().get(i).getPropertyByName("location_body_1").toString());
+            org.opensim.modeling.PointConstraint.safeDownCast(model.getConstraintSet().get(i)).set_location_body_1(scaledLocation1);
+        elseif strcmp(childStr(end), bodyName)
+            scaledLocation2 = getScaledLocation(scaleFactor, model.getConstraintSet().get(i).getPropertyByName("location_body_2").toString());
+            org.opensim.modeling.PointConstraint.safeDownCast(model.getConstraintSet().get(i)).set_location_body_2(scaledLocation2);
+        end
+    end
+catch;end
 
 if ~anatomicalMarkers
     for i = 1:length(markers)
@@ -60,3 +76,9 @@ if ~anatomicalMarkers
 end
 end
 
+function newLocation = getScaledLocation(scaleFactor, vec3String)
+vec3String = replace(replace(string(vec3String), "(", ""), ")", "");
+vec3String = str2double(strsplit(vec3String));
+vec3String = vec3String * scaleFactor;
+newLocation = org.opensim.modeling.Vec3(vec3String(1), vec3String(2), vec3String(3));
+end

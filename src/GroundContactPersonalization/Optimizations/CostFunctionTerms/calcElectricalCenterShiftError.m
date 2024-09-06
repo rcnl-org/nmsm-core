@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function ensures the synergy weights are normalized to sum to one
-% and the synergy commands are scaled in proportion
 %
-% (struct) -> (struct)
-% scale synergy weights and commands for sum of weights to equal one
+%
+% (struct, struct) -> (Array of double)
+% Calculate error between experimental and adjusted electrical center. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,33 +27,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = normalizeSynergyData(inputs)
-if strcmp(inputs.controllerType, "synergy")
-    method = lower(inputs.synergyNormalizationMethod);
-    switch method
-        case "sum"
-            for i = 1:size(inputs.synergyWeights, 1)
-                total = sum(inputs.synergyWeights(i, :)) / ...
-                    inputs.synergyNormalizationValue;
-                inputs.synergyWeights(i, :) = ...
-                    inputs.synergyWeights(i, :) / total;
-                inputs.initialSynergyControls(:, i) = ...
-                    inputs.initialSynergyControls(:, i) * total;
-            end
-        case "magnitude"
-            for i = 1:size(inputs.synergyWeights, 1)
-                total = norm(inputs.synergyWeights(i, :)) / ...
-                    inputs.synergyNormalizationValue;
-                inputs.synergyWeights(i, :) = ...
-                    inputs.synergyWeights(i, :) / total;
-                inputs.initialSynergyControls(:, i) = ...
-                    inputs.initialSynergyControls(:, i) * total;
-            end
-        otherwise
-            throw(MException('', "Only 'sum' and 'magnitude' are " + ...
-                "supported synergy normalization methods."))
-    end
-    inputs.initialSynergyWeights = inputs.synergyWeights;
+function errors = calcElectricalCenterShiftError(inputs, values)
+errors = zeros(1, 3 * length(inputs.surfaces));
+index = 1;
+for i = 1 : length(inputs.surfaces)
+    field = "electricalCenterX" + i;
+    errors(index) = values.(field);
+    index = index + 1;
+    field = "electricalCenterY" + i;
+    errors(index) = values.(field);
+    index = index + 1;
+    field = "electricalCenterZ" + i;
+    errors(index) = values.(field);
+    index = index + 1;
 end
 end
-

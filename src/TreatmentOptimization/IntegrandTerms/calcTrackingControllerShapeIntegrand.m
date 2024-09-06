@@ -30,7 +30,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingControllerIntegrand(costTerm, inputs, ...
+function cost = calcTrackingControllerShapeIntegrand(costTerm, inputs, ...
     values, time, controllerName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
@@ -42,16 +42,17 @@ if strcmp(inputs.controllerType, 'synergy')
         inputs.synergyLabels), controllerName));
     if ~isempty(indx)
         if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-            max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+                max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
             synergyActivations = inputs.splinedSynergyActivations;
         else
             synergyActivations = ...
                 evaluateGcvSplines(inputs.splineSynergyActivations, ...
                 inputs.synergyLabels, time);
         end
-        scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-        cost = calcTrackingCostArrayTerm(synergyActivations * scaleFactor, ...
-            values.controlSynergyActivations, indx);
+        experimentalControl = synergyActivations(:, indx);
+        referenceControl = values.controlSynergyActivations(:, indx);
+        scaleFactor = referenceControl \ experimentalControl;
+        cost = experimentalControl - (referenceControl * scaleFactor);
         return
     end
 end
@@ -68,9 +69,10 @@ else
         evaluateGcvSplines(inputs.splineTorqueControls, ...
         inputs.torqueLabels, time);
 end
-scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-cost = (experimentalJointMoments(:, indx1) * scaleFactor) - ...
-    values.torqueControls(:, indx2);
+experimentalControl = experimentalJointMoments(:, indx1);
+referenceControl = values.torqueControls(:, indx2);
+scaleFactor = referenceControl \ experimentalControl;
+cost = experimentalControl - (referenceControl * scaleFactor);
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);

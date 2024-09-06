@@ -31,7 +31,7 @@
 function modeledValues = computeGpopsContinuousFunction(setup)
 values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
 if strcmp(setup.auxdata.toolName, "DesignOptimization")
-    setup = updateSystemFromUserDefinedFunctions(setup, values);
+    [setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
 end
 modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
@@ -50,6 +50,16 @@ end
 modeledValues.integrand = calcGpopsIntegrand(values, modeledValues, setup.auxdata);
 if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
     modeledValues.integrand(:, end+1) = modeledValues.metabolicCost;
+end
+if valueOrAlternate(setup.auxdata, 'calculateBrakingImpulse', false)
+    modeledValues.integrand(:, ...
+        end+1:end + length(setup.auxdata.contactSurfaces)) = ...
+        modeledValues.brakingImpulse;
+end
+if valueOrAlternate(setup.auxdata, 'calculatePropulsiveImpulse', false)
+    modeledValues.integrand(:, ...
+        end+1:end + length(setup.auxdata.contactSurfaces)) = ...
+        modeledValues.propulsiveImpulse;
 end
 if isempty(modeledValues.integrand)
     modeledValues = rmfield(modeledValues, "integrand");

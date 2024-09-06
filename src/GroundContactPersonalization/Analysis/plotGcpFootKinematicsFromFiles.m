@@ -30,11 +30,6 @@
 
 function plotGcpFootKinematicsFromFiles(experimentalKinematicsFileName, ...
     optimizedKinematicsFileName, plotNumber)
-% The optional plot number argument allows users to generate multiple plots
-% without overwriting previous plots. By default, figure 1 is used. 
-if nargin < 3
-    plotNumber = 1;
-end
 coordinates = ["Toe Angle", "Y Rotation", "X Rotation", "Z Rotation", ...
     "X Translation", "Y Translation", "Z Translation"];
 import org.opensim.modeling.Storage

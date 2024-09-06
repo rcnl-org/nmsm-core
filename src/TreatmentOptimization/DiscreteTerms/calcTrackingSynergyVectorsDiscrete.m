@@ -29,12 +29,11 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTrackingSynergyVectorsDiscrete(synergyWeights, ...
-    params, costTerm)
+    inputs, costTerm)
 
-origSynergyWeights = params.initialSynergyWeights;
-origSynergyWeights(origSynergyWeights==0) = [];
-synergyWeights(synergyWeights==0) = [];
-cost = calcTrackingCostArrayTerm(synergyWeights, ...
-    origSynergyWeights, 1:size(synergyWeights, 2));
-cost = cost(:);
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+
+origSynergyWeights = inputs.initialSynergyWeights;
+rawCost = sum(abs(origSynergyWeights - synergyWeights), 'all');
+cost = ((rawCost - errorCenter) ./ costTerm.maxAllowableError) .^ 2;
 end

@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function ensures the synergy weights are normalized to sum to one
-% and the synergy commands are scaled in proportion
+% This function calculates the sum of the specified synergy weight group.
 %
-% (struct) -> (struct)
-% scale synergy weights and commands for sum of weights to equal one
+% (Array of number, struct, Array of string) -> (Number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,33 +27,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = normalizeSynergyData(inputs)
-if strcmp(inputs.controllerType, "synergy")
-    method = lower(inputs.synergyNormalizationMethod);
-    switch method
-        case "sum"
-            for i = 1:size(inputs.synergyWeights, 1)
-                total = sum(inputs.synergyWeights(i, :)) / ...
-                    inputs.synergyNormalizationValue;
-                inputs.synergyWeights(i, :) = ...
-                    inputs.synergyWeights(i, :) / total;
-                inputs.initialSynergyControls(:, i) = ...
-                    inputs.initialSynergyControls(:, i) * total;
-            end
-        case "magnitude"
-            for i = 1:size(inputs.synergyWeights, 1)
-                total = norm(inputs.synergyWeights(i, :)) / ...
-                    inputs.synergyNormalizationValue;
-                inputs.synergyWeights(i, :) = ...
-                    inputs.synergyWeights(i, :) / total;
-                inputs.initialSynergyControls(:, i) = ...
-                    inputs.initialSynergyControls(:, i) * total;
-            end
-        otherwise
-            throw(MException('', "Only 'sum' and 'magnitude' are " + ...
-                "supported synergy normalization methods."))
+function synergyWeightsMagnitude = calcSynergyWeightsMagnitude(synergyWeights, ...
+    synergyGroups, synergyGroupName)
+
+counter = 1;
+for i = 1 : length(synergyGroups)
+    if strcmp(synergyGroups{i}.muscleGroupName, synergyGroupName)
+        break;
     end
-    inputs.initialSynergyWeights = inputs.synergyWeights;
-end
+    counter = counter + synergyGroups{i}.numSynergies;
 end
 
+numSynergies = synergyGroups{i}.numSynergies;
+synergyWeightsMagnitude = zeros(numSynergies, 1);
+for j = counter : counter + numSynergies - 1
+    synergyWeightsMagnitude(j - counter + 1) = sqrt(sum(synergyWeights(j, :) .^ 2));
+end
+synergyWeightsMagnitude = synergyWeightsMagnitude';
+end

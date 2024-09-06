@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function ensures the synergy weights are normalized to sum to one
-% and the synergy commands are scaled in proportion
+% This function saves electrical center shifts applied to experimental
+% ground reaction data. 
 %
-% (struct) -> (struct)
-% scale synergy weights and commands for sum of weights to equal one
+% (struct, string, string) -> (None)
+% Write experimental ground reactions to an OpenSim Storage file.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,33 +28,29 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = normalizeSynergyData(inputs)
-if strcmp(inputs.controllerType, "synergy")
-    method = lower(inputs.synergyNormalizationMethod);
-    switch method
-        case "sum"
-            for i = 1:size(inputs.synergyWeights, 1)
-                total = sum(inputs.synergyWeights(i, :)) / ...
-                    inputs.synergyNormalizationValue;
-                inputs.synergyWeights(i, :) = ...
-                    inputs.synergyWeights(i, :) / total;
-                inputs.initialSynergyControls(:, i) = ...
-                    inputs.initialSynergyControls(:, i) * total;
-            end
-        case "magnitude"
-            for i = 1:size(inputs.synergyWeights, 1)
-                total = norm(inputs.synergyWeights(i, :)) / ...
-                    inputs.synergyNormalizationValue;
-                inputs.synergyWeights(i, :) = ...
-                    inputs.synergyWeights(i, :) / total;
-                inputs.initialSynergyControls(:, i) = ...
-                    inputs.initialSynergyControls(:, i) * total;
-            end
-        otherwise
-            throw(MException('', "Only 'sum' and 'magnitude' are " + ...
-                "supported synergy normalization methods."))
-    end
-    inputs.initialSynergyWeights = inputs.synergyWeights;
-end
-end
+function writeExperimentalGroundReactionsNewElectricalCenterToSto( ...
+    inputs, resultsDirectory)
+[~, name, ext] = fileparts(inputs.grfFileName);
+outfile = strcat("updatedElectricalCenter_", name, ext);
 
+storage = org.opensim.modeling.Storage(inputs.grfFileName);
+[columnNames, time, data] = parseMotToComponents( ...
+    Model(inputs.bodyModel), storage);
+
+for i = 1 : length(inputs.surfaces)
+    index = find(columnNames == convertCharsToStrings( ...
+        inputs.surfaces{i}.electricalCenterColumns(1, :)));
+    data(index, :) = data(index, :) + ...
+        inputs.surfaces{i}.electricalCenterShiftX;
+    index = find(columnNames == convertCharsToStrings( ...
+        inputs.surfaces{i}.electricalCenterColumns(2, :)));
+    data(index, :) = data(index, :) + ...
+        inputs.surfaces{i}.electricalCenterShiftY;
+    index = find(columnNames == convertCharsToStrings( ...
+        inputs.surfaces{i}.electricalCenterColumns(3, :)));
+    data(index, :) = data(index, :) + ...
+        inputs.surfaces{i}.electricalCenterShiftZ;
+end
+writeToSto(columnNames, time, data', ...
+    fullfile(resultsDirectory, "GRFData", outfile));
+end

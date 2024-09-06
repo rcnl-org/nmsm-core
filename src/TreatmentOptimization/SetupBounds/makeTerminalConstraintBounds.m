@@ -34,7 +34,8 @@ inputs.minTerminal = [];
 for i = 1:length(inputs.terminal)
     constraintTerm = inputs.terminal{i};
     if constraintTerm.isEnabled
-        if strcmp(constraintTerm.type, 'synergy_weight_sum')
+        if strcmp(constraintTerm.type, 'synergy_weight_sum') || ...
+                strcmp(constraintTerm.type, 'synergy_weight_magnitude')
             for j = 1:length(inputs.synergyGroups)
                 if strcmp(inputs.synergyGroups{j}.muscleGroupName, ...
                         constraintTerm.synergy_group)

@@ -3,7 +3,7 @@
 %
 %
 % (struct, string, string) -> (None)
-% Write modeled foot kinematics to an OpenSim Storage file.
+% Write modeled ground reactions to an OpenSim Storage file.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% If the model is synergy driven, this function tracks the difference
-% between original and current synergy activation controls. If the model is
-% torque driven, this function tracks the difference between inverse
-% dynamics moments and current torque controls.
+% 
 %
 % (struct, struct, Array of number, Array of string) -> (Array of number)
-%
+% Minimizes the average frequency of a control. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,47 +27,35 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingControllerIntegrand(costTerm, inputs, ...
-    values, time, controllerName)
+function cost = calcMinimizingControllerFrequencyIntegrand(costTerm, ...
+    inputs, values, time, controllerName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
+    "normalize_by_final_time", false);
+indx = [];
 if strcmp(inputs.controllerType, 'synergy')
     indx = find(strcmp(convertCharsToStrings( ...
         inputs.synergyLabels), controllerName));
-    if ~isempty(indx)
-        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-            max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-            synergyActivations = inputs.splinedSynergyActivations;
-        else
-            synergyActivations = ...
-                evaluateGcvSplines(inputs.splineSynergyActivations, ...
-                inputs.synergyLabels, time);
-        end
-        scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-        cost = calcTrackingCostArrayTerm(synergyActivations * scaleFactor, ...
-            values.controlSynergyActivations, indx);
-        return
+    control = values.controlSynergyActivations(:, indx);
+end
+if isempty(indx)
+    indx = find(strcmp(convertCharsToStrings( ...
+        strcat(inputs.torqueLabels, '_moment')), controllerName));
+    if isempty(indx)
+        indx = find(strcmp(convertCharsToStrings( ...
+            strcat(inputs.torqueLabels, '_force')), controllerName));
     end
+    control = values.torqueControls(:, indx);
 end
-indx1 = find(strcmp(convertCharsToStrings( ...
-    strcat(inputs.torqueLabels, '_moment')), controllerName));
-indx2 = find(strcmp(convertCharsToStrings( ...
-    strcat(inputs.torqueControllerCoordinateNames, '_moment')), ...
-    controllerName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointMoments = inputs.splinedTorqueControls;
-else
-    experimentalJointMoments = ...
-        evaluateGcvSplines(inputs.splineTorqueControls, ...
-        inputs.torqueLabels, time);
-end
-scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-cost = (experimentalJointMoments(:, indx1) * scaleFactor) - ...
-    values.torqueControls(:, indx2);
+assert(~isempty(indx), "Controller " + controllerName + " is not a " + ...
+    "synergy or torque controller.")
+
+period = mean(diff(time));
+numPoints = length(time);
+frequencies = (0 : numPoints - 1)' / numPoints / period;
+transform = abs(nufft(control, time / period));
+averageFrequency = sum(frequencies .* transform) / sum(transform);
+cost = averageFrequency * ones(size(control));
+
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);

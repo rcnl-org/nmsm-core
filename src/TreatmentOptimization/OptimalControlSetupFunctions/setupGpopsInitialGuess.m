@@ -110,12 +110,16 @@ end
 function guess = setupInitialParametersGuess(inputs, guess)
 if valueOrAlternate(inputs, "optimizeSynergyVectors", false)
     guess.parameter = [];
+    row = 1;
     for i = 1 : length(inputs.synergyGroups)
-        for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
-            index = find(ismember(inputs.synergyWeightsLabels, ...
-                inputs.synergyGroups{i}.muscleNames{j}));
-            guess.parameter(end + 1) = inputs.synergyWeights(i, index);
+        for k = 1:inputs.synergyGroups{i}.numSynergies
+            for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
+                index = find(ismember(inputs.synergyWeightsLabels, ...
+                    inputs.synergyGroups{i}.muscleNames{j}));
+                guess.parameter(end + 1) = inputs.synergyWeights(row + k - 1, index);
+            end
         end
+        row = row + inputs.synergyGroups{i}.numSynergies;
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")

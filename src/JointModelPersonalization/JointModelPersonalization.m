@@ -105,6 +105,7 @@ function outputModelFileName = saveTempOutputModel(modelFileName, ...
     outputModel)
 [~,name,ext] = fileparts(modelFileName);
 outputModelFileName = name + "_jmp_temp" + ext;
+outputModel.finalizeConnections();
 outputModel.print(outputModelFileName);
 end
 
