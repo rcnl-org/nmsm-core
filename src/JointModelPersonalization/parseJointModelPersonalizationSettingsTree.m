@@ -89,19 +89,12 @@ if(isstruct(timeRange))
     output.startTime = str2double(timeRange{1});
     output.finishTime = str2double(timeRange{2});
 end
-
-try
-    markerSet = getFieldByName(tree, 'JMPMarkerSet');
+    markerSet = getFieldByNameOrError(tree, 'JMPMarkerSet');
     if isstruct(markerSet) && isfield(markerSet, 'JMPMarker')
         [markerNames, markerAllowableErrors] = getJmpMarkers(markerSet);
         output.markerNames = markerNames;
         output.markerAllowableErrors = markerAllowableErrors;
     end
-    % markerNames = parseSpaceSeparatedList(tree, 'marker_names');
-    % if ~isempty(markerNames)
-    %     output.markerNames = markerNames;
-    % end
-catch; end
 try
     freeMarkers = parseSpaceSeparatedList(tree, 'free_markers');
 catch
@@ -332,7 +325,7 @@ function [markerNames, markerAllowableErrors] = getJmpMarkers(JMPMarkerSet)
         if isstruct(markerAllowableError)
             markerAllowableError = str2double(markerAllowableError.Text);
         else
-            markerAllowableError = 1;
+            markerAllowableError = 0.01;
         end
         markerNames = [markerNames, markersInSet];
         markerAllowableErrors = [markerAllowableErrors, ones(size(markersInSet))*markerAllowableError];
