@@ -37,7 +37,9 @@ applyParametersToIKSolver(trialIKSolver, params);
 error = computeInverseKinematicsSquaredError(model, trialIKSolver, ...
     markersReference, params);
 trialIKSolver = libpointer;
-desiredError = valueOrAlternate(params, "desiredError", 0.01);
-error = error / desiredError;
+maxAllowableErrors = valueOrAlternate(params, "markerAllowableErrors", 0.01);
+maxAllowableErrorsRepeated = repmat(maxAllowableErrors, 1, ...
+    numel(error)/numel(params.markerNames));
+error = error ./ maxAllowableErrorsRepeated;
 end
 

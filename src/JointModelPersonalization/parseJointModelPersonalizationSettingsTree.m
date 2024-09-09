@@ -91,11 +91,11 @@ if(isstruct(timeRange))
 end
 
 try
-    markerWeightSet = getFieldByName(tree, 'JMPMarkerSet');
-    if isstruct(markerWeightSet) && isfield(markerWeightSet, 'JMPMarker')
-        [markerNames, markerWeights] = getJmpMarkers(markerWeightSet);
+    markerSet = getFieldByName(tree, 'JMPMarkerSet');
+    if isstruct(markerSet) && isfield(markerSet, 'JMPMarker')
+        [markerNames, markerAllowableErrors] = getJmpMarkers(markerSet);
         output.markerNames = markerNames;
-        output.markerWeights = markerWeights;
+        output.markerAllowableErrors = markerAllowableErrors;
     end
     % markerNames = parseSpaceSeparatedList(tree, 'marker_names');
     % if ~isempty(markerNames)
@@ -322,19 +322,19 @@ for i=1:length(paramArgs)
 end
 end
 
-function [markerNames, markerWeights] = getJmpMarkers(JMPMarkerSet)
+function [markerNames, markerAllowableErrors] = getJmpMarkers(JMPMarkerSet)
     markers = JMPMarkerSet.JMPMarker;
     markerNames = [];
-    markerWeights = [];
+    markerAllowableErrors = [];
     for i = 1 : numel(markers)
-        markersInSet = parseSpaceSeparatedList(markers{i}, 'marker_name_list');
-        markerSetWeight = markers{i}.marker_weight;
-        if isstruct(markerSetWeight)
-            markerSetWeight = str2double(markerSetWeight.Text);
+        markersInSet = parseSpaceSeparatedList(markers{i}, 'marker_list');
+        markerAllowableError = markers{i}.max_allowable_error;
+        if isstruct(markerAllowableError)
+            markerAllowableError = str2double(markerAllowableError.Text);
         else
-            markerSetWeight = 1;
+            markerAllowableError = 1;
         end
         markerNames = [markerNames, markersInSet];
-        markerWeights = [markerWeights, ones(size(markersInSet))*markerSetWeight];
+        markerAllowableErrors = [markerAllowableErrors, ones(size(markersInSet))*markerAllowableError];
     end
 end
