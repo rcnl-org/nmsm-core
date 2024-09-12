@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function uses a mex file or a matlab function with parallel workers
-% to calculate the position and velocity of a point.
 %
-% (Array of number, 2D matrix, 2D matrix, 2D matrix (or Array of number), 
-% Array of number (or number), Array of string, Cell) -> (2D matrix, 2D matrix)
-% Returns point positions and point velocities
+%
+% () -> (double)
+% Returns the version of the linked OpenSim API.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams, Marleny Vega                               %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,22 +27,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [pointPositions, pointVelocities] = pointKinematics(time, ...
-    jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
-    coordinateLabels, version)
-if isequal(mexext, 'mexw64')
-    if version >= 40501
-        [pointPositions, pointVelocities] = ...
-            pointKinematicsMexWindows40501(time, jointAngles, ...
-            jointVelocities, pointLocationOnBody', body, coordinateLabels);
-    else
-        [pointPositions, pointVelocities] = ...
-            pointKinematicsMexWindows40400(time, jointAngles, ...
-            jointVelocities, pointLocationOnBody', body, coordinateLabels);
+function version = getOpenSimVersion()
+version = strsplit(org.opensim.modeling.opensimCommon.GetVersion() ...
+    .toCharArray()', '-');
+versionSplit = strsplit(version{1}, '.');
+
+version = versionSplit{1};
+for i = 2 : length(versionSplit)
+    if length(versionSplit{i}) == 1
+        version(end + 1) = '0';
     end
-else
-    [pointPositions, pointVelocities] = pointKinematicsMatlabParallel(time, ...
-        jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
-        coordinateLabels);
+    version(end + 1) = versionSplit{i};
 end
+for i = length(version) + 1 : 5
+    version(end + 1) = '0';
+end
+
+version = str2double(version);
 end
