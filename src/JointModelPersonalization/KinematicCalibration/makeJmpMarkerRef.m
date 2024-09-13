@@ -30,8 +30,10 @@
 function markersReference = makeJmpMarkerRef(model, markerFileName, params)
 if(isfield(params, 'markerNames'))
     markersReference = MarkersReference(markerFileName);
+    markerWeights = 1./(params.markerAllowableErrors.^2);
+    markerWeightsNormalized = markerWeights./min(markerWeights);
     markersReference.setMarkerWeightSet(makeMarkerWeightSet( ...
-        params.markerNames, ones(size(params.markerNames))));
+        params.markerNames, markerWeightsNormalized));
     removeNonUsedMarkers(model, params.markerNames)
 else
     markersReference = makeMarkersReference(model, markerFileName, params);

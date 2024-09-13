@@ -53,9 +53,11 @@ for i = 1 : numel(inputs.tasks)
 
     % Plot marker errors
     reportDistanceErrorByMarker(inputModelFileName, ...
-        task.markerFile, task.markers(markerIndicesToUse), "start.sto");
+        task.markerFile, task.markers(markerIndicesToUse), ...
+        task.markerAllowableErrors, "start.sto");
     reportDistanceErrorByMarker(outputModelFileName, ...
-        task.markerFile, task.markers(markerIndicesToUse), "finish.sto");
+        task.markerFile, task.markers(markerIndicesToUse), ... 
+        task.markerAllowableErrors, "finish.sto");
     figure(Name=strcat(settingsFileName, " Task ", num2str(i)));
     plotMarkerDistanceErrors(["start.sto", "finish.sto"], false)
 end

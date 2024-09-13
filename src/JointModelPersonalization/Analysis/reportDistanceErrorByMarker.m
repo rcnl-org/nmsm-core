@@ -1,7 +1,7 @@
 
 % (Model, string, cell array) -> (None)
 function reportDistanceErrorByMarker(model, markerFileName, ...
-    markerNames, outputSto)
+    markerNames, markerAllowableErrors, outputSto)
 import org.opensim.modeling.InverseKinematicsSolver
 import org.opensim.modeling.SimTKArrayCoordinateReference
 import org.opensim.modeling.Storage
@@ -9,6 +9,7 @@ import org.opensim.modeling.ArrayStr
 
 model = Model(model);
 params.markerNames = markerNames;
+params.markerAllowableErrors = markerAllowableErrors;
 markersReference = makeJmpMarkerRef(model, markerFileName, ...
     params);
 ikSolver = InverseKinematicsSolver(model, ...

@@ -55,10 +55,14 @@ else
             xlabel('time (s)')
             ylabel('error (m)')
             plot(time{j}, y, 'LineWidth',3);
+            rmse = rms(y);
+            titleString(j) = sprintf("RMSE %d: %.4f", j, rmse);
+            
             legendList{end+1} = strrep(strcat(storages{j}. ...
                 getColumnLabels.get(i).toCharArray', " - ", fileNames{j}), ...
                 '_', '\_');
         end
+        title(titleString)
         legend(legendList)
         legendList = {};
     end
