@@ -12,7 +12,7 @@
 % the figure size will be fixed and extra figures will be created as
 % needed.
 %
-% (string) (List of strings) (int), (int) -> (None)
+% (string) (string) (List of strings) (int), (int) -> (None)
 % Plot experimental and model joint angles from file
 
 % ----------------------------------------------------------------------- %
