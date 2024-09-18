@@ -31,7 +31,6 @@ for j=1:numel(modelDataFiles)
     modeledVelocitiesTime{j} = modeledStatesTime;
 
     for i = 1 : size(modeledStates(:, 1:size(modeledStates, 2)/2), 2)
-        model.getCoordinateSet().get(modeledStatesLabels(i))
         if model.getCoordinateSet().get(modeledStatesLabels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
             modeledVelocities{j}(:, i) = modeledVelocities{j}(:, i) * 1;
@@ -58,6 +57,7 @@ figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Velocities", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
@@ -77,15 +77,15 @@ for i=1:numel(modeledVelocitiesLabels)
         ylabel(t, "Joint Angle [deg]")
         subplotNumber = 1;
     end
-    modeledStatesLabels(i);
     coordinateIndex = find(modeledStatesLabels(i) == coordinateLabels);
     if ~isempty(coordinateIndex)
         nexttile(subplotNumber);
         hold on
-        plot(trackedDataTime*100, trackedVelocities(:, coordinateIndex), lineWidth=2)
+        plot(trackedDataTime*100, trackedVelocities(:, coordinateIndex), ...
+            lineWidth=2, Color = colors(1))
         for j = 1 : numel(modelDataFiles)
             plot(modeledVelocitiesTime{j}*100, modeledVelocities{j}(:, i), ...
-                lineWidth=2)
+                lineWidth=2, Color = colors(j+1));
         end
         hold off
         titleString = [sprintf("%s", strrep(coordinateLabels(coordinateIndex), "_", " "))];
@@ -95,6 +95,21 @@ for i=1:numel(modeledVelocitiesLabels)
             titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
         end
         title(titleString)
+        if subplotNumber==1
+            splitFileName = split(trackedDataFile, ["/", "\"]);
+            for k = 1 : numel(splitFileName)
+                if ~strcmp(splitFileName(k), "..")
+                    legendValues = sprintf("%s (T)", ...
+                        strrep(splitFileName(k), "_", " "));
+                    break
+                end
+            end
+            for j = 1 : numel(modelDataFiles)
+                splitFileName = split(modelDataFiles(j), ["/", "\"]);
+                legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
+            end
+            legend(legendValues)
+        end
         xlim("tight")
         maxData = [];
         minData = [];

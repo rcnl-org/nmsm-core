@@ -77,6 +77,7 @@ figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Muscle Activations", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
@@ -97,9 +98,11 @@ for i=1:numel(muscleLabels)
     end
     nexttile(subplotNumber);
     hold on
-    plot(trackedDataTime*100, trackedData(:, i), LineWidth=2);
+    plot(trackedDataTime*100, trackedData(:, i), LineWidth=2, ...
+        Color = colors(1));
     for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2);
+        plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2, ...
+            Color = colors(j+1));
     end
     hold off
     titleString = [sprintf("%s", strrep(muscleLabels(i), "_", " "))];

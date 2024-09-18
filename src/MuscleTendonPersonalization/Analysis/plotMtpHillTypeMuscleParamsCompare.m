@@ -1,16 +1,16 @@
 function plotMtpHillTypeMuscleParamsCompare(rightResultsDirectory, ...
     leftResultsDirectory)
-    rightAnalysisDirectory = fullfile(rightResultsDirectory, "Analysis");
-    leftAnalysisDirectory = fullfile(leftResultsDirectory, "Analysis");
-    [muscleNames, rightParams] = extractMtpDataFromSto( ...
-        fullfile(rightAnalysisDirectory, "muscleModelParameters"));
-    [~, leftParams] = extractMtpDataFromSto( ...
-        fullfile(leftAnalysisDirectory, "muscleModelParameters"));
-    muscleNames = strrep(muscleNames, '_', ' ');
-    figure(Name = strcat("Compare Muscle Model Parameters"), ...
-        Units='normalized', ...
-        Position=[0.05 0.05 0.9 0.85])
-
+rightAnalysisDirectory = fullfile(rightResultsDirectory, "Analysis");
+leftAnalysisDirectory = fullfile(leftResultsDirectory, "Analysis");
+[muscleNames, rightParams] = extractMtpDataFromSto( ...
+    fullfile(rightAnalysisDirectory, "muscleModelParameters"));
+[~, leftParams] = extractMtpDataFromSto( ...
+    fullfile(leftAnalysisDirectory, "muscleModelParameters"));
+muscleNames = strrep(muscleNames, '_', ' ');
+figure(Name = strcat("Compare Muscle Model Parameters"), ...
+    Units='normalized', ...
+    Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 if any(rightParams(5, :)<=0) | any(rightParams(6,:)<0)
     paramLabels = ["Activation Time Constant", ...
         "Activation Nonlinearity", ...
@@ -32,8 +32,9 @@ t = tiledlayout(1, 6, ...
 
 for i = 1 : numel(paramLabels)
     nexttile(i)
-    barh(1:numel(muscleNames), [rightParams(i,:); leftParams(i,:)]);
-    
+    b = barh(1:numel(muscleNames), [rightParams(i,:); leftParams(i,:)]);
+    b(1).FaceColor = colors(1);
+    b(2).FaceColor = colors(2);
     title(textwrap(paramLabels(i), 20), FontSize=12)
     if i == 1
         yticks(1:numel(muscleNames))
