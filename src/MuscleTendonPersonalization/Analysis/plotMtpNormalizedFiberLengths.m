@@ -53,6 +53,7 @@ figure(Name = strcat(resultsDirectory, ...
         " Normalized Fiber Lengths"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
 xlabel(t, "Percent Movement [0-100%]")
@@ -73,9 +74,9 @@ for i=1:numel(muscleNames)
     nexttile(subplotNumber);
     hold on
     plotMeanAndStd(meanFiberLengths(:,i), stdFiberLengths(:,i), ...
-        time, "#0072BD")
-    plot(time, passiveUpper, 'r--', LineWidth=2);
-    plot(time, passiveLower, 'r--', LineWidth=2);
+        time, colors(1))
+    plot(time, passiveUpper, color=colors(2), LineStyle='--', LineWidth=2);
+    plot(time, passiveLower, color=colors(2), LineStyle='--', LineWidth=2);
     hold off
     set(gca, fontsize=11)
     title(muscleNames(i), FontSize=12);

@@ -1,4 +1,4 @@
-% This function is part of the NMSM Pipeline, see file for full license.
+ % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Plot muscle activations for one trial resulting from Neural Control 
 % Personalization from synergy weights and synergy commands output files. 
@@ -39,6 +39,11 @@ time = findTimeColumn(commandsStorage);
 synergyCommands = storageToDoubleMatrix(commandsStorage);
 muscleActivations = synergyWeights * synergyCommands;
 
+if time(1) ~= 0
+    time = time - time(1);
+end
+time = time / time(end);
+
 if isstring(mtpActivationsFile) || ischar(mtpActivationsFile)
     mtpStorage = Storage(mtpActivationsFile);
     mtpMuscleNames = getStorageColumnNames(mtpStorage);
@@ -59,11 +64,13 @@ figureName = splitFileName(1);
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "Time Points [s]")
+xlabel(t, "% Gait Cycle [0-100%]")
+% xlabel(t, "Time Points [s]")
 ylabel(t, "Muscle Activations")
 for i = 1:size(muscleActivations, 1)
     if i > figureSize * figureNumber
@@ -77,11 +84,11 @@ for i = 1:size(muscleActivations, 1)
     mtpIndex = find(muscleNames(i) == mtpMuscleNames);
     hold on
     if ~isempty(mtpIndex)
-        plot(time, mtpActivations(mtpIndex, :), 'LineWidth', 2, ...
-            Color="#0072BD");
+        plot(time*100, mtpActivations(mtpIndex, :), 'LineWidth', 2, ...
+            Color=colors(1))
     end
-    plot(time, muscleActivations(i, :), 'LineWidth', 2, ...
-        Color="#D95319")
+    plot(time*100, muscleActivations(i, :), 'LineWidth', 2, ...
+        Color=colors(2))
     hold off
     if subplotNumber==1
         if ~isempty(mtpIndex)

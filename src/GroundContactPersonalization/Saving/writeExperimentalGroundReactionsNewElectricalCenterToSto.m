@@ -51,6 +51,9 @@ for i = 1 : length(inputs.surfaces)
     data(index, :) = data(index, :) + ...
         inputs.surfaces{i}.electricalCenterShiftZ;
 end
+if ~exist(fullfile(resultsDirectory, "GRFData"), "dir")
+    mkdir(fullfile(resultsDirectory, "GRFData"))
+end
 writeToSto(columnNames, time, data', ...
     fullfile(resultsDirectory, "GRFData", outfile));
 end
