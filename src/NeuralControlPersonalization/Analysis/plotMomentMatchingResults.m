@@ -38,10 +38,31 @@ import org.opensim.modeling.Storage
 [modeledColumns, modeledTime, modeledMoments] = parseMotToComponents( ...
     org.opensim.modeling.Model(), Storage(modeledMomentsFile));
 
+if experimentalTime(1) ~= 0
+    experimentalTime = experimentalTime - experimentalTime(1);
+end
+experimentalTime = experimentalTime / experimentalTime(end);
+if modeledTime(1) ~= 0
+    modeledTime = modeledTime - modeledTime(1);
+end
+modeledTime = modeledTime / modeledTime(end);
+
 includedColumns = logical(ismember(experimentalColumns, modeledColumns) ...
     + ismember(experimentalColumns + "_moment", modeledColumns));
 experimentalMoments = experimentalMoments(includedColumns, :);
 experimentalColumns = experimentalColumns(includedColumns);
+
+% Sort by left/right
+rightIndices = contains(experimentalColumns, "_r_");
+leftIndices = ~rightIndices;
+experimentalColumns = [experimentalColumns(rightIndices), ...
+    experimentalColumns(leftIndices)];
+modeledColumns = [modeledColumns(rightIndices), ...
+    modeledColumns(leftIndices)];
+experimentalMoments = [experimentalMoments(rightIndices, :); ...
+    experimentalMoments(leftIndices, :)];
+modeledMoments = [modeledMoments(rightIndices, :); ...
+    modeledMoments(leftIndices, :)];
 
 if nargin < 3
     figureWidth = ceil(sqrt(numel(experimentalColumns)));
@@ -63,13 +84,15 @@ end
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 figureIndex = 1;
 hasLegend = false;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "Time Points [s]")
+xlabel(t, "% Gait Cycle [0-100%]")
+% xlabel(t, "Time Points [s]")
 ylabel(t, "Joint Moments [Nm]")
 
 for i = 1:length(experimentalColumns)
@@ -82,14 +105,14 @@ for i = 1:length(experimentalColumns)
         hasLegend = false;
     end
     nexttile(subplotNumber)
-    plot(modeledTime, experimentalMoments(i, :), 'LineWidth', 2)
+    plot(modeledTime*100, experimentalMoments(i, :), color=colors(1), LineWidth=2)
     modeledIndex = find(experimentalColumns(i) == modeledColumns);
     if isempty(modeledIndex)
         modeledIndex = find(experimentalColumns(i) + "_moment" == modeledColumns);
     end
     if ~isempty(modeledIndex)
         hold on
-        plot(modeledTime, modeledMoments(modeledIndex, :), 'LineWidth', 2);
+        plot(modeledTime*100, modeledMoments(modeledIndex, :), color=colors(2), LineWidth=2);
         if ~hasLegend
             legend("Experimental Moments", "Modeled Moments")
             hasLegend = true;
@@ -102,7 +125,7 @@ for i = 1:length(experimentalColumns)
     end
     title(strrep(experimentalColumns(i), "_", " ") + newline + ...
         " RMSE: " + error)
-    xlim([modeledTime(1) modeledTime(end)])
+    xlim("tight")
     subplotNumber = subplotNumber + 1;
 end
 end
