@@ -42,15 +42,15 @@ if isstruct(precalInputs)
 else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
-optimizedParams = MuscleTendonPersonalization(inputs, params);
+results = MuscleTendonPersonalization(inputs, params);
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
-        getMtpResultsToSave(inputs, params, optimizedParams, precalInputs);
+        getMtpResultsToSave(inputs, params, results, precalInputs);
     saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory, precalInputs);
 else
     [finalValues, resultsStruct, modeledValues] = ...
-        getMtpResultsToSave(inputs, params, optimizedParams);
+        getMtpResultsToSave(inputs, params, results);
     saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory);
 end

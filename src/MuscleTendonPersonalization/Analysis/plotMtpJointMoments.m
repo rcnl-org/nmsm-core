@@ -28,10 +28,8 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotMtpJointMoments(resultsDirectory)
+function plotMtpJointMoments(resultsDirectory, figureWidth, figureHeight)
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
-% Include max allowable error, and rmse
-figureHeight = 1;
 
 [jointLabels, idMoments] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "inverseDynamicsJointMoments"));
@@ -42,7 +40,6 @@ figureHeight = 1;
 if exist(fullfile(analysisDirectory, "modelJointMomentsSynx"), "dir")
     [~, modelMomentsSynx] = extractMtpDataFromSto( ...
         fullfile(analysisDirectory, "modelJointMomentsSynx"));
-    figureHeight = figureHeight + 1;
 else
     modelMomentsSynx = [];
 end
@@ -62,37 +59,48 @@ minMoment = min([ ...
     min(meanIdMoments, [], "all"), ...
     min(meanMoments, [], "all"), ...
     min(meanMomentsSynx, [], "all")]);
-
-figure(Name = strcat(resultsDirectory, " Joint Moments"), ...
+if nargin < 2
+    figureWidth = ceil(sqrt(numel(jointLabels)));
+    figureHeight = ceil(numel(jointLabels)/figureWidth);
+elseif nargin < 3
+    figureHeight = ceil(sqrt(numel(jointLabels)));
+end
+figureSize = figureWidth * figureHeight;
+subplotNumber = 1;
+figureNumber = 1;
+figure(Name = strcat(resultsDirectory, ...
+        " Joint Moment Matching"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
+
 time = 1:1:size(meanIdMoments,1);
-figureWidth = numel(jointLabels);
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
+xlabel(t, "Percent Movement [0-100%]")
+ylabel(t, "Joint Moment [Nm]")
 for i=1:numel(jointLabels)
-    if ~isempty(meanMoments)
-        nexttile(i);
-        hold on
-        plotMeanAndStd(meanMoments(:,i), stdMoments(:,i), time, 'r-')
-        plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
-        hold off
-        set(gca, fontsize=11)
-        rmse = rms(meanMoments(:,i) - meanIdMoments(:,i));
-        mae = mean(abs(meanMoments(:,i) - meanIdMoments(:,i)));
-        title(sprintf("%s \n RMSE: %.4f, MAE: %.4f", ...
-            jointLabels(i), rmse, mae), fontsize=12)
-        axis([time(1) time(end) minMoment, maxMoment])
-        if i == 1
-            legend("Mean Moment No Synx", "Mean Inverse Dynamics Moment")
-            ylabel("Joint Moment [Nm]")
-        end
+    if i > figureSize * figureNumber
+        figureNumber = figureNumber + 1;
+        figure(Name = strcat(resultsDirectory, ...
+                " Joint Moment Matching"), ...
+            Units='normalized', ...
+            Position=[0.05 0.05 0.9 0.85])
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Joint Position")
+        ylabel(t, "Joint Moment [Nm]")
+        subplotNumber = 1;
     end
+    nexttile(subplotNumber);
     if ~isempty(meanMomentsSynx)
-        nexttile(i+figureWidth);
         hold on
-        plotMeanAndStd(meanMomentsSynx(:,i), stdMomentsSynx(:,i), time, 'r-')
-        plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), time, 'b-')
+        plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), ...
+            time, colors(1))
+        plotMeanAndStd(meanMomentsSynx(:,i), stdMomentsSynx(:,i), ...
+            time, colors(2))
+        plotMeanAndStd(meanMoments(:, i), stdMoments(:, i), ...
+            time, colors(2), '--')
         hold off
         set(gca, fontsize=11)
         rmse = rms(meanMomentsSynx(:,i) - meanIdMoments(:,i));
@@ -100,11 +108,30 @@ for i=1:numel(jointLabels)
         title(sprintf("%s \n RMSE: %.4f, MAE: %.4f", ...
             jointLabels(i), rmse, mae), fontsize=12)
         axis([time(1) time(end) minMoment, maxMoment])
-        if i == 1
-            legend("Mean Moment Synx", "Mean Inverse Dynamics Moment")
-            ylabel("Joint Moment [Nm]")
+        if subplotNumber == 1
+            legend("Mean Inverse Dynamics Moment", ...
+                "Mean Model Moment (SynX)", ...
+                "Mean Model Moment (No SynX)")
+        end
+    else
+        hold on
+        plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), ...
+            time, colors(1))
+        plotMeanAndStd(meanMoments(:, i), stdMoments(:, i), ...
+            time, colors(2))
+        hold off
+        set(gca, fontsize=11)
+        rmse = rms(meanMoments(:,i) - meanIdMoments(:,i));
+        mae = mean(abs(meanMoments(:,i) - meanIdMoments(:,i)));
+        title(sprintf("%s \n RMSE: %.4f, MAE: %.4f", ...
+            jointLabels(i), rmse, mae), fontsize=12)
+        xlim("tight")
+        ylim([minMoment, maxMoment])
+        if subplotNumber == 1
+            legend("Mean Inverse Dynamics Moment", ...
+                "Mean Model Moment (No SynX)")
         end
     end
-    xlabel("Time Points")
+    subplotNumber = subplotNumber + 1;
 end
 end

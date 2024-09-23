@@ -59,11 +59,13 @@ elseif nargin < 3
     figureHeight = ceil(sqrt(numel(plotLabels)));
 end
 figureSize = figureWidth * figureHeight;
-figure(Name = strcat(resultsDirectory, " Passive Moment Matching"), ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
 subplotNumber = 1;
 figureNumber = 1;
+figure(Name = strcat(resultsDirectory, ...
+        " Passive Moment Matching"), ...
+    Units='normalized', ...
+    Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
 minMoment = min([ ...
@@ -78,29 +80,28 @@ ylabel(t, "Joint Moment [Nm]")
 for i = 1 : numel(plotLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Joint Angles", ...
+        figure(Name = strcat(resultsDirectory, ...
+                " Passive Moment Matching"), ...
             Units='normalized', ...
             Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Joint Angle [deg]")
+        xlabel(t, "Joint Position")
+        ylabel(t, "Joint Moment [Nm]")
         subplotNumber = 1;
     end
     nexttile(subplotNumber)
     hold on
     plot(passiveMomentsExperimental(:, i), ...
-        LineWidth=3, ...
-        Color = "k")
+        LineWidth=2, Color=colors(1))
     plot(passiveMomentsModel(:, i), ...
-        LineWidth=3, ...
-        Color = "r")
+        LineWidth=2, Color=colors(2))
     hold off
     title(plotLabels(i));
     if subplotNumber == 1
         legend("Experimental Moments", "Model Moments")
     end
-    xlim([1 size(passiveMomentsExperimental, 1)])
+    xlim("tight")
     ylim([minMoment, maxMoment])
     subplotNumber = subplotNumber + 1;
 end

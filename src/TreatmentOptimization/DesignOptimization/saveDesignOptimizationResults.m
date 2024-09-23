@@ -31,14 +31,14 @@
 
 function saveDesignOptimizationResults(solution, inputs)
 values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
-saveTreatmentOptimizationResults(solution, inputs, values)
 if isfield(inputs, "systemFns")
     inputs.auxdata = inputs;
-    inputs = updateSystemFromUserDefinedFunctions(inputs, values);
+    [inputs, values] = updateSystemFromUserDefinedFunctions(inputs, values);
     model = Model(inputs.auxdata.model);
     model.print(strrep(inputs.mexModel, '_inactiveMuscles.osim', 'DesignOpt.osim'));
 end
 printUserDefinedVariablesToXml(solution, inputs);
+saveTreatmentOptimizationResults(solution, inputs, values);
 end
 
 function printUserDefinedVariablesToXml(solution, inputs)

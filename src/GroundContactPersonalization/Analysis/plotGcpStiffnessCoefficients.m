@@ -72,11 +72,20 @@ for i = 1 : length(contactSurface.springs)
 end
 
 % Plot values
+figure(name = osimxFileName)
 scatter(springZ, springX, 200, stiffness, "filled")
 set(gca, 'DataAspectRatio', [1, 1, 1])
 title("Stiffness coefficients")
 xlabel("Z location on foot (m)")
 ylabel("X location on foot (m)")
-colormap jet
+
+R = [254 254 236 204 153];
+G = [196 153 112 76 52];
+B = [79 41 20 2 4];
+R = interp1(linspace(R(1), R(end), numel(R)), R, linspace(R(1), R(end), 50));
+B = interp1(linspace(B(1), B(end), numel(B)), B, linspace(B(1), B(end), 50));
+G = interp1(linspace(G(1), G(end), numel(G)), G, linspace(G(1), G(end), 50));
+colors = [R', G', B']/255;
+colormap(colors)
 colorbar
 end
