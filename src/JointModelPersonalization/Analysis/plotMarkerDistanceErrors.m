@@ -5,16 +5,27 @@
 function plotMarkerDistanceErrors(files,onePlot)
 import org.opensim.modeling.Storage
 import org.opensim.modeling.ArrayDouble
+colors = getPlottingColors();
 storages = {};
+fileNames = {};
 for i=1:length(files)
     storages{end+1} = Storage(files(i));
+    [~, fileNames{i}, ~] = fileparts(files(i));
+    tempTime = ArrayDouble();
+    storages{i}.getTimeColumn(tempTime);
+    time{i} = columnToArray(tempTime);
 end
-time = ArrayDouble();
-storages{1}.getTimeColumn(time);
-time = columnToArray(time);
-legendList = {};
 
+legendList = {};
 plots = [];
+
+for i = 1:length(storages)
+    data = storageToDoubleMatrix(storages{i});
+    display(convertStringsToChars(strcat("File: ", fileNames{i}, " Avg: ", ...
+        num2str(mean(data, 'all')), " Max: ", ...
+        num2str(max(data, [], 'all')))));
+end
+
 
 if(onePlot)
     for i=1:storages{1}.getColumnLabels.getSize()-1
@@ -24,7 +35,8 @@ if(onePlot)
             y = columnToArray(yArray);
             xlabel('time')
             ylabel('error')
-            plot(time, y)
+            plot(time{1}, y, 'LineWidth',3)
+            xlim("tight")
             legendList{end+1} = strcat(storages{j}. ...
                 getColumnLabels.get(i).toCharArray', num2str(j));
             hold on
@@ -43,10 +55,11 @@ else
             y = columnToArray(yArray);
             hold on
             xlabel('time (s)')
-            ylabel('error (units of marker file)')
-            plot(time, y);
+            ylabel('error (m)')
+            plot(time{j}, y, 'LineWidth',3, color=colors(j));
+            xlim("tight")
             legendList{end+1} = strrep(strcat(storages{j}. ...
-                getColumnLabels.get(i).toCharArray', num2str(j)), ...
+                getColumnLabels.get(i).toCharArray', " - ", fileNames{j}), ...
                 '_', '\_');
         end
         legend(legendList)

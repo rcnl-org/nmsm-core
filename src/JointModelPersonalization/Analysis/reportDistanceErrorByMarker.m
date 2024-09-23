@@ -16,19 +16,25 @@ ikSolver = InverseKinematicsSolver(model, ...
 ikSolver.setAccuracy(1e-6);
 state = initModelSystem(model);
 state.setTime(markersReference.getValidTimeRange().get(0));
-ikSolver.assemble(state);
 frequency = markersReference.getSamplingFrequency();
 markerTable = markersReference.getMarkerTable();
 times = markerTable.getIndependentColumn();
 frameCounter = 0;
+ikSolver.assemble(state);
 
 storage = Storage();
 names = ArrayStr();
 names.append('time');
 for i=1:length(markerNames)
-    names.append(markerNames{i});
+    if ~strcmp(ikSolver.getMarkerNameForIndex(i-1),"")
+        names.append(ikSolver.getMarkerNameForIndex(i-1));
+    else
+        break
+    end
 end
 storage.setColumnLabels(names);
+
+state.setTime(markersReference.getValidTimeRange().get(0));
 
 for i=1:markersReference.getNumFrames() - 1 %start time is set so start with recording error
     ikSolver.track(state);

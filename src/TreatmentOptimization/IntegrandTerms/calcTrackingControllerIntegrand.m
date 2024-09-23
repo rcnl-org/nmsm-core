@@ -30,36 +30,52 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingControllerIntegrand(costTerm, auxdata, ...
+function cost = calcTrackingControllerIntegrand(costTerm, inputs, ...
     values, time, controllerName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-if strcmp(auxdata.controllerType, 'synergy')
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
+    time = time * inputs.collocationTimeOriginal(end) / time(end);
+end
+if strcmp(inputs.controllerType, 'synergy')
     indx = find(strcmp(convertCharsToStrings( ...
-        auxdata.synergyLabels), controllerName));
+        inputs.synergyLabels), controllerName));
     if ~isempty(indx)
-        synergyActivations = ...
-            fnval(auxdata.splineSynergyActivations, time)';
-        cost = calcTrackingCostArrayTerm(synergyActivations, ...
+        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+            max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+            synergyActivations = inputs.splinedSynergyActivations;
+        else
+            synergyActivations = ...
+                evaluateGcvSplines(inputs.splineSynergyActivations, ...
+                inputs.synergyLabels, time);
+        end
+        scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+        cost = calcTrackingCostArrayTerm(synergyActivations * scaleFactor, ...
             values.controlSynergyActivations, indx);
         return
     end
 end
 indx1 = find(strcmp(convertCharsToStrings( ...
-    strcat(auxdata.torqueLabels, '_moment')), controllerName));
+    strcat(inputs.torqueLabels, '_moment')), controllerName));
 indx2 = find(strcmp(convertCharsToStrings( ...
-    strcat(auxdata.torqueControllerCoordinateNames, '_moment')), ...
+    strcat(inputs.torqueControllerCoordinateNames, '_moment')), ...
     controllerName));
-if auxdata.splineTorqueControls.dim > 1
-    experimentalJointMoments = ...
-        fnval(auxdata.splineTorqueControls, time)';
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    experimentalJointMoments = inputs.splinedTorqueControls;
 else
     experimentalJointMoments = ...
-        fnval(auxdata.splineTorqueControls, time);
+        evaluateGcvSplines(inputs.splineTorqueControls, ...
+        inputs.torqueLabels, time);
 end
-cost = experimentalJointMoments(:, indx1) - ...
+scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+cost = (experimentalJointMoments(:, indx1) * scaleFactor) - ...
     values.torqueControls(:, indx2);
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end

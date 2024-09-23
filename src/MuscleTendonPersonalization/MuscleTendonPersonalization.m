@@ -39,30 +39,47 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function primaryValues = MuscleTendonPersonalization(inputs, ...
+function results = MuscleTendonPersonalization(inputs, ...
     params)
-primaryValues = prepareInitialValues(inputs, params);
-inputs = finalizeInputs(inputs, primaryValues, params);
+inputs.primaryValues = prepareInitialValues(inputs, params);
+inputs = finalizeInputs(inputs, inputs.primaryValues, params);
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
 for i=1:length(inputs.tasks)
     [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
-        primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
-    taskParams = makeTaskParams( ...
-        inputs.tasks{i}, ...
-        params, ...
-        inputs.synergyExtrapolation);
-    [A, b] = getLinearInequalityConstraints(inputs.synergyExtrapolation, ...
-        6 * length(inputs.muscleNames), inputs.extrapolationCommands, ...
-        permute(inputs.emgData, [3 1 2]));
-%     optimizedValues = taskValues;
-    optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
-        primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
-        taskUpperBounds, inputs, taskParams, optimizerOptions, A, b);
-    primaryValues = updateDesignVariables(primaryValues, ...
+        inputs.primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
+    taskParams = makeTaskParams(params);
+    if isfield(inputs, "synergyExtrapolation")
+        taskParams.costTerms = ...
+            [inputs.tasks{i}.costTerms,  inputs.synergyExtrapolation.costTerms];
+        [A, b] = getLinearInequalityConstraints(inputs.synergyExtrapolation, ...
+            sum(inputs.tasks{i}.isIncluded(1:6)) * ...
+            length(inputs.muscleNames), inputs.extrapolationCommands, ...
+            permute(inputs.emgData, [3 1 2]));
+        optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
+            inputs.primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
+            taskUpperBounds, inputs, taskParams, optimizerOptions, A, b);
+    else
+        taskParams.costTerms = inputs.tasks{i}.costTerms;
+        optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
+            inputs.primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
+            taskUpperBounds, inputs, taskParams, optimizerOptions, [], []);
+    end
+    inputs.primaryValues = updateDesignVariables(inputs.primaryValues, ...
         optimizedValues, inputs.tasks{i}.isIncluded);
+    inputs = updateScaleFactors(inputs);
 end
+results = inputs;
+end
+
+function [inputs] = updateScaleFactors(inputs)
+    inputs.optimalFiberLength = inputs.optimalFiberLength .* ...
+        inputs.primaryValues{5};
+    inputs.tendonSlackLength = inputs.tendonSlackLength .* ...
+        inputs.primaryValues{6};
+    inputs.primaryValues{5} = ones(size(inputs.primaryValues{5}));
+    inputs.primaryValues{6} = ones(size(inputs.primaryValues{6}));
 end
 
 % (struct) -> (None)
@@ -75,7 +92,7 @@ catch; throw(MException('','data is not of matching sizes')); end
 for i=1:length(inputs.tasks)
     try verifyNumeric(inputs.tasks{i}.isIncluded);
     catch; throw(MException('',strcat('invalid isIncluded boolean', ...
-        'array for task ', num2str(i))));
+            'array for task ', num2str(i))));
     end
 end
 end
@@ -103,14 +120,22 @@ values{3} = repmat(0.05, 1, numMuscles); % activation nonlinearity
 values{4} = repmat(0.5, 1, numMuscles); % EMG scale factors
 values{5} = repmat(1, 1, numMuscles); % optimal fiber length scale factor
 values{6} = repmat(1, 1, numMuscles); % tendon slack length scale factor
-values{7} = repmat(0, 1, inputs.numberOfExtrapolationWeights + ...
-    inputs.numberOfResidualWeights); % synergy commands
+if isfield(inputs, "synergyExtrapolation")
+    values{7} = repmat(0, 1, inputs.numberOfExtrapolationWeights + ...
+        inputs.numberOfResidualWeights); % synergy commands
+end
 end
 
 function inputs = finalizeInputs(inputs, primaryValues, params)
-values = makeMtpValuesAsStruct(struct(), primaryValues, zeros(1, 7));
+values = makeMtpValuesAsStruct(struct(), primaryValues, zeros(1, 7), inputs);
 modeledValues = calcMtpModeledValues(values, inputs, params);
 inputs = mergeStructs(inputs, modeledValues);
+inputs = rmfield(inputs, "model");
+if ~isfield(inputs, "synergyExtrapolation")
+    for i = 1:length(inputs.tasks)
+        inputs.tasks{i}.isIncluded(7) = 0;
+    end
+end
 end
 
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
@@ -125,8 +150,10 @@ else
     lowerBounds{4} = repmat(0.05, 1, numMuscles); % EMG scale factors
     lowerBounds{5} = repmat(0.6, 1, numMuscles); % optimal fiber length scale factor
     lowerBounds{6} = repmat(0.6, 1, numMuscles); % tendon slack length scale factor
-    lowerBounds{7} = repmat(-100, 1, inputs.numberOfExtrapolationWeights + ...
-        inputs.numberOfResidualWeights); % synergy commands
+    if isfield(inputs, "synergyExtrapolation")
+        lowerBounds{7} = repmat(-100, 1, inputs.numberOfExtrapolationWeights + ...
+            inputs.numberOfResidualWeights); % synergy commands
+    end
 end
 end
 
@@ -142,8 +169,10 @@ else
     upperBounds{4} = repmat(1, 1, numMuscles); % EMG scale factors
     upperBounds{5} = repmat(1.4, 1, numMuscles); % optimal fiber length scale factor
     upperBounds{6} = repmat(1.4, 1, numMuscles); % tendon slack length scale factor
-    upperBounds{7} = repmat(100, 1, inputs.numberOfExtrapolationWeights + ...
-        inputs.numberOfResidualWeights); % synergy commands    
+    if isfield(inputs, "synergyExtrapolation")
+        upperBounds{7} = repmat(100, 1, inputs.numberOfExtrapolationWeights + ...
+            inputs.numberOfResidualWeights); % synergy commands
+    end
 end
 end
 
@@ -162,6 +191,8 @@ output.ScaleProblem = valueOrAlternate(params, 'scaleProblem', ...
 output.Display = 'iter';
 output.Hessian = 'lbfgs';
 output.GradObj = 'off';
+output.DiffMaxChange = 10;
+output.DiffMinChange = 1e-5;
 end
 
 % (struct, struct) -> (Array of number)
@@ -172,19 +203,18 @@ taskValues = [];
 taskLowerBounds = [];
 taskUpperBounds = [];
 for i = 1:length(taskInputs.isIncluded)
-   if(taskInputs.isIncluded(i))
-       taskValues = [taskValues primaryValues{i}];
-       taskLowerBounds = [taskLowerBounds lowerBounds{i}];
-       taskUpperBounds = [taskUpperBounds upperBounds{i}];
-   end
+    if(taskInputs.isIncluded(i))
+        taskValues = [taskValues primaryValues{i}];
+        taskLowerBounds = [taskLowerBounds lowerBounds{i}];
+        taskUpperBounds = [taskUpperBounds upperBounds{i}];
+    end
 end
 end
 
 % (struct, struct) -> (struct)
 % prepare optimizer parameters for the given task
-function taskParams = makeTaskParams(taskInputs, params, synergyExtrapolation)
+function taskParams = makeTaskParams(params)
 taskParams = params;
-taskParams.costTerms = [taskInputs.costTerms, synergyExtrapolation.costTerms];
 if(~isfield(params, 'maxIterations'))
     taskParams.maxIterations = 2e3;
 end

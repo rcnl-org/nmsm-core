@@ -39,12 +39,15 @@ for i=1:length(inputs.tasks)
     params.markerNames = getMarkersInTask(outputModel, ...
         inputs.tasks{i});
     taskParams = mergeStructs(inputs.tasks{i}, params);
-    optimizedValues = computeKinematicCalibration(inputs.modelFileName, ...
+    outputModelFileName = saveTempOutputModel(inputs.modelFileName, ...
+        outputModel);
+    optimizedValues = computeKinematicCalibration(outputModelFileName, ...
         inputs.tasks{i}.markerFile, functions, inputs.desiredError, ...
         taskParams);
-    outputModel = adjustModelFromOptimizerOutput(outputModel, ...
-        functions, optimizedValues);
+    outputModel = adjustModelFromOptimizerOutput( ...
+        Model(outputModelFileName), functions, optimizedValues);
 end
+delete(outputModelFileName);
 end
 
 % (struct) -> (None)
@@ -96,6 +99,14 @@ if(isfield(params, fieldName))
     catch; throw(MException('', message));
     end
 end
+end
+
+function outputModelFileName = saveTempOutputModel(modelFileName, ...
+    outputModel)
+[~,name,ext] = fileparts(modelFileName);
+outputModelFileName = name + "_jmp_temp" + ext;
+outputModel.finalizeConnections();
+outputModel.print(outputModelFileName);
 end
 
 function functions = makeFunctions(...

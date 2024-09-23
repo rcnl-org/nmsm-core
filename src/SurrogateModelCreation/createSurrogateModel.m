@@ -24,7 +24,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -36,20 +36,36 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
-% -----------------------------------------------------------------------
+% ----------------------------------------------------------------------- %
 
-function [polynomialExpressionMuscleTendonLengths, ...
-    polynomialExpressionMuscleTendonVelocities, ...
-    polynomialExpressionMomentArms, coefficients] = ...
-    createSurrogateModel(jointAngles, muscleTendonLengths, ...
-    momentArms, polynomialDegree)
-
+function [surrogateMuscles, numArgs] = createSurrogateModel(jointAngles, ...
+    muscleTendonLengths, momentArms, polynomialDegree)
+surrogateMuscles = cell(1, size(muscleTendonLengths, 2));
+numArgs = ones(1, size(muscleTendonLengths, 2) * 3);
 % Create surorogate model for all muscles
 for i = 1 : size(muscleTendonLengths, 2)
-[polynomialExpressionMuscleTendonLengths{i}, ... 
-    polynomialExpressionMuscleTendonVelocities{i}, ...
-    polynomialExpressionMomentArms{i}, coefficients{i}] = ...
+[polynomialExpressionMuscleTendonLengths, ... 
+    polynomialExpressionMuscleTendonVelocities, ...
+    polynomialExpressionMomentArms, coefficients] = ...
     createMuscleSpecificSurrogateModel(jointAngles{i}, ...
     muscleTendonLengths(:, i), momentArms{i}, polynomialDegree);
+
+polynomialMuscleTendonLengths = matlabFunction(polynomialExpressionMuscleTendonLengths);
+polynomialMuscleTendonVelocities = matlabFunction(polynomialExpressionMuscleTendonVelocities);
+polynomialMomentArms = matlabFunction(polynomialExpressionMomentArms);
+
+polynomialMuscleTendonLengths = str2func(func2str(polynomialMuscleTendonLengths));
+polynomialMuscleTendonVelocities = str2func(func2str(polynomialMuscleTendonVelocities));
+polynomialMomentArms = str2func(func2str(polynomialMomentArms));
+
+numArgs(i * 3 - 2) = nargin(polynomialMuscleTendonLengths);
+numArgs(i * 3 - 1) = nargin(polynomialMuscleTendonVelocities);
+numArgs(i * 3) = nargin(polynomialMomentArms);
+
+surrogateMuscles{i} = @(jointAngles, jointVelocities, numArgs)evaluateSurrogate( ...
+    jointAngles, jointVelocities, ...
+    polynomialMuscleTendonLengths, ...
+    polynomialMuscleTendonVelocities, ...
+    polynomialMomentArms, coefficients, numArgs(i * 3 - 2 : i * 3));
 end
 end

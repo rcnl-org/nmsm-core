@@ -34,8 +34,8 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "TrackingOptimizationTool");
 [inputs, params] = parseTrackingOptimizationSettingsTree(settingsTree);
 inputs = normalizeSynergyData(inputs);
+inputs = setupMuscleSynergies(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
-outputs = solveOptimalControlProblem(inputs, params);
-reportTreatmentOptimizationResults(outputs, inputs);
+[inputs, outputs] = solveOptimalControlProblem(inputs, params);
 saveTrackingOptimizationResults(outputs, inputs);
 end

@@ -31,8 +31,8 @@
 function inputs = setupTorqueControls(inputs)
 if isfield(inputs, "torqueControllerCoordinateNames") && ...
         ~isempty(inputs.torqueControllerCoordinateNames)
-inputs.splineTorqueControls = spaps(inputs.initialTime, ...
-    inputs.initialTorqueControls', 0.0000001);
+inputs.splineTorqueControls = makeGcvSplineSet(inputs.initialTime, ...
+    inputs.initialTorqueControls', inputs.initialTorqueControlsLabels);
 inputs.torqueLabels = inputs.initialTorqueControlsLabels;
 end
 end

@@ -28,11 +28,16 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeTreatmentOptimizationInputs(inputs, params)
+%calc collocation point times
+inputs = computeCollocationPointTimes(inputs);
+inputs = splineExperimentalToCollocationPoints(inputs);
+%spline experimental data to collocation point times
 inputs = makeStateDerivatives(inputs, params);
 inputs.contactSurfaces = prepareGroundContactSurfaces( ...
     inputs.modelFileName, inputs.contactSurfaces);
 inputs = modifyModelForces(inputs);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
+inputs.osimVersion = ...
+    initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 inputs = setupGroundContact(inputs);
 inputs = makeExperimentalDataSplines(inputs);
 inputs = makeSurrogateModel(inputs);
@@ -42,5 +47,20 @@ inputs = makeMarkerTracking(inputs);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
-end
 
+if strcmpi(inputs.controllerType, "synergy")
+    if inputs.loadSurrogate && isfile("surrogateMuscles.mat")
+        temp = load("surrogateMuscles.mat");
+        inputs.surrogateMuscles = temp.surrogateMuscles;
+        inputs.surrogateMusclesNumArgs = temp.surrogateMusclesNumArgs;
+        inputs = getMuscleSpecificSurrogateModelData(inputs);
+    else
+        inputs = SurrogateModelCreation(inputs);
+    end
+    if inputs.saveSurrogate
+        surrogateMuscles = inputs.surrogateMuscles;
+        surrogateMusclesNumArgs = inputs.surrogateMusclesNumArgs;
+        save("surrogateMuscles.mat", "surrogateMuscles", "surrogateMusclesNumArgs");
+    end
+end
+end

@@ -43,4 +43,5 @@ synergyWeightsSum = zeros(numSynergies, 1);
 for j = counter : counter + numSynergies - 1
     synergyWeightsSum(j - counter + 1) = sum(synergyWeights(j, :));
 end
+synergyWeightsSum = synergyWeightsSum';
 end

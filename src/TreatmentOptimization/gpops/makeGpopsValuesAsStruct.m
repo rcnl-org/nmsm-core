@@ -39,19 +39,17 @@ values.statePositions = getCorrectStates( ...
     state, 1, length(inputs.statesCoordinateNames));
 values.stateVelocities = getCorrectStates( ...
     state, 2, length(inputs.statesCoordinateNames));
-values.stateAccelerations = getCorrectStates( ...
-    state, 3, length(inputs.statesCoordinateNames));
-values.controlJerks = control(:, 1 : length(inputs.statesCoordinateNames));
-[values.positions, values.velocities, ...
-    values.accelerations] = recombineFullState(values, inputs);
+values.controlAccelerations = control(:, 1 : length(inputs.statesCoordinateNames));
+[values.positions, values.velocities] = recombineFullState(values, inputs);
+values.accelerations = recombineFullAccelerations(values, inputs);
 if strcmp(inputs.controllerType, 'synergy')
     values.controlSynergyActivations = control(:, ...
         length(inputs.statesCoordinateNames) + 1 : ...
         length(inputs.statesCoordinateNames) + inputs.numSynergies);
 end
 values.torqueControls = control(:, ...
-    inputs.numCoordinates + 1 + inputs.numSynergies : ...
-    inputs.numCoordinates + inputs.numSynergies + ...
+    length(inputs.statesCoordinateNames) + 1 + inputs.numSynergies : ...
+    length(inputs.statesCoordinateNames) + inputs.numSynergies + ...
     length(inputs.torqueControllerCoordinateNames));
 
 if strcmp(inputs.toolName, "TrackingOptimization")
@@ -61,13 +59,17 @@ if strcmp(inputs.toolName, "TrackingOptimization")
             parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
             counter = 1;
+            row = 1;
             for i = 1 : length(inputs.synergyGroups)
-                for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
-                    index = find(ismember(inputs.synergyWeightsLabels, ...
-                        inputs.synergyGroups{i}.muscleNames{j}));
-                    values.synergyWeights(i, index) = ...
-                        parameters(counter);
-                    counter = counter + 1;
+                for k = 1:inputs.synergyGroups{i}.numSynergies
+                    for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
+                        index = find(ismember(inputs.synergyWeightsLabels, ...
+                            inputs.synergyGroups{i}.muscleNames{j}));
+                        values.synergyWeights(row, index) = ...
+                            parameters(counter);
+                        counter = counter + 1;
+                    end
+                    row = row + 1;
                 end
             end
         end
@@ -79,24 +81,29 @@ if strcmp(inputs.toolName, "VerificationOptimization")
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
-    counter = 1;
     if strcmp(inputs.controllerType, 'synergy')
         values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
             parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
+            counter = 1;
+            row = 1;
             for i = 1 : length(inputs.synergyGroups)
-                for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
-                    index = find(ismember(inputs.synergyWeightsLabels, ...
-                        inputs.synergyGroups{i}.muscleNames{j}));
-                    values.synergyWeights(i, index) = ...
-                        parameters(counter);
-                    counter = counter + 1;
+                for k = 1:inputs.synergyGroups{i}.numSynergies
+                    for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
+                        index = find(ismember(inputs.synergyWeightsLabels, ...
+                            inputs.synergyGroups{i}.muscleNames{j}));
+                        values.synergyWeights(row, index) = ...
+                            parameters(counter);
+                        counter = counter + 1;
+                    end
+                    row = row + 1;
                 end
             end
         end
     end
-    if isfield(inputs, 'userDefinedVariables')
+    if isfield(inputs, 'userDefinedVariables') && ...
+            ~isempty(inputs.userDefinedVariables)
         parameters = scaleToOriginal(phase.parameter(1,:), ...
             inputs.maxParameter, inputs.minParameter);
         for i = 1:length(inputs.userDefinedVariables)
@@ -110,15 +117,16 @@ if strcmp(inputs.toolName, "DesignOptimization")
 end
 end
 
-function [positions, velocities, accelerations] = recombineFullState( ...
+function [positions, velocities] = recombineFullState( ...
     values, inputs)
-positions = fnval(inputs.splineJointAngles, values.time)';
-velocities = fnval(inputs.splineJointVelocities, values.time)';
-accelerations = fnval(inputs.splineJointAccelerations, values.time)';
-if length(inputs.statesCoordinateNames) == 1
-    positions = positions';
-    velocities = velocities';
-    accelerations = accelerations';
+if size(values.time) == size(inputs.collocationTimeOriginal)
+    positions = inputs.splinedJointAngles;
+    velocities = inputs.splinedJointSpeeds;
+else
+    positions = evaluateGcvSplines(inputs.splineJointAngles, ...
+        inputs.coordinateNames, values.time);
+    velocities = evaluateGcvSplines(inputs.splineJointAngles, ...
+        inputs.coordinateNames, values.time, 1);
 end
 for i = 1:length(inputs.coordinateNames)
     index = find(ismember( ...
@@ -126,7 +134,22 @@ for i = 1:length(inputs.coordinateNames)
     if ~isempty(index)
         positions(:, i) = values.statePositions(:, index);
         velocities(:, i) = values.stateVelocities(:, index);
-        accelerations(:, i) = values.stateAccelerations(:, index);
+    end
+end
+end
+
+function accelerations = recombineFullAccelerations(values, inputs)
+if size(values.time) == size(inputs.collocationTimeOriginal)
+    accelerations = inputs.splinedJointAccelerations;
+else
+    accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
+        inputs.coordinateNames, values.time, 2);
+end
+for i = 1:length(inputs.coordinateNames)
+    index = find(ismember( ...
+        inputs.statesCoordinateNames, inputs.coordinateNames{i}));
+    if ~isempty(index)
+        accelerations(:, i) = values.controlAccelerations(:, index);
     end
 end
 end

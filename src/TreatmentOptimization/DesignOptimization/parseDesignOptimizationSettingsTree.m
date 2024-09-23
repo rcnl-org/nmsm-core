@@ -38,8 +38,13 @@ end
 
 function inputs = parseUserDefinedFunctions(tree, inputs)
 import org.opensim.modeling.Storage
-inputs.systemFns = parseSpaceSeparatedList(tree, "model_functions");
-parameterTree = getFieldByNameOrError(tree, "RCNLParameterTermSet");
+if isstruct(getFieldByName(tree, "model_functions"))
+    systemFns = parseSpaceSeparatedList(tree, "model_functions");
+    if ~isempty(systemFns)
+        inputs.systemFns = systemFns;
+    end
+end
+parameterTree = getFieldByName(tree, "RCNLParameterTermSet");
 if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
     inputs.userDefinedVariables = parseRcnlCostTermSet( ...
         parameterTree.RCNLParameterTerm);
@@ -67,10 +72,13 @@ output = str2double(output);
 end
 
 function inputs = parseDesignSettings(tree, inputs)
-finalTimeRange = getFieldByName(tree, ...
+try
+finalTimeRange = parseSpaceSeparatedList(tree, ...
     'final_time_range');
-if(isstruct(finalTimeRange))
-    inputs.finalTimeRange = getDoubleFromField(finalTimeRange);
+if(~isempty(finalTimeRange))
+    inputs.finalTimeRange = str2double(finalTimeRange);
+end
+catch
 end
 end
 

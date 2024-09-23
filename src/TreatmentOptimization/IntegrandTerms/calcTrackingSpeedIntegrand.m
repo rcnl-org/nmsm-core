@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the experimental and
-% predicted joint angles for the specified coordinate. 
+% predicted joint angles for the specified coordinate.
 %
 % (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,27 +28,36 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingSpeedIntegrand(costTerm, auxdata, time, ...
-    stateVelocities, coordinateName)
+function cost = calcTrackingSpeedIntegrand(costTerm, inputs, time, ...
+    velocities, coordinateName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-indx = find(strcmp(convertCharsToStrings(auxdata.statesCoordinateNames), ...
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
+    time = time * inputs.collocationTimeOriginal(end) / time(end);
+end
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
     coordinateName));
 if isempty(indx)
     throw(MException('CostTermError:CoordinateNotInState', ...
         strcat("Coordinate ", coordinateName, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-if auxdata.splineJointVelocities.dim > 1
-    experimentalJointVelocities = fnval(auxdata.splineJointVelocities, time)';
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    experimentalJointVelocities = inputs.splinedJointSpeeds;
 else
-    experimentalJointVelocities = fnval(auxdata.splineJointVelocities, time);
+    experimentalJointVelocities = evaluateGcvSplines( ...
+        inputs.splineJointAngles, inputs.coordinateNames, time, 1);
 end
 
 cost = calcTrackingCostArrayTerm(experimentalJointVelocities, ...
-    stateVelocities, indx);
-    
+    velocities, indx);
+
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end

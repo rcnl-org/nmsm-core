@@ -42,8 +42,13 @@ end
 % extract initial version of optimized values from inputs/params
 function values = prepareInitialValues(inputs)
 numMuscles = length(inputs.muscleNames);
-values{1} = ones(1, numMuscles); % optimal fiber length scale factor
-values{2} = ones(1, numMuscles); % tendon slack length scale factor
+if inputs.useAbsoluteLengths
+    values{1} = inputs.optimalFiberLength; % optimal fiber length
+    values{2} = inputs.tendonSlackLength; % tendon slack length
+else
+    values{1} = ones(1, numMuscles); % optimal fiber length scale factor
+    values{2} = ones(1, numMuscles); % tendon slack length scale factor
+end
 values{3} = ones(1, inputs.numMuscleGroups + ...
     inputs.numMusclesIndividual); % maximum normalized fiber length
 values{4} = ones(1, 1); % muscle specific tension
@@ -52,8 +57,13 @@ end
 % (struct, struct) -> (6 x numEnabledMuscles matrix of number)
 function lowerBounds = makeLowerBounds(inputs)
 numMuscles = length(inputs.muscleNames);
-lowerBounds{1} = repmat(0.5, 1, numMuscles); % optimal fiber length scale factor
-lowerBounds{2} = repmat(0.5, 1, numMuscles); % tendon slack length scale factor
+if inputs.useAbsoluteLengths
+    lengthBound = 0.001;
+else
+    lengthBound = 0.5;
+end
+lowerBounds{1} = repmat(lengthBound, 1, numMuscles); % optimal fiber length scale factor
+lowerBounds{2} = repmat(lengthBound, 1, numMuscles); % tendon slack length scale factor
 lowerBounds{3} = repmat(1, 1, inputs.numMuscleGroups + ...
     inputs.numMusclesIndividual); % maximum normalized fiber length
 lowerBounds{4} = repmat(0.6, 1, 1); % muscle specific tension
@@ -73,7 +83,7 @@ end
 % setup optimizer options struct to pass to fmincon
 function output = makeOptimizerOptions(params)
 output = optimset('UseParallel', true);
-output.MaxIter = valueOrAlternate(params, 'maxIterations', 10000);
+output.MaxIter = valueOrAlternate(params, 'maxIterations', 100);
 output.MaxFunEvals = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 100000000);
 output.Display = 'iter';

@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the experimental and
-% predicted ground reaction forces for the specified force. 
+% predicted ground reaction forces for the specified force.
 %
 % (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,21 +28,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingExternalForcesIntegrand(costTerm, params, ...
+function cost = calcTrackingExternalForcesIntegrand(costTerm, inputs, ...
     groundReactionsForces, time, forceName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-for i = 1:length(params.contactSurfaces)
-    indx = find(strcmp(convertCharsToStrings(params.contactSurfaces{i}. ...
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
+    time = time * inputs.collocationTimeOriginal(end) / time(end);
+end
+for i = 1:length(inputs.contactSurfaces)
+    indx = find(strcmp(convertCharsToStrings(inputs.contactSurfaces{i}. ...
         forceColumns), forceName));
     if ~isempty(indx)
-        if params.splineExperimentalGroundReactionForces{i}.dim > 1
-            experimentalGroundReactions = ...
-                fnval(params.splineExperimentalGroundReactionForces{i}, ...
-                time)';
+        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+            experimentalGroundReactions = inputs.splinedGroundReactionForces{i};
         else
             experimentalGroundReactions = ...
-                fnval(params.splineExperimentalGroundReactionForces{i}, ...
+                evaluateGcvSplines( ...
+                inputs.splineExperimentalGroundReactionForces{i}, 0:2, ...
                 time);
         end
         cost = calcTrackingCostArrayTerm(...
@@ -51,6 +54,10 @@ for i = 1:length(params.contactSurfaces)
     end
 end
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end

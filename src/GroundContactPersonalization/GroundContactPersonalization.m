@@ -59,13 +59,14 @@ function [replacedMoments, momentCenter] = ...
     replaceMomentsAboutMidfootSuperior(surface, inputs)
     replacedMoments = ...
         zeros(size(surface.experimentalGroundReactionMoments));
+    momentCenter = zeros(size(surface.midfootSuperiorPosition));
     for i = 1:size(replacedMoments, 2)
         newCenter = surface.midfootSuperiorPosition(:, i);
-        newCenter(2) = inputs.restingSpringLength;
+        newCenter(2) = 0;
         replacedMoments(:, i) = ...
             surface.experimentalGroundReactionMoments(:, i) + ...
             cross((surface.electricalCenter(:, i) - newCenter), ...
             surface.experimentalGroundReactionForces(:, i));
-        momentCenter = repmat(newCenter, 1, 101);
+        momentCenter(:, i) = newCenter;
     end
 end

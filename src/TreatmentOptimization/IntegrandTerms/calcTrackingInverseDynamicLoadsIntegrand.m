@@ -32,26 +32,30 @@ function cost = calcTrackingInverseDynamicLoadsIntegrand(costTerm, ...
     inputs, time, inverseDynamicsMoments, loadName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-loadName = erase(loadName, '_moment');
-loadName = erase(loadName, '_force');
-indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
-    loadName));
-
-if inputs.splineJointMoments.dim > 1
-    experimentalJointMoments = fnval(inputs.splineJointMoments, time)';
-else
-    experimentalJointMoments = fnval(inputs.splineJointMoments, time);
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
+    time = time * inputs.collocationTimeOriginal(end) / time(end);
 end
-
-momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
-momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
+indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    experimentalJointMoments = inputs.splinedJointMoments;
+else
+    experimentalJointMoments = evaluateGcvSplines( ...
+        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
+end
 if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
+    momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
+    momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
+    includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
     experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
 end
 cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
     inverseDynamicsMoments, indx);
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end

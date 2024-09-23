@@ -36,13 +36,13 @@ else
     tree = xml2struct(osimxFileName);
 end
 
-osimx.model = getFieldByNameOrError(tree, "associated_osim_model").Text;
-osimx.modelName = getFieldByNameOrError(tree, "OsimxModel").Attributes.name;
+osimx.model = getFieldByNameOrError(tree, 'associated_osim_model').Text;
+osimx.modelName = getFieldByNameOrError(tree, 'OsimxModel').Attributes.name;
 
-rcnlGroundContactTree = getFieldByName(tree, "RCNLContactSurfaceSet");
+rcnlGroundContactTree = getFieldByName(tree, 'RCNLContactSurfaceSet');
 if(isstruct(rcnlGroundContactTree))
 
-    contactSurfaceTree = getFieldByNameOrError(rcnlGroundContactTree, "RCNLContactSurface");
+    contactSurfaceTree = getFieldByNameOrError(rcnlGroundContactTree, 'RCNLContactSurface');
     if isstruct(contactSurfaceTree)
         contactSurfaceTree = {contactSurfaceTree};
     end
@@ -53,9 +53,9 @@ if(isstruct(rcnlGroundContactTree))
     end
 end
 
-rcnlMuscleSetTree = getFieldByName(tree, "RCNLMuscleSet");
+rcnlMuscleSetTree = getFieldByName(tree, 'RCNLMuscleSet');
 if(isstruct(rcnlMuscleSetTree))
-    musclesTree = getFieldByNameOrError(rcnlMuscleSetTree, "RCNLMuscle");
+    musclesTree = getFieldByNameOrError(rcnlMuscleSetTree, 'RCNLMuscle');
 
     for i = 1:length(musclesTree)
         if length(musclesTree) == 1
@@ -88,7 +88,7 @@ if(isstruct(rcnlMuscleSetTree))
     end
 end
 
-rcnlSynergySetTree = getFieldByName(tree, "RCNLSynergySet");
+rcnlSynergySetTree = getFieldByName(tree, 'RCNLSynergySet');
 if isstruct(rcnlSynergySetTree)
     osimx.synergyGroups = parseSynergyGroups(tree, model);
 end
@@ -96,39 +96,39 @@ end
 
 function contactSurface = parseContactSurface(tree)
 
-contactSurface.isLeftFoot = getFieldByNameOrError(tree, "is_left_foot").Text == "true";
-contactSurface.beltSpeed = str2double(getFieldByNameOrError(tree, "belt_speed").Text);
+contactSurface.isLeftFoot = getFieldByNameOrError(tree, 'is_left_foot').Text == "true";
+contactSurface.beltSpeed = str2double(getFieldByNameOrError(tree, 'belt_speed').Text);
 
-contactSurface.forceColumns = parseSpaceSeparatedList(tree, "force_columns");
-contactSurface.momentColumns = parseSpaceSeparatedList(tree, "moment_columns");
-contactSurface.electricalCenterColumns = parseSpaceSeparatedList(tree, "electrical_center_columns");
+contactSurface.forceColumns = parseSpaceSeparatedList(tree, 'force_columns');
+contactSurface.momentColumns = parseSpaceSeparatedList(tree, 'moment_columns');
+contactSurface.electricalCenterColumns = parseSpaceSeparatedList(tree, 'electrical_center_columns');
 
-hindfootBodyName = getFieldByName(tree, "hindfoot_body").Text;
-if ~hindfootBodyName
+hindfootBodyName = getFieldByName(tree, 'hindfoot_body');
+if ~isstruct(hindfootBodyName)
     throw(MException('', "<toes_coordinate> is replaced by <hindfoot_body> in the osimx file. Please update your osimx file."))
 else
-contactSurface.hindfootBodyName = hindfootBodyName;
+contactSurface.hindfootBodyName = hindfootBodyName.Text;
 end
 
-contactSurface.toeMarker = getFieldByNameOrError(tree, "toe_marker").Text;
-contactSurface.medialMarker = getFieldByNameOrError(tree, "medial_marker").Text;
-contactSurface.lateralMarker = getFieldByNameOrError(tree, "lateral_marker").Text;
-contactSurface.heelMarker = getFieldByNameOrError(tree, "heel_marker").Text;
-contactSurface.midfootSuperiorMarker = getFieldByNameOrError(tree, "midfoot_superior_marker").Text;
+contactSurface.toeMarker = getFieldByNameOrError(tree, 'toe_marker').Text;
+contactSurface.medialMarker = getFieldByNameOrError(tree, 'medial_marker').Text;
+contactSurface.lateralMarker = getFieldByNameOrError(tree, 'lateral_marker').Text;
+contactSurface.heelMarker = getFieldByNameOrError(tree, 'heel_marker').Text;
+contactSurface.midfootSuperiorMarker = getFieldByNameOrError(tree, 'midfoot_superior_marker').Text;
 
 contactSurface.restingSpringLength = ...
-    str2double(getFieldByNameOrError(tree, "resting_spring_length").Text);
+    str2double(getFieldByNameOrError(tree, 'resting_spring_length').Text);
 contactSurface.dynamicFrictionCoefficient = ...
-    str2double(getFieldByNameOrError(tree, "dynamic_friction_coefficient").Text);
+    str2double(getFieldByNameOrError(tree, 'dynamic_friction_coefficient').Text);
 contactSurface.viscousFrictionCoefficient = ...
-    str2double(getFieldByNameOrError(tree, "viscous_friction_coefficient").Text);
+    str2double(getFieldByNameOrError(tree, 'viscous_friction_coefficient').Text);
 contactSurface.dampingFactor = ...
-    str2double(getFieldByNameOrError(tree, "damping_factor").Text);
+    str2double(getFieldByNameOrError(tree, 'damping_factor').Text);
 contactSurface.latchingVelocity = ...
-    str2double(getFieldByNameOrError(tree, "latching_velocity").Text);
+    str2double(getFieldByNameOrError(tree, 'latching_velocity').Text);
 
-gcpSpringsTree = getFieldByNameOrError(tree, "GCPSpringSet");
-springsTree = getFieldByNameOrError(gcpSpringsTree, "GCPSpring");
+gcpSpringsTree = getFieldByNameOrError(tree, 'GCPSpringSet');
+springsTree = getFieldByNameOrError(gcpSpringsTree, 'GCPSpring');
 for i = 1:length(springsTree)
     if length(springsTree) == 1
         spring = springsTree;
@@ -136,8 +136,8 @@ for i = 1:length(springsTree)
         spring = springsTree{i};
     end
     contactSurface.springs{i}.name = spring.Attributes.name;
-    contactSurface.springs{i}.parentBody = getFieldByNameOrError(spring, "parent_body").Text;
-    contactSurface.springs{i}.location = str2double(parseSpaceSeparatedList(spring, "location"));
-    contactSurface.springs{i}.springConstant = str2double(getFieldByNameOrError(spring, "spring_constant").Text);
+    contactSurface.springs{i}.parentBody = getFieldByNameOrError(spring, 'parent_body').Text;
+    contactSurface.springs{i}.location = str2double(parseSpaceSeparatedList(spring, 'location'));
+    contactSurface.springs{i}.springConstant = str2double(getFieldByNameOrError(spring, 'spring_constant').Text);
 end
 end

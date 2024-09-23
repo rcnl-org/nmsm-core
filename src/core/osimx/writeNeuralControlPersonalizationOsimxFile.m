@@ -30,8 +30,7 @@
 
 function writeNeuralControlPersonalizationOsimxFile(inputs, ...
     resultsDirectory, precalInputs)
-modelFileName = inputs.modelFileName;
-model = Model(modelFileName);
+model = Model(inputs.modelFileName);
 
 buildFromExisting = false;
 if isfield(inputs, 'osimxFileName')
@@ -47,12 +46,12 @@ if ~buildFromExisting
     % reused
     osimx = buildMtpOsimxTemplate(...
         replace(model.getName().toCharArray',".","_dot_"), ...
-        modelFileName);
-    [~, name, ~] = fileparts(modelFileName);
+        inputs.modelFileName);
+    [~, name, ~] = fileparts(inputs.modelFileName);
     outfile = fullfile(resultsDirectory, strcat(name, "_ncp.xml"));
 end
 osimx.modelName = name;
-osimx.model = modelFileName;
+osimx.model = inputs.modelFileName;
 if ~isfield(osimx, 'muscles')
     osimx.muscles = [];
 end

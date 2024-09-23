@@ -164,11 +164,11 @@ end
 function task = getFootData(tree)
 task.isLeftFoot = strcmpi('true', ...
     getFieldByNameOrError(tree, 'is_left_foot').Text);
-hindfootBodyName = getFieldByName(tree, "hindfoot_body").Text;
-if ~hindfootBodyName
+hindfootBodyName = getFieldByName(tree, 'hindfoot_body');
+if ~isstruct(hindfootBodyName)
     throw(MException('', "<toes_coordinate> is replaced by <hindfoot_body> in the GCP settings file."))
 else
-    task.hindfootBodyName = hindfootBodyName;
+    task.hindfootBodyName = hindfootBodyName.Text;
 end
 task.markerNames.toe = getFieldByNameOrError(tree, ...
     'toe_marker').Text;
@@ -248,6 +248,7 @@ end
 
 % Gets cost terms and design variables included in each task.
 function output = getOptimizationTasks(tree)
+output = {};
 tasks = getFieldByNameOrError(tree, 'GCPTaskList');
 counter = 1;
 gcpTasks = orderByIndex(tasks.GCPTask);
@@ -273,9 +274,10 @@ end
 function output = getTaskDesignVariables(tree)
 variables = ["springConstants", "dampingFactor", ...
     "dynamicFrictionCoefficient", "viscousFrictionCoefficient", ...
-    "restingSpringLength", "kinematicsBSplineCoefficients"];
+    "restingSpringLength", "kinematicsBSplineCoefficients", ...
+    "electricalCenterX", "electricalCenterY", "electricalCenterZ"];
 for i=1:length(variables)
-    output.designVariables(i) = strcmpi( ...
-        tree.(variables(i)).Text, 'true');
+    output.designVariables(i) = getBooleanLogicFromField( ...
+        valueOrAlternate(tree, variables(i), 0));
 end
 end

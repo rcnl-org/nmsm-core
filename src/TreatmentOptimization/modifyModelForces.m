@@ -31,7 +31,19 @@
 
 function inputs = modifyModelForces(inputs)
 model = disableModelMuscles(inputs.model);
+if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
+    probe = org.opensim.modeling.Bhargava2004MuscleMetabolicsProbe( ...
+        true, true, true, false, true);
+    model.addProbe(probe);
+    probe.setOperation("value");
+    probe.set_report_total_metabolics_only(true);
+    probe.setName("metabolics");
+    for i = 1:length(inputs.muscleNames)
+        probe.addMuscle(inputs.muscleNames(i), 0.5, 40, 133, 74, 111);
+    end
+end
 model = addContactSurfaceActuators(inputs, model);
 inputs.mexModel = strcat(strrep(inputs.modelFileName,'.osim',''), '_inactiveMuscles.osim');
 model.print(inputs.mexModel);
+inputs.model = Model(inputs.mexModel);
 end

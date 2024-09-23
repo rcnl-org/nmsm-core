@@ -32,44 +32,87 @@
 function plotMomentMatchingResults(experimentalMomentsFile, ...
     modeledMomentsFile, figureWidth, figureHeight, figureNumber)
 import org.opensim.modeling.Storage
-if nargin < 3
-    figureWidth = 4;
-end
-if nargin < 4
-    figureHeight = 2;
-end
-if nargin < 5
-    figureNumber = 1;
-end
-figureSize = figureWidth * figureHeight;
-
 [experimentalColumns, experimentalTime, experimentalMoments] = ...
     parseMotToComponents(org.opensim.modeling.Model(), ...
     Storage(experimentalMomentsFile));
 [modeledColumns, modeledTime, modeledMoments] = parseMotToComponents( ...
     org.opensim.modeling.Model(), Storage(modeledMomentsFile));
 
-includedColumns = ismember(experimentalColumns, modeledColumns);
+if experimentalTime(1) ~= 0
+    experimentalTime = experimentalTime - experimentalTime(1);
+end
+experimentalTime = experimentalTime / experimentalTime(end);
+if modeledTime(1) ~= 0
+    modeledTime = modeledTime - modeledTime(1);
+end
+modeledTime = modeledTime / modeledTime(end);
+
+includedColumns = logical(ismember(experimentalColumns, modeledColumns) ...
+    + ismember(experimentalColumns + "_moment", modeledColumns));
 experimentalMoments = experimentalMoments(includedColumns, :);
 experimentalColumns = experimentalColumns(includedColumns);
 
+% Sort by left/right
+rightIndices = contains(experimentalColumns, "_r_");
+leftIndices = ~rightIndices;
+experimentalColumns = [experimentalColumns(rightIndices), ...
+    experimentalColumns(leftIndices)];
+modeledColumns = [modeledColumns(rightIndices), ...
+    modeledColumns(leftIndices)];
+experimentalMoments = [experimentalMoments(rightIndices, :); ...
+    experimentalMoments(leftIndices, :)];
+modeledMoments = [modeledMoments(rightIndices, :); ...
+    modeledMoments(leftIndices, :)];
+
+if nargin < 3
+    figureWidth = ceil(sqrt(numel(experimentalColumns)));
+    figureHeight = ceil(numel(experimentalColumns)/figureWidth);
+elseif nargin < 4
+    figureHeight = ceil(sqrt(numel(experimentalColumns)));
+end
+if nargin < 5
+    figureNumber = 1;
+end
+figureSize = figureWidth * figureHeight;
+splitFileName = split(modeledMomentsFile, ["/", "\"]);
+for k = 1 : numel(splitFileName)
+    if ~strcmp(splitFileName(k), "..")
+        figureName = splitFileName(k);
+        break
+    end
+end
+figure(Name = figureName, ...
+    Units='normalized', ...
+    Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 subplotNumber = 1;
-hasLegend = false;
-figure(figureNumber)
+figureNumber = 1;
 figureIndex = 1;
+hasLegend = false;
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='Compact', Padding='Compact');
+xlabel(t, "% Gait Cycle [0-100%]")
+% xlabel(t, "Time Points [s]")
+ylabel(t, "Joint Moments [Nm]")
+
 for i = 1:length(experimentalColumns)
     if i > figureSize * figureIndex
         figureIndex = figureIndex + 1;
         figure(figureNumber + figureIndex - 1)
+        t = tiledlayout(figureHeight, figureWidth, ...
+            TileSpacing='compact', Padding='compact');
         subplotNumber = 1;
         hasLegend = false;
     end
-    subplot(figureHeight, figureWidth, subplotNumber)
-    plot(experimentalTime, experimentalMoments(i, :), 'LineWidth', 2)
+    nexttile(subplotNumber)
+    plot(modeledTime*100, experimentalMoments(i, :), color=colors(1), LineWidth=2)
     modeledIndex = find(experimentalColumns(i) == modeledColumns);
+    if isempty(modeledIndex)
+        modeledIndex = find(experimentalColumns(i) + "_moment" == modeledColumns);
+    end
     if ~isempty(modeledIndex)
         hold on
-        plot(modeledTime, modeledMoments(modeledIndex, :), 'LineWidth', 2);
+        plot(modeledTime*100, modeledMoments(modeledIndex, :), color=colors(2), LineWidth=2);
         if ~hasLegend
             legend("Experimental Moments", "Modeled Moments")
             hasLegend = true;
@@ -82,7 +125,7 @@ for i = 1:length(experimentalColumns)
     end
     title(strrep(experimentalColumns(i), "_", " ") + newline + ...
         " RMSE: " + error)
-    xlim([modeledTime(1) modeledTime(end)])
+    xlim("tight")
     subplotNumber = subplotNumber + 1;
 end
 end

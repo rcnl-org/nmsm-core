@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the experimental and
-% predicted muscle activations for the specified muscle. 
+% predicted muscle activations for the specified muscle.
 %
 % (2D matrix, Array of number, struct, Array of string) -> (Array of number)
-% 
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,24 +29,28 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcTrackingMuscleActivationIntegrand(costTerm, ...
-    muscleActivations, time, params, muscleName)
+    muscleActivations, time, inputs, muscleName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
-    muscleName));
-
-if params.splineMuscleActivations.dim > 1
-    experimentalMuscleActivations = ...
-        fnval(params.splineMuscleActivations, time)';
-else
-    experimentalMuscleActivations = ...
-        fnval(params.splineMuscleActivations, time);
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
+    time = time * inputs.collocationTimeOriginal(end) / time(end);
 end
-
-experimentalMuscleActivations = fnval(params.splineMuscleActivations, time)';
+indx = find(strcmp(convertCharsToStrings(inputs.muscleNames), ...
+    muscleName));
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    experimentalMuscleActivations = inputs.splinedMuscleActivations;
+else
+    experimentalMuscleActivations = evaluateGcvSplines( ...
+        inputs.splineMuscleActivations, inputs.muscleNames, time);
+end
 cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
     muscleActivations, indx);
 if normalizeByFinalTime
-    cost = cost / time(end);
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
 end
 end

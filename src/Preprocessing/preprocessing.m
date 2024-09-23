@@ -44,6 +44,7 @@ inputSettings.model = "UF_Patient3_correctHeight_JMP_MTPGroups_NCPGroups.osim";
 % All values optional: files and directories of data to be split
 inputSettings.ikFileName = "input_data\Patient3_NormalGait_1pt0_02_Right_01_IK.mot";
 inputSettings.idFileName = "input_data\Patient3_NormalGait_1pt0_02_Right_01_ID.sto";
+inputSettings.grfFileName = "input_data\Patient3_NormalGait_1pt0_02_Right_01_GRF.mot";
 % The emgFileName should be the name of the *processed* emg data file
 inputSettings.emgFileName = "Patient3_NormalGait_1pt0_02_Right_01_processedEmg.sto";
 inputSettings.maDirectory = "MuscleAnalysis";
