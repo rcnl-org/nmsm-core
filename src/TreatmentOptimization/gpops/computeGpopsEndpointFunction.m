@@ -93,7 +93,18 @@ if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~ise
     if isempty(integral)
         continuousObjective = 0;
     else
-        continuousObjective = sum(integral) / length(integral);
+        if setup.auxdata.normalizeCostByType
+            termCounts = grouptransform(cellfun(@(x) x.type, ...
+                setup.auxdata.costTerms, 'UniformOutput', false)', ...
+                cellfun(@(x) x.type, setup.auxdata.costTerms, ...
+                'UniformOutput', false)', @numel)';
+
+            continuousObjective = sum(integral ./ termCounts) / ...
+                length(unique(cellfun(@(x) x.type, ...
+                setup.auxdata.costTerms, 'UniformOutput', false)));
+        else
+            continuousObjective = sum(integral) / length(integral);
+        end
     end
 else
     continuousObjective = 0;
