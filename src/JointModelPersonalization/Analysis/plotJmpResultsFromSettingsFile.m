@@ -44,18 +44,22 @@ for i = 1 : numel(inputs.tasks)
     end
     [markersInFile, ~, ~] = parseMotToComponents(Model(inputModelFileName), ...
         Storage(task.markerFile));
-    markerIndicesToUse = boolean(zeros(size(task.markers)));
+    markerNames = convertCharsToStrings(task.markers);
+    if iscell(markerNames)
+        markerNames = cellfun(@(marker) marker(1), markerNames);
+    end
+    markerIndicesToUse = false(size(task.markers));
     for j = 1 : numel(task.markers)
-        if any(contains(markersInFile, task.markers(j)))
-            markerIndicesToUse(j) = 1;
+        if any(contains(markersInFile, markerNames(j)))
+            markerIndicesToUse(j) = true;
         end
     end
 
     % Plot marker errors
     reportDistanceErrorByMarker(inputModelFileName, ...
-        task.markerFile, task.markers(markerIndicesToUse), "start.sto");
+        task.markerFile, markerNames(markerIndicesToUse), "start.sto");
     reportDistanceErrorByMarker(outputModelFileName, ...
-        task.markerFile, task.markers(markerIndicesToUse), "finish.sto");
+        task.markerFile, markerNames(markerIndicesToUse), "finish.sto");
     figure(Name=strcat(settingsFileName, " Task ", num2str(i)));
     plotMarkerDistanceErrors(["start.sto", "finish.sto"], false)
 end
