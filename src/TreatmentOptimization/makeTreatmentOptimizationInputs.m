@@ -36,7 +36,8 @@ inputs = makeStateDerivatives(inputs, params);
 inputs.contactSurfaces = prepareGroundContactSurfaces( ...
     inputs.modelFileName, inputs.contactSurfaces);
 inputs = modifyModelForces(inputs);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
+inputs.osimVersion = ...
+    initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 inputs = setupGroundContact(inputs);
 inputs = makeExperimentalDataSplines(inputs);
 inputs = makeSurrogateModel(inputs);
