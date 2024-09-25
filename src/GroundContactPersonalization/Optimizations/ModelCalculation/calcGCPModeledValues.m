@@ -77,6 +77,9 @@ for term = 1:length(params.tasks{task}.costTerms)
             params.tasks{task}.costTerms{term}.type)];
     end
 end
+if isempty(includedCostTypes)
+    includedCostTypes = "";
+end
 isCalculated = ones(4, 1);
 if isempty(intersect(includedCostTypes, ["ground_reaction_moment", ...
         "ground_reaction_moment_slope"]))
