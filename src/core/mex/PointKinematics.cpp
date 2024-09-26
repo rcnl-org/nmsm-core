@@ -84,8 +84,6 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		double *sp_pos = mxGetPr(plhs[0]);
 		double *sp_vel = mxGetPr(plhs[1]);
 		
-		const mxArray *cell_element_ptr;
-        char* c_array;
         mwIndex k;
 		mwSize buflen;
 
@@ -93,10 +91,13 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 		for (int i = 0; i<numPts; ++i)
 		{
 			int thread_id = omp_get_thread_num();
+            osimState[thread_id]->setTime(time[i]);
 
             for (int k = 0; k < numLabels; k++){
+				const mxArray *cell_element_ptr;
                 cell_element_ptr = mxGetCell(prhs[5], k);
 				buflen = mxGetN(cell_element_ptr) * sizeof(mxChar) + 1;
+        		char* c_array;
 				c_array = (char *)mxCalloc(buflen, sizeof(char));
 				mxGetString(cell_element_ptr, c_array, buflen);
 				string c_string(c_array);
