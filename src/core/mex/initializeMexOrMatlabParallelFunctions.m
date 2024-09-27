@@ -4,7 +4,7 @@
 % files if the appropriate mex extention exists. It also clears previous
 % parallel workers 
 %
-% (Array of string) -> ()
+% (Array of string) -> (double)
 % Intializes mex files or clear previous parallel workers 
 
 % ----------------------------------------------------------------------- %
@@ -29,10 +29,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function initializeMexOrMatlabParallelFunctions(modelFile)
+function version = initializeMexOrMatlabParallelFunctions(modelFile)
+version = getOpenSimVersion();
 if isequal(mexext, 'mexw64')
-    pointKinematicsMexWindows(modelFile);
-    inverseDynamicsWithExtraCalcsMexWindows(modelFile);
+    if version >= 40501
+        pointKinematicsMexWindows40501(modelFile);
+        inverseDynamicsWithExtraCalcsMexWindows40501(modelFile);
+    else
+        pointKinematicsMexWindows40400(modelFile);
+        inverseDynamicsWithExtraCalcsMexWindows40400(modelFile);
+    end
 end
 clear inverseDynamicsMatlabParallel
 clear pointKinematicsMatlabParallel

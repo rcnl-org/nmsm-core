@@ -1,10 +1,58 @@
 # Changelog
 
+## v1.3.0 - 2024-09-23
+
+### Added
+- Joint Model Personalization can scale point constraints with bodies
+- Individual Muscle-Tendon Personalization (MTP) design variables can be included or excluded
+- MTP supports a series of `<MTPTask>`s, setting up multiple-stage optimizations with individual sets of design variables and cost terms
+- Plotting function `plotMtpHillTypeMuscleParamsCompare()` can compare sets of muscle parameters optimized by MTP
+- Ground Contact Personalization (GCP) can optimize a change in experimental electrical center values to correct for force plate errors and produce ground reaction moments more consistent with physical models
+	- Individual electrical center shift dimensions can be added as design variables `<electricalCenterX>`, `<electricalCenterY>`, and `<electricalCenterZ>`
+	- Electrical center adjustment can be regularized with the `electrical_center_shift` cost term
+	- An updated version of the experimental ground reactions file will be saved with the new electrical center
+- GCP saves updated full-body kinematics and modeled ground reactions with modified foot motion if all `<GCPContactSurface>`s have the same time range
+- GCP kinematic periodicity relative to experimental motion can be enforced with the new `kinematic_periodicity` cost term
+- Model personalization plot windows have titles indicating the data displayed
+- Treatment Optimization (TO) now uses a `tracked_quantities_directory` for experimental data or data to track and an `initial_guess_directory` for initial values
+	- Missing intial guess values will be copied from tracked quantities, and missing quantities to track will be copied from initial guess data if available
+- TO states and controls can optionally have minimum search bounds set in addition to search scale factors
+	- Fields ending in `scale_factor` have an equivalent `minimum_range`
+- TO cost calculations can be normalized within individual cost term types instead of by the total number of cost terms by setting the optional `<normalize_cost_by_term_type>` to true 
+- New TO cost terms: 
+	- Controller shape tracking
+	- Controller minimization
+	- Scaled controller tracking
+		- Adding a `<scale_factor>` to a `controller_tracking` cost term will track a scaled version of the reference control
+- User-defined TO model functions can be used to modify either an element of the OpenSim model or part of the states or controls
+	- This allows users to create their own rules for modifying states or controls with custom parameters or feedback mechanisms before model dynamics are calculated
+- TO joint velocities can be plotted with the `plotTreatmentOptimizationJointVelocities()` function
+- New plotting functions for all tools will plot relevant results from settings files when run in the same directory as the settings file. Functions include:
+	- `plotJmpResultsFromSettingsFile()`
+	- `plotMtpResultsFromSettingsFile()`
+	- `plotNcpResultsFromSettingsFile()`
+	- `plotGcpResultsFromSettingsFile()`
+	- `plotTreatmentOptimizationResultsFromSettingsFile()`
+- Using the OpenSim 4.5.1 API linked with MATLAB is now supported
+
+
+### Fixed
+- MTP plots can properly display absolute length adjustments from Muscle-Tendon Length Initialization
+- GCP updates tracked experimental ground reaction moments to use the modified spring resting length for consistency
+
+
+### Changed
+- GCP rotation tracking allowable error should now be given in radians to be consistent with TO cost terms
+- Plot visuals have been improved and made more consistent between tools with new MATLAB grid features
+- TO computes metabolic cost with a MATLAB implementation of a Bhargava metabolic cost model
+
+
 ## v1.2.0 - 2024-05-09
 
 ### Added
 - MTP can now use translational coordinates spanned by muscles.
 - Added a plotting function to show the distribution of spring stiffnesses in GCP.
+
 
 ### Fixed
 - Fixed a bug where Treatment Optimization tracking terms were using the wrong time array
@@ -13,6 +61,7 @@
 - Fixed a bug with GCP damping terms not being applied correctly.
 - Fixed a bug where the wrong muscle tendon length file was parsed in Treatment Optimization.
 - Fixed a bug with the incorrect time array being used for the initial guess and dependency finding steps of Treatment Optimization.
+
 
 ### Changed
 - Treatment Optimization now no longer splines results back to the initial time points, instead using the collocation time points as the final results. This reduces numerical inconsistencies between the tracking and verification steps.
@@ -23,8 +72,6 @@
 - Improved the quality of the Treatment Optimization initial guess.
 - Changed the way Treatment Optimization results are saved to make VO easier.
 
-### Changes
-- MTP, NCP, & GCP plots with multiple lines now follow the color convention: blue for experimental/tracked data, and orange for modeled data.
 
 ## v1.1.0 - 2024-03-10
 

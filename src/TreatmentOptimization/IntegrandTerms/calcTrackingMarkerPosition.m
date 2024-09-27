@@ -52,18 +52,19 @@ else
         evaluateGcvSplines(inputs.splineMarkerPositions{indx}, ...
         0:2, time);
 end
+experimentalIndex = (indx - 1) * 3 + 1;
 cost = calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
-    markerPositions, indx);
+    markerPositions, experimentalIndex);
 if ~contains(axes, "x")
     cost(:) = 0;
 end
 if contains(axes, "y")
     cost = cost + calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
-        markerPositions, indx + 1);
+        markerPositions, experimentalIndex + 1);
 end
 if contains(axes, "z")
     cost = cost + calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
-        markerPositions, indx + 2);
+        markerPositions, experimentalIndex + 2);
 end
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))

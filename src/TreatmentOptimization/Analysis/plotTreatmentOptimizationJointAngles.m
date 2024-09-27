@@ -12,7 +12,7 @@
 % the figure size will be fixed and extra figures will be created as
 % needed.
 %
-% (string) (List of strings) (int), (int) -> (None)
+% (string) (string) (List of strings) (int), (int) -> (None)
 % Plot experimental and model joint angles from file
 
 % ----------------------------------------------------------------------- %
@@ -38,13 +38,12 @@
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationJointAngles(modelFileName, ...
     trackedDataFile, modelDataFiles, figureWidth, figureHeight)
-
 import org.opensim.modeling.Storage
 model = Model(modelFileName);
 trackedDataStorage = Storage(trackedDataFile);
-coordinateLabels = getStorageColumnNames(trackedDataStorage);
-trackedData = storageToDoubleMatrix(trackedDataStorage)';
-trackedDataTime = findTimeColumn(trackedDataStorage);
+[coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
+    model, trackedDataStorage);
+trackedData = trackedData';
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
@@ -58,8 +57,9 @@ end
 modelData = {};
 for j=1:numel(modelDataFiles)
     modelDataStorage = Storage(modelDataFiles(j));
-    modelData{j} = storageToDoubleMatrix(modelDataStorage)';
-    modelDataTime{j} = findTimeColumn(modelDataStorage);
+    [~, modelDataTime{j}, modelData{j}] = parseMotToComponents(...
+        model, modelDataStorage);
+    modelData{j} = modelData{j}';
     if modelDataTime{j} ~= 0
         modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
     end
@@ -90,6 +90,7 @@ figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Angles", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
@@ -110,9 +111,11 @@ for i=1:numel(coordinateLabels)
     end
     nexttile(subplotNumber);
     hold on
-        plot(trackedDataTime*100, trackedData(:, i), LineWidth=2);
+        plot(trackedDataTime*100, trackedData(:, i), LineWidth=2, ...
+            Color = colors(1));
         for j = 1 : numel(modelDataFiles)
-            plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2);
+            plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2, ...
+                Color = colors(j+1));
         end
     hold off
     titleString = [sprintf("%s", strrep(coordinateLabels(i), "_", " "))];

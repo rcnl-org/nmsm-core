@@ -1,6 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function takes MTP settings files and produces relevant plots for
+% the MTP runs. The function accepts up to two settings files, but works
+% with just one as well. Feeding in two settings files creates individual
+% plots for both settings files, and produces a plot comparing Hill-Type
+% muscle model parameters from both runs (such as to compare left and right
+% leg muscle model parameters).
 %
+% (string), (string) -> (None)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -10,7 +17,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -24,18 +31,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseTreatmentOptimizationDesignVariableBounds( ...
-    tree, inputs)
-inputs.jointPositionsMultiple = parseDoubleOrAlternate(tree, ...
-    'joint_position_range_scale_factor', 2);
-inputs.jointVelocitiesMultiple = parseDoubleOrAlternate(tree, ...
-    'joint_velocity_range_scale_factor', 1.5);
-inputs.jointAccelerationsMultiple = parseDoubleOrAlternate(tree, ...
-    'joint_acceleration_range_scale_factor', 1);
-inputs.jointPositionsMinRange = parseDoubleOrAlternate(tree, ...
-    'joint_position_minimum_range', 0);
-inputs.jointVelocitiesMinRange = parseDoubleOrAlternate(tree, ...
-    'joint_velocity_minimum_range', 0);
-inputs.jointAccelerationsMinRange = parseDoubleOrAlternate(tree, ...
-    'joint_acceleration_minimum_range', 0);
+function plotMtpResultsFromSettingsFile(settingsFileName1, settingsFileName2)
+import org.opensim.modeling.Storage
+settingsTree1 = xml2struct(settingsFileName1);
+resultsDirectory1 = getFieldByName(settingsTree1, 'results_directory').Text;
+plotMtpResultsFromDirectory(resultsDirectory1)
+if nargin > 1
+    settingsTree2 = xml2struct(settingsFileName2);
+    resultsDirectory2 = getFieldByName(settingsTree2, 'results_directory').Text;
+    plotMtpResultsFromDirectory(resultsDirectory2)
+    plotMtpHillTypeMuscleParamsCompare(resultsDirectory1, resultsDirectory2)
+else
+    plotMtpHillTypeMuscleParams(resultsDirectory1);
+end
+end
+
+function plotMtpResultsFromDirectory(resultsDirectory)
+plotMtpJointMoments(resultsDirectory);
+plotMtpMuscleExcitationsAndActivations(resultsDirectory);
+plotMtpNormalizedFiberLengths(resultsDirectory);
+plotMtpPassiveForceCurves(resultsDirectory);
+if isfolder(fullfile(resultsDirectory, "Analysis", "passiveJointMomentsExperimental"))
+    plotMtpPassiveMomentCurves(resultsDirectory);
+end
 end

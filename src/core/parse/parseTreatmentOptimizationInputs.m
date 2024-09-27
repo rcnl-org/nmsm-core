@@ -85,6 +85,8 @@ inputs.controllerType = parseControllerType(tree);
 inputs = parseModel(tree, inputs);
 [~, state] = Model(inputs.model);
 inputs.mass = inputs.model.getTotalMass(state);
+inputs.normalizeCostByType = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'normalize_cost_by_term_type', false));
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)

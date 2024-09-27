@@ -71,6 +71,7 @@ figureSize = figureWidth * figureHeight;
 figure(Name=figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
@@ -96,7 +97,8 @@ for i=1:numel(labels)
     nexttile(subplotNumber);
     hold on
     for j  = 1 : numel(controlsFiles)
-        plot(controlsTime{j}*100, controlsData{j}(:, i), LineWidth=2);
+        plot(controlsTime{j}*100, controlsData{j}(:, i), LineWidth=2, ...
+            Color = colors(j));
     end
     if subplotNumber==1
         for j = 1 : numel(controlsFiles)
@@ -106,7 +108,14 @@ for i=1:numel(labels)
         legend(legendValues)
     end
     hold off
-    title(strrep(labels(i), "_", " "));
+    titleString = [sprintf("%s", strrep(labels(i), "_", " "))];
+    if numel(controlsFiles) > 1
+        for j = 2 : numel(controlsFiles)
+            rmse = rms(controlsData{j}(1:end-1, i) - controlsData{1}(1:end-1, i));
+            titleString(j) = sprintf("RMSE %d: %.4f", j-1, rmse);
+        end
+    end
+    title(titleString)
     xlim("tight")
     subplotNumber = subplotNumber + 1;
 end

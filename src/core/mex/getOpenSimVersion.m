@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 %
+%
+% () -> (double)
+% Returns the version of the linked OpenSim API.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -10,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -24,18 +27,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseTreatmentOptimizationDesignVariableBounds( ...
-    tree, inputs)
-inputs.jointPositionsMultiple = parseDoubleOrAlternate(tree, ...
-    'joint_position_range_scale_factor', 2);
-inputs.jointVelocitiesMultiple = parseDoubleOrAlternate(tree, ...
-    'joint_velocity_range_scale_factor', 1.5);
-inputs.jointAccelerationsMultiple = parseDoubleOrAlternate(tree, ...
-    'joint_acceleration_range_scale_factor', 1);
-inputs.jointPositionsMinRange = parseDoubleOrAlternate(tree, ...
-    'joint_position_minimum_range', 0);
-inputs.jointVelocitiesMinRange = parseDoubleOrAlternate(tree, ...
-    'joint_velocity_minimum_range', 0);
-inputs.jointAccelerationsMinRange = parseDoubleOrAlternate(tree, ...
-    'joint_acceleration_minimum_range', 0);
+function version = getOpenSimVersion()
+version = strsplit(org.opensim.modeling.opensimCommon.GetVersion() ...
+    .toCharArray()', '-');
+versionSplit = strsplit(version{1}, '.');
+
+version = versionSplit{1};
+for i = 2 : length(versionSplit)
+    if length(versionSplit{i}) == 1
+        version(end + 1) = '0';
+    end
+    version(end + 1) = versionSplit{i};
+end
+for i = length(version) + 1 : 5
+    version(end + 1) = '0';
+end
+
+version = str2double(version);
 end
