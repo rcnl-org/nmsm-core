@@ -31,7 +31,13 @@ function cost = calcTrackingMarkerPosition(costTerm, time, ...
     markerPositions, inputs)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
-axes = lower(valueOrAlternate(costTerm, "axes", "xyz"));
+axes = strsplit(strip(valueOrAlternate(...
+    costTerm, "axes", 'true true true')), ' ');
+if length(axes) ~= 3
+    throw(MException('CostTermError:IncorrectAxes', ...
+        strcat("Axes ", costTerm.axes, " should be three " + ...
+        "space-separated true or false values.")))
+end
 if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
     time = time * inputs.collocationTimeOriginal(end) / time(end);
 end
@@ -55,14 +61,14 @@ end
 experimentalIndex = (indx - 1) * 3 + 1;
 cost = calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
     markerPositions, experimentalIndex);
-if ~contains(axes, "x")
+if ~strcmpi(axes{1}, 'true')
     cost(:) = 0;
 end
-if contains(axes, "y")
+if strcmpi(axes{2}, 'true')
     cost = cost + calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
         markerPositions, experimentalIndex + 1);
 end
-if contains(axes, "z")
+if strcmpi(axes{3}, 'true')
     cost = cost + calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
         markerPositions, experimentalIndex + 2);
 end
