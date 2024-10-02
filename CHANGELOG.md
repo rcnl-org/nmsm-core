@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.3.1 - 2024-10-01
+
+### Added
+- Marker tracking in Treatment Optimization (TO) can be used to track a subset of directions in the ground frame (default x, y, and z directions)
+	- To change the included subset, add `<axes>true true true</axes>` with the first, second, or third entry set to `false` for an excluded direction
+- TO synergy vectors can be used and saved normalized by either sum or magnitude of a given value (default sum to 1)
+	- Inside the `<RCNLSynergyController>`, add `<synergy_vector_normalization_method>` set to `sum` or `magnitude` and add `<synergy_vector_normalization_value>` set to the desired vector sum or magnitude
+- The root directory now includes installation instructions for the pipeline (`How to Install.pdf`)
+
+
+### Fixed
+- TO runs using point kinematics will no longer crash with OpenSim 4.5.1 linked to MATLAB
+- TO marker tracking will track multiple markers correctly at the same time
+
+
+### Changed
+- Optimizing synergy vectors during TO is significantly faster
+- TO plotting functions will automatically convert rotational input quantities from degrees when comparing to radians
+
+
 ## v1.3.0 - 2024-09-23
 
 ### Added

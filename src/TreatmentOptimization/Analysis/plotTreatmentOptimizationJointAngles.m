@@ -41,9 +41,9 @@ function plotTreatmentOptimizationJointAngles(modelFileName, ...
 import org.opensim.modeling.Storage
 model = Model(modelFileName);
 trackedDataStorage = Storage(trackedDataFile);
-coordinateLabels = getStorageColumnNames(trackedDataStorage);
-trackedData = storageToDoubleMatrix(trackedDataStorage)';
-trackedDataTime = findTimeColumn(trackedDataStorage);
+[coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
+    model, trackedDataStorage);
+trackedData = trackedData';
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
@@ -57,8 +57,9 @@ end
 modelData = {};
 for j=1:numel(modelDataFiles)
     modelDataStorage = Storage(modelDataFiles(j));
-    modelData{j} = storageToDoubleMatrix(modelDataStorage)';
-    modelDataTime{j} = findTimeColumn(modelDataStorage);
+    [~, modelDataTime{j}, modelData{j}] = parseMotToComponents(...
+        model, modelDataStorage);
+    modelData{j} = modelData{j}';
     if modelDataTime{j} ~= 0
         modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
     end

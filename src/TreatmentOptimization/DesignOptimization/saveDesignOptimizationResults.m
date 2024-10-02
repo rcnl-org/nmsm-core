@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -36,6 +36,9 @@ if isfield(inputs, "systemFns")
     [inputs, values] = updateSystemFromUserDefinedFunctions(inputs, values);
     model = Model(inputs.auxdata.model);
     model.print(strrep(inputs.mexModel, '_inactiveMuscles.osim', 'DesignOpt.osim'));
+end
+if strcmp(inputs.controllerType, "synergy")
+    values = normalizeSynergySolution(values, inputs);
 end
 printUserDefinedVariablesToXml(solution, inputs);
 saveTreatmentOptimizationResults(solution, inputs, values);
@@ -62,4 +65,13 @@ if isfield(inputs, 'userDefinedVariables')
             strcat(inputs.trialName, "_parameterSolution.xml")));
     end
 end
+end
+
+function values = normalizeSynergySolution(values, inputs)
+values.controllerType = inputs.controllerType;
+values.initialSynergyControls = values.controlSynergyActivations;
+values.synergyNormalizationMethod = inputs.synergyNormalizationMethod;
+values.synergyNormalizationValue = inputs.synergyNormalizationValue;
+values = normalizeSynergyData(values);
+values.controlSynergyActivations = values.initialSynergyControls;
 end

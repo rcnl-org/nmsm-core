@@ -58,20 +58,8 @@ if strcmp(inputs.toolName, "TrackingOptimization")
         if inputs.optimizeSynergyVectors
             parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
-            counter = 1;
-            row = 1;
-            for i = 1 : length(inputs.synergyGroups)
-                for k = 1:inputs.synergyGroups{i}.numSynergies
-                    for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
-                        index = find(ismember(inputs.synergyWeightsLabels, ...
-                            inputs.synergyGroups{i}.muscleNames{j}));
-                        values.synergyWeights(row, index) = ...
-                            parameters(counter);
-                        counter = counter + 1;
-                    end
-                    row = row + 1;
-                end
-            end
+            values.synergyWeights(inputs.synergyWeightsIndices) = ...
+                parameters(1 : length(inputs.synergyWeightsIndices));
         end
     end
 end
@@ -81,25 +69,15 @@ if strcmp(inputs.toolName, "VerificationOptimization")
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
+    counter = 1;
     if strcmp(inputs.controllerType, 'synergy')
         values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
             parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
-            counter = 1;
-            row = 1;
-            for i = 1 : length(inputs.synergyGroups)
-                for k = 1:inputs.synergyGroups{i}.numSynergies
-                    for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
-                        index = find(ismember(inputs.synergyWeightsLabels, ...
-                            inputs.synergyGroups{i}.muscleNames{j}));
-                        values.synergyWeights(row, index) = ...
-                            parameters(counter);
-                        counter = counter + 1;
-                    end
-                    row = row + 1;
-                end
-            end
+            values.synergyWeights(inputs.synergyWeightsIndices) = ...
+                parameters(1 : length(inputs.synergyWeightsIndices));
+            counter = length(inputs.synergyWeightsIndices) + 1;
         end
     end
     if isfield(inputs, 'userDefinedVariables') && ...

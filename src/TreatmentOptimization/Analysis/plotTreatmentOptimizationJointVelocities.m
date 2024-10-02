@@ -44,9 +44,9 @@ function plotTreatmentOptimizationJointVelocities(modelFileName, ...
 import org.opensim.modeling.Storage
 model = Model(modelFileName);
 trackedDataStorage = Storage(trackedDataFile);
-coordinateLabels = getStorageColumnNames(trackedDataStorage);
-trackedData = storageToDoubleMatrix(trackedDataStorage)';
-trackedDataTime = findTimeColumn(trackedDataStorage);
+[coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
+    model, trackedDataStorage);
+trackedData = trackedData';
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
@@ -59,9 +59,9 @@ for i = 1 : size(trackedData, 2)
 end
 for j=1:numel(modelDataFiles)
     modeledStatesStorage = Storage(modelDataFiles(j));
-    modeledStates = storageToDoubleMatrix(modeledStatesStorage)';
-    modeledStatesTime = findTimeColumn(modeledStatesStorage);
-    modeledStatesLabels = getStorageColumnNames(modeledStatesStorage);
+    [modeledStatesLabels, modeledStatesTime, modeledStates] = ...
+        parseMotToComponents(model, modeledStatesStorage);
+    modeledStates = modeledStates';
     if modeledStatesTime ~= 0
         modeledStatesTime = modeledStatesTime - modeledStatesTime(1);
     end

@@ -92,7 +92,8 @@ if strcmp(inputs.controllerType, 'synergy')
                 inputs.synergyGroups{i}.numSynergies * ...
                 length(inputs.synergyGroups{i}.muscleNames);
         end
-        inputs.maxParameter = ones(1, numParameters);
+        inputs.maxParameter = ones(1, numParameters) * ...
+            inputs.synergyNormalizationValue;
         inputs.minParameter = zeros(1, numParameters);
     end
 end
