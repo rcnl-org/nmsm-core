@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the magnitude of the specified synergy weight 
-% group.
+% This function calculates the squared magnitude of the specified synergy 
+% weight group.
 %
 % (Array of number, struct, Array of string) -> (Number)
 % 
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,8 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function synergyWeightsMagnitude = calcSynergyWeightsMagnitude(synergyWeights, ...
-    synergyGroups, synergyGroupName)
+function synergyWeightsMagnitude = calcSynergyWeightsSquaredMagnitude( ...
+    synergyWeights, synergyGroups, synergyGroupName)
 
 counter = 1;
 for i = 1 : length(synergyGroups)
@@ -42,7 +42,7 @@ end
 numSynergies = synergyGroups{i}.numSynergies;
 synergyWeightsMagnitude = zeros(numSynergies, 1);
 for j = counter : counter + numSynergies - 1
-    synergyWeightsMagnitude(j - counter + 1) = sqrt(sum(synergyWeights(j, :) .^ 2));
+    synergyWeightsMagnitude(j - counter + 1) = sum(synergyWeights(j, :) .^ 2);
 end
 synergyWeightsMagnitude = synergyWeightsMagnitude';
 end
