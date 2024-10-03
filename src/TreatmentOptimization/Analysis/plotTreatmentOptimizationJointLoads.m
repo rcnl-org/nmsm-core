@@ -81,6 +81,7 @@ figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Loads", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+set(gcf,Color="#E9E7E7");
 colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
@@ -94,6 +95,7 @@ for i=1:numel(jointLoadLabels)
         figure(Name="Treatment Optimization Joint Loads", ...
             Units='normalized', ...
             Position=[0.05 0.05 0.9 0.85])
+        set(gcf,Color="#E9E7E7");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Percent Movement [0-100%]")
@@ -106,6 +108,7 @@ for i=1:numel(jointLoadLabels)
     for j = 1 : numel(modelDataFiles)
         plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2, Color = colors(j+1));
     end
+    set(gca,Color="#E9E7E7");
     hold off
     if contains(jointLoadLabels(i), "moment")
         titleString = [sprintf("%s [Nm]", strrep(jointLoadLabels(i), "_", " "))];

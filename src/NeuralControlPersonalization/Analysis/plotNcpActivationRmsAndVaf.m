@@ -68,6 +68,8 @@ title("RMS error for muscles with tracked activations", ...
     sprintf(" (RMSE: %.3f)", worstError))
 ylabel("RMSE")
 set(gca, 'XTick', [])
+set(gca,Color="#E9E7E7");
+set(gcf,Color="#E9E7E7");
 end
 
 function percentVaf = calcPercentVaf(experimental, reconstructed)

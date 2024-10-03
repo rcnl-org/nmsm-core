@@ -52,6 +52,7 @@ figureNumber = 1;
 figure(Name = strcat(resultsDirectory, " Passive Force Curves"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+set(gcf,Color="#E9E7E7");
 colors = getPlottingColors();
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
@@ -65,6 +66,7 @@ for i = 1:numel(muscleNames)
                 " Passive Force Curves"), ...
             Units='normalized', ...
             Position=[0.05 0.05 0.9 0.85])
+        set(gcf,Color="#E9E7E7");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Percent Movement [0-100%]")
@@ -76,6 +78,7 @@ for i = 1:numel(muscleNames)
     plotMeanAndStd(meanModelForce(:,i), stdModelForce(:,i), time, ...
         colors(1));
     hold off
+    set(gca,Color="#E9E7E7");
     set(gca, fontsize=11)
     title(muscleNames(i), FontSize=12);
     xlim("tight")

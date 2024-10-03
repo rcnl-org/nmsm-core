@@ -53,6 +53,7 @@ figure(Name = strcat(resultsDirectory, ...
         " Normalized Fiber Lengths"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+set(gcf,Color="#E9E7E7");
 colors = getPlottingColors();
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
@@ -65,6 +66,7 @@ for i=1:numel(muscleNames)
                 " Normalized Fiber Lengths"), ...
             Units='normalized', ...
             Position=[0.05 0.05 0.9 0.85])
+        set(gcf,Color="#E9E7E7");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Percent Movement [0-100%]")
@@ -78,6 +80,7 @@ for i=1:numel(muscleNames)
     plot(time, passiveUpper, color=colors(2), LineStyle='--', LineWidth=2);
     plot(time, passiveLower, color=colors(2), LineStyle='--', LineWidth=2);
     hold off
+    set(gca,Color="#E9E7E7");
     set(gca, fontsize=11)
     title(muscleNames(i), FontSize=12);
     xlim("tight")

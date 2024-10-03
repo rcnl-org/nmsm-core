@@ -28,6 +28,7 @@ end
 
 
 if(onePlot)
+    set(gcf,Color="#E9E7E7");
     for i=1:storages{1}.getColumnLabels.getSize()-1
         for j=1:length(storages)
             yArray = ArrayDouble();
@@ -36,6 +37,7 @@ if(onePlot)
             xlabel('time')
             ylabel('error')
             plot(time{1}, y, 'LineWidth',3)
+            set(gca,Color="#E9E7E7");
             xlim("tight")
             legendList{end+1} = strcat(storages{j}. ...
                 getColumnLabels.get(i).toCharArray', num2str(j));
@@ -47,8 +49,10 @@ else
     numberOfPlots = storages{1}.getColumnLabels.getSize()-1;
     plotSize = ceil(sqrt(numberOfPlots));
     tiledlayout(ceil(numberOfPlots/plotSize), plotSize);
+    
     for i=1:storages{1}.getColumnLabels().getSize()-1
         plots(end+1) = nexttile;
+        set(gcf,Color="#E9E7E7");
         for j=1:length(storages)
             yArray = ArrayDouble();
             storages{j}.getDataColumn(i-1,yArray);
@@ -57,6 +61,7 @@ else
             xlabel('time (s)')
             ylabel('error (m)')
             plot(time{j}, y, 'LineWidth',3, color=colors(j));
+            set(gca,Color="#E9E7E7");
             xlim("tight")
             legendList{end+1} = strrep(strcat(storages{j}. ...
                 getColumnLabels.get(i).toCharArray', " - ", fileNames{j}), ...

@@ -72,6 +72,7 @@ figure(Name = strcat(resultsDirectory, ...
         " Joint Moment Matching"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+set(gcf,Color="#E9E7E7");
 colors = getPlottingColors();
 
 time = 1:1:size(meanIdMoments,1);
@@ -86,6 +87,7 @@ for i=1:numel(jointLabels)
                 " Joint Moment Matching"), ...
             Units='normalized', ...
             Position=[0.05 0.05 0.9 0.85])
+        set(gcf,Color="#E9E7E7");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Joint Position")
@@ -102,6 +104,7 @@ for i=1:numel(jointLabels)
         plotMeanAndStd(meanMoments(:, i), stdMoments(:, i), ...
             time, colors(2), '--')
         hold off
+        set(gca,Color="#E9E7E7");
         set(gca, fontsize=11)
         rmse = rms(meanMomentsSynx(:,i) - meanIdMoments(:,i));
         mae = mean(abs(meanMomentsSynx(:,i) - meanIdMoments(:,i)));

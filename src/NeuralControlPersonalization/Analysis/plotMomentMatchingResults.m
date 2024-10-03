@@ -84,6 +84,7 @@ end
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+set(gcf,Color="#E9E7E7");
 colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
@@ -99,6 +100,7 @@ for i = 1:length(experimentalColumns)
     if i > figureSize * figureIndex
         figureIndex = figureIndex + 1;
         figure(figureNumber + figureIndex - 1)
+        set(gcf,Color="#E9E7E7");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='compact', Padding='compact');
         subplotNumber = 1;
@@ -123,6 +125,7 @@ for i = 1:length(experimentalColumns)
     else
         error = "N/A";
     end
+    set(gca,Color="#E9E7E7");
     title(strrep(experimentalColumns(i), "_", " ") + newline + ...
         " RMSE: " + error)
     xlim("tight")

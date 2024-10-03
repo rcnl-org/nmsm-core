@@ -44,6 +44,7 @@ figureName = splitFileName(1);
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+set(gcf,Color="#E9E7E7");
 colors = getPlottingColors();
 t = tiledlayout(2, 4, ...
     TileSpacing='compact', Padding='compact');
@@ -62,6 +63,7 @@ for i = 1:7
     hold on
     plot(time, model, Color=colors(2), LineWidth=2)
     xlim("tight")
+    set(gca,Color="#E9E7E7");
     error = rms(experimental - model);
     title(coordinates(i) + newline + " RMSE: " + error)
     if i == 1

@@ -64,6 +64,7 @@ figureName = splitFileName(1);
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+set(gcf,Color="#E9E7E7");
 colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
@@ -76,6 +77,7 @@ for i = 1:size(muscleActivations, 1)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(figureNumber)
+        set(gcf,Color="#E9E7E7");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         subplotNumber = 1;
@@ -89,6 +91,7 @@ for i = 1:size(muscleActivations, 1)
     end
     plot(time*100, muscleActivations(i, :), 'LineWidth', 2, ...
         Color=colors(2))
+    set(gca,Color="#E9E7E7");
     hold off
     if subplotNumber==1
         if ~isempty(mtpIndex)

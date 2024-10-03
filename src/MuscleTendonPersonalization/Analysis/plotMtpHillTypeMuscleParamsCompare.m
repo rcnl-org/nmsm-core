@@ -10,6 +10,7 @@ muscleNames = strrep(muscleNames, '_', ' ');
 figure(Name = strcat("Compare Muscle Model Parameters"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+set(gcf,Color="#E9E7E7");
 colors = getPlottingColors();
 if any(params1(5, :)<=0) | any(params1(6,:)<0)
     paramLabels = ["Activation Time Constant", ...
@@ -35,6 +36,7 @@ for i = 1 : numel(paramLabels)
     b = barh(1:numel(muscleNames), [params1(i,:); params2(i,:)]);
     b(1).FaceColor = colors(1);
     b(2).FaceColor = colors(2);
+    set(gca,Color="#E9E7E7");
     title(textwrap(paramLabels(i), 20), FontSize=12)
     if i == 1
         yticks(1:numel(muscleNames))
