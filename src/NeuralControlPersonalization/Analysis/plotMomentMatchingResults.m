@@ -98,7 +98,9 @@ ylabel(t, "Joint Moments [Nm]")
 for i = 1:length(experimentalColumns)
     if i > figureSize * figureIndex
         figureIndex = figureIndex + 1;
-        figure(figureNumber + figureIndex - 1)
+        figure(Name = figureName, ...
+            Units='normalized', ...
+            Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='compact', Padding='compact');
         subplotNumber = 1;
