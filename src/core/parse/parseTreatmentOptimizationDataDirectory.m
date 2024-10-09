@@ -220,7 +220,7 @@ import org.opensim.modeling.Storage
 forces = NaN(length(grfTime), 3);
 moments = NaN(length(grfTime), 3);
 ec = NaN(length(grfTime), 3);
-for i=1:size(grfColumnNames')
+for i=1:size(grfColumnNames', 1)
     label = grfColumnNames(i);
     for j = 1:3
         if strcmpi(label, inputs.osimx.groundContact ...
