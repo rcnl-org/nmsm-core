@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -31,9 +31,21 @@
 function cost = calcTrackingSynergyVectorsDiscrete(synergyWeights, ...
     inputs, costTerm)
 
+counter = 1;
+for i = 1 : length(inputs.synergyGroups)
+    if strcmp(inputs.synergyGroups{i}.muscleGroupName, ...
+            costTerm.synergy_group)
+        break;
+    end
+    counter = counter + inputs.synergyGroups{i}.numSynergies;
+end
+
+numSynergies = inputs.synergyGroups{i}.numSynergies;
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 
-origSynergyWeights = inputs.initialSynergyWeights;
-rawCost = sum(abs(origSynergyWeights - synergyWeights), 'all');
-cost = ((rawCost - errorCenter) ./ costTerm.maxAllowableError) .^ 2;
+weightErrors = synergyWeights(counter : counter + numSynergies - 1, :) ...
+    - inputs.initialSynergyWeights( ...
+    counter : counter + numSynergies - 1, :) - errorCenter;
+
+cost = mean((weightErrors / costTerm.maxAllowableError) .^ 2, 'all');
 end
