@@ -87,8 +87,8 @@ subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Loads")
+xlabel(t, "Percent Movement [0-100%]", fontsize=20)
+ylabel(t, "Joint Loads", fontsize=20)
 for i=1:numel(jointLoadLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -104,11 +104,11 @@ for i=1:numel(jointLoadLabels)
     end
     nexttile(subplotNumber);
     hold on
-    plot(trackedDataTime*100, trackedData(:, i), LineWidth=2, Color = colors(1));
+    plot(trackedDataTime*100, trackedData(:, i), LineWidth=4, Color = colors(1));
     for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2, Color = colors(j+1));
+        plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=4, Color = colors(j+1));
     end
-    set(gca,Color="#E9E7E7");
+    set(gca,Color="#E9E7E7", fontsize=15);
     hold off
     if contains(jointLoadLabels(i), "moment")
         titleString = [sprintf("%s [Nm]", strrep(jointLoadLabels(i), "_", " "))];

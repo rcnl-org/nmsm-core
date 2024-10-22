@@ -104,8 +104,8 @@ subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Velocity [deg/s]")
+xlabel(t, "Percent Movement [0-100%]", fontsize=20)
+ylabel(t, "Joint Velocity [deg/s]", fontsize=20)
 
 for i=1:numel(modeledVelocitiesLabels)
     if i > figureSize * figureNumber
@@ -125,12 +125,12 @@ for i=1:numel(modeledVelocitiesLabels)
         nexttile(subplotNumber);
         hold on
         plot(trackedDataTime*100, trackedVelocities(:, coordinateIndex), ...
-            lineWidth=2, Color = colors(1))
+            lineWidth=4, Color = colors(1))
         for j = 1 : numel(modelDataFiles)
             plot(modeledVelocitiesTime{j}*100, modeledVelocities{j}(:, i), ...
-                lineWidth=2, Color = colors(j+1));
+                lineWidth=4, Color = colors(j+1));
         end
-        set(gca,Color="#E9E7E7");
+        set(gca,Color="#E9E7E7", fontsize=15);
         hold off
         titleString = [sprintf("%s", strrep(coordinateLabels(coordinateIndex), "_", " "))];
         for j = 1 : numel(modelDataFiles)

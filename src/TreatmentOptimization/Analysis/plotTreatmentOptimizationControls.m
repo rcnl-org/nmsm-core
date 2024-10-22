@@ -77,11 +77,11 @@ subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "Percent Movement [0-100%]")
+xlabel(t, "Percent Movement [0-100%]", fontsize=20)
 if strcmp(controllerType, "Torque")
-    ylabel(t, "Torque Controls [Nm]")
+    ylabel(t, "Torque Controls [Nm]", fontsize=20)
 elseif strcmp(controllerType, "Synergy")
-    ylabel(t, "Synergy Controls")
+    ylabel(t, "Synergy Controls", fontsize=20)
 end
 for i=1:numel(labels)
     if i > figureSize * figureNumber
@@ -99,10 +99,10 @@ for i=1:numel(labels)
     nexttile(subplotNumber);
     hold on
     for j  = 1 : numel(controlsFiles)
-        plot(controlsTime{j}*100, controlsData{j}(:, i), LineWidth=2, ...
+        plot(controlsTime{j}*100, controlsData{j}(:, i), LineWidth=4, ...
             Color = colors(j));
     end
-    set(gca,Color="#E9E7E7");
+    set(gca,Color="#E9E7E7", fontsize=15);
     if subplotNumber==1
         for j = 1 : numel(controlsFiles)
             splitFileName = split(controlsFiles(j), ["/", "\"]);

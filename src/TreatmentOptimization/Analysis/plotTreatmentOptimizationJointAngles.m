@@ -96,8 +96,8 @@ subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Angle [deg]")
+xlabel(t, "Percent Movement [0-100%]", fontsize=20)
+ylabel(t, "Joint Angle [deg]", fontsize=20)
 for i=1:numel(coordinateLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -107,19 +107,19 @@ for i=1:numel(coordinateLabels)
         set(gcf,Color="#E9E7E7");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Joint Angle [deg]")
+        xlabel(t, "Percent Movement [0-100%]", fontsize=15)
+        ylabel(t, "Joint Angle [deg]", fontsize=15)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-        plot(trackedDataTime*100, trackedData(:, i), LineWidth=2, ...
+        plot(trackedDataTime*100, trackedData(:, i), LineWidth=4, ...
             Color = colors(1));
         for j = 1 : numel(modelDataFiles)
-            plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2, ...
+            plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=4, ...
                 Color = colors(j+1));
         end
-        set(gca,Color="#E9E7E7");
+        set(gca,Color="#E9E7E7", fontsize=15);
     hold off
     titleString = [sprintf("%s", strrep(coordinateLabels(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)
