@@ -100,6 +100,11 @@ function [positions, velocities] = recombineFullState( ...
 if size(values.time) == size(inputs.collocationTimeOriginal)
     positions = inputs.splinedJointAngles;
     velocities = inputs.splinedJointSpeeds;
+elseif size(values.time) == size(inputs.collocationTimeOriginal) + [1, 0]
+    positions = inputs.splinedJointAngles;
+    velocities = inputs.splinedJointSpeeds;
+    positions(end+1, :) = inputs.experimentalJointAngles(end, :);
+    velocities(end+1, :) = inputs.experimentalJointVelocities(end, :);
 else
     positions = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time);
@@ -119,6 +124,9 @@ end
 function accelerations = recombineFullAccelerations(values, inputs)
 if size(values.time) == size(inputs.collocationTimeOriginal)
     accelerations = inputs.splinedJointAccelerations;
+elseif size(values.time) == size(inputs.collocationTimeOriginal) + [1, 0]
+    accelerations = inputs.splinedJointAccelerations;
+    accelerations(end+1, :) = inputs.experimentalJointAccelerations(end, :);
 else
     accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 2);
