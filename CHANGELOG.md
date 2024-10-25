@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.3.2 - 2024-10-25
+
+### Added
+- Treatment Optimization plotting function `plotTreatmentOptimizationResultsFromSettingsFile()` can optionally take an override results directory as a second argument to plot results from a directory other than the one in the given settings file
+
+
+### Fixed
+- Neural Control Personalization plots requiring multiple plot windows will correctly format overflow windows to match the first
+- Prescribed coordinates in Design Optimization are saved to results correctly for free final time problems
+
+
+### Changed
+- Updated calls to the MATLAB `size()` function to prevent compatibility warning messages on MATLAB R2024a and newer
+
+
 ## v1.3.1 - 2024-10-01
 
 ### Added
