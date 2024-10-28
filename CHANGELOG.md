@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.3.2 - 2024-10-25
+## v1.3.2 - 2024-10-28
 
 ### Added
 - Treatment Optimization plotting function `plotTreatmentOptimizationResultsFromSettingsFile()` can optionally take an override results directory as a second argument to plot results from a directory other than the one in the given settings file
