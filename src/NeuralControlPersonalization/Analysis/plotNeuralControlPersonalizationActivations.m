@@ -75,7 +75,9 @@ ylabel(t, "Muscle Activations")
 for i = 1:size(muscleActivations, 1)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(figureNumber)
+        figure(Name = figureName, ...
+            Units='normalized', ...
+            Position=[0.05 0.05 0.9 0.85])
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         subplotNumber = 1;

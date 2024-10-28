@@ -27,11 +27,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotTreatmentOptimizationResultsFromSettingsFile(settingsFileName)
+function plotTreatmentOptimizationResultsFromSettingsFile(settingsFileName, ...
+    overrideResultsDirectory)
 settingsTree = xml2struct(settingsFileName);
 toolName = findToolName(settingsTree);
 resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'results_directory'));
+if nargin > 1
+    resultsDirectory = overrideResultsDirectory;
+end
 trackedQuantitiesDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'tracked_quantities_directory'));
 initialGuessDirectory = getTextFromField(getFieldByName(settingsTree, ...

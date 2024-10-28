@@ -135,7 +135,7 @@ task.grfTime = grfTime(startIndex:endIndex);
 grf = NaN(3, length(task.grfTime));
 moments = NaN(3, length(task.grfTime));
 ec = NaN(3, length(task.grfTime));
-for i=1:size(grfColumnNames')
+for i=1:size(grfColumnNames', 1)
     label = grfColumnNames(i);
     for j = 1:3
         if strcmpi(label, task.forceColumns(j, :))
