@@ -74,10 +74,12 @@ end
 % Plot values
 figure(name = osimxFileName)
 scatter(springZ, springX, 200, stiffness, "filled")
+set(gca,Color="#D8D8D8", fontsize=15);
 set(gca, 'DataAspectRatio', [1, 1, 1])
 title("Stiffness coefficients")
 xlabel("Z location on foot (m)")
 ylabel("X location on foot (m)")
+set(gcf,Color="#D8D8D8");
 
 R = [254 254 236 204 153];
 G = [196 153 112 76 52];
