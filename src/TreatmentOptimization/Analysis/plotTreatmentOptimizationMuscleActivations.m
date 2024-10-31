@@ -77,7 +77,7 @@ figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Muscle Activations", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
-set(gcf,Color="#E9E7E7");
+set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
@@ -91,7 +91,7 @@ for i=1:numel(muscleLabels)
         figure(Name="Treatment Optimization Muscle Activations", ...
             Units='normalized', ...
             Position=[0.05 0.05 0.9 0.85])
-        set(gcf,Color="#E9E7E7");
+        set(gcf,Color="#D8D8D8");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Percent Movement [0-100%]")
@@ -106,7 +106,7 @@ for i=1:numel(muscleLabels)
         plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=4, ...
             Color = colors(j+1));
     end
-    set(gca,Color="#E9E7E7", fontsize=15);
+    set(gca,Color="#D8D8D8", fontsize=15);
     hold off
     titleString = [sprintf("%s", strrep(muscleLabels(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)

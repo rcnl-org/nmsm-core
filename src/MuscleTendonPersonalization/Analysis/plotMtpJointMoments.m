@@ -72,14 +72,14 @@ figure(Name = strcat(resultsDirectory, ...
         " Joint Moment Matching"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
-set(gcf,Color="#E9E7E7");
+set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 
 time = 1:1:size(meanIdMoments,1);
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Moment [Nm]")
+xlabel(t, "Percent Movement [0-100%]", fontsize=20)
+ylabel(t, "Joint Moment [Nm]", fontsize=20)
 for i=1:numel(jointLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -87,11 +87,11 @@ for i=1:numel(jointLabels)
                 " Joint Moment Matching"), ...
             Units='normalized', ...
             Position=[0.05 0.05 0.9 0.85])
-        set(gcf,Color="#E9E7E7");
+        set(gcf,Color="#D8D8D8");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Joint Position")
-        ylabel(t, "Joint Moment [Nm]")
+        xlabel(t, "Joint Position", fontsize=20)
+        ylabel(t, "Joint Moment [Nm]", fontsize=20)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
@@ -104,7 +104,7 @@ for i=1:numel(jointLabels)
         plotMeanAndStd(meanMoments(:, i), stdMoments(:, i), ...
             time, colors(2), '--')
         hold off
-        set(gca,Color="#E9E7E7");
+        set(gca,Color="#D8D8D8");
         set(gca, fontsize=11)
         rmse = rms(meanMomentsSynx(:,i) - meanIdMoments(:,i));
         mae = mean(abs(meanMomentsSynx(:,i) - meanIdMoments(:,i)));
@@ -123,11 +123,11 @@ for i=1:numel(jointLabels)
         plotMeanAndStd(meanMoments(:, i), stdMoments(:, i), ...
             time, colors(2))
         hold off
-        set(gca, fontsize=11)
+        set(gca, fontsize=15)
         rmse = rms(meanMoments(:,i) - meanIdMoments(:,i));
         mae = mean(abs(meanMoments(:,i) - meanIdMoments(:,i)));
         title(sprintf("%s \n RMSE: %.4f, MAE: %.4f", ...
-            jointLabels(i), rmse, mae), fontsize=12)
+            jointLabels(i), rmse, mae), fontsize=15)
         xlim("tight")
         ylim([minMoment, maxMoment])
         if subplotNumber == 1

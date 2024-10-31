@@ -46,29 +46,31 @@ figureName = splitFileName(1);
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
-set(gcf,Color="#E9E7E7");
+set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 t = tiledlayout(2, 3, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Time [s]")
+xlabel(t, "Time [s]", fontsize=20)
 for i = 1:6
     nexttile(i)
     experimental = experimentalGroundReactions(i, :);
     model = modeledGroundReactions(i, :);
-    plot(time, experimental, Color=colors(1), LineWidth=2)
+    plot(time, experimental, Color=colors(1), LineWidth=4)
     hold on
-    plot(time, model, Color=colors(2), LineWidth=2)
-    set(gca,Color="#E9E7E7");
+    plot(time, model, Color=colors(2), LineWidth=4)
+    set(gca,Color="#D8D8D8");
     error = rms(experimental - model);
     title(titles(i) + newline + " RMSE: " + error)
-    xlabel('Time')
+    % xlabel('Time')
     xlim("tight")
+    set(gca,Color="#D8D8D8", fontsize=15);
     if i == 1
-        ylabel('Force (N)')
+        ylabel('Force (N)', fontsize=20)
         legend("Experimental", "Model")
     else if i == 4
-        ylabel('Moment (N*m)')
+        ylabel('Moment (N*m)', fontsize=20)
     end
+    
     hold off
 end
 end

@@ -28,7 +28,7 @@ end
 
 
 if(onePlot)
-    set(gcf,Color="#E9E7E7");
+    set(gcf,Color="#D8D8D8");
     for i=1:storages{1}.getColumnLabels.getSize()-1
         for j=1:length(storages)
             yArray = ArrayDouble();
@@ -37,7 +37,7 @@ if(onePlot)
             xlabel('time')
             ylabel('error')
             plot(time{1}, y, 'LineWidth',3)
-            set(gca,Color="#E9E7E7");
+            set(gca,Color="#D8D8D8");
             xlim("tight")
             legendList{end+1} = strcat(storages{j}. ...
                 getColumnLabels.get(i).toCharArray', num2str(j));
@@ -52,7 +52,7 @@ else
     
     for i=1:storages{1}.getColumnLabels().getSize()-1
         plots(end+1) = nexttile;
-        set(gcf,Color="#E9E7E7");
+        set(gcf,Color="#D8D8D8");
         for j=1:length(storages)
             yArray = ArrayDouble();
             storages{j}.getDataColumn(i-1,yArray);
@@ -60,15 +60,25 @@ else
             hold on
             xlabel('time (s)')
             ylabel('error (m)')
-            plot(time{j}, y, 'LineWidth',3, color=colors(j));
-            set(gca,Color="#E9E7E7");
+            plot(time{j}, y, 'LineWidth',4, color=colors(j));
+            set(gca,Color="#D8D8D8", fontsize=15);
             xlim("tight")
-            legendList{end+1} = strrep(strcat(storages{j}. ...
-                getColumnLabels.get(i).toCharArray', " - ", fileNames{j}), ...
-                '_', '\_');
+            storages{j}.getColumnLabels.get(i).toCharArray'
+            % legendList{end+1} = strrep(strcat(storages{j}. ...
+            %     getColumnLabels.get(i).toCharArray', " - ", fileNames{j}), ...
+            %     '_', '\_');
         end
-        legend(legendList)
-        legendList = {};
+        title(strrep(storages{1}.getColumnLabels.get(i).toCharArray', ...
+            '_', ' '), fontsize=15)
+        if i == 1
+            for j = 1 : length(storages)
+                legendList{j} = fileNames{j};
+            end
+            legend(legendList)
+        end
+        
+        % legend(legendList)
+        % legendList = {};
     end
     linkaxes(plots, 'xy')
 end

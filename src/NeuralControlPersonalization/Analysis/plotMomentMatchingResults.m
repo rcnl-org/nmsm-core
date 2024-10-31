@@ -84,7 +84,7 @@ end
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
-set(gcf,Color="#E9E7E7");
+set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
@@ -92,29 +92,30 @@ figureIndex = 1;
 hasLegend = false;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "% Gait Cycle [0-100%]")
+xlabel(t, "% Gait Cycle [0-100%]", fontsize=20)
 % xlabel(t, "Time Points [s]")
-ylabel(t, "Joint Moments [Nm]")
+ylabel(t, "Joint Moments [Nm]", fontsize=20)
 
 for i = 1:length(experimentalColumns)
     if i > figureSize * figureIndex
         figureIndex = figureIndex + 1;
         figure(figureNumber + figureIndex - 1)
-        set(gcf,Color="#E9E7E7");
+        set(gcf,Color="#D8D8D8");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='compact', Padding='compact');
         subplotNumber = 1;
         hasLegend = false;
     end
     nexttile(subplotNumber)
-    plot(modeledTime*100, experimentalMoments(i, :), color=colors(1), LineWidth=2)
+    plot(modeledTime*100, experimentalMoments(i, :), color=colors(1), LineWidth=4)
     modeledIndex = find(experimentalColumns(i) == modeledColumns);
     if isempty(modeledIndex)
         modeledIndex = find(experimentalColumns(i) + "_moment" == modeledColumns);
     end
+    set(gca,Color="#D8D8D8", fontsize=15);
     if ~isempty(modeledIndex)
         hold on
-        plot(modeledTime*100, modeledMoments(modeledIndex, :), color=colors(2), LineWidth=2);
+        plot(modeledTime*100, modeledMoments(modeledIndex, :), color=colors(2), LineWidth=4);
         if ~hasLegend
             legend("Experimental Moments", "Modeled Moments")
             hasLegend = true;
@@ -125,7 +126,7 @@ for i = 1:length(experimentalColumns)
     else
         error = "N/A";
     end
-    set(gca,Color="#E9E7E7");
+    set(gca,Color="#D8D8D8", fontsize=15);
     title(strrep(experimentalColumns(i), "_", " ") + newline + ...
         " RMSE: " + error)
     xlim("tight")

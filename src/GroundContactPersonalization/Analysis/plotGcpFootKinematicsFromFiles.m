@@ -44,11 +44,11 @@ figureName = splitFileName(1);
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
-set(gcf,Color="#E9E7E7");
+set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 t = tiledlayout(2, 4, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Time [s]")
+xlabel(t, "Time [s]", fontsize=20)
 for i = 1:7
     nexttile(i)
     % Rotational coordinate data are converted to degrees. 
@@ -59,19 +59,20 @@ for i = 1:7
         experimental = experimentalKinematics(i, :);
         model = modeledKinematics(i, :);
     end
-    plot(time, experimental, Color=colors(1), LineWidth=2)
+    plot(time, experimental, Color=colors(1), LineWidth=4)
     hold on
-    plot(time, model, Color=colors(2), LineWidth=2)
+    plot(time, model, Color=colors(2), LineWidth=4)
     xlim("tight")
-    set(gca,Color="#E9E7E7");
+    set(gca,Color="#D8D8D8");
     error = rms(experimental - model);
     title(coordinates(i) + newline + " RMSE: " + error)
     if i == 1
-        ylabel('Angle (deg)')
+        ylabel('Angle (deg)', fontsize=20)
         legend("Experimental", "Model")
     elseif i == 5
-        ylabel('Translation (m)')
+        ylabel('Translation (m)', fontsize=20)
     end
+    set(gca, fontsize=15)
     hold off
 end
 end

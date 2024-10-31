@@ -75,12 +75,12 @@ figure(Name = strcat(resultsDirectory, ...
         " Muscle Excitations and Activations"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
-set(gcf,Color="#E9E7E7");
+set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Magnitude")
+xlabel(t, "Percent Movement [0-100%]", fontsize=20)
+ylabel(t, "Magnitude", fontsize=20)
 for i = 1:numel(muscleNames)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -88,11 +88,11 @@ for i = 1:numel(muscleNames)
                 " Muscle Excitations and Activations"), ...
             Units='normalized', ...
             Position=[0.05 0.05 0.9 0.85])
-        set(gcf,Color="#E9E7E7");
+        set(gcf,Color="#D8D8D8");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Magnitude")
+        xlabel(t, "Percent Movement [0-100%]", fontsize=20)
+        ylabel(t, "Magnitude", fontsize=20)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
@@ -112,12 +112,12 @@ for i = 1:numel(muscleNames)
         plotMeanAndStd(meanActivations(:,i), stdActivations(:,i), ...
             time, colors(2), '-');
     end
-    set(gca,Color="#E9E7E7");
-    set(gca, fontsize=11)
+    set(gca,Color="#D8D8D8");
+    % set(gca, fontsize=15)
     if (max(meanExcitations(:, i)) == 0)
-        title(strcat(muscleNames(i), " *"), FontSize=12);
+        title(strcat(muscleNames(i), " *"), FontSize=15);
     else
-        title(muscleNames(i), FontSize=12);
+        title(muscleNames(i), FontSize=15);
     end
     if subplotNumber == 1
         legend ('Excitation (No SynX)', ...
@@ -126,6 +126,7 @@ for i = 1:numel(muscleNames)
             'Activation (With SynX)');
     end
     xlim("tight")
+    set(gca, fontsize=15)
     ylim([0 1])
     subplotNumber = subplotNumber + 1;
 end

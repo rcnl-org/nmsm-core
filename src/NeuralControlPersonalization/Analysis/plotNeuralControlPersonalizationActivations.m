@@ -64,20 +64,20 @@ figureName = splitFileName(1);
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
-set(gcf,Color="#E9E7E7");
+set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "% Gait Cycle [0-100%]")
+xlabel(t, "% Gait Cycle [0-100%]", fontsize=20)
 % xlabel(t, "Time Points [s]")
-ylabel(t, "Muscle Activations")
+ylabel(t, "Muscle Activations", fontsize=20)
 for i = 1:size(muscleActivations, 1)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(figureNumber)
-        set(gcf,Color="#E9E7E7");
+        set(gcf,Color="#D8D8D8");
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         subplotNumber = 1;
@@ -86,12 +86,12 @@ for i = 1:size(muscleActivations, 1)
     mtpIndex = find(muscleNames(i) == mtpMuscleNames);
     hold on
     if ~isempty(mtpIndex)
-        plot(time*100, mtpActivations(mtpIndex, :), 'LineWidth', 2, ...
+        plot(time*100, mtpActivations(mtpIndex, :), 'LineWidth', 4, ...
             Color=colors(1))
     end
-    plot(time*100, muscleActivations(i, :), 'LineWidth', 2, ...
+    plot(time*100, muscleActivations(i, :), 'LineWidth', 4, ...
         Color=colors(2))
-    set(gca,Color="#E9E7E7");
+    set(gca,Color="#D8D8D8");
     hold off
     if subplotNumber==1
         if ~isempty(mtpIndex)
@@ -101,6 +101,7 @@ for i = 1:size(muscleActivations, 1)
         end
     end
     title(strrep(muscleNames(i), "_", " "))
+    set(gca, fontsize=15)
     xlim("tight")
     ylim([0 1])
     subplotNumber = subplotNumber + 1;
