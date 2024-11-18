@@ -43,9 +43,13 @@ for i=1:length(springConstants)
     % exist for spring markers out of contact. This can help the
     % optimization algorithm find a better search direction when springs
     % are incorrectly out of contact. 
+    % Small out-of-contact stiffness to improve gradient
     klow = 1e-1;
+    % Horizontal offset of slope transition region
     h = 1e-3;
+    % Curvature of transition between linear regions
     c = 5e-4;
+    % Height where out-of-contact force becomes zero
     ymax = 1e-2;
     Kval = springConstants(i);
     height = height - springRestingLength;
