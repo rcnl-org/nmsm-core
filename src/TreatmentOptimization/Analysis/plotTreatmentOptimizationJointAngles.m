@@ -90,6 +90,7 @@ figure(Name = "Treatment Optimization Joint Angles", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.4])
 colors = getPlottingColors();
+set(gcf,Color="#D8D8D8");
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
@@ -122,6 +123,7 @@ for i=1:numel(coordinateLabels)
         ax = gca;
         ax.FontSize=15;
         ax.FontName="Arial";
+        set(gca,Color="#D8D8D8", fontsize=15);
     hold off
     titleString = [sprintf("%s", strrep(plotTitles(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)

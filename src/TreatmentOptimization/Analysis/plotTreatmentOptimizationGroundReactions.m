@@ -108,6 +108,7 @@ figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Ground Reactions", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.4])
+set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
@@ -144,6 +145,7 @@ for i=1:numel(trackedDataLabels)
     ax = gca;
     ax.FontSize=15;
     ax.FontName="Arial";
+    set(gca,Color="#D8D8D8", fontsize=15);
     hold off
     titleString = [titleStrings(i)];
     for j = 1 : numel(modelDataFiles)

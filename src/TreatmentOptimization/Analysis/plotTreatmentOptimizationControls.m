@@ -74,6 +74,7 @@ labels = ["Synergy 1", "Synergy 2", "Synergy 3", "Synergy 4", ...
 figure(Name=figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.4])
+set(gcf,Color="#D8D8D8");
 set(gca, FontName="Arial")
 colors = getPlottingColors();
 subplotNumber = 1;
@@ -108,7 +109,7 @@ for i=1:numel(labels)
     ax = gca;
     ax.FontSize=15;
     ax.FontName="Arial";
-
+    set(gca,Color="#D8D8D8", fontsize=15);
     if subplotNumber==1
         for j = 1 : numel(controlsFiles)
             splitFileName = split(controlsFiles(j), ["/", "\"]);
