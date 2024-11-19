@@ -88,7 +88,7 @@ end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Angles", ...
     Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.4])
+    Position=[0.0 0.0 0.9 1/3])
 colors = getPlottingColors();
 set(gcf,Color="#D8D8D8");
 subplotNumber = 1;
@@ -97,10 +97,10 @@ t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=18, FontName="Arial")
 ylabel(t, "Joint Angle [deg]", fontsize=18, FontName="Arial")
-plotTitles = ["Hip Flexion", "Hip Adduction", "Hip Rotation", ...
-    "Knee Angle", "Ankle Angle", "Subtalar Angle", ...
-    "Hip Flexion", "Hip Adduction", "Hip Rotation", ...
-    "Knee Angle", "Ankle Angle", "Subtalar Angle"];
+plotTitles = ["R Hip Flexion", "R Hip Adduction", "R Hip Rotation", ...
+    "R Knee Angle", "R Ankle Angle", "R Subtalar Angle", ...
+    "L Hip Flexion", "L Hip Adduction", "L Hip Rotation", ...
+    "L Knee Angle", "L Ankle Angle", "L Subtalar Angle"];
 for i=1:numel(coordinateLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -150,11 +150,11 @@ for i=1:numel(coordinateLabels)
     maxData = [];
     minData = [];
     for j = 1 : numel(modelDataFiles)
-        maxData(j) = max(modelData{j}, [], "all");
-        minData(j) = min(modelData{j}, [], "all");
+        maxData(j) = max(modelData{j}(:, i), [], "all");
+        minData(j) = min(modelData{j}(:, i), [], "all");
     end
-    maxData(j+1) = max(trackedData, [], "all");
-    minData(j+1) = min(trackedData, [], "all");
+    maxData(j+1) = max(trackedData(:, i), [], "all");
+    minData(j+1) = min(trackedData(:, i), [], "all");
     % maxData = max()
     yLimitUpper = max(maxData);
     yLimitLower = min(minData);
@@ -167,15 +167,33 @@ for i=1:numel(coordinateLabels)
     % if yLimitUpper - yLimitLower < minimum
     %     ylim([(yLimitUpper+yLimitLower)/2-minimum, (yLimitUpper+yLimitLower)/2+minimum])
     % end
-    ylim([-40 80])
+
+    % ylim([-40 80])
     % if any(subplotNumber == 1 || subplotNumber == 7)
-        yticks([-40 0 40 80])
+        % yticks([-40 0 40 80])
     % else
     %     yticks([-40 0 40 80])
     %     yticklabels({})
     % end
+    % if subplotNumber == 1
+    %     ylabel("Right Leg")
+    % elseif subplotNumber == 7
+    %     ylabel("Left Leg")
+    % end
 
     % ylim([yLimitLower, yLimitUpper])
-    
+    if subplotNumber == 1 || subplotNumber == 7
+        ylim([5 45])
+    elseif subplotNumber == 2 || subplotNumber == 8
+        ylim([-15 5])
+    elseif subplotNumber == 3 || subplotNumber == 9
+        ylim([-6 15])
+    elseif subplotNumber == 4 || subplotNumber == 10
+        ylim([0 75])
+    elseif subplotNumber == 5 || subplotNumber == 11
+        ylim([-10 20])
+    elseif subplotNumber == 6 || subplotNumber == 12
+        ylim([-20 5])
+    end
     subplotNumber = subplotNumber + 1;
 end

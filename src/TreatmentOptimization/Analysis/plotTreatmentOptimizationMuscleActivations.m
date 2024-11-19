@@ -76,7 +76,7 @@ end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Muscle Activations", ...
     Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.4])
+    Position=[0.0 0.0 1 1/3])
 set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 subplotNumber = 1;
@@ -85,8 +85,10 @@ t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=18, FontName="Arial")
 ylabel(t, "Muscle Activations", fontsize=18, FontName="Arial")
-muscleLabels = ["Ext Dig Long R", "Iliacus R", "Psoas R", "Recfem R", "Soleus R", ...
-    "Ext Dig Long L", "Iliacus L", "Psoas L", "Recfem L", "Soleus L"];
+% muscleLabels = ["Ext Dig Long R", "Iliacus R", "Psoas R", "Recfem R", "Soleus R", ...
+%     "Ext Dig Long L", "Iliacus L", "Psoas L", "Recfem L", "Soleus L"];
+muscleLabels = ["R Biceps Fem Short", "R Glut Med 2", "R Psoas", "R Sartorius", "R Soleus", "R Vastus Med", ...
+    "L Biceps Fem Short", "L Glut Med 2", "L Psoas", "L Sartorius", "L Soleus", "L Vastus Med"];
 for i=1:numel(muscleLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -115,7 +117,7 @@ for i=1:numel(muscleLabels)
     titleString = [sprintf("%s", strrep(muscleLabels(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
-        titleString(j+1) = sprintf("RMSD: %.1f", rmse);
+        titleString(j+1) = sprintf("RMSD: %.2f", rmse);
     end
     title(titleString, fontsize=18, FontName="Arial")
     if subplotNumber==1

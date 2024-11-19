@@ -68,12 +68,12 @@ elseif nargin < 3
     figureHeight = ceil(sqrt(numel(labels)));
 end
 figureSize = figureWidth * figureHeight;
-labels = ["Synergy 1", "Synergy 2", "Synergy 3", "Synergy 4", ...
-    "Synergy 5", "Synergy 6", "Synergy 1", "Synergy 2", ...
-    "Synergy 3", "Synergy 4", "Synergy 5", "Synergy 6"];
+labels = ["R Synergy 1", "R Synergy 2", "R Synergy 3", "R Synergy 4", ...
+    "R Synergy 5", "R Synergy 6", "L Synergy 1", "L Synergy 2", ...
+    "L Synergy 3", "L Synergy 4", "L Synergy 5", "L Synergy 6"];
 figure(Name=figureName, ...
     Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.4])
+        Position=[0.0 0.0 0.9 1/3])
 set(gcf,Color="#D8D8D8");
 set(gca, FontName="Arial")
 colors = getPlottingColors();
@@ -115,8 +115,13 @@ for i=1:numel(labels)
             splitFileName = split(controlsFiles(j), ["/", "\"]);
             legendValues(j) = sprintf("%s", splitFileName(end-1));
         end
-        % legend(legendValues)
+        legend(legendValues)
     end
+    % if subplotNumber == 1
+    %     ylabel("Right Leg")
+    % elseif subplotNumber == 7
+    %     ylabel("Left Leg")
+    % end
     hold off
     maxData1 = max(controlsData{1}, [], "all");
     maxData2 = max(controlsData{2}, [], "all");
@@ -127,10 +132,13 @@ for i=1:numel(labels)
     yticks([0 2 4 6])
     rmse = rms(controlsData{1}(:, i) - controlsData{2}(:, i));
     titleString = strrep(labels(i), "_", " ");
-    titleString(2) = sprintf("RMSD: %.1f", rmse);
+    titleString(2) = sprintf("RMSE: %.2f", rmse);
     title(titleString, fontsize=18, FontName="Arial");
     xlim("tight")
     subplotNumber = subplotNumber + 1;
+    if subplotNumber == 1
+       legend("Tracking Optimization", "Verification Optimization")
+    end
 end
 end
 

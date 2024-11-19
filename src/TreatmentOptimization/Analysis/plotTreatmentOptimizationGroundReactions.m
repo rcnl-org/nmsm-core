@@ -107,7 +107,7 @@ end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Ground Reactions", ...
     Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.4])
+    Position=[0.0 0.0 1 1/3])
 set(gcf,Color="#D8D8D8");
 colors = getPlottingColors();
 subplotNumber = 1;
@@ -115,11 +115,11 @@ figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Gait Cycle [0-100%]", fontsize=18, FontName="Arial")
-% ylabel(t, "Ground Reaction Force [N]", fontsize=15)
-titleStrings = ["Ground Force X", "Ground Force Y", "Ground Force Z", ...
-    "Ground Moment X", "Ground Moment Y", "Ground Moment Z", ...
-    "Ground Force X", "Ground Force Y", "Ground Force Z", ...
-    "Ground Moment X", "Ground Moment Y", "Ground Moment Z"];
+ylabel(t, "Force [N], Moment [Nm]", fontsize=15)
+titleStrings = ["R Ground Force X", "R Ground Force Y", "R Ground Force Z", ...
+    "R Ground Moment X", "R Ground Moment Y", "R Ground Moment Z", ...
+    "L Ground Force X", "L Ground Force Y", "L Ground Force Z", ...
+    "L Ground Moment X", "L Ground Moment Y", "L Ground Moment Z"];
 forceIndices = contains(titleStrings, "Force");
 momentIndices = contains(titleStrings, "Moment");
 for i=1:numel(trackedDataLabels)
@@ -153,11 +153,11 @@ for i=1:numel(trackedDataLabels)
         titleString(j+1) = sprintf("RMSD: %.1f", rmse);
     end
     title(titleString, fontsize=18, FontName="Arial")
-    if subplotNumber == 1
-        ylabel("Right Foot", fontsize=18, FontName="Arial")
-    elseif subplotNumber == 7
-        ylabel("Left Foot", fontsize=18, FontName="Arial")
-    end
+    % if subplotNumber == 1
+    %     ylabel("Right Foot", fontsize=18, FontName="Arial")
+    % elseif subplotNumber == 7
+    %     ylabel("Left Foot", fontsize=18, FontName="Arial")
+    % end
         
     if subplotNumber==4
         % ylabel("Ground Reaction Moment [Nm]", fontsize=15, position=[-10 -35/2])
@@ -183,11 +183,12 @@ for i=1:numel(trackedDataLabels)
     elseif i == 3 | i == 9
         ylim([-100 100])
     elseif i == 4 | i == 10
-        ylim([-15 20])
+        ylim([-20 20])
     elseif i == 5 | i == 11
         ylim([-10 10])
     elseif i == 6 | i == 12
         ylim([-60 40])
+        yticks([-40 0 40])
     end
 
     % if subplotNumber <= 3
