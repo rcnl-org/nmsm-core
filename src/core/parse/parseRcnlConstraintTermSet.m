@@ -39,6 +39,7 @@ for term = 1:length(tree)
         currentTerm = tree{term};
     end
     % Find general cost term elements
+    tempTerm = struct();
     tempTerm.type = getTextFromField(getFieldByNameOrError( ...
         currentTerm, 'type'));
     [isValid, isPath] = isTypeValid(tempTerm.type, toolName, controllerType);
@@ -67,6 +68,9 @@ for term = 1:length(tree)
                 contents = false;
             elseif ~isnan(str2double(contents))
                 contents = str2double(contents);
+            elseif any(isspace(convertStringsToChars(contents)))
+                contents = parseSpaceSeparatedList(currentTerm, ...
+                    termElements{element});
             end
             tempTerm.(termElements{element}) = contents;
         end

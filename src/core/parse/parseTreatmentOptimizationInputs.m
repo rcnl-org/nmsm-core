@@ -37,6 +37,7 @@ inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs = parseOptimalControlSolverSettings(tree, inputs);
 inputs.costTerms = parseRcnlCostTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet'));
+inputs.costTerms = splitListTerms(inputs.costTerms);
 if isequal(mexext, 'mexw64') 
     inputs.calculateAngularMomentum = any(all([ ...
         strcmp(cellfun(@(term) term.type, inputs.costTerms, ...
@@ -74,6 +75,8 @@ end
 [inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
     inputs.controllerType, inputs.toolName);
+inputs.path = splitListTerms(inputs.path);
+inputs.terminal = splitListTerms(inputs.terminal);
 end
 
 function inputs = parseBasicInputs(tree)
@@ -125,3 +128,33 @@ else
 end
 end
 
+function splitTerms = splitListTerms(originalTerms)
+splitTerms = {};
+listTypes = ["coordinate_list", "load_list", "muscle_list", ...
+    "force_list", "moment_list", "marker_list", "controller_list"];
+unlistTypes = ["coordinate", "load", "muscle", ...
+    "force", "moment", "marker", "controller"];
+for i = 1 : length(originalTerms)
+    termElements = fieldnames(originalTerms{i});
+    hasBeenSplit = false;
+    for element = 1:length(termElements)
+        typeIndex = find(termElements{element} == listTypes, 1);
+        if ~isempty(typeIndex)
+            newTermTemplate = originalTerms{i};
+            newTermTemplate = rmfield(newTermTemplate, termElements{element});
+            elementsList = convertCharsToStrings(split(originalTerms{i} ...
+                .(termElements{element})));
+            for j = 1 : length(elementsList)
+                newTerm = newTermTemplate;
+                newTerm.(unlistTypes(typeIndex)) = ...
+                    convertStringsToChars(elementsList(j));
+                splitTerms{end + 1} = newTerm;
+            end
+            hasBeenSplit = true;
+        end
+    end
+    if ~hasBeenSplit
+        splitTerms{end + 1} = originalTerms{i};
+    end
+end
+end
