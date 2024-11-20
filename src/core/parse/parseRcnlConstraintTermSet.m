@@ -58,6 +58,9 @@ for term = 1:length(tree)
     % Find other cost term elements
     termElements = fieldnames(currentTerm);
     for element = 1:length(termElements)
+        if strcmp(termElements{element}, "Attributes")
+            continue
+        end
         if isempty(intersect(termElements{element}, ["type" ...
                 "is_enabled" "max_error" "min_error"]))
             contents = getTextFromField(getFieldByNameOrError( ...
