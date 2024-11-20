@@ -131,9 +131,10 @@ end
 function splitTerms = splitListTerms(originalTerms)
 splitTerms = {};
 listTypes = ["coordinate_list", "load_list", "muscle_list", ...
-    "force_list", "moment_list", "marker_list", "controller_list"];
+    "force_list", "moment_list", "marker_list", "controller_list", ...
+    "synergy_group_list"];
 unlistTypes = ["coordinate", "load", "muscle", ...
-    "force", "moment", "marker", "controller"];
+    "force", "moment", "marker", "controller", "synergy_group"];
 for i = 1 : length(originalTerms)
     termElements = fieldnames(originalTerms{i});
     hasBeenSplit = false;
