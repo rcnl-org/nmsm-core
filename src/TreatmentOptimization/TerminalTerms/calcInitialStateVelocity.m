@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the initial state 
-% position and specified target for the specified coordinate. 
+% velocity and current state velocity for the specified coordinate. 
 %
 % (2D matrix, Cell, struct) -> (Number)
 % 
@@ -28,8 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function initialStatePosition = calcInitialStatePosition( ...
-    statePositions, coordinateNames, constraintTerm)
+function initialStateVelocity = calcInitialStateVelocity( ...
+    stateVelocities, coordinateNames, constraintTerm)
 indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
     constraintTerm.coordinate));
 if isempty(indx)
@@ -37,5 +37,5 @@ if isempty(indx)
         strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-initialStatePosition = statePositions(1, indx) - constraintTerm.target_error;
+initialStateVelocity = stateVelocities(1, indx) - constraintTerm.target_error;
 end
