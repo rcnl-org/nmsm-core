@@ -43,6 +43,7 @@ for surface = 1:length(inputs.surfaces)
         inputs.surfaces{surface}.experimentalGroundReactionMoments, 2, ...
         inputs.surfaces{surface}.splineNodes);
 end
+inputs = getInitialGuessFromOsimx(inputs);
 % Run each task as outlined in XML settings file. 
 for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, ...
@@ -69,4 +70,8 @@ function [replacedMoments, momentCenter] = ...
             surface.experimentalGroundReactionForces(:, i));
         momentCenter(:, i) = newCenter;
     end
+end
+
+function inputs = getInitialGuessFromOsimx(inputs)
+    osimx = parseOsimxFile(inputs.inputOsimxFile, inputs.bodyModel);
 end
