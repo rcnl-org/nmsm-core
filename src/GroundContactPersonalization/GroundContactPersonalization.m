@@ -74,4 +74,18 @@ end
 
 function inputs = getInitialGuessFromOsimx(inputs)
     osimx = parseOsimxFile(inputs.inputOsimxFile, inputs.bodyModel);
+    surface = osimx.groundContact.contactSurface{1,1};
+    for spring = 1 : numel(surface.springs)
+        inputs.springConstants(spring) = surface.springs{spring}.springConstant;
+    end
+    % inputs.springConstants = surface.springs;
+    inputs.initialDampingFactor = surface.dampingFactor;
+    inputs.initialViscousFrictionCoefficient = surface.viscousFrictionCoefficient;
+    inputs.initialDynamicFrictionCoefficient = surface.dynamicFrictionCoefficient;
+    inputs.initialRestingSpringLength = surface.restingSpringLength;
+
+    inputs.dampingFactor = surface.dampingFactor;
+    inputs.viscousFrictionCoefficient = surface.viscousFrictionCoefficient;
+    inputs.dynamicFrictionCoefficient = surface.dynamicFrictionCoefficient;
+    inputs.restingSpringLength = surface.restingSpringLength;
 end
