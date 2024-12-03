@@ -48,7 +48,7 @@ for i=1:length(springConstants)
     % Horizontal offset of slope transition region
     h = 1e-3;
     % Curvature of transition between linear regions
-    c = 5e-4;
+    c = 1e-3;
     % Height where out-of-contact force becomes zero
     ymax = 1e-2;
     Kval = springConstants(i);
