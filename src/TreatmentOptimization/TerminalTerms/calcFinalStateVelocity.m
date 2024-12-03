@@ -37,5 +37,5 @@ if isempty(indx)
         strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-finalStateVelocity = stateVelocities(end, indx) - constraintTerm.target_error;
+finalStateVelocity = stateVelocities(end, indx) - constraintTerm.target_value;
 end
