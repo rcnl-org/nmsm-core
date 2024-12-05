@@ -90,6 +90,10 @@ forces = data(:, 1:3);
 points = data(:, 4:6);
 moments = data(:, 7:9);
 
+threshold = 1e-6;
+forces(abs(forces(:, 2)) < threshold, 2) = ...
+    sign(forces(abs(forces(:, 2)) < threshold, 2)) * threshold;
+
 centerOfPressure = zeros(size(points));
 centerOfPressure(:, 1) = points(:, 1) + (moments(:, 3) - forces(:, 1) ...
     .* points(:, 2)) ./ forces(:, 2);
