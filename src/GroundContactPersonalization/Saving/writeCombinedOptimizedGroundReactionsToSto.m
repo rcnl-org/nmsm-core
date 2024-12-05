@@ -37,6 +37,7 @@ outfile = strcat(name, ext);
 
 timePoints = inputs.surfaces{1}.time;
 data = zeros(length(timePoints), 9 * length(inputs.surfaces));
+dataCoP = zeros(size(data));
 columnLabels = string([]);
 for foot = 1:length(inputs.surfaces)
     if any(size(timePoints) ~= size(inputs.surfaces{foot}.time)) || ...
@@ -69,12 +70,35 @@ for foot = 1:length(inputs.surfaces)
         length(params.tasks), foot, models);
     center = inputs.surfaces{foot}.midfootSuperiorPosition;
     center(2, :) = inputs.restingSpringLength;
-    data(:, (foot - 1) * 9 + 1 : foot * 9) = [modeledValues.anteriorGrf' modeledValues.verticalGrf' ...
-        modeledValues.lateralGrf' center' modeledValues.xGrfMoment' ...
-        modeledValues.yGrfMoment' modeledValues.zGrfMoment'];
-    data = lowpassFilter(inputs.surfaces{1}.time, data, 2, 6, 0);
+    data(:, (foot - 1) * 9 + 1 : foot * 9) = [modeledValues.anteriorGrf' ...
+        modeledValues.verticalGrf' modeledValues.lateralGrf' center' ...
+        modeledValues.xGrfMoment' modeledValues.yGrfMoment' ...
+        modeledValues.zGrfMoment'];
+    dataCoP(:, (foot - 1) * 9 + 1 : foot * 9) = ...
+        convertEcToCoP(data(:, (foot - 1) * 9 + 1 : foot * 9));
 end
+data = lowpassFilter(inputs.surfaces{1}.time, data, 2, 6, 0);
+dataCoP = lowpassFilter(inputs.surfaces{1}.time, dataCoP, 2, 6, 0);
 writeToSto(columnLabels, timePoints, data, ...
     fullfile(resultsDirectory, "GRFData", outfile));
+writeToSto(columnLabels, timePoints, dataCoP, ...
+    fullfile(resultsDirectory, "GRFData", strcat('CoP_', outfile)));
 end
 
+function dataCoP = convertEcToCoP(data)
+forces = data(:, 1:3);
+points = data(:, 4:6);
+moments = data(:, 7:9);
+
+centerOfPressure = zeros(size(points));
+centerOfPressure(:, 1) = points(:, 1) + (moments(:, 3) - forces(:, 1) ...
+    .* points(:, 2)) ./ forces(:, 2);
+centerOfPressure(:, 3) = points(:, 3) - (moments(:, 1) + forces(:, 3) ...
+    .* points(:, 2)) ./ forces(:, 2);
+
+dataCoP = zeros(size(data));
+dataCoP(:, 1:3) = forces;
+dataCoP(:, 4:6) = centerOfPressure;
+dataCoP(:, 8) = moments(:, 2) + forces(:, 1) .* points(:, 3) - ...
+    forces(:, 3) .* points(:, 1);
+end
