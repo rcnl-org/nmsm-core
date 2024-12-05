@@ -87,22 +87,23 @@ end
 
 function dataCoP = convertEcToCoP(data)
 forces = data(:, 1:3);
+forcesThreshold = forces;
 points = data(:, 4:6);
 moments = data(:, 7:9);
 
 threshold = 1e-6;
-forces(abs(forces(:, 2)) < threshold, 2) = ...
-    sign(forces(abs(forces(:, 2)) < threshold, 2)) * threshold;
+forcesThreshold(abs(forcesThreshold(:, 2)) < threshold, 2) = ...
+    sign(forcesThreshold(abs(forcesThreshold(:, 2)) < threshold, 2)) * threshold;
 
 centerOfPressure = zeros(size(points));
-centerOfPressure(:, 1) = points(:, 1) + (moments(:, 3) - forces(:, 1) ...
-    .* points(:, 2)) ./ forces(:, 2);
-centerOfPressure(:, 3) = points(:, 3) - (moments(:, 1) + forces(:, 3) ...
-    .* points(:, 2)) ./ forces(:, 2);
+centerOfPressure(:, 1) = points(:, 1) + (moments(:, 3) - forcesThreshold(:, 1) ...
+    .* points(:, 2)) ./ forcesThreshold(:, 2);
+centerOfPressure(:, 3) = points(:, 3) - (moments(:, 1) + forcesThreshold(:, 3) ...
+    .* points(:, 2)) ./ forcesThreshold(:, 2);
 
 dataCoP = zeros(size(data));
 dataCoP(:, 1:3) = forces;
 dataCoP(:, 4:6) = centerOfPressure;
-dataCoP(:, 8) = moments(:, 2) + forces(:, 1) .* points(:, 3) - ...
-    forces(:, 3) .* points(:, 1);
+dataCoP(:, 8) = moments(:, 2) + forcesThreshold(:, 1) .* points(:, 3) - ...
+    forcesThreshold(:, 3) .* points(:, 1);
 end
