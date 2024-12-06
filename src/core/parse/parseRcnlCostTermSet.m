@@ -55,6 +55,10 @@ for term = 1:length(tree)
     % Find other cost term elements
     termElements = fieldnames(currentTerm);
     for element = 1:length(termElements)
+
+        if strcmp(termElements{element}, "Attributes")
+            continue
+        end
         if isempty(intersect(termElements{element}, ["type" ...
                 "is_enabled" "max_allowable_error" "error_center"]))
             contents = getTextFromField(getFieldByNameOrError( ...
@@ -65,10 +69,13 @@ for term = 1:length(tree)
                 contents = false;
             elseif ~isnan(str2double(contents))
                 contents = str2double(contents);
+            elseif any(isspace(convertStringsToChars(contents)))
+                contents = parseSpaceSeparatedList(currentTerm, ...
+                    termElements{element});
             end
             costTerms{term}.(termElements{element}) = contents;
         end
-    end 
+    end
 end
 end
 
