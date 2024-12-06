@@ -51,6 +51,8 @@ inputs.dynamicFrictionCoefficient = ...
 inputs.viscousFrictionCoefficient = ...
     inputs.initialViscousFrictionCoefficient;
 inputs.restingSpringLength = inputs.initialRestingSpringLength;
+
+inputs.osimVersion = getOpenSimVersion();
 end
 
 % (struct, struct, struct, double) -> (struct)
@@ -106,6 +108,41 @@ taskFootModel = addSpringsToModel(taskFootModel, surface.markerNames, ...
 surface.model = "footModel_" + surfaceNumber + ".osim";
 taskFootModel.print(surface.model);
 surface.numSpringMarkers = findNumSpringMarkers(surface.model);
+
+if isequal(mexext, 'mexw64')
+    locations = [];
+    bodies = [];
+    for i = 1:length(markerNamesFields)
+        locations = cat(1, locations, ...
+            Vec3ToArray(taskFootModel.getMarkerSet().get(...
+            surface.markerNames.(convertCharsToStrings( ...
+            markerNamesFields(i)))).get_location()));
+        bodies(end + 1) = taskFootModel.getBodySet().getIndex( ...
+            getMarkerBodyName(taskFootModel, surface.markerNames.( ...
+            convertCharsToStrings(markerNamesFields(i)))));
+    end
+    surface.footMarkerLocations = locations;
+    surface.footMarkerBodies = bodies;
+
+    locations = [];
+    bodies = [];
+    for i = 1:surface.numSpringMarkers
+        locations = cat(1, locations, ...
+            Vec3ToArray(taskFootModel.getMarkerSet().get(...
+            "spring_marker_" + i).get_location()));
+        bodies(end + 1) = taskFootModel.getBodySet().getIndex( ...
+            getMarkerBodyName(taskFootModel, "spring_marker_" + i));
+    end
+    surface.springMarkerLocations = locations;
+    surface.springMarkerBodies = bodies;
+
+    labels = {};
+    for i = 0:taskFootModel.getCoordinateSet().getSize() - 1
+        labels{end + 1} = taskFootModel.getCoordinateSet().get(i) ...
+            .getName().toCharArray()';
+    end
+    surface.coordinateLabels = labels;
+end
 
 surface.experimentalMarkerPositions = markerPositions;
 surface.experimentalMarkerVelocities = markerVelocities;
