@@ -44,6 +44,7 @@ inputs = setupMuscleSynergies(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
 saveTrackingOptimizationResults(outputs, inputs);
+copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
 fprintf("Tracking Optimization Runtime: %f Hours\n", toc/3600);
 diary off
 end
