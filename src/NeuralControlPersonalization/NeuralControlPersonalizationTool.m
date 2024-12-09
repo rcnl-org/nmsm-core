@@ -30,11 +30,16 @@
 % ----------------------------------------------------------------------- %
 
 function NeuralControlPersonalizationTool(settingsFileName)
+tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
-
+outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
+if ~exist(resultsDirectory)
+    mkdir(resultsDirectory)
+end
+diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
@@ -56,6 +61,8 @@ ncpMuscleJointMoments = calcFinalMuscleJointMoments(inputs, ...
 saveNeuralControlPersonalizationResults(synergyWeights, ...
     synergyCommands, combinedActivations, combinedMuscleJointMoments, ...
     ncpMuscleJointMoments, inputs, resultsDirectory, precalInputs);
+fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
+diary off
 end
 
 function [combinedActivations, synergyActivations] = ...

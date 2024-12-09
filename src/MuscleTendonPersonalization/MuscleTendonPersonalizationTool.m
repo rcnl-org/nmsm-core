@@ -30,11 +30,17 @@
 % ----------------------------------------------------------------------- %
 
 function MuscleTendonPersonalizationTool(settingsFileName)
+tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
+if ~exist(resultsDirectory)
+    mkdir(resultsDirectory)
+end
+diary(outputLogFile)
 if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
@@ -55,4 +61,6 @@ else
         resultsStruct, resultsDirectory);
 end
 printMtpJointMomentMatchingError(resultsDirectory);
+fprintf("Muscle-Tendon Personalization Runtime: %f Hours\n", toc/3600);
+diary off
 end

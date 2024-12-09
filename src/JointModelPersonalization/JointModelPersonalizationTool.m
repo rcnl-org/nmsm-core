@@ -30,11 +30,20 @@
 % ----------------------------------------------------------------------- %
 
 function JointModelPersonalizationTool(settingsFileName)
+tic;
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "JointModelPersonalizationTool");
 [outputFile, inputs, params] = ...
     parseJointModelPersonalizationSettingsTree(settingsTree);
+resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
+if ~exist(resultsDirectory)
+    mkdir(resultsDirectory)
+end
+diary(outputLogFile)
 newModel = JointModelPersonalization(inputs, params);
 newModel.print(outputFile);
+fprintf("Joint Model Personalization Runtime: %f Hours\n", toc/3600);
+diary off
 end
 
