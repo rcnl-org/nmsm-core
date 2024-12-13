@@ -30,10 +30,13 @@
 % ----------------------------------------------------------------------- %
 
 function GroundContactPersonalizationTool(settingsFileName)
+tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "GroundContactPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(settingsTree);
+outputLogFile = fullfile("commandWindowOutput.txt");
+diary(outputLogFile)
 results = GroundContactPersonalization(inputs, params);
 saveGroundContactPersonalizationResults(results, params, ...
     resultsDirectory, inputs.inputOsimxFile);
@@ -43,6 +46,13 @@ for foot = 1 : length(inputs.surfaces)
     disp([results.surfaces{foot}.electricalCenterShiftX, ...
         results.surfaces{foot}.electricalCenterShiftY, ...
         results.surfaces{foot}.electricalCenterShiftZ])
+end
+fprintf("Ground Contact Personalization Runtime: %f Hours\n", toc/3600);
+diary off
+try
+    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
+    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+catch
 end
 end
 
