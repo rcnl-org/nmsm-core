@@ -34,17 +34,18 @@ tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "TrackingOptimizationTool");
 [inputs, params] = parseTrackingOptimizationSettingsTree(settingsTree);
-outputLogFile = fullfile(inputs.resultsDirectory, "commandWindowOutput.txt");
-if ~exist(inputs.resultsDirectory)
-    mkdir(inputs.resultsDirectory)
-end
+outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 inputs = normalizeSynergyData(inputs);
 inputs = setupMuscleSynergies(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
 saveTrackingOptimizationResults(outputs, inputs);
-copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
 fprintf("Tracking Optimization Runtime: %f Hours\n", toc/3600);
 diary off
+try
+    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
+    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
+catch
+end
 end

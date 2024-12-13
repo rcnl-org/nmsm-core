@@ -35,10 +35,7 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
-outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
-if ~exist(resultsDirectory)
-    mkdir(resultsDirectory)
-end
+outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
@@ -63,6 +60,11 @@ saveNeuralControlPersonalizationResults(synergyWeights, ...
     ncpMuscleJointMoments, inputs, resultsDirectory, precalInputs);
 fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
 diary off
+try
+    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
+    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+catch
+end
 end
 
 function [combinedActivations, synergyActivations] = ...

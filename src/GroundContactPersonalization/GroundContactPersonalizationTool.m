@@ -35,10 +35,7 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "GroundContactPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(settingsTree);
-outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
-if ~exist(resultsDirectory)
-    mkdir(resultsDirectory)
-end
+outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 results = GroundContactPersonalization(inputs, params);
 saveGroundContactPersonalizationResults(results, params, ...
@@ -52,5 +49,10 @@ for foot = 1 : length(inputs.surfaces)
 end
 fprintf("Ground Contact Personalization Runtime: %f Hours\n", toc/3600);
 diary off
+try
+    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
+    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+catch
+end
 end
 
