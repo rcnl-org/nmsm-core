@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the final velocity for the specified
-% point on the specified body. The difference between the final point 
-% velocity and target positon is calculated.
+% This function calculates the difference between the initial state 
+% velocity and current state velocity for the specified coordinate. 
 %
-% (struct, struct, struct) -> (Number)
+% (2D matrix, Cell, struct) -> (Number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,13 +28,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalPointVelocityErrorMag = calcFinalPointVelocity(auxdata, ...
-    values, constraintTerm)
-
-pointVelocity = calcBodyVelocity(values, constraintTerm.point, ...
-    constraintTerm.body, auxdata);
-
-finalPointVelocityError = pointVelocity(end, :) - ...
-    str2num(constraintTerm.target_velocity);
-finalPointVelocityErrorMag = norm(finalPointVelocityError);
+function initialStateVelocity = calcInitialStateVelocity( ...
+    stateVelocities, coordinateNames, constraintTerm)
+indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
+    constraintTerm.coordinate));
+if isempty(indx)
+    throw(MException('ConstraintTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
+        "<states_coordinate_list>")))
+end
+initialStateVelocity = stateVelocities(1, indx) - constraintTerm.target_value;
 end

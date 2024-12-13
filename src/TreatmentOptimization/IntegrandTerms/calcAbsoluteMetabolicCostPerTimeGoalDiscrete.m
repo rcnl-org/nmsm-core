@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the final position for the specified
-% point on the specified body. The difference between the final point 
-% position and target positon is calculated.
+% This function returns an integrand cost for metabolic cost normalized by
+% time. 
 %
-% (struct, struct, struct) -> (Number)
-% 
+% (struct, struct, struct, struct) -> (Array of double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams, Claire V. Hammond                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,13 +27,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalPointPositionErrorMag = calcFinalPointPosition(auxdata, ...
-    values, constraintTerm)
-
-pointPosition = calcBodyLocation(values, str2num(constraintTerm.point), ...
-    constraintTerm.body, auxdata);
-
-finalPointPositionError = pointPosition(end, :) - ...
-    str2num(constraintTerm.target_position);
-finalPointPositionErrorMag = norm(finalPointPositionError);
+function cost = calcAbsoluteMetabolicCostPerTimeGoalDiscrete( ...
+    modeledValues, values, inputs, costTerm)
+rawCost = modeledValues.metabolicCost / values.time(end);
+assert(~any(isnan(rawCost)), "Metabolic cost is infinity.")
+cost = ((rawCost - costTerm.errorCenter) ./ costTerm.maxAllowableError) .^ 2;
 end
