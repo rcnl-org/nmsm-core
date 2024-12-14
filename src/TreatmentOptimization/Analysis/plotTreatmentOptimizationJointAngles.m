@@ -116,6 +116,9 @@ for i=1:numel(coordinateLabels)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     hold on
         plot(trackedDataTime*100, trackedData(:, i), ...
             LineWidth=params.linewidth, ...
@@ -126,9 +129,6 @@ for i=1:numel(coordinateLabels)
                 Color = params.lineColors(j+1));
         end
     hold off
-    set(gca, ...
-        fontsize = params.tickLabelFontSize, ...
-        color=params.subplotBackgroundColor)
     titleString = [sprintf("%s", strrep(coordinateLabels(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));

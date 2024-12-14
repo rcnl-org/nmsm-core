@@ -102,6 +102,9 @@ for i=1:numel(labels)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     hold on
     for j  = 1 : numel(controlsFiles)
         plot(controlsTime{j}*100, controlsData{j}(:, i), ...
@@ -109,9 +112,6 @@ for i=1:numel(labels)
                 Color = params.lineColors(j));
     end
     hold off
-    set(gca, ...
-        fontsize = params.tickLabelFontSize, ...
-        color=params.subplotBackgroundColor)
     titleString = [sprintf("%s", strrep(labels(i), "_", " "))];
     if numel(controlsFiles) > 1
         for j = 2 : numel(controlsFiles)
