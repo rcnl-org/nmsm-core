@@ -1,10 +1,10 @@
- % This function is part of the NMSM Pipeline, see file for full license.
+% This function is part of the NMSM Pipeline, see file for full license.
 %
-% Plot muscle activations for one trial resulting from Neural Control 
-% Personalization from synergy weights and synergy commands output files. 
+% Plot muscle activations for one trial resulting from Neural Control
+% Personalization from synergy weights and synergy commands output files.
 %
 % (string, string, string, double, double) -> (None)
-% Plot NCP muscle activations from weights and commands files. 
+% Plot NCP muscle activations from weights and commands files.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -31,6 +31,7 @@
 function plotNeuralControlPersonalizationActivations(weightsFile, ...
     commandsFile, mtpActivationsFile, figureWidth, figureHeight)
 import org.opensim.modeling.Storage
+params = getPlottingParams();
 weightsStorage = Storage(weightsFile);
 muscleNames = getStorageColumnNames(weightsStorage);
 synergyWeights = storageToDoubleMatrix(weightsStorage);
@@ -62,44 +63,58 @@ figureSize = figureWidth * figureHeight;
 splitFileName = split(commandsFile, "_synergyCommands.sto");
 figureName = splitFileName(1);
 figure(Name = figureName, ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+    Units=params.units, ...
+    Position=params.figureSize)
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "% Gait Cycle [0-100%]")
-% xlabel(t, "Time Points [s]")
-ylabel(t, "Muscle Activations")
+xlabel(t, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(t, "Muscle Activations", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
 for i = 1:size(muscleActivations, 1)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name = figureName, ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
+            Units=params.units, ...
+            Position=params.figureSize)
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
+        xlabel(t, "Percent Movement [0-100%]", ...
+            fontsize=params.axisLabelFontSize)
+        ylabel(t, "Muscle Activations", ...
+            fontsize=params.axisLabelFontSize)
+        set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
     nexttile(subplotNumber)
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     mtpIndex = find(muscleNames(i) == mtpMuscleNames);
     hold on
     if ~isempty(mtpIndex)
-        plot(time*100, mtpActivations(mtpIndex, :), 'LineWidth', 2, ...
-            Color=colors(1))
+        plot(time*100, mtpActivations(mtpIndex, :), ...
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(1))
     end
-    plot(time*100, muscleActivations(i, :), 'LineWidth', 2, ...
-        Color=colors(2))
+    plot(time*100, muscleActivations(i, :), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(2))
     hold off
     if subplotNumber==1
         if ~isempty(mtpIndex)
-            legend("MTP Activations", "NCP Activations")
+            legend("MTP Activations", "NCP Activations", ...
+                fontsize = params.legendFontSize)
         else
-            legend("NCP Activations")
+            legend("NCP Activations", ...
+                fontsize = params.legendFontSize)
         end
     end
-    title(strrep(muscleNames(i), "_", " "))
+    title(strrep(muscleNames(i), "_", " "), ...
+        fontsize = params.subplotTitleFontSize)
     xlim("tight")
     ylim([0 1])
     subplotNumber = subplotNumber + 1;

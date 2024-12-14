@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Plot modeled and experimental moments for one trial resulting from Neural 
-% Control Personalization or other tools from files. These plots include 
-% RMS error. 
+% Plot modeled and experimental moments for one trial resulting from Neural
+% Control Personalization or other tools from files. These plots include
+% RMS error.
 %
 % (string, string, double, double) -> (None)
-% Plot modeled and experimental moments from files. 
+% Plot modeled and experimental moments from files.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,6 +32,7 @@
 function plotMomentMatchingResults(experimentalMomentsFile, ...
     modeledMomentsFile, figureWidth, figureHeight, figureNumber)
 import org.opensim.modeling.Storage
+params = getPlottingParams();
 [experimentalColumns, experimentalTime, experimentalMoments] = ...
     parseMotToComponents(org.opensim.modeling.Model(), ...
     Storage(experimentalMomentsFile));
@@ -82,52 +83,68 @@ for k = 1 : numel(splitFileName)
     end
 end
 figure(Name = figureName, ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+    Units=params.units, ...
+    Position=params.figureSize)
+colors = getPlottingParams();
 subplotNumber = 1;
 figureNumber = 1;
 figureIndex = 1;
 hasLegend = false;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "% Gait Cycle [0-100%]")
-% xlabel(t, "Time Points [s]")
-ylabel(t, "Joint Moments [Nm]")
-
+xlabel(t, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(t, "Joint Moments [Nm]", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
 for i = 1:length(experimentalColumns)
     if i > figureSize * figureIndex
         figureIndex = figureIndex + 1;
         figure(Name = figureName, ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
+            Units=params.units, ...
+            Position=params.figureSize)
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='compact', Padding='compact');
+        xlabel(t, "Percent Movement [0-100%]", ...
+            fontsize=params.axisLabelFontSize)
+        ylabel(t, "Joint Moments [Nm]", ...
+            fontsize=params.axisLabelFontSize)
+        set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
         hasLegend = false;
     end
     nexttile(subplotNumber)
-    plot(modeledTime*100, experimentalMoments(i, :), color=colors(1), LineWidth=2)
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
+    hold on
+    plot(modeledTime*100, experimentalMoments(i, :), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1))
     modeledIndex = find(experimentalColumns(i) == modeledColumns);
     if isempty(modeledIndex)
         modeledIndex = find(experimentalColumns(i) + "_moment" == modeledColumns);
     end
     if ~isempty(modeledIndex)
-        hold on
-        plot(modeledTime*100, modeledMoments(modeledIndex, :), color=colors(2), LineWidth=2);
+        plot(modeledTime*100, modeledMoments(modeledIndex, :), ...
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(2))
         if ~hasLegend
-            legend("Experimental Moments", "Modeled Moments")
+            legend("Experimental Moments", "Modeled Moments", ...
+                fontsize = params.legendFontSize)
             hasLegend = true;
         end
-        hold off
         error = rms(experimentalMoments(i, :) - ...
             modeledMoments(modeledIndex, :));
     else
         error = "N/A";
     end
+    hold off
     title(strrep(experimentalColumns(i), "_", " ") + newline + ...
-        " RMSE: " + error)
+        " RMSE: " + error, ...
+        fontsize = params.subplotTitleFontSize)
     xlim("tight")
+    
     subplotNumber = subplotNumber + 1;
 end
 end
