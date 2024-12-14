@@ -39,7 +39,7 @@
 function plotTreatmentOptimizationControls(controlsFiles, ...
     figureWidth, figureHeight)
 import org.opensim.modeling.Storage
-
+params = getPlottingParams();
 if contains(controlsFiles(1), "torque")
     controllerType = "Torque";
 elseif contains(controlsFiles(1), "synergy")
@@ -69,45 +69,49 @@ end
 figureSize = figureWidth * figureHeight;
 
 figure(Name=figureName, ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+    Units=params.units, ...
+    Position=params.figureSize)
+colors = getPlottingParams();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "Percent Movement [0-100%]")
+xlabel(t, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
 if strcmp(controllerType, "Torque")
-    ylabel(t, "Torque Controls [Nm]")
+    ylabel(t, "Torque Controls [Nm]", ...
+    fontsize=params.axisLabelFontSize)
 elseif strcmp(controllerType, "Synergy")
-    ylabel(t, "Synergy Controls")
+    ylabel(t, "Synergy Controls", ...
+    fontsize=params.axisLabelFontSize)
 end
+set(gcf, color=params.plotBackgroundColor)
 for i=1:numel(labels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name=figureName, ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
+            Units=params.units, ...
+    Position=params.figureSize)
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Torque Controls [Nm]")
+        xlabel(t, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+        ylabel(t, "Torque Controls [Nm]", ...
+    fontsize=params.axisLabelFontSize)
+        set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
     for j  = 1 : numel(controlsFiles)
-        plot(controlsTime{j}*100, controlsData{j}(:, i), LineWidth=2, ...
-            Color = colors(j));
-    end
-    if subplotNumber==1
-        for j = 1 : numel(controlsFiles)
-            splitFileName = split(controlsFiles(j), ["/", "\"]);
-            legendValues(j) = sprintf("%s", splitFileName(end-1));
-        end
-        legend(legendValues)
+        plot(controlsTime{j}*100, controlsData{j}(:, i), ...
+                LineWidth=params.linewidth, ...
+                Color = params.lineColors(j));
     end
     hold off
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     titleString = [sprintf("%s", strrep(labels(i), "_", " "))];
     if numel(controlsFiles) > 1
         for j = 2 : numel(controlsFiles)
@@ -115,7 +119,14 @@ for i=1:numel(labels)
             titleString(j) = sprintf("RMSE %d: %.4f", j-1, rmse);
         end
     end
-    title(titleString)
+    title(titleString, fontsize = params.subplotTitleFontSize)
+    if subplotNumber==1
+        for j = 1 : numel(controlsFiles)
+            splitFileName = split(controlsFiles(j), ["/", "\"]);
+            legendValues(j) = sprintf("%s", splitFileName(end-1));
+        end
+        legend(legendValues, fontsize = params.legendFontSize)
+    end
     xlim("tight")
     subplotNumber = subplotNumber + 1;
 end

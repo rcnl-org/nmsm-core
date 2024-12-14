@@ -39,6 +39,7 @@
 function plotTreatmentOptimizationJointAngles(modelFileName, ...
     trackedDataFile, modelDataFiles, figureWidth, figureHeight)
 import org.opensim.modeling.Storage
+params = getPlottingParams();
 model = Model(modelFileName);
 trackedDataStorage = Storage(trackedDataFile);
 [coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
@@ -88,42 +89,52 @@ elseif nargin < 5
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Angles", ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+    Units=params.units, ...
+    Position=params.figureSize)
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Angle [deg]")
+xlabel(t, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(t, "Joint Angle [deg]", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
 for i=1:numel(coordinateLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Joint Angles", ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
+            Units=params.units, ...
+            Position=params.figureSize)
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Joint Angle [deg]")
+        xlabel(t, "Percent Movement [0-100%]", ...
+            fontsize=params.axisLabelFontSize)
+        ylabel(t, "Joint Angle [deg]", ...
+            fontsize=params.axisLabelFontSize)
+        set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     hold on
-        plot(trackedDataTime*100, trackedData(:, i), LineWidth=2, ...
-            Color = colors(1));
+        plot(trackedDataTime*100, trackedData(:, i), ...
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(1));
         for j = 1 : numel(modelDataFiles)
-            plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2, ...
-                Color = colors(j+1));
+            plot(modelDataTime{j}*100, modelData{j}(:, i), ...
+                LineWidth=params.linewidth, ...
+                Color = params.lineColors(j+1));
         end
     hold off
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     titleString = [sprintf("%s", strrep(coordinateLabels(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)
         rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
-    title(titleString)
+    title(titleString, fontsize = params.subplotTitleFontSize)
     if subplotNumber==1
         splitFileName = split(trackedDataFile, ["/", "\"]);
         for k = 1 : numel(splitFileName)
@@ -137,7 +148,7 @@ for i=1:numel(coordinateLabels)
             splitFileName = split(modelDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
-        legend(legendValues)
+        legend(legendValues, fontsize = params.legendFontSize)
     end
     xlim("tight")
     maxData = [];

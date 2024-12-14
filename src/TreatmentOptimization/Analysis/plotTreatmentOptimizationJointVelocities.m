@@ -3,7 +3,7 @@
 % This function reads .sto files for experimental joint angles, and a
 % states file in the treatment optimization results directory, and an osim
 % model file. It plots joint angles for all joints specified as states for
-% GPOPS2. There is an option to plot multiple model files by passing in a 
+% GPOPS2. There is an option to plot multiple model files by passing in a
 % list of output states files in the modelDataFiles argument.
 %
 % There are 2 optional arguments for figure width and figure height. If no
@@ -42,6 +42,7 @@
 function plotTreatmentOptimizationJointVelocities(modelFileName, ...
     trackedDataFile, modelDataFiles, figureWidth, figureHeight)
 import org.opensim.modeling.Storage
+params = getPlottingParams();
 model = Model(modelFileName);
 trackedDataStorage = Storage(trackedDataFile);
 [coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
@@ -53,7 +54,7 @@ end
 trackedDataTime = trackedDataTime / trackedDataTime(end);
 for i = 1 : size(trackedData, 2)
     if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
-        .toString().toCharArray()' == "Rotational"
+            .toString().toCharArray()' == "Rotational"
         trackedData(:, i) = trackedData(:, i) * 1;
     end
 end
@@ -66,14 +67,14 @@ for j=1:numel(modelDataFiles)
         modeledStatesTime = modeledStatesTime - modeledStatesTime(1);
     end
     modeledStatesTime = modeledStatesTime / modeledStatesTime(end);
-    
+
     modeledVelocities{j} = modeledStates(:, size(modeledStates, 2)/2+1:end);
     modeledVelocitiesLabels = modeledStatesLabels(size(modeledStates, 2)/2+1:end);
     modeledVelocitiesTime{j} = modeledStatesTime;
 
     for i = 1 : size(modeledStates(:, 1:size(modeledStates, 2)/2), 2)
         if model.getCoordinateSet().get(modeledStatesLabels(i)).getMotionType() ...
-            .toString().toCharArray()' == "Rotational"
+                .toString().toCharArray()' == "Rotational"
             modeledVelocities{j}(:, i) = modeledVelocities{j}(:, i) * 1;
 
         end
@@ -96,26 +97,30 @@ elseif nargin < 5
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Joint Velocities", ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+    Units=params.units, ...
+    Position=params.figureSize)
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Velocity [deg/s]")
-
+xlabel(t, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(t, "Joint Velocity [deg/s]", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
 for i=1:numel(modeledVelocitiesLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Treatment Optimization Joint Velocities", ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
+            Units=params.units, ...
+            Position=params.figureSize)
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Joint Velocity [deg/s]")
+        xlabel(t, "Percent Movement [0-100%]", ...
+            fontsize=params.axisLabelFontSize)
+        ylabel(t, "Joint Velocity [deg/s]", ...
+            fontsize=params.axisLabelFontSize)
+        set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
     coordinateIndex = find(modeledStatesLabels(i) == coordinateLabels);
@@ -123,19 +128,24 @@ for i=1:numel(modeledVelocitiesLabels)
         nexttile(subplotNumber);
         hold on
         plot(trackedDataTime*100, trackedVelocities(:, coordinateIndex), ...
-            lineWidth=2, Color = colors(1))
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(1))
         for j = 1 : numel(modelDataFiles)
             plot(modeledVelocitiesTime{j}*100, modeledVelocities{j}(:, i), ...
-                lineWidth=2, Color = colors(j+1));
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(j+1));
         end
         hold off
+        set(gca, ...
+            fontsize = params.tickLabelFontSize, ...
+            color=params.subplotBackgroundColor)
         titleString = [sprintf("%s", strrep(coordinateLabels(coordinateIndex), "_", " "))];
         for j = 1 : numel(modelDataFiles)
             rmse = rms(resampledExperimentalVelocities{j}(:, i) - ...
                 modeledVelocities{j}(:, i));
             titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
         end
-        title(titleString)
+        title(titleString, fontsize = params.subplotTitleFontSize)
         if subplotNumber==1
             splitFileName = split(trackedDataFile, ["/", "\"]);
             for k = 1 : numel(splitFileName)
@@ -149,7 +159,7 @@ for i=1:numel(modeledVelocitiesLabels)
                 splitFileName = split(modelDataFiles(j), ["/", "\"]);
                 legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
             end
-            legend(legendValues)
+            legend(legendValues, fontsize = params.legendFontSize);
         end
         xlim("tight")
         maxData = [];
