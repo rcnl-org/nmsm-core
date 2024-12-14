@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function reads .sto files created by
-% saveMuscleTendonPersonalizationResults.m containing passive force curves 
+% saveMuscleTendonPersonalizationResults.m containing passive force curves
 % and creates plots of them.
-%   
+%
 % (string) -> (None)
 % Plot passive force curves from file.
 
@@ -30,6 +30,7 @@
 % ----------------------------------------------------------------------- %
 function plotMtpPassiveForceCurves(resultsDirectory, figureWidth, ...
     figureHeight)
+params = getPlottingParams();
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
 
 [muscleNames, modelForce] = extractMtpDataFromSto(...
@@ -50,34 +51,41 @@ figureSize = figureWidth * figureHeight;
 subplotNumber = 1;
 figureNumber = 1;
 figure(Name = strcat(resultsDirectory, " Passive Force Curves"), ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+    Units=params.units, ...
+    Position=params.figureSize)
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Passive Force [N]")
+xlabel(t, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(t, "Passive Force [N]", ...
+    fontsize=params.axisLabelFontSize)
 time = 1:1:size(meanModelForce,1);
+set(gcf, color=params.plotBackgroundColor)
 for i = 1:numel(muscleNames)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name = strcat(resultsDirectory, ...
-                " Passive Force Curves"), ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
+            " Passive Force Curves"), ...
+            Units=params.units, ...
+            Position=params.figureSize)
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Passive Force [N]")
+        xlabel(t, "Percent Movement [0-100%]", ...
+            fontsize=params.axisLabelFontSize)
+        ylabel(t, "Passive Force [N]", ...
+            fontsize=params.axisLabelFontSize)
+        set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
     nexttile(subplotNumber)
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     hold on
     plotMeanAndStd(meanModelForce(:,i), stdModelForce(:,i), time, ...
-        colors(1));
+        params.lineColors(1));
     hold off
-    set(gca, fontsize=11)
-    title(muscleNames(i), FontSize=12);
+    title(muscleNames(i), fontsize = params.subplotTitleFontSize)
     xlim("tight")
     ylim([0 maxForce])
     subplotNumber = subplotNumber + 1;

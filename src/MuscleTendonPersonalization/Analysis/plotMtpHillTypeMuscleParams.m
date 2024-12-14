@@ -29,16 +29,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotMtpHillTypeMuscleParams(resultsDirectory)
+params = getPlottingParams();
 analysisDirectory = fullfile(resultsDirectory, "Analysis");
-[muscleNames, params] = extractMtpDataFromSto( ...
+[muscleNames, hillTypeParams] = extractMtpDataFromSto( ...
     fullfile(analysisDirectory, "muscleModelParameters"));
 muscleNames = strrep(muscleNames, '_', ' ');
 figure(Name = strcat(resultsDirectory, " Muscle Model Parameters"), ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+    Units=params.units, ...
+    Position=params.figureSize)
 
-if any(params(5, :)<=0) | any(params(6,:)<0)
+if any(hillTypeParams(5, :)<=0) | any(hillTypeParams(6,:)<0)
     paramLabels = ["Activation Time Constant", ...
         "Activation Nonlinearity", ...
         "Electromechanical Time Delay", ...
@@ -55,11 +55,15 @@ else
 end
 t = tiledlayout(1, 6, ...
     TileSpacing='Compact', Padding='Compact');
+set(gcf, color=params.plotBackgroundColor)
 for i = 1 : numel(paramLabels)
     nexttile(i)
-    barh(1:numel(muscleNames), params(i,:), facecolor=colors(1));
 
-    title(textwrap(paramLabels(i), 20), FontSize=12)
+    barh(1:numel(muscleNames), hillTypeParams(i,:), facecolor=params.lineColors(1));
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
+    title(textwrap(paramLabels(i), 20), fontsize = params.subplotTitleFontSize)
     if i == 1
         yticks(1:numel(muscleNames))
         yticklabels(muscleNames)

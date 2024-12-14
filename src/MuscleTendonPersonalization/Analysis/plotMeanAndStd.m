@@ -28,10 +28,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotMeanAndStd(mean, std, time, color, lineStyle)
+    params = getPlottingParams();
     if nargin < 5
         lineStyle = '-';
     end
-    plot(time, mean, Color=color, linewidth=2, LineStyle=lineStyle)
+    plot(time, mean, ...
+            LineWidth=params.linewidth, ...
+            Color = color, ...
+            LineStyle=lineStyle)
     FillRegion = [(mean+std); flipud(mean-std)];
     fill([time, fliplr(time)]', FillRegion, 'k', FaceColor=color, ...
         FaceAlpha=0.2, EdgeColor='none', HandleVisibility='off')
