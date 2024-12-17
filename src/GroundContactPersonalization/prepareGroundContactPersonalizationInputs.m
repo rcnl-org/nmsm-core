@@ -144,10 +144,6 @@ if isequal(mexext, 'mexw64')
     surface.coordinateLabels = labels;
 
     copyMexFunction(surfaceNumber);
-
-    funcCall = sprintf('pointKinematics%i(''footModel_%i.osim'');', ...
-        surfaceNumber, surfaceNumber);
-    evalc(funcCall);
 end
 
 surface.experimentalMarkerPositions = markerPositions;
@@ -244,10 +240,19 @@ if version >= 40501
 else
     mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40400.mexw64');
 end
+warning('off')
 destination = "pointKinematics" + foot + ".mexw64";
-if isfile(destination)
-    clear(destination)
-    delete(destination)
+% Needs two attempts to successfully delete a used MEX function
+for pass = 1 : 2
+    if isfile(destination)
+        clear(destination)
+        delete(destination)
+    end
 end
-copyfile(mexPath, destination, "f");
+% Do not copy if the copy already exists for some reason
+try
+    copyfile(mexPath, destination, "f");
+catch
+end
+warning('on')
 end
