@@ -249,8 +249,15 @@ function [markerPositions, markerVelocities] = ...
         version, foot)
 funcCall = sprintf(['pointKinematics%i(surface.time'', jointAngles'', ' ...
     'jointVelocities'', surface.footMarkerLocations'', ' ...
-    'surface.footMarkerBodies, surface.coordinateLabels'], foot);
-[~, pointPositions, pointVelocities] = evalc(funcCall);
+    'surface.footMarkerBodies, surface.coordinateLabels)'], foot);
+try
+    [~, pointPositions, pointVelocities] = evalc(funcCall);
+catch
+    loadModelCall = sprintf('pointKinematics%i(''footModel_%i.osim'');', ...
+        foot, foot);
+    evalc(loadModelCall);
+    [~, pointPositions, pointVelocities] = evalc(funcCall);
+end
 
 markerNamesFields = fieldnames(surface.markerNames);
 for i = 1:length(markerNamesFields)
@@ -268,6 +275,6 @@ function [markerPositions, markerVelocities] = ...
         version, foot)
 funcCall = sprintf(['pointKinematics%i(surface.time'', jointAngles'', ' ...
     'jointVelocities'', surface.springMarkerLocations'', ' ...
-    'surface.springMarkerBodies, surface.coordinateLabels'], foot);
+    'surface.springMarkerBodies, surface.coordinateLabels)'], foot);
 [~, markerPositions, markerVelocities] = evalc(funcCall);
 end

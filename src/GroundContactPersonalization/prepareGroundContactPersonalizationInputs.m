@@ -244,5 +244,10 @@ if version >= 40501
 else
     mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40400.mexw64');
 end
-copyfile(mexPath, "pointKinematics" + foot + ".mexw64", "f");
+destination = "pointKinematics" + foot + ".mexw64";
+if isfile(destination)
+    clear(destination)
+    delete(destination)
+end
+copyfile(mexPath, destination, "f");
 end
