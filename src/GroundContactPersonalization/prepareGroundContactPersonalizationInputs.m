@@ -142,6 +142,12 @@ if isequal(mexext, 'mexw64')
             .getName().toCharArray()';
     end
     surface.coordinateLabels = labels;
+
+    copyMexFunction(surfaceNumber);
+
+    funcCall = sprintf('pointKinematics%i(''footModel_%i.osim'');', ...
+        surfaceNumber, surfaceNumber);
+    evalc(funcCall);
 end
 
 surface.experimentalMarkerPositions = markerPositions;
@@ -212,4 +218,31 @@ function numSpringMarkers = confirmNumSpringMarkers(tasks)
         throw(MException('', 'Feet have an unequal number of springs'))
     end
     numSpringMarkers = counts(1);
+end
+
+% (double) -> ()
+% Makes a local copy of a mex function for a contact surface so that a
+% model can be stored in a unique function as a static variable and models
+% do not need to be reloaded.
+function copyMexFunction(foot)
+path = mfilename("fullpath");
+[pathParts, splits] = strsplit(path, {'\', '/'});
+indices = find(cellfun(@(x) strcmp(x, 'nmsm-core'), pathParts));
+index = indices(end);
+mexPath = cell(1, 2 * index - 1);
+for i = 1 : index
+    mexPath{2 * i - 1} = pathParts{i};
+    if 2 * i < length(mexPath)
+        mexPath{2 * i} = splits{i};
+    end
+end
+mexPath = strjoin(mexPath, '');
+mexPath = fullfile(mexPath, 'src', 'core', 'mex');
+version = getOpenSimVersion();
+if version >= 40501
+    mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40501.mexw64');
+else
+    mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40400.mexw64');
+end
+copyfile(mexPath, "pointKinematics" + foot + ".mexw64", "f");
 end
