@@ -136,43 +136,4 @@ for i=1:length(markers)
 end
 end
 
-function [markerNames, markerAllowableErrors] = getMarkersInTask(model, task)
-import org.opensim.modeling.*
-if isfield(task, "markerNames")
-    markerNames = task.markerNames;
-    markerAllowableErrors = task.markerAllowableErrors;
-    return
-end
-parameters = task.parameters;
-bodies = task.scaling;
-markerNames = {};
-for i = 1:length(task.markers)
-    if ~any(strcmp(markerNames, task.markers{i}(1)))
-        markerNames{end+1} = convertStringsToChars(task.markers{i}(1));
-    end
-end
-jointNames = {};
-for i=1:length(parameters)
-    if ~any(strcmp(jointNames,parameters{i}{1}))
-        jointNames{length(jointNames)+1} = parameters{i}{1};
-    end
-end
-for i = 1:length(bodies)
-    joints = getBodyJointNames(model, bodies{i});
-    for j = 1:length(joints)
-        if ~any(strcmp(jointNames, joints(j)))
-            jointNames{length(jointNames)+1} = joints(j);
-        end
-    end
-end
-for k=1:length(jointNames)
-    newMarkerNames = getMarkersFromJoint(model, jointNames{k});
-    for j=1:length(newMarkerNames)
-        if(~markerIncluded(markerNames, newMarkerNames{j}))
-            markerNames{length(markerNames)+1} = newMarkerNames{j};
-        end
-    end
-end
-end
-
 

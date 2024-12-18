@@ -89,16 +89,12 @@ if(isstruct(timeRange))
     output.startTime = str2double(timeRange{1});
     output.finishTime = str2double(timeRange{2});
 end
-    markerSet = getFieldByNameOrError(tree, 'JMPMarkerSet');
-    if isstruct(markerSet) && isfield(markerSet, 'JMPMarker')
-        [markerNames, markerAllowableErrors] = getJmpMarkers(markerSet);
-        output.markerNames = markerNames;
-        output.markerAllowableErrors = markerAllowableErrors;
-    end
-try
-    freeMarkers = parseSpaceSeparatedList(tree, 'free_markers');
-catch
-    freeMarkers = [];
+markerSet = getFieldByNameOrError(tree, 'JMPMarkerSet');
+if isstruct(markerSet) && isfield(markerSet, 'JMPMarker')
+    [output.markerNames, output.markerAllowableErrors, output.markers] = ...
+        getJmpMarkers(markerSet);
+else
+    throw(MException('', 'JMPMarker not found within JMPMarkerSet'))
 end
 
 output.parameters = {};
@@ -106,10 +102,8 @@ if(isstruct(getFieldByName(tree, 'JMPJointSet')))
     output.parameters = getJointParameters(tree.JMPJointSet);
 end
 output.scaling = [];
-output.markers = [];
-if isstruct(getFieldByName(tree, 'JMPBodySet')) || ~isempty(freeMarkers)
-    [output.scaling, output.markers] = ...
-        getBodyParameters(tree.JMPBodySet, model, freeMarkers);
+if isstruct(getFieldByName(tree, 'JMPBodySet'))
+    output.scaling = getScalingBodies(tree.JMPBodySet.JMPBody);
 end
 translationBounds = getFieldByName(tree, 'translation_bounds');
 if(isstruct(translationBounds))
@@ -183,19 +177,6 @@ if isfield(jointSetTree, 'JMPJoint')
 end
 end
 
-function [scaling, markers] = getBodyParameters( ...
-    bodySetTree, model, freeMarkers)
-if isfield(bodySetTree, 'JMPBody')
-    bodyTree = bodySetTree.JMPBody;
-    scaling = getScalingBodies(bodyTree);
-    markers = getMarkers(bodyTree, model);
-else
-    scaling = string([]);
-    markers = {};
-end
-markers = addFreeMarkers(markers, freeMarkers);
-end
-
 function inputs = getScalingBodies(bodyTree)
 inputs = string([]);
 for i=1:length(bodyTree)
@@ -240,20 +221,6 @@ for i=1:length(bodyTree)
     end
 end
 
-end
-
-function markers = addFreeMarkers(markers, freeMarkers)
-for i = 1:length(freeMarkers)
-    axesToBeAdded = ["x", "y", "z"];
-    for j = 1:length(markers)
-        if markers{j}(1) == freeMarkers(i) && any(ismember(axesToBeAdded, markers{j}(2)))
-            axesToBeAdded = axesToBeAdded(~ismember(axesToBeAdded, markers{j}(2)));
-        end
-    end
-    for j = 1:length(axesToBeAdded)
-        markers{end+1} = [freeMarkers(i), axesToBeAdded(j)];
-    end
-end
 end
 
 function output = getInitialValues(model, parameters, scaling, markers)
@@ -315,10 +282,13 @@ for i=1:length(paramArgs)
 end
 end
 
-function [markerNames, markerAllowableErrors] = getJmpMarkers(JMPMarkerSet)
+function [markerNames, markerAllowableErrors, markerCoordinates] = ...
+        getJmpMarkers(JMPMarkerSet)
     markers = JMPMarkerSet.JMPMarker;
-    markerNames = [];
+    markerNames = {};
     markerAllowableErrors = [];
+    markerCoordinates = {};
+    logMarkersUsed = strings(1);
     for i = 1 : numel(markers)
         markersInSet = parseSpaceSeparatedList(markers{i}, 'marker_list');
         markerAllowableError = markers{i}.max_allowable_error;
@@ -327,7 +297,24 @@ function [markerNames, markerAllowableErrors] = getJmpMarkers(JMPMarkerSet)
         else
             markerAllowableError = 0.01;
         end
-        markerNames = [markerNames, markersInSet];
-        markerAllowableErrors = [markerAllowableErrors, ones(size(markersInSet))*markerAllowableError];
+        for marker = 1 : numel(markersInSet)
+            if ~contains(logMarkersUsed, markersInSet{marker})
+                markerNames = [markerNames, markersInSet{marker}];
+                markerAllowableErrors = [markerAllowableErrors, ...
+                    markerAllowableError];
+                markerCoordinates{end+1} = [markersInSet{marker} "x"];
+                markerCoordinates{end+1} = [markersInSet{marker} "y"];
+                markerCoordinates{end+1} = [markersInSet{marker} "z"];
+                logMarkersUsed{end+1} = markersInSet{marker};
+            else
+                throw(MException('', ...
+                    strcat("Marker '", markersInSet{marker}, ...
+                    "' appears more than once in JMPMarkerSet")))
+            end
+        end
+
+    end
+    if isempty(markerNames)
+        throw(MException('', 'No markers found in JMPMarkerSet'))
     end
 end
