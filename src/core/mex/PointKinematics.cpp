@@ -8,7 +8,7 @@
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
-#define NTHREADS 10
+#define NTHREADS 1
 
 //______________________________________________________________________________
 

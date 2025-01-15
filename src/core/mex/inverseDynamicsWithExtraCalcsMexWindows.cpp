@@ -39,7 +39,7 @@
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
-#define numThreads 10 //
+#define numThreads 1 //
 
 //______________________________________________________________________________
 
