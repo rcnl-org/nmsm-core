@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the inverse dynamic
-% moments and the muscle produced moments with the aid of an external
-% torque controller for the specified coordinate. Applicable only if the
-% model is synergy driven and if an external torque controller is present.
+% This function returns an integrand cost for metabolic cost normalized by
+% distance. 
 %
-% (struct, struct, 2D matrix, Array of string) -> (Array of number)
-%
+% (struct, struct, struct, struct) -> (Array of double)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams, Claire V. Hammond                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,18 +27,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function pathTerm = ...
-    calcMuscleActuatedMomentsWithExternalAidPathConstraints(params, ...
-    modeledValues, externalTorqueControls, coordinate)
+function cost = calcAbsoluteMetabolicCostPerDistanceGoalDiscrete( ...
+    modeledValues, values, inputs, costTerm)
 
-indx1 = find(strcmp(convertCharsToStrings(params.inverseDynamicsMomentLabels), ...
-    [coordinate '_moment']));
-indx2 = find(strcmp(params.surrogateModelCoordinateNames, ...
-     coordinate));
-indx3 = find(strcmp(params.externalControlTorqueNames, ...
-     coordinate));
+beltSpeed = 0;
+if ~isempty(inputs.contactSurfaces)
+    for i = 1 : length(inputs.contactSurfaces)
+        beltSpeed = beltSpeed + inputs.contactSurfaces{i}.beltSpeed;
+    end
+    beltSpeed = beltSpeed / length(inputs.contactSurfaces);
+end
 
-pathTerm = modeledValues.inverseDynamicsMoments(:, indx1) - ...
-    (modeledValues.muscleJointMoments(:, indx2) + ...
-    externalTorqueControls(:, indx3));
+rawCost = modeledValues.metabolicCost / values.time(end) ...
+    / (modeledValues.massCenterVelocity + beltSpeed);
+assert(~any(isnan(rawCost)), "Metabolic cost is infinity.")
+cost = ((rawCost - costTerm.errorCenter) ./ costTerm.maxAllowableError) .^ 2;
 end

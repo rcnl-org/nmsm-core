@@ -48,5 +48,17 @@ if any(cellfun(@(task) any(task.designVariables(7:9)), params.tasks))
         resultsDirectory);
 end
 writeFullBodyKinematicsFromGcp(inputs, params, resultsDirectory);
+% Needs two attempts to successfully delete a used MEX function
+warning('off')
+for pass = 1 : 2
+    for i = 1 : length(inputs.surfaces)
+        mexCopy = "pointKinematics" + i + ".mexw64";
+        if isfile(mexCopy)
+            clear(mexCopy)
+            delete(mexCopy)
+        end
+    end
+end
+warning('on')
 end
 

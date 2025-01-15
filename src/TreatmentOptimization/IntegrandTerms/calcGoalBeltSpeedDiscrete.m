@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,18 +28,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGoalBeltSpeedDiscrete(values, params, costTerm)
-
+function cost = calcGoalBeltSpeedDiscrete(values, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 1);
-counter = 1;
-for i = 1:length(params.userDefinedVariables)
-    if strcmp(params.userDefinedVariables{i}.type, 'belt_speed')
-        if params.userDefinedVariables{i}.is_left_foot == ...
-                costTerm.is_left_foot
-            beltSpeed = values.belt_speed(counter);
-        end
-        counter = counter + 1;
-    end
-end
+surface = getFieldByNameOrError(costTerm, 'surface_index');
+parameters = getFieldByNameOrError(values, 'parameters');
+beltSpeeds = getFieldByNameOrError(parameters, 'belt_speed');
+beltSpeed = beltSpeeds(surface);
+
 cost = calcTrackingCostArrayTerm(beltSpeed, errorCenter , 1);
 end

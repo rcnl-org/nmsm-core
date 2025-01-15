@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates the difference between the initial state 
-% position and current state position for the specified coordinate. 
+% position and specified target for the specified coordinate. 
 %
 % (2D matrix, Cell, struct) -> (Number)
 % 
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function initialStatePosition = calcInitialStatePosition( ...
-    statePositions, coordinateNames, auxdata, constraintTerm)
+    statePositions, coordinateNames, constraintTerm)
 indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
     constraintTerm.coordinate));
 if isempty(indx)
@@ -37,6 +37,5 @@ if isempty(indx)
         strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-initialStatePosition = statePositions(1, indx) - ...
-    auxdata.initialStatePositions(1, indx);
+initialStatePosition = statePositions(1, indx) - constraintTerm.target_value;
 end
