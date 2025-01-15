@@ -1,4 +1,4 @@
-﻿#include "mex.h"
+#include "mex.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
