@@ -74,6 +74,9 @@ end
 [inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
     inputs.controllerType, inputs.toolName);
+
+inputs.costTerms = disableMissingCoordinateTerms(inputs.costTerms, ...
+    inputs.statesCoordinateNames);
 end
 
 function inputs = parseBasicInputs(tree)
@@ -125,3 +128,22 @@ else
 end
 end
 
+function costTerms = disableMissingCoordinateTerms(costTerms, statesCoordinateNames)
+warned = false;
+for i = 1:length(costTerms)
+    term = costTerms{i};
+    if term.isEnabled && isfield(term, 'coordinate')
+        if ~ismember(term.coordinate, statesCoordinateNames)
+            if ~warned
+                warning("Cost term " + term.type + " should not use " + ...
+                    "coordinates not found in state coordinates (" + ...
+                    term.coordinate + "). This and other terms " + ...
+                    "using coordinates not included in states will " + ...
+                    "be disabled.")
+            end
+            term.isEnabled = false;
+            costTerms{i} = term;
+        end
+    end
+end
+end
