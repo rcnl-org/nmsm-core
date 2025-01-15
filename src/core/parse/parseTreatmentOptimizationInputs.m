@@ -140,6 +140,7 @@ for i = 1:length(costTerms)
                     term.coordinate + "). This and other terms " + ...
                     "using coordinates not included in states will " + ...
                     "be disabled.")
+                warned = true;
             end
             term.isEnabled = false;
             costTerms{i} = term;
