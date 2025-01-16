@@ -39,7 +39,7 @@
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
-#define numThreads 1 //
+#define numThreads 20 //
 
 //______________________________________________________________________________
 
@@ -186,6 +186,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
                 osimModel[thread_id]->equilibrateMuscles(*osimState[thread_id]);
 				metabolicCost[i] = osimModel[thread_id]->getProbeSet().get(0).getProbeOutputs(*osimState[thread_id]).get(0);
 			}
+			osimState[thread_id] = &osimModel[thread_id]->initSystem();
         }
 		//q.clear();
 		//qp.clear();

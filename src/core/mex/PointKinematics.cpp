@@ -8,7 +8,7 @@
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
-#define NTHREADS 1
+#define NTHREADS 20
 
 //______________________________________________________________________________
 
@@ -135,6 +135,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 				sp_vel[i + j * numPts * 3 + numPts * 2] = tempGlobalVel(2);
 				
 			}
+			osimState[thread_id] = &osimModel[thread_id]->initSystem();
 		}
 	}
 }
