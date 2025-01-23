@@ -65,7 +65,11 @@ if isequal(mexext, 'mexw64')
         jointVelocitiesParts{i} = jointVelocities(index : nextIndex, :);
         jointAccelerationsParts{i} = jointAccelerations(index : nextIndex, :);
         appliedLoadsParts{i} = appliedLoads(index : nextIndex, :);
-        muscleActivationsParts{i} = muscleActivations(index : nextIndex, :);
+        if ~isempty(muscleActivations)
+            muscleActivationsParts{i} = muscleActivations(index : nextIndex, :);
+        else
+            muscleActivationsParts{i} = [];
+        end
         index = nextIndex + 1;
     end
     
@@ -80,7 +84,7 @@ if isequal(mexext, 'mexw64')
         else
             [inverseDynamicsMomentsParts{i}, angularMomentumParts{i}, metabolicCostParts{i}, ...
                 massCenterVelocityParts{i}] = ...
-                inverseDynamicsWithExtraCalcsMexWindows40400(timeParts{i}, ...
+                inverseDynamicsWithExtraCalcsMexWindows_1thread(timeParts{i}, ...
                 jointAnglesParts{i}, jointVelocitiesParts{i}, jointAccelerationsParts{i}, ...
                 coordinateLabels, appliedLoadsParts{i}, muscleActivationsParts{i}, ...
                 computeAngularMomentum, computeMetabolicCost);

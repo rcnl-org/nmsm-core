@@ -32,12 +32,16 @@
 function version = initializeMexOrMatlabParallelFunctions(modelFile)
 version = getOpenSimVersion();
 if isequal(mexext, 'mexw64')
-    if version >= 40501
-        pointKinematicsMexWindows40501(modelFile);
-        inverseDynamicsWithExtraCalcsMexWindows40501(modelFile);
-    else
-        pointKinematicsMexWindows40400(modelFile);
-        inverseDynamicsWithExtraCalcsMexWindows40400(modelFile);
+    pool = gcp();
+    numWorkers = pool.NumWorkers;
+    parfor i = 1 : numWorkers
+        if version >= 40501
+            pointKinematicsMexWindows40501(modelFile);
+            inverseDynamicsWithExtraCalcsMexWindows40501(modelFile);
+        else
+            pointKinematicsMexWindows_1thread(modelFile);
+            inverseDynamicsWithExtraCalcsMexWindows_1thread(modelFile);
+        end
     end
 end
 clear inverseDynamicsMatlabParallel

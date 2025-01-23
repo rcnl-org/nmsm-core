@@ -1,4 +1,4 @@
-﻿#include "mex.h"
+#include "mex.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,7 +8,7 @@
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
-#define NTHREADS 20
+#define NTHREADS 1
 
 //______________________________________________________________________________
 
