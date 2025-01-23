@@ -33,14 +33,44 @@ function [pointPositions, pointVelocities] = pointKinematics(time, ...
     jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
     coordinateLabels, version)
 if isequal(mexext, 'mexw64')
-    if version >= 40501
-        [pointPositions, pointVelocities] = ...
-            pointKinematicsMexWindows40501(time, jointAngles, ...
-            jointVelocities, pointLocationOnBody', body, coordinateLabels);
-    else
-        [pointPositions, pointVelocities] = ...
-            pointKinematicsMexWindows40400(time, jointAngles, ...
-            jointVelocities, pointLocationOnBody', body, coordinateLabels);
+    pool = gcp();
+    numWorkers = pool.NumWorkers;
+
+    index = 1;
+    timeParts = cell(1, numWorkers);
+    jointAnglesParts = cell(1, numWorkers);
+    pointPositionsParts = cell(1, numWorkers);
+    pointVelocitiesParts = cell(1, numWorkers);
+    
+    remainder = mod(length(time), numWorkers);
+    for i = 1 : numWorkers
+        if i <= remainder
+            nextIndex = index - 1 + ceil(length(time) / numWorkers);
+        else
+            nextIndex = index - 1 + floor(length(time) / numWorkers);
+        end
+        timeParts{i} = time(index : nextIndex);
+        jointAnglesParts{i} = jointAngles(index : nextIndex, :);
+        index = nextIndex + 1;
+    end
+
+    parfor i = 1 : numWorkers
+        if version >= 40501
+            [pointPositionsParts{i}, pointVelocitiesParts{i}] = ...
+                pointKinematicsMexWindows40501(timeParts{i}, jointAnglesParts{i}, ...
+                jointVelocities, pointLocationOnBody', body, coordinateLabels);
+        else
+            [pointPositionsParts{i}, pointVelocitiesParts{i}] = ...
+                pointKinematicsMexWindows40400(timeParts{i}, jointAnglesParts{i}, ...
+                jointVelocities, pointLocationOnBody', body, coordinateLabels);
+        end
+    end
+
+    pointPositions = pointPositionsParts{1};
+    pointVelocities = pointVelocitiesParts{1};
+    for part = 2 : numWorkers
+        pointPositions = cat(1, pointPositions, pointPositionsParts{part});
+        pointVelocities = cat(1, pointVelocities, pointVelocitiesParts{part});
     end
 else
     [pointPositions, pointVelocities] = pointKinematicsMatlabParallel(time, ...

@@ -38,21 +38,64 @@ function [inverseDynamicsMoments, angularMomentum, metabolicCost, ...
     muscleActivations, computeAngularMomentum, computeMetabolicCost, ...
     version)
 if isequal(mexext, 'mexw64')
-    if version >= 40501
-        [inverseDynamicsMoments, angularMomentum, metabolicCost, ...
-            massCenterVelocity] = ...
-            inverseDynamicsWithExtraCalcsMexWindows40501(time, ...
-            jointAngles, jointVelocities, jointAccelerations, ...
-            coordinateLabels, appliedLoads, muscleActivations, ...
-            computeAngularMomentum, computeMetabolicCost);
-    else
-        [inverseDynamicsMoments, angularMomentum, metabolicCost, ...
-            massCenterVelocity] = ...
-            inverseDynamicsWithExtraCalcsMexWindows40400(time, ...
-            jointAngles, jointVelocities, jointAccelerations, ...
-            coordinateLabels, appliedLoads, muscleActivations, ...
-            computeAngularMomentum, computeMetabolicCost);
+    pool = gcp();
+    numWorkers = pool.NumWorkers;
+
+    index = 1;
+    timeParts = cell(1, numWorkers);
+    jointAnglesParts = cell(1, numWorkers);
+    jointVelocitiesParts = cell(1, numWorkers);
+    jointAccelerationsParts = cell(1, numWorkers);
+    appliedLoadsParts = cell(1, numWorkers);
+    muscleActivationsParts = cell(1, numWorkers);
+    inverseDynamicsMomentsParts = cell(1, numWorkers);
+    angularMomentumParts = cell(1, numWorkers);
+    metabolicCostParts = cell(1, numWorkers);
+    massCenterVelocityParts = cell(1, numWorkers);
+    
+    remainder = mod(length(time), numWorkers);
+    for i = 1 : numWorkers
+        if i <= remainder
+            nextIndex = index - 1 + ceil(length(time) / numWorkers);
+        else
+            nextIndex = index - 1 + floor(length(time) / numWorkers);
+        end
+        timeParts{i} = time(index : nextIndex);
+        jointAnglesParts{i} = jointAngles(index : nextIndex, :);
+        jointVelocitiesParts{i} = jointVelocities(index : nextIndex, :);
+        jointAccelerationsParts{i} = jointAccelerations(index : nextIndex, :);
+        appliedLoadsParts{i} = appliedLoads(index : nextIndex, :);
+        muscleActivationsParts{i} = muscleActivations(index : nextIndex, :);
+        index = nextIndex + 1;
     end
+    
+    parfor i = 1 : numWorkers
+        if version >= 40501
+            [inverseDynamicsMomentsParts{i}, angularMomentumParts{i}, metabolicCostParts{i}, ...
+                massCenterVelocityParts{i}] = ...
+                inverseDynamicsWithExtraCalcsMexWindows40501(timeParts{i}, ...
+                jointAnglesParts{i}, jointVelocitiesParts{i}, jointAccelerationsParts{i}, ...
+                coordinateLabels, appliedLoadsParts{i}, muscleActivationsParts{i}, ...
+                computeAngularMomentum, computeMetabolicCost);
+        else
+            [inverseDynamicsMomentsParts{i}, angularMomentumParts{i}, metabolicCostParts{i}, ...
+                massCenterVelocityParts{i}] = ...
+                inverseDynamicsWithExtraCalcsMexWindows40400(timeParts{i}, ...
+                jointAnglesParts{i}, jointVelocitiesParts{i}, jointAccelerationsParts{i}, ...
+                coordinateLabels, appliedLoadsParts{i}, muscleActivationsParts{i}, ...
+                computeAngularMomentum, computeMetabolicCost);
+        end
+    end
+
+    inverseDynamicsMoments = inverseDynamicsMomentsParts{1};
+    angularMomentum = angularMomentumParts{1};
+    metabolicCost = metabolicCostParts{1};
+    for part = 2 : numWorkers
+        inverseDynamicsMoments = cat(1, inverseDynamicsMoments, inverseDynamicsMomentsParts{part});
+        angularMomentum = cat(1, angularMomentum, angularMomentumParts{part});
+        metabolicCost = cat(1, metabolicCost, metabolicCostParts{part});
+    end
+    massCenterVelocity = mean(cell2mat(massCenterVelocityParts));
 else
     if nargout == 1
         inverseDynamicsMoments = inverseDynamicsMatlabParallel(time, ...
