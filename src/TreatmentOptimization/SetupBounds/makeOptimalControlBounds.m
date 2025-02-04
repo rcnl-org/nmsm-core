@@ -50,12 +50,22 @@ stateJointVelocities = subsetDataByCoordinates( ...
 
 minRange = max(inputs.jointPositionsMultiple * range(stateJointAngles), ...
     inputs.jointPositionsMinRange);
-maxStatePositions = max(stateJointAngles) + minRange;
-minStatePositions = min(stateJointAngles) - minRange;
+if inputs.useDeviationKinematics
+    maxStatePositions = minRange;
+    minStatePositions = -minRange;
+else
+    maxStatePositions = max(stateJointAngles) + minRange;
+    minStatePositions = min(stateJointAngles) - minRange;
+end
 minRange = max(inputs.jointVelocitiesMultiple * ...
     range(stateJointVelocities), inputs.jointVelocitiesMinRange);
-maxStateVelocities = max(stateJointVelocities) + minRange;
-minStateVelocities = min(stateJointVelocities) - minRange;
+if inputs.useDeviationKinematics
+    maxStateVelocities = minRange;
+    minStateVelocities = -minRange;
+else
+    maxStateVelocities = max(stateJointVelocities) + minRange;
+    minStateVelocities = min(stateJointVelocities) - minRange;
+end
 
 inputs.maxState = [ ...
     maxStatePositions, ...
@@ -76,14 +86,24 @@ stateJointAccelerations = subsetDataByCoordinates( ...
 
 minRange = max(inputs.jointAccelerationsMultiple * ...
     range(stateJointAccelerations), inputs.jointAccelerationsMinRange);
-inputs.maxControl = max(stateJointAccelerations) + minRange;
-inputs.minControl = min(stateJointAccelerations) - minRange;
+if inputs.useDeviationKinematics
+    inputs.maxControl = minRange;
+    inputs.minControl = -minRange;
+else
+    inputs.maxControl = max(stateJointAccelerations) + minRange;
+    inputs.minControl = min(stateJointAccelerations) - minRange;
+end
 
 if strcmp(inputs.controllerType, 'synergy')
     maxControlSynergyActivations = inputs.maxControlSynergyActivations * ...
         ones(1, inputs.numSynergies);
-    inputs.maxControl = [inputs.maxControl maxControlSynergyActivations];
-    inputs.minControl = [inputs.minControl zeros(1, inputs.numSynergies)];
+    if inputs.useDeviationControls
+        inputs.maxControl = [inputs.maxControl maxControlSynergyActivations - max(inputs.initialSynergyControls)];
+        inputs.minControl = [inputs.minControl zeros(1, inputs.numSynergies) - max(inputs.initialSynergyControls)];
+    else
+        inputs.maxControl = [inputs.maxControl maxControlSynergyActivations];
+        inputs.minControl = [inputs.minControl zeros(1, inputs.numSynergies)];
+    end
 
     if inputs.optimizeSynergyVectors
         numParameters = 0;
@@ -124,10 +144,15 @@ if isfield(inputs, "torqueControllerCoordinateNames")
         minRange = max(inputs.maxTorqueControlsMultiple * ...
             range(inputs.experimentalJointMoments(:, indx)), ...
             inputs.maxTorqueControlsMinRange);
-        maxTorqueControls(i) = max(inputs.experimentalJointMoments(:, ...
-            indx)) + minRange;
-        minTorqueControls(i) = min(inputs.experimentalJointMoments(:, ...
-            indx)) - minRange;
+        if inputs.useDeviationControls
+            maxTorqueControls(i) = minRange;
+            minTorqueControls(i) = -minRange;
+        else
+            maxTorqueControls(i) = max(inputs.experimentalJointMoments(:, ...
+                indx)) + minRange;
+            minTorqueControls(i) = min(inputs.experimentalJointMoments(:, ...
+                indx)) - minRange;
+        end
     end
     inputs.maxControl = [inputs.maxControl maxTorqueControls];
     inputs.minControl = [inputs.minControl minTorqueControls];
