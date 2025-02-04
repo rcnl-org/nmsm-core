@@ -31,6 +31,13 @@
 function inputs = setupTorqueControls(inputs)
 if isfield(inputs, "torqueControllerCoordinateNames") && ...
         ~isempty(inputs.torqueControllerCoordinateNames)
+if ~isfield(inputs, "initialTorqueControls")
+    indices = find(ismember(erase(erase( ...
+        inputs.initialInverseDynamicsMomentLabels, '_moment'), ...
+        '_force'), inputs.torqueControllerCoordinateNames));
+    inputs.initialTorqueControlsLabels = inputs.initialInverseDynamicsMomentLabels(indices);
+    inputs.initialTorqueControls = inputs.initialJointMoments(:, indices);
+end
 inputs.splineTorqueControls = makeGcvSplineSet(inputs.initialTime, ...
     inputs.initialTorqueControls', inputs.initialTorqueControlsLabels);
 inputs.torqueLabels = inputs.initialTorqueControlsLabels;
