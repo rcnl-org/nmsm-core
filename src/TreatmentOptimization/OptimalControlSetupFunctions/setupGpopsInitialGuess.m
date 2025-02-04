@@ -70,6 +70,9 @@ else
     guess.phase.time = scaleToBounds(inputs.initialTime, inputs.maxTime, ...
         inputs.minTime);
 end
+if inputs.useDeviationKinematics
+    guess.phase.state(:) = 0;
+end
 end
 
 function guess = setupInitialControlsGuess(inputs, guess)
@@ -83,9 +86,16 @@ else
 
     controls = stateJointAccelerations;
 end
+if inputs.useDeviationKinematics
+    controls(:) = 0;
+end
 if strcmp(inputs.controllerType, "synergy")
     if isfield(inputs, "initialSynergyControls")
-        controls = [controls, inputs.initialSynergyControls];
+        if inputs.useDeviationControls
+            controls = [controls, zeros(size(inputs.initialSynergyControls))];
+        else
+            controls = [controls, inputs.initialSynergyControls];
+        end
     else
         throw(MException("NoInitialSynergyControls", ...
             strcat("initial synergy controls required for synergy", ...
@@ -93,14 +103,22 @@ if strcmp(inputs.controllerType, "synergy")
     end
 end
 if isfield(inputs, "initialTorqueControls")
-    controls = [controls, inputs.initialTorqueControls];
+    if inputs.useDeviationControls
+        controls = [controls, zeros(size(inputs.initialTorqueControls))];
+    else
+        controls = [controls, inputs.initialTorqueControls];
+    end
 else
     if ~isempty(valueOrAlternate(inputs, "torqueControllerCoordinateNames", []))
         stateTorqueControls = subsetDataByCoordinates( ...
             inputs.initialJointMoments, ...
             erase(erase(inputs.initialInverseDynamicsMomentLabels, '_moment'), '_force'), ...
             inputs.torqueControllerCoordinateNames);
-        controls = [controls, stateTorqueControls];
+        if inputs.useDeviationControls
+            controls = [controls, zeros(size(stateTorqueControls))];
+        else
+            controls = [controls, stateTorqueControls];
+        end
     end
 end
 guess.phase.control = scaleToBounds(controls, inputs.maxControl, ...
