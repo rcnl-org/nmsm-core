@@ -87,6 +87,10 @@ inputs = parseModel(tree, inputs);
 inputs.mass = inputs.model.getTotalMass(state);
 inputs.normalizeCostByType = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, 'normalize_cost_by_term_type', false));
+inputs.useDeviationControls = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'use_deviation_controls', false));
+inputs.useDeviationKinematics = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'use_deviation_kinematics', false));
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
