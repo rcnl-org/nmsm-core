@@ -41,7 +41,7 @@ if isempty(callNumber)
 else
     callNumber = callNumber + 1;
 end
-save(['pointKinematicsLog\inputs_' callNumber '.mat'])
+save(['pointKinematicsLog\inputs_' num2str(callNumber) '.mat'])
 if isequal(mexext, 'mexw64')
     if version >= 40501
         [pointPositions, pointVelocities] = ...
@@ -57,5 +57,5 @@ else
         jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
         coordinateLabels);
 end
-save(['pointKinematicsLog\results_' callNumber '.mat'], 'pointPositions', 'pointVelocities')
+save(['pointKinematicsLog\results_' num2str(callNumber) '.mat'], 'pointPositions', 'pointVelocities')
 end
