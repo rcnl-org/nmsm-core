@@ -35,6 +35,9 @@ function [pointPositions, pointVelocities] = pointKinematics(time, ...
 persistent callNumber;
 if isempty(callNumber)
     callNumber = 1;
+    if ~exist("pointKinematicsLog", "dir")
+        mkdir("pointKinematicsLog");
+    end
 else
     callNumber = callNumber + 1;
 end
