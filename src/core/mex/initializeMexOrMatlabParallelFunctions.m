@@ -42,4 +42,6 @@ if isequal(mexext, 'mexw64')
 end
 clear inverseDynamicsMatlabParallel
 clear pointKinematicsMatlabParallel
+
+clear pointKinematics
 end

@@ -32,6 +32,13 @@
 function [pointPositions, pointVelocities] = pointKinematics(time, ...
     jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
     coordinateLabels, version)
+persistent callNumber;
+if isempty(callNumber)
+    callNumber = 1;
+else
+    callNumber = callNumber + 1;
+end
+save(['pointKinematicsLog\inputs_' callNumber '.mat'])
 if isequal(mexext, 'mexw64')
     if version >= 40501
         [pointPositions, pointVelocities] = ...
@@ -47,4 +54,5 @@ else
         jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
         coordinateLabels);
 end
+save(['pointKinematicsLog\results_' callNumber '.mat'], 'pointPositions', 'pointVelocities')
 end
