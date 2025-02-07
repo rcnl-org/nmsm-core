@@ -161,6 +161,7 @@ surface.bSplineCoefficients = ones(surface.splineNodes, 7);
 surface.electricalCenterShiftX = 0;
 surface.electricalCenterShiftY = 0;
 surface.electricalCenterShiftZ = 0;
+surface.forcePlateRotation = 0;
 end
 
 % (struct) -> (struct)
