@@ -36,7 +36,7 @@ if isequal(mexext, 'mexw64')
         pointKinematicsMexWindows40501(modelFile);
         inverseDynamicsWithExtraCalcsMexWindows40501(modelFile);
     else
-        pointKinematics1(modelFile);
+        pointKinematicsMexWindows40400(modelFile);
         inverseDynamicsWithExtraCalcsMexWindows40400(modelFile);
     end
 end
