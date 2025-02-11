@@ -100,6 +100,7 @@ if strcmp(inputs.controllerType, 'synergy')
     if inputs.useDeviationControls
         inputs.maxControl = [inputs.maxControl maxControlSynergyActivations - max(inputs.initialSynergyControls)];
         inputs.minControl = [inputs.minControl zeros(1, inputs.numSynergies) - max(inputs.initialSynergyControls)];
+        [inputs.path, inputs.maxPath, inputs.minPath] = constrainSynergyActivations(inputs);
     else
         inputs.maxControl = [inputs.maxControl maxControlSynergyActivations];
         inputs.minControl = [inputs.minControl zeros(1, inputs.numSynergies)];
@@ -156,5 +157,19 @@ if isfield(inputs, "torqueControllerCoordinateNames")
     end
     inputs.maxControl = [inputs.maxControl maxTorqueControls];
     inputs.minControl = [inputs.minControl minTorqueControls];
+end
+end
+
+function [path, maxPath, minPath] = constrainSynergyActivations(inputs)
+path = inputs.path;
+maxPath = inputs.maxPath;
+minPath = inputs.minPath;
+for i = 1 : length(inputs.synergyLabels)
+    path{end+1} = struct('type', 'synergy_activation', ...
+        'isEnabled', true, 'maxError', ...
+        inputs.maxControlSynergyActivations, 'minError', 0, ...
+        'synergy', inputs.synergyLabels(i));
+    maxPath(end+1) = inputs.maxControlSynergyActivations;
+    minPath(end+1) = 0;
 end
 end
