@@ -1,0 +1,84 @@
+% This function is part of the NMSM Pipeline, see file for full license.
+%
+% This function calculates the error in marker velocity tracking
+%
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+% returns the velocity difference between the experimental and calculated 
+% markers.
+
+% ----------------------------------------------------------------------- %
+% The NMSM Pipeline is a toolkit for model personalization and treatment  %
+% optimization of neuromusculoskeletal models through OpenSim. See        %
+% nmsm.rice.edu and the NOTICE file for more information. The             %
+% NMSM Pipeline is developed at Rice University and supported by the US   %
+% National Institutes of Health (R01 EB030520).                           %
+%                                                                         %
+% Copyright (c) 2021 Rice University and the Authors                      %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         %
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
+
+function cost = calcTrackingMarkerVelocity(costTerm, time, ...
+    markerVelocities, inputs)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
+axes = strsplit(strip(valueOrAlternate(...
+    costTerm, "axes", 'true true true')), ' ');
+if length(axes) ~= 3
+    throw(MException('CostTermError:IncorrectAxes', ...
+        strcat("Axes ", costTerm.axes, " should be three " + ...
+        "space-separated true or false values.")))
+end
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
+    time = time * inputs.collocationTimeOriginal(end) / time(end);
+end
+indx = find(strcmp(convertCharsToStrings(inputs.trackedMarkerNames), ...
+    costTerm.marker));
+if isempty(indx)
+    throw(MException('CostTermError:MarkerDoesNotExist', ...
+        strcat("Marker ", costTerm.marker, " is not in the ", ...
+        "list of tracked markers")))
+end
+assert(length(indx) == 1, "Marker " + costTerm.marker + ...
+    " must only have one tracking cost term.")
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    experimentalMarkerVelocities = inputs.splinedMarkerVelocities{indx};
+else
+    experimentalMarkerVelocities = ...
+        evaluateGcvSplines(inputs.splineMarkerVelocities{indx}, ...
+        0:2, time);
+end
+experimentalIndex = (indx - 1) * 3 + 1;
+cost = calcTrackingCostArrayTerm(experimentalMarkerVelocities, ...
+    markerVelocities, experimentalIndex);
+if ~strcmpi(axes{1}, 'true')
+    cost(:) = 0;
+end
+if strcmpi(axes{2}, 'true')
+    cost = cost + calcTrackingCostArrayTerm(experimentalMarkerVelocities, ...
+        markerVelocities, experimentalIndex + 1);
+end
+if strcmpi(axes{3}, 'true')
+    cost = cost + calcTrackingCostArrayTerm(experimentalMarkerVelocities, ...
+        markerVelocities, experimentalIndex + 2);
+end
+if normalizeByFinalTime
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
+end
+end
+
