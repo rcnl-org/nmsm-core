@@ -33,10 +33,13 @@ function inputs = makeMarkerTracking(inputs)
 names = string([]);
 locations = [];
 bodies = [];
+markerCostTerms = ["marker_position_tracking", "marker_velocity_tracking"];
+markerConstraintTerms = ["marker_position_deviation", ...
+    "marker_position_value", "marker_velocity_deviation", ...
+    "marker_velocity_value"];
 for i = 1:length(inputs.costTerms)
     costTerm = inputs.costTerms{i};
-    if strcmp(costTerm.type, "marker_position_tracking") || ...
-            strcmp(costTerm.type, "marker_velocity_tracking")
+    if any(strcmp(costTerm.type, markerCostTerms))
         names(end + 1) = convertCharsToStrings(inputs.model.getMarkerSet().get( ...
             costTerm.marker).getName().toCharArray()');
         locations = cat(1, locations, ...
@@ -46,6 +49,31 @@ for i = 1:length(inputs.costTerms)
             getMarkerBodyName(inputs.model, costTerm.marker));
     end
 end
+for i = 1:length(inputs.path)
+    constraintTerm = inputs.path{i};
+    if any(strcmp(constraintTerm.type, markerConstraintTerms))
+        names(end + 1) = convertCharsToStrings(inputs.model.getMarkerSet().get( ...
+            constraintTerm.marker).getName().toCharArray()');
+        locations = cat(1, locations, ...
+            Vec3ToArray(inputs.model.getMarkerSet().get(...
+            constraintTerm.marker).get_location()));
+        bodies(end + 1) = inputs.model.getBodySet().getIndex( ...
+            getMarkerBodyName(inputs.model, constraintTerm.marker));
+    end
+end
+for i = 1:length(inputs.terminal)
+    constraintTerm = inputs.terminal{i};
+    if any(strcmp(constraintTerm.type, markerConstraintTerms))
+        names(end + 1) = convertCharsToStrings(inputs.model.getMarkerSet().get( ...
+            constraintTerm.marker).getName().toCharArray()');
+        locations = cat(1, locations, ...
+            Vec3ToArray(inputs.model.getMarkerSet().get(...
+            constraintTerm.marker).get_location()));
+        bodies(end + 1) = inputs.model.getBodySet().getIndex( ...
+            getMarkerBodyName(inputs.model, constraintTerm.marker));
+    end
+end
+
 [inputs.trackedMarkerNames, indices] = unique(names);
 inputs.trackedMarkerLocations = locations(indices, :);
 inputs.trackedMarkerBodyIndices = bodies(indices);
