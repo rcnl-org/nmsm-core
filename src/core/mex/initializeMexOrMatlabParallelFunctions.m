@@ -43,5 +43,5 @@ end
 clear inverseDynamicsMatlabParallel
 clear pointKinematicsMatlabParallel
 
-clear pointKinematics
+% clear pointKinematics
 end

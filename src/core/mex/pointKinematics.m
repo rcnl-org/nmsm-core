@@ -32,16 +32,16 @@
 function [pointPositions, pointVelocities] = pointKinematics(time, ...
     jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
     coordinateLabels, version)
-persistent callNumber;
-if isempty(callNumber)
-    callNumber = 1;
-    if ~exist("pointKinematicsLog", "dir")
-        mkdir("pointKinematicsLog");
-    end
-else
-    callNumber = callNumber + 1;
-end
-save(['pointKinematicsLog\inputs_' num2str(callNumber) '.mat'])
+% persistent callNumber;
+% if isempty(callNumber)
+%     callNumber = 1;
+%     if ~exist("pointKinematicsLog", "dir")
+%         mkdir("pointKinematicsLog");
+%     end
+% else
+%     callNumber = callNumber + 1;
+% end
+% save(['pointKinematicsLog\inputs_' num2str(callNumber) '.mat'])
 if isequal(mexext, 'mexw64')
     if version >= 40501
         [pointPositions, pointVelocities] = ...
@@ -57,5 +57,5 @@ else
         jointAngles, jointVelocities, pointLocationOnBody, body, modelName, ...
         coordinateLabels);
 end
-save(['pointKinematicsLog\results_' num2str(callNumber) '.mat'], 'pointPositions', 'pointVelocities')
+% save(['pointKinematicsLog\results_' num2str(callNumber) '.mat'], 'pointPositions', 'pointVelocities')
 end
