@@ -58,6 +58,10 @@ method = valueOrAlternate(costTerm, 'shift_method', 'none');
 assert(~strcmp('none', method), 'Symmetry terms need a <shift_method>.');
 if strcmpi(method, 'fft')
     shiftedCoordinate = shiftSignalWithFft(baseCoordinate, shiftedCoordinate);
+elseif strcmpi(method, 'polyFourier')
+    harmonics = 7;
+    coefs = polyFourierPhaseShiftCoefs(time, shiftedCoordinate, harmonics);
+    shiftedCoordinate = polyFourierPhaseShiftCurve(time, coefs, pi);
 else
     throw(MException(['Symmetry term shift_method must be fft or ' ...
         'polyFourier']));
