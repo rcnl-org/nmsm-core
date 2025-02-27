@@ -60,8 +60,8 @@ if strcmpi(method, 'fft')
     shiftedCoordinate = shiftSignalWithFft(baseCoordinate, shiftedCoordinate);
 elseif strcmpi(method, 'polyFourier')
     harmonics = 7;
-    coefs = polyFourierPhaseShiftCoefs(time, shiftedCoordinate, harmonics);
-    shiftedCoordinate = polyFourierPhaseShiftCurve(time, coefs, pi);
+    coefs = polyFourierPhaseShiftCoefs(time/time(end), shiftedCoordinate, harmonics);
+    shiftedCoordinate = polyFourierPhaseShiftCurve(time/time(end), coefs, pi);
 else
     throw(MException(['Symmetry term shift_method must be fft or ' ...
         'polyFourier']));
