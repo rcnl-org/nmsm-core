@@ -90,15 +90,19 @@ inputs.normalizeCostByType = getBooleanLogicFromField( ...
 inputs.useFourierControls = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, 'use_fourier_controls', false));
 if inputs.useFourierControls
-    if isfield(tree, 'fourier_control_harmonics')
+    if isstruct(getFieldByName(tree, 'fourier_control_harmonics'))
         inputs.fourierControlHarmonics = ...
-            getDoubleFromField(tree.fourier_control_harmonics);
-    elseif isfield(tree, 'fourier_control_cutoff_frequency')
+            getDoubleFromField(getFieldByName(tree, ...
+            'fourier_control_harmonics'));
+    elseif isstruct(getFieldByName(tree, 'fourier_control_cutoff_frequency'))
         inputs.fourierControlCutoff = ...
-            getDoubleFromField(tree.fourier_control_cutoff_frequency);
+            getDoubleFromField(getFieldByName(tree, ...
+            'fourier_control_cutoff_frequency'));
     else
         inputs.fourierControlHarmonics = 7;
     end
+    inputs.fourierControlDegree = getDoubleFromField( ...
+        getFieldByNameOrAlternate(tree, 'fourier_control_degree', 1));
 end
 end
 
