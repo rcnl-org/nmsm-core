@@ -102,7 +102,8 @@ if inputs.useFourierControls
         inputs.fourierControlHarmonics = 7;
     end
     inputs.fourierControlDegree = getDoubleFromField( ...
-        getFieldByNameOrAlternate(tree, 'fourier_control_degree', 1));
+        getFieldByNameOrAlternate(tree, ...
+        'fourier_control_polynomial_degree', 1));
 end
 end
 
