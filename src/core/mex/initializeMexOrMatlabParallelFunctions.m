@@ -42,4 +42,8 @@ if isequal(mexext, 'mexw64')
 end
 clear inverseDynamicsMatlabParallel
 clear pointKinematicsMatlabParallel
+
+clear calcGpopsIntegrand
+clear computeGpopsEndpointFunction
+clear computeGpopsContinuousFunction
 end

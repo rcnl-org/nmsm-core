@@ -28,8 +28,11 @@
 % ----------------------------------------------------------------------- %
 
 function integrand = calcGpopsIntegrand(values, modeledValues, inputs)
-[costTermCalculations, allowedTypes] = ...
-    generateCostTermStruct("continuous", inputs.toolName);
+persistent costTermCalculations, persistent allowedTypes;
+if isempty(allowedTypes)
+    [costTermCalculations, allowedTypes] = ...
+        generateCostTermStruct("continuous", inputs.toolName);
+end
 integrand = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedTypes, values, modeledValues, inputs);
 integrand = integrand ./ inputs.continuousMaxAllowableError;
