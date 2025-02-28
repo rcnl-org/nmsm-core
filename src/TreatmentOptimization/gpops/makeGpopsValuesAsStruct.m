@@ -52,6 +52,15 @@ values.torqueControls = control(:, ...
     length(inputs.statesCoordinateNames) + inputs.numSynergies + ...
     length(inputs.torqueControllerCoordinateNames));
 
+if inputs.useFourierControls
+    if strcmp(inputs.controllerType, 'synergy')
+        values.controlSynergyActivations = makeFourierControls(values.controlSynergyActivations, values.time, inputs);
+    end
+    if ~isempty(values.torqueControls)
+        values.torqueControls = makeFourierControls(values.torqueControls, values.time, inputs);
+    end
+end
+
 if strcmp(inputs.toolName, "TrackingOptimization")
     if strcmp(inputs.controllerType, 'synergy')
         values.synergyWeights = inputs.synergyWeights;
@@ -137,5 +146,22 @@ for i = 1:length(inputs.coordinateNames)
     if ~isempty(index)
         accelerations(:, i) = values.controlAccelerations(:, index);
     end
+end
+end
+
+function fourierControls = makeFourierControls(controls, time, inputs)
+fourierControls = zeros(size(controls));
+frequency = 1 / time(end);
+try
+    harmonics = inputs.fourierControlHarmonics;
+catch
+    harmonics = min(round(inputs.fourierControlCutoff/frequency), 1);
+end
+
+for control = 1 : size(controls, 2)
+    coefs = polyFourierCoefs(time, controls(:, control), frequency, ...
+        1, harmonics);
+    fourierControls(:, control) = polyFourierCurves(coefs, frequency, ...
+        time, inputs.fourierControlDegree, 0);
 end
 end
