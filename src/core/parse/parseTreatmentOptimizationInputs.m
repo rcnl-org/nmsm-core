@@ -87,6 +87,19 @@ inputs = parseModel(tree, inputs);
 inputs.mass = inputs.model.getTotalMass(state);
 inputs.normalizeCostByType = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, 'normalize_cost_by_term_type', false));
+inputs.useFourierControls = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'use_fourier_controls', false));
+if inputs.useFourierControls
+    if isfield(tree, 'fourier_control_harmonics')
+        inputs.fourierControlHarmonics = ...
+            getDoubleFromField(tree.fourier_control_harmonics);
+    elseif isfield(tree, 'fourier_control_cutoff_frequency')
+        inputs.fourierControlCutoff = ...
+            getDoubleFromField(tree.fourier_control_cutoff_frequency);
+    else
+        inputs.fourierControlHarmonics = 7;
+    end
+end
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
