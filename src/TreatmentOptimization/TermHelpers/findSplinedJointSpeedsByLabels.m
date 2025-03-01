@@ -2,7 +2,7 @@
 %
 % (struct, Array of double, Array of string) -> (Array of number)
 %
-% Finds splined joint angles given labels, saving indices for future calls.
+% Finds splined joint speeds given labels, saving indices for future calls.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,14 +26,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function experimentalJointAngles = ...
-    findSplinedJointAnglesByLabels(term, inputs, time)
+function experimentalJointSpeeds = ...
+    findSplinedJointSpeedsByLabels(term, inputs, time)
 indices = term.internalDataIndices;
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
         max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointAngles = inputs.splinedJointAngles(:, indices);
+    experimentalJointSpeeds = inputs.splinedJointSpeeds(:, indices);
 else
-    experimentalJointAngles = evaluateGcvSplines( ...
-        inputs.splineJointAngles, indices - 1, time);
+    experimentalJointSpeeds = evaluateGcvSplines( ...
+        inputs.splineJointAngles, indices - 1, time, 1);
 end
 end
