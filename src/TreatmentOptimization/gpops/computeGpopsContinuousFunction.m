@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modeledValues = computeGpopsContinuousFunction(setup)
+function [modeledValues, setup] = computeGpopsContinuousFunction(setup)
 values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
 if strcmp(setup.auxdata.toolName, "DesignOptimization")
     [setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
@@ -50,7 +50,8 @@ if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.path))
     modeledValues.path = scaleToBounds( ...
         modeledValues.path, setup.auxdata.maxPath, setup.auxdata.minPath);
 end
-modeledValues.integrand = calcGpopsIntegrand(values, modeledValues, setup.auxdata);
+[modeledValues.integrand, setup.auxdata] = calcGpopsIntegrand(values, ...
+    modeledValues, setup.auxdata);
 if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
     modeledValues.integrand(:, end+1) = modeledValues.metabolicCost;
 end
