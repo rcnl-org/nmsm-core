@@ -36,15 +36,10 @@ defaultTimeNormalization = true;
 
 [activation, costTerm] = findDataByLabels(costTerm, muscleActivations, ...
     inputs.muscleNames, muscleName);
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalMuscleActivations = inputs.splinedMuscleActivations;
-else
-    experimentalMuscleActivations = evaluateGcvSplines( ...
-        inputs.splineMuscleActivations, inputs.muscleNames, time);
-end
-cost = experimentalMuscleActivations(:, costTerm.internalDataIndices) - ...
-    activation;
+experimentalActivation = findSplinedMuscleActivationsByLabels(costTerm, ...
+    inputs, time);
+
+cost = experimentalActivation - activation;
 
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

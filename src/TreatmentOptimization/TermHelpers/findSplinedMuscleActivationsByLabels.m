@@ -1,8 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of string, Array of string) -> (Array of double)
+% (struct, Array of double, Array of string) -> (Array of number)
 %
-% Finds indices of target labels in a full set of labels.
+% Finds splined activations given labels, saving indices for future calls.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,14 +26,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function indices = findDataIndicesByLabels(dataLabels, targetLabels)
-dataLabels = string(dataLabels);
-targetLabels = string(targetLabels);
-indices = zeros(size(targetLabels));
-for i = 1 : length(indices)
-    tempIndex = find(strcmp(dataLabels, targetLabels(i)));
-    assert(~isempty(tempIndex), strcat(targetLabels(i), " is not in ", ...
-        "the <states_coordinate_list> or a muscle name"));
-    indices(i) = tempIndex;
+function experimentalMuscleActivations = ...
+    findSplinedMuscleActivationsByLabels(term, inputs, time)
+indices = term.internalDataIndices;
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    experimentalMuscleActivations = ...
+        inputs.splinedMuscleActivations(:, indices);
+else
+    experimentalMuscleActivations = evaluateGcvSplines( ...
+        inputs.splineMuscleActivations, indices - 1, time);
 end
 end

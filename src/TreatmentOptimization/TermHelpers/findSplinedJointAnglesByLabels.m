@@ -1,7 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, Array of double, Array of string, Array of string) -> 
-% (Array of number, struct)
+% (struct, Array of double, Array of string) -> (Array of number)
 %
 % Finds splined joint anglesgiven labels, saving indices for future calls.
 
@@ -27,15 +26,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [experimentalJointAngles, term] = ...
-    findSplinedJointAnglesByLabels(term, inputs, time, targetLabels)
-try
-    indices = term.internalDataIndices;
-catch
-    indices = findDataIndicesByLabels(inputs.coordinateNames, ...
-        targetLabels);
-    term.internalDataIndices = indices;
-end
+function experimentalJointAngles = ...
+    findSplinedJointAnglesByLabels(term, inputs, time)
+indices = term.internalDataIndices;
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
         max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
     experimentalJointAngles = inputs.splinedJointAngles(:, indices);
