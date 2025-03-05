@@ -49,7 +49,8 @@ if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
     includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
     experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
 end
-cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
+scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+cost = calcTrackingCostArrayTerm(experimentalJointMoments * scaleFactor, ...
     inverseDynamicsMoments, indx);
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
