@@ -111,14 +111,8 @@ else
     velocities = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 1);
 end
-for i = 1:length(inputs.coordinateNames)
-    index = find(ismember( ...
-        inputs.statesCoordinateNames, inputs.coordinateNames{i}));
-    if ~isempty(index)
-        positions(:, i) = values.statePositions(:, index);
-        velocities(:, i) = values.stateVelocities(:, index);
-    end
-end
+positions(:, inputs.statesCoordinateIndices) = values.statePositions;
+velocities(:, inputs.statesCoordinateIndices) = values.stateVelocities;
 end
 
 function accelerations = recombineFullAccelerations(values, inputs)
@@ -131,11 +125,6 @@ else
     accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 2);
 end
-for i = 1:length(inputs.coordinateNames)
-    index = find(ismember( ...
-        inputs.statesCoordinateNames, inputs.coordinateNames{i}));
-    if ~isempty(index)
-        accelerations(:, i) = values.controlAccelerations(:, index);
-    end
-end
+accelerations(:, inputs.statesCoordinateIndices) = ...
+    values.controlAccelerations;
 end
