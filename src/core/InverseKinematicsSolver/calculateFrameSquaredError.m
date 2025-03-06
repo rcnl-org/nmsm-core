@@ -30,19 +30,29 @@
 % ----------------------------------------------------------------------- %
 
 function error = calculateFrameSquaredError(ikSolver)
-persistent solverMarkerNames
-if isempty(solverMarkerNames)
-    solverMarkerNames = cell(1, ikSolver.getNumMarkersInUse());
-    for i = 1 : ikSolver.getNumMarkersInUse()
-        solverMarkerNames{i} = ...
-            ikSolver.getMarkerNameForIndex(i - 1);
-            % ikSolver.getMarkerNameForIndex(i - 1).toCharArray';
-            % string(ikSolver.getMarkerNameForIndex(i - 1).toCharArray');
-    end
+% persistent solverMarkerNames
+% if isempty(solverMarkerNames)
+%     solverMarkerNames = cell(1, ikSolver.getNumMarkersInUse());
+%     for i = 1 : ikSolver.getNumMarkersInUse()
+%         solverMarkerNames{i} = ...
+%             ikSolver.getMarkerNameForIndex(i - 1);
+%             % ikSolver.getMarkerNameForIndex(i - 1).toCharArray';
+%             % string(ikSolver.getMarkerNameForIndex(i - 1).toCharArray');
+%     end
+% end
+% error = zeros(1, length(solverMarkerNames));
+% for i= 1 : length(error)
+%     error(i) = ikSolver.computeCurrentMarkerError(solverMarkerNames{i});
+% end
+persistent arrayDouble
+numMarkers = ikSolver.getNumMarkersInUse();
+if isempty(arrayDouble)
+    arrayDouble = org.opensim.modeling.SimTKArrayDouble(numMarkers, 0.0);
 end
-error = zeros(1, length(solverMarkerNames));
-for i= 1 : length(error)
-    error(i) = ikSolver.computeCurrentMarkerError(solverMarkerNames{i});
+ikSolver.computeCurrentMarkerErrors(arrayDouble);
+error = zeros(1, numMarkers);
+for i = 1 : numMarkers
+    error(i) = arrayDouble.at(i - 1);
 end
 error = error / sqrt(length(error));
 end
