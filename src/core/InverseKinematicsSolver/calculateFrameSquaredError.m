@@ -30,9 +30,19 @@
 % ----------------------------------------------------------------------- %
 
 function error = calculateFrameSquaredError(ikSolver)
-error = zeros(1, ikSolver.getNumMarkersInUse());
-for i=0:ikSolver.getNumMarkersInUse()-1
-    error(i+1) = ikSolver.computeCurrentMarkerError(i);
+persistent solverMarkerNames
+if isempty(solverMarkerNames)
+    solverMarkerNames = cell(1, ikSolver.getNumMarkersInUse());
+    for i = 1 : ikSolver.getNumMarkersInUse()
+        solverMarkerNames{i} = ...
+            ikSolver.getMarkerNameForIndex(i - 1);
+            % ikSolver.getMarkerNameForIndex(i - 1).toCharArray';
+            % string(ikSolver.getMarkerNameForIndex(i - 1).toCharArray');
+    end
+end
+error = zeros(1, length(solverMarkerNames));
+for i= 1 : length(error)
+    error(i) = ikSolver.computeCurrentMarkerError(solverMarkerNames{i});
 end
 error = error / sqrt(length(error));
 end
