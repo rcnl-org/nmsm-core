@@ -1,12 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% If the model is synergy driven, this function tracks the difference
-% between original and current synergy activation controls. If the model is
-% torque driven, this function tracks the difference between inverse
-% dynamics moments and current torque controls.
+% (Array of string, Array of string) -> (Array of double)
 %
-% (struct, struct, Array of number, Array of string) -> (Array of number)
-%
+% Finds indices of target labels in a full set of labels if present.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,18 +26,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [cost, costTerm] = calcTrackingControllerIntegrand(costTerm, inputs, ...
-    values, time, controllerName)
-defaultTimeNormalization = true;
-[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
-    defaultTimeNormalization);
-
-[controls, costTerm] = findControlsByLabels(costTerm, inputs, values, ...
-    time, controllerName);
-experimentalControls = findSplinedControlsByLabels(costTerm, inputs, time);
-
-scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-cost = controls - (experimentalControls * scaleFactor);
-
-cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
+function indices = findOptionalDataIndicesByLabels(dataLabels, ...
+    targetLabels)
+dataLabels = string(dataLabels);
+targetLabels = string(targetLabels);
+indices = zeros(size(targetLabels));
+for i = 1 : length(indices)
+    tempIndex = find(strcmp(dataLabels, targetLabels(i)));
+    if isempty(tempIndex)
+        tempIndex = -1;
+    end
+    indices(i) = tempIndex;
+end
 end

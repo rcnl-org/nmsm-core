@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% If the model is synergy driven, this function tracks the difference
-% between original and current synergy activation controls. If the model is
-% torque driven, this function tracks the difference between inverse
-% dynamics moments and current torque controls.
+% (struct, Array of double, Array of string, Array of string) -> 
+% (Array of number, struct)
 %
-% (struct, struct, Array of number, Array of string) -> (Array of number)
-%
+% Finds splined control given labels, saving indices for future calls.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,18 +27,33 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [cost, costTerm] = calcTrackingControllerIntegrand(costTerm, inputs, ...
-    values, time, controllerName)
-defaultTimeNormalization = true;
-[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
-    defaultTimeNormalization);
+function controls = findSplinedControlsByLabels(term, inputs, time)
+synergyControlIndices = term.internalSynergyControlIndices;
+torqueControlIndices = term.internalSplinedTorqueControlIndices;
+numberOfTerms = length(synergyControlIndices);
 
-[controls, costTerm] = findControlsByLabels(costTerm, inputs, values, ...
-    time, controllerName);
-experimentalControls = findSplinedControlsByLabels(costTerm, inputs, time);
-
-scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-cost = controls - (experimentalControls * scaleFactor);
-
-cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
+controls = zeros(length(time), numberOfTerms);
+for i = 1 : numberOfTerms
+    if synergyControlIndices(i) > 0
+        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+                max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+            controls(:, i) = inputs.splinedSynergyActivations(:, ...
+                synergyControlIndices(i));
+        else
+            controls(:, i) = evaluateGcvSplines( ...
+                inputs.splineSynergyActivations, ...
+                synergyControlIndices(i) - 1, time);
+        end
+    elseif torqueControlIndices(i) > 0
+        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+                max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+            controls(:, i) = inputs.splinedTorqueControls(:, ...
+                torqueControlIndices(i));
+        else
+            controls(:, i) = evaluateGcvSplines( ...
+                inputs.splineTorqueControls, ...
+                torqueControlIndices(i) - 1, time);
+        end
+    end
+end
 end
