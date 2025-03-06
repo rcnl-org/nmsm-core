@@ -1,10 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost function values for all treatment
-% optimization modules (tracking, verification and design optimization).
+% (Array of string, Array of string) -> (Array of double)
 %
-% (struct, string, struct, struct, struct) -> (2D matrix)
-% 
+% Finds indices of target loads in list of coordinate names.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,26 +26,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [cost, auxdata] = calcTreatmentOptimizationCost( ...
-    costTermCalculations, allowedTypes, values, modeledValues, auxdata)
-cost = [];
-for i = 1:length(auxdata.costTerms)
-    costTerm = auxdata.costTerms{i};
-    if costTerm.isEnabled
-        if isfield(costTermCalculations, costTerm.type) && ...
-                any(ismember(allowedTypes, costTerm.type))
-            fn = costTermCalculations.(costTerm.type);
-            try
-                [newCost, auxdata.costTerms{i}] = ...
-                    fn(values, modeledValues, auxdata, costTerm);
-            catch
-                newCost = fn(values, modeledValues, auxdata, costTerm);
-            end
-            cost = cat(2, cost, newCost);
-%          else
-%              throw(MException('', ['Cost term type ' costTerm.type ...
-%                  ' does not exist for this tool.']))
-        end
+function indices = findCoordinateIndicesFromLoadNames(coordinateNames, loadNames)
+coordinateNames = string(coordinateNames);
+loadNames = string(loadNames);
+loadNames = replace(replace(loadNames, '_moment', ''), '_force', '');
+indices = zeros(size(loadNames));
+for i = 1 : length(indices)
+    tempIndex = find(strcmp(coordinateNames, loadNames(i)));
+    if isempty(tempIndex)
+        tempIndex = -1;
     end
+    indices(i) = tempIndex;
 end
 end

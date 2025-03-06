@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the cost function values for all treatment
-% optimization modules (tracking, verification and design optimization).
+% (struct, Array of double, Array of string, Array of string) -> 
+% (Array of number, struct)
 %
-% (struct, string, struct, struct, struct) -> (2D matrix)
-% 
+% Finds total controlled moment in an array given a label.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,26 +27,42 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [cost, auxdata] = calcTreatmentOptimizationCost( ...
-    costTermCalculations, allowedTypes, values, modeledValues, auxdata)
-cost = [];
-for i = 1:length(auxdata.costTerms)
-    costTerm = auxdata.costTerms{i};
-    if costTerm.isEnabled
-        if isfield(costTermCalculations, costTerm.type) && ...
-                any(ismember(allowedTypes, costTerm.type))
-            fn = costTermCalculations.(costTerm.type);
-            try
-                [newCost, auxdata.costTerms{i}] = ...
-                    fn(values, modeledValues, auxdata, costTerm);
-            catch
-                newCost = fn(values, modeledValues, auxdata, costTerm);
-            end
-            cost = cat(2, cost, newCost);
-%          else
-%              throw(MException('', ['Cost term type ' costTerm.type ...
-%                  ' does not exist for this tool.']))
+function [controlledMoment, term] = findControlledJointMomentByLabel( ...
+    term, inputs, modeledValues, torqueControls, loadName)
+if isfield(term, 'internalMuscleMomentIndex')
+    muscleMomentIndex = term.internalMuscleMomentIndex;
+    torqueLoadIndex = term.internalTorqueLoadIndex;
+else
+    if strcmpi(inputs.controllerType, "synergy")
+        muscleCoordinateIndex = findCoordinateIndicesFromLoadNames( ...
+            inputs.coordinateNames, loadName);
+        muscleMomentIndex = find(inputs.surrogateModelIndex == ...
+            muscleCoordinateIndex, 1);
+        if isempty(muscleMomentIndex)
+            muscleMomentIndex = -1;
         end
+        term.internalMuscleMomentIndex = muscleMomentIndex;
+    else
+        muscleMomentIndex = -1;
+        term.internalMuscleMomentIndex = -1;
     end
+    torqueLoadIndex = findCoordinateIndicesFromLoadNames( ...
+        inputs.torqueControllerCoordinateNames, loadName);
+    term.internalTorqueLoadIndex = torqueLoadIndex;
+    assert(muscleMomentIndex > 0 || torqueLoadIndex > 0, loadName ...
+        + " is not a controlled load")
 end
+
+if muscleMomentIndex > 0
+    synergyLoad = modeledValues.muscleJointMoments(:, muscleMomentIndex);
+else
+    synergyLoad = 0;
+end
+if torqueLoadIndex > 0
+    torqueLoad = torqueControls(:, torqueLoadIndex);
+else
+    torqueLoad = 0;
+end
+
+controlledMoment = synergyLoad + torqueLoad;
 end

@@ -29,9 +29,9 @@
 
 function [dataColumns, term] = findDataByLabels(term, data, dataLabels, ...
     targetLabels)
-try
+if isfield(term, 'internalDataIndices')
     indices = term.internalDataIndices;
-catch
+else
     indices = findDataIndicesByLabels(dataLabels, targetLabels);
     term.internalDataIndices = indices;
 end
