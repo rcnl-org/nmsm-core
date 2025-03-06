@@ -28,36 +28,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingSpeedIntegrand(costTerm, inputs, time, ...
-    velocities, coordinateName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
-    coordinateName));
-if isempty(indx)
-    throw(MException('CostTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", coordinateName, " is not in the ", ...
-        "<states_coordinate_list>")))
-end
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointVelocities = inputs.splinedJointSpeeds;
-else
-    experimentalJointVelocities = evaluateGcvSplines( ...
-        inputs.splineJointAngles, inputs.coordinateNames, time, 1);
-end
+function [cost, costTerm] = calcTrackingSpeedIntegrand(costTerm, ...
+    inputs, time, velocities, coordinateName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
 
-cost = calcTrackingCostArrayTerm(experimentalJointVelocities, ...
-    velocities, indx);
+[velocity, costTerm] = findDataByLabels(costTerm, velocities, ...
+    inputs.coordinateNames, coordinateName);
+experimentalVelocity = findSplinedJointSpeedsByLabels( ...
+    costTerm, inputs, time);
 
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+cost = experimentalVelocity - velocity;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
