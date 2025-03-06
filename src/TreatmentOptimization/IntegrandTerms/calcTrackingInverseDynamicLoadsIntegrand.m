@@ -39,7 +39,8 @@ defaultTimeNormalization = true;
 [experimentalMoment, costTerm] = findSplinedJointMomentsByLabels( ...
     costTerm, inputs, time, inverseDynamicsMoments);
 
-cost = experimentalMoment - idMoment;
+scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+cost = (experimentalMoment * scaleFactor) - idMoment;
 
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
