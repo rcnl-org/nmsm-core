@@ -26,9 +26,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function experimentalJointMoments = ...
-    findSplinedJointMomentsByLabels(term, inputs, time)
+function [experimentalJointMoments, term] = ...
+    findSplinedJointMomentsByLabels(term, inputs, time, ...
+    inverseDynamicsMoments)
 indices = term.internalDataIndices;
+if nargin == 4 && size(inverseDynamicsMoments, 2) ~= ...
+        size(inputs.splinedJointMoments, 2)
+    if isfield(term, 'internalExperimentalDataIndices')
+        indices = term.internalExperimentalDataIndices;
+    else
+        momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels,...
+            '_moment');
+        momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
+        includedJointMomentCols = ismember(momentLabelsNoSuffix, ...
+            convertCharsToStrings(inputs.coordinateNames));
+        for i = 1 : length(indices)
+            tempIndices = find(includedJointMomentCols, indices(i));
+            indices(i) = tempIndices(end);
+        end
+        term.internalExperimentalDataIndices = indices;
+    end
+end
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
         max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
     experimentalJointMoments = inputs.splinedJointMoments(:, indices);
