@@ -53,6 +53,8 @@ for i=1:length(springConstants)
     ymax = 1e-2;
     Kval = springConstants(i);
     height = height - springRestingLength;
+    % Spherical elements
+    height = sign(height) .* abs(height) .^ 1.5;
     % When the height variable reaches a critical value of 0.70947586,
     % the calculated vertical ground reaction force goes to fininity. Thus,
     % it is essential to keep the height variable below this value.
