@@ -105,6 +105,9 @@ elseif size(values.time) == size(inputs.collocationTimeOriginal) + [1, 0]
     velocities = inputs.splinedJointSpeeds;
     positions(end+1, :) = inputs.experimentalJointAngles(end, :);
     velocities(end+1, :) = inputs.experimentalJointVelocities(end, :);
+elseif size(values.time) == [2, 1]
+    positions = inputs.experimentalJointAngles([1 end], :);
+    velocities = inputs.experimentalJointVelocities([1 end], :);
 else
     positions = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time);
@@ -121,6 +124,8 @@ if size(values.time) == size(inputs.collocationTimeOriginal)
 elseif size(values.time) == size(inputs.collocationTimeOriginal) + [1, 0]
     accelerations = inputs.splinedJointAccelerations;
     accelerations(end+1, :) = inputs.experimentalJointAccelerations(end, :);
+elseif size(values.time) == [2, 1]
+    accelerations = inputs.experimentalJointAccelerations([1 end], :);
 else
     accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 2);
