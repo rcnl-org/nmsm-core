@@ -78,7 +78,9 @@ end
 discrete = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedCostTypes, values, modeledValues, setup.auxdata);
 discreteObjective = sum(discrete) / length(discrete);
-if isnan(discreteObjective); discreteObjective = 0; end
+if isempty(discreteObjective) || isnan(discreteObjective) 
+    discreteObjective = 0; 
+end
 
 
 if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~isempty(setup.phase.integral)

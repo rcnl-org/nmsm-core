@@ -30,24 +30,27 @@
 
 function [cost, auxdata] = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedTypes, values, modeledValues, auxdata)
-cost = [];
-for i = 1:length(auxdata.costTerms)
-    costTerm = auxdata.costTerms{i};
+cost = nan(length(values.time), length(auxdata.costTerms));
+costTerms = auxdata.costTerms;
+for i = 1:size(cost, 2)
+    costTerm = costTerms{i};
     if costTerm.isEnabled
         if isfield(costTermCalculations, costTerm.type) && ...
                 any(ismember(allowedTypes, costTerm.type))
             fn = costTermCalculations.(costTerm.type);
             try
-                [newCost, auxdata.costTerms{i}] = ...
+                [newCost, costTerms{i}] = ...
                     fn(values, modeledValues, auxdata, costTerm);
             catch
                 newCost = fn(values, modeledValues, auxdata, costTerm);
             end
-            cost = cat(2, cost, newCost);
+            cost(:, i) = newCost;
 %          else
 %              throw(MException('', ['Cost term type ' costTerm.type ...
 %                  ' does not exist for this tool.']))
         end
     end
 end
+auxdata.costTerms = costTerms;
+cost = cost(:, ~isnan(cost(1, :)));
 end
