@@ -46,4 +46,5 @@ clear pointKinematicsMatlabParallel
 clear calcGpopsIntegrand
 clear computeGpopsEndpointFunction
 clear computeGpopsContinuousFunction
+clear calcSynergyBasedModeledValues
 end

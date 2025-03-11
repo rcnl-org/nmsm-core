@@ -63,16 +63,27 @@ muscleActivations = permute(muscleActivations, [3 2 1]);
 end
 
 function [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, inputs)
-for i = 1 : inputs.numMuscles
-    counter = 1;
-    for j = 1:length(inputs.coordinateNames)
-        for k = 1:length(inputs.surrogateModelLabels{i})
-            if strcmp(inputs.coordinateNamesStrings(j), inputs.surrogateModelLabels{i}(k))
-                jointAngles{i}(:, counter) = values.positions(:, j);
-                jointVelocities{i}(:, counter) = values.velocities(:, j);
-                counter = counter + 1;
+persistent indexMatrix;
+if isempty(indexMatrix)
+    indexMatrix = zeros(0, 3);
+    for i = 1 : inputs.numMuscles
+        counter = 1;
+        for j = 1:length(inputs.coordinateNames)
+            for k = 1:length(inputs.surrogateModelLabels{i})
+                if strcmp(inputs.coordinateNamesStrings(j), inputs.surrogateModelLabels{i}(k))
+                    indexMatrix(end+1, :) = [i, counter, j];
+                    counter = counter + 1;
+                end
             end
         end
     end
+end
+jointAngles = cell(1, inputs.numMuscles);
+jointVelocities = jointAngles;
+for i = 1 : size(indexMatrix, 1)
+    jointAngles{indexMatrix(i, 1)}(:, indexMatrix(i, 2)) = ...
+        values.positions(:, indexMatrix(i, 3));
+    jointVelocities{indexMatrix(i, 1)}(:, indexMatrix(i, 2)) = ...
+        values.velocities(:, indexMatrix(i, 3));
 end
 end
