@@ -32,18 +32,20 @@ function [cost, auxdata] = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedTypes, values, modeledValues, auxdata)
 cost = nan(length(values.time), length(auxdata.costTerms));
 costTerms = auxdata.costTerms;
-for i = 1:size(cost, 2)
+persistent serialAuxdata, persistent removedTerms;
+if isempty(serialAuxdata)
+    clear costTermParallelHelper
+    [serialAuxdata, removedTerms] = makeSerializableInputs(auxdata);
+end
+parfor i = 1:size(cost, 2)
     costTerm = costTerms{i};
     if costTerm.isEnabled
         if isfield(costTermCalculations, costTerm.type) && ...
                 any(ismember(allowedTypes, costTerm.type))
             fn = costTermCalculations.(costTerm.type);
-            try
-                [newCost, costTerms{i}] = ...
-                    fn(values, modeledValues, auxdata, costTerm);
-            catch
-                newCost = fn(values, modeledValues, auxdata, costTerm);
-            end
+            [newCost, costTerms{i}] = costTermParallelHelper(fn, ...
+                values, modeledValues, serialAuxdata, removedTerms, ...
+                costTerm);
             cost(:, i) = newCost;
 %          else
 %              throw(MException('', ['Cost term type ' costTerm.type ...
@@ -53,4 +55,30 @@ for i = 1:size(cost, 2)
 end
 auxdata.costTerms = costTerms;
 cost = cost(:, ~isnan(cost(1, :)));
+end
+
+function [cost, costTerm] = costTermParallelHelper(costHandle, values, ...
+    modeledValues, serialAuxdata, removedTerms, costTerm)
+persistent auxdata;
+if isempty(auxdata)
+    auxdata = serialAuxdata;
+    nonSerialData = makeNonSerializableInputs(serialAuxdata, removedTerms);
+    possibleNonSerializable = ["model", "splineJointAngles", ...
+        "splineJointMoments", "splineSynergyActivations", ...
+        "splineMuscleActivations", "splineTorqueControls", ...
+        "splineMarkerPositions", "splineMarkerVelocities", ...
+        "splineExperimentalGroundReactionForces", ...
+        "splineExperimentalGroundReactionMoments"];
+    for i = 1 : length(nonSerialData)
+        if removedTerms(i)
+            auxdata.(possibleNonSerializable(i)) = nonSerialData{i};
+        end
+    end
+end
+try
+    [cost, costTerm] = ...
+        costHandle(values, modeledValues, auxdata, costTerm);
+catch
+    cost = costHandle(values, modeledValues, auxdata, costTerm);
+end
 end
