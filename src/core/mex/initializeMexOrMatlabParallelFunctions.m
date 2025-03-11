@@ -47,4 +47,5 @@ clear calcGpopsIntegrand
 clear computeGpopsEndpointFunction
 clear computeGpopsContinuousFunction
 clear calcSynergyBasedModeledValues
+clear calcSurrogateModel
 end
