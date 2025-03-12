@@ -153,8 +153,7 @@ if ~isempty(groundContactData)
             makeCoPData(splinedGroundContactData(:, (9 * (i - 1)) + (1:9)));
     end
     writeToSto(groundContactLabels, time, dataCoP, ...
-        fullfile(inputs.resultsDirectory, "GRFData", ...
-        strcat("CoP_", inputs.trialName, ".sto")));
+        fullfile(inputs.resultsDirectory, "GRFData", "CoP.sto"));
 end
 end
 
