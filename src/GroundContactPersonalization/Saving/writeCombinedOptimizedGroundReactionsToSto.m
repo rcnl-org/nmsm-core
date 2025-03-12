@@ -34,9 +34,11 @@ for foot = 1:length(inputs.surfaces)
 end
 [~,name,ext] = fileparts(inputs.grfFileName);
 outfile = strcat(name, ext);
+outfileCoP = strcat(name, "_CoP", ext);
 
 timePoints = inputs.surfaces{1}.time;
 data = zeros(length(timePoints), 9 * length(inputs.surfaces));
+dataCoP = zeros(length(timePoints), 9 * length(inputs.surfaces));
 columnLabels = string([]);
 for foot = 1:length(inputs.surfaces)
     if any(size(timePoints) ~= size(inputs.surfaces{foot}.time)) || ...
@@ -72,9 +74,13 @@ for foot = 1:length(inputs.surfaces)
     data(:, (foot - 1) * 9 + 1 : foot * 9) = [modeledValues.anteriorGrf' modeledValues.verticalGrf' ...
         modeledValues.lateralGrf' center' modeledValues.xGrfMoment' ...
         modeledValues.yGrfMoment' modeledValues.zGrfMoment'];
-    data = lowpassFilter(inputs.surfaces{1}.time, data, 2, 6, 0);
+    dataCoP(:, (foot - 1) * 9 + 1 : foot * 9) = ...
+        makeCoPData(data(:, (foot - 1) * 9 + 1 : foot * 9));
 end
+data = lowpassFilter(inputs.surfaces{1}.time, data, 2, 6, 0);
+dataCoP = lowpassFilter(inputs.surfaces{1}.time, dataCoP, 2, 6, 0);
 writeToSto(columnLabels, timePoints, data, ...
     fullfile(resultsDirectory, "GRFData", outfile));
+writeToSto(columnLabels, timePoints, dataCoP, ...
+    fullfile(resultsDirectory, "GRFData", outfileCoP));
 end
-
