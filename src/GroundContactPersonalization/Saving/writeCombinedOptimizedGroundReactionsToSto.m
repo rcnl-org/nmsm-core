@@ -34,9 +34,11 @@ for foot = 1:length(inputs.surfaces)
 end
 [~,name,ext] = fileparts(inputs.grfFileName);
 outfile = strcat(name, ext);
+outfileCoP = strcat(name, "_CoP", ext);
 
 timePoints = inputs.surfaces{1}.time;
 data = zeros(length(timePoints), 9 * length(inputs.surfaces));
+dataCoP = zeros(length(timePoints), 9 * length(inputs.surfaces));
 columnLabels = string([]);
 for foot = 1:length(inputs.surfaces)
     if any(size(timePoints) ~= size(inputs.surfaces{foot}.time)) || ...
@@ -54,11 +56,11 @@ for foot = 1:length(inputs.surfaces)
     end
     for i = 1:3
         columnLabels(end + 1) = convertCharsToStrings( ...
-            inputs.surfaces{foot}.momentColumns(i, :));
+            inputs.surfaces{foot}.electricalCenterColumns(i, :));
     end
     for i = 1:3
         columnLabels(end + 1) = convertCharsToStrings( ...
-            inputs.surfaces{foot}.electricalCenterColumns(i, :));
+            inputs.surfaces{foot}.momentColumns(i, :));
     end
     [modeledJointPositions, modeledJointVelocities] = ...
         calcGCPJointKinematics(inputs.surfaces{foot} ...
@@ -70,11 +72,15 @@ for foot = 1:length(inputs.surfaces)
     center = inputs.surfaces{foot}.midfootSuperiorPosition;
     center(2, :) = inputs.restingSpringLength;
     data(:, (foot - 1) * 9 + 1 : foot * 9) = [modeledValues.anteriorGrf' modeledValues.verticalGrf' ...
-        modeledValues.lateralGrf' modeledValues.xGrfMoment' ...
-        modeledValues.yGrfMoment' modeledValues.zGrfMoment' center'];
-    data = lowpassFilter(inputs.surfaces{1}.time, data, 2, 6, 0);
+        modeledValues.lateralGrf' center' modeledValues.xGrfMoment' ...
+        modeledValues.yGrfMoment' modeledValues.zGrfMoment'];
+    dataCoP(:, (foot - 1) * 9 + 1 : foot * 9) = ...
+        makeCoPData(data(:, (foot - 1) * 9 + 1 : foot * 9));
 end
+data = lowpassFilter(inputs.surfaces{1}.time, data, 2, 6, 0);
+dataCoP = lowpassFilter(inputs.surfaces{1}.time, dataCoP, 2, 6, 0);
 writeToSto(columnLabels, timePoints, data, ...
     fullfile(resultsDirectory, "GRFData", outfile));
+writeToSto(columnLabels, timePoints, dataCoP, ...
+    fullfile(resultsDirectory, "GRFData", outfileCoP));
 end
-

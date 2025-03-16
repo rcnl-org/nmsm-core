@@ -104,7 +104,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
 
 				if (!osimModel[thread_id]->getCoordinateSet().get(c_array).get_locked())
 				{
-					osimModel[thread_id]->getCoordinateSet().get(c_array).setValue(*osimState[thread_id], q[k*numPts + i]);
+					osimModel[thread_id]->getCoordinateSet().get(c_array).setValue(*osimState[thread_id], q[k*numPts + i], false);
 					osimModel[thread_id]->getCoordinateSet().get(c_array).setSpeedValue(*osimState[thread_id], qp[k*numPts + i]);
 				}
 				mxFree(c_array);
