@@ -1,8 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, Array of double, Array of string) -> (Array of number)
+% (struct, Array of double, Array of string, Array of string) -> 
+% (Array of number, struct)
 %
-% Finds splined ground reaction moments given labels.
+% Finds marker position data in an array given labels.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,30 +27,42 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function experimentalGroundReactions = ...
-    findSplinedGroundReactionMomentsByLabels(term, inputs, time)
-groundReactionIndices = term.internalGroundReactionIndices;
-contactSurfaceIndices = term.internalContactSurfaceIndices;
-experimentalGroundReactions = zeros(length(time), ...
-    length(groundReactionIndices));
-for i = 1 : length(groundReactionIndices)
-    if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-            max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-        groundReactions = ...
-            inputs.splinedGroundReactionMoments{contactSurfaceIndices(i)};
-        experimentalGroundReactions(:, i) = ...
-            groundReactions(:, groundReactionIndices(i));
-    elseif length(time) == 2
-        groundReactions = ...
-            inputs.contactSurfaces{ ...
-            contactSurfaceIndices(i)}.experimentalGroundReactionMoments;
-        experimentalGroundReactions(:, i) = ...
-            groundReactions([1 end], groundReactionIndices(i));
-    else
-        experimentalGroundReactions(:, i) = evaluateGcvSplines( ...
-            inputs.splineExperimentalGroundReactionMoments{ ...
-            contactSurfaceIndices(i)}, ...
-            groundReactionIndices(i) - 1, time);
+function [dataColumns, term] = findMarkerPositionDataByLabels(term, ...
+    inputs, markerPositions, time, targetLabels, targetAxes)
+if isfield(term, 'internalMarkerNameIndices')
+    markerNameIndices = term.internalMarkerNameIndices;
+    markerAxesIndices = term.internalMarkerAxesIndices;
+else
+    targetLabels = string(targetLabels);
+    numberOfTerms = length(targetLabels);
+    markerNameIndices = zeros(1, numberOfTerms);
+    markerAxesIndices = false(numberOfTerms, 3);
+    for i = 1 : numberOfTerms
+        index = find(strcmp(inputs.trackedMarkerNames, ...
+            targetLabels(i)), 1);
+        if ~isempty(index)
+            markerNameIndices = index;
+            markerAxesIndices(i, :) = [ ...
+                contains(lower(targetAxes), "x"), ...
+                contains(lower(targetAxes), "y"), ...
+                contains(lower(targetAxes), "z")];
+        end
+
+        assert(markerNameIndices(i) ~= 0, targetLabels(i) + ...
+            " is not a marker name");
+    end
+    term.internalMarkerNameIndices = markerNameIndices;
+    term.internalMarkerAxesIndices = markerAxesIndices;
+end
+dataColumns = zeros(length(time), sum(any(markerAxesIndices)), ...
+    length(markerNameIndices));
+includedAxes = find(any(markerAxesIndices, 1));
+for i = 1 : length(markerNameIndices)
+    for j = 1 : length(includedAxes)
+        if markerAxesIndices(i, includedAxes(j))
+            dataColumns(:, j, i) = markerPositions(:, includedAxes(j), ...
+                markerNameIndices(i));
+        end
     end
 end
 end

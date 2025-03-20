@@ -1,8 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, Array of double, Array of string) -> (Array of number)
+% This function calculates the difference between the experimental and
+% predicted ground reaction moments for the specified moment.
 %
-% Finds splined ground reaction moments given labels.
+% (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,30 +28,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function experimentalGroundReactions = ...
-    findSplinedGroundReactionMomentsByLabels(term, inputs, time)
-groundReactionIndices = term.internalGroundReactionIndices;
-contactSurfaceIndices = term.internalContactSurfaceIndices;
-experimentalGroundReactions = zeros(length(time), ...
-    length(groundReactionIndices));
-for i = 1 : length(groundReactionIndices)
-    if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-            max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-        groundReactions = ...
-            inputs.splinedGroundReactionMoments{contactSurfaceIndices(i)};
-        experimentalGroundReactions(:, i) = ...
-            groundReactions(:, groundReactionIndices(i));
-    elseif length(time) == 2
-        groundReactions = ...
-            inputs.contactSurfaces{ ...
-            contactSurfaceIndices(i)}.experimentalGroundReactionMoments;
-        experimentalGroundReactions(:, i) = ...
-            groundReactions([1 end], groundReactionIndices(i));
-    else
-        experimentalGroundReactions(:, i) = evaluateGcvSplines( ...
-            inputs.splineExperimentalGroundReactionMoments{ ...
-            contactSurfaceIndices(i)}, ...
-            groundReactionIndices(i) - 1, time);
-    end
-end
+function [pathTerm, constraintTerm] = ...
+    calcInitialExternalMomentDeviation( ...
+    constraintTerm, inputs, groundReactionsMoments, time, momentName)
+[moment, constraintTerm] = findGroundReactionMomentDataByLabels( ...
+    constraintTerm, inputs, groundReactionsMoments, time, momentName);
+experimentalMoment = findSplinedGroundReactionMomentsByLabels( ...
+    constraintTerm, inputs, time);
+
+pathTerm = moment(1) - experimentalMoment(1);
 end
