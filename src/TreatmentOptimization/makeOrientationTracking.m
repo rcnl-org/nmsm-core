@@ -88,5 +88,6 @@ if ~isempty(inputs.trackedOrientationNames)
     inputs.splineBodyOrientations = makeGcvSplineSet( ...
         inputs.experimentalTime, bodyOrientations, ...
         inputs.splineBodyOrientationsLabels);
+    inputs.experimentalBodyOrientations = bodyOrientations;
 end
 end
