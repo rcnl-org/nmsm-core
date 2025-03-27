@@ -275,10 +275,10 @@ for term = 1:length(params.tasks{task}.costTerms)
                     modeledValues.gaussianWeights) / ...
                     costTerm.maxAllowableError) .^ 4 * ...
                     costTerm.maxAllowableError;
-            case "electrical_center_shift"
+            case "electrical_center_regularization"
                 rawCost = calcElectricalCenterShiftError(inputs, ...
-                    valuesStruct);
-            case "force_plate_rotation"
+                    valuesStruct, costTerm);
+            case "force_plate_rotation_regularization"
                 rawCost = calcForcePlateRotationError(inputs, ...
                     valuesStruct);
             otherwise
