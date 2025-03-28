@@ -41,7 +41,7 @@ experimentalMoment = findSplinedGroundReactionMomentsByLabels( ...
 
 cost = experimentalMoment - moment;
 
-[cost, costTerm] = applyTermMask(cost, costTerm, time);
+[cost, costTerm] = applyTermTimeRanges(cost, costTerm, time);
 [cost, costTerm] = applyPercentErrorWithMinimum(cost, ...
     experimentalMoment, costTerm);
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);

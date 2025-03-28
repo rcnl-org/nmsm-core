@@ -2,7 +2,7 @@
 %
 % (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
 %
-% Applies a mask to a cost or constraint term.
+% Applies a time range to a cost or constraint term.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,22 +26,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [termValues, term] = applyTermMask(termValues, term, time)
-if isfield(term, "mask")
-    if ~isnumeric(term.mask)
-        term.mask = str2double(split(term.mask));
-        assert(mod(length(term.mask), 2) == 0, ...
-            "Term masks must contain an even number of values.");
-        assert(all(sign(diff(term.mask)) == 1), "Term mask values " + ...
-            "must be strictly increasing.");
-        assert(term.mask(end) <= 1, "Term masks use time normalized " + ...
-            "from 0 to 1 and should not have values greater than 1.");
+function [termValues, term] = applyTermTimeRanges(termValues, term, time)
+if isfield(term, "time_ranges")
+    if ~isnumeric(term.time_ranges)
+        term.time_ranges = str2double(split(term.time_ranges));
+        assert(mod(length(term.time_ranges), 2) == 0, ...
+            "Term time_ranges must contain an even number of values.");
+        assert(all(sign(diff(term.time_ranges)) == 1), "Term " + ...
+            "time_ranges values must be strictly increasing.");
+        assert(term.time_ranges(end) <= 1, "Term time_ranges uses " + ...
+            "time normalized from 0 to 1 and should not have values " + ...
+            "greater than 1.");
     end
     time = time / time(end);
     excludedIndices = true(size(time));
-    for i = 1 : length(term.mask) / 2
-        excludedIndices(time >= term.mask(2 * i - 1) & ...
-            time <= term.mask(2 * i)) = false;
+    for i = 1 : length(term.time_ranges) / 2
+        excludedIndices(time >= term.time_ranges(2 * i - 1) & ...
+            time <= term.time_ranges(2 * i)) = false;
     end
     termValues(excludedIndices) = 0;
 end

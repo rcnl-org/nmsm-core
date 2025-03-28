@@ -38,7 +38,7 @@ experimentalMoment = findSplinedGroundReactionMomentsByLabels( ...
 
 pathTerm = moment - experimentalMoment;
 
-[pathTerm, constraintTerm] = applyTermMask(pathTerm, constraintTerm, time);
+[pathTerm, constraintTerm] = applyTermTimeRanges(pathTerm, constraintTerm, time);
 [pathTerm, constraintTerm] = applyPercentErrorWithMinimum(pathTerm, ...
     experimentalMoment, constraintTerm);
 end

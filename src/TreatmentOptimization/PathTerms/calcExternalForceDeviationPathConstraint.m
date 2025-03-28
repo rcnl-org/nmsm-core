@@ -38,7 +38,7 @@ experimentalForce = findSplinedGroundReactionForcesByLabels( ...
 
 pathTerm = force - experimentalForce;
 
-[pathTerm, constraintTerm] = applyTermMask(pathTerm, constraintTerm, time);
+[pathTerm, constraintTerm] = applyTermTimeRanges(pathTerm, constraintTerm, time);
 [pathTerm, constraintTerm] = applyPercentErrorWithMinimum(pathTerm, ...
     experimentalForce, constraintTerm);
 end

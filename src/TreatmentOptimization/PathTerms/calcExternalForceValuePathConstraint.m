@@ -36,5 +36,5 @@ function [pathTerm, constraintTerm] = ...
 
 pathTerm = force;
 
-[pathTerm, constraintTerm] = applyTermMask(pathTerm, constraintTerm, time);
+[pathTerm, constraintTerm] = applyTermTimeRanges(pathTerm, constraintTerm, time);
 end

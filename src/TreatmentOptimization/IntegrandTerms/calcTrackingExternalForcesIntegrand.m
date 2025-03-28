@@ -41,7 +41,7 @@ experimentalForce = findSplinedGroundReactionForcesByLabels( ...
 
 cost = experimentalForce - force;
 
-[cost, costTerm] = applyTermMask(cost, costTerm, time);
+[cost, costTerm] = applyTermTimeRanges(cost, costTerm, time);
 [cost, costTerm] = applyPercentErrorWithMinimum(cost, ...
     experimentalForce, costTerm);
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
