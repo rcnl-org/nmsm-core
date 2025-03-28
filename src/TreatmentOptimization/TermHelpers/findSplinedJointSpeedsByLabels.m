@@ -32,6 +32,9 @@ indices = term.internalDataIndices;
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
         max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
     experimentalJointSpeeds = inputs.splinedJointSpeeds(:, indices);
+elseif length(time) == 2
+    experimentalJointSpeeds = inputs.experimentalJointSpeeds( ...
+        [1 end], indices);
 else
     experimentalJointSpeeds = evaluateGcvSplines( ...
         inputs.splineJointAngles, indices - 1, time, 1);
