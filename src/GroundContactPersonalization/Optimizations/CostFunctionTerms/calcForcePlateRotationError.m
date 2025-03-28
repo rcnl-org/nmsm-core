@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Saves a ground contact .osimx model and experimental and modeled
-% kinematics and ground reactions for each foot. 
 %
-% (struct, struct, string) -> (None)
-% Save final Ground Contact Personalization results. 
+%
+% (struct, struct) -> (Array of double)
+% Calculate regularization error for force plate rotation. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Spencer Williams                          %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,37 +27,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveGroundContactPersonalizationResults(inputs, params, ...
-    resultsDirectory, osimxFileName)
-[~, name, ~] = fileparts(inputs.bodyModel);
-if ~exist(resultsDirectory, "dir")
-    mkdir(resultsDirectory);
+function errors = calcForcePlateRotationError(inputs, values)
+errors = zeros(1, length(inputs.surfaces));
+index = 1;
+for i = 1 : length(inputs.surfaces)
+    field = "forcePlateRotation" + i;
+    errors(index) = values.(field);
+    index = index + 1;
 end
-writeExperimentalFootKinematicsToSto(inputs, resultsDirectory, name);
-writeOptimizedFootKinematicsToSto(inputs, resultsDirectory, name);
-writeReplacedExperimentalGroundReactionsToSto(inputs, ... 
-    resultsDirectory, name);
-writeOptimizedGroundReactionsToSto(inputs, params, resultsDirectory, name);
-writeGroundContactPersonalizationOsimxFile(inputs, resultsDirectory, ...
-    osimxFileName);
-writeCombinedOptimizedGroundReactionsToSto(inputs, params, ...
-    resultsDirectory);
-if any(cellfun(@(task) any(task.designVariables(7:10)), params.tasks))
-    writeExperimentalGroundReactionsNewElectricalCenterToSto(inputs, ...
-        resultsDirectory);
 end
-writeFullBodyKinematicsFromGcp(inputs, params, resultsDirectory);
-% Needs two attempts to successfully delete a used MEX function
-warning('off')
-for pass = 1 : 2
-    for i = 1 : length(inputs.surfaces)
-        mexCopy = "pointKinematics" + i + ".mexw64";
-        if isfile(mexCopy)
-            clear(mexCopy)
-            delete(mexCopy)
-        end
-    end
-end
-warning('on')
-end
-
