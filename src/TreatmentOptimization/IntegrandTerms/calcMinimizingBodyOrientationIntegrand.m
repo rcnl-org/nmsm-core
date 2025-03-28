@@ -1,11 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function initializes the point kinematics and inverse dynamics mex 
-% files if the appropriate mex extention exists. It also clears previous
-% parallel workers 
-%
-% (Array of string) -> (double)
-% Intializes mex files or clear previous parallel workers 
+% (struct, struct, Array of number, Array of string) -> (Array of number)
+% Minimizes body orientation from error center.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams, Marleny Vega                               %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,24 +25,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function version = initializeMexOrMatlabParallelFunctions(modelFile)
-version = getOpenSimVersion();
-if isequal(mexext, 'mexw64')
-    if version >= 40501
-        pointKinematicsMexWindows40501(modelFile);
-        inverseDynamicsMomentumMetabolicOrientationMexWindows40501(modelFile);
-    else
-        pointKinematicsMexWindows40400(modelFile);
-        inverseDynamicsMomentumMetabolicOrientationMexWindows40400(modelFile);
-    end
-end
-clear inverseDynamicsMatlabParallel
-clear pointKinematicsMatlabParallel
+function [cost, costTerm] = calcMinimizingBodyOrientationIntegrand( ...
+    costTerm, inputs, time, bodyOrientations)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
 
-clear calcGpopsIntegrand
-clear computeGpopsEndpointFunction
-clear computeGpopsContinuousFunction
-clear calcSynergyBasedModeledValues
-clear calcTorqueBasedModeledValues
-clear calcSurrogateModel
+[angles, costTerm] = findBodyAxesByLabels(costTerm, bodyOrientations, ...
+    inputs.splineBodyOrientationsLabels, ...
+    getTermFieldOrError(costTerm, 'body'), ...
+    getTermFieldOrError(costTerm, 'axes'));
+
+cost = angles - costTerm.errorCenter;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
