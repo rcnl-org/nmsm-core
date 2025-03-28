@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the experimental and
-% predicted inverse dynamic moments for the specified coordinate.
+% This function calculates the error in marker velocity tracking
 %
 % (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
-%
+% returns the velocity difference between the experimental and calculated 
+% markers.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,30 +28,51 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicLoadsIntegrand(costTerm, ...
-    inputs, time, inverseDynamicsMoments, loadName)
+function cost = calcTrackingMarkerVelocity(costTerm, time, ...
+    markerVelocities, inputs)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
+axes = strsplit(strip(valueOrAlternate(...
+    costTerm, "axes", 'true true true')), ' ');
+if length(axes) ~= 3
+    throw(MException('CostTermError:IncorrectAxes', ...
+        strcat("Axes ", costTerm.axes, " should be three " + ...
+        "space-separated true or false values.")))
+end
 if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
     time = time * inputs.collocationTimeOriginal(end) / time(end);
 end
-indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
+indx = find(strcmp(convertCharsToStrings(inputs.trackedMarkerNames), ...
+    costTerm.marker));
+if isempty(indx)
+    throw(MException('CostTermError:MarkerDoesNotExist', ...
+        strcat("Marker ", costTerm.marker, " is not in the ", ...
+        "list of tracked markers")))
+end
+assert(length(indx) == 1, "Marker " + costTerm.marker + ...
+    " must only have one tracking cost term.")
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
         max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointMoments = inputs.splinedJointMoments;
+    experimentalMarkerVelocities = inputs.splinedMarkerVelocities{indx};
 else
-    experimentalJointMoments = evaluateGcvSplines( ...
-        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
+    experimentalMarkerVelocities = ...
+        evaluateGcvSplines(inputs.splineMarkerVelocities{indx}, ...
+        0:2, time);
 end
-if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
-    momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
-    momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-    includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
-    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
+experimentalIndex = (indx - 1) * 3 + 1;
+cost = calcTrackingCostArrayTerm(experimentalMarkerVelocities, ...
+    markerVelocities, experimentalIndex);
+if ~strcmpi(axes{1}, 'true')
+    cost(:) = 0;
 end
-scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-cost = calcTrackingCostArrayTerm(experimentalJointMoments * scaleFactor, ...
-    inverseDynamicsMoments, indx);
+if strcmpi(axes{2}, 'true')
+    cost = cost + calcTrackingCostArrayTerm(experimentalMarkerVelocities, ...
+        markerVelocities, experimentalIndex + 1);
+end
+if strcmpi(axes{3}, 'true')
+    cost = cost + calcTrackingCostArrayTerm(experimentalMarkerVelocities, ...
+        markerVelocities, experimentalIndex + 2);
+end
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);
@@ -60,3 +81,4 @@ if normalizeByFinalTime
     end
 end
 end
+

@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the experimental and
-% predicted inverse dynamic moments for the specified coordinate.
+% This function calculates the difference between experimental and
+% modeled coordinate accelerations. 
 %
-% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
-%
+% (2D matrix, Cell, Array of string) -> (Number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,35 +28,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicLoadsIntegrand(costTerm, ...
-    inputs, time, inverseDynamicsMoments, loadName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
+function pathTerm = calcGeneralizedAccelerationDeviationPathConstraint( ...
+    inputs, time, accelerations, coordinateName)
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
+    coordinateName));
+if isempty(indx)
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", coordinateName, " is not in the ", ...
+        "<states_coordinate_list>")))
 end
-indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
         max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointMoments = inputs.splinedJointMoments;
+    experimentalJointAccelerations = inputs.splinedJointAccelerations;
 else
-    experimentalJointMoments = evaluateGcvSplines( ...
-        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
+    experimentalJointAccelerations = evaluateGcvSplines( ...
+        inputs.splineJointAngles, inputs.coordinateNames, time, 2);
 end
-if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
-    momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
-    momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-    includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
-    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
-end
-scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-cost = calcTrackingCostArrayTerm(experimentalJointMoments * scaleFactor, ...
-    inverseDynamicsMoments, indx);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+pathTerm = calcTrackingCostArrayTerm(accelerations, ...
+    experimentalJointAccelerations, indx);
 end

@@ -1,12 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function saves experimental passive force data, modeled passive 
-% force data without SynX, with SynX, and with SynX with no residuals to
-% their appropriate .sto files in a directory specified by
-% resultsDirectory.
-%
-% (struct, struct, struct, struct, struct, string) -> (None)
-% Saves passive force data to .sto files.
+% (Array of double) -> (Array of double)
+% Convert ground reaction data to center of pressure format. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Robert Salati                                                %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,10 +25,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveMtpPassiveForceData(mtpInputs, resultsStruct, ...
-    resultsDirectory)
-writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
-    resultsStruct.results.passiveForce, resultsStruct.results.time, ...
-    fullfile(resultsDirectory, "passiveForcesModel"), ...
-    "_passiveForcesModel.sto");
+function dataCoP = makeCoPData(data)
+forceCutoff = 5;
+dataCoP = zeros(size(data));
+Fx = data(:, 1);
+Fy = data(:, 2);
+Fz = data(:, 3);
+px = data(:, 4);
+py = data(:, 5);
+pz = data(:, 6);
+Tx = data(:, 7);
+Ty = data(:, 8);
+Tz = data(:, 9);
+framesToConvert = Fy > forceCutoff;
+dataCoP(~framesToConvert, :) = data(~framesToConvert, :);
+dataCoP(:, 1:3) = data(:, 1:3);
+qy = py;
+qx = px + (Tz - Fx .* (py - qy)) ./ Fy;
+qz = pz - (Tx + Fz .* (py - qy)) ./ Fy;
+dataCoP(framesToConvert, 4:6) = [qx(framesToConvert), ...
+    qy(framesToConvert), qz(framesToConvert)];
+dataCoP(:, [7, 9]) = zeros(size(dataCoP(:, [7, 9])));
+freeMoment = Ty + Fx .* (pz - qz) - Fz .* (px - qx);
+dataCoP(framesToConvert, 8) = freeMoment(framesToConvert);
 end

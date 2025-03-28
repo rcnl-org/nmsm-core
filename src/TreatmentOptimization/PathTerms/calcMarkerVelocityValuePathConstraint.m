@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function saves experimental passive force data, modeled passive 
-% force data without SynX, with SynX, and with SynX with no residuals to
-% their appropriate .sto files in a directory specified by
-% resultsDirectory.
+% This function calculates the value of marker velocity
 %
-% (struct, struct, struct, struct, struct, string) -> (None)
-% Saves passive force data to .sto files.
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+% returns the  calculated marker velocity
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Robert Salati                                                %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,10 +27,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveMtpPassiveForceData(mtpInputs, resultsStruct, ...
-    resultsDirectory)
-writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
-    resultsStruct.results.passiveForce, resultsStruct.results.time, ...
-    fullfile(resultsDirectory, "passiveForcesModel"), ...
-    "_passiveForcesModel.sto");
+function pathTerm = calcMarkerVelocityValuePathConstraint( ...
+    constraintTerm, time, markerVelocities, inputs)
+assert(isfield(constraintTerm, 'axis'), "Marker position and " + ...
+    "velocity constraints require an 'axis' field in the constraint " + ...
+    "term settings.")
+axisIndex = find(strcmpi(constraintTerm.axis, ["x" "y" "z"]));
+assert(~isempty(axisIndex), "Marker constraint axis must be X, Y, or " +...
+    "Z, but '" + constraintTerm.axis + "' was given.");
+
+indx = find(strcmp(convertCharsToStrings(inputs.trackedMarkerNames), ...
+    constraintTerm.marker));
+if isempty(indx)
+    throw(MException('CostTermError:MarkerDoesNotExist', ...
+        strcat("Marker ", costTerm.marker, " is not in the ", ...
+        "list of tracked markers")))
+end
+assert(length(indx) == 1, "Marker " + constraintTerm.marker + ...
+    " must not repeat in tracked marker names list.")
+
+experimentalIndex = (indx - 1) * 3 + axisIndex;
+
+pathTerm = markerVelocities(:, experimentalIndex);
 end

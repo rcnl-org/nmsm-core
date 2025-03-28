@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function saves experimental passive force data, modeled passive 
-% force data without SynX, with SynX, and with SynX with no residuals to
-% their appropriate .sto files in a directory specified by
-% resultsDirectory.
+% This function calculates the value of modeled coordinate accelerations. 
 %
-% (struct, struct, struct, struct, struct, string) -> (None)
-% Saves passive force data to .sto files.
+% (2D matrix, Cell, Array of string) -> (Number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Robert Salati                                                %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,10 +27,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveMtpPassiveForceData(mtpInputs, resultsStruct, ...
-    resultsDirectory)
-writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
-    resultsStruct.results.passiveForce, resultsStruct.results.time, ...
-    fullfile(resultsDirectory, "passiveForcesModel"), ...
-    "_passiveForcesModel.sto");
+function pathTerm = calcGeneralizedAccelerationValuePathConstraint( ...
+    inputs, accelerations, coordinateName)
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
+    coordinateName));
+if isempty(indx)
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", coordinateName, " is not in the ", ...
+        "<states_coordinate_list>")))
+end
+pathTerm = accelerations(:, indx);
 end
