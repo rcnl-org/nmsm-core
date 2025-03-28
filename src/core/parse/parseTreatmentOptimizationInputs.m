@@ -37,6 +37,7 @@ inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs = parseOptimalControlSolverSettings(tree, inputs);
 inputs.costTerms = parseRcnlCostTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet'));
+inputs.costTerms = splitAxesTerms(inputs.costTerms);
 if isequal(mexext, 'mexw64') 
     inputs.calculateAngularMomentum = any(all([ ...
         strcmp(cellfun(@(term) term.type, inputs.costTerms, ...
@@ -74,6 +75,8 @@ end
 [inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
     inputs.controllerType, inputs.toolName);
+inputs.path = splitAxesTerms(inputs.path);
+inputs.terminal = splitAxesTerms(inputs.terminal);
 end
 
 function inputs = parseBasicInputs(tree)
@@ -125,3 +128,34 @@ else
 end
 end
 
+function splitTerms = splitAxesTerms(originalTerms)
+splitTerms = {};
+for i = 1 : length(originalTerms)
+    if isfield(originalTerms{i}, 'axes')
+        axes = lower(originalTerms{i}.axes);
+        addedTerm = false;
+        if contains(axes, 'x')
+            tempTerm = originalTerms{i};
+            tempTerm.axes = 'x';
+            splitTerms{end+1} = tempTerm;
+            addedTerm = true;
+        end
+        if contains(axes, 'y')
+            tempTerm = originalTerms{i};
+            tempTerm.axes = 'y';
+            splitTerms{end+1} = tempTerm;
+            addedTerm = true;
+        end
+        if contains(axes, 'z')
+            tempTerm = originalTerms{i};
+            tempTerm.axes = 'z';
+            splitTerms{end+1} = tempTerm;
+            addedTerm = true;
+        end
+        assert(addedTerm, "Axes should " + ...
+            "be defined as some or all of x, y, and z.")
+    else
+        splitTerms{end+1} = originalTerms{i};
+    end
+end
+end
