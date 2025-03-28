@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the inverse dynamic
-% moments and the muscle produced moments with the aid of an external
-% torque controller for the specified coordinate. Applicable only if the
-% model is synergy driven and if an external torque controller is present.
+% This function calculates the value of marker position
 %
-% (struct, struct, 2D matrix, Array of string) -> (Array of number)
-%
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+% returns the  calculated marker position
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,18 +27,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function pathTerm = ...
-    calcMuscleActuatedMomentsWithExternalAidPathConstraints(params, ...
-    modeledValues, externalTorqueControls, coordinate)
+function pathTerm = calcMarkerPositionValuePathConstraint( ...
+    constraintTerm, time, markerPositions, inputs)
+assert(isfield(constraintTerm, 'axis'), "Marker position and " + ...
+    "velocity constraints require an 'axis' field in the constraint " + ...
+    "term settings.")
+axisIndex = find(strcmpi(constraintTerm.axis, ["x" "y" "z"]));
+assert(~isempty(axisIndex), "Marker constraint axis must be X, Y, or " +...
+    "Z, but '" + constraintTerm.axis + "' was given.");
 
-indx1 = find(strcmp(convertCharsToStrings(params.inverseDynamicsMomentLabels), ...
-    [coordinate '_moment']));
-indx2 = find(strcmp(params.surrogateModelCoordinateNames, ...
-     coordinate));
-indx3 = find(strcmp(params.externalControlTorqueNames, ...
-     coordinate));
+indx = find(strcmp(convertCharsToStrings(inputs.trackedMarkerNames), ...
+    constraintTerm.marker));
+if isempty(indx)
+    throw(MException('CostTermError:MarkerDoesNotExist', ...
+        strcat("Marker ", costTerm.marker, " is not in the ", ...
+        "list of tracked markers")))
+end
+assert(length(indx) == 1, "Marker " + constraintTerm.marker + ...
+    " must not repeat in tracked marker names list.")
 
-pathTerm = modeledValues.inverseDynamicsMoments(:, indx1) - ...
-    (modeledValues.muscleJointMoments(:, indx2) + ...
-    externalTorqueControls(:, indx3));
+experimentalIndex = (indx - 1) * 3 + axisIndex;
+
+pathTerm = markerPositions(:, experimentalIndex);
 end

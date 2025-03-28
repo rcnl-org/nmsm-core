@@ -37,5 +37,5 @@ if isempty(indx)
         strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-finalStatePosition = statePositions(end, indx) - constraintTerm.target_error;
+finalStatePosition = statePositions(end, indx) - constraintTerm.target_value;
 end

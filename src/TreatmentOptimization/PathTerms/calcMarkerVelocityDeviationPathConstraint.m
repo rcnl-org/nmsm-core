@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the experimental and
-% predicted inverse dynamic moments for the specified coordinate.
+% This function calculates the deviation in marker velocity
 %
 % (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
-%
+% compares the velocity between the experimental and calculated markers.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,35 +27,34 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicLoadsIntegrand(costTerm, ...
-    inputs, time, inverseDynamicsMoments, loadName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
+function pathTerm = calcMarkerVelocityDeviationPathConstraint( ...
+    constraintTerm, time, markerVelocities, inputs)
+assert(isfield(constraintTerm, 'axis'), "Marker position and " + ...
+    "velocity constraints require an 'axis' field in the constraint " + ...
+    "term settings.")
+axisIndex = find(strcmpi(constraintTerm.axis, ["x" "y" "z"]));
+assert(~isempty(axisIndex), "Marker constraint axis must be X, Y, or " +...
+    "Z, but '" + constraintTerm.axis + "' was given.");
+
+indx = find(strcmp(convertCharsToStrings(inputs.trackedMarkerNames), ...
+    constraintTerm.marker));
+if isempty(indx)
+    throw(MException('CostTermError:MarkerDoesNotExist', ...
+        strcat("Marker ", costTerm.marker, " is not in the ", ...
+        "list of tracked markers")))
 end
-indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
+assert(length(indx) == 1, "Marker " + constraintTerm.marker + ...
+    " must not repeat in tracked marker names list.")
 if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
         max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointMoments = inputs.splinedJointMoments;
+    experimentalMarkerVelocities = inputs.splinedMarkerVelocities{indx};
 else
-    experimentalJointMoments = evaluateGcvSplines( ...
-        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
+    experimentalMarkerVelocities = ...
+        evaluateGcvSplines(inputs.splineMarkerVelocities{indx}, ...
+        0:2, time);
 end
-if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
-    momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
-    momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-    includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
-    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
-end
-scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-cost = calcTrackingCostArrayTerm(experimentalJointMoments * scaleFactor, ...
-    inverseDynamicsMoments, indx);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+experimentalIndex = (indx - 1) * 3 + axisIndex;
+
+pathTerm = markerVelocities(:, experimentalIndex) - ...
+    experimentalMarkerVelocities(:, axisIndex);
 end

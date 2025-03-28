@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the final state velocity 
-% and the specified target error for the specified coordinate. 
+% This function calculates the value of marker velocity
 %
-% (2D matrix, Cell, struct) -> (Number)
-% 
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+% returns the  calculated marker velocity
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,14 +27,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalStateVelocity = calcFinalStateVelocity( ...
-    stateVelocities, coordinateNames, constraintTerm)
-indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
-    constraintTerm.coordinate));
+function pathTerm = calcMarkerVelocityValuePathConstraint( ...
+    constraintTerm, time, markerVelocities, inputs)
+assert(isfield(constraintTerm, 'axis'), "Marker position and " + ...
+    "velocity constraints require an 'axis' field in the constraint " + ...
+    "term settings.")
+axisIndex = find(strcmpi(constraintTerm.axis, ["x" "y" "z"]));
+assert(~isempty(axisIndex), "Marker constraint axis must be X, Y, or " +...
+    "Z, but '" + constraintTerm.axis + "' was given.");
+
+indx = find(strcmp(convertCharsToStrings(inputs.trackedMarkerNames), ...
+    constraintTerm.marker));
 if isempty(indx)
-    throw(MException('ConstraintTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
-        "<states_coordinate_list>")))
+    throw(MException('CostTermError:MarkerDoesNotExist', ...
+        strcat("Marker ", costTerm.marker, " is not in the ", ...
+        "list of tracked markers")))
 end
-finalStateVelocity = stateVelocities(end, indx) - constraintTerm.target_value;
+assert(length(indx) == 1, "Marker " + constraintTerm.marker + ...
+    " must not repeat in tracked marker names list.")
+
+experimentalIndex = (indx - 1) * 3 + axisIndex;
+
+pathTerm = markerVelocities(:, experimentalIndex);
 end

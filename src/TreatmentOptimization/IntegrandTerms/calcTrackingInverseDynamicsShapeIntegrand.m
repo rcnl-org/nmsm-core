@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams, Marleny Vega                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicLoadsIntegrand(costTerm, ...
+function cost = calcTrackingInverseDynamicsShapeIntegrand(costTerm, ...
     inputs, time, inverseDynamicsMoments, loadName)
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
@@ -49,9 +49,12 @@ if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
     includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
     experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
 end
-scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-cost = calcTrackingCostArrayTerm(experimentalJointMoments * scaleFactor, ...
-    inverseDynamicsMoments, indx);
+
+experimental = experimentalJointMoments(:, indx);
+modeled = inverseDynamicsMoments(:, indx);
+scaleFactor = modeled \ experimental;
+cost = experimental - (modeled * scaleFactor);
+
 if normalizeByFinalTime
     if all(size(time) == size(inputs.collocationTimeOriginal))
         cost = cost / time(end);

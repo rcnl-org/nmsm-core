@@ -1,10 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the final velocity for the specified
-% point on the specified body. The difference between the final point 
-% velocity and target positon is calculated.
+% This function calculates the value of modeled coordinate speeds. 
 %
-% (struct, struct, struct) -> (Number)
+% (2D matrix, Cell, Array of string) -> (Number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -15,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,13 +27,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalPointVelocityErrorMag = calcFinalPointVelocity(auxdata, ...
-    values, constraintTerm)
-
-pointVelocity = calcBodyVelocity(values, constraintTerm.point, ...
-    constraintTerm.body, auxdata);
-
-finalPointVelocityError = pointVelocity(end, :) - ...
-    str2num(constraintTerm.target_velocity);
-finalPointVelocityErrorMag = norm(finalPointVelocityError);
+function pathTerm = calcGeneralizedSpeedValuePathConstraint( ...
+    inputs, velocities, coordinateName)
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
+    coordinateName));
+if isempty(indx)
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", coordinateName, " is not in the ", ...
+        "<states_coordinate_list>")))
+end
+pathTerm = velocities(:, indx);
 end

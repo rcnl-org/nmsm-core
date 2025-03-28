@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the final state velocity 
-% and the specified target error for the specified coordinate. 
+% This function calculates the difference between the experimental and
+% predicted joint accelerations for the specified coordinate.
 %
-% (2D matrix, Cell, struct) -> (Number)
-% 
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,14 +28,36 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalStateVelocity = calcFinalStateVelocity( ...
-    stateVelocities, coordinateNames, constraintTerm)
-indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
-    constraintTerm.coordinate));
+function cost = calcTrackingAccelerationIntegrand(costTerm, inputs, time, ...
+    accelerations, coordinateName)
+normalizeByFinalTime = valueOrAlternate(costTerm, ...
+    "normalize_by_final_time", true);
+if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
+    time = time * inputs.collocationTimeOriginal(end) / time(end);
+end
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
+    coordinateName));
 if isempty(indx)
-    throw(MException('ConstraintTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", coordinateName, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-finalStateVelocity = stateVelocities(end, indx) - constraintTerm.target_value;
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    experimentalJointAccelerations = inputs.splinedJointAccelerations;
+else
+    experimentalJointAccelerations = evaluateGcvSplines( ...
+        inputs.splineJointAngles, inputs.coordinateNames, time, 2);
+end
+
+cost = calcTrackingCostArrayTerm(experimentalJointAccelerations, ...
+    accelerations, indx);
+
+if normalizeByFinalTime
+    if all(size(time) == size(inputs.collocationTimeOriginal))
+        cost = cost / time(end);
+    else
+        cost = cost / inputs.collocationTimeOriginal(end);
+    end
+end
 end

@@ -32,10 +32,12 @@ function writeExperimentalGroundReactionsNewElectricalCenterToSto( ...
     inputs, resultsDirectory)
 [~, name, ext] = fileparts(inputs.grfFileName);
 outfile = strcat("updatedElectricalCenter_", name, ext);
+outfileCoP = strcat("updatedElectricalCenter_", name, "_CoP", ext);
 
 storage = org.opensim.modeling.Storage(inputs.grfFileName);
 [columnNames, time, data] = parseMotToComponents( ...
     Model(inputs.bodyModel), storage);
+dataCoP = zeros(size(data'));
 
 for i = 1 : length(inputs.surfaces)
     index = find(columnNames == convertCharsToStrings( ...
@@ -51,9 +53,15 @@ for i = 1 : length(inputs.surfaces)
     data(index, :) = data(index, :) + ...
         inputs.surfaces{i}.electricalCenterShiftZ;
 end
+for i = 1 : (size(dataCoP, 2) / 9)
+    dataCoP(:, (9 * (i - 1)) + (1:9)) = ...
+        makeCoPData(data((9 * (i - 1)) + (1:9), :)');
+end
 if ~exist(fullfile(resultsDirectory, "GRFData"), "dir")
     mkdir(fullfile(resultsDirectory, "GRFData"))
 end
 writeToSto(columnNames, time, data', ...
     fullfile(resultsDirectory, "GRFData", outfile));
+writeToSto(columnNames, time, dataCoP, ...
+    fullfile(resultsDirectory, "GRFData", outfileCoP));
 end

@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.3.3 - 2024-11-21
+
+### Added
+- Tracking Optimization supports a `muscle_activation_minimization` cost term
+- Design Optimization (DO) supports `inverse_dynamics_load_minimization` and `controller_minimization` cost terms
+- DO supports user-defined constraint terms, with similar functionality available to user-defined cost terms
+	- User-defined constraint terms have the signature `function constraintValue = function_name(values, modeledValues, inputs, costTerm)`
+	- User-defined constraints can be either `path` or `terminal`, similar to how user-defined cost functions are `continuous` or `discrete`
+
+
 ## v1.3.2 - 2024-10-28
 
 ### Added

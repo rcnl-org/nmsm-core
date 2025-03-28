@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates and minimizes the joint power for the specified
-% coordinate.
+% This function calculates the value of modeled coordinate positions. 
 %
-% (2D matrix, 2D matrix, struct, Array of string) -> (Array of number)
+% (2D matrix, Cell, Array of string) -> (Number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,28 +27,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointPowerIntegrand(costTerm, ...
-    jointVelocity, time, jointMoment, params, loadName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-loadName = erase(loadName, '_moment');
-loadName = erase(loadName, '_force');
-indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
-    loadName));
-momentLabelsNoSuffix = erase(params.inverseDynamicsMomentLabels, '_moment');
-momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-includedJointMomentCols = ismember(momentLabelsNoSuffix, ...
-    convertCharsToStrings(params.coordinateNames));
-if isequal(mexext, 'mexw64')
-    jointMoment = jointMoment(:, includedJointMomentCols);
+function pathTerm = calcGeneralizedCoodinateValuePathConstraint( ...
+    inputs, positions, coordinateName)
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
+    coordinateName));
+if isempty(indx)
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", coordinateName, " is not in the ", ...
+        "<states_coordinate_list>")))
 end
-jointPower = jointMoment(:, indx) .* jointVelocity(:, indx);
-cost = calcMinimizingCostArrayTerm(jointPower);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+pathTerm = positions(:, indx);
 end

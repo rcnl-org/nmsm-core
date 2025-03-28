@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the final state velocity 
-% and the specified target error for the specified coordinate. 
+% This function calculates the difference between experimental and
+% modeled coordinate positions. 
 %
-% (2D matrix, Cell, struct) -> (Number)
+% (2D matrix, Cell, Array of string) -> (Number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,14 +28,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalStateVelocity = calcFinalStateVelocity( ...
-    stateVelocities, coordinateNames, constraintTerm)
-indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
-    constraintTerm.coordinate));
+function pathTerm = calcGeneralizedCoodinateDeviationPathConstraint( ...
+    inputs, time, positions, coordinateName)
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
+    coordinateName));
 if isempty(indx)
-    throw(MException('ConstraintTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
+    throw(MException('CostTermError:CoordinateNotInState', ...
+        strcat("Coordinate ", coordinateName, " is not in the ", ...
         "<states_coordinate_list>")))
 end
-finalStateVelocity = stateVelocities(end, indx) - constraintTerm.target_value;
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    experimentalJointAngles = inputs.splinedJointAngles;
+else
+    experimentalJointAngles = evaluateGcvSplines( ...
+        inputs.splineJointAngles, inputs.coordinateNames, time);
+end
+pathTerm = calcTrackingCostArrayTerm(positions, ...
+    experimentalJointAngles, indx);
 end
