@@ -1,9 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the initial state 
-% position and specified target for the specified coordinate. 
+% This function calculates the difference between experimental and
+% modeled coordinate speeds. 
 %
-% (2D matrix, Cell, struct) -> (Number)
+% (2D matrix, Cell, Array of string) -> (Number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Spencer Williams                               %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,14 +28,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function initialStatePosition = calcInitialStatePosition( ...
-    statePositions, coordinateNames, constraintTerm)
-indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
-    constraintTerm.coordinate));
-if isempty(indx)
-    throw(MException('ConstraintTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
-        "<states_coordinate_list>")))
-end
-initialStatePosition = statePositions(1, indx) - constraintTerm.target_value;
+function [pathTerm, constraintTerm] = ...
+    calcInitialGeneralizedSpeedDeviation( ...
+    constraintTerm, inputs, time, velocities)
+[velocity, constraintTerm] = findDataByLabels(constraintTerm, ...
+    velocities, inputs.coordinateNames, constraintTerm.coordinate);
+experimentalVelocity = findSplinedJointAnglesByLabels( ...
+    constraintTerm, inputs, time);
+
+pathTerm = velocity(1) - experimentalVelocity(1);
 end

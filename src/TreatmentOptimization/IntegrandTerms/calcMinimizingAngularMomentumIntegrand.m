@@ -33,12 +33,12 @@ function cost = calcMinimizingAngularMomentumIntegrand( ...
 normalizeByFinalTime = valueOrAlternate(costTerm, ...
     "normalize_by_final_time", true);
 
-assert(isfield(costTerm, 'axis'), "Angular momentum minimization " + ...
-    "requires an 'axis' field in the cost term settings.")
+assert(isfield(costTerm, 'axes'), "Angular momentum minimization " + ...
+    "requires an 'axes' field in the cost term settings.")
 
-index = find(strcmpi(costTerm.axis, ["x" "y" "z"]));
+index = find(strcmpi(costTerm.axes, ["x" "y" "z"]));
 assert(~isempty(index), "Angular momentum axis must be X, Y, or Z, " + ...
-    "but '" + costTerm.axis + "' was given.");
+    "but '" + costTerm.axes + "' was given.");
 
 cost = modeledValues.angularMomentum(:, index);
 if normalizeByFinalTime

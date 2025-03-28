@@ -28,35 +28,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingCoordinateIntegrand(costTerm, inputs, time, ...
-    positions, coordinateName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
-    coordinateName));
-if isempty(indx)
-    throw(MException('CostTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", coordinateName, " is not in the ", ...
-        "<states_coordinate_list>")))
-end
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointAngles = inputs.splinedJointAngles;
-else
-    experimentalJointAngles = evaluateGcvSplines( ...
-        inputs.splineJointAngles, inputs.coordinateNames, time);
-end
-cost = calcTrackingCostArrayTerm(experimentalJointAngles, ...
-    positions, indx);
+function [cost, costTerm] = calcTrackingCoordinateIntegrand(costTerm, ...
+    inputs, time, positions, coordinateName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
 
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+[position, costTerm] = findDataByLabels(costTerm, positions, ...
+    inputs.coordinateNames, coordinateName);
+experimentalPosition = findSplinedJointAnglesByLabels( ...
+    costTerm, inputs, time);
+
+cost = experimentalPosition - position;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
