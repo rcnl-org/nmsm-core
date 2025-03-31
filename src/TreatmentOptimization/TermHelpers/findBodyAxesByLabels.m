@@ -33,7 +33,10 @@ if isfield(term, 'internalBodyAxesIndices')
     indices = term.internalBodyAxesIndices;
 else
     targetLabels = string(targetLabels);
-    axes = split(lower(axes), '', 2);
+    if isfield(term, 'sequence')
+        axes = 'xyz';
+    end
+    axes = split(lower(erase(axes, ' ')), '', 2);
     axes = "_" + axes(2:end-1);
     fullLabels = repelem(targetLabels, 1, length(axes)) + ...
         repmat(axes, 1, length(targetLabels));
