@@ -33,5 +33,6 @@ function [pathTerm, constraintTerm] = ...
     getTermFieldOrError(constraintTerm, 'body'), ...
     getTermFieldOrError(constraintTerm, 'axes'));
 
+angles = findAngleInSequence(angles, constraintTerm);
 pathTerm = angles;
 end

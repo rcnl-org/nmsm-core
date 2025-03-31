@@ -34,5 +34,7 @@ function [pathTerm, constraintTerm] = ...
     getTermFieldOrError(constraintTerm, 'axes'));
 experimentalAngles = findSplinedBodyAxesByLabels(constraintTerm, inputs, time);
 
+angles = findAngleInSequence(angles, constraintTerm);
+experimentalAngles = findAngleInSequence(experimentalAngles, constraintTerm);
 pathTerm = angles - experimentalAngles;
 end
