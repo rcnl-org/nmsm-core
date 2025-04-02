@@ -76,7 +76,9 @@ end
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
     inputs.controllerType, inputs.toolName);
 inputs.path = splitAxesTerms(inputs.path);
+inputs.path = convertValueToError(inputs.path);
 inputs.terminal = splitAxesTerms(inputs.terminal);
+inputs.terminal = convertValueToError(inputs.terminal);
 end
 
 function inputs = parseBasicInputs(tree)
@@ -156,6 +158,19 @@ for i = 1 : length(originalTerms)
             "be defined as some or all of x, y, and z.")
     else
         splitTerms{end+1} = originalTerms{i};
+    end
+end
+end
+
+function terms = convertValueToError(terms)
+for i = 1 : length(terms)
+    if isfield(terms{i}, 'max_value')
+        terms{i}.maxError = terms{i}.max_value;
+        terms{i} = rmfield(terms{i}, 'max_value');
+    end
+    if isfield(terms{i}, 'min_value')
+        terms{i}.minError = terms{i}.min_value;
+        terms{i} = rmfield(terms{i}, 'min_value');
     end
 end
 end
