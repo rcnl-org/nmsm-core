@@ -30,7 +30,7 @@
 
 function saveTrackingOptimizationResults(solution, inputs)
 values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
-if strcmp(inputs.controllerType, "synergy")
+if inputs.controllerTypes(2)
     values = normalizeSynergySolution(values, inputs);
 end
 saveTreatmentOptimizationResults(solution, inputs, values);
