@@ -49,16 +49,17 @@ inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
 
-if strcmpi(inputs.controllerType, "synergy")
-    if inputs.loadSurrogate && isfile("surrogateMuscles.mat")
-        temp = load("surrogateMuscles.mat");
+inputs.surrogateModelCoordinateNames = inputs.coordinateNames;
+if any(inputs.controllerTypes(2:3))
+    if isfile(inputs.surrogateModelFileName)
+        [path, name, ~] = fileparts(inputs.surrogateModelFileName);
+        fileName = fullfile(path, strcat(name, ".mat"));
+        temp = load(fileName);
         inputs.surrogateMuscles = temp.surrogateMuscles;
         inputs.surrogateMusclesNumArgs = temp.surrogateMusclesNumArgs;
         inputs = getMuscleSpecificSurrogateModelData(inputs);
     else
         inputs = SurrogateModelCreation(inputs);
-    end
-    if inputs.saveSurrogate
         surrogateMuscles = inputs.surrogateMuscles;
         surrogateMusclesNumArgs = inputs.surrogateMusclesNumArgs;
         save("surrogateMuscles.mat", "surrogateMuscles", "surrogateMusclesNumArgs");

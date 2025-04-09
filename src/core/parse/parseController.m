@@ -34,13 +34,25 @@ inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
     inputs);
 inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
     "states_coordinate_list");
-
 torqueTree = getFieldByName(tree, 'RCNLTorqueController');
 if isstruct(torqueTree)
     inputs = parseTorqueController(torqueTree, inputs);
+else
+    inputs.torqueControllerCoordinateNames = [];
 end
 synergyTree = getFieldByName(tree, 'RCNLSynergyController');
 if isstruct(synergyTree)
     inputs = parseSynergyController(tree, inputs);
+else
+    inputs.numSynergies = 0;
+    inputs.synergyCoordinateNames = [];
+end
+muscleTree = getFieldByName(tree, 'RCNLMuscleController');
+if isstruct(muscleTree)
+    inputs = parseMuscleController(tree, inputs);
+end
+% Handle muscle properties if either muscle-based controller is used
+if isstruct(synergyTree) || isstruct(muscleTree)
+    inputs = parseMuscleSettings(tree, inputs);
 end
 end

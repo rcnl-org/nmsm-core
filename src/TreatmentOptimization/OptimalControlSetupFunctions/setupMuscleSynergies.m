@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = setupMuscleSynergies(inputs)
-if strcmp(inputs.controllerType, 'synergy')
+if inputs.controllerTypes(2)
     inputs.splineSynergyActivations = makeGcvSplineSet( ...
         inputs.initialTime, inputs.initialSynergyControls', ...
         inputs.initialSynergyControlsLabels);

@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function [path, terminal] = parseRcnlConstraintTermSet(tree, toolName, ...
-    controllerType)
+    controllerTypes)
 path = {};
 terminal = {};
 for term = 1:length(tree)
@@ -41,7 +41,7 @@ for term = 1:length(tree)
     % Find general cost term elements
     tempTerm.type = getTextFromField(getFieldByNameOrError( ...
         currentTerm, 'type'));
-    [isValid, isPath] = isTypeValid(tempTerm.type, toolName, controllerType);
+    [isValid, isPath] = isTypeValid(tempTerm.type, toolName, controllerTypes);
     if ~isValid
         throw(MException("ConstraintTermSet:InvalidType", ...
             strcat(tempTerm.type, " is not a valid constraint", ...
@@ -79,15 +79,15 @@ for term = 1:length(tree)
 end
 end
 
-function [isValid, isPath] = isTypeValid(type, toolName, controllerType)
+function [isValid, isPath] = isTypeValid(type, toolName, controllerTypes)
 [~, allowedTypes] = ...
-    generateConstraintTermStruct("path", controllerType, ...
+    generateConstraintTermStruct("path", controllerTypes, ...
     toolName);
 isPath = true;
 isValid = any(strcmp(type, allowedTypes));
 if ~isValid
     [~, allowedTypes] = ...
-        generateConstraintTermStruct("terminal", controllerType, ...
+        generateConstraintTermStruct("terminal", controllerTypes, ...
         toolName);
     isPath = false;
     isValid = any(strcmp(type, allowedTypes));

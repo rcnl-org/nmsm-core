@@ -36,18 +36,18 @@
 % ----------------------------------------------------------------------- %
 
 function [constraintTermCalculations, allowedTypes] = ...
-    generateConstraintTermStruct(constraintTermType, controllerType, ...
+    generateConstraintTermStruct(constraintTermType, controllerTypes, ...
     toolName)
-allowedTypes = getAllowedTypes(constraintTermType, controllerType, ...
+allowedTypes = getAllowedTypes(constraintTermType, controllerTypes, ...
     toolName);
 constraintTermCalculations = ...
     getConstraintTermCalculations(constraintTermType);
 end
 
 function allowedTypes = getAllowedTypes(constraintTermType, ...
-    controllerType, toolName)
+    controllerTypes, toolName)
 allowedTypes = [];
-if strcmp(controllerType, "torque")
+if ~any(controllerTypes(2:3))
     switch toolName
         case "TrackingOptimization"
             if strcmp(constraintTermType, "path")
@@ -236,7 +236,7 @@ if strcmp(controllerType, "torque")
             end
     end
 end
-if strcmp(controllerType, "synergy")
+if any(controllerTypes(2:3))
     switch toolName
         case "TrackingOptimization"
             if strcmp(constraintTermType, "path")

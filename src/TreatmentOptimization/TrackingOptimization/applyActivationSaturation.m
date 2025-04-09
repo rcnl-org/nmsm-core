@@ -1,12 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function finds the correct element to
-% determine which controller is being used. This informs the XML parsing
-% logic.
-%
-% (struct) -> (string)
-% returns "synergy" or "torque" depending on the settings file
+% (Array of double) -> (Array of double)
+% Applies a saturation function to muscle activations.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,17 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function controllerType = parseControllerType(tree)
-synergy = getFieldByName(tree, 'RCNLSynergyController');
-if isstruct(synergy)
-    controllerType = "synergy";
-    return
-end
-torque = getFieldByName(tree, 'RCNLTorqueController');
-if isstruct(torque)
-    controllerType = "torque";
-    return
-end
-throw(MException("ParseTreatmentOptimization:NoController", ...
-    "Could not find <RCNLTorqueController> or <RCNLSynergyController>"))
+function muscleActivations = applyActivationSaturation(muscleActivations)
+% Function based on: http://dx.doi.org/10.1016/j.fss.2005.02.016
+% Higher corner coefficient makes corners sharper 
+cornerCoefficient = 75;
+muscleActivations = log( ...
+    (1 + exp(cornerCoefficient .* (muscleActivations))) ./ ...
+    (1 + exp(cornerCoefficient .* (muscleActivations - 1)))) .* ...
+    (1 ./ cornerCoefficient);
 end

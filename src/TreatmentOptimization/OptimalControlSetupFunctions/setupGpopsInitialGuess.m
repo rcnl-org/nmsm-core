@@ -83,7 +83,17 @@ else
 
     controls = stateJointAccelerations;
 end
-if strcmp(inputs.controllerType, "synergy")
+if inputs.controllerTypes(3)
+    if isfield(inputs, "initialMuscleControls")
+        controls = [controls, inputs.initialMuscleControls];
+    else
+        throw(MException("NoInitialMuscleControls", ...
+            strcat("initial muscle controls required for muscle", ...
+            " controls, have you included initial muscle controls " + ...
+            "or an initial value?")));
+    end
+end
+if inputs.controllerTypes(2)
     if isfield(inputs, "initialSynergyControls")
         controls = [controls, inputs.initialSynergyControls];
     else

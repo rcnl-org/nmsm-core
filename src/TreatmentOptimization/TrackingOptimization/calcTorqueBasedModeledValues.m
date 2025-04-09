@@ -84,6 +84,8 @@ if ~isempty(inputs.contactSurfaces)
         modeledValues.bodyLocations, groundReactions, inputs);
     groundReactionsLab = calcGroundReactionsLab(groundReactions);
     appliedLoads = [appliedLoads groundReactionsBody];
+else
+    groundReactionsLab = [];
 end
 end
 
