@@ -38,6 +38,7 @@ for term = 1:length(tree)
     else
         currentTerm = tree{term};
     end
+    tempTerm = struct();
     % Find general cost term elements
     tempTerm.type = getTextFromField(getFieldByNameOrError( ...
         currentTerm, 'type'));

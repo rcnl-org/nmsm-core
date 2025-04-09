@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct, Array of number, Array of string) -> (Array of number)
-% Tracks body orientation deviations.
+% (struct) -> (struct)
+% Prepares center of pressure for cost and constraint terms.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,14 +25,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [pathTerm, constraintTerm] = ...
-    calcBodyOrientationValuePathConstraint( ...
-    constraintTerm, inputs, time, bodyOrientations)
-[angles, constraintTerm] = findBodyAxesByLabels(constraintTerm, ...
-    bodyOrientations, inputs.splineBodyOrientationsLabels, ...
-    getTermFieldOrError(constraintTerm, 'body'), ...
-    getTermFieldOrError(constraintTerm, 'axes'));
-
-angles = findAngleInSequence(angles, constraintTerm);
-pathTerm = angles;
+function inputs = makeCenterOfPressureTracking(inputs)
+if ~isfield(inputs, 'contactSurfaces')
+    return
+end
+splines = cell(1, length(inputs.contactSurfaces));
+for i = 1 : length(inputs.contactSurfaces)
+    forces = inputs.contactSurfaces{i}.experimentalGroundReactionForces;
+    moments = inputs.contactSurfaces{i}.experimentalGroundReactionMoments;
+    points = inputs.contactSurfaces{i}.electricalCenter;
+    centerOfPressure = zeros(size(forces, 1), 2);
+    tempTerm = struct('type', 'Center of pressure creation', 'axes', 'x');
+    centerOfPressure(:, 1) = calcCenterOfPressureForTermAxis(tempTerm, ...
+        forces, moments, points);
+    tempTerm.axes = 'z';
+    centerOfPressure(:, 2) = calcCenterOfPressureForTermAxis(tempTerm, ...
+        forces, moments, points);
+    inputs.contactSurfaces{i}.experimentalCenterOfPressure = ...
+        centerOfPressure;
+    splines{i} = makeGcvSplineSet(inputs.experimentalTime, ...
+        centerOfPressure, ["x", "z"]);
+end
+inputs.splineCenterOfPressure = splines;
 end

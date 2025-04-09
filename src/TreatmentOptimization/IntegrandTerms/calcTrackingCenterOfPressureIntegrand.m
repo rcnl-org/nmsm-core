@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct, Array of number, Array of string) -> (Array of number)
-% Tracks body orientation deviations.
+% This function calculates the difference between the experimental and
+% predicted center of pressure for the specified direction.
+%
+% (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,14 +28,30 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [pathTerm, constraintTerm] = ...
-    calcBodyOrientationValuePathConstraint( ...
-    constraintTerm, inputs, time, bodyOrientations)
-[angles, constraintTerm] = findBodyAxesByLabels(constraintTerm, ...
-    bodyOrientations, inputs.splineBodyOrientationsLabels, ...
-    getTermFieldOrError(constraintTerm, 'body'), ...
-    getTermFieldOrError(constraintTerm, 'axes'));
+function [cost, costTerm] = calcTrackingCenterOfPressureIntegrand( ...
+    costTerm, inputs, time, modeledValues)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
 
-angles = findAngleInSequence(angles, constraintTerm);
-pathTerm = angles;
+hindfootBodyName = getTermFieldOrError(costTerm, 'hindfoot_body');
+[forces, moments, points, costTerm] = ...
+    findGroundReactionsByHindfootBodyName( ...
+    costTerm, inputs, modeledValues, hindfootBodyName);
+experimentalCenterOfPressure = ...
+    findSplinedCenterOfPressureByLabels(costTerm, inputs, time);
+
+centerOfPressure = calcCenterOfPressureForTermAxis( ...
+    costTerm, forces, moments, points);
+
+cost = centerOfPressure - experimentalCenterOfPressure;
+
+assert(isfield(costTerm, 'time_ranges'), costTerm.type + " requires " + ...
+    "defined <time_ranges> to avoid poorly defined times for the " + ...
+    "center of pressure. If this motion has no undefined contact, " + ...
+    "use <time_ranges>0 1</time_ranges>.")
+[cost, costTerm] = applyTermTimeRanges(cost, costTerm, time);
+[cost, costTerm] = applyPercentErrorWithMinimum(cost, ...
+    experimentalCenterOfPressure, costTerm);
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

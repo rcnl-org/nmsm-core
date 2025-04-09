@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct, Array of number, Array of string) -> (Array of number)
-% Tracks body orientation deviations.
+% This function calculates the difference between the experimental and
+% predicted center of pressure for the specified direction.
+%
+% (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,13 +29,22 @@
 % ----------------------------------------------------------------------- %
 
 function [pathTerm, constraintTerm] = ...
-    calcBodyOrientationValuePathConstraint( ...
-    constraintTerm, inputs, time, bodyOrientations)
-[angles, constraintTerm] = findBodyAxesByLabels(constraintTerm, ...
-    bodyOrientations, inputs.splineBodyOrientationsLabels, ...
-    getTermFieldOrError(constraintTerm, 'body'), ...
-    getTermFieldOrError(constraintTerm, 'axes'));
+    calcCenterOfPressureValuePathConstraint( ...
+    constraintTerm, inputs, time, modeledValues)
+hindfootBodyName = getTermFieldOrError(constraintTerm, 'hindfoot_body');
+[forces, moments, points, constraintTerm] = ...
+    findGroundReactionsByHindfootBodyName( ...
+    constraintTerm, inputs, modeledValues, hindfootBodyName);
 
-angles = findAngleInSequence(angles, constraintTerm);
-pathTerm = angles;
+centerOfPressure = calcCenterOfPressureForTermAxis( ...
+    constraintTerm, forces, moments, points);
+
+pathTerm = centerOfPressure;
+
+assert(isfield(constraintTerm, 'time_ranges'), constraintTerm.type + ...
+    " requires defined <time_ranges> to avoid poorly defined times " + ...
+    "for the center of pressure. If this motion has no undefined " + ...
+    "contact, use <time_ranges>0 1</time_ranges>.")
+[pathTerm, constraintTerm] = applyTermTimeRanges(pathTerm, ...
+    constraintTerm, time);
 end

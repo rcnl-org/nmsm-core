@@ -1,7 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct, Array of number, Array of string) -> (Array of number)
-% Tracks body orientation deviations.
+% (struct, Array of double, Array of string, Array of string) -> 
+% (Array of number, struct)
+%
+% Finds ground reaction data in a cell array given labels.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,14 +27,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [pathTerm, constraintTerm] = ...
-    calcBodyOrientationValuePathConstraint( ...
-    constraintTerm, inputs, time, bodyOrientations)
-[angles, constraintTerm] = findBodyAxesByLabels(constraintTerm, ...
-    bodyOrientations, inputs.splineBodyOrientationsLabels, ...
-    getTermFieldOrError(constraintTerm, 'body'), ...
-    getTermFieldOrError(constraintTerm, 'axes'));
-
-angles = findAngleInSequence(angles, constraintTerm);
-pathTerm = angles;
+function [forces, moments, points, term] = ...
+    findGroundReactionsByHindfootBodyName(term, inputs, modeledValues, ...
+    hindfootBodyName)
+if isfield(term, 'internalGroundReactionIndices')
+    contactSurfaceIndices = term.internalContactSurfaceIndices;
+else
+    hindfootBodyName = string(hindfootBodyName);
+    contactSurfaceIndices = 0;
+    for j = 1 : length(inputs.contactSurfaces)
+        if strcmp(inputs.contactSurfaces{j}.hindfootBodyName, ...
+                hindfootBodyName)
+            contactSurfaceIndices = j;
+        end
+    end
+    assert(contactSurfaceIndices ~= 0, hindfootBodyName + ...
+        " is not a contact surface hindfoot body.");
+    
+    term.internalContactSurfaceIndices = contactSurfaceIndices;
+end
+forces = modeledValues.groundReactionsLab.forces{contactSurfaceIndices};
+moments = modeledValues.groundReactionsLab.moments{contactSurfaceIndices};
+points = modeledValues.bodyLocations.midfootSuperior{contactSurfaceIndices};
 end

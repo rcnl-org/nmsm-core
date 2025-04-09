@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct, Array of number, Array of string) -> (Array of number)
-% Tracks body orientation deviations.
+% (Array of number, struct) -> (Array of number)
+% Finds angles for terms using rotation sequences.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,14 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [pathTerm, constraintTerm] = ...
-    calcBodyOrientationValuePathConstraint( ...
-    constraintTerm, inputs, time, bodyOrientations)
-[angles, constraintTerm] = findBodyAxesByLabels(constraintTerm, ...
-    bodyOrientations, inputs.splineBodyOrientationsLabels, ...
-    getTermFieldOrError(constraintTerm, 'body'), ...
-    getTermFieldOrError(constraintTerm, 'axes'));
-
-angles = findAngleInSequence(angles, constraintTerm);
-pathTerm = angles;
+function angles = findAngleInSequence(angles, term)
+if ~isfield(term, 'sequence')
+    return
+end
+sequence = lower(erase(term.sequence, " "));
+angles = convertAnglesToSequence(angles, sequence);
+angles = angles(:, sequence == term.axes);
 end

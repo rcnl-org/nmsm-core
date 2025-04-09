@@ -36,6 +36,7 @@ defaultTimeNormalization = true;
     getTermFieldOrError(costTerm, 'body'), ...
     getTermFieldOrError(costTerm, 'axes'));
 
+angles = findAngleInSequence(angles, costTerm);
 cost = angles - costTerm.errorCenter;
 
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);

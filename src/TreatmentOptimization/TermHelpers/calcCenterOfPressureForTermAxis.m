@@ -1,7 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct, Array of number, Array of string) -> (Array of number)
-% Tracks body orientation deviations.
+% This function calculates the difference between the experimental and
+% predicted center of pressure for the specified direction.
+%
+% (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,14 +28,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [pathTerm, constraintTerm] = ...
-    calcBodyOrientationValuePathConstraint( ...
-    constraintTerm, inputs, time, bodyOrientations)
-[angles, constraintTerm] = findBodyAxesByLabels(constraintTerm, ...
-    bodyOrientations, inputs.splineBodyOrientationsLabels, ...
-    getTermFieldOrError(constraintTerm, 'body'), ...
-    getTermFieldOrError(constraintTerm, 'axes'));
-
-angles = findAngleInSequence(angles, constraintTerm);
-pathTerm = angles;
+function centerOfPressure = calcCenterOfPressureForTermAxis( ...
+    term, forces, moments, points)
+axes = getTermFieldOrError(term, 'axes');
+forces(:, 2) = forces(:, 2) + sign(forces(:, 2));
+if any(forces(:, 2) == 0)
+    forces(forces(:, 2) == 0, 2) = 1;
+end
+switch axes
+    case 'x'
+        centerOfPressure = points(:, 1) + moments(:, 3) ./ forces(:, 2);
+    case 'z'
+        centerOfPressure = points(:, 3) - moments(:, 1) ./ forces(:, 2);
+    case 'y'
+        throw(MException('', "Center of pressure does not use the " + ...
+            "Y axis."))
+    otherwise
+        throw(MException('', axes + " is not a supported value for " + ...
+            "<axes>."))
+end
 end

@@ -1,7 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct, Array of number, Array of string) -> (Array of number)
-% Tracks body orientation deviations.
+% (struct, Array of double, Array of string) -> (Array of number)
+%
+% Finds splined center of pressure component given labels.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,14 +26,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [pathTerm, constraintTerm] = ...
-    calcBodyOrientationValuePathConstraint( ...
-    constraintTerm, inputs, time, bodyOrientations)
-[angles, constraintTerm] = findBodyAxesByLabels(constraintTerm, ...
-    bodyOrientations, inputs.splineBodyOrientationsLabels, ...
-    getTermFieldOrError(constraintTerm, 'body'), ...
-    getTermFieldOrError(constraintTerm, 'axes'));
-
-angles = findAngleInSequence(angles, constraintTerm);
-pathTerm = angles;
+function centerOfPressure = findSplinedCenterOfPressureByLabels(term, ...
+    inputs, time)
+contactSurfaceIndices = term.internalContactSurfaceIndices;
+axes = getTermFieldOrError(term, 'axes');
+axesIndex = find(axes == 'xz', 1);
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    centerOfPressureComponents = ...
+        inputs.splinedCenterOfPressure{contactSurfaceIndices};
+    centerOfPressure = centerOfPressureComponents(:, axesIndex);
+elseif length(time) == 2
+    centerOfPressureComponents = ...
+        inputs.contactSurfaces{ ...
+        contactSurfaceIndices}.experimentalCenterOfPressure;
+    centerOfPressure = centerOfPressureComponents([1 end], axesIndex);
+else
+    centerOfPressure = evaluateGcvSplines( ...
+        inputs.splineCenterOfPressure{contactSurfaceIndices}, axesIndex - 1, time);
+end
 end
