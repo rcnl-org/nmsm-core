@@ -33,7 +33,7 @@ if isfield(term, 'internalMuscleMomentIndex')
     muscleMomentIndex = term.internalMuscleMomentIndex;
     torqueLoadIndex = term.internalTorqueLoadIndex;
 else
-    if strcmpi(inputs.controllerType, "synergy")
+    if  any(inputs.controllerTypes(2:3))
         muscleCoordinateIndex = findCoordinateIndicesFromLoadNames( ...
             inputs.coordinateNames, loadName);
         muscleMomentIndex = find(inputs.surrogateModelIndex == ...

@@ -34,7 +34,7 @@ normalizeByFinalTime = valueOrAlternate(costTerm, ...
 if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
     time = time * inputs.collocationTimeOriginal(end) / time(end);
 end
-if strcmp(inputs.controllerType, 'synergy')
+if inputs.controllerTypes(2)
     indx = find(strcmp(convertCharsToStrings( ...
         inputs.synergyLabels), controllerName));
     if ~isempty(indx)

@@ -39,7 +39,7 @@ else
     torqueControlIndices = synergyControlIndices;
     torqueControlSplinedIndices = torqueControlIndices;
     for i = 1 : numberOfTerms
-        if strcmp(inputs.controllerType, 'synergy')
+        if inputs.controllerTypes(2)
             synergyControlIndices(i) = findOptionalDataIndicesByLabels( ...
                 inputs.synergyLabels, targetLabels(i));
         else
