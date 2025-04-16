@@ -28,15 +28,21 @@
 
 function fit = fitSmoothingTermCurve(inputs, time, curve, ...
     polynomialDegree, harmonics)
-% Must account for free final time when determining true time range
-if length(time) == length(inputs.collocationTimeOriginal)
-    timeScaling = time(end) / inputs.collocationTimeOriginal(end);
-elseif length(time) == length(inputs.collocationTimeOriginalWithEnd)
-    timeScaling = time(end) / inputs.collocationTimeOriginalWithEnd(end);
-else
-    timeScaling = 1;
-end
-frequency = 1 / (timeScaling * inputs.collocationTimeOriginalWithEnd(end));
+% Time scaling is not needed for this function. The critical thing is for
+% time to be the same for both the original curve and the fitted curve, and
+% for the frequency to be based on whatever the final value is of the time
+% vector (assuming initial time = 0).
+%
+% % Must account for free final time when determining true time range
+% if length(time) == length(inputs.collocationTimeOriginal)
+%     timeScaling = time(end) / inputs.collocationTimeOriginal(end);
+% elseif length(time) == length(inputs.collocationTimeOriginalWithEnd)
+%     timeScaling = time(end) / inputs.collocationTimeOriginalWithEnd(end);
+% else
+%     timeScaling = 1;
+% end
+% frequency = 1 / (timeScaling * inputs.collocationTimeOriginalWithEnd(end));
+frequency = 1 / time(end);
 coefficients = polyFourierCoefs(time, curve, frequency, ...
     polynomialDegree, harmonics);
 fit = polyFourierCurves(coefficients, frequency, time, ...
