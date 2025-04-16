@@ -64,7 +64,6 @@ for j=1:numel(modelDataFiles)
     if modeledStatesTime ~= 0
         modeledStatesTime = modeledStatesTime - modeledStatesTime(1);
     end
-    modeledStatesTime = modeledStatesTime / modeledStatesTime(end);
     
     modeledVelocities{j} = modeledStates(:, size(modeledStates, 2)/2+1:end);
     modeledVelocitiesLabels = modeledStatesLabels(size(modeledStates, 2)/2+1:end);
@@ -87,7 +86,6 @@ for j = 1 : numel(modelDataFiles)
     resampledExperimentalVelocities{j}= evaluateGcvSplines(experimentalSpline, ...
         coordinateLabels, modeledVelocitiesTime{j}, 1);
 end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
 if nargin < 4
     figureWidth = ceil(sqrt(numel(modeledVelocitiesLabels)));
     figureHeight = ceil(numel(modeledVelocitiesLabels)/figureWidth);
@@ -122,16 +120,16 @@ for i=1:numel(modeledVelocitiesLabels)
     if ~isempty(coordinateIndex)
         nexttile(subplotNumber);
         hold on
-        plot(trackedDataTime*100, trackedVelocities(:, coordinateIndex), ...
+        plot(trackedDataTime/trackedDataTime(end)*100, trackedVelocities(:, coordinateIndex), ...
             lineWidth=2, Color = colors(1))
         for j = 1 : numel(modelDataFiles)
-            plot(modeledVelocitiesTime{j}*100, modeledVelocities{j}(:, i), ...
+            plot(modeledVelocitiesTime{j}/modeledVelocitiesTime{j}(end)*100, modeledVelocities{j}(:, i), ...
                 lineWidth=2, Color = colors(j+1));
         end
         hold off
         titleString = [sprintf("%s", strrep(coordinateLabels(coordinateIndex), "_", " "))];
         for j = 1 : numel(modelDataFiles)
-            rmse = rms(resampledExperimentalVelocities{j}(:, i) - ...
+            rmse = rms(resampledExperimentalVelocities{j}(:, coordinateIndex) - ...
                 modeledVelocities{j}(:, i));
             titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
         end
