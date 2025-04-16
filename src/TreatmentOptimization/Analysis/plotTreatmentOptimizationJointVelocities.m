@@ -50,7 +50,6 @@ trackedData = trackedData';
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
 for i = 1 : size(trackedData, 2)
     if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
         .toString().toCharArray()' == "Rotational"
@@ -88,6 +87,7 @@ for j = 1 : numel(modelDataFiles)
     resampledExperimentalVelocities{j}= evaluateGcvSplines(experimentalSpline, ...
         coordinateLabels, modeledVelocitiesTime{j}, 1);
 end
+trackedDataTime = trackedDataTime / trackedDataTime(end);
 if nargin < 4
     figureWidth = ceil(sqrt(numel(modeledVelocitiesLabels)));
     figureHeight = ceil(numel(modeledVelocitiesLabels)/figureWidth);
