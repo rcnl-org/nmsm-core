@@ -38,8 +38,9 @@ inputs.initialStatePositions = values.statePositions;
 if isfield(initialGuess,'parameter')
     initialGuess.phase.parameter = initialGuess.parameter;
 end
-output = continuousFunction(initialGuess);
+[output, initialGuess] = continuousFunction(initialGuess);
 output.solution = initialGuess;
+inputs.costTerms = initialGuess.auxdata.costTerms;
 inputs.initialIntegrand = output.integrand;
 if length(output.metabolicCost) == length(inputs.experimentalTime)
 inputs.initialMetabolicCost = output.metabolicCost;

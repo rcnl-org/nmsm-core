@@ -28,12 +28,47 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingSynergyVectorsDiscrete(synergyWeights, ...
-    inputs, costTerm)
+function [cost, costTerm] = calcTrackingSynergyVectorsDiscrete( ...
+    synergyWeights, inputs, costTerm)
+if isfield(costTerm, 'vectorNumber')
+    vectorNumber = costTerm.vectorNumber;
+    numWeights = costTerm.numWeights;
+else
+    synergyName = getTermFieldOrError(costTerm, "synergy");
+    delimiterIndex = find(synergyName == '_', 1, 'last');
+    assert(~isempty(delimiterIndex), "Synergy names must be given " + ...
+        "as GroupName_Index (ex: RightLeg_2). Found " + synergyName + ...
+        " instead.")
+    synergyGroupName = synergyName(1 : delimiterIndex - 1);
+    synergyIndex = str2double(synergyName(delimiterIndex + 1 : end));
+
+    counter = 0;
+    synergyGroups = inputs.synergyGroups;
+    for i = 1 : length(synergyGroups)
+        if strcmp(synergyGroups{i}.muscleGroupName, synergyGroupName)
+            break;
+        end
+        if i == length(synergyGroups)
+            error(synergyGroupName + " is not an included synergy group.")
+        end
+        counter = counter + synergyGroups{i}.numSynergies;
+    end
+    synergyGroupNumber = i;
+    vectorNumber = counter + synergyIndex;
+    assert(vectorNumber <= size(synergyWeights, 1), ...
+        "Synergy number " + synergyIndex + " is not valid.")
+    numWeights = length(inputs.synergyGroups{synergyGroupNumber} ...
+        .muscleNames);
+
+    costTerm.vectorNumber = vectorNumber;
+    costTerm.numWeights = numWeights;
+end
+
+indices = inputs.initialSynergyWeights(vectorNumber, :) ~= 0 | ...
+    synergyWeights(vectorNumber, :) ~= 0;
 
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
-
-origSynergyWeights = inputs.initialSynergyWeights;
-rawCost = sum(abs(origSynergyWeights - synergyWeights), 'all');
-cost = ((rawCost - errorCenter) ./ costTerm.maxAllowableError) .^ 2;
+cost = norm([(synergyWeights(vectorNumber, indices) - ...
+    inputs.initialSynergyWeights(vectorNumber, indices) - errorCenter) ...
+    zeros(1, numWeights - sum(indices))]);
 end

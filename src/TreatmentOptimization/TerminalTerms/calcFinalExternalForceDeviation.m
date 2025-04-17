@@ -1,10 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the final state position 
-% and the specified target error for the specified coordinate. 
+% This function calculates the difference between the experimental and
+% predicted ground reaction forces for the specified force.
 %
-% (2D matrix, Cell, struct) -> (Number)
-% 
+% (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,14 +28,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalStatePosition = calcFinalStatePosition( ...
-    statePositions, coordinateNames, constraintTerm)
-indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
-    constraintTerm.coordinate));
-if isempty(indx)
-    throw(MException('ConstraintTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
-        "<states_coordinate_list>")))
-end
-finalStatePosition = statePositions(end, indx) - constraintTerm.target_value;
+function [pathTerm, constraintTerm] = ...
+    calcFinalExternalForceDeviation( ...
+    constraintTerm, inputs, groundReactionsForces, time, forceName)
+[force, constraintTerm] = findGroundReactionForceDataByLabels( ...
+    constraintTerm, inputs, groundReactionsForces, time, forceName);
+experimentalForce = findSplinedGroundReactionForcesByLabels( ...
+    constraintTerm, inputs, time);
+
+pathTerm = force(end) - experimentalForce(end);
 end

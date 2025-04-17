@@ -37,6 +37,6 @@ end
 for i = 1 : size(data,1)
     writeToSto(columnLabels, time(i, :), ...
         permute(data(i,:,:), [3 2 1]), ...
-        strcat(directory, "\", taskNames(i), fileName))
+        fullfile(directory, strcat(taskNames(i), fileName)))
 end
 end
