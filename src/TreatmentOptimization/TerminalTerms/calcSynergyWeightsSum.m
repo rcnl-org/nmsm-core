@@ -27,8 +27,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function synergyWeightsSum = calcSynergyWeightsSum(synergyWeights, ...
-    synergyGroups, synergyGroupName)
+function [synergyWeightsSum, constraintTerm] = ...
+    calcSynergyWeightsSum(constraintTerm, ...
+    synergyWeights, synergyGroups, synergyGroupName)
 
 counter = 1;
 for i = 1 : length(synergyGroups)
