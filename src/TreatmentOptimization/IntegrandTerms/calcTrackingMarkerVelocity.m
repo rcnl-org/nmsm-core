@@ -28,13 +28,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMarkerVelocity(costTerm, time, ...
+function [cost, costTerm] = calcTrackingMarkerVelocity(costTerm, time, ...
     markerVelocities, inputs)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
 indx = find(strcmp(convertCharsToStrings(inputs.trackedMarkerNames), ...
     costTerm.marker));
 if isempty(indx)
@@ -63,12 +62,7 @@ else
 end
 cost = calcTrackingCostArrayTerm(experimentalMarkerVelocities, ...
     markerVelocities, experimentalIndex);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
 
