@@ -76,8 +76,10 @@ end
 [inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
     inputs.controllerType, inputs.toolName);
+inputs.path = splitListTerms(inputs.path);
 inputs.path = splitAxesTerms(inputs.path);
 inputs.path = convertValueToError(inputs.path);
+inputs.terminal = splitListTerms(inputs.terminal);
 inputs.terminal = splitAxesTerms(inputs.terminal);
 inputs.terminal = convertValueToError(inputs.terminal);
 end
@@ -135,9 +137,10 @@ function splitTerms = splitListTerms(originalTerms)
 splitTerms = {};
 listTypes = ["coordinate_list", "load_list", "muscle_list", ...
     "force_list", "moment_list", "marker_list", "controller_list", ...
-    "synergy_group_list"];
+    "synergy_group_list", "body_list", "hindfoot_body_list"];
 unlistTypes = ["coordinate", "load", "muscle", ...
-    "force", "moment", "marker", "controller", "synergy_group"];
+    "force", "moment", "marker", "controller", "synergy_group", ...
+    "body", "hindfoot_body"];
 for i = 1 : length(originalTerms)
     termElements = fieldnames(originalTerms{i});
     hasBeenSplit = false;
