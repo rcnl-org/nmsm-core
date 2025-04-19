@@ -38,7 +38,11 @@ end
 
 function outputFile = getOutputFile(tree)
 outputFile = getFieldByNameOrError(tree, 'output_model_file').Text;
-resultsDir = getFieldByName(tree, 'results_directory').Text;
+splitOutputFile = split(outputFile, ["\", "/"]);
+resultsDir = getFieldByName(tree, 'results_directory');
+if isstruct(resultsDir)
+    resultsDir = resultsDir.Text;
+end
 if(resultsDir)
     if ~exist(resultsDir, 'dir')
         try
@@ -50,7 +54,17 @@ if(resultsDir)
     end
     outputFile = fullfile(resultsDir, outputFile);
 else
-    outputFile = fullfile(pwd, outputFile);
+    if numel(splitOutputFile) > 1
+    else
+        outputFile = fullfile(pwd, outputFile);
+    end
+end
+splitOutputFile = split(outputFile, ["\", "/"]);
+outputDir = fullfile(splitOutputFile{1:end-1});
+if ~exist(outputDir, 'dir')
+    throw(MException('', strcat("Cannot find output directory ", ...
+        outputDir, ". Verify that your <results_directory> and <output", ...
+        "_model_file> form a directory that exists")))
 end
 end
 
