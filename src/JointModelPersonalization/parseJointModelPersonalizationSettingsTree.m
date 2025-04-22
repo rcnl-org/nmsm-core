@@ -47,24 +47,19 @@ if(resultsDir)
         try
             mkdir(resultsDir)
         catch
-            throw(MException('', "Cannot find output directory " + ...
+            throw(MException('', "Cannot create output directory " + ...
                 resultsDir))
         end
     end
-    outputFile = fullfile(resultsDir, outputFile);
-else
-    if numel(splitOutputFile) > 1
-    else
-        outputFile = fullfile(pwd, outputFile);
-    end
+    [~, outputFileName, ~] = fileparts(outputFile);
+    outputFileName = strcat(outputFileName, ".osim");
+    outputFile = fullfile(resultsDir, outputFileName);
 end
-% splitOutputFile = split(outputFile, ["\", "/"]);
 [outputDir, ~, ~] = fileparts(outputFile);
-% outputDir = fullfile(splitOutputFile{1:end-1});
 if ~exist(outputDir, 'dir')
-    throw(MException('', strcat("Cannot find output directory ", ...
-        outputDir, ". Verify that your <results_directory> and <output", ...
-        "_model_file> form a directory that exists")))
+    throw(MException('', strcat("Cannot find specified output directory.", ...
+        " Either use <results_directory> in your settings file or verify that your", ...
+        " <output_model_file> is contained in an existing directory.")))
 end
 end
 
