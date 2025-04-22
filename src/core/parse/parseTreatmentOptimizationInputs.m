@@ -169,19 +169,19 @@ for i = 1 : length(originalTerms)
     if isfield(originalTerms{i}, 'axes')
         axes = lower(originalTerms{i}.axes);
         addedTerm = false;
-        if contains(axes, 'x')
+        if any(contains(axes, 'x'))
             tempTerm = originalTerms{i};
             tempTerm.axes = 'x';
             splitTerms{end+1} = tempTerm;
             addedTerm = true;
         end
-        if contains(axes, 'y')
+        if any(contains(axes, 'y'))
             tempTerm = originalTerms{i};
             tempTerm.axes = 'y';
             splitTerms{end+1} = tempTerm;
             addedTerm = true;
         end
-        if contains(axes, 'z')
+        if any(contains(axes, 'z'))
             tempTerm = originalTerms{i};
             tempTerm.axes = 'z';
             splitTerms{end+1} = tempTerm;

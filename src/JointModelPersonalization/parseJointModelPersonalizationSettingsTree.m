@@ -38,7 +38,6 @@ end
 
 function outputFile = getOutputFile(tree)
 outputFile = getFieldByNameOrError(tree, 'output_model_file').Text;
-splitOutputFile = split(outputFile, ["\", "/"]);
 resultsDir = getFieldByName(tree, 'results_directory');
 if isstruct(resultsDir)
     resultsDir = resultsDir.Text;
@@ -59,8 +58,9 @@ else
         outputFile = fullfile(pwd, outputFile);
     end
 end
-splitOutputFile = split(outputFile, ["\", "/"]);
-outputDir = fullfile(splitOutputFile{1:end-1});
+% splitOutputFile = split(outputFile, ["\", "/"]);
+[outputDir, ~, ~] = fileparts(outputFile);
+% outputDir = fullfile(splitOutputFile{1:end-1});
 if ~exist(outputDir, 'dir')
     throw(MException('', strcat("Cannot find output directory ", ...
         outputDir, ". Verify that your <results_directory> and <output", ...
