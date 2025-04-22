@@ -162,7 +162,10 @@ for i = 1 : length(originalTerms)
     end
     if ~hasBeenSplit
         splitTerms{end + 1} = originalTerms{i};
-        
+    end
+end
+end
+
 function splitTerms = splitAxesTerms(originalTerms)
 splitTerms = {};
 for i = 1 : length(originalTerms)
