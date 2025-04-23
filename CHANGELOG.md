@@ -26,6 +26,7 @@
 - Optimized ground reactions from GCP are saved with the column order expected by the OpenSim GUI
 - .osimx files created by Model Personalization tools are printed with correct indentation for readability
 - JMP safely handles absolute file paths given in the <output_model_file> element
+- plotTreatmentOptimizationJointVelocities properly normalizes splined data points
 
 
 ### Changed
