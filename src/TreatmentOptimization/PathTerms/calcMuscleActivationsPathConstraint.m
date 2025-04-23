@@ -28,10 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function pathTerm = calcMuscleActivationsPathConstraint(params, ...
-    modeledValues, muscleName)
-
-indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
-    muscleName));
-pathTerm = modeledValues.muscleActivations(:, indx);
+function [pathTerm, constraintTerm] = ...
+    calcMuscleActivationsPathConstraint(inputs, ...
+    modeledValues, muscleName, constraintTerm)
+[activation, constraintTerm] = findDataByLabels(constraintTerm, ...
+    modeledValues.muscleActivations, inputs.muscleNames, muscleName);
+pathTerm = activation;
 end

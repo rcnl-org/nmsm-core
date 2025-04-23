@@ -63,6 +63,7 @@ function inputs = parseExperimentalData(inputs, dataDirectory)
     fullfile(dataDirectory, "IKData"), inputs.trialName, inputs.model, true);
 inputs.coordinateNamesStrings = inputs.coordinateNames;
 inputs.coordinateNames = cellstr(inputs.coordinateNames);
+inputs.statesCoordinateIndices = findStatesCoordinateIndices(inputs);
 inputs.experimentalTime = experimentalTime - experimentalTime(1);
 inputs.initialTime = inputs.experimentalTime;
 if isfield(inputs.osimx, 'groundContact') && ...
@@ -240,5 +241,13 @@ end
 if any([isnan(forces) isnan(moments) isnan(ec)])
     throw(MException('', ['Unable to parse GRF file, check that ' ...
         'all necessary column labels are present']))
+end
+end
+
+function statesCoordinateIndices = findStatesCoordinateIndices(inputs)
+statesCoordinateIndices = zeros(size(inputs.statesCoordinateNames));
+for i = 1 : length(inputs.statesCoordinateNames)
+    statesCoordinateIndices(i) = find( ...
+        ismember(inputs.coordinateNames, inputs.statesCoordinateNames(i)));
 end
 end

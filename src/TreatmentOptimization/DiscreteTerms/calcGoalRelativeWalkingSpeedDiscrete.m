@@ -29,8 +29,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGoalRelativeWalkingSpeedDiscrete(values, ...
-    modeledValues, inputs, costTerm)
+function [cost, costTerm] = calcGoalRelativeWalkingSpeedDiscrete( ...
+    values, modeledValues, inputs, costTerm)
 
 rawCost = modeledValues.massCenterVelocity;
 

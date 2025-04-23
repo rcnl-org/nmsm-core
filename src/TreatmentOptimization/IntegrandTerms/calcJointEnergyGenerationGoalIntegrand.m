@@ -28,10 +28,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcJointEnergyGenerationGoalIntegrand(costTerm, ...
-    jointVelocity, time, jointMoment, params, loadName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
+function [cost, costTerm] = calcJointEnergyGenerationGoalIntegrand( ...
+    costTerm, jointVelocity, time, jointMoment, params, loadName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
 loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
 indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
@@ -48,11 +50,5 @@ jointPower = jointMoment(:, indx) .* jointVelocity(:, indx);
 cost = real(sqrt((jointPower - costTerm.errorCenter) / ...
     costTerm.maxAllowableError));
 
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
