@@ -10,7 +10,7 @@
 - Ground Contact Personalization (GCP) supports force plate rotation adjustment alongside the existing force plate electrical center location adjustment
 - Many new cost and constraint terms have been added to Treatment Optimization tools
 	- These include constraint forms of previously existing cost terms as well as terms based on new quantities such as body orientation and center of pressure
-	- For the full list, review the cost and constraint term documents included with this release
+	- For the full list, review the documents `Cost Terms.pdf` and `Constraint Terms.pdf` included with this release
 - Terms like marker or body orientation tracking that depend on axes now take an `<axes>` element where users specify some combination of X, Y, and Z
 - Cost and constraint terms using external loads (including center of pressure) support a `<time_ranges>` element to limit the range of a term's application
 	- Times are given as normalized time ranges, such as `<time_ranges>0.2 0.6</time_ranges>`, which would only apply a cost or constraint from 20% to 60% of a motion
