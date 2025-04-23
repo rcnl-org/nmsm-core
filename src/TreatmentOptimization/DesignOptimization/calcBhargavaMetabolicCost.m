@@ -2,8 +2,6 @@ function metabolicCost = calcBhargavaMetabolicCost(mass, ...
     allMuscleActivations, normalizedMuscleFiberLengths, ...
     normalizedMuscleFiberVelocities, maxIsometricForce, optimalFiberLength)
 fiberTypeRatio = 0.5;
-normalizedMuscleFiberLengths = permute(normalizedMuscleFiberLengths, [3 2 1]);
-normalizedMuscleFiberVelocities = permute(normalizedMuscleFiberVelocities, [3 2 1]);
 metabolicCost = zeros(size(allMuscleActivations, 1), 1);
 for i = 1:size(allMuscleActivations, 2)
     activations = allMuscleActivations(:, i);

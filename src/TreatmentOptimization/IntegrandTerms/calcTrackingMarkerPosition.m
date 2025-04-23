@@ -27,20 +27,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMarkerPosition(costTerm, time, ...
+function [cost, costTerm] = calcTrackingMarkerPosition(costTerm, time, ...
     markerPositions, inputs)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-axes = strsplit(strip(valueOrAlternate(...
-    costTerm, "axes", 'true true true')), ' ');
-if length(axes) ~= 3
-    throw(MException('CostTermError:IncorrectAxes', ...
-        strcat("Axes ", costTerm.axes, " should be three " + ...
-        "space-separated true or false values.")))
-end
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
 indx = find(strcmp(convertCharsToStrings(inputs.trackedMarkerNames), ...
     costTerm.marker));
 if isempty(indx)
@@ -59,25 +51,16 @@ else
         0:2, time);
 end
 experimentalIndex = (indx - 1) * 3 + 1;
+if costTerm.axes == 'y'
+    experimentalIndex = experimentalIndex + 1;
+elseif costTerm.axes == 'z'
+    experimentalIndex = experimentalIndex + 2;
+else
+    assert(costTerm.axes == 'x', costTerm.type + " axes must be x, " + ...
+    "y, or z.");
+end
 cost = calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
     markerPositions, experimentalIndex);
-if ~strcmpi(axes{1}, 'true')
-    cost(:) = 0;
-end
-if strcmpi(axes{2}, 'true')
-    cost = cost + calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
-        markerPositions, experimentalIndex + 1);
-end
-if strcmpi(axes{3}, 'true')
-    cost = cost + calcTrackingCostArrayTerm(experimentalMarkerPositions, ...
-        markerPositions, experimentalIndex + 2);
-end
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
-end
 
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
+end

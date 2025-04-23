@@ -27,7 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcAbsoluteMetabolicCostPerDistanceGoalDiscrete( ...
+function [cost, costTerm] = ...
+    calcAbsoluteMetabolicCostPerDistanceGoalDiscrete( ...
     modeledValues, values, inputs, costTerm)
 
 beltSpeed = 0;
