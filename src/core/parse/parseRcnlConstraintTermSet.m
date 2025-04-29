@@ -40,6 +40,7 @@ for term = 1:length(tree)
     end
     tempTerm = struct();
     % Find general cost term elements
+    tempTerm = struct();
     tempTerm.type = getTextFromField(getFieldByNameOrError( ...
         currentTerm, 'type'));
     [isValid, isPath] = isTypeValid(tempTerm.type, toolName, controllerTypes);
@@ -58,6 +59,9 @@ for term = 1:length(tree)
     % Find other cost term elements
     termElements = fieldnames(currentTerm);
     for element = 1:length(termElements)
+        if strcmp(termElements{element}, "Attributes")
+            continue
+        end
         if isempty(intersect(termElements{element}, ["type" ...
                 "is_enabled" "max_error" "min_error"]))
             contents = getTextFromField(getFieldByNameOrError( ...
@@ -68,6 +72,9 @@ for term = 1:length(tree)
                 contents = false;
             elseif ~isnan(str2double(contents))
                 contents = str2double(contents);
+            elseif any(isspace(convertStringsToChars(contents)))
+                contents = parseSpaceSeparatedList(currentTerm, ...
+                    termElements{element});
             end
             tempTerm.(termElements{element}) = contents;
         end

@@ -38,6 +38,8 @@ if isfield(term, "time_ranges")
             "time normalized from 0 to 1 and should not have values " + ...
             "greater than 1.");
     end
+    assert(length(term.time_ranges) > 1, ...
+        "Term time_ranges must contain an even number of values.");
     time = time / time(end);
     excludedIndices = true(size(time));
     for i = 1 : length(term.time_ranges) / 2

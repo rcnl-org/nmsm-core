@@ -28,36 +28,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingAccelerationIntegrand(costTerm, inputs, time, ...
-    accelerations, coordinateName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
-    coordinateName));
-if isempty(indx)
-    throw(MException('CostTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", coordinateName, " is not in the ", ...
-        "<states_coordinate_list>")))
-end
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointAccelerations = inputs.splinedJointAccelerations;
-else
-    experimentalJointAccelerations = evaluateGcvSplines( ...
-        inputs.splineJointAngles, inputs.coordinateNames, time, 2);
-end
+function [cost, costTerm] = calcTrackingAccelerationIntegrand(costTerm, ...
+    inputs, time, accelerations, coordinateName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
 
-cost = calcTrackingCostArrayTerm(experimentalJointAccelerations, ...
-    accelerations, indx);
+[acceleration, costTerm] = findDataByLabels(costTerm, accelerations, ...
+    inputs.coordinateNames, coordinateName);
+experimentalAcceleration = findSplinedJointAccelerationsByLabels( ...
+    costTerm, inputs, time);
 
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+cost = experimentalAcceleration - acceleration;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
