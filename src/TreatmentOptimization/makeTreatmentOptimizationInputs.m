@@ -52,18 +52,21 @@ inputs = makeOptimalControlBounds(inputs);
 
 inputs.surrogateModelCoordinateNames = inputs.coordinateNames;
 if any(inputs.controllerTypes(2:3))
-    if isfile(inputs.surrogateModelFileName)
-        [path, name, ~] = fileparts(inputs.surrogateModelFileName);
-        fileName = fullfile(path, strcat(name, ".mat"));
+    [path, name, ~] = fileparts(inputs.surrogateModelFileName);
+    fileName = fullfile(path, strcat(name, ".mat"));
+    if isfile(fileName)
+        disp("Loading surrogate geometry from " + fileName);
         temp = load(fileName);
         inputs.surrogateMuscles = temp.surrogateMuscles;
         inputs.surrogateMusclesNumArgs = temp.surrogateMusclesNumArgs;
         inputs = getMuscleSpecificSurrogateModelData(inputs);
     else
+        disp("Fitting surrogate geometry from data directory...")
         inputs = SurrogateModelCreation(inputs);
         surrogateMuscles = inputs.surrogateMuscles;
         surrogateMusclesNumArgs = inputs.surrogateMusclesNumArgs;
-        save("surrogateMuscles.mat", "surrogateMuscles", "surrogateMusclesNumArgs");
+        save(fileName, "surrogateMuscles", "surrogateMusclesNumArgs");
+        disp("Saved surrogate geometry to " + fileName);
     end
 end
 end
