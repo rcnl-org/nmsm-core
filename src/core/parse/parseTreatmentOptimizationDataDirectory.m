@@ -147,14 +147,23 @@ end
 
 function inputs = parseMuscleExperimentalData(tree, inputs)
 if any(inputs.controllerTypes(2:3))
-    [experimentalMuscleActivations, inputs.muscleLabels] = ...
-        parseTrialData(inputs.initialGuessDirectory, ...
-        strcat(inputs.trialName, "_combinedActivations"), inputs.model);
+    try
+        [experimentalMuscleActivations, inputs.muscleLabels] = ...
+            parseTrialData(inputs.initialGuessDirectory, ...
+            strcat(inputs.trialName, "_combinedActivations"), inputs.model);
+    catch
+        experimentalMuscleActivations = ...
+            zeros(length(inputs.experimentalTime), 0);
+        inputs.muscleLabels = string([]);
+    end
     if length(inputs.muscleLabels) < inputs.numMuscles
         muscleActivationsFile = getTextFromField( ...
             getFieldByName(tree, "muscle_activations_file"));
         if ischar(muscleActivationsFile)
             [path, name, ~] = fileparts(muscleActivationsFile);
+            if isempty(path)
+                path = '.';
+            end
             [extraActivations, extraLabels] = ...
                 parseTrialData(path, name, inputs.model);
             assert(size(extraActivations, 1) == size( ...
