@@ -50,6 +50,8 @@ end
 muscleTree = getFieldByName(tree, 'RCNLMuscleController');
 if isstruct(muscleTree)
     inputs = parseMuscleController(tree, inputs);
+else
+    inputs.numIndividualMuscles = 0;
 end
 % Handle muscle properties if either muscle-based controller is used
 if isstruct(synergyTree) || isstruct(muscleTree)
