@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of double) -> (Array of double)
+% (Array of double, double) -> (Array of double)
 % Applies a saturation function to muscle activations.
 
 % ----------------------------------------------------------------------- %
@@ -25,10 +25,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function muscleActivations = applyActivationSaturation(muscleActivations)
+function muscleActivations = applyActivationSaturation( ...
+    muscleActivations, cornerCoefficient)
 % Function based on: http://dx.doi.org/10.1016/j.fss.2005.02.016
 % Higher corner coefficient makes corners sharper 
-cornerCoefficient = 75;
 muscleActivations = log( ...
     (1 + exp(cornerCoefficient .* (muscleActivations))) ./ ...
     (1 + exp(cornerCoefficient .* (muscleActivations - 1)))) .* ...
