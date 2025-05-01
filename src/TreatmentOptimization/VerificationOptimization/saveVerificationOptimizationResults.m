@@ -37,7 +37,7 @@ saveTreatmentOptimizationResults(solution, inputs, values)
 end
 
 function values = normalizeSynergySolution(values, inputs)
-values.controllerType = inputs.controllerType;
+values.controllerTypes = inputs.controllerTypes;
 values.initialSynergyControls = values.controlSynergyActivations;
 values.synergyNormalizationMethod = inputs.synergyNormalizationMethod;
 values.synergyNormalizationValue = inputs.synergyNormalizationValue;
