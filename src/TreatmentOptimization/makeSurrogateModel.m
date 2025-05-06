@@ -29,12 +29,13 @@
 
 function inputs = makeSurrogateModel(inputs)
 if strcmp(inputs.controllerType, 'synergy')
-    for i = 1 : length(inputs.coordinateNames)
-        for j = 1 : length(inputs.surrogateModelCoordinateNames)
-            if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
-                inputs.surrogateModelIndex(j) = i;
-            end
-        end
-    end
+    % for i = 1 : length(inputs.coordinateNames)
+    %     for j = 1 : length(inputs.surrogateModelCoordinateNames)
+    %         if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
+    %             inputs.surrogateModelIndex(j) = i;
+    %         end
+    %     end
+    % end
+    inputs.surrogateModelIndex = 1 : length(inputs.coordinateNames);
 end
 end
