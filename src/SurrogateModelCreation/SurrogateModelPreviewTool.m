@@ -48,8 +48,11 @@ switch toolFields{1}
             "TrackingOptimizationTool, VerificationOptimizationTool," + ...
             " and DesignOptimizationTool.")
 end
+inputs.surrogateModelCoordinateNames = inputs.coordinateNames;
 inputs.plotResults = true;
 inputs.plotSurrogateResults = plotSurrogateResults;
 inputs.plotExperimentalResults = plotExperimentalResults;
+tic
 SurrogateModelCreation(inputs);
+toc
 end
