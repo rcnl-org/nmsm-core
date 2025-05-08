@@ -28,36 +28,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingExternalForcesIntegrand(costTerm, inputs, ...
-    groundReactionsForces, time, forceName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-for i = 1:length(inputs.contactSurfaces)
-    indx = find(strcmp(convertCharsToStrings(inputs.contactSurfaces{i}. ...
-        forceColumns), forceName));
-    if ~isempty(indx)
-        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-            experimentalGroundReactions = inputs.splinedGroundReactionForces{i};
-        else
-            experimentalGroundReactions = ...
-                evaluateGcvSplines( ...
-                inputs.splineExperimentalGroundReactionForces{i}, 0:2, ...
-                time);
-        end
-        cost = calcTrackingCostArrayTerm(...
-            experimentalGroundReactions, groundReactionsForces{i}, ...
-            indx);
-    end
-end
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+function [cost, costTerm] = calcTrackingExternalForcesIntegrand( ...
+    costTerm, inputs, groundReactionsForces, time, forceName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+[force, costTerm] = findGroundReactionForceDataByLabels( ...
+    costTerm, inputs, groundReactionsForces, time, forceName);
+experimentalForce = findSplinedGroundReactionForcesByLabels( ...
+    costTerm, inputs, time);
+
+cost = experimentalForce - force;
+
+[cost, costTerm] = applyTermTimeRanges(cost, costTerm, time);
+[cost, costTerm] = applyPercentErrorWithMinimum(cost, ...
+    experimentalForce, costTerm);
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

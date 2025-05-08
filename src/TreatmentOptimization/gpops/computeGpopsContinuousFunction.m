@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function modeledValues = computeGpopsContinuousFunction(setup)
+function [modeledValues, setup] = computeGpopsContinuousFunction(setup)
 values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
 if strcmp(setup.auxdata.toolName, "DesignOptimization")
     [setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
@@ -37,17 +37,21 @@ modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
     modeledValues);
 modeledValues.dynamics = calcDynamicConstraint(values, setup.auxdata);
+persistent constraintTermCalculations, persistent allowedTypes;
 if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.path))
-    [constraintTermCalculations, allowedTypes] = ...
-        generateConstraintTermStruct("path", ...
-        setup.auxdata.controllerType, setup.auxdata.toolName);
-    modeledValues.path = calcGpopsConstraint( ...
+    if isempty(allowedTypes)
+        [constraintTermCalculations, allowedTypes] = ...
+            generateConstraintTermStruct("path", ...
+            setup.auxdata.controllerType, setup.auxdata.toolName);
+    end
+    [modeledValues.path, setup.auxdata.path] = calcGpopsConstraint( ...
         setup.auxdata.path, constraintTermCalculations, allowedTypes, ...
         values, modeledValues, setup.auxdata);
     modeledValues.path = scaleToBounds( ...
         modeledValues.path, setup.auxdata.maxPath, setup.auxdata.minPath);
 end
-modeledValues.integrand = calcGpopsIntegrand(values, modeledValues, setup.auxdata);
+[modeledValues.integrand, setup.auxdata] = calcGpopsIntegrand(values, ...
+    modeledValues, setup.auxdata);
 if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
     modeledValues.integrand(:, end+1) = modeledValues.metabolicCost;
 end

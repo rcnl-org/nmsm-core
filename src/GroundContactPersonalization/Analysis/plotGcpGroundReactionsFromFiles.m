@@ -46,6 +46,7 @@ figureName = splitFileName(1);
 figure(Name = figureName, ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 t = tiledlayout(2, 3, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Time [s]")
@@ -53,12 +54,13 @@ for i = 1:6
     nexttile(i)
     experimental = experimentalGroundReactions(i, :);
     model = modeledGroundReactions(i, :);
-    plot(time, experimental, Color="#0072BD", LineWidth=2)
+    plot(time, experimental, Color=colors(1), LineWidth=2)
     hold on
-    plot(time, model, Color="#D95319", LineWidth=2)
+    plot(time, model, Color=colors(2), LineWidth=2)
     error = rms(experimental - model);
     title(titles(i) + newline + " RMSE: " + error)
     xlabel('Time')
+    xlim("tight")
     if i == 1
         ylabel('Force (N)')
         legend("Experimental", "Model")

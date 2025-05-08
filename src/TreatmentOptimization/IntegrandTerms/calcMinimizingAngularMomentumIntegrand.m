@@ -28,24 +28,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingAngularMomentumIntegrand( ...
+function [cost, costTerm] = calcMinimizingAngularMomentumIntegrand( ...
     modeledValues, time, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
 
-assert(isfield(costTerm, 'axis'), "Angular momentum minimization " + ...
-    "requires an 'axis' field in the cost term settings.")
-
-index = find(strcmpi(costTerm.axis, ["x" "y" "z"]));
+index = find(strcmpi(getTermFieldOrError(costTerm, 'axes'), ...
+    ["x" "y" "z"]));
 assert(~isempty(index), "Angular momentum axis must be X, Y, or Z, " + ...
-    "but '" + costTerm.axis + "' was given.");
+    "but '" + costTerm.axes + "' was given.");
 
 cost = modeledValues.angularMomentum(:, index);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

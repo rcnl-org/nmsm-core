@@ -58,20 +58,8 @@ if strcmp(inputs.toolName, "TrackingOptimization")
         if inputs.optimizeSynergyVectors
             parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
-            counter = 1;
-            row = 1;
-            for i = 1 : length(inputs.synergyGroups)
-                for k = 1:inputs.synergyGroups{i}.numSynergies
-                    for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
-                        index = find(ismember(inputs.synergyWeightsLabels, ...
-                            inputs.synergyGroups{i}.muscleNames{j}));
-                        values.synergyWeights(row, index) = ...
-                            parameters(counter);
-                        counter = counter + 1;
-                    end
-                    row = row + 1;
-                end
-            end
+            values.synergyWeights(inputs.synergyWeightsIndices) = ...
+                parameters(1 : length(inputs.synergyWeightsIndices));
         end
     end
 end
@@ -81,25 +69,15 @@ if strcmp(inputs.toolName, "VerificationOptimization")
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
+    counter = 1;
     if strcmp(inputs.controllerType, 'synergy')
         values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
             parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
-            counter = 1;
-            row = 1;
-            for i = 1 : length(inputs.synergyGroups)
-                for k = 1:inputs.synergyGroups{i}.numSynergies
-                    for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
-                        index = find(ismember(inputs.synergyWeightsLabels, ...
-                            inputs.synergyGroups{i}.muscleNames{j}));
-                        values.synergyWeights(row, index) = ...
-                            parameters(counter);
-                        counter = counter + 1;
-                    end
-                    row = row + 1;
-                end
-            end
+            values.synergyWeights(inputs.synergyWeightsIndices) = ...
+                parameters(1 : length(inputs.synergyWeightsIndices));
+            counter = length(inputs.synergyWeightsIndices) + 1;
         end
     end
     if isfield(inputs, 'userDefinedVariables') && ...
@@ -122,34 +100,36 @@ function [positions, velocities] = recombineFullState( ...
 if size(values.time) == size(inputs.collocationTimeOriginal)
     positions = inputs.splinedJointAngles;
     velocities = inputs.splinedJointSpeeds;
+elseif size(values.time) == size(inputs.collocationTimeOriginal) + [1, 0]
+    positions = inputs.splinedJointAngles;
+    velocities = inputs.splinedJointSpeeds;
+    positions(end+1, :) = inputs.experimentalJointAngles(end, :);
+    velocities(end+1, :) = inputs.experimentalJointVelocities(end, :);
+elseif size(values.time) == [2, 1]
+    positions = inputs.experimentalJointAngles([1 end], :);
+    velocities = inputs.experimentalJointVelocities([1 end], :);
 else
     positions = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time);
     velocities = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 1);
 end
-for i = 1:length(inputs.coordinateNames)
-    index = find(ismember( ...
-        inputs.statesCoordinateNames, inputs.coordinateNames{i}));
-    if ~isempty(index)
-        positions(:, i) = values.statePositions(:, index);
-        velocities(:, i) = values.stateVelocities(:, index);
-    end
-end
+positions(:, inputs.statesCoordinateIndices) = values.statePositions;
+velocities(:, inputs.statesCoordinateIndices) = values.stateVelocities;
 end
 
 function accelerations = recombineFullAccelerations(values, inputs)
 if size(values.time) == size(inputs.collocationTimeOriginal)
     accelerations = inputs.splinedJointAccelerations;
+elseif size(values.time) == size(inputs.collocationTimeOriginal) + [1, 0]
+    accelerations = inputs.splinedJointAccelerations;
+    accelerations(end+1, :) = inputs.experimentalJointAccelerations(end, :);
+elseif size(values.time) == [2, 1]
+    accelerations = inputs.experimentalJointAccelerations([1 end], :);
 else
     accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 2);
 end
-for i = 1:length(inputs.coordinateNames)
-    index = find(ismember( ...
-        inputs.statesCoordinateNames, inputs.coordinateNames{i}));
-    if ~isempty(index)
-        accelerations(:, i) = values.controlAccelerations(:, index);
-    end
-end
+accelerations(:, inputs.statesCoordinateIndices) = ...
+    values.controlAccelerations;
 end

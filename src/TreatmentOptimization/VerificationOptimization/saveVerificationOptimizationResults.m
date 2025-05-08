@@ -13,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,5 +30,17 @@
 function saveVerificationOptimizationResults(solution, inputs)
 values = makeGpopsValuesAsStruct( ...
     solution.solution.phase, inputs);
+if strcmp(inputs.controllerType, "synergy")
+    values = normalizeSynergySolution(values, inputs);
+end
 saveTreatmentOptimizationResults(solution, inputs, values)
+end
+
+function values = normalizeSynergySolution(values, inputs)
+values.controllerType = inputs.controllerType;
+values.initialSynergyControls = values.controlSynergyActivations;
+values.synergyNormalizationMethod = inputs.synergyNormalizationMethod;
+values.synergyNormalizationValue = inputs.synergyNormalizationValue;
+values = normalizeSynergyData(values);
+values.controlSynergyActivations = values.initialSynergyControls;
 end

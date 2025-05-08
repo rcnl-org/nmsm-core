@@ -86,6 +86,13 @@ if ~params.tasks{task}.designVariables(9)
             inputs.surfaces{foot}.electricalCenterShiftZ;
     end
 end
+if ~params.tasks{task}.designVariables(10)
+    for foot = 1:length(inputs.surfaces)
+        field = "forcePlateRotation" + foot;
+        valuesStruct.(field) = ...
+            inputs.surfaces{foot}.forcePlateRotation;
+    end
+end
 
 for foot = 1 : length(inputs.surfaces)
     for i = 1 : size(inputs.surfaces{foot} ...
@@ -98,6 +105,7 @@ for foot = 1 : length(inputs.surfaces)
     end
 end
 
+% Electrical center shift
 if any(params.tasks{task}.designVariables(7:9))
     for foot = 1:length(inputs.surfaces)
         fieldX = "electricalCenterX" + foot;
@@ -115,6 +123,18 @@ if any(params.tasks{task}.designVariables(7:9))
                 cross(electricalCenterShift, inputs.surfaces{foot} ...
                 .experimentalGroundReactionForces(:, i));
         end
+    end
+end
+
+% Force plate rotation
+if params.tasks{task}.designVariables(10)
+    for foot = 1:length(inputs.surfaces)
+        [inputs.surfaces{foot}.experimentalGroundReactionForces, ...
+            inputs.surfaces{foot}.experimentalGroundReactionMoments] = ...
+            rotateGroundReactions( ...
+            inputs.surfaces{foot}.experimentalGroundReactionForces, ...
+            inputs.surfaces{foot}.experimentalGroundReactionMoments, ...
+            inputs.surfaces{foot}.forcePlateRotation);
     end
 end
 
@@ -158,6 +178,9 @@ for i=1:length(fieldNameOrder)
         valuesStruct.(fieldNameOrder(i)) = values(start);
         start = start + 1;
     elseif contains(fieldNameOrder(i), "electricalCenterZ")
+        valuesStruct.(fieldNameOrder(i)) = values(start);
+        start = start + 1;
+    elseif contains(fieldNameOrder(i), "forcePlateRotation")
         valuesStruct.(fieldNameOrder(i)) = values(start);
         start = start + 1;
     else
@@ -252,8 +275,11 @@ for term = 1:length(params.tasks{task}.costTerms)
                     modeledValues.gaussianWeights) / ...
                     costTerm.maxAllowableError) .^ 4 * ...
                     costTerm.maxAllowableError;
-            case "electrical_center_shift"
+            case "electrical_center_regularization"
                 rawCost = calcElectricalCenterShiftError(inputs, ...
+                    valuesStruct, costTerm);
+            case "force_plate_rotation_regularization"
+                rawCost = calcForcePlateRotationError(inputs, ...
                     valuesStruct);
             otherwise
                 throw(MException('', ['Cost term type ' costTerm.type ...

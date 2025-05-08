@@ -2,7 +2,7 @@
 %
 %
 %
-% (struct, struct) -> (Array of double)
+% (struct, struct, struct) -> (Array of double)
 % Calculate error between experimental and adjusted electrical center. 
 
 % ----------------------------------------------------------------------- %
@@ -27,18 +27,31 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function errors = calcElectricalCenterShiftError(inputs, values)
+function errors = calcElectricalCenterShiftError(inputs, values, costTerm)
 errors = zeros(1, 3 * length(inputs.surfaces));
+if isfield(costTerm, 'axes')
+    axes = [contains(lower(costTerm.axes), 'x'), ...
+        contains(lower(costTerm.axes), 'y'), ...
+        contains(lower(costTerm.axes), 'z')];
+else
+    axes = true(1, 3);
+end
 index = 1;
 for i = 1 : length(inputs.surfaces)
-    field = "electricalCenterX" + i;
-    errors(index) = values.(field);
+    if axes(1)
+        field = "electricalCenterX" + i;
+        errors(index) = values.(field);
+    end
     index = index + 1;
-    field = "electricalCenterY" + i;
-    errors(index) = values.(field);
+    if axes(2)
+        field = "electricalCenterY" + i;
+        errors(index) = values.(field);
+    end
     index = index + 1;
-    field = "electricalCenterZ" + i;
-    errors(index) = values.(field);
+    if axes(3)
+        field = "electricalCenterZ" + i;
+        errors(index) = values.(field);
+    end
     index = index + 1;
 end
 end

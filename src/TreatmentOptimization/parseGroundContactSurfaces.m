@@ -96,7 +96,7 @@ end
 function output = parseGroundReactionDataWithoutTime(model, grfFile, output)
 import org.opensim.modeling.Storage
 [grfColumnNames, ~, grfData] = parseMotToComponents(model, Storage(grfFile));
-for i=1:size(grfColumnNames')
+for i=1:size(grfColumnNames', 1)
     label = grfColumnNames(i);
     for j = 1:3
         if strcmpi(label, output.forceColumns(j))

@@ -47,7 +47,7 @@ trackedDataTime = findTimeColumn(trackedDataStorage);
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
+% trackedDataTime = trackedDataTime / trackedDataTime(end);
 for j = 1 : numel(modelDataFiles)
     modelDataStorage = Storage(modelDataFiles(j));
     modelData{j} = storageToDoubleMatrix(modelDataStorage)';
@@ -56,7 +56,7 @@ for j = 1 : numel(modelDataFiles)
     if modelDataTime{j} ~= 0
         modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
     end
-    modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
+    % modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
 end
 
 experimentalMomentIndices = contains(trackedDataLabels, ["_m", "M"]);
@@ -99,6 +99,7 @@ figureSize = figureWidth * figureHeight;
 figure(Name = "Treatment Optimization Ground Reactions", ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
@@ -119,14 +120,17 @@ for i=1:numel(trackedDataLabels)
     end
     nexttile(subplotNumber);
     hold on
-    plot(trackedDataTime*100, trackedData(:, i), LineWidth=2);
+    plot(trackedDataTime, trackedData(:, i), LineWidth=2, ...
+        Color = colors(1));
     for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2);
+        plot(modelDataTime{j}, modelData{j}(:, i), LineWidth=2, ...
+            Color = colors(j+1));
     end
     hold off
     titleString = [sprintf("%s", strrep(trackedDataLabels(i), "_", " "))];
     for j = 1 : numel(modelDataFiles)
-        rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
+        rmse = rms(resampledExperimentalData{j}(1:end-1, i) - ...
+            modelData{j}(1:end-1, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
     title(titleString)

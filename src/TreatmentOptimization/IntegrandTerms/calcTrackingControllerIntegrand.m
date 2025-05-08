@@ -30,52 +30,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingControllerIntegrand(costTerm, inputs, ...
+function [cost, costTerm] = calcTrackingControllerIntegrand(costTerm, inputs, ...
     values, time, controllerName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-if strcmp(inputs.controllerType, 'synergy')
-    indx = find(strcmp(convertCharsToStrings( ...
-        inputs.synergyLabels), controllerName));
-    if ~isempty(indx)
-        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-            max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-            synergyActivations = inputs.splinedSynergyActivations;
-        else
-            synergyActivations = ...
-                evaluateGcvSplines(inputs.splineSynergyActivations, ...
-                inputs.synergyLabels, time);
-        end
-        scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-        cost = calcTrackingCostArrayTerm(synergyActivations * scaleFactor, ...
-            values.controlSynergyActivations, indx);
-        return
-    end
-end
-indx1 = find(strcmp(convertCharsToStrings( ...
-    strcat(inputs.torqueLabels, '_moment')), controllerName));
-indx2 = find(strcmp(convertCharsToStrings( ...
-    strcat(inputs.torqueControllerCoordinateNames, '_moment')), ...
-    controllerName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointMoments = inputs.splinedTorqueControls;
-else
-    experimentalJointMoments = ...
-        evaluateGcvSplines(inputs.splineTorqueControls, ...
-        inputs.torqueLabels, time);
-end
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+[controls, costTerm] = findControlsByLabels(costTerm, inputs, values, ...
+    time, controllerName);
+experimentalControls = findSplinedControlsByLabels(costTerm, inputs, time);
+
 scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
-cost = (experimentalJointMoments(:, indx1) * scaleFactor) - ...
-    values.torqueControls(:, indx2);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+cost = controls - (experimentalControls * scaleFactor);
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

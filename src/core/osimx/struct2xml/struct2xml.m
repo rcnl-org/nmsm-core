@@ -41,6 +41,7 @@ function varargout = struct2xml_modified( inputStructure2Xml, varargin )
 % Multiple space to single space conversion adapted for speed by T. Lohuis, 11-04-2011
 % Val2str subfunction bugfix by H. Gsenger, 19-9-2011
 % Comment functionality added by M. Vega 5-3-2022
+% Indentation fix by S. Williams 10-4-2025
     
 if (nargin ~= 2)
     if(nargout ~= 1 || nargin ~= 1)
@@ -197,6 +198,9 @@ for i = 1:length(fnames)
             curNode.appendChild(curElement);
             [txt,succes] = val2str(inputStructure2Xml.(curfield));
             if (succes)
+                % S. Williams: added next line to correctly advance through
+                % indentation levels for text fields without comments 
+                indLevel = indLevel + 1;
                 curElement.appendChild(docNode.createTextNode(txt));
             else
                 disp(['Warning. The text in ' pName curfield ' could ' ...

@@ -37,5 +37,5 @@ osimModel.finalizeConnections();
 bodyIndex = osimModel.getBodySet.getIndex(bodyName);
 bodyLocation = pointKinematics(values.time, values.statePositions, ...
     values.stateVelocities, pointOnBody, bodyIndex, ...
-    params.mexModel, params.coordinateNames);
+    params.mexModel, params.coordinateNames, params.osimVersion);
 end

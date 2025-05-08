@@ -276,7 +276,7 @@ switch degree
         app(:,4) = 6*t;
         app(:,5) = 12*t2;
         app(:,6) = 20*t3;
-        app(:,7) = 30*t3;
+        app(:,7) = 30*t4;
 
     case 7
         app(:,1) = 0.0;
@@ -285,8 +285,8 @@ switch degree
         app(:,4) = 6*t;
         app(:,5) = 12*t2;
         app(:,6) = 20*t3;
-        app(:,7) = 30*t3;
-        app(:,8) = 42*t3; 
+        app(:,7) = 30*t4;
+        app(:,8) = 42*t5;
 
     otherwise
         disp('Illegal polynomial degree')

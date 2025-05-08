@@ -35,44 +35,57 @@
 function modeledValues = calcSynergyBasedModeledValues(values, inputs)
 if strcmp(inputs.controllerType, 'synergy')
     [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, inputs);
-    [inputs.muscleTendonLength, inputs.momentArms, ...
-        inputs.muscleTendonVelocity] = calcSurrogateModel(inputs, ...
-        jointAngles, jointVelocities);
-    inputs.muscleTendonLength = permute(inputs.muscleTendonLength, [3 2 1]);
-    inputs.muscleTendonVelocity = permute(inputs.muscleTendonVelocity, [3 2 1]);
-    inputs.momentArms = permute(inputs.momentArms, [4 2 3 1]);
-    [modeledValues.normalizedFiberLength, modeledValues.normalizedFiberVelocity] = ...
-        calcNormalizedMuscleFiberLengthsAndVelocities(inputs, ...
-        ones(1, inputs.numMuscles), ones(1, inputs.numMuscles));
+    [muscleTendonLength, momentArms, muscleTendonVelocity] = ...
+        calcSurrogateModel(inputs, jointAngles, jointVelocities);
+    [modeledValues.normalizedFiberLength, ...
+        modeledValues.normalizedFiberVelocity] = ...
+        calcNormalizedFiberQuantities(inputs, muscleTendonLength, ...
+        muscleTendonVelocity);
     modeledValues.muscleActivations = calcMuscleActivationFromSynergies(values);
-    muscleJointMoments = calcMuscleJointMoments(inputs, ...
-        modeledValues.muscleActivations, modeledValues.normalizedFiberLength, ...
-        modeledValues.normalizedFiberVelocity);
-    modeledValues.muscleJointMoments = permute(muscleJointMoments, [3 2 1]);
-    modeledValues.muscleJointMoments = modeledValues.muscleJointMoments(:, ...
-        inputs.surrogateModelIndex);
-    modeledValues.muscleActivations = permute(modeledValues.muscleActivations, [3 2 1]);
+    modeledValues.muscleJointMoments = ...
+        calcTreatmentOptimizationMuscleJointMoments(inputs, ...
+        modeledValues, momentArms);
 else
     modeledValues.muscleActivations = [];
 end
 end
 
+function [normalizedFiberLengths, normalizedFiberVelocities] = ...
+    calcNormalizedFiberQuantities(inputs, muscleTendonLength, ...
+    muscleTendonVelocity)
+normalizedFiberLengths = (muscleTendonLength - ...
+    inputs.tendonSlackLength) ./ (inputs.optimalFiberLength .* ...
+    cos(inputs.pennationAngle));
+normalizedFiberVelocities = muscleTendonVelocity ./ (inputs.vMaxFactor ...
+    .* inputs.optimalFiberLength .* cos(inputs.pennationAngle));
+end
+
 function muscleActivations = calcMuscleActivationFromSynergies(values)
 muscleActivations = values.controlSynergyActivations * values.synergyWeights;
-muscleActivations = permute(muscleActivations, [3 2 1]);
 end
 
 function [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, inputs)
-for i = 1 : inputs.numMuscles
-    counter = 1;
-    for j = 1:length(inputs.coordinateNames)
-        for k = 1:length(inputs.surrogateModelLabels{i})
-            if strcmp(inputs.coordinateNamesStrings(j), inputs.surrogateModelLabels{i}(k))
-                jointAngles{i}(:, counter) = values.positions(:, j);
-                jointVelocities{i}(:, counter) = values.velocities(:, j);
-                counter = counter + 1;
+persistent indexMatrix;
+if isempty(indexMatrix)
+    indexMatrix = zeros(0, 3);
+    for i = 1 : inputs.numMuscles
+        counter = 1;
+        for j = 1:length(inputs.coordinateNames)
+            for k = 1:length(inputs.surrogateModelLabels{i})
+                if strcmp(inputs.coordinateNamesStrings(j), inputs.surrogateModelLabels{i}(k))
+                    indexMatrix(end+1, :) = [i, counter, j];
+                    counter = counter + 1;
+                end
             end
         end
     end
+end
+jointAngles = cell(1, inputs.numMuscles);
+jointVelocities = jointAngles;
+for i = 1 : size(indexMatrix, 1)
+    jointAngles{indexMatrix(i, 1)}(:, indexMatrix(i, 2)) = ...
+        values.positions(:, indexMatrix(i, 3));
+    jointVelocities{indexMatrix(i, 1)}(:, indexMatrix(i, 2)) = ...
+        values.velocities(:, indexMatrix(i, 3));
 end
 end

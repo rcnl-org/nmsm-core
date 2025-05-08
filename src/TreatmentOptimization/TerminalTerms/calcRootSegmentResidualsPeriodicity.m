@@ -28,8 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function rootSegmentResidualsPeriodicity = calcRootSegmentResidualsPeriodicity( ...
-    inverseDynamicsMoments, inverseDynamicsMomentLabels, loadNames)
+function [rootSegmentResidualsPeriodicity, constraintTerm] = calcRootSegmentResidualsPeriodicity( ...
+    constraintTerm, inverseDynamicsMoments, inverseDynamicsMomentLabels, loadNames)
 indx = find(strcmp(convertCharsToStrings(inverseDynamicsMomentLabels), ...
     loadNames));
 rootSegmentResidualsPeriodicity = diff(inverseDynamicsMoments(:, indx));

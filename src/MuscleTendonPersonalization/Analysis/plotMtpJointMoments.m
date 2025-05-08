@@ -72,6 +72,8 @@ figure(Name = strcat(resultsDirectory, ...
         " Joint Moment Matching"), ...
     Units='normalized', ...
     Position=[0.05 0.05 0.9 0.85])
+colors = getPlottingColors();
+
 time = 1:1:size(meanIdMoments,1);
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='Compact', Padding='Compact');
@@ -94,11 +96,11 @@ for i=1:numel(jointLabels)
     if ~isempty(meanMomentsSynx)
         hold on
         plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), ...
-            time, "#0072BD")
+            time, colors(1))
         plotMeanAndStd(meanMomentsSynx(:,i), stdMomentsSynx(:,i), ...
-            time, "#D95319")
+            time, colors(2))
         plotMeanAndStd(meanMoments(:, i), stdMoments(:, i), ...
-            time, "#D95319", '--')
+            time, colors(2), '--')
         hold off
         set(gca, fontsize=11)
         rmse = rms(meanMomentsSynx(:,i) - meanIdMoments(:,i));
@@ -114,9 +116,9 @@ for i=1:numel(jointLabels)
     else
         hold on
         plotMeanAndStd(meanIdMoments(:,i), stdIdMoments(:,i), ...
-            time, "#0072BD")
+            time, colors(1))
         plotMeanAndStd(meanMoments(:, i), stdMoments(:, i), ...
-            time, "#D95319")
+            time, colors(2))
         hold off
         set(gca, fontsize=11)
         rmse = rms(meanMoments(:,i) - meanIdMoments(:,i));

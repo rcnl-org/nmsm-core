@@ -58,13 +58,8 @@ totalVaf = calcPercentVaf(reshape(mtpSubset, 1, []), ...
 [worstError, worstMuscleIndex] = max(rmsError);
 worstMuscleName = sharedMuscleNames(worstMuscleIndex);
 
-splitFileName = split(weightsFile, ["/", "\"]);
-for k = 1 : numel(splitFileName)
-    if ~strcmp(splitFileName(k), "..")
-        figureName = splitFileName(k);
-        break
-    end
-end
+splitFileName = split(commandsFile, "_synergyCommands.sto");
+figureName = splitFileName(1);
 figure(name = figureName)
 boxplot(rmsError)
 title("RMS error for muscles with tracked activations", ...

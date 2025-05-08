@@ -29,38 +29,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function pathTerm = calcKineticPathConstraint(inputs, ...
-    modeledValues, torqueControls, loadName)
-inverseDynamicsIndex = find(strcmp(convertCharsToStrings(inputs.inverseDynamicsMomentLabels), ...
-    loadName));
-if strcmpi(inputs.controllerType, "synergy")
-    coordinateNameIndex = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
-        replace(replace(loadName, '_moment', ''), '_force', '')));
-    synergyIndex = find(inputs.surrogateModelIndex == coordinateNameIndex);
-else
-    synergyIndex = [];
-end
-torqueIndex = find(strcmp(strcat(inputs.torqueControllerCoordinateNames, ...
-    '_moment'), loadName));
-if isempty(torqueIndex)
-    torqueIndex = find(strcmp(strcat(inputs.torqueControllerCoordinateNames, ...
-        '_force'), loadName));
-end
-if isempty(synergyIndex)
-    synergyLoad = 0;
-else
-    synergyLoad = modeledValues.muscleJointMoments(:, synergyIndex);
-end
-if isempty(torqueIndex)
-    torqueLoad = 0;
-else
-    torqueLoad = torqueControls(:, torqueIndex);
-end
-if length(synergyLoad) == 1 && length(torqueLoad) == 1 && ...
-        torqueLoad == 0 && synergyLoad == 0
-    throw(MException('', "kinetic path constraint load is not a" + ...
-        " synergy driven or torque driven coordinate"))
-end
-pathTerm = modeledValues.inverseDynamicsMoments(:, inverseDynamicsIndex) - ...
-    (synergyLoad + torqueLoad);
+function [pathTerm, constraintTerm] = calcKineticPathConstraint( ...
+    constraintTerm, inputs, modeledValues, torqueControls, loadName)
+[inverseDynamicsLoad, constraintTerm] = findDataByLabels( ...
+    constraintTerm, modeledValues.inverseDynamicsMoments, ...
+    inputs.inverseDynamicsMomentLabels, loadName);
+[controlledMoment, constraintTerm] = findControlledJointMomentByLabel( ...
+    constraintTerm, inputs, modeledValues, torqueControls, loadName);
+
+pathTerm = inverseDynamicsLoad - controlledMoment;
 end

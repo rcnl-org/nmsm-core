@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,11 +29,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function guess = setupGpopsInitialGuess(inputs)
+function [inputs, guess] = setupGpopsInitialGuess(inputs)
 guess = struct();
 guess = setupInitialStatesGuess(inputs, guess);
 guess = setupInitialControlsGuess(inputs, guess);
-guess = setupInitialParametersGuess(inputs, guess);
+[inputs, guess] = setupInitialParametersGuess(inputs, guess);
 % guess.phase.integral = scaleToBounds(1, inputs.continuousMaxAllowableError, ...
 %     zeros(size(inputs.continuousMaxAllowableError)));
 guess.phase.integral = zeros(size(inputs.continuousMaxAllowableError));
@@ -107,16 +107,21 @@ guess.phase.control = scaleToBounds(controls, inputs.maxControl, ...
     inputs.minControl);
 end
 
-function guess = setupInitialParametersGuess(inputs, guess)
+function [inputs, guess] = setupInitialParametersGuess(inputs, guess)
 if valueOrAlternate(inputs, "optimizeSynergyVectors", false)
     guess.parameter = [];
+    inputs.synergyWeightsIndices = [];
     row = 1;
     for i = 1 : length(inputs.synergyGroups)
         for k = 1:inputs.synergyGroups{i}.numSynergies
             for j = 1 : length(inputs.synergyGroups{i}.muscleNames)
                 index = find(ismember(inputs.synergyWeightsLabels, ...
                     inputs.synergyGroups{i}.muscleNames{j}));
-                guess.parameter(end + 1) = inputs.synergyWeights(row + k - 1, index);
+                inputs.synergyWeightsIndices(end + 1) = ...
+                    size(inputs.synergyWeights, 1) * ...
+                    (index - 1) + row + k - 1;
+                guess.parameter(end + 1) = inputs.synergyWeights( ...
+                    inputs.synergyWeightsIndices(end));
             end
         end
         row = row + inputs.synergyGroups{i}.numSynergies;

@@ -87,4 +87,12 @@ if (params.tasks{task}.designVariables(9))
         index = index + 1;
     end
 end
+if (params.tasks{task}.designVariables(10))
+    for foot = 1:length(inputs.surfaces)
+        forcePlateRotation = results(index);
+        inputs.surfaces{foot}.forcePlateRotation = ...
+            forcePlateRotation;
+        index = index + 1;
+    end
+end
 end

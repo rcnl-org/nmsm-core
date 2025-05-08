@@ -56,21 +56,27 @@ function output = computeGpopsEndpointFunction(setup)
         modeledValues.metabolicCost = setup.phase.integral(end - counter);
     end
 
-[constraintTermCalculations, allowedTypes] = ...
-    generateConstraintTermStruct("terminal", ...
-    setup.auxdata.controllerType, setup.auxdata.toolName);
+persistent constraintTermCalculations, persistent allowedConstraintTypes;
+if isempty(allowedConstraintTypes)
+    [constraintTermCalculations, allowedConstraintTypes] = ...
+        generateConstraintTermStruct("terminal", ...
+        setup.auxdata.controllerType, setup.auxdata.toolName);
+end
 event = ...
     calcGpopsConstraint(setup.auxdata.terminal, ...
-    constraintTermCalculations, allowedTypes, values, ...
+    constraintTermCalculations, allowedConstraintTypes, values, ...
     modeledValues, setup.auxdata);
 if ~isempty(event)
     output.eventgroup.event = event;
 end
 
-[costTermCalculations, allowedTypes] = ...
-    generateCostTermStruct("discrete", setup.auxdata.toolName);
+persistent costTermCalculations, persistent allowedCostTypes;
+if isempty(allowedCostTypes)
+    [costTermCalculations, allowedCostTypes] = ...
+        generateCostTermStruct("discrete", setup.auxdata.toolName);
+end
 discrete = calcTreatmentOptimizationCost( ...
-    costTermCalculations, allowedTypes, values, modeledValues, setup.auxdata);
+    costTermCalculations, allowedCostTypes, values, modeledValues, setup.auxdata);
 discreteObjective = sum(discrete) / length(discrete);
 if isnan(discreteObjective); discreteObjective = 0; end
 
@@ -93,11 +99,38 @@ if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~ise
     if isempty(integral)
         continuousObjective = 0;
     else
-        continuousObjective = sum(integral) / length(integral);
+        if setup.auxdata.normalizeCostByType
+            continuousObjective = normalizeCostByType( ...
+                setup.auxdata.costTerms, allowedCostTypes, integral);
+        else
+            continuousObjective = sum(integral) / length(integral);
+        end
     end
 else
     continuousObjective = 0;
 end
 
 output.objective = continuousObjective + discreteObjective;
+end
+
+function continuousObjective = normalizeCostByType(costTerms, ...
+    allowedCostTypes, integral)
+persistent termCounts, persistent numUnique;
+if isempty(termCounts)
+    isEnabled = cellfun(@(x) x.isEnabled, costTerms);
+    if isempty(allowedCostTypes)
+        isAllowed = isEnabled;
+    else
+        isAllowed = cellfun(@(x) ~ismember(x.type, allowedCostTypes), ...
+            costTerms);
+    end
+    
+    termNames = string(cellfun(@(x) x.type, costTerms, ...
+        'UniformOutput', false));
+    includedTermNames = termNames(isEnabled & isAllowed);
+    termCounts = grouptransform(includedTermNames', includedTermNames', ...
+        @numel)';
+    numUnique = length(unique(includedTermNames));
+end
+continuousObjective = sum(integral ./ termCounts) / numUnique;
 end

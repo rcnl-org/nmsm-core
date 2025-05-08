@@ -97,6 +97,13 @@ if (params.tasks{task}.designVariables(9))
         fieldNameOrder = [fieldNameOrder ("electricalCenterZ" + foot)];
     end
 end
+if (params.tasks{task}.designVariables(10))
+    for foot = 1:length(inputs.surfaces)
+        initialValues = [initialValues ...
+            inputs.surfaces{foot}.forcePlateRotation];
+        fieldNameOrder = [fieldNameOrder ("forcePlateRotation" + foot)];
+    end
+end
 end
 
 % (struct) -> (Array of double, Array of double)
@@ -148,6 +155,12 @@ if (params.tasks{task}.designVariables(9))
     for foot = 1:length(inputs.surfaces)
         lowerBounds = [lowerBounds -Inf];
         upperBounds = [upperBounds Inf];
+    end
+end
+if (params.tasks{task}.designVariables(10))
+    for foot = 1:length(inputs.surfaces)
+        lowerBounds = [lowerBounds -0.2618]; % 15 degrees
+        upperBounds = [upperBounds 0.2618];
     end
 end
 end

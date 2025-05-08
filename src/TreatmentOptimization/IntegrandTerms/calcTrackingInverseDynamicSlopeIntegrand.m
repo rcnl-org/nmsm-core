@@ -28,40 +28,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicSlopeIntegrand(costTerm, ...
-    inputs, time, inverseDynamicsMoments, loadName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointMoments = inputs.splinedJointMoments;
-else
-    experimentalJointMoments = evaluateGcvSplines( ...
-        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
-end
-if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
-    momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
-    momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-    includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
-    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
-end
+function [cost, costTerm] = calcTrackingInverseDynamicSlopeIntegrand( ...
+    costTerm, inputs, time, inverseDynamicsMoments, loadName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+[idMoment, costTerm] = findDataByLabels(costTerm, ...
+    inverseDynamicsMoments, inputs.inverseDynamicsMomentLabels, loadName);
+[experimentalMoment, costTerm] = findSplinedJointMomentsByLabels( ...
+    costTerm, inputs, time, inverseDynamicsMoments);
 
 timeDiff = diff(time);
-experimentalDiff = diff(experimentalJointMoments, 1) ./ timeDiff;
-experimentalDiff(end + 1, :) = 0;
-modeledDiff = diff(inverseDynamicsMoments, 1) ./ timeDiff;
-modeledDiff(end + 1, :) = 0;
+experimentalDiff = diff(experimentalMoment) ./ timeDiff;
+experimentalDiff(end + 1) = 0;
+modeledDiff = diff(idMoment) ./ timeDiff;
+modeledDiff(end + 1) = 0;
 
-cost = calcTrackingCostArrayTerm(experimentalDiff, modeledDiff, indx);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+cost = modeledDiff - experimentalDiff;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

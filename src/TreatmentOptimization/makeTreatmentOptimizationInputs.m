@@ -36,17 +36,21 @@ inputs = makeStateDerivatives(inputs, params);
 inputs.contactSurfaces = prepareGroundContactSurfaces( ...
     inputs.modelFileName, inputs.contactSurfaces);
 inputs = modifyModelForces(inputs);
-initializeMexOrMatlabParallelFunctions(inputs.mexModel);
+inputs.osimVersion = ...
+    initializeMexOrMatlabParallelFunctions(inputs.mexModel);
 inputs = setupGroundContact(inputs);
 inputs = makeExperimentalDataSplines(inputs);
 inputs = makeSurrogateModel(inputs);
 [inputs.continuousMaxAllowableError, inputs.discreteMaxAllowableError] ...
     = makeMaxAllowableError(inputs.toolName, inputs.costTerms);
 inputs = makeMarkerTracking(inputs);
+inputs = makeOrientationTracking(inputs);
+inputs = makeCenterOfPressureTracking(inputs);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
 
+inputs.surrogateModelCoordinateNames = inputs.coordinateNames;
 if strcmpi(inputs.controllerType, "synergy")
     if inputs.loadSurrogate && isfile("surrogateMuscles.mat")
         temp = load("surrogateMuscles.mat");

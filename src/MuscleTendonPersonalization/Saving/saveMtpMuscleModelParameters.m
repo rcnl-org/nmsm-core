@@ -39,7 +39,8 @@ if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
 columnLabels = mtpInputs.muscleNames;
-if precalInputs.useAbsoluteLengths
+
+if isfield(precalInputs, "useAbsoluteLengths") && precalInputs.useAbsoluteLengths
     dataPoints = [finalValues.activationTimeConstants;
         finalValues.activationNonlinearityConstants;
         finalValues.electromechanicalDelays;

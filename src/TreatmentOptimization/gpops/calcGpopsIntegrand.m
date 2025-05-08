@@ -27,10 +27,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function integrand = calcGpopsIntegrand(values, modeledValues, inputs)
-[costTermCalculations, allowedTypes] = ...
-    generateCostTermStruct("continuous", inputs.toolName);
-integrand = calcTreatmentOptimizationCost( ...
+function [integrand, inputs] = calcGpopsIntegrand(values, ...
+    modeledValues, inputs)
+persistent costTermCalculations, persistent allowedTypes;
+if isempty(allowedTypes)
+    [costTermCalculations, allowedTypes] = ...
+        generateCostTermStruct("continuous", inputs.toolName);
+end
+[integrand, inputs] = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedTypes, values, modeledValues, inputs);
 integrand = integrand ./ inputs.continuousMaxAllowableError;
 integrand = integrand .^ 2;

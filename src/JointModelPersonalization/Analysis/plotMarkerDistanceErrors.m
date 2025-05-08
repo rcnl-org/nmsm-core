@@ -5,6 +5,7 @@
 function plotMarkerDistanceErrors(files,onePlot)
 import org.opensim.modeling.Storage
 import org.opensim.modeling.ArrayDouble
+colors = getPlottingColors();
 storages = {};
 fileNames = {};
 for i=1:length(files)
@@ -35,6 +36,7 @@ if(onePlot)
             xlabel('time')
             ylabel('error')
             plot(time{1}, y, 'LineWidth',3)
+            xlim("tight")
             legendList{end+1} = strcat(storages{j}. ...
                 getColumnLabels.get(i).toCharArray', num2str(j));
             hold on
@@ -54,7 +56,8 @@ else
             hold on
             xlabel('time (s)')
             ylabel('error (m)')
-            plot(time{j}, y, 'LineWidth',3);
+            plot(time{j}, y, 'LineWidth',3, color=colors(j));
+            xlim("tight")
             legendList{end+1} = strrep(strcat(storages{j}. ...
                 getColumnLabels.get(i).toCharArray', " - ", fileNames{j}), ...
                 '_', '\_');
