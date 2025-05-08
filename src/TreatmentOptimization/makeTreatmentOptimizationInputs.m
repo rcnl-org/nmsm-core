@@ -42,7 +42,7 @@ inputs = setupGroundContact(inputs);
 inputs = makeExperimentalDataSplines(inputs);
 inputs = makeSurrogateModel(inputs);
 [inputs.continuousMaxAllowableError, inputs.discreteMaxAllowableError] ...
-    = makeMaxAllowableError(inputs.toolName, inputs.costTerms);
+    = makeMaxAllowableError(inputs.toolName, inputs.controllerTypes, inputs.costTerms);
 inputs = makeMarkerTracking(inputs);
 inputs = makeOrientationTracking(inputs);
 inputs = makeCenterOfPressureTracking(inputs);

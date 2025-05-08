@@ -73,7 +73,7 @@ end
 persistent costTermCalculations, persistent allowedCostTypes;
 if isempty(allowedCostTypes)
     [costTermCalculations, allowedCostTypes] = ...
-        generateCostTermStruct("discrete", setup.auxdata.toolName);
+        generateCostTermStruct("discrete", setup.auxdata.controllerTypes, setup.auxdata.toolName);
 end
 discrete = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedCostTypes, values, modeledValues, setup.auxdata);
