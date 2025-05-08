@@ -52,7 +52,5 @@ inputs.surrogateModelCoordinateNames = inputs.coordinateNames;
 inputs.plotResults = true;
 inputs.plotSurrogateResults = plotSurrogateResults;
 inputs.plotExperimentalResults = plotExperimentalResults;
-tic
 SurrogateModelCreation(inputs);
-toc
 end
