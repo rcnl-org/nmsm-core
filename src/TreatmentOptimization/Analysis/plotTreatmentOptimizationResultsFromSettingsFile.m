@@ -28,13 +28,13 @@
 % ----------------------------------------------------------------------- %
 
 function plotTreatmentOptimizationResultsFromSettingsFile(settingsFileName, ...
-    overrideResultsDirectory)
+    resultsDirectories)
 settingsTree = xml2struct(settingsFileName);
 toolName = findToolName(settingsTree);
 resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'results_directory'));
 if nargin > 1
-    resultsDirectory = overrideResultsDirectory;
+    resultsDirectory = resultsDirectories;
 end
 trackedQuantitiesDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'tracked_quantities_directory'));
@@ -78,35 +78,54 @@ plotTreatmentOptimizationJointLoads( ...
     fullfile(trackedQuantitiesDirectory, "IDData", strcat(trialPrefix, ".sto")), ...
     fullfile(resultsDirectory, "IDData", strcat(trialPrefix, ".sto")));
 
-if exist(fullfile(resultsDirectory, "GRFData"), 'dir')
-    plotTreatmentOptimizationGroundReactions( ...
-        fullfile(trackedQuantitiesDirectory, "GRFData", strcat(trialPrefix, ".sto")), ...
-        fullfile(resultsDirectory, "GRFData", strcat(trialPrefix, ".sto")));
+if exist(fullfile(trackedQuantitiesDirectory, "GRFData"), 'dir')
+    for i = 1 : numel(resultsDirectory)
+        plotTreatmentOptimizationGroundReactions( ...
+            fullfile(resultsDirectory(i), strcat(trialPrefix, "_replacedExperimentalGroundReactions.sto")), ...
+            fullfile(resultsDirectory, "GRFData", strcat(trialPrefix, ".sto")));
+    end
 end
 
 if isTorque
+    torqueIndices = boolean([]);
+    for i = 1 : numel(resultsDirectory)
+        if exist(fullfile(resultsDirectory(i), strcat(trialPrefix, "_torqueControls.sto")))
+            torqueIndices(i) = 1;
+        else
+            torqueIndices(i) = 0;
+        end
+    end
+
     if strcmp(toolName, "DesignOptimization") | strcmp(toolName, "VerificationOptimization")
         plotTreatmentOptimizationControls( ...
             [fullfile(trackedQuantitiesDirectory, strcat(trialPrefix, "_torqueControls.sto")), ...
-            fullfile(resultsDirectory, strcat(trialPrefix, "_torqueControls.sto"))])
+            fullfile(resultsDirectory(torqueIndices), strcat(trialPrefix, "_torqueControls.sto"))])
     else
         plotTreatmentOptimizationControls( ...
-            fullfile(resultsDirectory, strcat(trialPrefix, "_torqueControls.sto")))
+            fullfile(resultsDirectory(torqueIndices), strcat(trialPrefix, "_torqueControls.sto")))
     end
 end
 if isSynergy
+    synergyIndices = boolean([]);
+    for i = 1 : numel(resultsDirectory)
+        if exist(fullfile(resultsDirectory(i), strcat(trialPrefix, "_synergyCommands.sto")))
+            synergyIndices(i) = 1;
+        else
+            synergyIndices(i) = 0;
+        end
+    end
     if strcmp(toolName, "DesignOptimization") | strcmp(toolName, "VerificationOptimization")
         plotTreatmentOptimizationControls( ...
             [fullfile(trackedQuantitiesDirectory, strcat(trialPrefix, "_synergyCommands.sto")), ...
-            fullfile(resultsDirectory, strcat(trialPrefix, "_synergyCommands.sto"))])
+            fullfile(resultsDirectory(synergyIndices), strcat(trialPrefix, "_synergyCommands.sto"))])
 
     else
         plotTreatmentOptimizationControls( ...
-            fullfile(resultsDirectory, strcat(trialPrefix, "_synergyCommands.sto")))
+            fullfile(resultsDirectory(synergyIndices), strcat(trialPrefix, "_synergyCommands.sto")))
     end
     plotTreatmentOptimizationMuscleActivations(...
         fullfile(experimentalEmgFile), ...
-        fullfile(resultsDirectory, strcat(trialPrefix, "_combinedActivations.sto")))
+        fullfile(resultsDirectory(synergyIndices), strcat(trialPrefix, "_combinedActivations.sto")))
 end
 end
 
@@ -118,7 +137,7 @@ else
     isSynergy = false;
 end
 torque = getFieldByName(settingsTree, 'RCNLTorqueController');
-if isstruct(torque)
+if isstruct(torque) && ~isempty(torque.coordinate_list.Text)
     isTorque = true;
 else
     isTorque = false;
