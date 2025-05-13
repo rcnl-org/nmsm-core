@@ -78,12 +78,23 @@ plotTreatmentOptimizationJointLoads( ...
     fullfile(trackedQuantitiesDirectory, "IDData", strcat(trialPrefix, ".sto")), ...
     fullfile(resultsDirectory, "IDData", strcat(trialPrefix, ".sto")));
 
-if exist(fullfile(resultsDirectory, "GRFData"), 'dir')
-    plotTreatmentOptimizationGroundReactions( ...
-        fullfile(resultsDirectory, strcat(trialPrefix, "_replacedExperimentalGroundReactions.sto")), ...
-        fullfile(resultsDirectory, "GRFData", strcat(trialPrefix, ".sto")));
+grfIndices = boolean([]);
+for i = 1 : numel(resultsDirectory)
+    if exist(fullfile(resultsDirectory(i), "GRFData"), 'dir')
+        grfIndices(i) = 1;
+    else
+        grfIndices(i) = 0;
+    end
 end
 
+for i = 1 : numel(resultsDirectory)
+    if exist(fullfile(resultsDirectory(i), strcat(trialPrefix, "_replacedExperimentalGroundReactions.sto")))
+        plotTreatmentOptimizationGroundReactions( ...
+            fullfile(resultsDirectory(i), strcat(trialPrefix, "_replacedExperimentalGroundReactions.sto")), ...
+            fullfile(resultsDirectory(grfIndices), "GRFData", strcat(trialPrefix, ".sto")));
+        break
+    end
+end
 if isTorque
     torqueIndices = boolean([]);
     for i = 1 : numel(resultsDirectory)

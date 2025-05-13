@@ -47,8 +47,7 @@ elseif contains(controlsFiles(1), "synergy")
 else
     controllerType = "";
 end
-splitFileName = split(controlsFiles(end), ["/", "\"]);
-figureName = strcat(splitFileName(end-1), " ", controllerType, " Controls");
+figureName = strcat(controllerType, " Controls");
 controlsData = {};
 for j = 1 : numel(controlsFiles)
     controlsStorage = Storage(controlsFiles(j));

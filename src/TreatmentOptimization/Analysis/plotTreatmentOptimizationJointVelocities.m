@@ -73,7 +73,7 @@ for j=1:numel(modelDataFiles)
     for i = 1 : size(modeledStates(:, 1:size(modeledStates, 2)/2), 2)
         if model.getCoordinateSet().get(modeledStatesLabels(i)).getMotionType() ...
                 .toString().toCharArray()' == "Rotational"
-            modeledVelocities{j}(:, i) = modeledVelocities{j}(:, i) * 1;
+            modeledVelocities{j}(:, i) = modeledVelocities{j}(:, i) * 180/pi;
 
         end
     end
@@ -94,7 +94,7 @@ elseif nargin < 5
     figureHeight = ceil(sqrt(numel(modeledVelocitiesLabels)));
 end
 figureSize = figureWidth * figureHeight;
-figure(Name = "Treatment Optimization Joint Velocities", ...
+figure(Name = "Joint Velocities", ...
     Units=params.units, ...
     Position=params.figureSize)
 subplotNumber = 1;
@@ -109,7 +109,7 @@ set(gcf, color=params.plotBackgroundColor)
 for i=1:numel(modeledVelocitiesLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Joint Velocities", ...
+        figure(Name="Joint Velocities", ...
             Units=params.units, ...
             Position=params.figureSize)
         t = tiledlayout(figureHeight, figureWidth, ...
