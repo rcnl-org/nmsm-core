@@ -1,10 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the initial state 
-% velocity and current state velocity for the specified coordinate. 
-%
 % (2D matrix, Cell, struct) -> (Number)
 % 
+% Calculates value of final marker velocity. 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Spencer Williams                               %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,14 +26,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function initialStateVelocity = calcInitialStateVelocity( ...
-    stateVelocities, coordinateNames, constraintTerm)
-indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
-    constraintTerm.coordinate));
-if isempty(indx)
-    throw(MException('ConstraintTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
-        "<states_coordinate_list>")))
-end
-initialStateVelocity = stateVelocities(1, indx) - constraintTerm.target_value;
+function [constraintValue, constraintTerm] = ...
+    calcFinalMarkerVelocityValue(constraintTerm, inputs, ...
+    markerVelocities, time)
+assert(isfield(constraintTerm, "marker"), constraintTerm.type + ...
+    " must have a marker specified.");
+assert(isfield(constraintTerm, "axes"), constraintTerm.type + ...
+    " must have axes specified.");
+[velocities, constraintTerm] = findMarkerVelocityDataByLabels( ...
+    constraintTerm, inputs, markerVelocities, time, ...
+    constraintTerm.marker, constraintTerm.axes);
+
+assert(all(size(velocities, [2, 3]) == [1, 1]), "Marker " + ...
+    "constraints may only use one axis.")
+constraintValue = velocities(end);
 end

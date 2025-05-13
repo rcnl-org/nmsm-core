@@ -51,7 +51,6 @@ trackedData = trackedData';
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
 for i = 1 : size(trackedData, 2)
     if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
@@ -66,8 +65,7 @@ for j=1:numel(modelDataFiles)
     if modeledStatesTime ~= 0
         modeledStatesTime = modeledStatesTime - modeledStatesTime(1);
     end
-    modeledStatesTime = modeledStatesTime / modeledStatesTime(end);
-
+    
     modeledVelocities{j} = modeledStates(:, size(modeledStates, 2)/2+1:end);
     modeledVelocitiesLabels = modeledStatesLabels(size(modeledStates, 2)/2+1:end);
     modeledVelocitiesTime{j} = modeledStatesTime;
@@ -141,7 +139,7 @@ for i=1:numel(modeledVelocitiesLabels)
         hold off
         titleString = [sprintf("%s", strrep(coordinateLabels(coordinateIndex), "_", " "))];
         for j = 1 : numel(modelDataFiles)
-            rmse = rms(resampledExperimentalVelocities{j}(:, i) - ...
+            rmse = rms(resampledExperimentalVelocities{j}(:, coordinateIndex) - ...
                 modeledVelocities{j}(:, i));
             titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
         end

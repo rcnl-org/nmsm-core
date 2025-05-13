@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the difference between the final state velocity 
-% and the specified target error for the specified coordinate. 
+% This function calculates predicted ground reaction moments.
 %
-% (2D matrix, Cell, struct) -> (Number)
-% 
+% (struct, 2D matrix, Array of number, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,14 +27,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalStateVelocity = calcFinalStateVelocity( ...
-    stateVelocities, coordinateNames, constraintTerm)
-indx = find(strcmp(convertCharsToStrings(coordinateNames), ...
-    constraintTerm.coordinate));
-if isempty(indx)
-    throw(MException('ConstraintTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", constraintTerm.coordinate, " is not in the ", ...
-        "<states_coordinate_list>")))
-end
-finalStateVelocity = stateVelocities(end, indx) - constraintTerm.target_value;
+function [pathTerm, constraintTerm] = ...
+    calcInitialExternalMomentValue( ...
+    constraintTerm, inputs, groundReactionsForces, time, momentName)
+[moment, constraintTerm] = findGroundReactionMomentDataByLabels( ...
+    constraintTerm, inputs, groundReactionsForces, time, momentName);
+
+pathTerm = moment(1);
 end

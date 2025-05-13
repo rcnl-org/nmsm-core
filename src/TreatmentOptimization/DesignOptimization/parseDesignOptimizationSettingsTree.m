@@ -67,7 +67,7 @@ if isnumeric(string)
     return;
 end
 string = strtrim(string);
-output = strsplit(string, ' ');
+output = split(string);
 output = str2double(output);
 end
 

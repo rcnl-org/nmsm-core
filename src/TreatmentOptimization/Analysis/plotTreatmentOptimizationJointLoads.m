@@ -48,7 +48,10 @@ trackedDataTime = findTimeColumn(trackedDataStorage);
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
+% trackedDataTime = trackedDataTime / trackedDataTime(end);
+% Crop data to get rid of edge effects
+trackedDataTime = trackedDataTime(1:end-1);
+trackedData = trackedData(1:end-1, :);
 for j=1:numel(modelDataFiles)
     modelDataStorage = Storage(modelDataFiles(j));
     modelData{j} = storageToDoubleMatrix(modelDataStorage)';
@@ -56,7 +59,10 @@ for j=1:numel(modelDataFiles)
     if modelDataTime{j} ~= 0
         modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
     end
-    modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
+    % modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
+    % Crop data to get rid of edge effects
+    modelDataTime{j} = modelDataTime{j}(1:end-1);
+    modelData{j} = modelData{j}(1:end-1, :);
 end
 
 % Spline experimental time to the same time points as the model.

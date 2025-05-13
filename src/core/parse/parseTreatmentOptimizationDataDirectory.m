@@ -63,6 +63,7 @@ function inputs = parseExperimentalData(inputs, dataDirectory)
     fullfile(dataDirectory, "IKData"), inputs.trialName, inputs.model, true);
 inputs.coordinateNamesStrings = inputs.coordinateNames;
 inputs.coordinateNames = cellstr(inputs.coordinateNames);
+inputs.statesCoordinateIndices = findStatesCoordinateIndices(inputs);
 inputs.experimentalTime = experimentalTime - experimentalTime(1);
 inputs.initialTime = inputs.experimentalTime;
 if isfield(inputs.osimx, 'groundContact') && ...
@@ -146,7 +147,7 @@ if strcmp(inputs.controllerType, "synergy")
         "synergyWeights", inputs.model);
     directory = fullfile(surrogateModelDataDirectory, "MAData", inputs.trialName);
     inputs.surrogateModelMomentArms = parseSelectMomentArms(directory, ...
-        inputs.surrogateModelCoordinateNames, inputs.muscleNames);
+        inputs.coordinateNamesStrings, inputs.muscleNames);
     [inputs.muscleTendonLengths, inputs.muscleTendonColumnNames] = ...
         parseFileFromDirectories(directory, "_Length.sto", inputs.model);
     inputs.muscleTendonLengths = findSpecificMusclesInData( ...
@@ -155,7 +156,7 @@ if strcmp(inputs.controllerType, "synergy")
     inputs.muscleTendonLengths = reshape(permute(inputs.muscleTendonLengths, ...
         [1 3 2]), [], length(inputs.muscleNames));
     inputs.surrogateModelMomentArms = reshape(permute(inputs.surrogateModelMomentArms, [1 4 2 3]), [], ...
-        length(inputs.surrogateModelCoordinateNames), length(inputs.muscleNames));
+        length(inputs.coordinateNamesStrings), length(inputs.muscleNames));
     [inputs.surrogateModelJointAngles, inputs.surrogateIkCoordinateNames, inputs.surrogateTime] = ...
         parseTrialData(fullfile(surrogateModelDataDirectory, "IKData"), ...
         inputs.trialName, inputs.model);
@@ -240,5 +241,13 @@ end
 if any([isnan(forces) isnan(moments) isnan(ec)])
     throw(MException('', ['Unable to parse GRF file, check that ' ...
         'all necessary column labels are present']))
+end
+end
+
+function statesCoordinateIndices = findStatesCoordinateIndices(inputs)
+statesCoordinateIndices = zeros(size(inputs.statesCoordinateNames));
+for i = 1 : length(inputs.statesCoordinateNames)
+    statesCoordinateIndices(i) = find( ...
+        ismember(inputs.coordinateNames, inputs.statesCoordinateNames(i)));
 end
 end
