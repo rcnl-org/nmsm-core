@@ -42,5 +42,6 @@ defaultTimeNormalization = true;
 scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
 cost = (experimentalMoment * scaleFactor) - idMoment;
 
+[cost, costTerm] = applyTermTimeRanges(cost, costTerm, time);
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
