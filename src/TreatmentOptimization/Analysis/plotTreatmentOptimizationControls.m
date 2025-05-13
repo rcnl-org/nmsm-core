@@ -127,6 +127,12 @@ for i=1:numel(labels)
         legend(legendValues, fontsize = params.legendFontSize)
     end
     xlim("tight")
+    if strcmp(controllerType, "Synergy")
+        maxValues = [];
+        for j = 1 : numel(controlsData)
+            maxValues(j) = max(controlsData{j}, [], "all");
+        end
+        ylim([0, max(maxValues)])
     subplotNumber = subplotNumber + 1;
 end
 end
