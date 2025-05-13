@@ -35,6 +35,7 @@ verifyVersion(settingsTree, "DesignOptimizationTool");
 [inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
 inputs = normalizeSynergyData(inputs);
 inputs = setupMuscleSynergies(inputs);
+inputs = setupMuscleActivations(inputs);
 inputs = setupTorqueControls(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
