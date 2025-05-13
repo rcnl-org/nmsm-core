@@ -30,7 +30,8 @@
 
 function [pathTerm, constraintTerm] = ...
     calcRootSegmentResidualsPathConstraints(constraintTerm, loadName, ...
-    inverseDynamicsMomentLabels, inverseDynamicsMoments)
+    inverseDynamicsMomentLabels, inverseDynamicsMoments, time)
 [pathTerm, constraintTerm] = findDataByLabels(constraintTerm, ...
     inverseDynamicsMoments, inverseDynamicsMomentLabels, loadName);
+[pathTerm, constraintTerm] = applyTermTimeRanges(pathTerm, constraintTerm, time);
 end
