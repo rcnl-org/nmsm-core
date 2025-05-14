@@ -28,38 +28,24 @@ end
 
 function plotJointPositionBounds(modelFileName, trackedDataFile, ...
     modelDataFile, designVariableBounds)
-import org.opensim.modeling.Storage
 params = getPlottingParams();
 model = Model(modelFileName);
-trackedDataStorage = Storage(trackedDataFile);
-[coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
-    model, trackedDataStorage);
-trackedData = trackedData';
-if trackedDataTime(1) ~= 0
-    trackedDataTime = trackedDataTime - trackedDataTime(1);
-end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
+
+[coordinateLabels, trackedDataTime, trackedData, ...
+    modelDataTime, modelData] = readTrackedAndModeledData(model, ...
+    trackedDataFile, modelDataFile);
 for i = 1 : size(trackedData, 2)
     if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
         trackedData(:, i) = trackedData(:, i) * 180/pi;
     end
 end
-modelDataStorage = Storage(modelDataFile);
-[coordinateLabels, modelDataTime, modelData] = parseMotToComponents(...
-    model, modelDataStorage);
-modelData = modelData';
-if modelDataTime(1) ~= 0
-    modelDataTime = modelDataTime - modelDataTime(1);
-end
-modelDataTime = modelDataTime / modelDataTime(end);
 for i = 1 : size(modelData, 2)
     if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
         modelData(:, i) = modelData(:, i) * 180/pi;
     end
 end
-
 maxTrackedData = max(trackedData, [], 1);
 minTrackedData = min(trackedData, [], 1);
 trackedDataRange = maxTrackedData-minTrackedData;
@@ -118,6 +104,7 @@ end
 function [coordinateLabels, trackedDataTime, trackedData, ...
     modelDataTime, modelData] = readTrackedAndModeledData(model, ...
     trackedDataFile, modelDataFile)
+import org.opensim.modeling.Storage
 trackedDataStorage = Storage(trackedDataFile);
 [~, trackedDataTime, trackedData] = parseMotToComponents(...
     model, trackedDataStorage);
