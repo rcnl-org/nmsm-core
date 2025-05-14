@@ -40,9 +40,14 @@
 % ----------------------------------------------------------------------- %
 
 function plotTreatmentOptimizationJointVelocities(modelFileName, ...
-    trackedDataFile, modelDataFiles, figureWidth, figureHeight)
+    trackedDataFile, modelDataFiles, varargin)
 import org.opensim.modeling.Storage
 params = getPlottingParams();
+if nargin > 3
+    options = parseVarargin(varargin);
+else
+    options = struct();
+end
 model = Model(modelFileName);
 trackedDataStorage = Storage(trackedDataFile);
 [coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
@@ -51,10 +56,12 @@ trackedData = trackedData';
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
-for i = 1 : size(trackedData, 2)
-    if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
-            .toString().toCharArray()' == "Rotational"
-        trackedData(:, i) = trackedData(:, i) * 1;
+if ~isfield(options, "useRadians") || ~options.useRadians
+    for i = 1 : size(trackedData, 2)
+        if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
+                .toString().toCharArray()' == "Rotational"
+            trackedData(:, i) = trackedData(:, i) * 180/pi;
+        end
     end
 end
 for j=1:numel(modelDataFiles)
@@ -69,12 +76,13 @@ for j=1:numel(modelDataFiles)
     modeledVelocities{j} = modeledStates(:, size(modeledStates, 2)/2+1:end);
     modeledVelocitiesLabels = modeledStatesLabels(size(modeledStates, 2)/2+1:end);
     modeledVelocitiesTime{j} = modeledStatesTime;
-
-    for i = 1 : size(modeledStates(:, 1:size(modeledStates, 2)/2), 2)
-        if model.getCoordinateSet().get(modeledStatesLabels(i)).getMotionType() ...
-                .toString().toCharArray()' == "Rotational"
-            modeledVelocities{j}(:, i) = modeledVelocities{j}(:, i) * 180/pi;
-
+    if ~isfield(options, "useRadians") || ~options.useRadians
+        for i = 1 : size(modeledStates(:, 1:size(modeledStates, 2)/2), 2)
+            if model.getCoordinateSet().get(modeledStatesLabels(i)).getMotionType() ...
+                    .toString().toCharArray()' == "Rotational"
+                modeledVelocities{j}(:, i) = modeledVelocities{j}(:, i) * 180/pi;
+    
+            end
         end
     end
 end
@@ -87,11 +95,12 @@ for j = 1 : numel(modelDataFiles)
     resampledExperimentalVelocities{j}= evaluateGcvSplines(experimentalSpline, ...
         coordinateLabels, modeledVelocitiesTime{j}, 1);
 end
-if nargin < 4
-    figureWidth = ceil(sqrt(numel(modeledVelocitiesLabels)));
-    figureHeight = ceil(numel(modeledVelocitiesLabels)/figureWidth);
-elseif nargin < 5
-    figureHeight = ceil(sqrt(numel(modeledVelocitiesLabels)));
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
+    figureWidth = ceil(sqrt(numel(coordinateLabels)));
+    figureHeight = ceil(numel(coordinateLabels)/figureWidth);
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Joint Velocities", ...
@@ -103,8 +112,13 @@ t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Movement [0-100%]", ...
     fontsize=params.axisLabelFontSize)
-ylabel(t, "Joint Velocity [rad/s]", ...
-    fontsize=params.axisLabelFontSize)
+if isfield(options, "useRadians") && options.useRadians
+    ylabel(t, "Joint Velocity [rad/s]", ...
+        fontsize=params.axisLabelFontSize)
+else
+    ylabel(t, "Joint Velocity [deg/s]", ...
+        fontsize=params.axisLabelFontSize)
+end
 set(gcf, color=params.plotBackgroundColor)
 for i=1:numel(modeledVelocitiesLabels)
     if i > figureSize * figureNumber
@@ -116,8 +130,13 @@ for i=1:numel(modeledVelocitiesLabels)
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Percent Movement [0-100%]", ...
             fontsize=params.axisLabelFontSize)
-        ylabel(t, "Joint Velocity [rad/s]", ...
-            fontsize=params.axisLabelFontSize)
+        if isfield(options, "useRadians") && options.useRadians
+            ylabel(t, "Joint Velocity [rad/s]", ...
+                fontsize=params.axisLabelFontSize)
+        else
+            ylabel(t, "Joint Velocity [deg/s]", ...
+                fontsize=params.axisLabelFontSize)
+        end
         set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
@@ -177,5 +196,12 @@ for i=1:numel(modeledVelocitiesLabels)
         subplotNumber = subplotNumber + 1;
     end
 end
+end
 
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
 end

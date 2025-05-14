@@ -37,9 +37,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationJointAngles(modelFileName, ...
-    trackedDataFile, modelDataFiles, figureWidth, figureHeight)
+    trackedDataFile, modelDataFiles, varargin)
 import org.opensim.modeling.Storage
 params = getPlottingParams();
+if nargin > 3
+    options = parseVarargin(varargin);
+else
+    options = struct();
+end
 model = Model(modelFileName);
 trackedDataStorage = Storage(trackedDataFile);
 [coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
@@ -49,10 +54,12 @@ if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
 trackedDataTime = trackedDataTime / trackedDataTime(end);
-for i = 1 : size(trackedData, 2)
-    if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
-        .toString().toCharArray()' == "Rotational"
-        trackedData(:, i) = trackedData(:, i) * 180/pi;
+if ~isfield(options, "useRadians") || ~options.useRadians
+    for i = 1 : size(trackedData, 2)
+        if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
+            .toString().toCharArray()' == "Rotational"
+            trackedData(:, i) = trackedData(:, i) * 180/pi;
+        end
     end
 end
 modelData = {};
@@ -65,10 +72,12 @@ for j=1:numel(modelDataFiles)
         modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
     end
     modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
-    for i = 1 : size(modelData{j}, 2)
-        if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
-            .toString().toCharArray()' == "Rotational"
-            modelData{j}(:, i) = modelData{j}(:, i) * 180/pi;
+    if ~isfield(options, "useRadians") || ~options.useRadians
+        for i = 1 : size(modelData{j}, 2)
+            if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
+                .toString().toCharArray()' == "Rotational"
+                modelData{j}(:, i) = modelData{j}(:, i) * 180/pi;
+            end
         end
     end
 end
@@ -81,11 +90,12 @@ for j = 1 : numel(modelDataFiles)
     resampledExperimentalData{j}= evaluateGcvSplines(experimentalSpline, ...
         coordinateLabels, modelDataTime{j});
 end
-if nargin < 4
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
     figureWidth = ceil(sqrt(numel(coordinateLabels)));
     figureHeight = ceil(numel(coordinateLabels)/figureWidth);
-elseif nargin < 5
-    figureHeight = ceil(sqrt(numel(coordinateLabels)));
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Joint Angles", ...
@@ -97,8 +107,13 @@ t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Movement [0-100%]", ...
     fontsize=params.axisLabelFontSize)
-ylabel(t, "Joint Angle [deg]", ...
-    fontsize=params.axisLabelFontSize)
+if isfield(options, "useRadians") && options.useRadians
+    ylabel(t, "Joint Angle [rad]", ...
+        fontsize=params.axisLabelFontSize)
+else
+    ylabel(t, "Joint Angle [deg]", ...
+        fontsize=params.axisLabelFontSize)
+end
 set(gcf, color=params.plotBackgroundColor)
 for i=1:numel(coordinateLabels)
     if i > figureSize * figureNumber
@@ -110,8 +125,13 @@ for i=1:numel(coordinateLabels)
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Percent Movement [0-100%]", ...
             fontsize=params.axisLabelFontSize)
-        ylabel(t, "Joint Angle [deg]", ...
-            fontsize=params.axisLabelFontSize)
+        if isfield(options, "useRadians") && options.useRadians
+            ylabel(t, "Joint Angle [rad]", ...
+                fontsize=params.axisLabelFontSize)
+        else
+            ylabel(t, "Joint Angle [deg]", ...
+                fontsize=params.axisLabelFontSize)
+        end
         set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
@@ -163,7 +183,11 @@ for i=1:numel(coordinateLabels)
     yLimitLower = min(minData);
     if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
-        minimum = 10;
+        if isfield(options, "useRadians") && options.useRadians
+            minimum = 10*pi/180;
+        else
+            minimum = 10;
+        end
     else
         minimum = 0.1;
     end
@@ -171,4 +195,13 @@ for i=1:numel(coordinateLabels)
         ylim([(yLimitUpper+yLimitLower)/2-minimum, (yLimitUpper+yLimitLower)/2+minimum])
     end
     subplotNumber = subplotNumber + 1;
+end
+end
+
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
 end
