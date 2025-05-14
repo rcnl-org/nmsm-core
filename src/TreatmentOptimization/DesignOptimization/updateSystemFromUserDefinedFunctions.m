@@ -33,7 +33,7 @@ if isfield(setup.auxdata, 'systemFns') && ...
         ~isempty(setup.auxdata.systemFns)
     for i = 1:length(setup.auxdata.systemFns)
         func = str2func(setup.auxdata.systemFns(i));
-        [setup, values] = func(setup, values);
+        [setup.auxdata, values] = func(setup.auxdata, values);
     end
 end
 end
