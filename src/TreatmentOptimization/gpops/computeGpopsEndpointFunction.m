@@ -100,14 +100,8 @@ if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~ise
         continuousObjective = 0;
     else
         if setup.auxdata.normalizeCostByType
-            termCounts = grouptransform(cellfun(@(x) x.type, ...
-                setup.auxdata.costTerms, 'UniformOutput', false)', ...
-                cellfun(@(x) x.type, setup.auxdata.costTerms, ...
-                'UniformOutput', false)', @numel)';
-
-            continuousObjective = sum(integral ./ termCounts) / ...
-                length(unique(cellfun(@(x) x.type, ...
-                setup.auxdata.costTerms, 'UniformOutput', false)));
+            continuousObjective = normalizeCostByType( ...
+                setup.auxdata.costTerms, allowedCostTypes, integral);
         else
             continuousObjective = sum(integral) / length(integral);
         end
@@ -117,4 +111,26 @@ else
 end
 
 output.objective = continuousObjective + discreteObjective;
+end
+
+function continuousObjective = normalizeCostByType(costTerms, ...
+    allowedCostTypes, integral)
+persistent termCounts, persistent numUnique;
+if isempty(termCounts)
+    isEnabled = cellfun(@(x) x.isEnabled, costTerms);
+    if isempty(allowedCostTypes)
+        isAllowed = isEnabled;
+    else
+        isAllowed = cellfun(@(x) ~ismember(x.type, allowedCostTypes), ...
+            costTerms);
+    end
+    
+    termNames = string(cellfun(@(x) x.type, costTerms, ...
+        'UniformOutput', false));
+    includedTermNames = termNames(isEnabled & isAllowed);
+    termCounts = grouptransform(includedTermNames', includedTermNames', ...
+        @numel)';
+    numUnique = length(unique(includedTermNames));
+end
+continuousObjective = sum(integral ./ termCounts) / numUnique;
 end
