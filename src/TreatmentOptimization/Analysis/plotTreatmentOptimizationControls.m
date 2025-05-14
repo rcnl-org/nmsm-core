@@ -133,6 +133,7 @@ for i=1:numel(labels)
             maxValues(j) = max(controlsData{j}, [], "all");
         end
         ylim([0, max(maxValues)])
+    end
     subplotNumber = subplotNumber + 1;
 end
 end
