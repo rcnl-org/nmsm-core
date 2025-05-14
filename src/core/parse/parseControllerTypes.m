@@ -1,9 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function prepares the inputs for the all treatment optimization
-% modules (tracking, verification, and design optimization.
+% There are multiple controllers that can be used to solve optimal control
+% problems in the NMSM Pipeline. This function finds the correct element to
+% determine which controllers are being used. This informs the XML parsing
+% logic.
 %
-% (struct, struct) -> (struct)
+% (struct) -> (string)
+% returns logical vector depending on the settings file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +16,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,15 +30,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = makeSurrogateModel(inputs)
-if any(inputs.controllerTypes(2:3))
-    % for i = 1 : length(inputs.coordinateNames)
-    %     for j = 1 : length(inputs.surrogateModelCoordinateNames)
-    %         if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
-    %             inputs.surrogateModelIndex(j) = i;
-    %         end
-    %     end
-    % end
-    inputs.surrogateModelIndex = 1 : length(inputs.coordinateNames);
+function controllerTypes = parseControllerTypes(tree)
+torque = getFieldByName(tree, 'RCNLTorqueController');
+synergy = getFieldByName(tree, 'RCNLSynergyController');
+muscle = getFieldByName(tree, 'RCNLMuscleController');
+controllerTypes = [isstruct(torque), isstruct(synergy), isstruct(muscle)];
+if all(~controllerTypes)
+    throw(MException("ParseTreatmentOptimization:NoController", ...
+       "Could not find <RCNLTorqueController>, " + ...
+       "<RCNLSynergyController>, or <RCNLMuscleController>"))
 end
 end

@@ -40,11 +40,11 @@ trackedQuantitiesDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'tracked_quantities_directory'));
 initialGuessDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'initial_guess_directory'));
-[isTorque, isSynergy] = parseControllers(settingsTree);
+[isTorque, isSynergy, isMuscle] = parseControllers(settingsTree);
 modelFileName = parseElementTextByName(settingsTree, 'input_model_file');
 trialPrefix = getTextFromField(getFieldByName(settingsTree, ...
     'trial_name'));
-if isSynergy
+if isSynergy || isMuscle
     if exist(fullfile(initialGuessDirectory, ...
             strcat(trialPrefix, "_combinedActivations.sto")), "file")
         experimentalEmgFile = fullfile(initialGuessDirectory, ...
@@ -95,7 +95,7 @@ if isTorque
     end
 end
 if isSynergy
-    if strcmp(toolName, "DesignOptimization") | strcmp(toolName, "VerificationOptimization")
+    if strcmp(toolName, "DesignOptimization") || strcmp(toolName, "VerificationOptimization")
         plotTreatmentOptimizationControls( ...
             [fullfile(trackedQuantitiesDirectory, strcat(trialPrefix, "_synergyCommands.sto")), ...
             fullfile(resultsDirectory, strcat(trialPrefix, "_synergyCommands.sto"))])
@@ -108,9 +108,29 @@ if isSynergy
         fullfile(experimentalEmgFile), ...
         fullfile(resultsDirectory, strcat(trialPrefix, "_combinedActivations.sto")))
 end
+if isMuscle
+    if strcmp(toolName, "DesignOptimization") || strcmp(toolName, "VerificationOptimization")
+        plotTreatmentOptimizationControls( ...
+            [fullfile(trackedQuantitiesDirectory, strcat(trialPrefix, "_muscleControls.sto")), ...
+            fullfile(resultsDirectory, strcat(trialPrefix, "_muscleControls.sto"))])
+
+    else
+        plotTreatmentOptimizationControls( ...
+            fullfile(resultsDirectory, strcat(trialPrefix, "_muscleControls.sto")))
+    end
+    plotTreatmentOptimizationMuscleActivations(...
+        fullfile(experimentalEmgFile), ...
+        fullfile(resultsDirectory, strcat(trialPrefix, "_combinedActivations.sto")))
+end
 end
 
-function [isTorque, isSynergy] = parseControllers(settingsTree)
+function [isTorque, isSynergy, isMuscle] = parseControllers(settingsTree)
+muscle = getFieldByName(settingsTree, 'RCNLMuscleController');
+if isstruct(muscle)
+    isMuscle = true;
+else
+    isMuscle = false;
+end
 synergy = getFieldByName(settingsTree, 'RCNLSynergyController');
 if isstruct(synergy)
     isSynergy = true;

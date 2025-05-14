@@ -29,9 +29,9 @@
 % ----------------------------------------------------------------------- %
 
 function [continuousMaxAllowableError, discreteMaxAllowableError] = ...
-    makeMaxAllowableError(toolName, costTerms)
-[~, continuousAllowedTypes] = generateCostTermStruct("continuous", toolName);
-[~, discreteAllowedTypes] = generateCostTermStruct("discrete", toolName);
+    makeMaxAllowableError(toolName, controllerTypes, costTerms)
+[~, continuousAllowedTypes] = generateCostTermStruct("continuous", controllerTypes, toolName);
+[~, discreteAllowedTypes] = generateCostTermStruct("discrete", controllerTypes, toolName);
 
 continuousMaxAllowableError = [];
 discreteMaxAllowableError = [];

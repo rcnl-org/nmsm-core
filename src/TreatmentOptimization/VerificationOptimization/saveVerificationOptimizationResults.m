@@ -30,14 +30,14 @@
 function saveVerificationOptimizationResults(solution, inputs)
 values = makeGpopsValuesAsStruct( ...
     solution.solution.phase, inputs);
-if strcmp(inputs.controllerType, "synergy")
+if inputs.controllerTypes(2)
     values = normalizeSynergySolution(values, inputs);
 end
 saveTreatmentOptimizationResults(solution, inputs, values)
 end
 
 function values = normalizeSynergySolution(values, inputs)
-values.controllerType = inputs.controllerType;
+values.controllerTypes = inputs.controllerTypes;
 values.initialSynergyControls = values.controlSynergyActivations;
 values.synergyNormalizationMethod = inputs.synergyNormalizationMethod;
 values.synergyNormalizationValue = inputs.synergyNormalizationValue;

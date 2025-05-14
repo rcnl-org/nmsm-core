@@ -63,7 +63,7 @@ end
 if ~isempty(inputs.maxTerminal)
     bounds.eventgroup.upper = inputs.maxTerminal;
 end
-if strcmp(inputs.controllerType, 'synergy')
+if inputs.controllerTypes(2)
     if inputs.optimizeSynergyVectors
         bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));

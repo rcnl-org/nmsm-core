@@ -42,18 +42,23 @@ values.stateVelocities = getCorrectStates( ...
 values.controlAccelerations = control(:, 1 : length(inputs.statesCoordinateNames));
 [values.positions, values.velocities] = recombineFullState(values, inputs);
 values.accelerations = recombineFullAccelerations(values, inputs);
-if strcmp(inputs.controllerType, 'synergy')
-    values.controlSynergyActivations = control(:, ...
+if inputs.controllerTypes(3)
+    values.controlMuscleActivations = control(:, ...
         length(inputs.statesCoordinateNames) + 1 : ...
-        length(inputs.statesCoordinateNames) + inputs.numSynergies);
+        length(inputs.statesCoordinateNames) + inputs.numIndividualMuscles);
+end
+if inputs.controllerTypes(2)
+    values.controlSynergyActivations = control(:, ...
+        length(inputs.statesCoordinateNames) + 1 + inputs.numIndividualMuscles: ...
+        length(inputs.statesCoordinateNames) + inputs.numIndividualMuscles + inputs.numSynergies);
 end
 values.torqueControls = control(:, ...
-    length(inputs.statesCoordinateNames) + 1 + inputs.numSynergies : ...
-    length(inputs.statesCoordinateNames) + inputs.numSynergies + ...
+    length(inputs.statesCoordinateNames) + 1 + inputs.numIndividualMuscles + inputs.numSynergies : ...
+    length(inputs.statesCoordinateNames) + inputs.numIndividualMuscles + inputs.numSynergies + ...
     length(inputs.torqueControllerCoordinateNames));
 
 if strcmp(inputs.toolName, "TrackingOptimization")
-    if strcmp(inputs.controllerType, 'synergy')
+    if inputs.controllerTypes(2)
         values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
             parameters = scaleToOriginal(phase.parameter(1,:), ...
@@ -64,13 +69,13 @@ if strcmp(inputs.toolName, "TrackingOptimization")
     end
 end
 if strcmp(inputs.toolName, "VerificationOptimization")
-    if strcmp(inputs.controllerType, 'synergy')
+    if inputs.controllerTypes(2)
         values.synergyWeights = inputs.synergyWeights;
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
     counter = 1;
-    if strcmp(inputs.controllerType, 'synergy')
+    if inputs.controllerTypes(2)
         values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
             parameters = scaleToOriginal(phase.parameter(1,:), ...

@@ -37,7 +37,7 @@ if isfield(inputs, "systemFns")
     model = Model(inputs.auxdata.model);
     model.print(strrep(inputs.mexModel, '_inactiveMuscles.osim', 'DesignOpt.osim'));
 end
-if strcmp(inputs.controllerType, "synergy")
+if inputs.controllerTypes(2)
     values = normalizeSynergySolution(values, inputs);
 end
 printUserDefinedVariablesToXml(solution, inputs);
@@ -68,7 +68,7 @@ end
 end
 
 function values = normalizeSynergySolution(values, inputs)
-values.controllerType = inputs.controllerType;
+values.controllerTypes = inputs.controllerTypes;
 values.initialSynergyControls = values.controlSynergyActivations;
 values.synergyNormalizationMethod = inputs.synergyNormalizationMethod;
 values.synergyNormalizationValue = inputs.synergyNormalizationValue;

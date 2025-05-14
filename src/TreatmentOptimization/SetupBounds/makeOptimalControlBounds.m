@@ -79,7 +79,13 @@ minRange = max(inputs.jointAccelerationsMultiple * ...
 inputs.maxControl = max(stateJointAccelerations) + minRange;
 inputs.minControl = min(stateJointAccelerations) - minRange;
 
-if strcmp(inputs.controllerType, 'synergy')
+if inputs.controllerTypes(3)
+    inputs.maxControl = [inputs.maxControl ones(1, ...
+        inputs.numIndividualMuscles)];
+    inputs.minControl = [inputs.minControl zeros(1, ...
+        inputs.numIndividualMuscles)];
+end
+if inputs.controllerTypes(2)
     maxControlSynergyActivations = inputs.maxControlSynergyActivations * ...
         ones(1, inputs.numSynergies);
     inputs.maxControl = [inputs.maxControl maxControlSynergyActivations];
