@@ -1,11 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function saves and prints the unscaled results from
-% Design Optimization. An osim model may also be printed if model specific
-% values were optimized
 %
-% (struct, struct) -> (None)
-% Prints design optimization results
+% (struct, struct) -> (struct)
+% Parses a list of user-defined functions
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Spencer Williams                               %
+% Author(s): Claire V. Hammond                                            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,26 +26,37 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveDesignOptimizationResults(solution, inputs)
-values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
-if isfield(inputs, "systemFns")
-    inputs.auxdata = inputs;
-    [inputs, values] = updateSystemFromUserDefinedFunctions(inputs, values);
-    model = Model(inputs.auxdata.model);
-    model.print(strrep(inputs.mexModel, '_inactiveMuscles.osim', 'DesignOpt.osim'));
+function inputs = parseUserDefinedFunctions(tree, inputs)
+import org.opensim.modeling.Storage
+if isstruct(getFieldByName(tree, "model_functions"))
+    systemFns = parseSpaceSeparatedList(tree, "model_functions");
+    if ~isempty(systemFns)
+        inputs.systemFns = systemFns;
+    end
 end
-if inputs.controllerTypes(2)
-    values = normalizeSynergySolution(values, inputs);
+parameterTree = getFieldByName(tree, "RCNLParameterTermSet");
+if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
+    inputs.userDefinedVariables = parseRcnlCostTermSet( ...
+        parameterTree.RCNLParameterTerm);
+    for i = 1:length(inputs.userDefinedVariables)
+        inputs.userDefinedVariables{i}.initial_values = ...
+            stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.initial_values);
+        inputs.userDefinedVariables{i}.upper_bounds = ...
+            stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.upper_bounds);
+        inputs.userDefinedVariables{i}.lower_bounds = ...
+            stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.lower_bounds);
+    end
+else
+    inputs.userDefinedVariables = {};
 end
-printUserDefinedVariablesToXml(solution, inputs);
-saveTreatmentOptimizationResults(solution, inputs, values);
 end
 
-function values = normalizeSynergySolution(values, inputs)
-values.controllerTypes = inputs.controllerTypes;
-values.initialSynergyControls = values.controlSynergyActivations;
-values.synergyNormalizationMethod = inputs.synergyNormalizationMethod;
-values.synergyNormalizationValue = inputs.synergyNormalizationValue;
-values = normalizeSynergyData(values);
-values.controlSynergyActivations = values.initialSynergyControls;
+function output = stringToSpaceSeparatedList(string)
+if isnumeric(string)
+    output = string;
+    return;
+end
+string = strtrim(string);
+output = split(string);
+output = str2double(output);
 end

@@ -137,14 +137,12 @@ if valueOrAlternate(inputs, "optimizeSynergyVectors", false)
         row = row + inputs.synergyGroups{i}.numSynergies;
     end
 end
-if strcmp(inputs.toolName, "DesignOptimization")
-    for i = 1:length(inputs.userDefinedVariables)
-        if ~isfield(guess, "parameter")
-            guess.parameter = [];
-        end
-        guess.parameter = [guess.parameter, ...
-            inputs.userDefinedVariables{i}.initial_values];
+for i = 1:length(inputs.userDefinedVariables)
+    if ~isfield(guess, "parameter")
+        guess.parameter = [];
     end
+    guess.parameter = [guess.parameter, ...
+        inputs.userDefinedVariables{i}.initial_values];
 end
 if isfield(guess, "parameter")
     guess.parameter = scaleToBounds(guess.parameter, inputs.maxParameter, ...

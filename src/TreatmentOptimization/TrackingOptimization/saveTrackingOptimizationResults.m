@@ -33,6 +33,7 @@ values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
 if inputs.controllerTypes(2)
     values = normalizeSynergySolution(values, inputs);
 end
+printUserDefinedVariablesToXml(solution, inputs);
 saveTreatmentOptimizationResults(solution, inputs, values);
 end
 

@@ -30,9 +30,7 @@
 
 function [modeledValues, setup] = computeGpopsContinuousFunction(setup)
 values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
-if strcmp(setup.auxdata.toolName, "DesignOptimization")
-    [setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
-end
+[setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
 modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
     modeledValues);

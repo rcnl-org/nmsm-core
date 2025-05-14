@@ -29,32 +29,30 @@
 % ----------------------------------------------------------------------- %
 
 function output = computeGpopsEndpointFunction(setup)
-    setup.phase.state = [setup.phase.initialstate; setup.phase.finalstate];
-    setup.phase.time = [setup.phase.initialtime; setup.phase.finaltime];
-    setup.phase.control = ones(size(setup.phase.time,1),length(setup.auxdata.minControl));
-    if isfield(setup, "parameter")
-        setup.phase.parameter = setup.parameter;
-    end
-    values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
-    if strcmp(setup.auxdata.toolName, "DesignOptimization")
-        [setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
-    end
-    modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
-    modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
-        modeledValues);
-    counter = 0;
-    if valueOrAlternate(setup.auxdata, 'calculatePropulsiveImpulse', false)
-        modeledValues.propulsiveImpulse = setup.phase.integral( ...
-            end - length(setup.auxdata.contactSurfaces) + 1 : end);
-        counter = counter + length(setup.auxdata.contactSurfaces);
-    end
-    if valueOrAlternate(setup.auxdata, 'calculateBrakingImpulse', false)
-        modeledValues.brakingImpulse = setup.phase.integral( ...
-            end - length(setup.auxdata.contactSurfaces) - counter + 1 : end - counter);
-    end
-    if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
-        modeledValues.metabolicCost = setup.phase.integral(end - counter);
-    end
+setup.phase.state = [setup.phase.initialstate; setup.phase.finalstate];
+setup.phase.time = [setup.phase.initialtime; setup.phase.finaltime];
+setup.phase.control = ones(size(setup.phase.time,1),length(setup.auxdata.minControl));
+if isfield(setup, "parameter")
+    setup.phase.parameter = setup.parameter;
+end
+values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
+[setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
+modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
+modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
+    modeledValues);
+counter = 0;
+if valueOrAlternate(setup.auxdata, 'calculatePropulsiveImpulse', false)
+    modeledValues.propulsiveImpulse = setup.phase.integral( ...
+        end - length(setup.auxdata.contactSurfaces) + 1 : end);
+    counter = counter + length(setup.auxdata.contactSurfaces);
+end
+if valueOrAlternate(setup.auxdata, 'calculateBrakingImpulse', false)
+    modeledValues.brakingImpulse = setup.phase.integral( ...
+        end - length(setup.auxdata.contactSurfaces) - counter + 1 : end - counter);
+end
+if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
+    modeledValues.metabolicCost = setup.phase.integral(end - counter);
+end
 
 persistent constraintTermCalculations, persistent allowedConstraintTypes;
 if isempty(allowedConstraintTypes)

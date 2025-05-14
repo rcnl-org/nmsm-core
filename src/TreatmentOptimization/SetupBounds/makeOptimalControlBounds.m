@@ -103,17 +103,15 @@ if inputs.controllerTypes(2)
         inputs.minParameter = zeros(1, numParameters);
     end
 end
-if strcmp(inputs.toolName, "DesignOptimization")
-    if ~isfield(inputs, "maxParameter")
-        inputs.maxParameter = [];
-        inputs.minParameter = [];
-    end
-    for i = 1:length(inputs.userDefinedVariables)
-        inputs.maxParameter = [inputs.maxParameter ...
-            inputs.userDefinedVariables{i}.upper_bounds];
-        inputs.minParameter = [inputs.minParameter ...
-            inputs.userDefinedVariables{i}.lower_bounds];
-    end
+if ~isfield(inputs, "maxParameter")
+    inputs.maxParameter = [];
+    inputs.minParameter = [];
+end
+for i = 1:length(inputs.userDefinedVariables)
+    inputs.maxParameter = [inputs.maxParameter ...
+        inputs.userDefinedVariables{i}.upper_bounds];
+    inputs.minParameter = [inputs.minParameter ...
+        inputs.userDefinedVariables{i}.lower_bounds];
 end
 if isfield(inputs, "torqueControllerCoordinateNames")
     maxTorqueControls = [];
