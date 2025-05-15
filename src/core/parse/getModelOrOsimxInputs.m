@@ -35,6 +35,9 @@ inputs.optimalFiberLength = [];
 inputs.tendonSlackLength = [];
 inputs.pennationAngle = [];
 inputs.maxIsometricForce = [];
+if ~isfield(inputs, "osimx")
+    inputs.osimx = struct();
+end
 for i = 1 : inputs.numMuscles
     if isfield(inputs.osimx, "muscles") && ...
             isfield(inputs.osimx.muscles, inputs.muscleNames(i))

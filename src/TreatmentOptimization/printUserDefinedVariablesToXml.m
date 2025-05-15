@@ -1,9 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function prepares the inputs for the all treatment optimization
-% modules (tracking, verification, and design optimization.
 %
-% (struct, struct) -> (struct)
+% (struct, struct) -> (None)
+% Prints final user-defined parameters
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,15 +26,25 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = makeSurrogateModel(inputs)
-if any(inputs.controllerTypes(2:3))
-    % for i = 1 : length(inputs.coordinateNames)
-    %     for j = 1 : length(inputs.surrogateModelCoordinateNames)
-    %         if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
-    %             inputs.surrogateModelIndex(j) = i;
-    %         end
-    %     end
-    % end
-    inputs.surrogateModelIndex = 1 : length(inputs.coordinateNames);
+function printUserDefinedVariablesToXml(solution, inputs)
+if isfield(inputs, 'userDefinedVariables')
+    counter = 1;
+    for i = 1:length(inputs.userDefinedVariables)
+        numParameters = length(inputs.userDefinedVariables{i}.initial_values);
+        parameterResults = scaleToOriginal( ...
+            solution.solution.phase.parameter( ...
+            counter : counter + numParameters - 1), ...
+            inputs.userDefinedVariables{i}.upper_bounds, ...
+            inputs.userDefinedVariables{i}.lower_bounds);
+        counter = counter + numParameters;
+        valuesStr = num2str(parameterResults(1));
+        for j = 2:length(parameterResults)
+            valuesStr = strcat(valuesStr, " ", num2str(parameterResults(j)));
+        end
+        parameters.NMSMPipelineDocument.RCNLParameters{i}.RCNLParameterSet.type = inputs.userDefinedVariables{i}.type;
+        parameters.NMSMPipelineDocument.RCNLParameters{i}.RCNLParameterSet.values = convertStringsToChars(valuesStr);
+        struct2xml(parameters, fullfile(inputs.resultsDirectory, ...
+            strcat(inputs.trialName, "_parameterSolution.xml")));
+    end
 end
 end

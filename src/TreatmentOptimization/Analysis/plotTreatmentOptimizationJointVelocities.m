@@ -102,7 +102,7 @@ figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Velocity [deg/s]")
+ylabel(t, "Joint Velocity [rad/s]")
 
 for i=1:numel(modeledVelocitiesLabels)
     if i > figureSize * figureNumber
@@ -113,7 +113,7 @@ for i=1:numel(modeledVelocitiesLabels)
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Joint Velocity [deg/s]")
+        ylabel(t, "Joint Velocity [rad/s]")
         subplotNumber = 1;
     end
     coordinateIndex = find(modeledStatesLabels(i) == coordinateLabels);

@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function prepares the inputs for the all treatment optimization
-% modules (tracking, verification, and design optimization.
+% This function stores the initial muscle activations as a spline for use
+% in cost terms for Treatment Optimization
 %
-% (struct, struct) -> (struct)
+% (string) -> (None)
+% Spline input synergy activations
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,15 +28,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = makeSurrogateModel(inputs)
-if any(inputs.controllerTypes(2:3))
-    % for i = 1 : length(inputs.coordinateNames)
-    %     for j = 1 : length(inputs.surrogateModelCoordinateNames)
-    %         if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
-    %             inputs.surrogateModelIndex(j) = i;
-    %         end
-    %     end
-    % end
-    inputs.surrogateModelIndex = 1 : length(inputs.coordinateNames);
+function inputs = setupMuscleActivations(inputs)
+if inputs.controllerTypes(3)
+    if ~isfield(inputs, 'initialMuscleControlsLabels')
+        inputs.initialMuscleControlsLabels = inputs.individualMuscleNames;
+        [~, indices] = intersect(inputs.muscleLabels, ...
+            inputs.individualMuscleNames);
+        inputs.initialMuscleControls = inputs.experimentalMuscleActivations(:, indices);
+        if isfield(inputs, 'synergyMuscleNames')
+            [~, indices] = intersect(inputs.individualMuscleNames, ...
+                inputs.synergyMuscleNames);
+            inputs.initialMuscleControls(:, indices) = 0;
+        end
+    end
+    inputs.splineMuscleControls = makeGcvSplineSet( ...
+        inputs.initialTime, inputs.initialMuscleControls', ...
+        inputs.initialMuscleControlsLabels);
 end
 end

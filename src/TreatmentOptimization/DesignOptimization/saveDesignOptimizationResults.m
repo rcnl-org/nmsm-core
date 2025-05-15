@@ -37,38 +37,15 @@ if isfield(inputs, "systemFns")
     model = Model(inputs.auxdata.model);
     model.print(strrep(inputs.mexModel, '_inactiveMuscles.osim', 'DesignOpt.osim'));
 end
-if strcmp(inputs.controllerType, "synergy")
+if inputs.controllerTypes(2)
     values = normalizeSynergySolution(values, inputs);
 end
 printUserDefinedVariablesToXml(solution, inputs);
 saveTreatmentOptimizationResults(solution, inputs, values);
 end
 
-function printUserDefinedVariablesToXml(solution, inputs)
-if isfield(inputs, 'userDefinedVariables')
-    counter = 1;
-    for i = 1:length(inputs.userDefinedVariables)
-        numParameters = length(inputs.userDefinedVariables{i}.initial_values);
-        parameterResults = scaleToOriginal( ...
-            solution.solution.phase.parameter( ...
-            counter : counter + numParameters - 1), ...
-            inputs.userDefinedVariables{i}.upper_bounds, ...
-            inputs.userDefinedVariables{i}.lower_bounds);
-        counter = counter + numParameters;
-        valuesStr = num2str(parameterResults(1));
-        for j = 2:length(parameterResults)
-            valuesStr = strcat(valuesStr, " ", num2str(parameterResults(j)));
-        end
-        parameters.NMSMPipelineDocument.RCNLParameters{i}.RCNLParameterSet.type = inputs.userDefinedVariables{i}.type;
-        parameters.NMSMPipelineDocument.RCNLParameters{i}.RCNLParameterSet.values = convertStringsToChars(valuesStr);
-        struct2xml(parameters, fullfile(inputs.resultsDirectory, ...
-            strcat(inputs.trialName, "_parameterSolution.xml")));
-    end
-end
-end
-
 function values = normalizeSynergySolution(values, inputs)
-values.controllerType = inputs.controllerType;
+values.controllerTypes = inputs.controllerTypes;
 values.initialSynergyControls = values.controlSynergyActivations;
 values.synergyNormalizationMethod = inputs.synergyNormalizationMethod;
 values.synergyNormalizationValue = inputs.synergyNormalizationValue;

@@ -1,9 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function prepares the inputs for the all treatment optimization
-% modules (tracking, verification, and design optimization.
-%
-% (struct, struct) -> (struct)
+% (Array of double, double) -> (Array of double)
+% Applies a saturation function to muscle activations.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,15 +25,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = makeSurrogateModel(inputs)
-if any(inputs.controllerTypes(2:3))
-    % for i = 1 : length(inputs.coordinateNames)
-    %     for j = 1 : length(inputs.surrogateModelCoordinateNames)
-    %         if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
-    %             inputs.surrogateModelIndex(j) = i;
-    %         end
-    %     end
-    % end
-    inputs.surrogateModelIndex = 1 : length(inputs.coordinateNames);
-end
+function muscleActivations = applyActivationSaturation( ...
+    muscleActivations, cornerCoefficient)
+% Function based on: http://dx.doi.org/10.1016/j.fss.2005.02.016
+% Higher corner coefficient makes corners sharper 
+% muscleActivations = log( ...
+%     (1 + exp(cornerCoefficient .* (muscleActivations))) ./ ...
+%     (1 + exp(cornerCoefficient .* (muscleActivations - 1)))) .* ...
+%     (1 ./ cornerCoefficient);
+
+% Revised version allows for higher corner coefficients without reaching
+% infinity
+numPower = cornerCoefficient .* (muscleActivations);
+denomPower = cornerCoefficient .* (muscleActivations - 1);
+muscleActivations = (log(exp(0.5 * numPower) + exp(-0.5 * numPower)) + ...
+    log(exp(0.5 * numPower)) - log(exp(0.5 * denomPower) + ...
+    exp(-0.5 * denomPower)) - log(exp(0.5 * denomPower))) .* ...
+    (1 ./ cornerCoefficient);
 end

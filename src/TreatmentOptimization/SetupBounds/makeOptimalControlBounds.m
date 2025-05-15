@@ -79,7 +79,13 @@ minRange = max(inputs.jointAccelerationsMultiple * ...
 inputs.maxControl = max(stateJointAccelerations) + minRange;
 inputs.minControl = min(stateJointAccelerations) - minRange;
 
-if strcmp(inputs.controllerType, 'synergy')
+if inputs.controllerTypes(3)
+    inputs.maxControl = [inputs.maxControl ones(1, ...
+        inputs.numIndividualMuscles)];
+    inputs.minControl = [inputs.minControl zeros(1, ...
+        inputs.numIndividualMuscles)];
+end
+if inputs.controllerTypes(2)
     maxControlSynergyActivations = inputs.maxControlSynergyActivations * ...
         ones(1, inputs.numSynergies);
     inputs.maxControl = [inputs.maxControl maxControlSynergyActivations];
@@ -97,17 +103,15 @@ if strcmp(inputs.controllerType, 'synergy')
         inputs.minParameter = zeros(1, numParameters);
     end
 end
-if strcmp(inputs.toolName, "DesignOptimization")
-    if ~isfield(inputs, "maxParameter")
-        inputs.maxParameter = [];
-        inputs.minParameter = [];
-    end
-    for i = 1:length(inputs.userDefinedVariables)
-        inputs.maxParameter = [inputs.maxParameter ...
-            inputs.userDefinedVariables{i}.upper_bounds];
-        inputs.minParameter = [inputs.minParameter ...
-            inputs.userDefinedVariables{i}.lower_bounds];
-    end
+if ~isfield(inputs, "maxParameter")
+    inputs.maxParameter = [];
+    inputs.minParameter = [];
+end
+for i = 1:length(inputs.userDefinedVariables)
+    inputs.maxParameter = [inputs.maxParameter ...
+        inputs.userDefinedVariables{i}.upper_bounds];
+    inputs.minParameter = [inputs.minParameter ...
+        inputs.userDefinedVariables{i}.lower_bounds];
 end
 if isfield(inputs, "torqueControllerCoordinateNames")
     maxTorqueControls = [];

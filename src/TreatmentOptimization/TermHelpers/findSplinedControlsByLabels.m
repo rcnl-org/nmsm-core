@@ -28,13 +28,24 @@
 % ----------------------------------------------------------------------- %
 
 function controls = findSplinedControlsByLabels(term, inputs, time)
+muscleControlIndices = term.internalMuscleControlIndices;
 synergyControlIndices = term.internalSynergyControlIndices;
 torqueControlIndices = term.internalSplinedTorqueControlIndices;
 numberOfTerms = length(synergyControlIndices);
 
 controls = zeros(length(time), numberOfTerms);
 for i = 1 : numberOfTerms
-    if synergyControlIndices(i) > 0
+    if muscleControlIndices(i) > 0
+        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+                max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+            controls(:, i) = inputs.splinedMuscleControls(:, ...
+                muscleControlIndices(i));
+        else
+            controls(:, i) = evaluateGcvSplines( ...
+                inputs.splineMuscleControls, ...
+                muscleControlIndices(i) - 1, time);
+        end
+    elseif synergyControlIndices(i) > 0
         if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
                 max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
             controls(:, i) = inputs.splinedSynergyActivations(:, ...

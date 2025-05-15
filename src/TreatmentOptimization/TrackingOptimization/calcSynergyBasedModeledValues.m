@@ -33,7 +33,7 @@
 % ----------------------------------------------------------------------- %
 
 function modeledValues = calcSynergyBasedModeledValues(values, inputs)
-if strcmp(inputs.controllerType, 'synergy')
+if any(inputs.controllerTypes(2:3))
     [jointAngles, jointVelocities] = getMuscleActuatedDOFs(values, inputs);
     [muscleTendonLength, momentArms, muscleTendonVelocity] = ...
         calcSurrogateModel(inputs, jointAngles, jointVelocities);
@@ -41,7 +41,19 @@ if strcmp(inputs.controllerType, 'synergy')
         modeledValues.normalizedFiberVelocity] = ...
         calcNormalizedFiberQuantities(inputs, muscleTendonLength, ...
         muscleTendonVelocity);
-    modeledValues.muscleActivations = calcMuscleActivationFromSynergies(values);
+    if inputs.controllerTypes(2)
+        synergyMuscleActivations = ...
+            calcMuscleActivationFromSynergies(values);
+    else
+        synergyMuscleActivations = [];
+    end
+    modeledValues.muscleActivations = combineMuscleActivations(values, ...
+        inputs, synergyMuscleActivations);
+    if inputs.useActivationSaturation
+        modeledValues.muscleActivations = ...
+            applyActivationSaturation(modeledValues.muscleActivations, ...
+            inputs.activationSaturationSharpness);
+    end
     modeledValues.muscleJointMoments = ...
         calcTreatmentOptimizationMuscleJointMoments(inputs, ...
         modeledValues, momentArms);
@@ -88,4 +100,28 @@ for i = 1 : size(indexMatrix, 1)
     jointVelocities{indexMatrix(i, 1)}(:, indexMatrix(i, 2)) = ...
         values.velocities(:, indexMatrix(i, 3));
 end
+end
+
+function muscleActivations = combineMuscleActivations(values, ...
+        inputs, synergyMuscleActivations)
+if isempty(synergyMuscleActivations)
+    muscleActivations = values.controlMuscleActivations;
+    return
+end
+if ~isfield(values, 'controlMuscleActivations')
+    muscleActivations = synergyMuscleActivations;
+    return
+end
+persistent synergyIndices, persistent individualIndices;
+if isempty(individualIndices)
+    [~, ~, individualIndices] = intersect( ...
+        inputs.individualMuscleNames, inputs.muscleNames, 'stable');
+end
+if isempty(synergyIndices)
+    [~, ~, synergyIndices] = intersect( ...
+        inputs.synergyMuscleNames, inputs.muscleNames, 'stable');
+end
+muscleActivations = zeros(length(values.time), inputs.numMuscles);
+muscleActivations(:, individualIndices) = values.controlMuscleActivations;
+muscleActivations(:, synergyIndices) = synergyMuscleActivations;
 end

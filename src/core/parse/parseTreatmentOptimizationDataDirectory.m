@@ -36,6 +36,8 @@ function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
 inputs.trialName = parseTrialName(tree);
 inputs = parseExperimentalData(inputs, inputs.trackedDirectory);
 inputs = parseSynergyExperimentalData(tree, inputs);
+inputs = parseMuscleExperimentalData(tree, inputs);
+inputs = parseSurrogateModelData(tree, inputs);
 inputs = parseInitialGuessData(inputs, inputs.initialGuessDirectory);
 inputs = parseInitialValues(inputs);
 end
@@ -136,15 +138,71 @@ end
 end
 
 function inputs = parseSynergyExperimentalData(tree, inputs)
-if strcmp(inputs.controllerType, "synergy")
-    surrogateModelDataDirectory = getTextFromField( ...
-        getFieldByNameOrError(tree, 'surrogate_model_data_directory'));
-    [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
-        parseTrialData(inputs.initialGuessDirectory, ...
-        strcat(inputs.trialName, "_combinedActivations"), inputs.model);
+if inputs.controllerTypes(2)
     [inputs.synergyWeights, inputs.synergyWeightsLabels] = ...
         parseTrialData(inputs.initialGuessDirectory, ...
         "synergyWeights", inputs.model);
+end
+end
+
+function inputs = parseMuscleExperimentalData(tree, inputs)
+if any(inputs.controllerTypes(2:3))
+    try
+        [experimentalMuscleActivations, inputs.muscleLabels] = ...
+            parseTrialData(inputs.initialGuessDirectory, ...
+            strcat(inputs.trialName, "_combinedActivations"), inputs.model);
+    catch
+        experimentalMuscleActivations = ...
+            zeros(length(inputs.experimentalTime), 0);
+        inputs.muscleLabels = string([]);
+    end
+    if length(inputs.muscleLabels) < inputs.numMuscles
+        muscleActivationsFile = getTextFromField( ...
+            getFieldByName(tree, "muscle_activations_file"));
+        if ischar(muscleActivationsFile)
+            [path, name, ~] = fileparts(muscleActivationsFile);
+            if isempty(path)
+                path = '.';
+            end
+            [extraActivations, extraLabels] = ...
+                parseTrialData(path, name, inputs.model);
+            assert(size(extraActivations, 1) == size( ...
+                experimentalMuscleActivations, 1), ...
+                "<muscle_activations_file> has an inconsistent " + ...
+                "number of time points.");
+            [inputs.muscleLabels, indices] = unique( ...
+                [inputs.muscleLabels, extraLabels], 'stable');
+            activations = [experimentalMuscleActivations, ...
+                extraActivations];
+            experimentalMuscleActivations = activations(:, indices);
+        end
+        if length(inputs.muscleLabels) < inputs.numMuscles
+            missingMuscles = setdiff(inputs.muscleNames, ...
+                inputs.muscleLabels);
+            defaultActivation = getDoubleFromField( ...
+                getFieldByNameOrAlternate(tree, ...
+                'initial_activation_value', 0.1));
+            for i = 1 : length(missingMuscles)
+                inputs.muscleLabels(end + 1) = missingMuscles(i);
+                experimentalMuscleActivations(:, end + 1) = ...
+                    defaultActivation;
+            end
+        end
+    end
+    [inputs.muscleLabels, ~, newOrder] = intersect(inputs.muscleNames, ...
+        inputs.muscleLabels, 'stable');
+    assert(length(inputs.muscleLabels) == inputs.numMuscles, ...
+        "Not all muscles are accounted for in initial activation " + ...
+        "data and values.");
+    inputs.experimentalMuscleActivations = ...
+        experimentalMuscleActivations(:, newOrder);
+end
+end
+
+function inputs = parseSurrogateModelData(tree, inputs)
+if any(inputs.controllerTypes(2:3))
+    surrogateModelDataDirectory = getTextFromField( ...
+        getFieldByNameOrError(tree, 'surrogate_model_data_directory'));
     directory = fullfile(surrogateModelDataDirectory, "MAData", inputs.trialName);
     inputs.surrogateModelMomentArms = parseSelectMomentArms(directory, ...
         inputs.coordinateNamesStrings, inputs.muscleNames);
@@ -179,11 +237,16 @@ try
         parseTrialData(inputs.initialGuessDirectory, ...
         strcat(inputs.trialName, "_torqueControls"), inputs.model);
 catch;end
-if strcmp(inputs.controllerType, "synergy")
+if inputs.controllerTypes(2)
     [inputs.initialSynergyControls, inputs.initialSynergyControlsLabels] = ...
         parseTrialData(inputs.initialGuessDirectory, ...
         strcat(inputs.trialName, "_synergyCommands"), inputs.model);
 end
+try
+    [inputs.initialMuscleControls, inputs.initialMuscleControlsLabels] = ...
+        parseTrialData(inputs.initialGuessDirectory, ...
+        strcat(inputs.trialName, "_muscleControls"), inputs.model);
+catch;end
 end
 
 function [data, labels, time] = parseTrialDataTryDirectories( ...

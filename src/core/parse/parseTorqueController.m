@@ -36,6 +36,4 @@ inputs.maxTorqueControlsMultiple = parseDoubleOrAlternate(tree, ...
     'torque_controls_range_scale_factor', 1);
 inputs.maxTorqueControlsMinRange = parseDoubleOrAlternate(tree, ...
     'torque_controls_minimum_range', 0);
-inputs.numSynergies = 0;
-inputs.surrogateModelCoordinateNames = [];
 end

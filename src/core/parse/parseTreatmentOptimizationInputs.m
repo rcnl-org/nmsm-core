@@ -75,7 +75,7 @@ if isequal(mexext, 'mexw64')
 end
 [inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
-    inputs.controllerType, inputs.toolName);
+    inputs.controllerTypes, inputs.toolName);
 inputs.path = splitListTerms(inputs.path);
 inputs.path = splitAxesTerms(inputs.path);
 inputs.path = convertValueToError(inputs.path);
@@ -89,7 +89,7 @@ inputs.toolName = findToolName(tree);
 inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
     'results_directory'));
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
-inputs.controllerType = parseControllerType(tree);
+inputs.controllerTypes = parseControllerTypes(tree);
 inputs = parseModel(tree, inputs);
 [~, state] = Model(inputs.model);
 inputs.mass = inputs.model.getTotalMass(state);
@@ -100,7 +100,7 @@ end
 function osimx = parseOsimxFileWithCondition(tree, inputs)
 osimxFileName = parseTextOrAlternate(tree, "input_osimx_file", "");
 osimx = parseOsimxFile(osimxFileName, inputs.model);
-if strcmp(inputs.controllerType, "synergy")
+if inputs.controllerTypes(2)
     if strcmp(osimxFileName, "")
         throw(MException("", ...
             strcat("<input_osimx_file> must be specified", ...
@@ -123,12 +123,12 @@ end
 end
 
 function [path, terminal] = parseRcnlConstraintTermSetHelper(tree, ...
-    controllerType, toolName)
+    controllerTypes, toolName)
 if isfield(tree, "RCNLConstraintTerm")
     [path, terminal] = parseRcnlConstraintTermSet( ...
-        tree.RCNLConstraintTerm, toolName, controllerType);
+        tree.RCNLConstraintTerm, toolName, controllerTypes);
 else
-    [path, terminal] = parseRcnlConstraintTermSet({}, controllerType, ...
+    [path, terminal] = parseRcnlConstraintTermSet({}, controllerTypes, ...
         toolName);
 end
 end

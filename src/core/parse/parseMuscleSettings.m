@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function finds the correct element to
-% determine which controller is being used. This informs the XML parsing
-% logic.
+% There are multiple controllers that can be used to solve optimal control
+% problems in the NMSM Pipeline. This function parses the muscle
+% model settings inside <RCNLMuscleModel> for two of those controllers.
 %
-% (struct) -> (string)
-% returns "synergy" or "torque" depending on the settings file
+% (struct) -> (struct)
+% parses synergy controller settings from XML tree
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,17 +29,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function controllerType = parseControllerType(tree)
-synergy = getFieldByName(tree, 'RCNLSynergyController');
-if isstruct(synergy)
-    controllerType = "synergy";
-    return
-end
-torque = getFieldByName(tree, 'RCNLTorqueController');
-if isstruct(torque)
-    controllerType = "torque";
-    return
-end
-throw(MException("ParseTreatmentOptimization:NoController", ...
-    "Could not find <RCNLTorqueController> or <RCNLSynergyController>"))
+function inputs = parseMuscleSettings(tree, inputs)
+inputs.muscleNames = unique([valueOrAlternate(inputs, ...
+    'synergyMuscleNames', []), valueOrAlternate(inputs, ...
+    'individualMuscleNames', [])], 'stable');
+inputs.numMuscles = length(inputs.muscleNames);
+inputs.epsilon = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "surrogate_model_coordinate_value_threshold", "1e-4"));
+inputs.polynomialDegree = str2double(parseElementTextByNameOrAlternate( ...
+    tree, "surrogate_model_polynomial_degree", "5"));
+inputs.vMaxFactor = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "maximum_shortening_velocity_multiplier", "10"));
+inputs = getModelOrOsimxInputs(inputs);
+inputs.surrogateModelFileName = parseElementTextByNameOrAlternate(tree, ...
+    "surrogate_model_file_name", "surrogateMuscles.mat");
+inputs.useActivationSaturation = strcmpi( ...
+    parseElementTextByNameOrAlternate(tree, ...
+    "use_activation_saturation", "true"), "true");
+inputs.activationSaturationSharpness = str2double( ...
+    parseElementTextByNameOrAlternate(tree, ...
+    "activation_saturation_sharpness", "600"));
 end

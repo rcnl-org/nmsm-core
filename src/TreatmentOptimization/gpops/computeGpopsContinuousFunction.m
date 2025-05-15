@@ -30,9 +30,7 @@
 
 function [modeledValues, setup] = computeGpopsContinuousFunction(setup)
 values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
-if strcmp(setup.auxdata.toolName, "DesignOptimization")
-    [setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
-end
+[setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
 modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
     modeledValues);
@@ -42,7 +40,7 @@ if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.path))
     if isempty(allowedTypes)
         [constraintTermCalculations, allowedTypes] = ...
             generateConstraintTermStruct("path", ...
-            setup.auxdata.controllerType, setup.auxdata.toolName);
+            setup.auxdata.controllerTypes, setup.auxdata.toolName);
     end
     [modeledValues.path, setup.auxdata.path] = calcGpopsConstraint( ...
         setup.auxdata.path, constraintTermCalculations, allowedTypes, ...

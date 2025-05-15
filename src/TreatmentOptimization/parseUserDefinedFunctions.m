@@ -1,9 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function prepares the inputs for the all treatment optimization
-% modules (tracking, verification, and design optimization.
 %
 % (struct, struct) -> (struct)
+% Parses a list of user-defined functions
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,15 +26,37 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = makeSurrogateModel(inputs)
-if any(inputs.controllerTypes(2:3))
-    % for i = 1 : length(inputs.coordinateNames)
-    %     for j = 1 : length(inputs.surrogateModelCoordinateNames)
-    %         if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
-    %             inputs.surrogateModelIndex(j) = i;
-    %         end
-    %     end
-    % end
-    inputs.surrogateModelIndex = 1 : length(inputs.coordinateNames);
+function inputs = parseUserDefinedFunctions(tree, inputs)
+import org.opensim.modeling.Storage
+if isstruct(getFieldByName(tree, "model_functions"))
+    systemFns = parseSpaceSeparatedList(tree, "model_functions");
+    if ~isempty(systemFns)
+        inputs.systemFns = systemFns;
+    end
 end
+parameterTree = getFieldByName(tree, "RCNLParameterTermSet");
+if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
+    inputs.userDefinedVariables = parseRcnlCostTermSet( ...
+        parameterTree.RCNLParameterTerm);
+    for i = 1:length(inputs.userDefinedVariables)
+        inputs.userDefinedVariables{i}.initial_values = ...
+            stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.initial_values);
+        inputs.userDefinedVariables{i}.upper_bounds = ...
+            stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.upper_bounds);
+        inputs.userDefinedVariables{i}.lower_bounds = ...
+            stringToSpaceSeparatedList(inputs.userDefinedVariables{i}.lower_bounds);
+    end
+else
+    inputs.userDefinedVariables = {};
+end
+end
+
+function output = stringToSpaceSeparatedList(string)
+if isnumeric(string)
+    output = string;
+    return;
+end
+string = strtrim(string);
+output = split(string);
+output = str2double(output);
 end

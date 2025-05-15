@@ -32,20 +32,28 @@ function [controls, term] = findControlsByLabels(term, inputs, ...
 targetLabels = string(targetLabels);
 numberOfTerms = length(targetLabels);
 if isfield(term, 'internalTorqueControlIndices')
+    muscleControlIndices = term.internalMuscleControlIndices;
     synergyControlIndices = term.internalSynergyControlIndices;
     torqueControlIndices = term.internalTorqueControlIndices;
 else
+    muscleControlIndices = zeros(size(targetLabels));
     synergyControlIndices = zeros(size(targetLabels));
-    torqueControlIndices = synergyControlIndices;
+    torqueControlIndices = zeros(size(targetLabels));
     torqueControlSplinedIndices = torqueControlIndices;
     for i = 1 : numberOfTerms
-        if strcmp(inputs.controllerType, 'synergy')
+        if inputs.controllerTypes(3)
+            muscleControlIndices(i) = findOptionalDataIndicesByLabels( ...
+                inputs.individualMuscleNames, targetLabels(i));
+        else
+            muscleControlIndices(i) = -1;
+        end
+        if muscleControlIndices(i) == -1 && inputs.controllerTypes(2)
             synergyControlIndices(i) = findOptionalDataIndicesByLabels( ...
                 inputs.synergyLabels, targetLabels(i));
         else
             synergyControlIndices(i) = -1;
         end
-        if synergyControlIndices(i) == -1
+        if muscleControlIndices(i) == -1 && synergyControlIndices(i) == -1
             torqueControlIndices(i) = ...
                 findCoordinateIndicesFromLoadNames( ...
                 inputs.torqueControllerCoordinateNames, ...
@@ -61,17 +69,22 @@ else
             torqueControlSplinedIndices(i) = -1;
         end
 
-        assert(synergyControlIndices(i) > 0 || ...
+        assert(muscleControlIndices(i) > 0 || ...
+            synergyControlIndices(i) > 0 || ...
             torqueControlIndices(i) > 0, targetLabels(i) ...
             + " is not a control label");
     end
+    term.internalMuscleControlIndices = muscleControlIndices;
     term.internalSynergyControlIndices = synergyControlIndices;
     term.internalTorqueControlIndices = torqueControlIndices;
     term.internalSplinedTorqueControlIndices = torqueControlSplinedIndices;
 end
 controls = zeros(length(time), numberOfTerms);
 for i = 1 : numberOfTerms
-    if synergyControlIndices(i) > 0
+    if muscleControlIndices(i) > 0
+        controls(:, i) = values.controlMuscleActivations(:, ...
+            muscleControlIndices(i));
+    elseif synergyControlIndices(i) > 0
         controls(:, i) = values.controlSynergyActivations(:, ...
             synergyControlIndices(i));
     elseif torqueControlIndices(i) > 0
