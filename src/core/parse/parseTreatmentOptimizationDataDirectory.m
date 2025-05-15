@@ -244,15 +244,13 @@ if inputs.controllerTypes(4)
         defaultControl = 0;
     end
     if length(defaultControl) == 1
-        defaultControl = repmat(bounds, 1, inputs.numUserDefinedControls);
-    elseif length(defaultControl) == inputs.numUserDefinedControls
-        defaultControl = bounds;
-    else
+        defaultControl = repmat(defaultControl, 1, inputs.numUserDefinedControls);
+    elseif length(defaultControl) ~= inputs.numUserDefinedControls
         error("User-defined control initial values do not match the " + ...
             "number of user-defined controls.")
     end
     inputs.experimentalUserDefinedControls(:, missingIndices) = ...
-        defaultControl(missingIndices);
+        repmat(defaultControl(missingIndices), length(inputs.experimentalTime), 1);
 end
 end
 
