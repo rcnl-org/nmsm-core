@@ -83,6 +83,16 @@ else
 
     controls = stateJointAccelerations;
 end
+if inputs.controllerTypes(4)
+    if isfield(inputs, "initialUserDefinedControls")
+        controls = [controls, inputs.initialUserDefinedControls];
+    else
+        throw(MException("NoInitialUserDefinedControls", ...
+            strcat("initial user-defined controls required ", ...
+            ", have you included initial user-defined controls " + ...
+            "or an initial value?")));
+    end
+end
 if inputs.controllerTypes(3)
     if isfield(inputs, "initialMuscleControls")
         controls = [controls, inputs.initialMuscleControls];

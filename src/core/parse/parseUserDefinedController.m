@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function parses the shared inputs and
-% requests the correct subtools to be parsed.
+% There are multiple controllers that can be used to solve optimal control
+% problems in the NMSM Pipeline. This function parses the muscle
+% controller settings inside <RCNLUserDefinedController>
 %
 % (struct) -> (struct)
-% parses shared controller settings from XML tree
+% parses user-defined controller settings from XML tree
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,8 +14,8 @@
 % NMSM Pipeline is developed at Rice University and supported by the US   %
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
-% Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Copyright (c) 2025 Rice University and the Authors                      %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,38 +29,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = parseController(tree, inputs)
-inputs = parseTreatmentOptimizationDesignVariableBounds(tree, ...
-    inputs);
-inputs.statesCoordinateNames = parseSpaceSeparatedList(tree, ...
-    "states_coordinate_list");
-torqueTree = getFieldByName(tree, 'RCNLTorqueController');
-if isstruct(torqueTree)
-    inputs = parseTorqueController(torqueTree, inputs);
-else
-    inputs.torqueControllerCoordinateNames = [];
+function inputs = parseUserDefinedController(tree, inputs)
+inputs.userDefinedControlLabels = parseSpaceSeparatedList(tree, ...
+    "control_labels");
+inputs.numUserDefinedControls = length(inputs.userDefinedControlLabels);
+userControlMaxValues = str2double(parseSpaceSeparatedList(tree, ...
+    "control_maximum_values"));
+inputs = setupBounds(inputs, userControlMaxValues, "userControlMaxValues");
+userControlMinValues = str2double(parseSpaceSeparatedList(tree, ...
+    "control_minimum_values"));
+inputs = setupBounds(inputs, userControlMinValues, "userControlMinValues");
 end
-synergyTree = getFieldByName(tree, 'RCNLSynergyController');
-if isstruct(synergyTree)
-    inputs = parseSynergyController(tree, inputs);
+
+function inputs = setupBounds(inputs, bounds, field)
+if length(bounds) == 1
+    inputs.(field) = repmat(bounds, 1, inputs.numUserDefinedControls);
+elseif length(bounds) == inputs.numUserDefinedControls
+    inputs.(field) = bounds;
 else
-    inputs.numSynergies = 0;
-    inputs.synergyCoordinateNames = [];
-end
-muscleTree = getFieldByName(tree, 'RCNLMuscleController');
-if isstruct(muscleTree)
-    inputs = parseMuscleController(tree, inputs);
-else
-    inputs.numIndividualMuscles = 0;
-end
-userTree = getFieldByName(tree, 'RCNLUserDefinedController');
-if isstruct(userTree)
-    inputs = parseUserDefinedController(tree, inputs);
-else
-    inputs.numUserDefinedControls = 0;
-end
-% Handle muscle properties if either muscle-based controller is used
-if isstruct(synergyTree) || isstruct(muscleTree)
-    inputs = parseMuscleSettings(tree, inputs);
+    error("User-defined control bounds do not match the number of user-defined controls.")
 end
 end

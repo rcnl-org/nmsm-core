@@ -32,16 +32,24 @@ function [controls, term] = findControlsByLabels(term, inputs, ...
 targetLabels = string(targetLabels);
 numberOfTerms = length(targetLabels);
 if isfield(term, 'internalTorqueControlIndices')
+    userDefinedControlIndices = term.internalUserDefinedControlIndices;
     muscleControlIndices = term.internalMuscleControlIndices;
     synergyControlIndices = term.internalSynergyControlIndices;
     torqueControlIndices = term.internalTorqueControlIndices;
 else
+    userDefinedControlIndices = zeros(size(targetLabels));
     muscleControlIndices = zeros(size(targetLabels));
     synergyControlIndices = zeros(size(targetLabels));
     torqueControlIndices = zeros(size(targetLabels));
     torqueControlSplinedIndices = torqueControlIndices;
     for i = 1 : numberOfTerms
-        if inputs.controllerTypes(3)
+        if inputs.controllerTypes(4)
+            userDefinedControlIndices(i) = findOptionalDataIndicesByLabels( ...
+                inputs.userDefinedControlLabels, targetLabels(i));
+        else
+            userDefinedControlIndices(i) = -1;
+        end
+        if userDefinedControlIndices(i) == -1 && inputs.controllerTypes(3)
             muscleControlIndices(i) = findOptionalDataIndicesByLabels( ...
                 inputs.individualMuscleNames, targetLabels(i));
         else
@@ -74,6 +82,7 @@ else
             torqueControlIndices(i) > 0, targetLabels(i) ...
             + " is not a control label");
     end
+    term.internalUserDefinedControlIndices = userDefinedControlIndices;
     term.internalMuscleControlIndices = muscleControlIndices;
     term.internalSynergyControlIndices = synergyControlIndices;
     term.internalTorqueControlIndices = torqueControlIndices;
@@ -81,7 +90,10 @@ else
 end
 controls = zeros(length(time), numberOfTerms);
 for i = 1 : numberOfTerms
-    if muscleControlIndices(i) > 0
+    if userDefinedControlIndices(i) > 0
+        controls(:, i) = values.userDefinedControls(:, ...
+            userDefinedControlIndices(i));
+    elseif muscleControlIndices(i) > 0
         controls(:, i) = values.controlMuscleActivations(:, ...
             muscleControlIndices(i));
     elseif synergyControlIndices(i) > 0

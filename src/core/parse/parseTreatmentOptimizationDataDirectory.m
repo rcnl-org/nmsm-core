@@ -37,6 +37,7 @@ inputs.trialName = parseTrialName(tree);
 inputs = parseExperimentalData(inputs, inputs.trackedDirectory);
 inputs = parseSynergyExperimentalData(tree, inputs);
 inputs = parseMuscleExperimentalData(tree, inputs);
+inputs = parseUserDefinedExperimentalData(tree, inputs);
 inputs = parseSurrogateModelData(tree, inputs);
 inputs = parseInitialGuessData(inputs, inputs.initialGuessDirectory);
 inputs = parseInitialValues(inputs);
@@ -199,6 +200,62 @@ if any(inputs.controllerTypes(2:3))
 end
 end
 
+function inputs = parseUserDefinedExperimentalData(tree, inputs)
+if inputs.controllerTypes(4)
+    try
+        [experimentalUserControls, fileUserControlLabels] = ...
+            parseTrialData(inputs.initialGuessDirectory, ...
+            strcat(inputs.trialName, "_userDefinedControls"), ...
+            inputs.model);
+    catch
+        userControlsFile = getTextFromField( ...
+            getFieldByName(tree, "initial_control_file"));
+        if ischar(userControlsFile)
+            [path, name, ~] = fileparts(userControlsFile);
+            if isempty(path)
+                path = '.';
+            end
+            [experimentalUserControls, fileUserControlLabels] = ...
+                parseTrialData(path, name, inputs.model);
+            assert(size(extraSignals, 1) == size( ...
+                experimentalUserControls, 1), ...
+                "<initial_control_file> has an inconsistent " + ...
+                "number of time points.");
+        else
+            experimentalUserControls = ...
+                zeros(length(inputs.experimentalTime), 0);
+            fileUserControlLabels = string([]);
+        end
+    end
+    [~, foundIndices, newOrder] = intersect( ...
+        inputs.userDefinedControlLabels, ...
+        fileUserControlLabels, 'stable');
+    inputs.experimentalUserDefinedControls = ...
+        zeros(length(inputs.experimentalTime), ...
+        length(inputs.userDefinedControlLabels));
+    inputs.experimentalUserDefinedControls(:, foundIndices) = ...
+        experimentalUserControls(:, newOrder);
+    missingIndices = setxor(1:length(inputs.userDefinedControlLabels), ...
+        foundIndices);
+    try
+        defaultControl = str2double(parseSpaceSeparatedList(tree, ...
+            'control_initial_values', 0));
+    catch
+        defaultControl = 0;
+    end
+    if length(defaultControl) == 1
+        defaultControl = repmat(bounds, 1, inputs.numUserDefinedControls);
+    elseif length(defaultControl) == inputs.numUserDefinedControls
+        defaultControl = bounds;
+    else
+        error("User-defined control initial values do not match the " + ...
+            "number of user-defined controls.")
+    end
+    inputs.experimentalUserDefinedControls(:, missingIndices) = ...
+        defaultControl(missingIndices);
+end
+end
+
 function inputs = parseSurrogateModelData(tree, inputs)
 if any(inputs.controllerTypes(2:3))
     surrogateModelDataDirectory = getTextFromField( ...
@@ -246,6 +303,12 @@ try
     [inputs.initialMuscleControls, inputs.initialMuscleControlsLabels] = ...
         parseTrialData(inputs.initialGuessDirectory, ...
         strcat(inputs.trialName, "_muscleControls"), inputs.model);
+catch;end
+try
+    [inputs.initialUserDefinedControls, ...
+        inputs.initialUserDefinedControlLabels] = ...
+        parseTrialData(inputs.initialGuessDirectory, ...
+        strcat(inputs.trialName, "_userDefinedControls"), inputs.model);
 catch;end
 end
 
