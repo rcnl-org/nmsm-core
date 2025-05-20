@@ -57,10 +57,10 @@ trackedActivationsTime = trackedActivationsTime - trackedActivationsTime(1);
 trackedActivationsTime = trackedActivationsTime / trackedActivationsTime(end);
 
 trackedWeightsStorage = Storage(trackedWeightsFile);
-[~, ~, trackedWeightsData] = ...
+[trackedWeightsLabels, trackedWeightsTime, trackedWeightsData] = ...
     parseMotToComponents(org.opensim.modeling.Model(), trackedWeightsStorage);
 
-[trackedActivationsData, ~] = normalizeSynergyData(trackedActivationsData', ...
+[trackedActivationsData, trackedWeightsData] = normalizeSynergyData(trackedActivationsData', ...
     trackedWeightsData', synergyNormalizationMethod, synergyNormalizationValue);
 % Max tracked synergy activation. Used to set the plot y axis.
 maxActivation = [max(trackedActivationsData, [], "all")];
@@ -76,11 +76,13 @@ for i = 1 : numel(resultsActivationsFiles)
     resultsActivationsTime{i} = resultsActivationsTime{i} / resultsActivationsTime{i}(end);
 
     resultsWeightsStorage = Storage(resultsWeightsFiles(i));
-    [~, ~, resultsWeightsData{i}] = ...
+    [resultsWeightsLabels, resultsWeightsTime, resultsWeightsData{i}] = ...
         parseMotToComponents(org.opensim.modeling.Model(), resultsWeightsStorage);
 
-    [resultsActivationsData{i}, ~] = normalizeSynergyData(resultsActivationsData{i}', ...
-    resultsWeightsData{i}', synergyNormalizationMethod, synergyNormalizationValue);
+    [resultsActivationsData{i}, resultsWeightsData{i}] = ...
+        normalizeSynergyData(...
+            resultsActivationsData{i}', resultsWeightsData{i}', ...
+            synergyNormalizationMethod, synergyNormalizationValue);
     % Max results synergy activation. Used to set the plot y axis.
     maxActivation(i+1) = max(resultsActivationsData{i}, [], "all");
 end
@@ -170,8 +172,48 @@ for i=1:numel(trackedActivationsLabels)
     ylim([0 upperYLimit])
     subplotNumber = subplotNumber + 1;
 end
-end
 
+
+figureHeight = numel(trackedWeightsTime);
+figureWidth = 1;
+figure(Name = "Synergy Commands", ...
+    Units=params.units, ...
+    Position=params.figureSize)
+subplotNumber = 1;
+figureNumber = 1;
+t = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='compact', Padding='compact');
+xlabel(t, "Muscle Name", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(t, "Synergy Command", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
+
+for i = 1 : numel(trackedWeightsTime)
+    nexttile(i)
+    weightsPlottingArray = [trackedWeightsData(i, :)];
+    for k = 1 : numel(resultsWeightsData)
+        weightsPlottingArray = [weightsPlottingArray; resultsWeightsData{k}(i, :)];
+    end
+    b = bar(1:numel(trackedWeightsLabels), ...
+        weightsPlottingArray);
+    b(1).FaceColor = params.lineColors(1);
+    for k = 1 : numel(resultsWeightsData)
+        b(k).FaceColor = params.lineColors(k);
+    end
+    title(strrep(trackedActivationsLabels(i), "_", " "))
+    if i == figureHeight
+        xticks(1:numel(trackedWeightsLabels))
+        xticklabels(trackedWeightsLabels)
+    else
+        xticks([])
+        xticklabels([])
+    end
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
+end
+end
 function options = parseVarargin(varargin)
     options = struct();
     varargin = varargin{1};
