@@ -84,7 +84,7 @@ plotTreatmentOptimizationJointLoads( ...
     fullfile(trackedQuantitiesDirectory, "IDData", strcat(trialPrefix, ".sto")), ...
     fullfile(resultsDirectory, "IDData", strcat(trialPrefix, ".sto")));
 
-grfIndices = boolean([]);
+grfIndices = logical([]);
 for i = 1 : numel(resultsDirectory)
     if exist(fullfile(resultsDirectory(i), "GRFData"), 'dir')
         grfIndices(i) = 1;
@@ -102,7 +102,7 @@ for i = 1 : numel(resultsDirectory)
     end
 end
 if isTorque
-    torqueIndices = boolean([]);
+    torqueIndices = logical([]);
     for i = 1 : numel(resultsDirectory)
         if exist(fullfile(resultsDirectory(i), strcat(trialPrefix, "_torqueControls.sto")))
             torqueIndices(i) = 1;
@@ -121,7 +121,7 @@ if isTorque
     end
 end
 if isSynergy
-    synergyIndices = boolean([]);
+    synergyIndices = logical([]);
     for i = 1 : numel(resultsDirectory)
         if exist(fullfile(resultsDirectory(i), strcat(trialPrefix, "_synergyCommands.sto")), "file")
             synergyIndices(i) = 1;
