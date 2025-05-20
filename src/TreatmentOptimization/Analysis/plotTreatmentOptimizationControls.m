@@ -37,8 +37,13 @@
 % ----------------------------------------------------------------------- %
 
 function plotTreatmentOptimizationControls(controlsFiles, ...
-    figureWidth, figureHeight)
+    varargin)
 import org.opensim.modeling.Storage
+if nargin > 1
+    options = parseVarargin(varargin);
+else
+    options = struct();
+end
 params = getPlottingParams();
 controlsData = {};
 for j = 1 : numel(controlsFiles)
@@ -64,11 +69,12 @@ if numel(controlsFiles) > 1
     end
 end
 
-if nargin < 2
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
-elseif nargin < 3
-    figureHeight = ceil(sqrt(numel(labels)));
 end
 figureSize = figureWidth * figureHeight;
 if contains(controlsFiles(1), "torque")
@@ -149,3 +155,10 @@ for i=1:numel(labels)
 end
 end
 
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
+end

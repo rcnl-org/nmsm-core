@@ -37,9 +37,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationJointLoads(trackedDataFile, ...
-    resultsDataFiles, figureWidth, figureHeight)
-
+    resultsDataFiles, varargin)
 import org.opensim.modeling.Storage
+if nargin > 3
+    options = parseVarargin(varargin);
+else
+    options = struct();
+end
 params = getPlottingParams();
 trackedDataStorage = Storage(trackedDataFile);
 jointLoadLabels = getStorageColumnNames(trackedDataStorage);
@@ -73,11 +77,12 @@ for j = 1 : numel(resultsDataFiles)
     resampledTrackedData{j}= evaluateGcvSplines(trackedDataSpline, ...
         jointLoadLabels, resultsDataTime{j});
 end
-if nargin < 3
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
     figureWidth = ceil(sqrt(numel(jointLoadLabels)));
     figureHeight = ceil(numel(jointLoadLabels)/figureWidth);
-elseif nargin < 4
-    figureHeight = ceil(sqrt(numel(jointLoadLabels)));
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Joint Loads", ...
@@ -167,4 +172,12 @@ for i=1:numel(jointLoadLabels)
         ylim([yLimitLower, yLimitUpper]);
     end
     subplotNumber = subplotNumber + 1;
+end
+end
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
 end

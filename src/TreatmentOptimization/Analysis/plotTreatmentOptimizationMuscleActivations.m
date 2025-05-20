@@ -37,9 +37,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationMuscleActivations(trackedDataFile, ...
-    resultsDataFiles, figureWidth, figureHeight)
-
+    resultsDataFiles, varargin)
 import org.opensim.modeling.Storage
+if nargin > 3
+    options = parseVarargin(varargin);
+else
+    options = struct();
+end
 params = getPlottingParams();
 trackedDataStorage = Storage(trackedDataFile);
 muscleLabels = getStorageColumnNames(trackedDataStorage);
@@ -68,11 +72,12 @@ for j = 1 : numel(resultsDataFiles)
     resampledTrackedData{j}= evaluateGcvSplines(trackedDataSpline, ...
         muscleLabels, resultsDataTime{j});
 end
-if nargin < 3
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
     figureWidth = ceil(sqrt(numel(muscleLabels)));
     figureHeight = ceil(numel(muscleLabels)/figureWidth);
-elseif nargin < 4
-    figureHeight = ceil(sqrt(numel(muscleLabels)));
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Muscle Activations", ...
@@ -140,4 +145,13 @@ for i=1:numel(muscleLabels)
     xlim("tight")
     ylim([0, 1])
     subplotNumber = subplotNumber + 1;
+end
+end
+
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
 end

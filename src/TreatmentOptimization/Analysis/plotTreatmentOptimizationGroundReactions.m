@@ -37,9 +37,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationGroundReactions(trackedDataFile, ...
-    resultsDataFiles, figureWidth, figureHeight)
-
+    resultsDataFiles, varargin)
 import org.opensim.modeling.Storage
+if nargin > 3
+    options = parseVarargin(varargin);
+else
+    options = struct();
+end
 params = getPlottingParams();
 trackedDataStorage = Storage(trackedDataFile);
 trackedDataLabels = getStorageColumnNames(trackedDataStorage);
@@ -90,10 +94,11 @@ for i = 1 : numel(resultsDataFiles)
     resampledTrackedData{i} = evaluateGcvSplines(trackedDataSpline, ...
         trackedDataLabels, resultsDataTime{i});
 end
-if nargin < 3
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
     figureWidth = 3;
-end
-if nargin < 4
     figureHeight = 2;
 end
 figureSize = figureWidth * figureHeight;
@@ -174,4 +179,13 @@ for i=1:numel(trackedDataLabels)
     yLimitLower = min(minData);
     ylim([yLimitLower, yLimitUpper]);
     subplotNumber = subplotNumber + 1;
+end
+end
+
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
 end
