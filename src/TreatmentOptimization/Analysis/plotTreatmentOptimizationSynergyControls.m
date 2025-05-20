@@ -212,6 +212,11 @@ for i = 1 : numel(trackedWeightsTime)
     set(gca, ...
         fontsize = params.tickLabelFontSize, ...
         color=params.subplotBackgroundColor)
+    maxWeights = max(trackedWeightsData, [], "all");
+    for k = 1 : numel(resultsWeightsData)
+        maxWeights(k) = max(resultsWeightsData{k}, [], "all");
+    end
+    ylim([0 max(maxWeights)])
 end
 end
 function options = parseVarargin(varargin)
