@@ -40,14 +40,6 @@ function plotTreatmentOptimizationControls(controlsFiles, ...
     figureWidth, figureHeight)
 import org.opensim.modeling.Storage
 params = getPlottingParams();
-if contains(controlsFiles(1), "torque")
-    controllerType = "Torque";
-elseif contains(controlsFiles(1), "synergy")
-    controllerType = "Synergy";
-else
-    controllerType = "";
-end
-figureName = strcat(controllerType, " Controls");
 controlsData = {};
 for j = 1 : numel(controlsFiles)
     controlsStorage = Storage(controlsFiles(j));
@@ -59,6 +51,19 @@ for j = 1 : numel(controlsFiles)
     end
     controlsTime{j} = controlsTime{j} / controlsTime{j}(end);
 end
+
+if numel(controlsFiles) > 1
+    firstControlSpline = makeGcvSplineSet(controlsTime{1}, ...
+    controlsData{1}, labels);
+    resampledFirstControlData = {};
+    % Resample the first control file to the time points of all other
+    % files. 
+    for j = 2 : numel(controlsFiles)
+        resampledFirstControlData{j-1}= evaluateGcvSplines(firstControlSpline, ...
+            labels, controlsTime{j});
+    end
+end
+
 if nargin < 2
     figureWidth = ceil(sqrt(numel(labels)));
     figureHeight = ceil(numel(labels)/figureWidth);
@@ -66,11 +71,17 @@ elseif nargin < 3
     figureHeight = ceil(sqrt(numel(labels)));
 end
 figureSize = figureWidth * figureHeight;
-
+if contains(controlsFiles(1), "torque")
+    controllerType = "Torque";
+elseif contains(controlsFiles(1), "synergy")
+    controllerType = "Synergy";
+else
+    controllerType = "";
+end
+figureName = strcat(controllerType, " Controls");
 figure(Name=figureName, ...
     Units=params.units, ...
     Position=params.figureSize)
-colors = getPlottingParams();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
@@ -114,7 +125,7 @@ for i=1:numel(labels)
     titleString = [sprintf("%s", strrep(labels(i), "_", " "))];
     if numel(controlsFiles) > 1
         for j = 2 : numel(controlsFiles)
-            rmse = rms(controlsData{j}(1:end-1, i) - controlsData{1}(1:end-1, i));
+            rmse = rms(controlsData{j}(1:end-1, i) - resampledFirstControlData{j-1}(1:end-1, i));
             titleString(j) = sprintf("RMSE %d: %.4f", j-1, rmse);
         end
     end
