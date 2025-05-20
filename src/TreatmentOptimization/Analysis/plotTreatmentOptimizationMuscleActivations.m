@@ -37,7 +37,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationMuscleActivations(trackedDataFile, ...
-    modelDataFiles, figureWidth, figureHeight)
+    resultsDataFiles, figureWidth, figureHeight)
 
 import org.opensim.modeling.Storage
 params = getPlottingParams();
@@ -49,24 +49,24 @@ if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
 trackedDataTime = trackedDataTime / trackedDataTime(end);
-for j=1:numel(modelDataFiles)
-    modelDataStorage = Storage(modelDataFiles(j));
-    modelData{j} = storageToDoubleMatrix(modelDataStorage)';
-    modelLabels{j} = getStorageColumnNames(modelDataStorage);
-    modelDataTime{j} = findTimeColumn(modelDataStorage);
-    if modelDataTime{j} ~= 0
-        modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
+for j=1:numel(resultsDataFiles)
+    resultsDataStorage = Storage(resultsDataFiles(j));
+    resultsData{j} = storageToDoubleMatrix(resultsDataStorage)';
+    resultsLabels{j} = getStorageColumnNames(resultsDataStorage);
+    resultsDataTime{j} = findTimeColumn(resultsDataStorage);
+    if resultsDataTime{j} ~= 0
+        resultsDataTime{j} = resultsDataTime{j} - resultsDataTime{j}(1);
     end
-    modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
+    resultsDataTime{j} = resultsDataTime{j} / resultsDataTime{j}(end);
 end
 
 % Spline experimental time to the same time points as the model.
-experimentalDataaSpline = makeGcvSplineSet(trackedDataTime, ...
+trackedDataSpline = makeGcvSplineSet(trackedDataTime, ...
     trackedData, muscleLabels);
-resampledExperimentalData = {};
-for j = 1 : numel(modelDataFiles)
-    resampledExperimentalData{j}= evaluateGcvSplines(experimentalDataaSpline, ...
-        muscleLabels, modelDataTime{j});
+resampledTrackedData = {};
+for j = 1 : numel(resultsDataFiles)
+    resampledTrackedData{j}= evaluateGcvSplines(trackedDataSpline, ...
+        muscleLabels, resultsDataTime{j});
 end
 if nargin < 3
     figureWidth = ceil(sqrt(numel(muscleLabels)));
@@ -110,15 +110,15 @@ for i=1:numel(muscleLabels)
     plot(trackedDataTime*100, trackedData(:, i), ...
         LineWidth=params.linewidth, ...
         Color = params.lineColors(1));
-    for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}*100, modelData{j}(:, i), ...
+    for j = 1 : numel(resultsDataFiles)
+        plot(resultsDataTime{j}*100, resultsData{j}(:, i), ...
             LineWidth=params.linewidth, ...
             Color = params.lineColors(j+1));
     end
     hold off
     titleString = [sprintf("%s", strrep(muscleLabels(i), "_", " "))];
-    for j = 1 : numel(modelDataFiles)
-        rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
+    for j = 1 : numel(resultsDataFiles)
+        rmse = rms(resampledTrackedData{j}(:, i) - resultsData{j}(:, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
     title(titleString, fontsize = params.subplotTitleFontSize)
@@ -131,8 +131,8 @@ for i=1:numel(muscleLabels)
                 break
             end
         end
-        for j = 1 : numel(modelDataFiles)
-            splitFileName = split(modelDataFiles(j), ["/", "\"]);
+        for j = 1 : numel(resultsDataFiles)
+            splitFileName = split(resultsDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
         legend(legendValues, fontsize = params.legendFontSize)

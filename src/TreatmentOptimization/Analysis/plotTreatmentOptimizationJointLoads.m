@@ -37,7 +37,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationJointLoads(trackedDataFile, ...
-    modelDataFiles, figureWidth, figureHeight)
+    resultsDataFiles, figureWidth, figureHeight)
 
 import org.opensim.modeling.Storage
 params = getPlottingParams();
@@ -52,25 +52,26 @@ trackedDataTime = trackedDataTime / trackedDataTime(end);
 % Crop data to get rid of edge effects
 trackedDataTime = trackedDataTime(1:end-1);
 trackedData = trackedData(1:end-1, :);
-for j=1:numel(modelDataFiles)
-    modelDataStorage = Storage(modelDataFiles(j));
-    modelData{j} = storageToDoubleMatrix(modelDataStorage)';
-    modelDataTime{j} = findTimeColumn(modelDataStorage);
-    if modelDataTime{j} ~= 0
-        modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
+
+for j=1:numel(resultsDataFiles)
+    resultsDataStorage = Storage(resultsDataFiles(j));
+    resultsData{j} = storageToDoubleMatrix(resultsDataStorage)';
+    resultsDataTime{j} = findTimeColumn(resultsDataStorage);
+    if resultsDataTime{j} ~= 0
+        resultsDataTime{j} = resultsDataTime{j} - resultsDataTime{j}(1);
     end
-    modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
+    resultsDataTime{j} = resultsDataTime{j} / resultsDataTime{j}(end);
     % Crop data to get rid of edge effects
-    modelDataTime{j} = modelDataTime{j}(1:end-1);
-    modelData{j} = modelData{j}(1:end-1, :);
+    resultsDataTime{j} = resultsDataTime{j}(1:end-1);
+    resultsData{j} = resultsData{j}(1:end-1, :);
 end
 
 % Spline experimental time to the same time points as the model.
-experimentalDataSpline = makeGcvSplineSet(trackedDataTime, ...
+trackedDataSpline = makeGcvSplineSet(trackedDataTime, ...
     trackedData, jointLoadLabels);
-for j = 1 : numel(modelDataFiles)
-    resampledExperimentalData{j}= evaluateGcvSplines(experimentalDataSpline, ...
-        jointLoadLabels, modelDataTime{j});
+for j = 1 : numel(resultsDataFiles)
+    resampledTrackedData{j}= evaluateGcvSplines(trackedDataSpline, ...
+        jointLoadLabels, resultsDataTime{j});
 end
 if nargin < 3
     figureWidth = ceil(sqrt(numel(jointLoadLabels)));
@@ -114,8 +115,8 @@ for i=1:numel(jointLoadLabels)
     plot(trackedDataTime*100, trackedData(:, i), ...
         LineWidth=params.linewidth, ...
         Color = params.lineColors(1));
-    for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}*100, modelData{j}(:, i), ...
+    for j = 1 : numel(resultsDataFiles)
+        plot(resultsDataTime{j}*100, resultsData{j}(:, i), ...
             LineWidth=params.linewidth, ...
             Color = params.lineColors(j+1));
     end
@@ -127,9 +128,9 @@ for i=1:numel(jointLoadLabels)
     else
         titleString = [sprintf("%s", strrep(jointLoadLabels(i), "_", " "))];
     end
-    for j = 1 : numel(modelDataFiles)
-        rmse = rms(resampledExperimentalData{j}(1:end-1, i) - ...
-            modelData{j}(1:end-1, i));
+    for j = 1 : numel(resultsDataFiles)
+        rmse = rms(resampledTrackedData{j}(1:end-1, i) - ...
+            resultsData{j}(1:end-1, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
     title(titleString, fontsize = params.subplotTitleFontSize)
@@ -142,8 +143,8 @@ for i=1:numel(jointLoadLabels)
                 break
             end
         end
-        for j = 1 : numel(modelDataFiles)
-            splitFileName = split(modelDataFiles(j), ["/", "\"]);
+        for j = 1 : numel(resultsDataFiles)
+            splitFileName = split(resultsDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
         legend(legendValues, fontsize = params.legendFontSize)
@@ -152,9 +153,9 @@ for i=1:numel(jointLoadLabels)
     xlim("tight")
     maxData = [];
     minData = [];
-    for j = 1 : numel(modelDataFiles)
-        maxData(j) = max(modelData{j}(1:end-1, i), [], "all");
-        minData(j) = min(modelData{j}(1:end-1, i), [], "all");
+    for j = 1 : numel(resultsDataFiles)
+        maxData(j) = max(resultsData{j}(1:end-1, i), [], "all");
+        minData(j) = min(resultsData{j}(1:end-1, i), [], "all");
     end
     maxData(j+1) = max(trackedData(1:end-1, i), [], "all");
     minData(j+1) = min(trackedData(1:end-1, i), [], "all");

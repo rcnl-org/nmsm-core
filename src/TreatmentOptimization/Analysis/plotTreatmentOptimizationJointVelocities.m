@@ -40,13 +40,18 @@
 % ----------------------------------------------------------------------- %
 
 function plotTreatmentOptimizationJointVelocities(modelFileName, ...
-    trackedDataFile, modelDataFiles, varargin)
+    trackedDataFile, resultsDataFiles, varargin)
 import org.opensim.modeling.Storage
 params = getPlottingParams();
 if nargin > 3
     options = parseVarargin(varargin);
 else
     options = struct();
+end
+if isfield(options, "useRadians")
+    useRadians = options.useRadians;
+else
+    useRadians = 1;
 end
 model = Model(modelFileName);
 trackedDataStorage = Storage(trackedDataFile);
@@ -56,7 +61,7 @@ trackedData = trackedData';
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
-if ~isfield(options, "useRadians") || ~options.useRadians
+if ~useRadians
     for i = 1 : size(trackedData, 2)
         if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
                 .toString().toCharArray()' == "Rotational"
@@ -64,43 +69,43 @@ if ~isfield(options, "useRadians") || ~options.useRadians
         end
     end
 end
-for j=1:numel(modelDataFiles)
-    modeledStatesStorage = Storage(modelDataFiles(j));
-    [modeledStatesLabels, modeledStatesTime, modeledStates] = ...
-        parseMotToComponents(model, modeledStatesStorage);
-    modeledStates = modeledStates';
-    if modeledStatesTime ~= 0
-        modeledStatesTime = modeledStatesTime - modeledStatesTime(1);
+for j=1:numel(resultsDataFiles)
+    resultsStatesStorage = Storage(resultsDataFiles(j));
+    [resultsStatesLabels, resultsStatesTime, resultsStates] = ...
+        parseMotToComponents(model, resultsStatesStorage);
+    resultsStates = resultsStates';
+    if resultsStatesTime ~= 0
+        resultsStatesTime = resultsStatesTime - resultsStatesTime(1);
     end
     
-    modeledVelocities{j} = modeledStates(:, size(modeledStates, 2)/2+1:end);
-    modeledVelocitiesLabels = modeledStatesLabels(size(modeledStates, 2)/2+1:end);
-    modeledVelocitiesTime{j} = modeledStatesTime;
-    if ~isfield(options, "useRadians") || ~options.useRadians
-        for i = 1 : size(modeledStates(:, 1:size(modeledStates, 2)/2), 2)
-            if model.getCoordinateSet().get(modeledStatesLabels(i)).getMotionType() ...
+    resultsVelocities{j} = resultsStates(:, size(resultsStates, 2)/2+1:end);
+    resultsVelocitiesLabels = resultsStatesLabels(size(resultsStates, 2)/2+1:end);
+    resultsVelocitiesTime{j} = resultsStatesTime;
+    if ~useRadians
+        for i = 1 : size(resultsStates(:, 1:size(resultsStates, 2)/2), 2)
+            if model.getCoordinateSet().get(resultsStatesLabels(i)).getMotionType() ...
                     .toString().toCharArray()' == "Rotational"
-                modeledVelocities{j}(:, i) = modeledVelocities{j}(:, i) * 180/pi;
+                resultsVelocities{j}(:, i) = resultsVelocities{j}(:, i) * 180/pi;
     
             end
         end
     end
 end
-experimentalSpline = makeGcvSplineSet(trackedDataTime, ...
+trackedDataSpline = makeGcvSplineSet(trackedDataTime, ...
     trackedData, coordinateLabels);
-trackedVelocities = evaluateGcvSplines(experimentalSpline, coordinateLabels, ...
+trackedVelocities = evaluateGcvSplines(trackedDataSpline, coordinateLabels, ...
     trackedDataTime, 1);
-resampledExperimentalVelocities = {};
-for j = 1 : numel(modelDataFiles)
-    resampledExperimentalVelocities{j}= evaluateGcvSplines(experimentalSpline, ...
-        coordinateLabels, modeledVelocitiesTime{j}, 1);
+resampledTrackedVelocities = {};
+for j = 1 : numel(resultsDataFiles)
+    resampledTrackedVelocities{j}= evaluateGcvSplines(trackedDataSpline, ...
+        coordinateLabels, resultsVelocitiesTime{j}, 1);
 end
 if isfield(options, "figureGridSize")
     figureWidth = options.figureGridSize(1);
     figureHeight = options.figureGridSize(2);
 else
-    figureWidth = ceil(sqrt(numel(coordinateLabels)));
-    figureHeight = ceil(numel(coordinateLabels)/figureWidth);
+    figureWidth = ceil(sqrt(numel(resultsVelocitiesLabels)));
+    figureHeight = ceil(numel(resultsVelocitiesLabels)/figureWidth);
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Joint Velocities", ...
@@ -112,15 +117,15 @@ t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Movement [0-100%]", ...
     fontsize=params.axisLabelFontSize)
-if isfield(options, "useRadians") && options.useRadians
-    ylabel(t, "Joint Velocity [rad/s]", ...
+if ~useRadians
+    ylabel(t, "Joint Velocity [deg/s]", ...
         fontsize=params.axisLabelFontSize)
 else
-    ylabel(t, "Joint Velocity [deg/s]", ...
+    ylabel(t, "Joint Velocity [rad/s]", ...
         fontsize=params.axisLabelFontSize)
 end
 set(gcf, color=params.plotBackgroundColor)
-for i=1:numel(modeledVelocitiesLabels)
+for i=1:numel(resultsVelocitiesLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Joint Velocities", ...
@@ -130,17 +135,17 @@ for i=1:numel(modeledVelocitiesLabels)
             TileSpacing='Compact', Padding='Compact');
         xlabel(t, "Percent Movement [0-100%]", ...
             fontsize=params.axisLabelFontSize)
-        if isfield(options, "useRadians") && options.useRadians
-            ylabel(t, "Joint Velocity [rad/s]", ...
+        if ~useRadians
+            ylabel(t, "Joint Velocity [deg/s]", ...
                 fontsize=params.axisLabelFontSize)
         else
-            ylabel(t, "Joint Velocity [deg/s]", ...
+            ylabel(t, "Joint Velocity [rad/s]", ...
                 fontsize=params.axisLabelFontSize)
         end
         set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
-    coordinateIndex = find(modeledStatesLabels(i) == coordinateLabels);
+    coordinateIndex = find(resultsStatesLabels(i) == coordinateLabels);
     if ~isempty(coordinateIndex)
         nexttile(subplotNumber);
         set(gca, ...
@@ -150,16 +155,16 @@ for i=1:numel(modeledVelocitiesLabels)
         plot(trackedDataTime*100, trackedVelocities(:, coordinateIndex), ...
             LineWidth=params.linewidth, ...
             Color = params.lineColors(1))
-        for j = 1 : numel(modelDataFiles)
-            plot(modeledVelocitiesTime{j}*100, modeledVelocities{j}(:, i), ...
+        for j = 1 : numel(resultsDataFiles)
+            plot(resultsVelocitiesTime{j}*100, resultsVelocities{j}(:, i), ...
             LineWidth=params.linewidth, ...
             Color = params.lineColors(j+1));
         end
         hold off
         titleString = [sprintf("%s", strrep(coordinateLabels(coordinateIndex), "_", " "))];
-        for j = 1 : numel(modelDataFiles)
-            rmse = rms(resampledExperimentalVelocities{j}(:, coordinateIndex) - ...
-                modeledVelocities{j}(:, i));
+        for j = 1 : numel(resultsDataFiles)
+            rmse = rms(resampledTrackedVelocities{j}(:, coordinateIndex) - ...
+                resultsVelocities{j}(:, i));
             titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
         end
         title(titleString, fontsize = params.subplotTitleFontSize)
@@ -172,8 +177,8 @@ for i=1:numel(modeledVelocitiesLabels)
                     break
                 end
             end
-            for j = 1 : numel(modelDataFiles)
-                splitFileName = split(modelDataFiles(j), ["/", "\"]);
+            for j = 1 : numel(resultsDataFiles)
+                splitFileName = split(resultsDataFiles(j), ["/", "\"]);
                 legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
             end
             legend(legendValues, fontsize = params.legendFontSize);
@@ -181,9 +186,9 @@ for i=1:numel(modeledVelocitiesLabels)
         xlim("tight")
         maxData = [];
         minData = [];
-        for j = 1 : numel(modelDataFiles)
-            maxData(j) = max(modeledVelocities{j}(:, i), [], "all");
-            minData(j) = min(modeledVelocities{j}(:, i), [], "all");
+        for j = 1 : numel(resultsDataFiles)
+            maxData(j) = max(resultsVelocities{j}(:, i), [], "all");
+            minData(j) = min(resultsVelocities{j}(:, i), [], "all");
         end
         maxData(j+1) = max(trackedVelocities(:, i), [], "all");
         minData(j+1) = min(trackedVelocities(:, i), [], "all");

@@ -37,7 +37,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationJointAngles(modelFileName, ...
-    trackedDataFile, modelDataFiles, varargin)
+    trackedDataFile, resultsDataFiles, varargin)
 import org.opensim.modeling.Storage
 params = getPlottingParams();
 if nargin > 3
@@ -45,16 +45,24 @@ if nargin > 3
 else
     options = struct();
 end
+if isfield(options, "useRadians")
+    useRadians = options.useRadians;
+else
+    useRadians = 0;
+end
 model = Model(modelFileName);
+
 trackedDataStorage = Storage(trackedDataFile);
 [coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
     model, trackedDataStorage);
 trackedData = trackedData';
+% We want time points to start at zero.
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
 trackedDataTime = trackedDataTime / trackedDataTime(end);
-if ~isfield(options, "useRadians") || ~options.useRadians
+
+if ~useRadians
     for i = 1 : size(trackedData, 2)
         if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
@@ -62,34 +70,38 @@ if ~isfield(options, "useRadians") || ~options.useRadians
         end
     end
 end
-modelData = {};
-for j=1:numel(modelDataFiles)
-    modelDataStorage = Storage(modelDataFiles(j));
-    [~, modelDataTime{j}, modelData{j}] = parseMotToComponents(...
-        model, modelDataStorage);
-    modelData{j} = modelData{j}';
-    if modelDataTime{j} ~= 0
-        modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
+
+
+resultsData = {};
+for j=1:numel(resultsDataFiles)
+    resultsDataStorage = Storage(resultsDataFiles(j));
+    [~, resultsDataTime{j}, resultsData{j}] = parseMotToComponents(...
+        model, resultsDataStorage);
+    resultsData{j} = resultsData{j}';
+    if resultsDataTime{j} ~= 0
+        resultsDataTime{j} = resultsDataTime{j} - resultsDataTime{j}(1);
     end
-    modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
-    if ~isfield(options, "useRadians") || ~options.useRadians
-        for i = 1 : size(modelData{j}, 2)
+    resultsDataTime{j} = resultsDataTime{j} / resultsDataTime{j}(end);
+    if ~useRadians
+        for i = 1 : size(resultsData{j}, 2)
             if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
                 .toString().toCharArray()' == "Rotational"
-                modelData{j}(:, i) = modelData{j}(:, i) * 180/pi;
+                resultsData{j}(:, i) = resultsData{j}(:, i) * 180/pi;
             end
         end
     end
 end
 
-% Spline experimental time to the same time points as the model.
-experimentalSpline = makeGcvSplineSet(trackedDataTime, ...
+% Spline experimental time to the same time points as the model. This is
+% only used for RMSE calculations
+trackedDataSpline = makeGcvSplineSet(trackedDataTime, ...
     trackedData, coordinateLabels);
-resampledExperimentalData = {};
-for j = 1 : numel(modelDataFiles)
-    resampledExperimentalData{j}= evaluateGcvSplines(experimentalSpline, ...
-        coordinateLabels, modelDataTime{j});
+resampledTrackedData = {};
+for j = 1 : numel(resultsDataFiles)
+    resampledTrackedData{j}= evaluateGcvSplines(trackedDataSpline, ...
+        coordinateLabels, resultsDataTime{j});
 end
+
 if isfield(options, "figureGridSize")
     figureWidth = options.figureGridSize(1);
     figureHeight = options.figureGridSize(2);
@@ -107,51 +119,54 @@ t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
 xlabel(t, "Percent Movement [0-100%]", ...
     fontsize=params.axisLabelFontSize)
-if isfield(options, "useRadians") && options.useRadians
-    ylabel(t, "Joint Angle [rad]", ...
+if ~useRadians
+    ylabel(t, "Joint Angle [deg]", ...
         fontsize=params.axisLabelFontSize)
 else
-    ylabel(t, "Joint Angle [deg]", ...
+    ylabel(t, "Joint Angle [rad]", ...
         fontsize=params.axisLabelFontSize)
 end
 set(gcf, color=params.plotBackgroundColor)
 for i=1:numel(coordinateLabels)
+    % If we exceed the specified figure size, create a new figure
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
         figure(Name="Joint Angles", ...
             Units=params.units, ...
             Position=params.figureSize)
         t = tiledlayout(figureHeight, figureWidth, ...
-            TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]", ...
+    TileSpacing='compact', Padding='compact');
+    xlabel(t, "Percent Movement [0-100%]", ...
+        fontsize=params.axisLabelFontSize)
+    if ~useRadians
+        ylabel(t, "Joint Angle [deg]", ...
             fontsize=params.axisLabelFontSize)
-        if isfield(options, "useRadians") && options.useRadians
-            ylabel(t, "Joint Angle [rad]", ...
-                fontsize=params.axisLabelFontSize)
-        else
-            ylabel(t, "Joint Angle [deg]", ...
-                fontsize=params.axisLabelFontSize)
-        end
+    else
+        ylabel(t, "Joint Angle [rad]", ...
+            fontsize=params.axisLabelFontSize)
+    end
         set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
+
     nexttile(subplotNumber);
     set(gca, ...
         fontsize = params.tickLabelFontSize, ...
         color=params.subplotBackgroundColor)
     hold on
-        plot(trackedDataTime*100, trackedData(:, i), ...
+    plot(trackedDataTime*100, trackedData(:, i), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1));
+    for j = 1 : numel(resultsDataFiles)
+        plot(resultsDataTime{j}*100, resultsData{j}(:, i), ...
             LineWidth=params.linewidth, ...
-            Color = params.lineColors(1));
-        for j = 1 : numel(modelDataFiles)
-            plot(modelDataTime{j}*100, modelData{j}(:, i), ...
-                LineWidth=params.linewidth, ...
-                Color = params.lineColors(j+1));
-        end
+            Color = params.lineColors(j+1));
+    end
     hold off
+
     titleString = [sprintf("%s", strrep(coordinateLabels(i), "_", " "))];
-    for j = 1 : numel(modelDataFiles)
-        rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
+    for j = 1 : numel(resultsDataFiles)
+        rmse = rms(resampledTrackedData{j}(:, i) - resultsData{j}(:, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
     title(titleString, fontsize = params.subplotTitleFontSize)
@@ -164,18 +179,19 @@ for i=1:numel(coordinateLabels)
                 break
             end
         end
-        for j = 1 : numel(modelDataFiles)
-            splitFileName = split(modelDataFiles(j), ["/", "\"]);
+        for j = 1 : numel(resultsDataFiles)
+            splitFileName = split(resultsDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
         legend(legendValues, fontsize = params.legendFontSize)
     end
+    
     xlim("tight")
     maxData = [];
     minData = [];
-    for j = 1 : numel(modelDataFiles)
-        maxData(j) = max(modelData{j}(:, i), [], "all");
-        minData(j) = min(modelData{j}(:, i), [], "all");
+    for j = 1 : numel(resultsDataFiles)
+        maxData(j) = max(resultsData{j}(:, i), [], "all");
+        minData(j) = min(resultsData{j}(:, i), [], "all");
     end
     maxData(j+1) = max(trackedData(:, i), [], "all");
     minData(j+1) = min(trackedData(:, i), [], "all");
@@ -183,10 +199,10 @@ for i=1:numel(coordinateLabels)
     yLimitLower = min(minData);
     if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
-        if isfield(options, "useRadians") && options.useRadians
-            minimum = 10*pi/180;
-        else
+        if ~useRadians
             minimum = 10;
+        else
+            minimum = 10*pi/180;
         end
     else
         minimum = 0.1;
