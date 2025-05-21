@@ -199,7 +199,7 @@ for i = 1 : numel(trackedWeightsTime)
         weightsPlottingArray);
     b(1).FaceColor = params.lineColors(1);
     for k = 1 : numel(resultsWeightsData)
-        b(k).FaceColor = params.lineColors(k);
+        b(k+1).FaceColor = params.lineColors(k+1);
     end
     title(strrep(trackedActivationsLabels(i), "_", " "))
     if i == figureHeight
@@ -217,8 +217,24 @@ for i = 1 : numel(trackedWeightsTime)
         maxWeights(k) = max(resultsWeightsData{k}, [], "all");
     end
     ylim([0 max(maxWeights)])
+    if i == 1
+        splitFileName = split(trackedWeightsFile, ["/", "\"]);
+        for k = 1 : numel(splitFileName)
+            if ~strcmp(splitFileName(k), "..")
+                legendValues = sprintf("%s (T)", ...
+                    strrep(splitFileName(k), "_", " "));
+                break
+            end
+        end
+        for j = 1 : numel(resultsWeightsFiles)
+            splitFileName = split(resultsWeightsFiles(j), ["/", "\"]);
+            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
+        end
+        legend(legendValues, fontsize = params.legendFontSize)
+    end
 end
 end
+
 function options = parseVarargin(varargin)
     options = struct();
     varargin = varargin{1};
