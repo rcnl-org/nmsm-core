@@ -61,6 +61,7 @@ trackedData = trackedData';
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
+trackedTimeNormalized = trackedDataTime ./ trackedDataTime(end);
 if ~useRadians
     for i = 1 : size(trackedData, 2)
         if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
@@ -77,6 +78,7 @@ for j=1:numel(resultsDataFiles)
     if resultsStatesTime ~= 0
         resultsStatesTime = resultsStatesTime - resultsStatesTime(1);
     end
+    resultsTimeNormalized{j} = resultsStatesTime ./ resultsStatesTime(end);
     
     resultsVelocities{j} = resultsStates(:, size(resultsStates, 2)/2+1:end);
     resultsVelocitiesLabels = resultsStatesLabels(size(resultsStates, 2)/2+1:end);
@@ -152,11 +154,11 @@ for i=1:numel(resultsVelocitiesLabels)
             fontsize = params.tickLabelFontSize, ...
             color=params.subplotBackgroundColor)
         hold on
-        plot(trackedDataTime*100, trackedVelocities(:, coordinateIndex), ...
+        plot(trackedTimeNormalized*100, trackedVelocities(:, coordinateIndex), ...
             LineWidth=params.linewidth, ...
             Color = params.lineColors(1))
         for j = 1 : numel(resultsDataFiles)
-            plot(resultsVelocitiesTime{j}*100, resultsVelocities{j}(:, i), ...
+            plot(resultsTimeNormalized{j}*100, resultsVelocities{j}(:, i), ...
             LineWidth=params.linewidth, ...
             Color = params.lineColors(j+1));
         end
