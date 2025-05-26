@@ -48,7 +48,8 @@ for i = 1 : length(synergyGroups)
     synergyMuscleNames = [synergyMuscleNames synergyGroups{i}.muscleNames];
 end
 inputs.muscleNames = intersect(surrogateCoordintateMuscleNames, ...
-    synergyMuscleNames);
+    synergyMuscleNames,'stable'); % Stable added by Li to keep muscle names
+    % in correct order
 inputs.numMuscles = length(inputs.muscleNames);
 inputs.epsilon = str2double(parseElementTextByNameOrAlternate(tree, ...
     "epsilon", "1e-4"));
