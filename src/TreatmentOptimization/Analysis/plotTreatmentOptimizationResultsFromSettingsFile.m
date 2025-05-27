@@ -180,6 +180,8 @@ function [normalizationMethod, normalizationValue] = ...
             normalizationValue = 1;
         end
     else
+        normalizationMethod = "sum";
+        normalizationValue = 1;
         return
     end
 end
