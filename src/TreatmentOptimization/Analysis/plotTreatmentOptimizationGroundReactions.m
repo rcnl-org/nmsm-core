@@ -169,12 +169,12 @@ for i=1:numel(trackedDataLabels)
     xlim("tight")
     maxData = [];
     minData = [];
+    maxData(1) = max(trackedData(1:end-1, i), [], "all");
+    minData(1) = min(trackedData(1:end-1, i), [], "all");
     for j = 1 : numel(resultsDataFiles)
-        maxData(j) = max(resultsData{j}(1:end-1, i), [], "all");
-        minData(j) = min(resultsData{j}(1:end-1, i), [], "all");
+        maxData(j+1) = max(resultsData{j}(1:end-1, i), [], "all");
+        minData(j+1) = min(resultsData{j}(1:end-1, i), [], "all");
     end
-    maxData(j+1) = max(trackedData(1:end-1, i), [], "all");
-    minData(j+1) = min(trackedData(1:end-1, i), [], "all");
     yLimitUpper = max(maxData);
     yLimitLower = min(minData);
     ylim([yLimitLower, yLimitUpper]);

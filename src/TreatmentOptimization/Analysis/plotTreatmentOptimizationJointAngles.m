@@ -189,12 +189,12 @@ for i=1:numel(coordinateLabels)
     xlim("tight")
     maxData = [];
     minData = [];
+    maxData(1) = max(trackedData(:, i), [], "all");
+    minData(1) = min(trackedData(:, i), [], "all");
     for j = 1 : numel(resultsDataFiles)
-        maxData(j) = max(resultsData{j}(:, i), [], "all");
-        minData(j) = min(resultsData{j}(:, i), [], "all");
+        maxData(j+1) = max(resultsData{j}(:, i), [], "all");
+        minData(j+1) = min(resultsData{j}(:, i), [], "all");
     end
-    maxData(j+1) = max(trackedData(:, i), [], "all");
-    minData(j+1) = min(trackedData(:, i), [], "all");
     yLimitUpper = max(maxData);
     yLimitLower = min(minData);
     if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
