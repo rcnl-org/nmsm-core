@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.4.1 - 2025-05-30
+### Fixed
+- Reorder states when parsing initial values to account for initial/tracked quantities having a different order than the current states.
+- Surrogate model now reads from surrogate_model_coordinate_list to choose whether a joint should be varied or not. 
+
+### Changes
+- All plotting functions have a central formatting function getPlottingParams()
+- Synergy plotting function now plots synergy weights
+- Added an option to plot joint positions in velocities in degrees or radians (useRadians=0 for degrees, 1 for radians)
+- plotNcpResultsFromSettingsFile() now plots synergy controls
+- The GUI now recognizes cost and constraint term fields <axes> and <sequence>
+- The GUI now recognizes synergy Treatment Optimization fields load_surrogate_model, save_surrogate_model, synergy_vector_normalization_method, and synergy_vector_normalization_value
+
 ## v1.4.0 - 2025-04-24
 
 ### Added
