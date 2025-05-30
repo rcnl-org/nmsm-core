@@ -29,20 +29,9 @@
 
 function [synergyWeightsMagnitude, constraintTerm] = ...
     calcSynergyWeightsMagnitude( ...
-    constraintTerm, synergyWeights, synergyGroups, synergyGroupName)
+    constraintTerm, synergyWeights, inputs, synergyName)
+[synergyIndex, constraintTerm] = findSynergyIndexByLabel( ...
+    constraintTerm, inputs, synergyName);
 
-counter = 1;
-for i = 1 : length(synergyGroups)
-    if strcmp(synergyGroups{i}.muscleGroupName, synergyGroupName)
-        break;
-    end
-    counter = counter + synergyGroups{i}.numSynergies;
-end
-
-numSynergies = synergyGroups{i}.numSynergies;
-synergyWeightsMagnitude = zeros(numSynergies, 1);
-for j = counter : counter + numSynergies - 1
-    synergyWeightsMagnitude(j - counter + 1) = sqrt(sum(synergyWeights(j, :) .^ 2));
-end
-synergyWeightsMagnitude = synergyWeightsMagnitude';
+synergyWeightsMagnitude= sqrt(sum(synergyWeights(synergyIndex, :) .^ 2));
 end

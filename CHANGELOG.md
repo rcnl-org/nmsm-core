@@ -1,5 +1,24 @@
 # Changelog
 
+## v1.4.1 - 2025-05-30
+
+### Added
+- Treatment Optimization joint positions and velocities may be plotted in degrees or radians (`useRadians=0` for degrees, `1` for radians).
+- `IntegratedQuantitiesPreviewTool()` can read a Design Optimization settings file and display initial values for integrated quantities (metabolic cost, propulsive/braking impulse) that are otherwise difficult to estimate. 
+
+
+### Fixed
+- States are reordered when parsing initial values to account for initial/tracked quantities having a different order from the current states.
+
+
+### Changed
+- The `<surrogate_model_coordinate_list>` to choose which coordinates to include in muscle model fitting can include non-state coordinates.
+- Treatment Optimization plotting functions plot synergy weights when relevant.
+- `plotNcpResultsFromSettingsFile()` plots synergy controls.
+- The GUI recognizes cost and constraint term fields `<axes>` and `<sequence>`.
+- The GUI recognizes synergy-driven Treatment Optimization fields `<load_surrogate_model>`, `<save_surrogate_model>`, `<synergy_vector_normalization_method>`, and `<synergy_vector_normalization_value>`.
+
+
 ## v1.4.0 - 2025-04-24
 
 ### Added
@@ -25,7 +44,7 @@
 ### Fixed
 - Optimized ground reactions from GCP are saved with the column order expected by the OpenSim GUI
 - .osimx files created by Model Personalization tools are printed with correct indentation for readability
-- JMP safely handles absolute file paths given in the <output_model_file> element
+- JMP safely handles absolute file paths given in the `<output_model_file>` element
 - plotTreatmentOptimizationJointVelocities properly normalizes splined data points
 
 

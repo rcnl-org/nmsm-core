@@ -36,5 +36,6 @@ if strcmp(inputs.controllerType, 'synergy')
             end
         end
     end
+    % inputs.surrogateModelIndex = 1 : length(inputs.coordinateNames);
 end
 end

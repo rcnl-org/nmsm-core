@@ -56,6 +56,9 @@ if(resultsDir)
     outputFile = fullfile(resultsDir, outputFileName);
 end
 [outputDir, ~, ~] = fileparts(outputFile);
+if isempty(outputDir)
+    outputDir = ".";
+end
 if ~exist(outputDir, 'dir')
     throw(MException('', strcat("Cannot find specified output directory.", ...
         " Either use <results_directory> in your settings file or verify that your", ...
