@@ -48,7 +48,7 @@ params = getPlottingParams();
 controlsData = {};
 for j = 1 : numel(controlsFiles)
     controlsStorage = Storage(controlsFiles(j));
-    labels = getStorageColumnNames(controlsStorage);
+    labels{j} = getStorageColumnNames(controlsStorage);
     controlsData{j} = storageToDoubleMatrix(controlsStorage)';
     controlsTime{j} = findTimeColumn(controlsStorage);
     if controlsTime{j}(1) ~= 0
@@ -56,7 +56,13 @@ for j = 1 : numel(controlsFiles)
     end
     controlsTime{j} = controlsTime{j} / controlsTime{j}(end);
 end
-
+if numel(controlsFiles) > 1
+    for j = 2 : numel(controlsFiles)
+        [~, ~, indices] = intersect(labels{1}, labels{j}, 'stable');
+        controlsData{j}(:, 1:length(indices)) = controlsData{j}(:,indices);
+    end
+end
+labels = labels{1};
 if numel(controlsFiles) > 1
     firstControlSpline = makeGcvSplineSet(controlsTime{1}, ...
     controlsData{1}, labels);
