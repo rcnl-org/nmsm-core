@@ -72,7 +72,7 @@ if ~useRadians
 end
 for j=1:numel(resultsDataFiles)
     resultsStatesStorage = Storage(resultsDataFiles(j));
-    [resultsStatesLabels, resultsStatesTime, resultsStates] = ...
+    [resultsStatesLabels{j}, resultsStatesTime, resultsStates] = ...
         parseMotToComponents(model, resultsStatesStorage);
     resultsStates = resultsStates';
     if resultsStatesTime ~= 0
@@ -81,7 +81,7 @@ for j=1:numel(resultsDataFiles)
     resultsTimeNormalized{j} = resultsStatesTime ./ resultsStatesTime(end);
     
     resultsVelocities{j} = resultsStates(:, size(resultsStates, 2)/2+1:end);
-    resultsVelocitiesLabels = resultsStatesLabels(size(resultsStates, 2)/2+1:end);
+    resultsVelocitiesLabels{j} = resultsStatesLabels{j}(size(resultsStates, 2)/2+1:end);
     resultsVelocitiesTime{j} = resultsStatesTime;
     if ~useRadians
         for i = 1 : size(resultsStates(:, 1:size(resultsStates, 2)/2), 2)
@@ -93,10 +93,21 @@ for j=1:numel(resultsDataFiles)
         end
     end
 end
+
 trackedDataSpline = makeGcvSplineSet(trackedDataTime, ...
     trackedData, coordinateLabels);
 trackedVelocities = evaluateGcvSplines(trackedDataSpline, coordinateLabels, ...
     trackedDataTime, 1);
+
+% Reorder labels
+for j = 1 : numel(resultsDataFiles)
+    [~, ~, indices] = intersect(resultsVelocitiesLabels{1}, resultsVelocitiesLabels{j}, 'stable');
+    resultsVelocities{j}(:, 1:length(indices)) = resultsVelocities{j}(:,indices);
+    resultsStatesLabels{j}(1:length(indices)) = resultsStatesLabels{j}(indices);
+end
+resultsVelocitiesLabels = resultsVelocitiesLabels{1};
+resultsStatesLabels = resultsStatesLabels{1};
+
 resampledTrackedVelocities = {};
 for j = 1 : numel(resultsDataFiles)
     resampledTrackedVelocities{j}= evaluateGcvSplines(trackedDataSpline, ...
