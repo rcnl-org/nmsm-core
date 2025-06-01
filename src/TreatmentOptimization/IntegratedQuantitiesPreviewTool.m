@@ -46,12 +46,12 @@ braking = valueOrAlternate(inputs, 'calculateBrakingImpulse', false);
 propulsive = valueOrAlternate(inputs, 'calculatePropulsiveImpulse', false);
 if propulsive
     disp("Propulsive impulses: " + ...
-        integral(index - length(inputs.contactSurfaces) + 1 : index));
+        strjoin(string(integral(index - length(inputs.contactSurfaces) + 1 : index)), '\t'));
     index = index - length(inputs.contactSurfaces);
 end
 if braking
     disp("Braking impulses: " + ...
-        integral(index - length(inputs.contactSurfaces) + 1 : index));
+        strjoin(string(integral(index - length(inputs.contactSurfaces) + 1 : index)), '\t'));
     index = index - length(inputs.contactSurfaces);
 end
 if metabolic
