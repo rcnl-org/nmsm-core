@@ -7,6 +7,26 @@ else
 end
 inputs.minTime = min(inputs.experimentalTime);
 
+if strcmp(inputs.solverType, 'gpops')
+    inputs = computeGpopsCollocationPointTimes(inputs);
+else
+    rootTime = casadi.collocation_points( ...
+        inputs.gpops.numIntervals, 'radau');
+    rootTime = rootTime(1:end-1);
+    meshTime = linspace(inputs.experimentalTime(1), ...
+        inputs.experimentalTime(end), ...
+        inputs.gpops.numCollocationPoints + 1);
+    meshDuration = mean(diff(meshTime));
+    collocationTime = [];
+    for i = 1 : length(meshTime) - 1
+        collocationTime(end+1:end+1+length(rootTime)) ...
+            = [meshTime(i), meshTime(i) + meshDuration * rootTime];
+    end
+    inputs.collocationTimeOriginal = collocationTime;
+end
+end
+
+function inputs = computeGpopsCollocationPointTimes(inputs)
 setup.guess.phase.time = scaleToBounds(inputs.initialTime, ...
     inputs.maxTime, inputs.minTime);
 setup.auxdata = inputs;
