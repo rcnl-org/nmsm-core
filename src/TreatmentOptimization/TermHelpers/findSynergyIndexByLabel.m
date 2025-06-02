@@ -1,10 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the error in braking impulse for the side
-% defined in the cost term. Only the braking impulse (negative) is
-% included in the output.
+% (struct, Array of double, Array of string, Array of string) -> 
+% (Array of number, struct)
 %
-% (struct, Array of double, struct, struct) -> (Array of double)
+% Finds the index of a synergy name, saving an index for future calls.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,27 +27,30 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcBrakingImpulseGoalIntegrand(modeledValues, ...
-    time, inputs, costTerm)
-if isfield(costTerm, 'internalSurfaceIndex')
-    surfaceIndex = costTerm.internalSurfaceIndex;
+function [index, term] = findSynergyIndexByLabel(term, inputs, ...
+    synergyName)
+if isfield(term, 'internalSynergyIndex')
+    index = term.internalSynergyIndex;
 else
-    hindfootBodyName = getTermFieldOrError(costTerm, 'hindfoot_body');
-    surfaceIndex = 0;
-    for j = 1 : length(inputs.contactSurfaces)
-        if strcmp(inputs.contactSurfaces{j}.hindfootBodyName, ...
-                hindfootBodyName)
-            surfaceIndex = j;
-        end
-    end
-    assert(surfaceIndex ~= 0, hindfootBodyName + ...
-        " is not a contact surface hindfoot body.");
-    
-    costTerm.internalSurfaceIndex = surfaceIndex;
-end
+    index = -1;
+    nameParts = split(synergyName, "_");
+    assert(length(nameParts) > 1 && ~isnan(str2double(nameParts(end))), ...
+        "Synergy names are referenced in terms as " + ...
+        "'<group name>_<index>', such as 'RightLeg_2'.");
+    synergyGroupName = join(nameParts(1:end-1), "_");
+    synergyNumber = str2double(nameParts(end));
 
-assert(isfield(costTerm, 'errorCenter'), "Impulse goal terms " + ...
-    "require an <error_center>.");
-cost = ((modeledValues.brakingImpulse(surfaceIndex) - costTerm.errorCenter) ...
-    ./ costTerm.maxAllowableError) .^ 2;
+    counter = 0;
+    for i = 1 : length(inputs.synergyGroups)
+        if strcmp(inputs.synergyGroups{i}.muscleGroupName, ...
+                synergyGroupName)
+            index = counter + synergyNumber;
+            term.internalSynergyIndex = index;
+            break;
+        end
+        counter = counter + inputs.synergyGroups{i}.numSynergies;
+    end
+
+    assert(index > 0, "Unable to find synergy " + synergyName);
+end
 end

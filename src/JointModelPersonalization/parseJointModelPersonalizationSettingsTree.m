@@ -57,7 +57,7 @@ if(resultsDir)
 end
 [outputDir, ~, ~] = fileparts(outputFile);
 if isempty(outputDir)
-    outputDir = '.';
+    outputDir = ".";
 end
 if ~exist(outputDir, 'dir')
     throw(MException('', strcat("Cannot find specified output directory.", ...

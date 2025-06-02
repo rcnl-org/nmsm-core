@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Plot experimental and optimized foot kinematics from Ground Contact
-% Personalization results files. 
+% Personalization results files.
 %
 % (string, string, double) -> (None)
 % Plot experimental and optimized foot kinematics.
@@ -33,6 +33,7 @@ function plotGcpFootKinematicsFromFiles(experimentalKinematicsFileName, ...
 coordinates = ["Toe Angle", "Y Rotation", "X Rotation", "Z Rotation", ...
     "X Translation", "Y Translation", "Z Translation"];
 import org.opensim.modeling.Storage
+params = getPlottingParams();
 experimentalKinematics = ...
     storageToDoubleMatrix(Storage(experimentalKinematicsFileName));
 modeledKinematics = ...
@@ -42,15 +43,19 @@ time = findTimeColumn(Storage(experimentalKinematicsFileName));
 splitFileName = split(optimizedKinematicsFileName, "_optimized");
 figureName = splitFileName(1);
 figure(Name = figureName, ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+    Units=params.units, ...
+    Position=params.figureSize)
 t = tiledlayout(2, 4, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Time [s]")
+xlabel(t, "Time [s]", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
 for i = 1:7
     nexttile(i)
-    % Rotational coordinate data are converted to degrees. 
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
+    % Rotational coordinate data are converted to degrees.
     if i <= 4
         experimental = rad2deg(experimentalKinematics(i, :));
         model = rad2deg(modeledKinematics(i, :));
@@ -58,17 +63,25 @@ for i = 1:7
         experimental = experimentalKinematics(i, :);
         model = modeledKinematics(i, :);
     end
-    plot(time, experimental, Color=colors(1), LineWidth=2)
     hold on
-    plot(time, model, Color=colors(2), LineWidth=2)
+    plot(time, experimental, ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1))
+    plot(time, model, ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(2))
     xlim("tight")
     error = rms(experimental - model);
-    title(coordinates(i) + newline + " RMSE: " + error)
+    title(coordinates(i) + newline + " RMSE: " + error, ...
+        fontsize = params.subplotTitleFontSize)
     if i == 1
-        ylabel('Angle (deg)')
-        legend("Experimental", "Model")
+        ylabel('Angle [deg]', ...
+            fontsize=params.axisLabelFontSize)
+        legend("Experimental", "Model", ...
+            fontsize = params.legendFontSize);
     elseif i == 5
-        ylabel('Translation (m)')
+        ylabel('Translation [m]', ...
+            fontsize=params.axisLabelFontSize)
     end
     hold off
 end

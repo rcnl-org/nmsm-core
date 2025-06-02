@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Plot experimental and optimized ground reactions from Ground Contact
-% Personalization results files. Moments are calculated about the midfoot 
+% Personalization results files. Moments are calculated about the midfoot
 % superior marker projected down to the resting spring length.
 %
 % (string, string, double) -> (None)
-% Plot experimental and modeled ground reactions. 
+% Plot experimental and modeled ground reactions.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -35,6 +35,7 @@ function plotGcpGroundReactionsFromFiles( ...
 titles = ["Anterior GRF" "Vertical GRF" "Lateral GRF" "X Moment" ...
     "Y Moment" "Z Moment"];
 import org.opensim.modeling.Storage
+params = getPlottingParams();
 experimentalGroundReactions = ...
     storageToDoubleMatrix(Storage(experimentalGroundReactionsFileName));
 modeledGroundReactions = ...
@@ -44,30 +45,41 @@ time = findTimeColumn(Storage(experimentalGroundReactionsFileName));
 splitFileName = split(optimizedGroundReactionsFileName, "_optimized");
 figureName = splitFileName(1);
 figure(Name = figureName, ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+    Units=params.units, ...
+    Position=params.figureSize)
 t = tiledlayout(2, 3, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Time [s]")
+xlabel(t, "Time [s]", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
 for i = 1:6
     nexttile(i)
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     experimental = experimentalGroundReactions(i, :);
     model = modeledGroundReactions(i, :);
-    plot(time, experimental, Color=colors(1), LineWidth=2)
     hold on
-    plot(time, model, Color=colors(2), LineWidth=2)
+    plot(time, experimental, ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1))
+    plot(time, model, ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(2))
     error = rms(experimental - model);
-    title(titles(i) + newline + " RMSE: " + error)
-    xlabel('Time')
+    title(titles(i) + newline + " RMSE: " + error, ...
+        fontsize = params.subplotTitleFontSize)
     xlim("tight")
     if i == 1
-        ylabel('Force (N)')
-        legend("Experimental", "Model")
+        ylabel('Force [N]', ...
+            fontsize=params.axisLabelFontSize)
+        legend("Experimental", "Model", ...
+            fontsize = params.legendFontSize);
     else if i == 4
-        ylabel('Moment (N*m)')
+            ylabel('Moment [Nm]', ...
+                fontsize=params.axisLabelFontSize)
     end
     hold off
-end
+    end
 end
 

@@ -30,7 +30,7 @@
 
 function [cost, costTerm] = calcPropulsiveImpulseGoalIntegrand( ...
     modeledValues, time, inputs, costTerm)
-if isfield(term, 'internalSurfaceIndex')
+if isfield(costTerm, 'internalSurfaceIndex')
     surfaceIndex = costTerm.internalSurfaceIndex;
 else
     hindfootBodyName = getTermFieldOrError(costTerm, 'hindfoot_body');

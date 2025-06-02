@@ -28,14 +28,13 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeSurrogateModel(inputs)
-if any(inputs.controllerTypes(2:3))
-    % for i = 1 : length(inputs.coordinateNames)
-    %     for j = 1 : length(inputs.surrogateModelCoordinateNames)
-    %         if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
-    %             inputs.surrogateModelIndex(j) = i;
-    %         end
-    %     end
-    % end
-    inputs.surrogateModelIndex = 1 : length(inputs.coordinateNames);
+if strcmp(inputs.controllerType, 'synergy')
+    for i = 1 : length(inputs.coordinateNames)
+        for j = 1 : length(inputs.surrogateModelCoordinateNames)
+            if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
+                inputs.surrogateModelIndex(j) = i;
+            end
+        end
+    end
 end
 end

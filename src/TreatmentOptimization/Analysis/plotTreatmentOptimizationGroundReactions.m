@@ -37,9 +37,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationGroundReactions(trackedDataFile, ...
-    modelDataFiles, figureWidth, figureHeight)
-
+    resultsDataFiles, varargin)
 import org.opensim.modeling.Storage
+if nargin > 3
+    options = parseVarargin(varargin);
+else
+    options = struct();
+end
+params = getPlottingParams();
 trackedDataStorage = Storage(trackedDataFile);
 trackedDataLabels = getStorageColumnNames(trackedDataStorage);
 trackedData = storageToDoubleMatrix(trackedDataStorage)';
@@ -47,16 +52,16 @@ trackedDataTime = findTimeColumn(trackedDataStorage);
 if trackedDataTime(1) ~= 0
     trackedDataTime = trackedDataTime - trackedDataTime(1);
 end
-% trackedDataTime = trackedDataTime / trackedDataTime(end);
-for j = 1 : numel(modelDataFiles)
-    modelDataStorage = Storage(modelDataFiles(j));
-    modelData{j} = storageToDoubleMatrix(modelDataStorage)';
-    modelDataLabels{j} = getStorageColumnNames(modelDataStorage);
-    modelDataTime{j} = findTimeColumn(modelDataStorage);
-    if modelDataTime{j} ~= 0
-        modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
+trackedDataTime = trackedDataTime / trackedDataTime(end);
+for j = 1 : numel(resultsDataFiles)
+    resultsDataStorage = Storage(resultsDataFiles(j));
+    resultsData{j} = storageToDoubleMatrix(resultsDataStorage)';
+    resultsDataLabels{j} = getStorageColumnNames(resultsDataStorage);
+    resultsDataTime{j} = findTimeColumn(resultsDataStorage);
+    if resultsDataTime{j} ~= 0
+        resultsDataTime{j} = resultsDataTime{j} - resultsDataTime{j}(1);
     end
-    % modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
+    resultsDataTime{j} = resultsDataTime{j} / resultsDataTime{j}(end);
 end
 
 experimentalMomentIndices = contains(trackedDataLabels, ["_m", "M"]);
@@ -65,90 +70,122 @@ experimentalIncludedIndices = experimentalMomentIndices | experimentalForceIndic
 trackedData = trackedData(:, experimentalIncludedIndices);
 trackedDataLabels = trackedDataLabels(experimentalIncludedIndices);
 experimentalForcePlate1 = contains(trackedDataLabels, "1");
-for j = 1 : numel(modelDataFiles)
-    modelMomentIndices = contains(modelDataLabels{j}, "_m");
-    modelForceIndices = contains(modelDataLabels{j}, "_v");
-    modelIncludedIndices = modelMomentIndices | modelForceIndices;
-    modelData{j} = modelData{j}(:, modelIncludedIndices);
-    modelDataLabels{j} = modelDataLabels{j}(modelIncludedIndices);
-    modelForcePlate1 = contains(modelDataLabels{j}, "1");
-    if experimentalForcePlate1 ~= modelForcePlate1
-        temp = modelData{j};
-        modelData{j}(:, ~experimentalForcePlate1) = ...
-            modelData{j}(:, experimentalForcePlate1);
-        modelData{j}(:, experimentalForcePlate1) = ...
+for j = 1 : numel(resultsDataFiles)
+    resultsMomentIndices = contains(resultsDataLabels{j}, "_m");
+    resultsForceIndices = contains(resultsDataLabels{j}, "_v");
+    resultsIncludedIndices = resultsMomentIndices | resultsForceIndices;
+    resultsData{j} = resultsData{j}(:, resultsIncludedIndices);
+    resultsDataLabels{j} = resultsDataLabels{j}(resultsIncludedIndices);
+    resultsForcePlate1 = contains(resultsDataLabels{j}, "1");
+    if experimentalForcePlate1 ~= resultsForcePlate1
+        temp = resultsData{j};
+        resultsData{j}(:, ~experimentalForcePlate1) = ...
+            resultsData{j}(:, experimentalForcePlate1);
+        resultsData{j}(:, experimentalForcePlate1) = ...
             temp(:, ~experimentalForcePlate1);
     end
 end
 
 % Spline experimental time to the same time points as the model.
-experimentalSpline = makeGcvSplineSet(trackedDataTime, ...
+trackedDataSpline = makeGcvSplineSet(trackedDataTime, ...
     trackedData, trackedDataLabels);
-resampledExperimentalData = {};
-for i = 1 : numel(modelDataFiles)
-    resampledExperimentalData{i} = evaluateGcvSplines(experimentalSpline, ...
-        trackedDataLabels, modelDataTime{i});
+resampledTrackedData = {};
+for i = 1 : numel(resultsDataFiles)
+    resampledTrackedData{i} = evaluateGcvSplines(trackedDataSpline, ...
+        trackedDataLabels, resultsDataTime{i});
 end
-if nargin < 3
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
     figureWidth = 3;
-end
-if nargin < 4
     figureHeight = 2;
 end
 figureSize = figureWidth * figureHeight;
-figure(Name = "Treatment Optimization Ground Reactions", ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+figure(Name = "Ground Reactions", ...
+    Units=params.units, ...
+    Position=params.figureSize)
+colors = getPlottingParams();
 subplotNumber = 1;
 figureNumber = 1;
 t = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Ground Reaction")
+xlabel(t, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(t, "Ground Reaction", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
 for i=1:numel(trackedDataLabels)
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Ground Reactions", ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
+        figure(Name="Ground Reactions", ...
+            Units=params.units, ...
+            Position=params.figureSize)
         t = tiledlayout(figureHeight, figureWidth, ...
             TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Ground Reaction")
+        xlabel(t, "Percent Movement [0-100%]", ...
+            fontsize=params.axisLabelFontSize)
+        ylabel(t, "Ground Reaction", ...
+            fontsize=params.axisLabelFontSize)
+        set(gcf, color=params.plotBackgroundColor)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     hold on
-    plot(trackedDataTime, trackedData(:, i), LineWidth=2, ...
-        Color = colors(1));
-    for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}, modelData{j}(:, i), LineWidth=2, ...
-            Color = colors(j+1));
+    plot(trackedDataTime*100, trackedData(:, i), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1));
+    for j = 1 : numel(resultsDataFiles)
+        plot(resultsDataTime{j}*100, resultsData{j}(:, i), ...
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(j+1));
     end
     hold off
     titleString = [sprintf("%s", strrep(trackedDataLabels(i), "_", " "))];
-    for j = 1 : numel(modelDataFiles)
-        rmse = rms(resampledExperimentalData{j}(1:end-1, i) - ...
-            modelData{j}(1:end-1, i));
+    for j = 1 : numel(resultsDataFiles)
+        rmse = rms(resampledTrackedData{j}(1:end-1, i) - ...
+            resultsData{j}(1:end-1, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
-    title(titleString)
+    title(titleString, fontsize = params.subplotTitleFontSize)
     if subplotNumber==1
         splitFileName = split(trackedDataFile, ["/", "\"]);
         for k = 1 : numel(splitFileName)
             if ~strcmp(splitFileName(k), "..")
-                legendValues = sprintf("%s (T)", ...
+                legendValues = sprintf("Replaced Experimental Ground Reactions (T)", ...
                     strrep(splitFileName(k), "_", " "));
                 break
             end
         end
-        for j = 1 : numel(modelDataFiles)
-            splitFileName = split(modelDataFiles(j), ["/", "\"]);
+        for j = 1 : numel(resultsDataFiles)
+            splitFileName = split(resultsDataFiles(j), ["/", "\"]);
             legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
         end
-        legend(legendValues)
+        legend(legendValues, fontsize = params.legendFontSize)
     end
     xlim("tight")
+    maxData = [];
+    minData = [];
+    maxData(1) = max(trackedData(1:end-1, i), [], "all");
+    minData(1) = min(trackedData(1:end-1, i), [], "all");
+    for j = 1 : numel(resultsDataFiles)
+        maxData(j+1) = max(resultsData{j}(1:end-1, i), [], "all");
+        minData(j+1) = min(resultsData{j}(1:end-1, i), [], "all");
+    end
+    yLimitUpper = max(maxData);
+    yLimitLower = min(minData);
+    ylim([yLimitLower, yLimitUpper]);
     subplotNumber = subplotNumber + 1;
+end
+end
+
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
 end

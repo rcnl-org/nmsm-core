@@ -33,6 +33,7 @@
 function plotNcpActivationRmsAndVaf(weightsFile, commandsFile, ...
     mtpActivationsFile)
 import org.opensim.modeling.Storage
+params = getPlottingParams();
 weightsStorage = Storage(weightsFile);
 ncpMuscleNames = getStorageColumnNames(weightsStorage);
 synergyWeights = storageToDoubleMatrix(weightsStorage);
@@ -61,13 +62,19 @@ worstMuscleName = sharedMuscleNames(worstMuscleIndex);
 splitFileName = split(commandsFile, "_synergyCommands.sto");
 figureName = splitFileName(1);
 figure(name = figureName)
+set(gcf, color=params.plotBackgroundColor)
 boxplot(rmsError)
+set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
 title("RMS error for muscles with tracked activations", ...
     "Total VAF: " + sprintf('\\bf{%.2f}%%\\rm', totalVaf) + newline + ...
     "Worst individual muscle: " + strrep(worstMuscleName, '_', '\_') + ...
-    sprintf(" (RMSE: %.3f)", worstError))
-ylabel("RMSE")
+    sprintf(" (RMSE: %.3f)", worstError), ...
+    fontsize = params.subplotTitleFontSize)
+ylabel("RMSE", fontsize=params.axisLabelFontSize)
 set(gca, 'XTick', [])
+
 end
 
 function percentVaf = calcPercentVaf(experimental, reconstructed)

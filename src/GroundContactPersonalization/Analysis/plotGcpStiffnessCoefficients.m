@@ -28,6 +28,7 @@
 function plotGcpStiffnessCoefficients(modelFileName, osimxFileName, ...
     surfaceNumber)
 % Parse inputs
+params = getPlottingParams();
 [model, state] = Model(modelFileName);
 osimx = parseOsimxFile(osimxFileName, model);
 if nargin < 3
@@ -73,11 +74,18 @@ end
 
 % Plot values
 figure(name = osimxFileName)
+set(gcf, color=params.plotBackgroundColor)
 scatter(springZ, springX, 200, stiffness, "filled")
+set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
 set(gca, 'DataAspectRatio', [1, 1, 1])
-title("Stiffness coefficients")
-xlabel("Z location on foot (m)")
-ylabel("X location on foot (m)")
+title("Stiffness coefficients", ...
+        fontsize = params.subplotTitleFontSize)
+xlabel("Z location on foot (m)", ...
+    fontsize=params.axisLabelFontSize)
+ylabel("X location on foot (m)", ...
+    fontsize=params.axisLabelFontSize)
 
 R = [254 254 236 204 153];
 G = [196 153 112 76 52];

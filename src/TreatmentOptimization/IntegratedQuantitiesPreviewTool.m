@@ -1,10 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the error in braking impulse for the side
-% defined in the cost term. Only the braking impulse (negative) is
-% included in the output.
 %
-% (struct, Array of double, struct, struct) -> (Array of double)
+% (string) -> (None)
+% Start Design Optimization from settings file to preview integrated terms 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,27 +26,36 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcBrakingImpulseGoalIntegrand(modeledValues, ...
-    time, inputs, costTerm)
-if isfield(costTerm, 'internalSurfaceIndex')
-    surfaceIndex = costTerm.internalSurfaceIndex;
-else
-    hindfootBodyName = getTermFieldOrError(costTerm, 'hindfoot_body');
-    surfaceIndex = 0;
-    for j = 1 : length(inputs.contactSurfaces)
-        if strcmp(inputs.contactSurfaces{j}.hindfootBodyName, ...
-                hindfootBodyName)
-            surfaceIndex = j;
-        end
-    end
-    assert(surfaceIndex ~= 0, hindfootBodyName + ...
-        " is not a contact surface hindfoot body.");
-    
-    costTerm.internalSurfaceIndex = surfaceIndex;
+function IntegratedQuantitiesPreviewTool(settingsFileName)
+settingsTree = xml2struct(settingsFileName);
+verifyVersion(settingsTree, "DesignOptimizationTool");
+[inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
+inputs = normalizeSynergyData(inputs);
+inputs = setupMuscleSynergies(inputs);
+inputs = setupTorqueControls(inputs);
+inputs = makeTreatmentOptimizationInputs(inputs, params);
+[setup, ~] = convertToGpopsInputs(inputs, params);
+displayIntegratedQuantitesPreview(setup, inputs);
 end
 
-assert(isfield(costTerm, 'errorCenter'), "Impulse goal terms " + ...
-    "require an <error_center>.");
-cost = ((modeledValues.brakingImpulse(surfaceIndex) - costTerm.errorCenter) ...
-    ./ costTerm.maxAllowableError) .^ 2;
+function displayIntegratedQuantitesPreview(setup, inputs)
+integral = setup.guess.phase.integral;
+index = length(integral);
+metabolic = valueOrAlternate(inputs, 'calculateMetabolicCost', false);
+braking = valueOrAlternate(inputs, 'calculateBrakingImpulse', false);
+propulsive = valueOrAlternate(inputs, 'calculatePropulsiveImpulse', false);
+if propulsive
+    disp("Propulsive impulses: " + ...
+        strjoin(string(integral(index - length(inputs.contactSurfaces) + 1 : index)), '\t'));
+    index = index - length(inputs.contactSurfaces);
+end
+if braking
+    disp("Braking impulses: " + ...
+        strjoin(string(integral(index - length(inputs.contactSurfaces) + 1 : index)), '\t'));
+    index = index - length(inputs.contactSurfaces);
+end
+if metabolic
+    disp("Total metabolic cost: " + integral(index));
+    index = index - 1;
+end
 end
