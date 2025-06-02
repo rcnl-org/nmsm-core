@@ -28,7 +28,7 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = makeSurrogateModel(inputs)
-if strcmp(inputs.controllerType, 'synergy')
+if any(inputs.controllerTypes(2:3))
     for i = 1 : length(inputs.coordinateNames)
         for j = 1 : length(inputs.surrogateModelCoordinateNames)
             if strcmp(inputs.coordinateNames(i), inputs.surrogateModelCoordinateNames(j))
