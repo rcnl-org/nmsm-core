@@ -51,6 +51,7 @@ function output = computeGpopsEndpointFunction(setup)
     if valueOrAlternate(setup.auxdata, 'calculateBrakingImpulse', false)
         modeledValues.brakingImpulse = setup.phase.integral( ...
             end - length(setup.auxdata.contactSurfaces) - counter + 1 : end - counter);
+        counter = counter + length(setup.auxdata.contactSurfaces);
     end
     if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
         modeledValues.metabolicCost = setup.phase.integral(end - counter);
