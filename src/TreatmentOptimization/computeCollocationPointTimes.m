@@ -22,7 +22,7 @@ else
         collocationTime(end+1:end+1+length(rootTime)) ...
             = [meshTime(i), meshTime(i) + meshDuration * rootTime];
     end
-    inputs.collocationTimeOriginal = collocationTime;
+    inputs.collocationTimeOriginal = collocationTime';
 end
 end
 
