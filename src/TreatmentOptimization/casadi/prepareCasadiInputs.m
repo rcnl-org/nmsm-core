@@ -33,6 +33,6 @@ inputs = preSplineCasadiInputs(inputs);
 
 % First run of model function to check for errors, preindex cost and
 % constraint terms, and find initial integrated quantities
-[~, ~, ~, ~, ~, inputs] = computeCasadiModelFunction( ...
+[~, inputs] = computeCasadiModelFunction( ...
     inputs.guess.phase, inputs);
 end
