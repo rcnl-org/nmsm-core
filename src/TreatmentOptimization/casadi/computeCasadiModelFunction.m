@@ -37,8 +37,8 @@ modeledValues = calcSynergyBasedModeledValues(values, inputs);
 modeledValues = calcTorqueBasedModeledValues(values, inputs, ...
     modeledValues);
 
-% TODO: dynamic constraint
-% outputs.dynamics = calcCasadiDynamicConstraint(values, inputs);
+% Dynamic constraint
+outputs.dynamics = calcCasadiDynamicConstraint(values, inputs);
 
 % Path constraints
 persistent pathConstraintTermCalculations, persistent pathAllowedTypes;

@@ -47,6 +47,7 @@ clear calcGpopsIntegrand
 clear computeGpopsEndpointFunction
 clear computeGpopsContinuousFunction
 clear computeCasadiModelFunction
+clear calcCasadiDynamicConstraint
 clear calcSynergyBasedModeledValues
 clear calcTorqueBasedModeledValues
 clear calcSurrogateModel
