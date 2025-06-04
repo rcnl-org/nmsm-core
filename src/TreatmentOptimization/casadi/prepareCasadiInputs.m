@@ -10,7 +10,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -24,17 +24,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [inputs, output] = solveOptimalControlProblem(inputs, params)
-if strcmp(inputs.solverType, 'gpops')
-    [setup, inputs] = convertToGpopsInputs(inputs, params);
-    setup.auxdata = inputs;
-    solution = gpops2(setup);
-    inputs = setup.auxdata;
-    output = convertFromGpopsOutputs(solution, ...
-        inputs, params);
-else
-    inputs = prepareCasadiInputs(inputs, params);
-    solution = solveTreatmentOptimizationWithCasadi(inputs);
-    output = convertFromCasadiOutputs(solution, inputs);
-end
+function inputs = prepareCasadiInputs(inputs, params)
+inputs.bounds = setupTreatmentOptimizationBounds(inputs, params);
+[inputs, inputs.guess] = setupGpopsInitialGuess(inputs);
+inputs.numMeshes = inputs.gpops.numCollocationPoints;
+inputs.numCollocationPerMesh = inputs.gpops.numIntervals;
+inputs = preSplineCasadiInputs(inputs);
+
+% First run of model function to check for errors, preindex cost and
+% constraint terms, and find initial integrated quantities
+[~, ~, ~, ~, ~, inputs] = computeCasadiModelFunction( ...
+    inputs.guess.phase, inputs);
 end
