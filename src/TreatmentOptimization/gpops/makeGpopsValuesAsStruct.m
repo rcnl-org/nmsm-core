@@ -29,8 +29,12 @@
 % ----------------------------------------------------------------------- %
 
 function values = makeGpopsValuesAsStruct(phase, inputs)
-values.time = scaleToOriginal(phase.time, inputs.maxTime, ...
-    inputs.minTime);
+if isfield(phase, 'time')
+    values.time = scaleToOriginal(phase.time, inputs.maxTime, ...
+        inputs.minTime);
+else
+    values.time = inputs.collocationTimeOriginalWithEnd;
+end
 state = scaleToOriginal(phase.state, ones(size(phase.state, 1), 1) .* ...
     inputs.maxState, ones(size(phase.state, 1), 1) .* inputs.minState);
 control = scaleToOriginal(phase.control, ones(size(phase.control, 1), 1) .* ...
