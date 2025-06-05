@@ -38,5 +38,5 @@
 % ----------------------------------------------------------------------- %
 
 function version = getPipelineVersion()
-version = "1.4.1";
+version = "1.4.2";
 end

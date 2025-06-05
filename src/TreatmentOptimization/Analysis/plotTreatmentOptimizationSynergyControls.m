@@ -38,12 +38,9 @@
 function plotTreatmentOptimizationSynergyControls(...
     trackedActivationsFile, trackedWeightsFile, ...
     resultsActivationsFiles, resultsWeightsFiles, ...
-    synergyNormalizationMethod, synergyNormalizationValue, varargin)
-% Take synergy activations and controls
-% Normalization method and value 
-% Use a common y axis. 
+    osimx, synergyNormalizationMethod, synergyNormalizationValue, varargin)
 import org.opensim.modeling.Storage
-if nargin > 6
+if ~isempty(varargin)
     options = parseVarargin(varargin);
 else
     options = struct();
@@ -173,64 +170,70 @@ for i=1:numel(trackedActivationsLabels)
     subplotNumber = subplotNumber + 1;
 end
 
-
-figureHeight = numel(trackedWeightsTime);
-figureWidth = 1;
-figure(Name = "Synergy Weights", ...
-    Units=params.units, ...
-    Position=params.figureSize)
-subplotNumber = 1;
-figureNumber = 1;
-t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='compact', Padding='compact');
-xlabel(t, "Muscle Name", ...
-    fontsize=params.axisLabelFontSize)
-ylabel(t, "Synergy Weight", ...
-    fontsize=params.axisLabelFontSize)
-set(gcf, color=params.plotBackgroundColor)
-
-for i = 1 : numel(trackedWeightsTime)
-    nexttile(i)
-    weightsPlottingArray = [trackedWeightsData(i, :)];
-    for k = 1 : numel(resultsWeightsData)
-        weightsPlottingArray = [weightsPlottingArray; resultsWeightsData{k}(i, :)];
-    end
-    b = bar(1:numel(trackedWeightsLabels), ...
-        weightsPlottingArray);
-    b(1).FaceColor = params.lineColors(1);
-    for k = 1 : numel(resultsWeightsData)
-        b(k+1).FaceColor = params.lineColors(k+1);
-    end
-    title(strrep(trackedActivationsLabels(i), "_", " "))
-    if i == figureHeight
-        xticks(1:numel(trackedWeightsLabels))
-        xticklabels(trackedWeightsLabels)
-    else
-        xticks([])
-        xticklabels([])
-    end
-    set(gca, ...
-        fontsize = params.tickLabelFontSize, ...
-        color=params.subplotBackgroundColor)
-    maxWeights = max(trackedWeightsData, [], "all");
-    for k = 1 : numel(resultsWeightsData)
-        maxWeights(k) = max(resultsWeightsData{k}, [], "all");
-    end
-    ylim([0 max(maxWeights)])
-    if i == 1
-        splitFileName = split(trackedWeightsFile, ["/", "\"]);
-        for k = 1 : numel(splitFileName)
-            if ~strcmp(splitFileName(k), "..")
-                legendValues = sprintf("%s (T)", ...
-                    strrep(splitFileName(k), "_", " "));
-                break
+% Outer level: iterate through synergy sets. We get 1 plot for each synergy
+% set for readability.
+synergyNumber = 1;
+for synergyGroup = 1 : numel(osimx.synergyGroups)
+    synergyGroup = osimx.synergyGroups{synergyGroup};
+    muscleIndices = contains(trackedWeightsLabels, ...
+        synergyGroup.muscleNames);
+    figureHeight = synergyGroup.numSynergies;
+    figureWidth=1;
+    figure(Name = "Synergy Weights", ...
+        Units=params.units, ...
+        Position=params.figureSize)
+    t = tiledlayout(figureHeight, figureWidth, ...
+        TileSpacing='compact', Padding='compact');
+    xlabel(t, "Muscle Name", ...
+        fontsize=params.axisLabelFontSize)
+    ylabel(t, "Synergy Weight", ...
+        fontsize=params.axisLabelFontSize)
+    set(gcf, color=params.plotBackgroundColor)
+    for i = 1 : synergyGroup.numSynergies
+        nexttile(i)
+        weightsPlottingArray = [trackedWeightsData(synergyNumber, muscleIndices)];
+        for k = 1 : numel(resultsWeightsData)
+            weightsPlottingArray = [weightsPlottingArray; ...
+                resultsWeightsData{k}(synergyNumber, muscleIndices)];
+        end
+        b = bar(1:numel(synergyGroup.muscleNames), ...
+            weightsPlottingArray);
+        b(1).FaceColor = params.lineColors(1);
+        for k = 1 : numel(resultsWeightsData)
+            b(k+1).FaceColor = params.lineColors(k+1);
+        end
+        title(strrep(trackedActivationsLabels(synergyNumber), "_", " "))
+        if i == figureHeight
+            xticks(1:numel(synergyGroup.muscleNames))
+            xticklabels(synergyGroup.muscleNames)
+        else
+            xticks(1:numel(synergyGroup.muscleNames))
+            xticklabels([])
+        end
+        synergyNumber = synergyNumber + 1;
+        set(gca, ...
+            fontsize = params.tickLabelFontSize, ...
+            color=params.subplotBackgroundColor)
+        maxWeights = max(trackedWeightsData, [], "all");
+        for k = 1 : numel(resultsWeightsData)
+            maxWeights(k) = max(resultsWeightsData{k}, [], "all");
+        end
+        ylim([0 max(maxWeights)])
+        if i == 1
+            splitFileName = split(trackedWeightsFile, ["/", "\"]);
+            for k = 1 : numel(splitFileName)
+                if ~strcmp(splitFileName(k), "..")
+                    legendValues = sprintf("%s (T)", ...
+                        strrep(splitFileName(k), "_", " "));
+                    break
+                end
             end
+            for j = 1 : numel(resultsWeightsFiles)
+                splitFileName = split(resultsWeightsFiles(j), ["/", "\"]);
+                legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
+            end
+            legend(legendValues, fontsize = params.legendFontSize)
         end
-        for j = 1 : numel(resultsWeightsFiles)
-            splitFileName = split(resultsWeightsFiles(j), ["/", "\"]);
-            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
-        end
-        legend(legendValues, fontsize = params.legendFontSize)
     end
 end
 end
@@ -269,3 +272,5 @@ switch synergyNormalizationMethod
             "supported synergy normalization methods."))
 end
 end
+
+% function []
