@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.4.2 - 2025-06-05
+
+### Fixed
+- Treatment Optimization tools correctly load previous results with different state and control column name orders.
+- `IntegratedQuantitiesPreviewTool()` correctly displays impulses for multiple contact surfaces alongside metabolic cost.
+
+
 ## v1.4.1 - 2025-05-30
 
 ### Added
