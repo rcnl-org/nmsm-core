@@ -1,12 +1,12 @@
 # Changelog
 
-## v1.4.2 - 2025-06-05
+## v1.4.2 - 2025-06-06
 
 ### Fixed
 - Treatment Optimization tools correctly load previous results with different state and control column name orders.
 - `IntegratedQuantitiesPreviewTool()` correctly displays impulses for multiple contact surfaces alongside metabolic cost.
 
-## Changed
+### Changed
 - 'plotTreatmentOptimizationSynergyControls()' splits synergy weights plots by synergy set for readability. This function now requires an osimx file input to parse the synergy set from.
 - 'plotNcpResultsFromSettingsFile()' and 'plotTreatmentOptimizationResultsFromSettingsFile()' have been updated to support the new 'plotTreatmentOptimizationSynergyControls()' change.
 
