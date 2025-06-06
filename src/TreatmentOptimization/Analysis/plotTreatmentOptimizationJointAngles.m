@@ -40,7 +40,7 @@ function plotTreatmentOptimizationJointAngles(modelFileName, ...
     trackedDataFile, resultsDataFiles, varargin)
 import org.opensim.modeling.Storage
 params = getPlottingParams();
-if nargin > 3
+if ~isempty(varargin)
     options = parseVarargin(varargin);
 else
     options = struct();
@@ -52,62 +52,19 @@ else
 end
 model = Model(modelFileName);
 
-trackedDataStorage = Storage(trackedDataFile);
-[coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
-    model, trackedDataStorage);
-trackedData = trackedData';
-% We want time points to start at zero.
-if trackedDataTime(1) ~= 0
-    trackedDataTime = trackedDataTime - trackedDataTime(1);
-end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
-
+[tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles);
 if ~useRadians
-    for i = 1 : size(trackedData, 2)
-        if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
-            .toString().toCharArray()' == "Rotational"
-            trackedData(:, i) = trackedData(:, i) * 180/pi;
-        end
-    end
+    [tracked, results] = convertRadiansToDegrees(model, tracked, results);
 end
 
-
-resultsData = {};
-for j=1:numel(resultsDataFiles)
-    resultsDataStorage = Storage(resultsDataFiles(j));
-    [~, resultsDataTime{j}, resultsData{j}] = parseMotToComponents(...
-        model, resultsDataStorage);
-    resultsData{j} = resultsData{j}';
-    if resultsDataTime{j} ~= 0
-        resultsDataTime{j} = resultsDataTime{j} - resultsDataTime{j}(1);
-    end
-    resultsDataTime{j} = resultsDataTime{j} / resultsDataTime{j}(end);
-    if ~useRadians
-        for i = 1 : size(resultsData{j}, 2)
-            if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
-                .toString().toCharArray()' == "Rotational"
-                resultsData{j}(:, i) = resultsData{j}(:, i) * 180/pi;
-            end
-        end
-    end
-end
-
-% Spline experimental time to the same time points as the model. This is
-% only used for RMSE calculations
-trackedDataSpline = makeGcvSplineSet(trackedDataTime, ...
-    trackedData, coordinateLabels);
-resampledTrackedData = {};
-for j = 1 : numel(resultsDataFiles)
-    resampledTrackedData{j}= evaluateGcvSplines(trackedDataSpline, ...
-        coordinateLabels, resultsDataTime{j});
-end
+tracked = splineAndResamplePlottingData(tracked, results);
 
 if isfield(options, "figureGridSize")
     figureWidth = options.figureGridSize(1);
     figureHeight = options.figureGridSize(2);
 else
-    figureWidth = ceil(sqrt(numel(coordinateLabels)));
-    figureHeight = ceil(numel(coordinateLabels)/figureWidth);
+    figureWidth = ceil(sqrt(numel(tracked.labels)));
+    figureHeight = ceil(numel(tracked.labels)/figureWidth);
 end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Joint Angles", ...
@@ -127,7 +84,7 @@ else
         fontsize=params.axisLabelFontSize)
 end
 set(gcf, color=params.plotBackgroundColor)
-for i=1:numel(coordinateLabels)
+for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
     if i > figureSize * figureNumber
         figureNumber = figureNumber + 1;
@@ -154,19 +111,19 @@ for i=1:numel(coordinateLabels)
         fontsize = params.tickLabelFontSize, ...
         color=params.subplotBackgroundColor)
     hold on
-    plot(trackedDataTime*100, trackedData(:, i), ...
+    plot(tracked.time*100, tracked.data(:, i), ...
         LineWidth=params.linewidth, ...
         Color = params.lineColors(1));
-    for j = 1 : numel(resultsDataFiles)
-        plot(resultsDataTime{j}*100, resultsData{j}(:, i), ...
+    for j = 1 : numel(results.data)
+        plot(results.time{j}*100, results.data{j}(:, i), ...
             LineWidth=params.linewidth, ...
             Color = params.lineColors(j+1));
     end
     hold off
 
-    titleString = [sprintf("%s", strrep(coordinateLabels(i), "_", " "))];
-    for j = 1 : numel(resultsDataFiles)
-        rmse = rms(resampledTrackedData{j}(:, i) - resultsData{j}(:, i));
+    titleString = [sprintf("%s", strrep(tracked.labels(i), "_", " "))];
+    for j = 1 : numel(results.data)
+        rmse = rms(tracked.resampledData{j}(:, i) - results.data{j}(:, i));
         titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
     title(titleString, fontsize = params.subplotTitleFontSize)
@@ -189,15 +146,15 @@ for i=1:numel(coordinateLabels)
     xlim("tight")
     maxData = [];
     minData = [];
-    maxData(1) = max(trackedData(:, i), [], "all");
-    minData(1) = min(trackedData(:, i), [], "all");
-    for j = 1 : numel(resultsDataFiles)
-        maxData(j+1) = max(resultsData{j}(:, i), [], "all");
-        minData(j+1) = min(resultsData{j}(:, i), [], "all");
+    maxData(1) = max(tracked.data(:, i), [], "all");
+    minData(1) = min(tracked.data(:, i), [], "all");
+    for j = 1 : numel(results.data)
+        maxData(j+1) = max(results.data{j}(:, i), [], "all");
+        minData(j+1) = min(results.data{j}(:, i), [], "all");
     end
     yLimitUpper = max(maxData);
     yLimitLower = min(minData);
-    if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
+    if model.getCoordinateSet().get(tracked.labels(i)).getMotionType() ...
             .toString().toCharArray()' == "Rotational"
         if ~useRadians
             minimum = 10;
@@ -220,4 +177,16 @@ function options = parseVarargin(varargin)
     for k = 1 : 2 : numel(varargin)
         options.(varargin{k}) = varargin{k+1};
     end
+end
+
+function [tracked, results] = convertRadiansToDegrees(model, tracked, results)
+for i = 1 : size(tracked.data, 2)
+    if model.getCoordinateSet().get(tracked.labels(i)).getMotionType() ...
+        .toString().toCharArray()' == "Rotational"
+        tracked.data(:, i) = tracked.data(:, i) * 180/pi;
+        for j = 1 : numel(results.data)
+            results.data{j}(:, i) = results.data{j}(:, i) * 180/pi;
+        end
+    end
+end
 end
