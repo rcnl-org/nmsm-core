@@ -54,165 +54,73 @@ else
     useRadians = 1;
 end
 model = Model(modelFileName);
-trackedDataStorage = Storage(trackedDataFile);
-[coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
-    model, trackedDataStorage);
-trackedData = trackedData';
-if trackedDataTime(1) ~= 0
-    trackedDataTime = trackedDataTime - trackedDataTime(1);
-end
-trackedTimeNormalized = trackedDataTime ./ trackedDataTime(end);
-if ~useRadians
-    for i = 1 : size(trackedData, 2)
-        if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
-                .toString().toCharArray()' == "Rotational"
-            trackedData(:, i) = trackedData(:, i) * 180/pi;
-        end
-    end
-end
-for j=1:numel(resultsDataFiles)
-    resultsStatesStorage = Storage(resultsDataFiles(j));
-    [resultsStatesLabels{j}, resultsStatesTime, resultsStates] = ...
-        parseMotToComponents(model, resultsStatesStorage);
-    resultsStates = resultsStates';
-    if resultsStatesTime ~= 0
-        resultsStatesTime = resultsStatesTime - resultsStatesTime(1);
-    end
-    resultsTimeNormalized{j} = resultsStatesTime ./ resultsStatesTime(end);
-    
-    resultsVelocities{j} = resultsStates(:, size(resultsStates, 2)/2+1:end);
-    resultsVelocitiesLabels{j} = resultsStatesLabels{j}(size(resultsStates, 2)/2+1:end);
-    resultsVelocitiesTime{j} = resultsStatesTime;
-    if ~useRadians
-        for i = 1 : size(resultsStates(:, 1:size(resultsStates, 2)/2), 2)
-            if model.getCoordinateSet().get(resultsStatesLabels(i)).getMotionType() ...
-                    .toString().toCharArray()' == "Rotational"
-                resultsVelocities{j}(:, i) = resultsVelocities{j}(:, i) * 180/pi;
-    
-            end
-        end
-    end
+[tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
+for j = 1 : numel(results.data)
+    results.data{j} = results.data{j}(:, size(results.data{j}, 2)/2+1:end);
+    results.labels{j} = results.labels{j}(1:size(results.labels{j}, 2)/2);
 end
 
-trackedDataSpline = makeGcvSplineSet(trackedDataTime, ...
-    trackedData, coordinateLabels);
-trackedVelocities = evaluateGcvSplines(trackedDataSpline, coordinateLabels, ...
-    trackedDataTime, 1);
+% Create experimental velocities
+trackedDataSpline = makeGcvSplineSet(tracked.time, ...
+    tracked.data, tracked.labels);
+tracked.data = evaluateGcvSplines(trackedDataSpline, tracked.labels, ...
+    tracked.time, 1);
 
 % Reorder labels
-for j = 1 : numel(resultsDataFiles)
-    [~, ~, indices] = intersect(resultsVelocitiesLabels{1}, resultsVelocitiesLabels{j}, 'stable');
-    resultsVelocities{j}(:, 1:length(indices)) = resultsVelocities{j}(:,indices);
-    resultsStatesLabels{j}(1:length(indices)) = resultsStatesLabels{j}(indices);
+for j = 1 : numel(results.data)
+    [~, ~, indices] = intersect(results.labels{1}, results.labels{j}, 'stable');
+    results.data{j}(:, 1:length(indices)) = results.data{j}(:,indices);
+    results.labels{j}(1:length(indices)) = results.labels{j}(indices);
 end
-resultsVelocitiesLabels = resultsVelocitiesLabels{1};
-resultsStatesLabels = resultsStatesLabels{1};
 
-resampledTrackedVelocities = {};
-for j = 1 : numel(resultsDataFiles)
-    resampledTrackedVelocities{j}= evaluateGcvSplines(trackedDataSpline, ...
-        coordinateLabels, resultsVelocitiesTime{j}, 1);
-end
-if isfield(options, "figureGridSize")
-    figureWidth = options.figureGridSize(1);
-    figureHeight = options.figureGridSize(2);
-else
-    figureWidth = ceil(sqrt(numel(resultsVelocitiesLabels)));
-    figureHeight = ceil(numel(resultsVelocitiesLabels)/figureWidth);
-end
-figureSize = figureWidth * figureHeight;
-figure(Name = "Joint Velocities", ...
-    Units=params.units, ...
-    Position=params.figureSize)
-subplotNumber = 1;
-figureNumber = 1;
-t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]", ...
-    fontsize=params.axisLabelFontSize)
+% Only use the coordinates in the states.
+[~, ~, trackedIndicesToUse] = intersect(results.labels{1}, tracked.labels, 'stable');
+tracked.labels = tracked.labels(trackedIndicesToUse);
+tracked.data = tracked.data(:, trackedIndicesToUse);
+
 if ~useRadians
-    ylabel(t, "Joint Velocity [deg/s]", ...
-        fontsize=params.axisLabelFontSize)
-else
-    ylabel(t, "Joint Velocity [rad/s]", ...
-        fontsize=params.axisLabelFontSize)
+    [tracked, results] = convertRadiansToDegrees(model, tracked, results);
 end
-set(gcf, color=params.plotBackgroundColor)
-for i=1:numel(resultsVelocitiesLabels)
-    if i > figureSize * figureNumber
-        figureNumber = figureNumber + 1;
-        figure(Name="Joint Velocities", ...
-            Units=params.units, ...
-            Position=params.figureSize)
-        t = tiledlayout(figureHeight, figureWidth, ...
-            TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]", ...
-            fontsize=params.axisLabelFontSize)
-        if ~useRadians
-            ylabel(t, "Joint Velocity [deg/s]", ...
-                fontsize=params.axisLabelFontSize)
-        else
-            ylabel(t, "Joint Velocity [rad/s]", ...
-                fontsize=params.axisLabelFontSize)
-        end
-        set(gcf, color=params.plotBackgroundColor)
+
+tracked = splineAndResamplePlottingData(tracked, results);
+
+tileFigure = makeJointVelocitiesFigure(params, options, tracked, useRadians);
+figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
+figureNumber = 1;
+subplotNumber = 1;
+titleStrings = makeSubplotTitles(tracked, results);
+legendString = makeLegendFromFileNames(trackedDataFile, ...
+            resultsDataFiles);
+yLimits = makeJointVelocitiesYLimits(tracked, results, model, useRadians);
+for i=1:numel(tracked.labels)
+    % If we exceed the specified figure size, create a new figure
+    if subplotNumber > figureSize * figureNumber
+        makeJointAnglesFigure(params, options, tracked, useRadians);
         subplotNumber = 1;
+        figureNumber = figureNumber + 1;
     end
-    coordinateIndex = find(resultsStatesLabels(i) == coordinateLabels);
-    if ~isempty(coordinateIndex)
-        nexttile(subplotNumber);
-        set(gca, ...
-            fontsize = params.tickLabelFontSize, ...
-            color=params.subplotBackgroundColor)
-        hold on
-        plot(trackedTimeNormalized*100, trackedVelocities(:, coordinateIndex), ...
-            LineWidth=params.linewidth, ...
-            Color = params.lineColors(1))
-        for j = 1 : numel(resultsDataFiles)
-            plot(resultsTimeNormalized{j}*100, resultsVelocities{j}(:, i), ...
-            LineWidth=params.linewidth, ...
-            Color = params.lineColors(j+1));
-        end
-        hold off
-        titleString = [sprintf("%s", strrep(coordinateLabels(coordinateIndex), "_", " "))];
-        for j = 1 : numel(resultsDataFiles)
-            rmse = rms(resampledTrackedVelocities{j}(:, coordinateIndex) - ...
-                resultsVelocities{j}(:, i));
-            titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
-        end
-        title(titleString, fontsize = params.subplotTitleFontSize)
-        if subplotNumber==1
-            splitFileName = split(trackedDataFile, ["/", "\"]);
-            for k = 1 : numel(splitFileName)
-                if ~strcmp(splitFileName(k), "..")
-                    legendValues = sprintf("%s (T)", ...
-                        strrep(splitFileName(k), "_", " "));
-                    break
-                end
-            end
-            for j = 1 : numel(resultsDataFiles)
-                splitFileName = split(resultsDataFiles(j), ["/", "\"]);
-                legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
-            end
-            legend(legendValues, fontsize = params.legendFontSize);
-        end
-        xlim("tight")
-        maxData = [];
-        minData = [];
-        for j = 1 : numel(resultsDataFiles)
-            maxData(j) = max(resultsVelocities{j}(:, i), [], "all");
-            minData(j) = min(resultsVelocities{j}(:, i), [], "all");
-        end
-        maxData(j+1) = max(trackedVelocities(:, i), [], "all");
-        minData(j+1) = min(trackedVelocities(:, i), [], "all");
-        yLimitUpper = max(maxData);
-        yLimitLower = min(minData);
-        minimum = 3;
-        if yLimitUpper - yLimitLower < minimum
-            ylim([(yLimitUpper+yLimitLower)/2-minimum, (yLimitUpper+yLimitLower)/2+minimum])
-        end
-        subplotNumber = subplotNumber + 1;
+    nexttile(subplotNumber);
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
+    hold on
+    plot(tracked.normalizedTime*100, tracked.data(:, i), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1))
+    for j = 1 : numel(resultsDataFiles)
+        plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(j+1));
     end
+    hold off
+
+    title(titleStrings{i}, fontsize = params.subplotTitleFontSize)
+    if subplotNumber==1
+        legend(legendString, fontsize = params.legendFontSize)
+    end
+    xlim("tight")
+    ylim(yLimits{i});
+    subplotNumber = subplotNumber + 1;
 end
 end
 
@@ -222,4 +130,73 @@ function options = parseVarargin(varargin)
     for k = 1 : 2 : numel(varargin)
         options.(varargin{k}) = varargin{k+1};
     end
+end
+
+function [tracked, results] = convertRadiansToDegrees(model, tracked, results)
+for i = 1 : size(tracked.data, 2)
+    if model.getCoordinateSet().get(tracked.labels(i)).getMotionType() ...
+        .toString().toCharArray()' == "Rotational"
+        tracked.data(:, i) = tracked.data(:, i) * 180/pi;
+        for j = 1 : numel(results.data)
+            results.data{j}(:, i) = results.data{j}(:, i) * 180/pi;
+        end
+    end
+end
+end
+
+function tileFigure = makeJointVelocitiesFigure(params, options, tracked, useRadians)
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
+    figureWidth = ceil(sqrt(numel(tracked.labels)));
+    figureHeight = ceil(numel(tracked.labels)/figureWidth);
+end
+figureSize = figureWidth * figureHeight;
+figure(Name = "Joint Velocities", ...
+    Units=params.units, ...
+    Position=params.figureSize);
+tileFigure = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='compact', Padding='compact');
+xlabel(tileFigure, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+if ~useRadians
+    ylabel(tileFigure, "Joint Velocity [deg]", ...
+        fontsize=params.axisLabelFontSize)
+else
+    ylabel(tileFigure, "Joint Velocity [rad]", ...
+        fontsize=params.axisLabelFontSize)
+end
+set(gcf, color=params.plotBackgroundColor)
+end
+
+function yLimits = makeJointVelocitiesYLimits(tracked, results, model, useRadians)
+for i = 1 : numel(tracked.labels)
+    maxData = [];
+    minData = [];
+    maxData(1) = max(tracked.data(:, i), [], "all");
+    minData(1) = min(tracked.data(:, i), [], "all");
+    for j = 1 : numel(results.data)
+        maxData(j+1) = max(results.data{j}(:, i), [], "all");
+        minData(j+1) = min(results.data{j}(:, i), [], "all");
+    end
+    yLimitUpper = max(maxData);
+    yLimitLower = min(minData);
+    if model.getCoordinateSet().get(tracked.labels(i)).getMotionType() ...
+            .toString().toCharArray()' == "Rotational"
+        if ~useRadians
+            minimum = 3;
+        else
+            minimum = 3*pi/180;
+        end
+    else
+        minimum = 0.03;
+    end
+    if yLimitUpper - yLimitLower < minimum
+        yLimits{i} = [(yLimitUpper+yLimitLower)/2-minimum, ...
+            (yLimitUpper+yLimitLower)/2+minimum];
+    else
+        yLimits{i} = [yLimitLower, yLimitUpper];
+    end
+end
 end

@@ -1,17 +1,20 @@
-function [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles)
+function [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model)
     import org.opensim.modeling.*
+    if nargin < 3
+        model = org.opensim.modeling.Model();
+    end
     tracked = struct();
     results = struct();
-
+    
     trackedDataStorage = Storage(trackedDataFile);
     [tracked.labels, tracked.time, tracked.data] = parseMotToComponents(...
-        org.opensim.modeling.Model(), trackedDataStorage);
+        model, trackedDataStorage);
     tracked.data = tracked.data';
     % We want time points to start at zero.
     if tracked.time(1) ~= 0
         tracked.time = tracked.time - tracked.time(1);
     end
-    tracked.time = tracked.time / tracked.time(end);
+    tracked.normalizedTime = tracked.time / tracked.time(end);
 
     for j=1:numel(resultsDataFiles)
         resultsDataStorage = Storage(resultsDataFiles(j));
@@ -21,6 +24,6 @@ function [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFile
         if results.time{j} ~= 0
             results.time{j} = results.time{j} - results.time{j}(1);
         end
-        results.time{j} = results.time{j} / results.time{j}(end);
+        results.normalizedTime{j} = results.time{j} / results.time{j}(end);
     end
 end

@@ -38,7 +38,6 @@
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationJointAngles(modelFileName, ...
     trackedDataFile, resultsDataFiles, varargin)
-import org.opensim.modeling.Storage
 params = getPlottingParams();
 if ~isempty(varargin)
     options = parseVarargin(varargin);
@@ -50,15 +49,81 @@ if isfield(options, "useRadians")
 else
     useRadians = 0;
 end
-model = Model(modelFileName);
 
-[tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles);
+model = Model(modelFileName);
+[tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
 if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);
 end
 
 tracked = splineAndResamplePlottingData(tracked, results);
 
+tileFigure = makeJointAnglesFigure(params, options, tracked, useRadians);
+
+figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
+
+figureNumber = 1;
+subplotNumber = 1;
+
+titleStrings = makeSubplotTitles(tracked, results);
+legendString = makeLegendFromFileNames(trackedDataFile, ...
+            resultsDataFiles);
+yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians);
+for i=1:numel(tracked.labels)
+    % If we exceed the specified figure size, create a new figure
+    if subplotNumber > figureSize * figureNumber
+        makeJointAnglesFigure(params, options, tracked, useRadians);
+        subplotNumber = 1;
+        figureNumber = figureNumber + 1;
+    end
+    nexttile(subplotNumber);
+    
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
+    hold on
+    plot(tracked.normalizedTime*100, tracked.data(:, i), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1));
+    for j = 1 : numel(results.data)
+        plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(j+1));
+    end
+    hold off
+
+    title(titleStrings{i}, fontsize = params.subplotTitleFontSize)
+    if subplotNumber==1
+        legend(legendString, fontsize = params.legendFontSize)
+    end
+    
+    xlim("tight")
+    ylim(yLimits{i});
+    subplotNumber = subplotNumber + 1;
+end
+end
+
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
+end
+
+function [tracked, results] = convertRadiansToDegrees(model, tracked, results)
+for i = 1 : size(tracked.data, 2)
+    if model.getCoordinateSet().get(tracked.labels(i)).getMotionType() ...
+        .toString().toCharArray()' == "Rotational"
+        tracked.data(:, i) = tracked.data(:, i) * 180/pi;
+        for j = 1 : numel(results.data)
+            results.data{j}(:, i) = results.data{j}(:, i) * 180/pi;
+        end
+    end
+end
+end
+
+function tileFigure = makeJointAnglesFigure(params, options, tracked, useRadians)
 if isfield(options, "figureGridSize")
     figureWidth = options.figureGridSize(1);
     figureHeight = options.figureGridSize(2);
@@ -69,81 +134,23 @@ end
 figureSize = figureWidth * figureHeight;
 figure(Name = "Joint Angles", ...
     Units=params.units, ...
-    Position=params.figureSize)
-subplotNumber = 1;
-figureNumber = 1;
-t = tiledlayout(figureHeight, figureWidth, ...
+    Position=params.figureSize);
+tileFigure = tiledlayout(figureHeight, figureWidth, ...
     TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]", ...
+xlabel(tileFigure, "Percent Movement [0-100%]", ...
     fontsize=params.axisLabelFontSize)
 if ~useRadians
-    ylabel(t, "Joint Angle [deg]", ...
+    ylabel(tileFigure, "Joint Angle [deg]", ...
         fontsize=params.axisLabelFontSize)
 else
-    ylabel(t, "Joint Angle [rad]", ...
+    ylabel(tileFigure, "Joint Angle [rad]", ...
         fontsize=params.axisLabelFontSize)
 end
 set(gcf, color=params.plotBackgroundColor)
-for i=1:numel(tracked.labels)
-    % If we exceed the specified figure size, create a new figure
-    if i > figureSize * figureNumber
-        figureNumber = figureNumber + 1;
-        figure(Name="Joint Angles", ...
-            Units=params.units, ...
-            Position=params.figureSize)
-        t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='compact', Padding='compact');
-    xlabel(t, "Percent Movement [0-100%]", ...
-        fontsize=params.axisLabelFontSize)
-    if ~useRadians
-        ylabel(t, "Joint Angle [deg]", ...
-            fontsize=params.axisLabelFontSize)
-    else
-        ylabel(t, "Joint Angle [rad]", ...
-            fontsize=params.axisLabelFontSize)
-    end
-        set(gcf, color=params.plotBackgroundColor)
-        subplotNumber = 1;
-    end
+end
 
-    nexttile(subplotNumber);
-    set(gca, ...
-        fontsize = params.tickLabelFontSize, ...
-        color=params.subplotBackgroundColor)
-    hold on
-    plot(tracked.time*100, tracked.data(:, i), ...
-        LineWidth=params.linewidth, ...
-        Color = params.lineColors(1));
-    for j = 1 : numel(results.data)
-        plot(results.time{j}*100, results.data{j}(:, i), ...
-            LineWidth=params.linewidth, ...
-            Color = params.lineColors(j+1));
-    end
-    hold off
-
-    titleString = [sprintf("%s", strrep(tracked.labels(i), "_", " "))];
-    for j = 1 : numel(results.data)
-        rmse = rms(tracked.resampledData{j}(:, i) - results.data{j}(:, i));
-        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
-    end
-    title(titleString, fontsize = params.subplotTitleFontSize)
-    if subplotNumber==1
-        splitFileName = split(trackedDataFile, ["/", "\"]);
-        for k = 1 : numel(splitFileName)
-            if ~strcmp(splitFileName(k), "..")
-                legendValues = sprintf("%s (T)", ...
-                    strrep(splitFileName(k), "_", " "));
-                break
-            end
-        end
-        for j = 1 : numel(resultsDataFiles)
-            splitFileName = split(resultsDataFiles(j), ["/", "\"]);
-            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
-        end
-        legend(legendValues, fontsize = params.legendFontSize)
-    end
-    
-    xlim("tight")
+function yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians)
+for i = 1 : numel(tracked.labels)
     maxData = [];
     minData = [];
     maxData(1) = max(tracked.data(:, i), [], "all");
@@ -165,28 +172,10 @@ for i=1:numel(tracked.labels)
         minimum = 0.1;
     end
     if yLimitUpper - yLimitLower < minimum
-        ylim([(yLimitUpper+yLimitLower)/2-minimum, (yLimitUpper+yLimitLower)/2+minimum])
-    end
-    subplotNumber = subplotNumber + 1;
-end
-end
-
-function options = parseVarargin(varargin)
-    options = struct();
-    varargin = varargin{1};
-    for k = 1 : 2 : numel(varargin)
-        options.(varargin{k}) = varargin{k+1};
-    end
-end
-
-function [tracked, results] = convertRadiansToDegrees(model, tracked, results)
-for i = 1 : size(tracked.data, 2)
-    if model.getCoordinateSet().get(tracked.labels(i)).getMotionType() ...
-        .toString().toCharArray()' == "Rotational"
-        tracked.data(:, i) = tracked.data(:, i) * 180/pi;
-        for j = 1 : numel(results.data)
-            results.data{j}(:, i) = results.data{j}(:, i) * 180/pi;
-        end
+        yLimits{i} = [(yLimitUpper+yLimitLower)/2-minimum, ...
+            (yLimitUpper+yLimitLower)/2+minimum];
+    else
+        yLimits{i} = [yLimitLower, yLimitUpper];
     end
 end
 end
