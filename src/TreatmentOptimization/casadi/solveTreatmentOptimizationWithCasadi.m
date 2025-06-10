@@ -46,7 +46,6 @@ mainFunction = TreatmentOptimizationCallback('mainFunction', inputs, ...
 [dynamics, pathTemp, terminalTemp, objectiveTemp] = mainFunction(state, control);
 
 % Apply variable bounds
-test = jacobian(dynamics,state);
 maxState = repmat(inputs.bounds.phase.state.upper, size(state, 1), 1);
 minState = repmat(inputs.bounds.phase.state.lower, size(state, 1), 1);
 optimizer.subject_to(minState(:) < state(:) < maxState(:));
