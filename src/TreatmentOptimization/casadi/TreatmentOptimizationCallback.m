@@ -53,26 +53,14 @@ classdef TreatmentOptimizationCallback < casadi.Callback
         end
 
         function output = eval(self, casadiValues)
-            state = casadiValues{1};
-            control = casadiValues{2};
-            structValues.state = ...
-                self.convertDenseMatrixToDoubleArray(state);
-            structValues.control = ...
-                self.convertDenseMatrixToDoubleArray(control);
+            structValues.state = full(casadiValues{1});
+            structValues.control = full(casadiValues{2});
 
             outputs = computeCasadiModelFunction(structValues, ...
                 self.inputs);
 
             output = {outputs.dynamics, outputs.path, outputs.terminal, ...
                 outputs.objective};
-        end
-
-        function array = convertDenseMatrixToDoubleArray(self, matrix)
-            array = zeros(size(matrix));
-            for i = 1 : numel(array)
-                tempElement = matrix(i);
-                array(i) = tempElement.to_double;
-            end
         end
     end
 end
