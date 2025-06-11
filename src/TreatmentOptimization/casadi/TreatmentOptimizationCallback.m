@@ -1,17 +1,23 @@
 classdef TreatmentOptimizationCallback < casadi.Callback
     properties
         inputs
+        derivativeDependencies
     end
     methods
-        function self = TreatmentOptimizationCallback(name, inputs, options)
+        % Construct callback with optional struct input for callback
+        % options, such as how to calculate derivatives. 
+        function self = TreatmentOptimizationCallback(name, inputs, ...
+                derivativeDependencies, options)
             self@casadi.Callback();
             self.inputs = inputs;
-            if nargin < 3
+            self.derivativeDependencies = derivativeDependencies;
+            if nargin < 4
                 options = struct();
             end
             construct(self, name, options);
         end
 
+        % Specify input/output counts.
         function v=get_n_in(self)
             v=2;
         end
@@ -19,6 +25,9 @@ classdef TreatmentOptimizationCallback < casadi.Callback
             v=4;
         end
 
+        % Return sparsity patterns (shapes of dense matrices in this case)
+        % of expected inputs and outputs. This function will be called
+        % indexing from zero. 
         function res = get_sparsity_in(self, i)
             switch i
                 case 0
@@ -52,6 +61,18 @@ classdef TreatmentOptimizationCallback < casadi.Callback
             end
         end
 
+        % Return expected Jacobian sparsity pattern for each output/input
+        % combination. This function will be called indexing from zero. 
+        function res = get_jac_sparsity(self, oind, iind, ~)
+            res = self.derivativeDependencies{oind + 1, iind + 1};
+        end
+        
+        % Tell CasADi where it has Jacobian sparsity patterns to use.
+        function res = has_jac_sparsity(self, oind, iind)
+            res = ~isempty(self.derivativeDependencies{oind+1, iind+1});
+        end
+
+        % Iterative call to use main model function
         function output = eval(self, casadiValues)
             structValues.state = full(casadiValues{1});
             structValues.control = full(casadiValues{2});

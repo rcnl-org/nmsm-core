@@ -38,12 +38,15 @@ control = optimizer.variable(size(inputs.guess.phase.control, 1), ...
 optimizer.set_initial(state, inputs.guess.phase.state);
 optimizer.set_initial(control, inputs.guess.phase.control);
 
+% Find derivative dependencies
+derivativeDependencies = findCasadiDerivativeDependencies(inputs);
+
 % Connect optimizer variables to main function
-casadiValues.state = state;
-casadiValues.control = control;
-mainFunction = TreatmentOptimizationCallback('mainFunction', inputs, ...
-    struct('enable_fd', true, 'fd_method', 'forward'));
-[dynamics, pathTemp, terminalTemp, objectiveTemp] = mainFunction(state, control);
+mainFunction = TreatmentOptimizationCallback( ...
+    'mainFunction', inputs, derivativeDependencies, ...
+    struct('enable_fd', true, 'fd_method', 'forward'));%, ...
+    %'enable_forward', false, 'enable_reverse', false, 'enable_jacobian', false));
+[dynamics, path, terminal, objective] = mainFunction(state, control);
 
 % Apply variable bounds
 maxState = repmat(inputs.bounds.phase.state.upper, size(state, 1), 1);
@@ -58,24 +61,25 @@ optimizer.subject_to(dynamics == 0);
 
 % Apply path constraints
 if ~isempty(inputs.initialOutputs.path)
-    maxPath = repmat(inputs.maxPath, size(pathTemp, 1), 1);
-    minPath = repmat(inputs.minPath, size(pathTemp, 1), 1);
-    optimizer.subject_to(minPath(:) < pathTemp(:) < maxPath(:));
+    maxPath = repmat(inputs.maxPath, size(path, 1), 1);
+    minPath = repmat(inputs.minPath, size(path, 1), 1);
+    optimizer.subject_to(minPath(:) < path(:) < maxPath(:));
 end
 
 % Apply terminal constraints
 if ~isempty(inputs.initialOutputs.terminal)
-    optimizer.subject_to(inputs.minTerminal < terminalTemp < ...
+    optimizer.subject_to(inputs.minTerminal < terminal < ...
         inputs.maxTerminal);
 end
 
 % Minimize objective
-optimizer.minimize(objectiveTemp);
+optimizer.minimize(objective);
 
 % Ipopt settings
 optimizerOptions.detect_simple_bounds = true;
 optimizerOptions.ipopt.tol = 1e-4;
 optimizerOptions.ipopt.constr_viol_tol = 1e-4;
+optimizerOptions.ipopt.hessian_approximation = 'limited-memory';
 
 optimizer.solver('ipopt', optimizerOptions);
 

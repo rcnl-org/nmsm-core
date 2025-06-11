@@ -103,7 +103,7 @@ discreteObjective = sum(discrete) / length(discrete);
 if isnan(discreteObjective); discreteObjective = 0; end
 
 % Calculate total objective
-if ~isempty(integral) && ~any(isnan(integral))
+if ~isempty(integral)% && ~any(isnan(integral))
     if inputs.normalizeCostByType
         continuousObjective = normalizeCostByType( ...
             inputs.costTerms, allowedCostTypes, integral);
