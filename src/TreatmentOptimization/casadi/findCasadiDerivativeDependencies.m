@@ -38,9 +38,9 @@ valuesFields = string(fieldnames(valuesStruct));
 derivativeDependencies = cell(length(outputsFields), length(valuesFields));
 for i = 1 : length(outputsFields)
     for j = 1 : length(valuesFields)
-        derivativeDependencies{i, j} = sparse(false( ...
+        derivativeDependencies{i, j} = sparse( ...
             numel(inputs.initialOutputs.(outputsFields(i))), ...
-            numel(valuesStruct.(valuesFields(j)))));
+            numel(valuesStruct.(valuesFields(j))));
     end
 end
 
