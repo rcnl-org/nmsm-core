@@ -28,7 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function casadiDependencies = findCasadiDerivativeDependencies(inputs)
+function [derivativeDependencies, casadiDependencies] = ...
+    findCasadiDerivativeDependencies(inputs)
 valuesStruct.state = inputs.guess.phase.state;
 valuesStruct.control = inputs.guess.phase.control;
 

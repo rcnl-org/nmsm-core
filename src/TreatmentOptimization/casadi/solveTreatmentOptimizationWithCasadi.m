@@ -39,13 +39,13 @@ optimizer.set_initial(state, inputs.guess.phase.state);
 optimizer.set_initial(control, inputs.guess.phase.control);
 
 % Find derivative dependencies
-derivativeDependencies = findCasadiDerivativeDependencies(inputs);
+[derivativeDependencies, casadiDependencies] = ...
+    findCasadiDerivativeDependencies(inputs);
 
 % Connect optimizer variables to main function
 mainFunction = TreatmentOptimizationCallback( ...
-    'mainFunction', inputs, derivativeDependencies, ...
-    struct('enable_fd', true, 'fd_method', 'forward'));%, ...
-    %'enable_forward', false, 'enable_reverse', false, 'enable_jacobian', false));
+    'mainFunction', inputs, derivativeDependencies, casadiDependencies, ...
+    struct('enable_fd', true, 'fd_method', 'forward'));
 [dynamics, path, terminal, objective] = mainFunction(state, control);
 
 % Apply variable bounds

@@ -2,15 +2,17 @@ classdef TreatmentOptimizationCallback < casadi.Callback
     properties
         inputs
         derivativeDependencies
+        casadiDependencies
     end
     methods
         % Construct callback with optional struct input for callback
         % options, such as how to calculate derivatives. 
         function self = TreatmentOptimizationCallback(name, inputs, ...
-                derivativeDependencies, options)
+                derivativeDependencies, casadiDependencies, options)
             self@casadi.Callback();
             self.inputs = inputs;
             self.derivativeDependencies = derivativeDependencies;
+            self.casadiDependencies = casadiDependencies;
             if nargin < 4
                 options = struct();
             end
@@ -64,13 +66,18 @@ classdef TreatmentOptimizationCallback < casadi.Callback
         % Return expected Jacobian sparsity pattern for each output/input
         % combination. This function will be called indexing from zero. 
         function res = get_jac_sparsity(self, oind, iind, ~)
-            res = self.derivativeDependencies{oind + 1, iind + 1};
+            res = self.casadiDependencies{oind + 1, iind + 1};
         end
         
         % Tell CasADi where it has Jacobian sparsity patterns to use.
         function res = has_jac_sparsity(self, oind, iind)
-            res = ~isempty(self.derivativeDependencies{oind+1, iind+1});
+            res = ~isempty(self.casadiDependencies{oind+1, iind+1});
         end
+
+%         % Tell CasADi to use provided Jacobian calculations
+%         function res = has_jacobian(self)
+%             res = true;
+%         end
 
         % Iterative call to use main model function
         function output = eval(self, casadiValues)
