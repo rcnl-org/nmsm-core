@@ -39,7 +39,8 @@ defaultTimeNormalization = true;
 experimentalActivation = findSplinedMuscleActivationsByLabels(costTerm, ...
     inputs, time);
 
-cost = experimentalActivation - activation;
+scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+cost = (experimentalActivation * scaleFactor) - activation;
 
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
