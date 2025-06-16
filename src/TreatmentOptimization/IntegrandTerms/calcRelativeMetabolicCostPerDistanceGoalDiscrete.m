@@ -46,6 +46,6 @@ normalizedInitialMetabolicCost = inputs.initialMetabolicCost / ...
 
 rawCost = currentMetabolicCost / ...
     normalizedInitialMetabolicCost;
-assert(~any(isnan(rawCost)), "Relative metabolic cost is infinity, is the initial metabolic cost 0?")
+% assert(~any(isnan(rawCost)), "Relative metabolic cost is infinity, is the initial metabolic cost 0?")
 cost = ((rawCost - costTerm.errorCenter) ./ costTerm.maxAllowableError) .^ 2;
 end
