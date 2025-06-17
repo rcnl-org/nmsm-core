@@ -35,8 +35,13 @@ if isempty(collocationCoefficients)
 end
 meshDuration = (values.time(end) - values.time(1)) / inputs.numMeshes;
 
-dynamics = zeros(inputs.numMeshes * inputs.numCollocationPerMesh * 2, ...
-    size(values.statePositions, 2));
+if isa(values.statePositions, 'casadi.MX')
+    dynamics = casadi.MX.zeros(inputs.numMeshes * ...
+        inputs.numCollocationPerMesh * 2, size(values.statePositions, 2));
+else
+    dynamics = zeros(inputs.numMeshes * inputs.numCollocationPerMesh * ...
+        2, size(values.statePositions, 2));
+end
 index = 0;
 dynamicsIndex = 0;
 for i = 1 : inputs.numMeshes

@@ -1,5 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function computes path constraints (if any) for a CasADi problem
+%
+% (struct) -> (struct)
 %
 
 % ----------------------------------------------------------------------- %
@@ -10,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                                             %
+% Author(s): Claire V. Hammond, Spencer Williams                          %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -24,22 +27,36 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = prepareCasadiInputs(inputs, params)
-inputs.bounds = setupTreatmentOptimizationBounds(inputs, params);
-[inputs, inputs.guess] = setupGpopsInitialGuess(inputs);
-inputs.numMeshes = inputs.gpops.numCollocationPoints;
-inputs.numCollocationPerMesh = inputs.gpops.numIntervals;
-inputs = preSplineCasadiInputs(inputs);
-
-% First run of model functions to check for errors, preindex cost and
-% constraint terms, and find initial integrated quantities
-[outputsSymbolic, modeledValues, inputs] = ...
-    computeCasadiSymbolicModelFunction(inputs.guess.phase, inputs);
-[outputsFinite, inputs] = computeCasadiFiniteDifferenceModelFunction( ...
-    inputs.guess.phase, inputs, modeledValues);
-outputs.dynamics = outputsSymbolic.dynamics;
-outputs.path = outputsSymbolic.path + outputsFinite.path;
-outputs.terminal = outputsSymbolic.terminal + outputsFinite.terminal;
-outputs.objective = outputsSymbolic.objective + outputsFinite.objective;
-inputs.initialOutputs = outputs;
+function [constraint, constraints] = calcCasadiConstraint(constraints, ...
+    constraintTermCalculations, allowedTypes, values, modeledValues, ...
+    inputs, supportAD)
+constraint = [];
+for i = 1:length(constraints)
+    constraintTerm = constraints{i};
+    if constraintTerm.isEnabled
+        nameMatch = ismember(allowedTypes, constraintTerm.type);
+        if isfield(constraintTermCalculations, constraintTerm.type) && ...
+                any(nameMatch)
+            if supportAD(nameMatch)
+                fn = constraintTermCalculations.(constraintTerm.type);
+                try
+                    [newConstraint, constraints{i}] = ...
+                        fn(values, modeledValues, inputs, constraintTerm);
+                catch
+                    newConstraint = fn(values, modeledValues, inputs, ...
+                        constraintTerm);
+                end
+                constraint = cat(2, constraint, newConstraint);
+            else
+                constraint = cat(2, constraint, ...
+                    zeros(length(values.time), 1));
+            end
+        else
+%             throw(MException('ConstraintTerms:IllegalTerm', ...
+%                 strcat("Constraint term ",  constraintTerm.type, ...
+%                 " is not allowed for this tool")))
+        end
+    end
 end
+end
+

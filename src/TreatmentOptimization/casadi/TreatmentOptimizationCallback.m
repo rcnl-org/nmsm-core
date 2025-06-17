@@ -24,7 +24,7 @@ classdef TreatmentOptimizationCallback < casadi.Callback
             v=2;
         end
         function v=get_n_out(self)
-            v=4;
+            v=3;
         end
 
         % Return sparsity patterns (shapes of dense matrices in this case)
@@ -46,17 +46,13 @@ classdef TreatmentOptimizationCallback < casadi.Callback
             switch i
                 case 0
                     res = casadi.Sparsity.dense( ...
-                        size(self.inputs.initialOutputs.dynamics, 1), ...
-                        size(self.inputs.initialOutputs.dynamics, 2));
-                case 1
-                    res = casadi.Sparsity.dense( ...
                         size(self.inputs.initialOutputs.path, 1), ...
                         size(self.inputs.initialOutputs.path, 2));
-                case 2
+                case 1
                     res = casadi.Sparsity.dense( ...
                         size(self.inputs.initialOutputs.terminal, 1), ...
                         size(self.inputs.initialOutputs.terminal, 2));
-                case 3
+                case 2
                     res = casadi.Sparsity.dense( ...
                         size(self.inputs.initialOutputs.objective, 1), ...
                         size(self.inputs.initialOutputs.objective, 2));
@@ -84,11 +80,10 @@ classdef TreatmentOptimizationCallback < casadi.Callback
             structValues.state = full(casadiValues{1});
             structValues.control = full(casadiValues{2});
 
-            outputs = computeCasadiModelFunction(structValues, ...
-                self.inputs);
+            outputs = computeCasadiFiniteDifferenceModelFunction( ...
+                structValues, self.inputs);
 
-            output = {outputs.dynamics, outputs.path, outputs.terminal, ...
-                outputs.objective};
+            output = {outputs.path, outputs.terminal, outputs.objective};
         end
     end
 end

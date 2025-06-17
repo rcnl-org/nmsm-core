@@ -123,6 +123,10 @@ else
     velocities = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 1);
 end
+if isa(values.statePositions, 'casadi.MX')
+    positions = casadi.MX(positions);
+    velocities = casadi.MX(velocities);
+end
 positions(:, inputs.statesCoordinateIndices) = values.statePositions;
 velocities(:, inputs.statesCoordinateIndices) = values.stateVelocities;
 end
@@ -138,6 +142,9 @@ elseif size(values.time) == [2, 1]
 else
     accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 2);
+end
+if isa(values.controlAccelerations, 'casadi.MX')
+    accelerations = casadi.MX(accelerations);
 end
 accelerations(:, inputs.statesCoordinateIndices) = ...
     values.controlAccelerations;

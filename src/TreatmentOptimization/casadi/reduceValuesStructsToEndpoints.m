@@ -1,5 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function reduces structs containing time-varying data to include
+% terminal points, used by the CasADi variant of Treatment Optimization.
+%
+% (struct) -> (struct)
 %
 
 % ----------------------------------------------------------------------- %
@@ -24,22 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = prepareCasadiInputs(inputs, params)
-inputs.bounds = setupTreatmentOptimizationBounds(inputs, params);
-[inputs, inputs.guess] = setupGpopsInitialGuess(inputs);
-inputs.numMeshes = inputs.gpops.numCollocationPoints;
-inputs.numCollocationPerMesh = inputs.gpops.numIntervals;
-inputs = preSplineCasadiInputs(inputs);
-
-% First run of model functions to check for errors, preindex cost and
-% constraint terms, and find initial integrated quantities
-[outputsSymbolic, modeledValues, inputs] = ...
-    computeCasadiSymbolicModelFunction(inputs.guess.phase, inputs);
-[outputsFinite, inputs] = computeCasadiFiniteDifferenceModelFunction( ...
-    inputs.guess.phase, inputs, modeledValues);
-outputs.dynamics = outputsSymbolic.dynamics;
-outputs.path = outputsSymbolic.path + outputsFinite.path;
-outputs.terminal = outputsSymbolic.terminal + outputsFinite.terminal;
-outputs.objective = outputsSymbolic.objective + outputsFinite.objective;
-inputs.initialOutputs = outputs;
+function endpointStruct = reduceValuesStructsToEndpoints(continuousStruct)
+fields = fieldnames(continuousStruct);
+fields = setdiff(fields, ["synergyWeights", "parameters"], 'stable');
+for i = 1 : length(fields)
+    currentTerm = continuousStruct.(fields{i});
+    if size(currentTerm, 1) > 2
+        endpointStruct.(fields{i}) = currentTerm([1 end], :);
+    else
+        endpointStruct.(fields{i}) = currentTerm;
+    end
+end
 end

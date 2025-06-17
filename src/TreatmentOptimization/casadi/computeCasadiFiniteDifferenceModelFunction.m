@@ -28,8 +28,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputs, inputs] = computeCasadiModelFunction(casadiValues, ...
-    inputs)
+function [outputs, inputs] = ...
+    computeCasadiFiniteDifferenceModelFunction(casadiValues, inputs, ...
+    ~)
+% persistent storedModeledValues;
+% if nargin == 1
+%     storedModeledValues = struct();
+%     fields = fieldnames(casadiValues);
+%     for field = string(fields)'
+%         storedModeledValues.(field) = full(casadiValues.(field));
+%     end
+%     return
+% end
+% if nargin < 3
+%     modeledValues = storedModeledValues;
+% end
+
 % Prepare values and modeled values
 values = makeGpopsValuesAsStruct(casadiValues, inputs);
 [inputs, values] = updateSystemFromUserDefinedFunctions(inputs, values);
@@ -37,34 +51,30 @@ modeledValues = calcSynergyBasedModeledValues(values, inputs);
 modeledValues = calcTorqueBasedModeledValues(values, inputs, ...
     modeledValues);
 
-% Dynamic constraint
-outputs.dynamics = calcCasadiDynamicConstraint(values, inputs);
-
 % Path constraints
 persistent pathConstraintTermCalculations, persistent pathAllowedTypes;
+persistent pathNoAD;
 if any(cellfun(@(x) x.isEnabled == 1, inputs.path))
     if isempty(pathAllowedTypes)
-        [pathConstraintTermCalculations, pathAllowedTypes] = ...
-            generateConstraintTermStruct("path", ...
+        [pathConstraintTermCalculations, pathAllowedTypes, ...
+            pathSupportAD] = generateConstraintTermStruct("path", ...
             inputs.controllerTypes, inputs.toolName);
+        pathNoAD = ~pathSupportAD;
     end
-    [outputs.path, inputs.path] = calcGpopsConstraint( ...
+    [outputs.path, inputs.path] = calcCasadiConstraint( ...
         inputs.path, pathConstraintTermCalculations, pathAllowedTypes, ...
-        values, modeledValues, inputs);
+        values, modeledValues, inputs, pathNoAD);
 end
 
 % Continuous cost terms
-[integrand, inputs] = calcGpopsIntegrand(values, modeledValues, inputs);
+[integrand, inputs] = calcCasadiIntegrand(values, modeledValues, ...
+    inputs, false);
 
 % Integrate continuous cost terms and modeled values
 if ~isempty(integrand)
     integral = integrateRadauQuadrature(integrand, inputs, values.time);
 else
     integral = [];
-end
-if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
-    modeledValues.metabolicCost = integrateRadauQuadrature( ...
-        modeledValues.metabolicCost, inputs, values.time);
 end
 if valueOrAlternate(inputs, 'calculatePropulsiveImpulse', false)
     modeledValues.propulsiveImpulse = integrateRadauQuadrature( ...
@@ -76,34 +86,43 @@ if valueOrAlternate(inputs, 'calculateBrakingImpulse', false)
 end
 
 % Switch to endpoint function
-values = reduceValuesToEndpoints(values);
-modeledValues = reduceValuesToEndpoints(modeledValues);
+values = reduceValuesStructsToEndpoints(values);
+modeledValues = reduceValuesStructsToEndpoints(modeledValues);
 
 % Terminal constraint terms
 persistent terminalConstraintTermCalculations;
 persistent terminalAllowedTypes;
+persistent terminalNoAD;
 if isempty(terminalAllowedTypes)
-    [terminalConstraintTermCalculations, terminalAllowedTypes] = ...
-        generateConstraintTermStruct("terminal", ...
+    [terminalConstraintTermCalculations, terminalAllowedTypes, ...
+        terminalSupportAD] = generateConstraintTermStruct("terminal", ...
         inputs.controllerTypes, inputs.toolName);
+    terminalNoAD = ~terminalSupportAD;
 end
-[outputs.terminal, inputs.terminal] = calcGpopsConstraint( ...
+[outputs.terminal, inputs.terminal] = calcCasadiConstraint( ...
     inputs.terminal, terminalConstraintTermCalculations, ...
-    terminalAllowedTypes, values, modeledValues, inputs);
+    terminalAllowedTypes, values, modeledValues, inputs, terminalNoAD);
 
 % Discrete cost terms
 persistent costTermCalculations, persistent allowedCostTypes;
+persistent costNoAD;
 if isempty(allowedCostTypes)
-    [costTermCalculations, allowedCostTypes] = generateCostTermStruct( ...
-        "discrete", inputs.controllerTypes, inputs.toolName);
+    [costTermCalculations, allowedCostTypes, costSupportAD] = ...
+        generateCostTermStruct("discrete", inputs.controllerTypes, ...
+        inputs.toolName);
+    costNoAD = ~costSupportAD;
 end
-[discrete, inputs] = calcTreatmentOptimizationCost( ...
-    costTermCalculations, allowedCostTypes, values, modeledValues, inputs);
-discreteObjective = sum(discrete) / length(discrete);
-if isnan(discreteObjective); discreteObjective = 0; end
+[discrete, inputs] = calcCasadiTreatmentOptimizationCost( ...
+    costTermCalculations, allowedCostTypes, values, modeledValues, ...
+    inputs, costNoAD);
+if ~isempty(discrete)
+    discreteObjective = sum(discrete) / length(discrete);
+else
+    discreteObjective = 0;
+end
 
 % Calculate total objective
-if ~isempty(integral)% && ~any(isnan(integral))
+if ~isempty(integral)
     if inputs.normalizeCostByType
         continuousObjective = normalizeCostByType( ...
             inputs.costTerms, allowedCostTypes, integral);
@@ -115,24 +134,6 @@ else
 end
 
 outputs.objective = continuousObjective + discreteObjective;
-
-% Store initial values if this is the first run
-if valueOrAlternate(inputs, 'calculateMetabolicCost', false) && ...
-        ~isfield(inputs, 'initialMetabolicCost')
-    inputs.initialMetabolicCost = modeledValues.metabolicCost;
-end
-end
-
-function endpointStruct = reduceValuesToEndpoints(continuousStruct)
-fields = fieldnames(continuousStruct);
-for i = 1 : length(fields)
-    currentTerm = continuousStruct.(fields{i});
-    if size(currentTerm, 1) > 2
-        endpointStruct.(fields{i}) = currentTerm([1 end], :);
-    else
-        endpointStruct.(fields{i}) = currentTerm;
-    end
-end
 end
 
 function continuousObjective = normalizeCostByType(costTerms, ...

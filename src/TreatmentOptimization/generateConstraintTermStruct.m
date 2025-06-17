@@ -35,17 +35,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [constraintTermCalculations, allowedTypes] = ...
+function [constraintTermCalculations, allowedTypes, supportAD] = ...
     generateConstraintTermStruct(constraintTermType, controllerTypes, ...
     toolName)
-allowedTypes = getAllowedTypes(constraintTermType, controllerTypes, ...
-    toolName);
+[allowedTypes, supportAD] = getAllowedTypes(constraintTermType, ...
+    controllerTypes, toolName);
 constraintTermCalculations = ...
     getConstraintTermCalculations(constraintTermType);
 end
 
-function allowedTypes = getAllowedTypes(constraintTermType, ...
-    controllerTypes, toolName)
+function [allowedTypes, supportAD] = getAllowedTypes( ...
+    constraintTermType, controllerTypes, toolName)
 if strcmp(constraintTermType, "path")
     constraintTermSet = { ...
         % Table with the columns:
@@ -82,10 +82,12 @@ if strcmp(constraintTermType, "path")
     assert(any(toolNameLogical), toolName + " is not a valid tool.")
 
     allowedTypes = string([]);
+    supportAD = [];
     for term = constraintTermSet
         currentTerm = term{1};
         if any(toolNameLogical & currentTerm{2}) && any(controllerTypes & currentTerm{3})
             allowedTypes(end + 1) = currentTerm{1};
+            supportAD(end + 1) = currentTerm{4};
         end
     end
 elseif strcmp(constraintTermType, "terminal")
@@ -140,10 +142,12 @@ elseif strcmp(constraintTermType, "terminal")
     assert(any(toolNameLogical), toolName + " is not a valid tool.")
 
     allowedTypes = string([]);
+    supportAD = [];
     for term = constraintTermSet
         currentTerm = term{1};
         if any(toolNameLogical & currentTerm{2}) && any(controllerTypes & currentTerm{3})
             allowedTypes(end + 1) = currentTerm{1};
+            supportAD(end + 1) = currentTerm{4};
         end
     end
 else

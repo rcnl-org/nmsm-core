@@ -57,8 +57,20 @@ if any(inputs.controllerTypes(2:3))
     modeledValues.muscleJointMoments = ...
         calcTreatmentOptimizationMuscleJointMoments(inputs, ...
         modeledValues, momentArms);
+
+    if sum(valueOrAlternate(inputs, 'calculateMetabolicCost', false))
+        modeledValues.metabolicCost = calcBhargavaMetabolicCost( ...
+            inputs.mass, modeledValues.muscleActivations, ...
+            modeledValues.normalizedFiberLength, ...
+            modeledValues.normalizedFiberVelocity, ...
+            inputs.maxIsometricForce, inputs.optimalFiberLength);
+    end
 else
+    modeledValues.normalizedFiberLength = [];
+    modeledValues.normalizedFiberVelocity = [];
     modeledValues.muscleActivations = [];
+    modeledValues.muscleJointMoments = [];
+    modeledValues.metabolicCost = [];
 end
 end
 

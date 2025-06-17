@@ -43,10 +43,21 @@ optimizer.set_initial(control, inputs.guess.phase.control);
     findCasadiDerivativeDependencies(inputs);
 
 % Connect optimizer variables to main function
+[symbolicOutputs, modeledValues] = wrapSymbolicModelFunction(state, control);
+% symbolicModelFunction = casadi.Function('symbolicModelFunction', ...
+%     {state, control}, {symbolicOutputs.dynamics, symbolicOutputs.path, ...
+%     symbolicOutputs.terminal, symbolicOutputs.objective, modeledValues.normalizedFiberLength, ...
+%     modeledValues.normalizedFiberVelocity, modeledValues.muscleActivations, ...
+%     modeledValues.muscleJointMoments, modeledValues.metabolicCost});
+% computeCasadiFiniteDifferenceModelFunction(modeledValues);
 mainFunction = TreatmentOptimizationCallback( ...
     'mainFunction', inputs, derivativeDependencies, casadiDependencies, ...
     struct('enable_fd', true, 'fd_method', 'forward'));
-[dynamics, path, terminal, objective] = mainFunction(state, control);
+[path, terminal, objective] = mainFunction(state, control);
+dynamics = symbolicOutputs.dynamics;
+path = symbolicOutputs.path + path;
+terminal = symbolicOutputs.terminal + terminal;
+objective = symbolicOutputs.objective + objective;
 
 % Apply variable bounds
 maxState = repmat(inputs.bounds.phase.state.upper, size(state, 1), 1);
@@ -87,4 +98,11 @@ casadiSolution = optimizer.solve();
 
 % Unpack solution values
 
+end
+
+function [outputs, modeledValues] = wrapSymbolicModelFunction(state, ...
+    control)
+values.state = state;
+values.control = control;
+[outputs, modeledValues] = computeCasadiSymbolicModelFunction(values);
 end

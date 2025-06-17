@@ -1,6 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function calculates the integrand for CasADi.
 %
+% (struct, struct, struct) -> (2D matrix)
+% Returns scaled integrand
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -10,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                                             %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -24,22 +27,25 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = prepareCasadiInputs(inputs, params)
-inputs.bounds = setupTreatmentOptimizationBounds(inputs, params);
-[inputs, inputs.guess] = setupGpopsInitialGuess(inputs);
-inputs.numMeshes = inputs.gpops.numCollocationPoints;
-inputs.numCollocationPerMesh = inputs.gpops.numIntervals;
-inputs = preSplineCasadiInputs(inputs);
-
-% First run of model functions to check for errors, preindex cost and
-% constraint terms, and find initial integrated quantities
-[outputsSymbolic, modeledValues, inputs] = ...
-    computeCasadiSymbolicModelFunction(inputs.guess.phase, inputs);
-[outputsFinite, inputs] = computeCasadiFiniteDifferenceModelFunction( ...
-    inputs.guess.phase, inputs, modeledValues);
-outputs.dynamics = outputsSymbolic.dynamics;
-outputs.path = outputsSymbolic.path + outputsFinite.path;
-outputs.terminal = outputsSymbolic.terminal + outputsFinite.terminal;
-outputs.objective = outputsSymbolic.objective + outputsFinite.objective;
-inputs.initialOutputs = outputs;
+function [integrand, inputs] = calcCasadiIntegrand(values, ...
+    modeledValues, inputs, inAD)
+persistent costTermCalculations, persistent allowedTypes;
+persistent supportAD;
+if isempty(allowedTypes)
+    [costTermCalculations, allowedTypes, supportAD] = ...
+        generateCostTermStruct("continuous", inputs.controllerTypes, ...
+        inputs.toolName);
 end
+if inAD
+    [integrand, inputs] = calcCasadiTreatmentOptimizationCost( ...
+        costTermCalculations, allowedTypes, values, modeledValues, ...
+        inputs, supportAD);
+else
+    [integrand, inputs] = calcCasadiTreatmentOptimizationCost( ...
+        costTermCalculations, allowedTypes, values, modeledValues, ...
+        inputs, ~supportAD);
+end
+integrand = integrand ./ inputs.continuousMaxAllowableError;
+integrand = integrand .^ 2;
+end
+

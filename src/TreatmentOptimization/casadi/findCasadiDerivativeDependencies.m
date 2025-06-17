@@ -34,7 +34,8 @@ valuesStruct.state = inputs.guess.phase.state;
 valuesStruct.control = inputs.guess.phase.control;
 
 % Create a separate sparse dependency matrix for every input/output combo
-outputsFields = string(fieldnames(inputs.initialOutputs));
+outputsFields = setdiff(string(fieldnames(inputs.initialOutputs)), ...
+    "dynamics", 'stable');
 valuesFields = string(fieldnames(valuesStruct));
 derivativeDependencies = cell(length(outputsFields), length(valuesFields));
 for i = 1 : length(outputsFields)
@@ -45,13 +46,18 @@ for i = 1 : length(outputsFields)
     end
 end
 
-% Find dependencies using NaN method
+% Handle AD derivatives separately
+% [~, modeledValues] = computeCasadiSymbolicModelFunction(valuesStruct);
+% computeCasadiFiniteDifferenceModelFunction(modeledValues);
+
+% Find finite difference dependencies using NaN method
 for i = 1 : length(valuesFields)
     for j = 1 : numel(valuesStruct.(valuesFields(i)))
         testValues = valuesStruct;
         % Run model function with a single broken (NaN) input
         testValues.(valuesFields(i))(j) = nan;
-        outputs = computeCasadiModelFunction(testValues, inputs);
+        outputs = computeCasadiFiniteDifferenceModelFunction( ...
+            testValues, inputs);
         
         % All broken (NaN) outputs depended on the broken input
         for k = 1 : length(outputsFields)

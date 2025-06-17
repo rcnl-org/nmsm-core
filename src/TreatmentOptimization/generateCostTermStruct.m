@@ -34,14 +34,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [costTermCalculations, allowedTypes] = ...
+function [costTermCalculations, allowedTypes, supportAD] = ...
     generateCostTermStruct(costTermType, controllerTypes, toolName)
-allowedTypes = getAllowedTypes(costTermType, controllerTypes, toolName);
+[allowedTypes, supportAD] = getAllowedTypes(costTermType, ...
+    controllerTypes, toolName);
 costTermCalculations = getCostTermCalculations(costTermType);
 end
 
-function allowedTypes = getAllowedTypes(costTermType, controllerTypes, ...
-    toolName)
+function [allowedTypes, supportAD] = getAllowedTypes(costTermType, ...
+    controllerTypes, toolName)
 if strcmp(costTermType, "continuous")
     costTermSet = { ...
         % Table with the columns:
@@ -80,10 +81,12 @@ if strcmp(costTermType, "continuous")
     assert(any(toolNameLogical), toolName + " is not a valid tool.")
 
     allowedTypes = string([]);
+    supportAD = [];
     for term = costTermSet
         currentTerm = term{1};
         if any(toolNameLogical & currentTerm{2}) && any(controllerTypes & currentTerm{3})
             allowedTypes(end + 1) = currentTerm{1};
+            supportAD(end + 1) = currentTerm{4};
         end
     end
 elseif strcmp(costTermType, "discrete")
@@ -108,10 +111,12 @@ elseif strcmp(costTermType, "discrete")
     assert(any(toolNameLogical), toolName + " is not a valid tool.")
 
     allowedTypes = string([]);
+    supportAD = [];
     for term = costTermSet
         currentTerm = term{1};
         if any(toolNameLogical & currentTerm{2}) && any(controllerTypes & currentTerm{3})
             allowedTypes(end + 1) = currentTerm{1};
+            supportAD(end + 1) = currentTerm{4};
         end
     end
 else
