@@ -52,10 +52,13 @@ bounds.phase.path.upper = 0.5 * ones(1, length(inputs.minPath));
 % setup control bounds
 bounds.phase.control.lower = -0.5 * ones(1, length(inputs.minControl));
 bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
-% setup integral bounds
-bounds.phase.integral.lower = zeros(1, length(inputs.continuousMaxAllowableError));
-bounds.phase.integral.upper = inputs.gpops.integralBound * ...
-    ones(1, length(inputs.continuousMaxAllowableError));
+if strcmp(inputs.solverType, 'gpops')
+    % setup integral bounds
+    bounds.phase.integral.lower = ...
+        zeros(1, length(inputs.continuousMaxAllowableError));
+    bounds.phase.integral.upper = inputs.gpops.integralBound * ...
+        ones(1, length(inputs.continuousMaxAllowableError));
+end
 % setup terminal constraint bounds
 if ~isempty(inputs.minTerminal)
     bounds.eventgroup.lower = inputs.minTerminal;

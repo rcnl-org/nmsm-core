@@ -1,6 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function reads the optimal control settings (CasADi based) from a
+% separate XML file.
 %
+% (struct) -> (Array of string)
+% CasADi ptimal control solver settings are loaded
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -24,20 +28,44 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = prepareCasadiInputs(inputs, params)
-inputs.bounds = setupTreatmentOptimizationBounds(inputs, params);
-[inputs, inputs.guess] = setupGpopsInitialGuess(inputs);
-inputs = preSplineCasadiInputs(inputs);
+function inputs = parseCasadiSolverSettings(settingsTree, inputs)
+% Required user-defined settings
+try
+    inputs.numMeshes = getDoubleFromField(getFieldByNameOrError( ...
+        settingsTree, "num_meshes"));
+    inputs.numCollocationPerMesh = getDoubleFromField( ...
+        getFieldByNameOrError(settingsTree, ...
+        "num_collocation_points_per_mesh"));
+catch
+    error("<num_meshes> and <num_collocation_points_per_mesh> are " + ...
+        "required CasADi settings elements.")
+end
 
-% First run of model functions to check for errors, preindex cost and
-% constraint terms, and find initial integrated quantities
-[outputsSymbolic, modeledValues, inputs] = ...
-    computeCasadiSymbolicModelFunction(inputs.guess.phase, inputs);
-[outputsFinite, inputs] = computeCasadiFiniteDifferenceModelFunction( ...
-    inputs.guess.phase, inputs, modeledValues);
-outputs.dynamics = outputsSymbolic.dynamics;
-outputs.path = outputsSymbolic.path + outputsFinite.path;
-outputs.terminal = outputsSymbolic.terminal + outputsFinite.terminal;
-outputs.objective = outputsSymbolic.objective + outputsFinite.objective;
-inputs.initialOutputs = outputs;
+% Default settings that are strongly recommended not to overwrite
+inputs.casadi.detect_simple_bounds = true;
+inputs.casadi.ipopt.hessian_approximation = 'limited-memory';
+
+% Other default settings
+inputs.casadi.ipopt.output_file = 'TreatmentOptimizationIPOPTinfo.txt';
+
+% Other user-defined settings, which can overwrite above options, and
+% assume field names are correct
+settingsFields = setdiff(fieldnames(settingsTree.CasadiSettings), ...
+    ["num_meshes", "num_collocation_points_per_mesh"])';
+for field = settingsFields
+    value = settingsTree.CasadiSettings.(field).Text;
+    % Convert values to numeric when possible
+    if ~isnan(str2double(value))
+        value = str2double(value);
+    end
+    
+    settingName = lower(field);
+    % Differentiate between CasADi and IPOPT settings
+    if startsWith(settingName, "ipopt_")
+        settingName = eraseBetween(settingName, 1, 6);
+        inputs.casadi.ipopt.(settingName) = value;
+    else
+        inputs.casadi.(settingName) = value;
+    end
+end
 end

@@ -91,14 +91,16 @@ end
 optimizer.minimize(objective);
 
 % Ipopt settings
-optimizerOptions.detect_simple_bounds = true;
-optimizerOptions.ipopt.tol = 1e-4;
-optimizerOptions.ipopt.constr_viol_tol = 1e-4;
-optimizerOptions.ipopt.hessian_approximation = 'limited-memory';
+optimizer.solver('ipopt', inputs.casadi);
 
-optimizer.solver('ipopt', optimizerOptions);
-
-casadiSolution = optimizer.solve();
+try
+    casadiSolution = optimizer.solve();
+catch
+    warning(['Solver failed with status ' ...
+        optimizer.debug.stats.return_status ...
+        '. Debug results will be saved.']);
+    casadiSolution = optimizer.debug;
+end
 
 % Unpack solution values
 solution.phase.state = casadiSolution.value(state);

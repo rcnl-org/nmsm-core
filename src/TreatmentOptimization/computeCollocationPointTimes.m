@@ -11,11 +11,11 @@ if strcmp(inputs.solverType, 'gpops')
     inputs = computeGpopsCollocationPointTimes(inputs);
 else
     rootTime = casadi.collocation_points( ...
-        inputs.gpops.numIntervals, 'radau');
+        inputs.numCollocationPerMesh, 'radau');
     rootTime = rootTime(1:end-1);
     meshTime = linspace(inputs.experimentalTime(1), ...
         inputs.experimentalTime(end), ...
-        inputs.gpops.numCollocationPoints + 1);
+        inputs.numMeshes + 1);
     meshDuration = mean(diff(meshTime));
     collocationTime = [];
     for i = 1 : length(meshTime) - 1
