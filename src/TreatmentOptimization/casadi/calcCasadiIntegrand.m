@@ -45,7 +45,12 @@ else
         costTermCalculations, allowedTypes, values, modeledValues, ...
         inputs, ~supportAD);
 end
-integrand = integrand ./ inputs.continuousMaxAllowableError;
+if isa(values.statePositions, 'casadi.MX')
+    integrand = integrand ./ repmat(inputs.continuousMaxAllowableError, ...
+        length(values.time), 1);
+else
+    integrand = integrand ./ inputs.continuousMaxAllowableError;
+end
 integrand = integrand .^ 2;
 end
 

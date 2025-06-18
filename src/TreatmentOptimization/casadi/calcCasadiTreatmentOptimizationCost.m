@@ -45,9 +45,15 @@ for i = 1:length(auxdata.costTerms)
                 catch
                     newCost = fn(values, modeledValues, auxdata, costTerm);
                 end
-                cost = cat(2, cost, newCost);
+%                 cost = cat(2, cost, newCost);
+                cost = [cost, newCost];
             else
-                cost = cat(2, cost, zeros(length(values.time), 1));
+                if isa(values.statePositions, 'casadi.MX')
+                    cost = [cost, casadi.MX.zeros(length(values.time), 1)];
+                else
+                    cost = [cost, zeros(length(values.time), 1)];
+%                     cost = cat(2, cost, zeros(length(values.time), 1));
+                end
             end
 %          else
 %              throw(MException('', ['Cost term type ' costTerm.type ...

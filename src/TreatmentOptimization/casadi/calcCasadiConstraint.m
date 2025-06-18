@@ -46,10 +46,21 @@ for i = 1:length(constraints)
                     newConstraint = fn(values, modeledValues, inputs, ...
                         constraintTerm);
                 end
-                constraint = cat(2, constraint, newConstraint);
+%                 constraint = cat(2, constraint, newConstraint);
+                constraint = [constraint, newConstraint];
             else
-                constraint = cat(2, constraint, ...
-                    zeros(length(values.time), 1));
+                if length(values.time) == 2
+                    constraintLength = 1;
+                else
+                    constraintLength = length(values.time);
+                end
+                if isa(values.statePositions, 'casadi.MX')
+                    constraint = [constraint, casadi.MX.zeros(constraintLength, 1)];
+                else
+                    constraint = [constraint, zeros(constraintLength, 1)];
+%                 constraint = cat(2, constraint, ...
+%                     zeros(length(values.time), 1));
+                end
             end
         else
 %             throw(MException('ConstraintTerms:IllegalTerm', ...
@@ -59,4 +70,3 @@ for i = 1:length(constraints)
     end
 end
 end
-

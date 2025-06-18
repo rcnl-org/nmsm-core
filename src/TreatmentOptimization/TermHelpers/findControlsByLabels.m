@@ -79,7 +79,22 @@ else
     term.internalTorqueControlIndices = torqueControlIndices;
     term.internalSplinedTorqueControlIndices = torqueControlSplinedIndices;
 end
-controls = zeros(length(time), numberOfTerms);
+useMX = false;
+if any(muscleControlIndices > 0) && ...
+        isa(values.controlMuscleActivations, 'casadi.MX')
+    useMX = true;
+elseif any(synergyControlIndices > 0) && ...
+        isa(values.controlSynergyActivations, 'casadi.MX')
+    useMX = true;
+elseif any(torqueControlIndices > 0) && ...
+        isa(values.torqueControls, 'casadi.MX')
+    useMX = true;
+end
+if useMX
+    controls = casadi.MX.zeros(length(time), numberOfTerms);
+else
+    controls = zeros(length(time), numberOfTerms);
+end
 for i = 1 : numberOfTerms
     if muscleControlIndices(i) > 0
         controls(:, i) = values.controlMuscleActivations(:, ...
