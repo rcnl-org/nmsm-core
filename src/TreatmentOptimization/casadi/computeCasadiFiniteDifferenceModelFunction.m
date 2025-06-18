@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputs, inputs] = ...
+function [outputs, inputs, modeledValues] = ...
     computeCasadiFiniteDifferenceModelFunction(casadiValues, inputs, ...
     ~)
 % persistent storedModeledValues;
@@ -87,7 +87,7 @@ end
 
 % Switch to endpoint function
 values = reduceValuesStructsToEndpoints(values);
-modeledValues = reduceValuesStructsToEndpoints(modeledValues);
+modeledValuesTerminal = reduceValuesStructsToEndpoints(modeledValues);
 
 % Terminal constraint terms
 persistent terminalConstraintTermCalculations;
@@ -101,7 +101,8 @@ if isempty(terminalAllowedTypes)
 end
 [outputs.terminal, inputs.terminal] = calcCasadiConstraint( ...
     inputs.terminal, terminalConstraintTermCalculations, ...
-    terminalAllowedTypes, values, modeledValues, inputs, terminalNoAD);
+    terminalAllowedTypes, values, modeledValuesTerminal, inputs, ...
+    terminalNoAD);
 
 % Discrete cost terms
 persistent costTermCalculations, persistent allowedCostTypes;
@@ -113,8 +114,8 @@ if isempty(allowedCostTypes)
     costNoAD = ~costSupportAD;
 end
 [discrete, inputs] = calcCasadiTreatmentOptimizationCost( ...
-    costTermCalculations, allowedCostTypes, values, modeledValues, ...
-    inputs, costNoAD);
+    costTermCalculations, allowedCostTypes, values, ...
+    modeledValuesTerminal, inputs, costNoAD);
 if ~isempty(discrete)
     discreteObjective = sum(discrete) / length(discrete);
 else

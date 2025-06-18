@@ -50,18 +50,14 @@ end
 [derivativeDependencies, casadiDependencies] = ...
     findCasadiDerivativeDependencies(inputs);
 
-% Connect optimizer variables to main function
+% Connect optimizer variables to model functions
 symbolicOutputs = wrapSymbolicModelFunction(state, control, parameter);
-% symbolicModelFunction = casadi.Function('symbolicModelFunction', ...
-%     {state, control}, {symbolicOutputs.dynamics, symbolicOutputs.path, ...
-%     symbolicOutputs.terminal, symbolicOutputs.objective, modeledValues.normalizedFiberLength, ...
-%     modeledValues.normalizedFiberVelocity, modeledValues.muscleActivations, ...
-%     modeledValues.muscleJointMoments, modeledValues.metabolicCost});
-% computeCasadiFiniteDifferenceModelFunction(modeledValues);
 mainFunction = TreatmentOptimizationCallback( ...
     'mainFunction', inputs, derivativeDependencies, casadiDependencies, ...
     struct('enable_fd', true, 'fd_method', 'forward'));
 [path, terminal, objective] = mainFunction(state, control, parameter);
+
+% Combine constraints and objective
 dynamics = symbolicOutputs.dynamics;
 path = symbolicOutputs.path + path;
 terminal = symbolicOutputs.terminal + terminal;
@@ -105,7 +101,10 @@ optimizer.solver('ipopt', optimizerOptions);
 casadiSolution = optimizer.solve();
 
 % Unpack solution values
-
+solution.phase.state = casadiSolution.value(state);
+solution.phase.control = casadiSolution.value(control);
+solution.phase.parameter = casadiSolution.value(parameter);
+% Log info available in casadiSolution.stats.iterations
 end
 
 function [outputs, modeledValues] = wrapSymbolicModelFunction(state, ...
