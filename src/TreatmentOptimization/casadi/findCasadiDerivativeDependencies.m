@@ -32,6 +32,7 @@ function [derivativeDependencies, casadiDependencies] = ...
     findCasadiDerivativeDependencies(inputs)
 valuesStruct.state = inputs.guess.phase.state;
 valuesStruct.control = inputs.guess.phase.control;
+valuesStruct.parameter = valueOrAlternate(inputs.guess.phase, 'parameter', []);
 
 % Create a separate sparse dependency matrix for every input/output combo
 outputsFields = setdiff(string(fieldnames(inputs.initialOutputs)), ...

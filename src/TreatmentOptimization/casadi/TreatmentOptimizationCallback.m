@@ -21,7 +21,7 @@ classdef TreatmentOptimizationCallback < casadi.Callback
 
         % Specify input/output counts.
         function v=get_n_in(self)
-            v=2;
+            v=3;
         end
         function v=get_n_out(self)
             v=3;
@@ -40,6 +40,14 @@ classdef TreatmentOptimizationCallback < casadi.Callback
                     res = casadi.Sparsity.dense( ...
                         size(self.inputs.guess.phase.control, 1), ...
                         size(self.inputs.guess.phase.control, 2));
+                case 2
+                    if isfield(self.inputs.guess.phase, 'parameter')
+                        res = casadi.Sparsity.dense( ...
+                            size(self.inputs.guess.phase.parameter, 1), ...
+                            size(self.inputs.guess.phase.parameter, 2));
+                    else
+                        res = casadi.Sparsity.dense(0, 0);
+                    end
             end
         end
         function res = get_sparsity_out(self, i)
@@ -79,6 +87,7 @@ classdef TreatmentOptimizationCallback < casadi.Callback
         function output = eval(self, casadiValues)
             structValues.state = full(casadiValues{1});
             structValues.control = full(casadiValues{2});
+            structValues.parameter = full(casadiValues{3});
 
             outputs = computeCasadiFiniteDifferenceModelFunction( ...
                 structValues, self.inputs);

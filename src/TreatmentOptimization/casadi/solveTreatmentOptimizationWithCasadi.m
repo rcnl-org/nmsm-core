@@ -28,22 +28,30 @@ function solution = solveTreatmentOptimizationWithCasadi(inputs)
 optimizer = casadi.Opti();
 
 % Create optimizer variables
-% TODO: add other possible fields like parameters
 state = optimizer.variable(size(inputs.guess.phase.state, 1), ...
     size(inputs.guess.phase.state, 2));
 control = optimizer.variable(size(inputs.guess.phase.control, 1), ...
     size(inputs.guess.phase.control, 2));
+if isfield(inputs.guess.phase, 'parameter')
+    parameter = optimizer.variable(size(inputs.guess.phase.parameter, ...
+        1), size(inputs.guess.phase.parameter, 2));
+else
+    parameter = optimizer.variable(0, 0);
+end
 
 % Initialize optimizer variables
 optimizer.set_initial(state, inputs.guess.phase.state);
 optimizer.set_initial(control, inputs.guess.phase.control);
+if isfield(inputs.guess.phase, 'parameter')
+    optimizer.set_initial(parameter, inputs.guess.phase.parameter);
+end
 
 % Find derivative dependencies
 [derivativeDependencies, casadiDependencies] = ...
     findCasadiDerivativeDependencies(inputs);
 
 % Connect optimizer variables to main function
-[symbolicOutputs, ~] = wrapSymbolicModelFunction(state, control);
+symbolicOutputs = wrapSymbolicModelFunction(state, control, parameter);
 % symbolicModelFunction = casadi.Function('symbolicModelFunction', ...
 %     {state, control}, {symbolicOutputs.dynamics, symbolicOutputs.path, ...
 %     symbolicOutputs.terminal, symbolicOutputs.objective, modeledValues.normalizedFiberLength, ...
@@ -53,7 +61,7 @@ optimizer.set_initial(control, inputs.guess.phase.control);
 mainFunction = TreatmentOptimizationCallback( ...
     'mainFunction', inputs, derivativeDependencies, casadiDependencies, ...
     struct('enable_fd', true, 'fd_method', 'forward'));
-[path, terminal, objective] = mainFunction(state, control);
+[path, terminal, objective] = mainFunction(state, control, parameter);
 dynamics = symbolicOutputs.dynamics;
 path = symbolicOutputs.path + path;
 terminal = symbolicOutputs.terminal + terminal;
@@ -101,8 +109,9 @@ casadiSolution = optimizer.solve();
 end
 
 function [outputs, modeledValues] = wrapSymbolicModelFunction(state, ...
-    control)
+    control, parameter)
 values.state = state;
 values.control = control;
+values.parameter = parameter;
 [outputs, modeledValues] = computeCasadiSymbolicModelFunction(values);
 end
