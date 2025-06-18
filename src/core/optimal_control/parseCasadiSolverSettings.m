@@ -47,6 +47,8 @@ inputs.casadi.ipopt.hessian_approximation = 'limited-memory';
 
 % Other default settings
 inputs.casadi.ipopt.output_file = 'TreatmentOptimizationIPOPTinfo.txt';
+inputs.casadi.ipopt.tol = 1e-4;
+inputs.casadi.ipopt.constr_viol_tol = 1e-4;
 
 % Other user-defined settings, which can overwrite above options, and
 % assume field names are correct
