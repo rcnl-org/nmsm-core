@@ -39,11 +39,16 @@ outputsFields = setdiff(string(fieldnames(inputs.initialOutputs)), ...
     "dynamics", 'stable');
 valuesFields = string(fieldnames(valuesStruct));
 derivativeDependencies = cell(length(outputsFields), length(valuesFields));
+totalTests = 0;
 for i = 1 : length(outputsFields)
     for j = 1 : length(valuesFields)
         derivativeDependencies{i, j} = sparse( ...
             numel(inputs.initialOutputs.(outputsFields(i))), ...
             numel(valuesStruct.(valuesFields(j))));
+        if i == 1
+            totalTests = totalTests + ...
+                numel(valuesStruct.(valuesFields(j)));
+        end
     end
 end
 
@@ -52,6 +57,10 @@ end
 % computeCasadiFiniteDifferenceModelFunction(modeledValues);
 
 % Find finite difference dependencies using NaN method
+currentTest = 0;
+reverseStr = '';
+fprintf('\n')
+disp("Finding finite difference derivative dependencies...")
 for i = 1 : length(valuesFields)
     for j = 1 : numel(valuesStruct.(valuesFields(i)))
         testValues = valuesStruct;
@@ -65,8 +74,20 @@ for i = 1 : length(valuesFields)
             derivativeDependencies{k, i}( ...
                 isnan(outputs.(outputsFields(k))(:)), j) = true;
         end
+
+        updatePeriod = 50;
+        if mod(j, updatePeriod) == 0
+            currentTest = currentTest + updatePeriod;
+            reverseStr = printProgressBar(currentTest, totalTests, ...
+                reverseStr);
+        end
     end
+
+%     currentTest = currentTest + numel(valuesStruct.(valuesFields(i)));
+%     reverseStr = printProgressBar(currentTest, totalTests, reverseStr);
 end
+reverseStr = printProgressBar(totalTests, totalTests, reverseStr);
+fprintf('\n\n')
 
 % Convert Matlab dependencies to CasADi Sparsity structures
 casadiDependencies = cell(size(derivativeDependencies));
