@@ -41,8 +41,12 @@ catch
         "required CasADi settings elements.")
 end
 
-% Default settings that are strongly recommended not to overwrite
+% Default settings that are *strongly recommended* not to overwrite
+% detect_simple_bounds prevents variable bounds from becoming path
+% constraints
 inputs.casadi.detect_simple_bounds = true;
+% This prevents Lagrangian Hessian evaluations, which are extremely
+% inefficient for these problems
 inputs.casadi.ipopt.hessian_approximation = 'limited-memory';
 
 % Other default settings
@@ -63,6 +67,9 @@ for field = settingsFields
     
     settingName = lower(field);
     % Differentiate between CasADi and IPOPT settings
+    % IPOPT settings are defined as fields starting with "ipopt_" and then
+    % including the name of a setting as defined here: 
+    % https://coin-or.github.io/Ipopt/OPTIONS.html
     if startsWith(settingName, "ipopt_")
         settingName = eraseBetween(settingName, 1, 6);
         inputs.casadi.ipopt.(settingName) = value;

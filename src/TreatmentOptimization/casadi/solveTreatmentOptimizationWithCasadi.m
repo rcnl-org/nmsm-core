@@ -46,7 +46,7 @@ if isfield(inputs.guess.phase, 'parameter')
     optimizer.set_initial(parameter, inputs.guess.phase.parameter);
 end
 
-% Find derivative dependencies
+% Find derivative dependencies for finite difference function
 [derivativeDependencies, casadiDependencies] = ...
     findCasadiDerivativeDependencies(inputs);
 
@@ -57,7 +57,8 @@ mainFunction = TreatmentOptimizationCallback( ...
     struct('enable_fd', true, 'fd_method', 'forward'));
 [path, terminal, objective] = mainFunction(state, control, parameter);
 
-% Combine constraints and objective
+% Combine constraints and objective from symbolic and finite difference
+% model functions
 dynamics = symbolicOutputs.dynamics;
 path = symbolicOutputs.path + path;
 terminal = symbolicOutputs.terminal + terminal;
@@ -90,9 +91,10 @@ end
 % Minimize objective
 optimizer.minimize(objective);
 
-% Ipopt settings
+% Load solver settings parsed in parseCasadiSolverSettings()
 optimizer.solver('ipopt', inputs.casadi);
 
+% Solve problem, catching solver failures if needed
 try
     casadiSolution = optimizer.solve();
 catch
@@ -109,6 +111,7 @@ solution.phase.parameter = casadiSolution.value(parameter);
 % Log info available in casadiSolution.stats.iterations
 end
 
+% Handles moving optimizer variables to an inputs struct
 function [outputs, modeledValues] = wrapSymbolicModelFunction(state, ...
     control, parameter)
 values.state = state;

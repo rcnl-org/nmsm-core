@@ -75,7 +75,7 @@ for i = 1 : length(valuesFields)
                 isnan(outputs.(outputsFields(k))(:)), j) = true;
         end
 
-        updatePeriod = 50;
+        updatePeriod = 100;
         if mod(j, updatePeriod) == 0
             currentTest = currentTest + updatePeriod;
             reverseStr = printProgressBar(currentTest, totalTests, ...
