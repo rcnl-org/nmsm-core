@@ -50,7 +50,6 @@ inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
 
-inputs.surrogateModelCoordinateNames = inputs.coordinateNames;
 if any(inputs.controllerTypes(2:3))
     [path, name, ~] = fileparts(inputs.surrogateModelFileName);
     fileName = fullfile(path, strcat(name, ".mat"));
