@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, Array of double, Array of string, Array of string) -> 
-% (Array of number, struct)
+% This function calculates the sum of squared errors between two synergy 
+% vectors.
 %
-% Finds the index of a synergy name, saving an index for future calls.
+% (Array of number, struct, Array of string) -> (Number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,35 +28,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [indices, term] = findSynergyIndexByLabel(term, inputs, ...
-    synergyNames)
-if isfield(term, 'internalSynergyIndices')
-    indices = term.internalSynergyIndices;
-else
-    indices = zeros(1, length(synergyNames));
-    for name = 1 : length(synergyNames)
-        synergyName = synergyNames(name);
-        index = -1;
-        nameParts = split(synergyName, "_");
-        assert(length(nameParts) > 1 && ~isnan(str2double( ...
-            nameParts(end))), "Synergy names are referenced in " + ...
-            "terms as '<group name>_<index>', such as 'RightLeg_2'.");
-        synergyGroupName = join(nameParts(1:end-1), "_");
-        synergyNumber = str2double(nameParts(end));
+function [cost, constraintTerm] = calcSynergyVectorSymmetry( ...
+    constraintTerm, synergyWeights, inputs, synergyNames)
+assert(length(synergyNames) == 2, "synergy_vector_symmetry requires " + ...
+    "exactly two <synergies> to compare.")
 
-        counter = 0;
-        for i = 1 : length(inputs.synergyGroups)
-            if strcmp(inputs.synergyGroups{i}.muscleGroupName, ...
-                    synergyGroupName)
-                index = counter + synergyNumber;
-                indices(name) = index;
-                break;
-            end
-            counter = counter + inputs.synergyGroups{i}.numSynergies;
-        end
+[synergyIndices, constraintTerm] = findSynergyIndexByLabel( ...
+    constraintTerm, inputs, synergyNames);
 
-        assert(index > 0, "Unable to find synergy " + synergyName);
-    end
-    term.internalSynergyIndices = indices;
-end
+vector1 = synergyWeights(synergyIndices(1), :);
+vector2 = synergyWeights(synergyIndices(2), :);
+assert(length(vector1) == length(vector2), "synergy_vector_symmetry " + ...
+    "must compare vectors of the same length.")
+
+cost = sum((vector1 - vector2) .^ 2);
 end
