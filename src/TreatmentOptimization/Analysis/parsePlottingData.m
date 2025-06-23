@@ -5,6 +5,8 @@ function [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFile
     end
     tracked = struct();
     results = struct();
+    tracked.dataFile = trackedDataFile;
+    results.dataFiles = resultsDataFiles;
     
     trackedDataStorage = Storage(trackedDataFile);
     [tracked.labels, tracked.time, tracked.data] = parseMotToComponents(...
@@ -15,7 +17,9 @@ function [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFile
         tracked.time = tracked.time - tracked.time(1);
     end
     tracked.normalizedTime = tracked.time / tracked.time(end);
-
+    results.data = {};
+    results.labels = {};
+    results.time = {};
     for j=1:numel(resultsDataFiles)
         resultsDataStorage = Storage(resultsDataFiles(j));
         [results.labels{j}, results.time{j}, results.data{j}] = parseMotToComponents(...

@@ -35,53 +35,93 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationTorqueControls(controlsFile, ...
-    figureWidth, figureHeight)
+function plotTreatmentOptimizationTorqueControls(trackedDataFile, ...
+    resultsDataFiles, varargin)
+import org.opensim.modeling.Model
+params = getPlottingParams();
+if ~isempty(varargin)
+    options = parseVarargin(varargin);
+else
+    options = struct();
+end
+% This function shouldn't necessarily require resultsDataFiles, but it's
+% nicer to write assuming it does exist, so force assign it an empty value
+% if it isn't given.
+try 
+    resultsDataFiles;
+catch
+    resultsDataFiles = [];
+end
+model = org.opensim.modeling.Model();
+[tracked, results] = parsePlottingData(trackedDataFile, ...
+    resultsDataFiles, model);
+tracked = resampleTrackedData(tracked, results);
 
-import org.opensim.modeling.Storage
-controlsStorage = Storage(controlsFile);
-labels = getStorageColumnNames(controlsStorage);
-controls = storageToDoubleMatrix(controlsStorage)';
-time = findTimeColumn(controlsStorage);
-if time(1) ~= 0
-    time = time - time(1);
-end
-time = time / time(end);
-if nargin < 2
-    figureWidth = ceil(sqrt(numel(labels)));
-    figureHeight = ceil(numel(labels)/figureWidth);
-elseif nargin < 3
-    figureHeight = ceil(sqrt(numel(labels)));
-end
-figureSize = figureWidth * figureHeight;
-figure(Name="Treatment Optimization Torque Controls", ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
+tileFigure = makeTorqueControlsFigure(params, options, tracked);
+figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
-figureNumber = 1;
-t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='Compact', Padding='Compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Torque Controls [Nm]")
-for i=1:numel(labels)
-    if i > figureSize * figureNumber
-        figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Torque Controls", ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
-        t = tiledlayout(figureHeight, figureWidth, ...
-            TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Torque Controls [Nm]")
+
+titleStrings = makeSubplotTitles(tracked, results);
+legendString = makeLegendFromFileNames(trackedDataFile, ...
+            resultsDataFiles);
+for i=1:numel(tracked.labels)
+    if subplotNumber > figureSize
+        tileFigure = makeTorqueControlsFigure(params, options, tracked);
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
+    nexttile(subplotNumber);
+    
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     hold on
-    plot(time*100, controls(:, i), LineWidth=2);
+    plot(tracked.normalizedTime*100, tracked.data(:, i), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1));
+    for j = 1 : numel(results.data)
+        plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(j+1));
+    end
     hold off
-    title(strrep(labels(i), "_", " "));
+    title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
+            Interpreter="none")
+    if subplotNumber==1
+        legend(legendString, fontsize = params.legendFontSize, ...
+            Interpreter="none")
+    end
+
     xlim("tight")
+    
     subplotNumber = subplotNumber + 1;
 end
 end
 
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
+end
+
+function tileFigure = makeTorqueControlsFigure(params, options, tracked)
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
+    figureWidth = ceil(sqrt(numel(tracked.labels)));
+    figureHeight = ceil(numel(tracked.labels)/figureWidth);
+end
+figure(Name = "Torque Controls", ...
+    Units=params.units, ...
+    Position=params.figureSize)
+tileFigure = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='compact', Padding='compact');
+xlabel(tileFigure, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(tileFigure, "Torque Controls", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
+end

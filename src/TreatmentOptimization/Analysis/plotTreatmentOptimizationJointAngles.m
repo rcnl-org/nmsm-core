@@ -56,13 +56,12 @@ if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);
 end
 
-tracked = splineAndResamplePlottingData(tracked, results);
+tracked = resampleTrackedData(tracked, results);
 
 tileFigure = makeJointAnglesFigure(params, options, tracked, useRadians);
 
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 
-figureNumber = 1;
 subplotNumber = 1;
 
 titleStrings = makeSubplotTitles(tracked, results);
@@ -71,10 +70,9 @@ legendString = makeLegendFromFileNames(trackedDataFile, ...
 yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians);
 for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
-    if subplotNumber > figureSize * figureNumber
+    if subplotNumber > figureSize
         makeJointAnglesFigure(params, options, tracked, useRadians);
         subplotNumber = 1;
-        figureNumber = figureNumber + 1;
     end
     nexttile(subplotNumber);
     
@@ -92,9 +90,11 @@ for i=1:numel(tracked.labels)
     end
     hold off
 
-    title(titleStrings{i}, fontsize = params.subplotTitleFontSize)
+    title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
+            Interpreter="none")
     if subplotNumber==1
-        legend(legendString, fontsize = params.legendFontSize)
+        legend(legendString, fontsize = params.legendFontSize, ...
+            Interpreter="none")
     end
     
     xlim("tight")
@@ -131,7 +131,6 @@ else
     figureWidth = ceil(sqrt(numel(tracked.labels)));
     figureHeight = ceil(numel(tracked.labels)/figureWidth);
 end
-figureSize = figureWidth * figureHeight;
 figure(Name = "Joint Angles", ...
     Units=params.units, ...
     Position=params.figureSize);
