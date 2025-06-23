@@ -46,6 +46,7 @@ clear pointKinematicsMatlabParallel
 clear calcGpopsIntegrand
 clear computeGpopsEndpointFunction
 clear computeGpopsContinuousFunction
+clear calcCasadiIntegrand
 clear computeCasadiSymbolicModelFunction
 clear computeCasadiFiniteDifferenceModelFunction
 clear calcCasadiDynamicConstraint

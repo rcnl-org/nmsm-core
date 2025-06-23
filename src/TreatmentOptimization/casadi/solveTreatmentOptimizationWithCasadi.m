@@ -51,6 +51,7 @@ end
     findCasadiDerivativeDependencies(inputs);
 
 % Connect optimizer variables to model functions
+fprintf('%s\n\n', "Setting up symbolic model function...")
 symbolicOutputs = wrapSymbolicModelFunction(state, control, parameter);
 mainFunction = TreatmentOptimizationCallback( ...
     'mainFunction', inputs, derivativeDependencies, casadiDependencies, ...

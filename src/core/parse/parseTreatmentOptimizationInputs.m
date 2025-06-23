@@ -35,6 +35,9 @@ inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
 inputs = parseController(tree, inputs);
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs = parseOptimalControlSolverSettings(tree, inputs);
+if strcmp(inputs.solverType, 'casadi')
+    inputs = calcCasadiCollocationPointTimes(inputs);
+end
 inputs.costTerms = parseRcnlCostTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet'));
 inputs.costTerms = splitListTerms(inputs.costTerms);
@@ -210,4 +213,25 @@ for i = 1 : length(terms)
         terms{i} = rmfield(terms{i}, 'min_value');
     end
 end
+end
+
+
+
+function inputs = calcCasadiCollocationPointTimes(inputs)
+rootTime = casadi.collocation_points( ...
+    inputs.numCollocationPerMesh, 'radau');
+rootTime = rootTime(1:end-1);
+meshTime = linspace(inputs.experimentalTime(1), ...
+    inputs.experimentalTime(end), ...
+    inputs.numMeshes + 1);
+meshDuration = mean(diff(meshTime));
+collocationTime = [];
+for i = 1 : length(meshTime) - 1
+    collocationTime(end+1:end+1+length(rootTime)) ...
+        = [meshTime(i), meshTime(i) + meshDuration * rootTime];
+end
+inputs.collocationTimeOriginal = collocationTime';
+inputs.collocationTimeOriginalWithEnd = inputs.collocationTimeOriginal;
+inputs.collocationTimeOriginalWithEnd(end + 1) = ...
+    inputs.experimentalTime(end);
 end
