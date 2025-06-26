@@ -72,6 +72,10 @@ optimizer.subject_to(minState(:) < state(:) < maxState(:));
 maxControl = repmat(inputs.bounds.phase.control.upper, size(control, 1), 1);
 minControl = repmat(inputs.bounds.phase.control.lower, size(control, 1), 1);
 optimizer.subject_to(minControl(:) < control(:) < maxControl(:));
+if isfield(inputs.bounds.phase, 'parameter')
+    optimizer.subject_to(inputs.bounds.phase.parameter.lower < ...
+        parameter < inputs.bounds.phase.parameter.upper);
+end
 
 % Apply dynamic constraint
 optimizer.subject_to(dynamics == 0);
