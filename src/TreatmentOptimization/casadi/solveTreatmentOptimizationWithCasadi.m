@@ -100,6 +100,7 @@ optimizer.minimize(objective);
 optimizer.solver('ipopt', inputs.casadi);
 
 % Solve problem, catching solver failures if needed
+fprintf('%s\n\n', "Starting optimization with IPOPT...")
 try
     casadiSolution = optimizer.solve();
 catch
