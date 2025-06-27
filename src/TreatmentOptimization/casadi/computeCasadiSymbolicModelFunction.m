@@ -49,7 +49,7 @@ outputs.dynamics = calcCasadiDynamicConstraint(values, inputs);
 % Path constraints
 persistent pathConstraintTermCalculations, persistent pathAllowedTypes;
 persistent pathSupportAD;
-if any(cellfun(@(x) x.isEnabled == 1, inputs.path))
+% if any(cellfun(@(x) x.isEnabled == 1, inputs.path))
     if isempty(pathAllowedTypes)
         [pathConstraintTermCalculations, pathAllowedTypes, ...
             pathSupportAD] = generateConstraintTermStruct("path", ...
@@ -58,7 +58,7 @@ if any(cellfun(@(x) x.isEnabled == 1, inputs.path))
     [outputs.path, inputs.path] = calcCasadiConstraint( ...
         inputs.path, pathConstraintTermCalculations, pathAllowedTypes, ...
         values, modeledValues, inputs, pathSupportAD);
-end
+% end
 
 % Continuous cost terms
 [integrand, inputs] = calcCasadiIntegrand(values, modeledValues, ...
