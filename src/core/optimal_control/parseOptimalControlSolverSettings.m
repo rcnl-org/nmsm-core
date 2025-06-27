@@ -38,10 +38,8 @@ if isfield(tree, 'GpopsSettings')
 elseif isfield(tree, 'CasadiSettings')
     inputs = parseCasadiSolverSettings(tree, inputs);
     inputs.solverType = 'casadi';
-elseif isfield(tree, 'MocoSettings')
-    inputs.moco = parseMocoSolverSettings(tree);
 else
     throw(MException("OptimalControlSolverSettings:UnsupportedSolver", ...
-        "Only <GpopsSettings> and <MocoSettings> are supported"))
+        "Only <GpopsSettings> and <CasadiSettings> are supported"))
 end
 end
