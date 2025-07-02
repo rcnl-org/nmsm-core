@@ -54,7 +54,7 @@ tracked = resampleTrackedData(tracked, results);
 tileFigure = makeGroundReactionsFigure(params, options);
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
-titleStrings = makeSubplotTitles(tracked, results);
+titleStrings = makeGroundReactionsSubplotTitles(tracked, results);
 legendString = makeLegendFromFileNames(trackedDataFile, ...
             resultsDataFiles);
 yLimits = makeGroundReactionsYLimits(tracked, results);
@@ -109,6 +109,17 @@ for j = 1 : numel(results.data)
     [~, ~, indices] = intersect(tracked.labels, results.labels{j}, "stable");
     results.data{j} = results.data{j}(:,indices);
     results.labels{j} = results.labels{j}(indices);
+end
+end
+
+function titleStrings = makeGroundReactionsSubplotTitles(tracked, results)
+for i = 1 : numel(tracked.labels)
+    titleStrings{i} = [sprintf("%s", strrep(tracked.labels(i), "_", " "))];
+    for j = 1 : numel(results.data)
+        rmse = rms(tracked.resampledData{j}(1:end-1, i) - ...
+            results.data{j}(1:end-1, i));
+        titleStrings{i}(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+    end
 end
 end
 

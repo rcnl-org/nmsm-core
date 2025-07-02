@@ -63,7 +63,7 @@ yLimits = makeJointLoadsYLimits(tracked, results);
 for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
     if subplotNumber > figureSize
-        makeJointAnglesFigure(params, options, tracked, useRadians);
+        makeJointLoadsFigure(params, options, tracked, useRadians);
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
@@ -90,7 +90,7 @@ for i=1:numel(tracked.labels)
     end
 
     xlim("tight")
-    
+    ylim(yLimits{i});
     subplotNumber = subplotNumber + 1;
 end
 end

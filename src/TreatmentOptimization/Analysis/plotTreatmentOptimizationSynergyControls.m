@@ -38,8 +38,8 @@
 function plotTreatmentOptimizationSynergyControls(...
     trackedActivationsFile, trackedWeightsFile, ...
     resultsActivationsFiles, resultsWeightsFiles, ...
-    osimx, synergyNormalizationMethod, synergyNormalizationValue, varargin)
-import org.opensim.modeling.Model
+    osimxFileName, modelFileName, ...
+    synergyNormalizationMethod, synergyNormalizationValue, varargin)
 params = getPlottingParams();
 if ~isempty(varargin)
     options = parseVarargin(varargin);
@@ -47,16 +47,19 @@ else
     options = struct();
 end
 
-model = org.opensim.modeling.Model();
+model = Model(modelFileName);
+osimx = parseOsimxFile(osimxFileName, Model(modelFileName));
 [trackedActivations, resultsActivations] = parsePlottingData(...
     trackedActivationsFile, resultsActivationsFiles, model);
 
 [trackedWeights, resultsWeights] = parsePlottingData(...
     trackedWeightsFile, resultsWeightsFiles, model);
 
+if ~strcmp(synergyNormalizationMethod, "none")
 [trackedActivations.data, trackedWeights.data] = normalizeSynergyData(...
     trackedActivations.data, trackedWeights.data, ...
     synergyNormalizationMethod, synergyNormalizationValue);
+end
 
 for i = 1 : numel(resultsActivations.data)
     [resultsActivations.data{i}, resultsWeights.data{i}] = ...
