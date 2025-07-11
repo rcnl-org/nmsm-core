@@ -73,7 +73,7 @@ emgDataFileNames = findFileListFromPrefixList( ...
     fullfile(dataDirectory, "EMGData"), inputs.prefixes);
 collectedEmgGroupNames = parseSpaceSeparatedList(tree, 'collected_emg_channel_muscle_groups');
 [inputs.fullEmgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
-[~, collectedEmgGroupNamesMembers] = intersect(inputs.emgDataColumnNames, collectedEmgGroupNames);
+[~, ~, collectedEmgGroupNamesMembers] = intersect(collectedEmgGroupNames, inputs.emgDataColumnNames, 'stable');
 inputs.emgData = inputs.fullEmgData(:, collectedEmgGroupNamesMembers, :);
 inputs.emgDataColumnNames = inputs.emgDataColumnNames(collectedEmgGroupNamesMembers);
 firstEmgDataExpanded = expandEmgDatas(inputs.model, squeeze(inputs.emgData(1, :, :)), collectedEmgGroupNames, inputs.muscleNames);
