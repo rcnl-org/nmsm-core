@@ -1,5 +1,15 @@
 # Changelog
 
+## v.1.4.2 - 2025-07-14
+
+### Fixed
+
+### Changed
+
+### Added
+- The Joint Model Personalization GUI tool now allows for selection of markers to be used in a task
+- The Treatment Optimization GUIs now allow for the trial prefix to be specified in the tool.
+
 ## v1.4.2 - 2025-06-06
 
 ### Fixed
