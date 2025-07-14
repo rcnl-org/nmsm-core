@@ -1,19 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function hard codes the version of the software. It is used to
-% check compatibility between the software and the settings files for
-% different versions of the software.
+% This function calculates the sum of squared errors between two synergy 
+% vectors.
 %
-% This value should be updated with each release. Please use semantic
-% versioning (https://semver.org/) to determine the version number.
-%
-% Specifically, versions are of the form MAJOR.MINOR.PATCH
-% MAJOR version when you make incompatible API changes,
-% MINOR version when you add functionality in a backwards compatible manner,
-% PATCH version when you make backwards compatible bug fixes.
-%
-% () -> (string)
-% return: version number of the software as a string
+% (Array of number, struct, Array of string) -> (Number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -23,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -37,6 +28,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function version = getPipelineVersion()
-version = "1.4.3";
+function [cost, constraintTerm] = calcSynergyVectorSymmetry( ...
+    constraintTerm, synergyWeights, inputs, synergyNames)
+assert(length(synergyNames) == 2, "synergy_vector_symmetry requires " + ...
+    "exactly two <synergies> to compare.")
+
+[synergyIndices, constraintTerm] = findSynergyIndexByLabel( ...
+    constraintTerm, inputs, synergyNames);
+
+vector1 = synergyWeights(synergyIndices(1), :);
+vector2 = synergyWeights(synergyIndices(2), :);
+assert(length(vector1) == length(vector2), "synergy_vector_symmetry " + ...
+    "must compare vectors of the same length.")
+
+cost = sum((vector1 - vector2) .^ 2);
 end
