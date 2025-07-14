@@ -1,20 +1,30 @@
 # Changelog
 
-## v.1.4.2 - 2025-07-14
-
-### Fixed
-
-### Changed
+## v.1.4.3 - 2025-07-14
 
 ### Added
 - The Joint Model Personalization GUI tool now allows for selection of markers to be used in a task
 - The Treatment Optimization GUIs now allow for the trial prefix to be specified in the tool.
+- The `muscle_activation_tracking` cost term supports a `<scale_factor>` to track scaled versions of previous muscle activations. 
+- New Treatment Optimization cost term `synergy_vector_symmetry` keeps two synergy vectors weights' similar. 
+- New Treatment Optimization constraint terms: `muscle_activation_deviation`, `muscle_activation_value`, `controller_deviation`, `controller_value`
+- The Treatment Optimization `<synergy_normalization_method>` can be set to `none` to retain input synergy magnitudes. 
+
+
+### Fixed
+- Bugs related to parsing EMG column names from files with inconsistent ordering have been fixed for Muscle Tendon Personalization. 
+
+
+### Changed
+- Metabolic cost calculation has been revised for consistency with previously published research. 
+
 
 ## v1.4.2 - 2025-06-06
 
 ### Fixed
 - Treatment Optimization tools correctly load previous results with different state and control column name orders.
 - `IntegratedQuantitiesPreviewTool()` correctly displays impulses for multiple contact surfaces alongside metabolic cost.
+
 
 ### Changed
 - 'plotTreatmentOptimizationSynergyControls()' splits synergy weights plots by synergy set for readability. This function now requires an osimx file input to parse the synergy set from.
