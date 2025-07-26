@@ -49,6 +49,23 @@ end
 model = org.opensim.modeling.Model();
 [tracked, results] = parsePlottingData(trackedDataFile, ...
     resultsDataFiles, model);
+if isfield(options, "columnsToUse")
+    [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
+    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.labels = tracked.labels(trackedIndices);
+    
+    for j = 1 : numel(resultsDataFiles)
+        [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
+        results.data{j} = results.data{j}(:, resultsIndices);
+        results.labels{j} = results.labels{j}(resultsIndices);
+    end
+end
+if isfield(options, "columnNames")
+    tracked.labels = options.columnNames;
+    for j = 1 : numel(resultsDataFiles)
+        results.labels{j} = options.columnNames;
+    end
+end
 tracked = resampleTrackedData(tracked, results);
 
 tileFigure = makeJointLoadsFigure(params, options, tracked);
@@ -56,8 +73,13 @@ figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
 
 titleStrings = makeJointLoadsSubplotTitles(tracked, results);
-legendString = makeLegendFromFileNames(trackedDataFile, ...
-            resultsDataFiles);
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(trackedDataFile, ...
+                resultsDataFiles);
+end
+
 yLimits = makeJointLoadsYLimits(tracked, results);
 
 for i=1:numel(tracked.labels)
@@ -72,10 +94,12 @@ for i=1:numel(tracked.labels)
         fontsize = params.tickLabelFontSize, ...
         color=params.subplotBackgroundColor)
     hold on
+    
     plot(tracked.normalizedTime*100, tracked.data(:, i), ...
         LineWidth=params.linewidth, ...
         Color = params.lineColors(1));
     for j = 1 : numel(results.data)
+        results.data{j}(:, i) = lowpassFilter(results.time{j}, results.data{j}(:, i), 4, 10, 0);
         plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
             LineWidth=params.linewidth, ...
             Color = params.lineColors(j+1));
@@ -84,7 +108,7 @@ for i=1:numel(tracked.labels)
 
     title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
             Interpreter="none")
-    if subplotNumber==1
+    if subplotNumber==figureSize || i == numel(tracked.labels)
         legend(legendString, fontsize = params.legendFontSize, ...
             Interpreter="none")
     end
@@ -93,6 +117,14 @@ for i=1:numel(tracked.labels)
     ylim(yLimits{i});
     subplotNumber = subplotNumber + 1;
 end
+end
+
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
 end
 
 function tileFigure = makeJointLoadsFigure(params, options, tracked)
@@ -151,7 +183,7 @@ for i = 1 : numel(tracked.labels)
     for j = 1 : numel(results.data)
         rmse = rms(tracked.resampledData{j}(1:end-1, i) - ...
             results.data{j}(1:end-1, i));
-        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+        % titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
     end
     titleStrings{i} = titleString;
 end

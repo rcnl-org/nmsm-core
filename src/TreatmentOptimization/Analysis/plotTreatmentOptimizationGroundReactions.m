@@ -51,12 +51,33 @@ model = org.opensim.modeling.Model();
 tracked = resampleTrackedData(tracked, results);
 [tracked, results] = sortGroundReactionData(tracked, results);
 
+if isfield(options, "columnsToUse")
+    [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
+    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.labels = tracked.labels(trackedIndices);
+    
+    for j = 1 : numel(resultsDataFiles)
+        [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
+        results.data{j} = results.data{j}(:, resultsIndices); 
+        results.labels{j} = results.labels{j}(resultsIndices);
+    end
+end
+if isfield(options, "columnNames")
+    tracked.labels = options.columnNames;
+    for j = 1 : numel(resultsDataFiles)
+        results.labels{j} = options.columnNames;
+    end
+end
 tileFigure = makeGroundReactionsFigure(params, options);
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
 titleStrings = makeGroundReactionsSubplotTitles(tracked, results);
-legendString = makeLegendFromFileNames(trackedDataFile, ...
-            resultsDataFiles);
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(trackedDataFile, ...
+                resultsDataFiles);
+end
 yLimits = makeGroundReactionsYLimits(tracked, results);
 
 for i=1:numel(tracked.labels)
@@ -81,7 +102,7 @@ for i=1:numel(tracked.labels)
 
     title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
             Interpreter="none")
-    if subplotNumber==1
+    if subplotNumber==figureSize || i == numel(tracked.labels)
         legend(legendString, fontsize = params.legendFontSize, ...
             Interpreter="none")
     end

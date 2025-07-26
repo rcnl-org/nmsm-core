@@ -23,7 +23,7 @@ function [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFile
     for j=1:numel(resultsDataFiles)
         resultsDataStorage = Storage(resultsDataFiles(j));
         [results.labels{j}, results.time{j}, results.data{j}] = parseMotToComponents(...
-            org.opensim.modeling.Model(), resultsDataStorage);
+            model, resultsDataStorage);
         results.data{j} = results.data{j}';
         if results.time{j} ~= 0
             results.time{j} = results.time{j} - results.time{j}(1);

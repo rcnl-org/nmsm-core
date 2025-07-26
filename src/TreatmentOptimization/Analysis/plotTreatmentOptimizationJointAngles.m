@@ -56,6 +56,24 @@ if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);
 end
 
+if isfield(options, "columnsToUse")
+    [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
+    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.labels = tracked.labels(trackedIndices);
+    
+    for j = 1 : numel(resultsDataFiles)
+        [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
+        results.data{j} = results.data{j}(:, resultsIndices); 
+        results.labels{j} = results.labels{j}(resultsIndices);
+    end
+end
+if isfield(options, "columnNames")
+    tracked.labels = options.columnNames;
+    for j = 1 : numel(resultsDataFiles)
+        results.labels{j} = options.columnNames;
+    end
+end
+
 tracked = resampleTrackedData(tracked, results);
 
 tileFigure = makeJointAnglesFigure(params, options, tracked, useRadians);
@@ -65,8 +83,12 @@ figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
 
 titleStrings = makeSubplotTitles(tracked, results);
-legendString = makeLegendFromFileNames(trackedDataFile, ...
-            resultsDataFiles);
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(trackedDataFile, ...
+                resultsDataFiles);
+end
 yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians);
 for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
@@ -80,10 +102,12 @@ for i=1:numel(tracked.labels)
         fontsize = params.tickLabelFontSize, ...
         color=params.subplotBackgroundColor)
     hold on
+    tracked.data(:, i) = lowpassFilter(tracked.time, tracked.data(:, i), 4, 10, 0);
     plot(tracked.normalizedTime*100, tracked.data(:, i), ...
         LineWidth=params.linewidth, ...
         Color = params.lineColors(1));
     for j = 1 : numel(results.data)
+        results.data{j}(:, i) = lowpassFilter(results.time{j}, results.data{j}(:, i), 4, 10, 0);
         plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
             LineWidth=params.linewidth, ...
             Color = params.lineColors(j+1));
@@ -92,7 +116,7 @@ for i=1:numel(tracked.labels)
 
     title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
             Interpreter="none")
-    if subplotNumber==1
+    if subplotNumber==figureSize || i == numel(tracked.labels)
         legend(legendString, fontsize = params.legendFontSize, ...
             Interpreter="none")
     end
