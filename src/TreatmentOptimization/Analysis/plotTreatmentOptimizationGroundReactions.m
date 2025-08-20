@@ -48,9 +48,8 @@ end
 model = org.opensim.modeling.Model();
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
 
-tracked = resampleTrackedData(tracked, results);
 [tracked, results] = sortGroundReactionData(tracked, results);
-
+tracked = resampleTrackedData(tracked, results);
 if isfield(options, "columnsToUse")
     [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
     tracked.data = tracked.data(:, trackedIndices); 
