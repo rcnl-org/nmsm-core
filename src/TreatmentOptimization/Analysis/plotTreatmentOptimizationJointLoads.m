@@ -1,19 +1,29 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads .sto files for experimental and model joint loads
-% and plots them. There is an option to plot multiple model files by
-% passing in a list of model file names.
+% Plots ID joint loads from given .sto or .mot files.
 %
-% There are 2 optional arguments for figure width and figure height. If no
-% optional arguments are given, the figure size is automatically adjusted
-% to fit all data on one plot. Giving just figure width and no figure
-% height will set figure height to a default value and extra figures will
-% be created as needed. If both figure width and figure height are given,
-% the figure size will be fixed and extra figures will be created as
-% needed.
+% Args:
+% trackedDataFile (string) - .sto or .mot file with inverse kinematics
+%   joint angles. RMSE values will be calculated between this file and all
+%   results data files.
+% resultsDataFiles (Array of strings) - String array of .sto or .mot files
+%   with inverse dynamics joint loads.
 %
-% (string) (List of strings) (int), (int) -> (None)
-% Plot experimental and model joint loads from file
+% Optional varargin:
+% columnsToUse (array of strings) - list of column names to plot in the
+%   given .sto or .mot files. Useful to plot only a subset of the
+%   coordinates in the model. Can be in any order.
+%   Default is use all columns in trackedDataFile.
+% columnNames (array of strings) - specify the names to use in subplot
+%   titles (ie plot "Right Hip" instead of "hip_flexion_r".) Must be the
+%   same dimension as columnsToUse.
+%   Default is the column names in trackedDataFile.
+% legend (array of strings) - specify legend values to use instead of the
+%   default.
+%   Default uses the directory structure to create legend names.
+% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
+%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
+%   Default is 1.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -45,20 +55,30 @@ if ~isempty(varargin)
 else
     options = struct();
 end
-
+if isfield(options, "showRmse")
+    showRmse = options.showRmse;
+else
+    showRmse = 1;
+end
 model = org.opensim.modeling.Model();
 [tracked, results] = parsePlottingData(trackedDataFile, ...
     resultsDataFiles, model);
+
+tracked = resampleTrackedData(tracked, results);
+
+yLimits = makeJointLoadsYLimits(tracked, results);
+
 if isfield(options, "columnsToUse")
     [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
-    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.data = tracked.data(:, trackedIndices);
     tracked.labels = tracked.labels(trackedIndices);
-    
+
     for j = 1 : numel(resultsDataFiles)
         [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
         results.data{j} = results.data{j}(:, resultsIndices);
         results.labels{j} = results.labels{j}(resultsIndices);
     end
+    yLimits = yLimits(trackedIndices);
 end
 if isfield(options, "columnNames")
     tracked.labels = options.columnNames;
@@ -66,22 +86,20 @@ if isfield(options, "columnNames")
         results.labels{j} = options.columnNames;
     end
 end
-tracked = resampleTrackedData(tracked, results);
 
 tileFigure = makeJointLoadsFigure(params, options, tracked);
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
 
-titleStrings = makeJointLoadsSubplotTitles(tracked, results);
 if isfield(options, "legend")
     legendString = options.legend;
 else
     legendString = makeLegendFromFileNames(trackedDataFile, ...
-                resultsDataFiles);
+        resultsDataFiles);
 end
 
-yLimits = makeJointLoadsYLimits(tracked, results);
 
+titleStrings = makeJointLoadsSubplotTitles(tracked, results, showRmse);
 for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
     if subplotNumber > figureSize
@@ -89,12 +107,12 @@ for i=1:numel(tracked.labels)
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
-    
+
     set(gca, ...
         fontsize = params.tickLabelFontSize, ...
         color=params.subplotBackgroundColor)
     hold on
-    
+
     plot(tracked.normalizedTime*100, tracked.data(:, i), ...
         LineWidth=params.linewidth, ...
         Color = params.lineColors(1));
@@ -107,7 +125,7 @@ for i=1:numel(tracked.labels)
     hold off
 
     title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
-            Interpreter="none")
+        Interpreter="none")
     if subplotNumber==figureSize || i == numel(tracked.labels)
         legend(legendString, fontsize = params.legendFontSize, ...
             Interpreter="none")
@@ -120,11 +138,11 @@ end
 end
 
 function options = parseVarargin(varargin)
-    options = struct();
-    varargin = varargin{1};
-    for k = 1 : 2 : numel(varargin)
-        options.(varargin{k}) = varargin{k+1};
-    end
+options = struct();
+varargin = varargin{1};
+for k = 1 : 2 : numel(varargin)
+    options.(varargin{k}) = varargin{k+1};
+end
 end
 
 function tileFigure = makeJointLoadsFigure(params, options, tracked)
@@ -168,7 +186,7 @@ for i = 1 : numel(tracked.labels)
 end
 end
 
-function titleStrings = makeJointLoadsSubplotTitles(tracked, results)
+function titleStrings = makeJointLoadsSubplotTitles(tracked, results, showRmse)
 for i = 1 : numel(tracked.labels)
     if contains(tracked.labels(i), "moment")
         titleString = [sprintf("%s [Nm]", strrep(tracked.labels(i), ...
@@ -180,10 +198,11 @@ for i = 1 : numel(tracked.labels)
         titleString = [sprintf("%s", strrep(tracked.labels(i), ...
             "_", " "))];
     end
-    for j = 1 : numel(results.data)
-        rmse = rms(tracked.resampledData{j}(1:end-1, i) - ...
-            results.data{j}(1:end-1, i));
-        % titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+    if showRmse
+        for j = 1 : numel(results.data)
+            rmse = rms(tracked.resampledData{j}(1:end-1, i) - ...
+                results.data{j}(1:end-1, i));
+        end
     end
     titleStrings{i} = titleString;
 end

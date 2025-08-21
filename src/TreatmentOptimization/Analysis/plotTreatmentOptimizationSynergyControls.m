@@ -1,18 +1,30 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads one .sto file for treatment optimization synergy
-% controls and plots it.
+% Plots synergy activations and weights from given .sto or .mot files. 
+% Can plot with different normalization methods and values.
+% Automatically splits weights between synergy sets.
 %
-% There are 2 optional arguments for figure width and figure height. If no
-% optional arguments are given, the figure size is automatically adjusted
-% to fit all data on one plot. Giving just figure width and no figure
-% height will set figure height to a default value and extra figures will
-% be created as needed. If both figure width and figure height are given,
-% the figure size will be fixed and extra figures will be created as
-% needed.
+% Args:
+% trackedDataFile (string) - .sto or .mot file. 
+%   RMSE values will be calculated between this file and all results data 
+%   files.
+% resultsDataFiles (Array of strings) - String array of .sto or .mot files.
 %
-% (string) -> (None)
-% Plot joint moment curves from file.
+% Optional varargin:
+% columnsToUse (array of strings) - list of column names to plot in the
+%   given .sto or .mot files. Useful to plot only a subset of the
+%   coordinates in the model. Can be in any order.
+%   Default is use all columns in trackedDataFile.
+% columnNames (array of strings) - specify the names to use in subplot
+%   titles (ie plot "Right Hip" instead of "hip_flexion_r".) Must be the
+%   same dimension as columnsToUse.
+%   Default is the column names in trackedDataFile.
+% legend (array of strings) - specify legend values to use instead of the
+%   default.
+%   Default uses the directory structure to create legend names.
+% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
+%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
+%   Default is 1.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -46,21 +58,17 @@ if ~isempty(varargin)
 else
     options = struct();
 end
-
 model = Model(modelFileName);
 osimx = parseOsimxFile(osimxFileName, Model(modelFileName));
 [trackedActivations, resultsActivations] = parsePlottingData(...
     trackedActivationsFile, resultsActivationsFiles, model);
-
 [trackedWeights, resultsWeights] = parsePlottingData(...
     trackedWeightsFile, resultsWeightsFiles, model);
-
 if ~strcmp(synergyNormalizationMethod, "none")
 [trackedActivations.data, trackedWeights.data] = normalizeSynergyData(...
     trackedActivations.data, trackedWeights.data, ...
     synergyNormalizationMethod, synergyNormalizationValue);
 end
-
 for i = 1 : numel(resultsActivations.data)
     [resultsActivations.data{i}, resultsWeights.data{i}] = ...
         normalizeSynergyData(...
@@ -73,17 +81,42 @@ trackedActivations = resampleTrackedData(trackedActivations, ...
 plotSynergyActivations(trackedActivations, resultsActivations, ...
     params, options);
 plotSynergyVectors(trackedWeights, trackedActivations.labels, ...
-    resultsWeights, params, osimx);
+    resultsWeights, params, osimx, options);
 end
 
 function plotSynergyActivations(tracked, results, params, options)
+if isfield(options, "showRmse")
+    showRmse = options.showRmse;
+else
+    showRmse = 1;
+end
+if isfield(options, "columnsToUse")
+    [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
+    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.labels = tracked.labels(trackedIndices);
+    for j = 1 : numel(results.dataFiles)
+        [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
+        results.data{j} = results.data{j}(:, resultsIndices); 
+        results.labels{j} = results.labels{j}(resultsIndices);
+    end
+end
+% Allow renaming columns in the subplot titles
+if isfield(options, "columnNames")
+    tracked.labels = options.columnNames;
+    for j = 1 : numel(results.dataFiles)
+        results.labels{j} = options.columnNames;
+    end
+end
 tileFigure = makeSynergyActivationsFigure(params, options, tracked);
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
-
-titleStrings = makeSubplotTitles(tracked, results);
-legendString = makeLegendFromFileNames(tracked.dataFile, ...
+titleStrings = makeSubplotTitles(tracked, results, showRmse);
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(tracked.dataFile, ...
             results.dataFiles);
+end
 % Max tracked synergy activation. Used to set the plot y axis.
 maxActivations = [max(tracked.data, [], "all")];
 for i = 1 : numel(results.data)
@@ -126,12 +159,16 @@ for i=1:numel(tracked.labels)
 end
 end
 
-function plotSynergyVectors(tracked, synergyLabels, results, params, osimx)
+function plotSynergyVectors(tracked, synergyLabels, results, params, osimx, options)
 % Outer level: iterate through synergy sets. We get 1 plot for each synergy
 % set for readability.
 synergyNumber = 1;
-legendString = makeLegendFromFileNames(tracked.dataFile, ...
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(tracked.dataFile, ...
             results.dataFiles);
+end
 for synergyGroup = 1 : numel(osimx.synergyGroups)
     synergyGroup = osimx.synergyGroups{synergyGroup};
     muscleIndices = contains(tracked.labels, synergyGroup.muscleNames);

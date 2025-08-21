@@ -7,7 +7,6 @@ function [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFile
     results = struct();
     tracked.dataFile = trackedDataFile;
     results.dataFiles = resultsDataFiles;
-    
     trackedDataStorage = Storage(trackedDataFile);
     [tracked.labels, tracked.time, tracked.data] = parseMotToComponents(...
         model, trackedDataStorage);

@@ -1,19 +1,28 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads .sto files for experimental and model ground
-% reactions and plots them. There is an option to plot multiple model files
-% by passing in a list of model file names.
+% Plots ground reaction forces and moments from given .sto or .mot files.
 %
-% There are 2 optional arguments for figure width and figure height. If no
-% optional arguments are given, the figure size is automatically adjusted
-% to fit all data on one plot. Giving just figure width and no figure
-% height will set figure height to a default value and extra figures will
-% be created as needed. If both figure width and figure height are given,
-% the figure size will be fixed and extra figures will be created as
-% needed.
+% Args:
+% trackedDataFile (string) - .sto or .mot file. 
+%   RMSE values will be calculated between this file and all results data 
+%   files.
+% resultsDataFiles (Array of strings) - String array of .sto or .mot files.
 %
-% (string) (List of strings) (int), (int) -> (None)
-% Plot experimental and model ground reactions from file
+% Optional varargin:
+% columnsToUse (array of strings) - list of column names to plot in the
+%   given .sto or .mot files. Useful to plot only a subset of the
+%   coordinates in the model. Can be in any order.
+%   Default is use all columns in trackedDataFile.
+% columnNames (array of strings) - specify the names to use in subplot
+%   titles (ie plot "Right Hip" instead of "hip_flexion_r".) Must be the
+%   same dimension as columnsToUse.
+%   Default is the column names in trackedDataFile.
+% legend (array of strings) - specify legend values to use instead of the
+%   default.
+%   Default uses the directory structure to create legend names.
+% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
+%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
+%   Default is 1.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -45,22 +54,30 @@ if ~isempty(varargin)
 else
     options = struct();
 end
+if isfield(options, "showRmse")
+    showRmse = options.showRmse;
+else
+    showRmse = 1;
+end
+
 model = org.opensim.modeling.Model();
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
-
 [tracked, results] = sortGroundReactionData(tracked, results);
 tracked = resampleTrackedData(tracked, results);
+yLimits = makeGroundReactionsYLimits(tracked, results);
+% Allow only plot certain column names from the input files
 if isfield(options, "columnsToUse")
     [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
     tracked.data = tracked.data(:, trackedIndices); 
     tracked.labels = tracked.labels(trackedIndices);
-    
     for j = 1 : numel(resultsDataFiles)
         [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
         results.data{j} = results.data{j}(:, resultsIndices); 
         results.labels{j} = results.labels{j}(resultsIndices);
     end
+    yLimits = yLimits(trackedIndices);
 end
+% Allow renaming columns in the subplot titles
 if isfield(options, "columnNames")
     tracked.labels = options.columnNames;
     for j = 1 : numel(resultsDataFiles)
@@ -70,15 +87,13 @@ end
 tileFigure = makeGroundReactionsFigure(params, options);
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
-titleStrings = makeGroundReactionsSubplotTitles(tracked, results);
+titleStrings = makeGroundReactionsSubplotTitles(tracked, results, showRmse);
 if isfield(options, "legend")
     legendString = options.legend;
 else
     legendString = makeLegendFromFileNames(trackedDataFile, ...
                 resultsDataFiles);
 end
-yLimits = makeGroundReactionsYLimits(tracked, results);
-
 for i=1:numel(tracked.labels)
     if subplotNumber > figureSize
         tileFigure = makeGroundReactionsFigure(params, options);
@@ -132,13 +147,15 @@ for j = 1 : numel(results.data)
 end
 end
 
-function titleStrings = makeGroundReactionsSubplotTitles(tracked, results)
+function titleStrings = makeGroundReactionsSubplotTitles(tracked, results, showRmse)
 for i = 1 : numel(tracked.labels)
     titleStrings{i} = [sprintf("%s", strrep(tracked.labels(i), "_", " "))];
-    for j = 1 : numel(results.data)
-        rmse = rms(tracked.resampledData{j}(1:end-1, i) - ...
-            results.data{j}(1:end-1, i));
-        titleStrings{i}(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+    if showRmse
+        for j = 1 : numel(results.data)
+            rmse = rms(tracked.resampledData{j}(1:end-1, i) - ...
+                results.data{j}(1:end-1, i));
+            titleStrings{i}(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+        end
     end
 end
 end

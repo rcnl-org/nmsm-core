@@ -1,21 +1,35 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads .sto files for experimental joint angles, and a
-% states file in the treatment optimization results directory, and an osim
-% model file. It plots joint angles for all joints specified as states for
-% GPOPS2. There is an option to plot multiple model files by passing in a
-% list of output states files in the modelDataFiles argument.
+% Plots joint velocities from a Treatment Optimization run. 
+% The tracked data file should be inverse kinematics joint angles.
+% The results data files should be states files from the Treatment 
+% Optimization runs.
 %
-% There are 2 optional arguments for figure width and figure height. If no
-% optional arguments are given, the figure size is automatically adjusted
-% to fit all data on one plot. Giving just figure width and no figure
-% height will set figure height to a default value and extra figures will
-% be created as needed. If both figure width and figure height are given,
-% the figure size will be fixed and extra figures will be created as
-% needed.
+% Args:
+% modelFileName (string) - Osim model file being used.
+% trackedDataFile (string) - .sto or .mot file. 
+%   RMSE values will be calculated between this file and all results data 
+%   files.
+% resultsDataFiles (Array of strings) - String array of .sto or .mot files.
 %
-% (string) (string) (List of strings) (int), (int) -> (None)
-% Plot experimental and model joint angles from file
+% Optional varargin:
+% useRadians (boolean) - "useRadians=0" for plotting in degrees, or ...
+%   "useRadians=1" for plotting in radians.
+%   Default is 1.
+% columnsToUse (array of strings) - list of column names to plot in the
+%   given .sto or .mot files. Useful to plot only a subset of the
+%   coordinates in the model. Can be in any order.
+%   Default is use all columns in trackedDataFile.
+% columnNames (array of strings) - overrides the string to be used in
+%   subplot titles (ie subplot titled "Right Hip" instead of
+%   "hip_flexion_r".) Must be the same dimension as columnsToUse.
+%   Default is the column names in trackedDataFile.
+% legend (array of strings) - specify legend values to use instead of the
+%   default.
+%   Default uses the directory structure to create legend names.
+% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
+%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
+%   Default is 1.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -53,6 +67,11 @@ if isfield(options, "useRadians")
 else
     useRadians = 1;
 end
+if isfield(options, "showRmse")
+    showRmse = options.showRmse;
+else
+    showRmse = 1;
+end
 model = Model(modelFileName);
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
 for j = 1 : numel(results.data)
@@ -60,7 +79,7 @@ for j = 1 : numel(results.data)
     results.labels{j} = results.labels{j}(1:size(results.labels{j}, 2)/2);
 end
 
-% Create experimental velocities
+% Create tracked velocities
 trackedDataSpline = makeGcvSplineSet(tracked.time, ...
     tracked.data, tracked.labels);
 tracked.data = evaluateGcvSplines(trackedDataSpline, tracked.labels, ...
@@ -89,15 +108,15 @@ yLimits = makeJointVelocitiesYLimits(tracked, results, model, useRadians);
 % Allow only plot certain column names from the input files
 if isfield(options, "columnsToUse")
     [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
-    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.data = tracked.data(:, trackedIndices);
     tracked.labels = tracked.labels(trackedIndices);
-    
+
     for j = 1 : numel(resultsDataFiles)
         [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
-        results.data{j} = results.data{j}(:, resultsIndices); 
+        results.data{j} = results.data{j}(:, resultsIndices);
         results.labels{j} = results.labels{j}(resultsIndices);
     end
-    yLimits = yLimits{trackedIndices};
+    yLimits = yLimits(trackedIndices);
 end
 
 % Allow renaming columns
@@ -109,15 +128,18 @@ if isfield(options, "columnNames")
 end
 
 tileFigure = makeJointVelocitiesFigure(params, options, tracked, useRadians);
+
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
+
 subplotNumber = 1;
-titleStrings = makeSubplotTitles(tracked, results);
+
+titleStrings = makeSubplotTitles(tracked, results, showRmse);
 
 if isfield(options, "legend")
     legendString = options.legend;
 else
     legendString = makeLegendFromFileNames(trackedDataFile, ...
-                resultsDataFiles);
+        resultsDataFiles);
 end
 
 for i=1:numel(tracked.labels)
@@ -136,13 +158,13 @@ for i=1:numel(tracked.labels)
         Color = params.lineColors(1))
     for j = 1 : numel(resultsDataFiles)
         plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
-        LineWidth=params.linewidth, ...
-        Color = params.lineColors(j+1));
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(j+1));
     end
     hold off
 
     title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
-            Interpreter="none")
+        Interpreter="none")
     if subplotNumber==1
         legend(legendString, fontsize = params.legendFontSize, ...
             Interpreter="none")
@@ -154,17 +176,17 @@ end
 end
 
 function options = parseVarargin(varargin)
-    options = struct();
-    varargin = varargin{1};
-    for k = 1 : 2 : numel(varargin)
-        options.(varargin{k}) = varargin{k+1};
-    end
+options = struct();
+varargin = varargin{1};
+for k = 1 : 2 : numel(varargin)
+    options.(varargin{k}) = varargin{k+1};
+end
 end
 
 function [tracked, results] = convertRadiansToDegrees(model, tracked, results)
 for i = 1 : size(tracked.data, 2)
     if model.getCoordinateSet().get(tracked.labels(i)).getMotionType() ...
-        .toString().toCharArray()' == "Rotational"
+            .toString().toCharArray()' == "Rotational"
         tracked.data(:, i) = tracked.data(:, i) * 180/pi;
         for j = 1 : numel(results.data)
             results.data{j}(:, i) = results.data{j}(:, i) * 180/pi;
