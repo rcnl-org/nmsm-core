@@ -56,6 +56,11 @@ if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);
 end
 
+tracked = resampleTrackedData(tracked, results);
+
+yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians);
+
+% Allow only plot certain column names from the input files
 if isfield(options, "columnsToUse")
     [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
     tracked.data = tracked.data(:, trackedIndices); 
@@ -66,7 +71,10 @@ if isfield(options, "columnsToUse")
         results.data{j} = results.data{j}(:, resultsIndices); 
         results.labels{j} = results.labels{j}(resultsIndices);
     end
+    
 end
+
+% Allow renaming columns
 if isfield(options, "columnNames")
     tracked.labels = options.columnNames;
     for j = 1 : numel(resultsDataFiles)
@@ -74,7 +82,6 @@ if isfield(options, "columnNames")
     end
 end
 
-tracked = resampleTrackedData(tracked, results);
 
 tileFigure = makeJointAnglesFigure(params, options, tracked, useRadians);
 
@@ -89,7 +96,6 @@ else
     legendString = makeLegendFromFileNames(trackedDataFile, ...
                 resultsDataFiles);
 end
-yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians);
 for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
     if subplotNumber > figureSize

@@ -84,13 +84,42 @@ end
 
 tracked = resampleTrackedData(tracked, results);
 
+yLimits = makeJointVelocitiesYLimits(tracked, results, model, useRadians);
+
+% Allow only plot certain column names from the input files
+if isfield(options, "columnsToUse")
+    [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
+    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.labels = tracked.labels(trackedIndices);
+    
+    for j = 1 : numel(resultsDataFiles)
+        [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
+        results.data{j} = results.data{j}(:, resultsIndices); 
+        results.labels{j} = results.labels{j}(resultsIndices);
+    end
+    yLimits = yLimits{trackedIndices};
+end
+
+% Allow renaming columns
+if isfield(options, "columnNames")
+    tracked.labels = options.columnNames;
+    for j = 1 : numel(resultsDataFiles)
+        results.labels{j} = options.columnNames;
+    end
+end
+
 tileFigure = makeJointVelocitiesFigure(params, options, tracked, useRadians);
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
 titleStrings = makeSubplotTitles(tracked, results);
-legendString = makeLegendFromFileNames(trackedDataFile, ...
-            resultsDataFiles);
-yLimits = makeJointVelocitiesYLimits(tracked, results, model, useRadians);
+
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(trackedDataFile, ...
+                resultsDataFiles);
+end
+
 for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
     if subplotNumber > figureSize
