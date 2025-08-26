@@ -1,12 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are multiple controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function finds the correct element to
-% determine which controllers are being used. This informs the XML parsing
-% logic.
+% This function stores the initial user-defined controls as a spline for
+% use in cost terms for Treatment Optimization
 %
-% (struct) -> (string)
-% returns logical vector depending on the settings file
+% (string) -> (None)
+% Spline input user-defined controls
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,8 +13,8 @@
 % NMSM Pipeline is developed at Rice University and supported by the US   %
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
-% Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Spencer Williams                          %
+% Copyright (c) 2025 Rice University and the Authors                      %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,17 +28,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function controllerTypes = parseControllerTypes(tree)
-torque = getFieldByName(tree, 'RCNLTorqueController');
-synergy = getFieldByName(tree, 'RCNLSynergyController');
-muscle = getFieldByName(tree, 'RCNLMuscleController');
-user = getFieldByName(tree, 'RCNLUserDefinedController');
-controllerTypes = [isstruct(torque), isstruct(synergy), ...
-    isstruct(muscle), isstruct(user)];
-if all(~controllerTypes)
-    throw(MException("ParseTreatmentOptimization:NoController", ...
-       "Could not find <RCNLTorqueController>, " + ...
-       "<RCNLSynergyController>, <RCNLMuscleController>, " + ...
-       "or <RCNLUserDefinedController>"))
+function inputs = setupUserDefinedControls(inputs)
+if inputs.controllerTypes(4)
+    if ~isfield(inputs, 'initialUserDefinedControlLabels')
+        inputs.initialUserDefinedControls = ...
+            inputs.experimentalUserDefinedControls;
+        inputs.initialUserDefinedControlLabels = ...
+            inputs.userDefinedControlLabels;
+    end
+    inputs.splineUserDefinedControls = makeGcvSplineSet( ...
+        inputs.initialTime, inputs.initialUserDefinedControls', ...
+        inputs.initialUserDefinedControlLabels);
 end
 end

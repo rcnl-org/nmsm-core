@@ -79,6 +79,10 @@ minRange = max(inputs.jointAccelerationsMultiple * ...
 inputs.maxControl = max(stateJointAccelerations) + minRange;
 inputs.minControl = min(stateJointAccelerations) - minRange;
 
+if inputs.controllerTypes(4)
+    inputs.maxControl = [inputs.maxControl inputs.userControlMaxValues];
+    inputs.minControl = [inputs.minControl inputs.userControlMinValues];
+end
 if inputs.controllerTypes(3)
     inputs.maxControl = [inputs.maxControl ones(1, ...
         inputs.numIndividualMuscles)];

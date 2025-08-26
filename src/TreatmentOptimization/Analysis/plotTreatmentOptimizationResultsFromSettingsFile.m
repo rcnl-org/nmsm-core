@@ -41,7 +41,7 @@ trackedQuantitiesDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'tracked_quantities_directory'));
 initialGuessDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'initial_guess_directory'));
-[isTorque, isSynergy, isMuscle] = parseControllers(settingsTree);
+[isTorque, isSynergy, isMuscle, isUser] = parseControllers(settingsTree);
 [synergyNormalizationMethod, synergyNormalizationValue] = ...
     parseSynergyNormalizationMethod(settingsTree);
 modelFileName = parseElementTextByName(settingsTree, 'input_model_file');
@@ -163,9 +163,25 @@ if isMuscle
         fullfile(experimentalEmgFile), ...
         fullfile(resultsDirectory, strcat(trialPrefix, "_combinedActivations.sto")))
 end
+if isUser
+    if strcmp(toolName, "DesignOptimization") | strcmp(toolName, "VerificationOptimization")
+        plotTreatmentOptimizationControls( ...
+            [fullfile(trackedQuantitiesDirectory, strcat(trialPrefix, "_userDefinedControls.sto")), ...
+            fullfile(resultsDirectory, strcat(trialPrefix, "_userDefinedControls.sto"))])
+    else
+        plotTreatmentOptimizationControls( ...
+            fullfile(resultsDirectory, strcat(trialPrefix, "_userDefinedControls.sto")))
+    end
+end
 end
 
-function [isTorque, isSynergy, isMuscle] = parseControllers(settingsTree)
+function [isTorque, isSynergy, isMuscle, isUser] = parseControllers(settingsTree)
+user = getFieldByName(settingsTree, 'RCNLUserDefinedController');
+if isstruct(user)
+    isUser = true;
+else
+    isUser = false;
+end
 muscle = getFieldByName(settingsTree, 'RCNLMuscleController');
 if isstruct(muscle)
     isMuscle = true;
