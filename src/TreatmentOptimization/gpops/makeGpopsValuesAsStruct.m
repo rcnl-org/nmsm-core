@@ -43,28 +43,73 @@ values.statePositions = getCorrectStates( ...
     state, 1, length(inputs.statesCoordinateNames));
 values.stateVelocities = getCorrectStates( ...
     state, 2, length(inputs.statesCoordinateNames));
-values.controlAccelerations = control(:, 1 : length(inputs.statesCoordinateNames));
+if inputs.useJerk
+    values.controlAccelerations = getCorrectStates(state, 3, length(inputs.statesCoordinateNames));
+    values.controlJerks = control(:, 1 : length(inputs.statesCoordinateNames));
+else
+    values.controlAccelerations = control(:, 1 : length(inputs.statesCoordinateNames));
+end
 [values.positions, values.velocities] = recombineFullState(values, inputs);
 values.accelerations = recombineFullAccelerations(values, inputs);
 controlIndex = length(inputs.statesCoordinateNames) + 1;
-if inputs.controllerTypes(4)
-    values.userDefinedControls = control(:, ...
-        controlIndex : controlIndex - 1 + inputs.numUserDefinedControls);
-    controlIndex = controlIndex + inputs.numUserDefinedControls;
+if inputs.useJerk
+    stateIndex = length(inputs.statesCoordinateNames) * 3 + 1;
+else
+    stateIndex = length(inputs.statesCoordinateNames) * 2 + 1;
 end
-if inputs.controllerTypes(3)
-    values.controlMuscleActivations = control(:, ...
-        controlIndex : controlIndex - 1 + inputs.numIndividualMuscles);
-    controlIndex = controlIndex + inputs.numIndividualMuscles;
+
+if inputs.useControlDerivatives
+    if inputs.controllerTypes(4)
+        values.userDefinedControls = state(:, ...
+            stateIndex : stateIndex - 1 + inputs.numUserDefinedControls);
+        stateIndex = stateIndex + inputs.numUserDefinedControls;
+        values.userDefinedControlDerivatives = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numUserDefinedControls);
+        controlIndex = controlIndex + inputs.numUserDefinedControls;
+    end
+    if inputs.controllerTypes(3)
+        values.controlMuscleActivations = state(:, ...
+            stateIndex : stateIndex - 1 + inputs.numIndividualMuscles);
+        stateIndex = stateIndex + inputs.numIndividualMuscles;
+        values.controlMuscleActivationDerivatives = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numIndividualMuscles);
+        controlIndex = controlIndex + inputs.numIndividualMuscles;
+    end
+    if inputs.controllerTypes(2)
+        values.controlSynergyActivations = state(:, ...
+            stateIndex : stateIndex - 1 + inputs.numSynergies);
+        stateIndex = stateIndex + inputs.numSynergies;
+        values.controlSynergyActivationDerivatives = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numSynergies);
+        controlIndex = controlIndex + inputs.numSynergies;
+    end
+    values.torqueControls = state(:, ...
+        stateIndex : ...
+        stateIndex - 1 + length(inputs.torqueControllerCoordinateNames));
+    values.torqueControlDerivatives = control(:, ...
+        controlIndex : ...
+        controlIndex - 1 + length(inputs.torqueControllerCoordinateNames));
+else
+    if inputs.controllerTypes(4)
+        values.userDefinedControls = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numUserDefinedControls);
+        controlIndex = controlIndex + inputs.numUserDefinedControls;
+    end
+    if inputs.controllerTypes(3)
+        values.controlMuscleActivations = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numIndividualMuscles);
+        controlIndex = controlIndex + inputs.numIndividualMuscles;
+    end
+    if inputs.controllerTypes(2)
+        values.controlSynergyActivations = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numSynergies);
+        controlIndex = controlIndex + inputs.numSynergies;
+    end
+    values.torqueControls = control(:, ...
+        controlIndex : ...
+        controlIndex - 1 + length(inputs.torqueControllerCoordinateNames));
 end
-if inputs.controllerTypes(2)
-    values.controlSynergyActivations = control(:, ...
-        controlIndex : controlIndex - 1 + inputs.numSynergies);
-    controlIndex = controlIndex + inputs.numSynergies;
-end
-values.torqueControls = control(:, ...
-    controlIndex : ...
-    controlIndex - 1 + length(inputs.torqueControllerCoordinateNames));
+
 
 if strcmp(inputs.toolName, "TrackingOptimization")
     if inputs.controllerTypes(2)

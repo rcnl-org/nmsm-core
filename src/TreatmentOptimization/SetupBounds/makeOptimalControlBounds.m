@@ -65,47 +65,68 @@ inputs.minState = [ ...
     minStatePositions, ...
     minStateVelocities, ...
     ];
+
+if inputs.useJerk
+    stateJointAccelerations = subsetDataByCoordinates( ...
+        inputs.experimentalJointAccelerations, ...
+        inputs.coordinateNames, ...
+        inputs.statesCoordinateNames);
+    minRange = max(inputs.jointJerksMultiple * ...
+        range(stateJointAccelerations), inputs.jointAccelerationsMinRange);
+    maxStateAccelerations = max(stateJointAccelerations) + minRange;
+    minStateAccelerations = min(stateJointAccelerations) - minRange;
+    inputs.maxState = [inputs.maxState, maxStateAccelerations];
+    inputs.minState = [inputs.minState, minStateAccelerations];
+end
+
+if inputs.useControlDerivatives
+    [maxControl, minControl] = makeNonDerivativeControlBounds(inputs);
+    inputs.maxState = [inputs.maxState, maxControl];
+    inputs.minState = [inputs.minState, minControl];
+end
 end
 
 function inputs = makeControlBounds(inputs)
-
-stateJointAccelerations = subsetDataByCoordinates( ...
-    inputs.experimentalJointAccelerations, ...
-    inputs.coordinateNames, ...
-    inputs.statesCoordinateNames);
-
-minRange = max(inputs.jointAccelerationsMultiple * ...
-    range(stateJointAccelerations), inputs.jointAccelerationsMinRange);
-inputs.maxControl = max(stateJointAccelerations) + minRange;
-inputs.minControl = min(stateJointAccelerations) - minRange;
-
-if inputs.controllerTypes(4)
-    inputs.maxControl = [inputs.maxControl inputs.userControlMaxValues];
-    inputs.minControl = [inputs.minControl inputs.userControlMinValues];
+if inputs.useJerk
+    stateJointJerks = subsetDataByCoordinates( ...
+        inputs.experimentalJointJerks, ...
+        inputs.coordinateNames, ...
+        inputs.statesCoordinateNames);
+    minRange = max(inputs.jointJerksMultiple * ...
+        range(stateJointJerks), inputs.jointJerksMinRange);
+    inputs.maxControl = max(stateJointJerks) + minRange;
+    inputs.minControl = min(stateJointJerks) - minRange;
+else
+    stateJointAccelerations = subsetDataByCoordinates( ...
+        inputs.experimentalJointAccelerations, ...
+        inputs.coordinateNames, ...
+        inputs.statesCoordinateNames);
+    minRange = max(inputs.jointAccelerationsMultiple * ...
+        range(stateJointAccelerations), inputs.jointAccelerationsMinRange);
+    inputs.maxControl = max(stateJointAccelerations) + minRange;
+    inputs.minControl = min(stateJointAccelerations) - minRange;
 end
-if inputs.controllerTypes(3)
-    inputs.maxControl = [inputs.maxControl ones(1, ...
-        inputs.numIndividualMuscles)];
-    inputs.minControl = [inputs.minControl zeros(1, ...
-        inputs.numIndividualMuscles)];
-end
-if inputs.controllerTypes(2)
-    maxControlSynergyActivations = inputs.maxControlSynergyActivations * ...
-        ones(1, inputs.numSynergies);
-    inputs.maxControl = [inputs.maxControl maxControlSynergyActivations];
-    inputs.minControl = [inputs.minControl zeros(1, inputs.numSynergies)];
 
-    if inputs.optimizeSynergyVectors
-        numParameters = 0;
-        for i = 1 : length(inputs.synergyGroups)
-            numParameters = numParameters + ...
-                inputs.synergyGroups{i}.numSynergies * ...
-                length(inputs.synergyGroups{i}.muscleNames);
-        end
-        inputs.maxParameter = ones(1, numParameters) * ...
-            inputs.synergyNormalizationValue;
-        inputs.minParameter = zeros(1, numParameters);
+if inputs.useControlDerivatives
+    [maxControl, minControl] = makeDerivativeControlBounds(inputs);
+    inputs.maxControl = [inputs.maxControl, maxControl];
+    inputs.minControl = [inputs.minControl, minControl];
+else
+    [maxControl, minControl] = makeNonDerivativeControlBounds(inputs);
+    inputs.maxControl = [inputs.maxControl, maxControl];
+    inputs.minControl = [inputs.minControl, minControl];
+end
+
+if inputs.controllerTypes(2) && inputs.optimizeSynergyVectors
+    numParameters = 0;
+    for i = 1 : length(inputs.synergyGroups)
+        numParameters = numParameters + ...
+            inputs.synergyGroups{i}.numSynergies * ...
+            length(inputs.synergyGroups{i}.muscleNames);
     end
+    inputs.maxParameter = ones(1, numParameters) * ...
+        inputs.synergyNormalizationValue;
+    inputs.minParameter = zeros(1, numParameters);
 end
 if ~isfield(inputs, "maxParameter")
     inputs.maxParameter = [];
@@ -116,6 +137,27 @@ for i = 1:length(inputs.userDefinedVariables)
         inputs.userDefinedVariables{i}.upper_bounds];
     inputs.minParameter = [inputs.minParameter ...
         inputs.userDefinedVariables{i}.lower_bounds];
+end
+end
+
+function [maxBound, minBound] = makeNonDerivativeControlBounds(inputs)
+maxBound = [];
+minBound = [];
+if inputs.controllerTypes(4)
+    maxBound = [maxBound inputs.userControlMaxValues];
+    minBound = [minBound inputs.userControlMinValues];
+end
+if inputs.controllerTypes(3)
+    maxBound = [maxBound ones(1, ...
+        inputs.numIndividualMuscles)];
+    minBound = [minBound zeros(1, ...
+        inputs.numIndividualMuscles)];
+end
+if inputs.controllerTypes(2)
+    maxControlSynergyActivations = inputs.maxControlSynergyActivations * ...
+        ones(1, inputs.numSynergies);
+    maxBound = [maxBound maxControlSynergyActivations];
+    minBound = [minBound zeros(1, inputs.numSynergies)];
 end
 if isfield(inputs, "torqueControllerCoordinateNames")
     maxTorqueControls = [];
@@ -137,7 +179,65 @@ if isfield(inputs, "torqueControllerCoordinateNames")
         minTorqueControls(i) = min(inputs.experimentalJointMoments(:, ...
             indx)) - minRange;
     end
-    inputs.maxControl = [inputs.maxControl maxTorqueControls];
-    inputs.minControl = [inputs.minControl minTorqueControls];
+    maxBound = [maxBound maxTorqueControls];
+    minBound = [minBound minTorqueControls];
+end
+end
+
+function [maxBound, minBound] = makeDerivativeControlBounds(inputs)
+maxBound = [];
+minBound = [];
+if inputs.controllerTypes(4)
+    derivatives = inputs.initialUserDefinedControlDerivatives;
+    minRange = max(inputs.userControlDerivativesMultiple * ...
+        range(derivatives), inputs.userControlDerivativesMinRange);
+    maxValues = max(derivatives) + minRange;
+    minValues = min(derivatives) - minRange;
+    maxBound = [maxBound, maxValues];
+    minBound = [minBound, minValues];
+end
+if inputs.controllerTypes(3)
+    derivatives = inputs.initialMuscleControlDerivatives;
+    minRange = max(inputs.muscleControlDerivativesMultiple * ...
+        range(derivatives), inputs.muscleControlDerivativesMinRange);
+    maxValues = max(derivatives) + minRange;
+    minValues = min(derivatives) - minRange;
+    maxBound = [maxBound, maxValues];
+    minBound = [minBound, minValues];
+end
+if inputs.controllerTypes(2)
+    derivatives = inputs.initialSynergyControlDerivatives;
+    minRange = max(inputs.synergyControlDerivativesMultiple * ...
+        range(derivatives), inputs.synergyControlDerivativesMinRange);
+    maxValues = max(derivatives) + minRange;
+    minValues = min(derivatives) - minRange;
+    maxBound = [maxBound, maxValues];
+    minBound = [minBound, minValues];
+end
+if isfield(inputs, "torqueControllerCoordinateNames")
+    maxTorqueControls = [];
+    minTorqueControls = [];
+    torqueControlDerivatives = evaluateGcvSplines( ...
+        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, ...
+        inputs.experimentalTime, 1);
+    for i = 1:length(inputs.torqueControllerCoordinateNames)
+        indx = find(strcmp(convertCharsToStrings( ...
+            inputs.inverseDynamicsMomentLabels), ...
+            strcat(inputs.torqueControllerCoordinateNames(i), '_moment')));
+        if isempty(indx)
+            indx = find(strcmp(convertCharsToStrings( ...
+                inputs.inverseDynamicsMomentLabels), ...
+                strcat(inputs.torqueControllerCoordinateNames(i), '_force')));
+        end
+        minRange = max(inputs.maxTorqueControlsMultiple * ...
+            range(inputs.experimentalJointMoments(:, indx)), ...
+            inputs.maxTorqueControlsMinRange);
+        maxTorqueControls(i) = max(torqueControlDerivatives(:, ...
+            indx)) + minRange;
+        minTorqueControls(i) = min(torqueControlDerivatives(:, ...
+            indx)) - minRange;
+    end
+    maxBound = [maxBound maxTorqueControls];
+    minBound = [minBound minTorqueControls];
 end
 end
