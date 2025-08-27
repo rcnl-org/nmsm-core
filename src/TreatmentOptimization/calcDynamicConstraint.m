@@ -30,34 +30,25 @@
 
 function dynamics = calcDynamicConstraint(values, ...
     params)
-state = [];
-control = [];
+derivatives = [values.stateVelocities, values.controlAccelerations];
 if params.useJerk
-    state = [state, values.controlAccelerations];
-    control = [control, values.controlJerks];
-else
-    state = [state, values.stateVelocities];
-    control = [control, values.controlAccelerations];
+    derivatives = [derivatives, values.controlJerks];
 end
 if params.useControlDerivatives
     if params.controllerTypes(4)
-        state = [state, values.userDefinedControls];
-        control = [control, values.userDefinedControlDerivatives];
+        derivatives = [derivatives, values.userDefinedControlDerivatives];
     end
     if params.controllerTypes(3)
-        state = [state, values.controlMuscleActivations];
-        control = [control, values.controlMuscleActivationDerivatives];
+        derivatives = [derivatives, values.controlMuscleActivationDerivatives];
     end
     if params.controllerTypes(2)
-        state = [state, values.controlSynergyActivations];
-        control = [control, values.controlSynergyActivationDerivatives];
+        derivatives = [derivatives, values.controlSynergyActivationDerivatives];
     end
     if params.controllerTypes(1)
-        state = [state, values.torqueControls];
-        control = [control, values.torqueControlDerivatives];
+        derivatives = [derivatives, values.torqueControlDerivatives];
     end
 end
 
 dynamics = (params.maxTime - params.minTime) * ...
-    ([state control]) ./ (params.maxState - params.minState);
+    derivatives ./ (params.maxState - params.minState);
 end
