@@ -79,9 +79,13 @@ for j=1:numel(resultsDataFiles)
         resultsStatesTime = resultsStatesTime - resultsStatesTime(1);
     end
     resultsTimeNormalized{j} = resultsStatesTime ./ resultsStatesTime(end);
-    
-    resultsVelocities{j} = resultsStates(:, size(resultsStates, 2)/2+1:end);
-    resultsVelocitiesLabels{j} = resultsStatesLabels{j}(size(resultsStates, 2)/2+1:end);
+    if endsWith(resultsStatesLabels{j}(end), "_dudt")
+        resultsVelocities{j} = resultsStates(:, size(resultsStates, 2)/3+1:size(resultsStates, 2)*2/3);
+        resultsVelocitiesLabels{j} = resultsStatesLabels{j}(size(resultsStates, 2)/3+1:size(resultsStates, 2)*2/3);
+    else
+        resultsVelocities{j} = resultsStates(:, size(resultsStates, 2)/2+1:end);
+        resultsVelocitiesLabels{j} = resultsStatesLabels{j}(size(resultsStates, 2)/2+1:end);
+    end
     resultsVelocitiesTime{j} = resultsStatesTime;
     if ~useRadians
         for i = 1 : size(resultsStates(:, 1:size(resultsStates, 2)/2), 2)
