@@ -48,7 +48,21 @@ if isfield(inputs, "initialStates")
     states = subsetInitialStatesDataByCoordinates( ...
         inputs.initialStates, ...
         inputs.initialStatesLabels, ...
-        inputs.statesCoordinateNames);
+        inputs.statesCoordinateNames, inputs.useJerk);
+    if inputs.useControlDerivatives
+        if inputs.controllerTypes(4)
+            states = [states, inputs.initialUserDefinedControls];
+        end
+        if inputs.controllerTypes(3)
+            states = [states, inputs.initialMuscleControls];
+        end
+        if inputs.controllerTypes(2)
+            states = [states, inputs.initialSynergyControls];
+        end
+        if inputs.controllerTypes(1)
+            states = [states, inputs.initialTorqueControls];
+        end
+    end
     guess.phase.state = scaleToBounds(states, ...
         inputs.maxState, inputs.minState);
     if strcmp(inputs.solverType, 'casadi')
@@ -237,12 +251,19 @@ end
 end
 
 function output = subsetInitialStatesDataByCoordinates(data, ...
-    coordinateNames, subsetOfCoordinateNames)
+    coordinateNames, subsetOfCoordinateNames, useJerk)
 includedSubset = ismember(coordinateNames, subsetOfCoordinateNames);
-numCoordinates = length(includedSubset) / 2;
+if useJerk
+    numCoordinates = length(includedSubset) / 3;
+else
+    numCoordinates = length(includedSubset) / 2;
+end
 for i = 1:numCoordinates
     if includedSubset(i)
         includedSubset(i + numCoordinates) = true;
+        if useJerk
+            includedSubset(i + 2 * numCoordinates) = true;
+        end
     end
 end
 output = data(:, includedSubset);
