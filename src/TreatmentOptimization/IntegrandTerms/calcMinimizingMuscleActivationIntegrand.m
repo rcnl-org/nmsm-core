@@ -37,9 +37,11 @@ defaultTimeNormalization = true;
     inputs.muscleNames, muscleName);
 
 exponent = valueOrAlternate(costTerm, "exponent", 2);
+% Pre divide by max allowable error and raise to exponent divided by 2
+% because calcGpopsIntegrant later divides this by max allowable error and
+% sqaures it.
 cost = (activation./costTerm.maxAllowableError).^(exponent/2) * ...
     costTerm.maxAllowableError;
-% cost = activation;
 
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
