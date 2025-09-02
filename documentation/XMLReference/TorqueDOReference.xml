@@ -1,0 +1,690 @@
+<NMSMPipelineDocument Version="1.4.0">
+	<DesignOptimizationTool>
+		<!--Directory used for writing results.-->
+		<results_directory>DOResults</results_directory>
+		<!--Directory for optimizer initial guess.-->
+		<initial_guess_directory>InitialGuessDir</initial_guess_directory>
+		<!--Directory for files for the optimizer to track.-->
+		<tracked_quantities_directory>TrackedQuantitiesDir</tracked_quantities_directory>
+		<!--Name of the input model file (.osim) to use.-->
+		<input_model_file>model.osim</input_model_file>
+		<!--Name of the osimx model file.-->
+		<input_osimx_file>model.osimx</input_osimx_file>
+		<!--Name of the optimal control solver settings file.-->
+		<optimal_control_solver_settings_file>gpopsSettings.xml</optimal_control_solver_settings_file>
+		<!--Name, excluding file type (.sto, .mot, etc), of the trial-->
+		<trial_name>gait_1</trial_name>
+		<!--Space separated list of coordinates to be considered GPOPS2 states. Not including a coordinate prescribes it.-->
+		<states_coordinate_list>coordinate_1 coordinate_2 coordinate_3</states_coordinate_list>
+		<!--*Optional* Default is 2.-->
+		<joint_position_range_scale_factor>2</joint_position_range_scale_factor>
+		<!--*Optional* Default is 1.5.-->
+		<joint_velocity_range_scale_factor>1.5</joint_velocity_range_scale_factor>
+		<!--*Optional* Default is 1.-->
+		<joint_acceleration_range_scale_factor>1</joint_acceleration_range_scale_factor>
+		<!--Set of synergy controls for GPOPS2.-->
+		<RCNLSynergyController>
+			<!--Space separated list containing the coordinates controlled by the synergy controller.-->
+			<surrogate_model_coordinate_list>coordinate_1 coordinate_2 coordinate_3</surrogate_model_coordinate_list>
+			<!--Directory to read the surrogate model from.-->
+			<surrogate_model_data_directory>SurrogateDataDir</surrogate_model_data_directory>
+			<!--Flag (true, false) indicating whether to load a previously saved surrogate model (named surrogateMuscles.mat)-->
+			<load_surrogate_model>false</load_surrogate_model>
+			<!--Flag (true, false) indicating whether to save the surrogate model used in this run (named surrogateMuscles.mat)-->
+			<save_surrogate_model>false</save_surrogate_model>
+			<epsilon>1e-4</epsilon>
+			<surrogate_model_polynomial_degree></surrogate_model_polynomial_degree>
+			<perform_latin_hypercube_sampling>true</perform_latin_hypercube_sampling>
+			<latin_hypercube_range_multiplier>1</latin_hypercube_range_multiplier>
+			<latin_hypercube_number_of_points>10</latin_hypercube_number_of_points>
+			<maximum_shortening_velocity_multiplier></maximum_shortening_velocity_multiplier>
+			<optimize_synergy_vectors>false</optimize_synergy_vectors>
+			<maximum_allowable_synergy_activation>5</maximum_allowable_synergy_activation>
+			<synergy_vector_normalization_method>sum</synergy_vector_normalization_method>
+			<synergy_vector_normalization_value>1</synergy_vector_normalization_value>
+		</RCNLSynergyController>
+		<RCNLTorqueController>
+			<!--Space separated list containing the coordinates controlled by the torque controller.-->
+			<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+		</RCNLTorqueController>
+		<!--Set of cost terms used for this optimization. For a full list of cost terms, see documentation at nmsm.rice.edu.-->
+		<RCNLCostTermSet>
+			<RCNLCostTerm name="generalized_coordinate_tracking">
+				<is_enabled>true</is_enabled>
+				<type>generalized_coordinate_tracking</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="generalized_speed_tracking">
+				<is_enabled>true</is_enabled>
+				<type>generalized_speed_tracking</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="generalized_acceleration_tracking">
+				<is_enabled>true</is_enabled>
+				<type>generalized_acceleration_tracking</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="generalized_acceleration_minimization">
+				<is_enabled>true</is_enabled>
+				<type>generalized_acceleration_minimization</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="marker_position_tracking">
+				<is_enabled>true</is_enabled>
+				<type>marker_position_tracking</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="marker_velocity_tracking">
+				<is_enabled>true</is_enabled>
+				<type>marker_velocity_tracking</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="body_orientation_tracking">
+				<is_enabled>true</is_enabled>
+				<type>body_orientation_tracking</type>
+				<body_list>body_1 body_2 body_3</body_list>
+				<axes>x y z</axes>
+				<sequence>xyz</sequence>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="body_orientation_minimization">
+				<is_enabled>true</is_enabled>
+				<type>body_orientation_minimization</type>
+				<body_list>body_1 body_2 body_3</body_list>
+				<axes>x y z</axes>
+				<sequence>xyz</sequence>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="inverse_dynamics_load_tracking">
+				<is_enabled>true</is_enabled>
+				<type>inverse_dynamics_load_tracking</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="inverse_dynamics_load_minimization">
+				<is_enabled>true</is_enabled>
+				<type>inverse_dynamics_load_minimization</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="inverse_dynamics_slope_tracking">
+				<is_enabled>true</is_enabled>
+				<type>inverse_dynamics_slope_tracking</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="external_force_tracking">
+				<is_enabled>true</is_enabled>
+				<type>external_force_tracking</type>
+				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="external_moment_tracking">
+				<is_enabled>true</is_enabled>
+				<type>external_moment_tracking</type>
+				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="center_of_pressure_tracking">
+				<is_enabled>true</is_enabled>
+				<type>center_of_pressure_tracking</type>
+				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="muscle_activation_tracking">
+				<is_enabled>true</is_enabled>
+				<type>muscle_activation_tracking</type>
+				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="muscle_activation_minimization">
+				<is_enabled>true</is_enabled>
+				<type>muscle_activation_minimization</type>
+				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="controller_tracking">
+				<is_enabled>true</is_enabled>
+				<type>controller_tracking</type>
+				<controller_list>controller_1 controller_2 controller_3</controller_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="controller_minimization">
+				<is_enabled>true</is_enabled>
+				<type>controller_minimization</type>
+				<controller_list>controller_1 controller_2 controller_3</controller_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="controller_slope_minimization">
+				<is_enabled>true</is_enabled>
+				<type>controller_slope_minimization</type>
+				<controller_list>controller_1 controller_2 controller_3</controller_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="controller_shape_tracking">
+				<is_enabled>true</is_enabled>
+				<type>controller_shape_tracking</type>
+				<controller_list>controller_1 controller_2 controller_3</controller_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="joint_energy_absorption_goal">
+				<is_enabled>true</is_enabled>
+				<type>joint_energy_absorption_goal</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="joint_energy_generation_goal">
+				<is_enabled>true</is_enabled>
+				<type>inverse_dynamics_shape_tracking</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="inverse_dynamics_shape_tracking">
+				<is_enabled>true</is_enabled>
+				<type>joint_energy_generation_goal</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="angular_momentum_minimization">
+				<is_enabled>true</is_enabled>
+				<type>angular_momentum_minimization</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="synergy_vector_tracking">
+				<is_enabled>true</is_enabled>
+				<type>synergy_vector_tracking</type>
+				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="relative_walking_speed_goal">
+				<is_enabled>true</is_enabled>
+				<type>relative_walking_speed_goal</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="absolute_metabolic_cost_per_time">
+				<is_enabled>true</is_enabled>
+				<type>absolute_metabolic_cost_per_time</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="absolute_metabolic_cost_per_distance">
+				<is_enabled>true</is_enabled>
+				<type>absolute_metabolic_cost_per_distance</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="relative_metabolic_cost_per_time">
+				<is_enabled>true</is_enabled>
+				<type>relative_metabolic_cost_per_time</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="relative_metabolic_cost_per_distance">
+				<is_enabled>true</is_enabled>
+				<type>relative_metabolic_cost_per_distance</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="propulsive_impulse_goal">
+				<is_enabled>true</is_enabled>
+				<type>propulsive_impulse_goal</type>
+				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="braking_impulse_goal">
+				<is_enabled>true</is_enabled>
+				<type>braking_impulse_goal</type>
+				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+		</RCNLCostTermSet>
+		<RCNLConstraintTermSet>
+			<RCNLConstraintTerm name="generalized_coordinate_deviation">
+				<is_enabled>true</is_enabled>
+				<type>generalized_coordinate_deviation</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="generalized_coordinate_value">
+				<is_enabled>true</is_enabled>
+				<type>generalized_coordinate_value</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="generalized_speed_deviation">
+				<is_enabled>true</is_enabled>
+				<type>generalized_speed_deviation</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="generalized_speed_value">
+				<is_enabled>true</is_enabled>
+				<type>generalized_speed_value</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="generalized_acceleration_deviation">
+				<is_enabled>true</is_enabled>
+				<type>generalized_acceleration_deviation</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="generalized_acceleration_value">
+				<is_enabled>true</is_enabled>
+				<type>generalized_acceleration_value</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="marker_position_deviation">
+				<is_enabled>true</is_enabled>
+				<type>marker_position_deviation</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="marker_position_value">
+				<is_enabled>true</is_enabled>
+				<type>marker_position_value</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="marker_velocity_deviation">
+				<is_enabled>true</is_enabled>
+				<type>marker_velocity_deviation</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="marker_velocity_value">
+				<is_enabled>true</is_enabled>
+				<type>marker_velocity_value</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="body_orientation_deviation">
+				<is_enabled>true</is_enabled>
+				<type>body_orientation_deviation</type>
+				<body_list>body_1 body_2 body_3</body_list>
+				<axes>x y z</axes>
+				<sequence>xyz</sequence>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="body_orientation_value">
+				<is_enabled>true</is_enabled>
+				<type>body_orientation_value</type>
+				<body_list>body_1 body_2 body_3</body_list>
+				<axes>x y z</axes>
+				<sequence>xyz</sequence>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="kinetic_consistency">
+				<is_enabled>true</is_enabled>
+				<type>kinetic_consistency</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="root_segment_residual_load">
+				<is_enabled>true</is_enabled>
+				<type>root_segment_residual_load</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="external_force_deviation">
+				<is_enabled>true</is_enabled>
+				<type>external_force_deviation</type>
+				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="external_force_value">
+				<is_enabled>true</is_enabled>
+				<type>external_force_value</type>
+				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="external_moment_deviation">
+				<is_enabled>true</is_enabled>
+				<type>external_moment_deviation</type>
+				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="external_moment_value">
+				<is_enabled>true</is_enabled>
+				<type>external_moment_value</type>
+				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="center_of_pressure_deviation">
+				<is_enabled>true</is_enabled>
+				<type>center_of_pressure_deviation</type>
+				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="center_of_pressure_value">
+				<is_enabled>true</is_enabled>
+				<type>center_of_pressure_value</type>
+				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="generalized_coordinate_periodicity">
+				<is_enabled>true</is_enabled>
+				<type>generalized_coordinate_periodicity</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_generalized_coordinate_deviation">
+				<is_enabled>true</is_enabled>
+				<type>initial_generalized_coordinate_deviation</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_generalized_coordinate_value">
+				<is_enabled>true</is_enabled>
+				<type>initial_generalized_coordinate_value</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_generalized_coordinate_deviation">
+				<is_enabled>true</is_enabled>
+				<type>final_generalized_coordinate_deviation</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_generalized_coordinate_value">
+				<is_enabled>true</is_enabled>
+				<type>final_generalized_coordinate_value</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="generalized_speed_periodicity">
+				<is_enabled>true</is_enabled>
+				<type>generalized_speed_periodicity</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_generalized_speed_deviation">
+				<is_enabled>true</is_enabled>
+				<type>initial_generalized_speed_deviation</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_generalized_speed_value">
+				<is_enabled>true</is_enabled>
+				<type>initial_generalized_speed_value</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_generalized_speed_deviation">
+				<is_enabled>true</is_enabled>
+				<type>final_generalized_speed_deviation</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_generalized_speed_value">
+				<is_enabled>true</is_enabled>
+				<type>final_generalized_speed_value</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="marker_position_periodicity">
+				<is_enabled>true</is_enabled>
+				<type>marker_position_periodicity</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_marker_position_deviation">
+				<is_enabled>true</is_enabled>
+				<type>initial_marker_position_deviation</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_marker_position_value">
+				<is_enabled>true</is_enabled>
+				<type>initial_marker_position_value</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_marker_position_deviation">
+				<is_enabled>true</is_enabled>
+				<type>final_marker_position_deviation</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_marker_position_value">
+				<is_enabled>true</is_enabled>
+				<type>final_marker_position_value</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="marker_velocity_periodicity">
+				<is_enabled>true</is_enabled>
+				<type>marker_velocity_periodicity</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_marker_velocity_deviation">
+				<is_enabled>true</is_enabled>
+				<type>initial_marker_velocity_deviation</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_marker_velocity_value">
+				<is_enabled>true</is_enabled>
+				<type>initial_marker_velocity_value</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_marker_velocity_deviation">
+				<is_enabled>true</is_enabled>
+				<type>final_marker_velocity_deviation</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_marker_velocity_value">
+				<is_enabled>true</is_enabled>
+				<type>final_marker_velocity_value</type>
+				<marker_list>marker_1 marker_2 marker_3</marker_list>
+				<axes>x y z</axes>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="body_orientation_periodicity">
+				<is_enabled>true</is_enabled>
+				<type>body_orientation_periodicity</type>
+				<body_list>body_1 body_2 body_3</body_list>
+				<axes>x y z</axes>
+				<sequence>xyz</sequence>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_body_orientation_deviation">
+				<is_enabled>true</is_enabled>
+				<type>initial_body_orientation_deviation</type>
+				<body_list>body_1 body_2 body_3</body_list>
+				<axes>x y z</axes>
+				<sequence>xyz</sequence>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_body_orientation_value">
+				<is_enabled>true</is_enabled>
+				<type>initial_body_orientation_value</type>
+				<body_list>body_1 body_2 body_3</body_list>
+				<axes>x y z</axes>
+				<sequence>xyz</sequence>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_body_orientation_deviation">
+				<is_enabled>true</is_enabled>
+				<type>final_body_orientation_deviation</type>
+				<body_list>body_1 body_2 body_3</body_list>
+				<axes>x y z</axes>
+				<sequence>xyz</sequence>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_body_orientation_value">
+				<is_enabled>true</is_enabled>
+				<type>final_body_orientation_value</type>
+				<body_list>body_1 body_2 body_3</body_list>
+				<axes>x y z</axes>
+				<sequence>xyz</sequence>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="root_segment_residual_load_periodicity">
+				<is_enabled>true</is_enabled>
+				<type>root_segment_residual_load_periodicity</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="external_force_periodicity">
+				<is_enabled>true</is_enabled>
+				<type>external_force_periodicity</type>
+				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_external_force_deviation">
+				<is_enabled>true</is_enabled>
+				<type>initial_external_force_deviation</type>
+				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_external_force_value">
+				<is_enabled>true</is_enabled>
+				<type>initial_external_force_value</type>
+				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_external_force_deviation">
+				<is_enabled>true</is_enabled>
+				<type>final_external_force_deviation</type>
+				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_external_force_value">
+				<is_enabled>true</is_enabled>
+				<type>final_external_force_value</type>
+				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="external_moment_periodicity">
+				<is_enabled>true</is_enabled>
+				<type>external_moment_periodicity</type>
+				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_external_moment_deviation">
+				<is_enabled>true</is_enabled>
+				<type>initial_external_moment_deviation</type>
+				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="initial_external_moment_value">
+				<is_enabled>true</is_enabled>
+				<type>initial_external_moment_value</type>
+				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_external_moment_deviation">
+				<is_enabled>true</is_enabled>
+				<type>final_external_moment_deviation</type>
+				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="final_external_moment_value">
+				<is_enabled>true</is_enabled>
+				<type>final_external_moment_value</type>
+				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="synergy_vector_sum">
+				<is_enabled>true</is_enabled>
+				<type>synergy_vector_sum</type>
+				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="synergy_vector_magnitude">
+				<is_enabled>true</is_enabled>
+				<type>synergy_vector_magnitude</type>
+				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+		</RCNLConstraintTermSet>
+	</DesignOptimizationTool>
+</NMSMPipelineDocument>
