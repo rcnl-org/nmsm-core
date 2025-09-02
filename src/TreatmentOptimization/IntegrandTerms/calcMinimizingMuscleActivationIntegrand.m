@@ -36,7 +36,10 @@ defaultTimeNormalization = true;
 [activation, costTerm] = findDataByLabels(costTerm, muscleActivations, ...
     inputs.muscleNames, muscleName);
 
-cost = activation;
+exponent = valueOrAlternate(costTerm, "exponent", 2);
+cost = (activation./costTerm.maxAllowableError).^(exponent/2) * ...
+    costTerm.maxAllowableError;
+% cost = activation;
 
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
