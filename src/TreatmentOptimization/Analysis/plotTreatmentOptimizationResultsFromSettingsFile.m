@@ -102,6 +102,7 @@ plotTreatmentOptimizationJointLoads( ...
 end
 
 function plotGroundReactions(resultsDirectory, trialPrefix)
+% First check which directories have ground reactions
 grfIndices = logical([]);
 for i = 1 : numel(resultsDirectory)
     if exist(fullfile(resultsDirectory(i), "GRFData"), 'dir')
@@ -161,6 +162,7 @@ end
 
 function plotTorqueControls(resultsDirectory, trackedQuantitiesDirectory, ...
     trialPrefix)
+% First check which directories have torque controllers
 torqueIndices = logical([]);
 for i = 1 : numel(resultsDirectory)
     if exist(fullfile(resultsDirectory(i), strcat(trialPrefix, ...

@@ -62,9 +62,11 @@ end
 
 model = org.opensim.modeling.Model();
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
+% Tracked and results files can have columns in different order sometimes.
 [tracked, results] = sortGroundReactionData(tracked, results);
 tracked = resampleTrackedData(tracked, results);
 yLimits = makeGroundReactionsYLimits(tracked, results);
+
 % Allow only plot certain column names from the input files
 if isfield(options, "columnsToUse")
     [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
@@ -77,6 +79,7 @@ if isfield(options, "columnsToUse")
     end
     yLimits = yLimits(trackedIndices);
 end
+
 % Allow renaming columns in the subplot titles
 if isfield(options, "columnNames")
     tracked.labels = options.columnNames;
@@ -84,16 +87,19 @@ if isfield(options, "columnNames")
         results.labels{j} = options.columnNames;
     end
 end
+
 tileFigure = makeGroundReactionsFigure(params, options);
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
 titleStrings = makeGroundReactionsSubplotTitles(tracked, results, showRmse);
+ 
 if isfield(options, "legend")
     legendString = options.legend;
 else
     legendString = makeLegendFromFileNames(trackedDataFile, ...
                 resultsDataFiles);
 end
+
 for i=1:numel(tracked.labels)
     if subplotNumber > figureSize
         tileFigure = makeGroundReactionsFigure(params, options);

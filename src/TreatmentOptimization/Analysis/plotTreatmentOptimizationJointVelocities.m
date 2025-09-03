@@ -72,8 +72,11 @@ if isfield(options, "showRmse")
 else
     showRmse = 1;
 end
+
 model = Model(modelFileName);
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
+% Results files should be states files, so we only take the last half of
+% the file where the velocities are.
 for j = 1 : numel(results.data)
     results.data{j} = results.data{j}(:, size(results.data{j}, 2)/2+1:end);
     results.labels{j} = results.labels{j}(1:size(results.labels{j}, 2)/2);

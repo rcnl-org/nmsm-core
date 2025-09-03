@@ -73,8 +73,10 @@ model = Model(modelFileName);
 if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);
 end
+% Resample tracked data to experimental for calculating RMSE
 tracked = resampleTrackedData(tracked, results);
 yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians);
+
 % Allow only plot certain column names from the input files
 if isfield(options, "columnsToUse")
     [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
@@ -95,6 +97,7 @@ if isfield(options, "columnNames")
         results.labels{j} = options.columnNames;
     end
 end
+
 tileFigure = makeJointAnglesFigure(params, options, tracked, useRadians);
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
