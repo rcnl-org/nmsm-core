@@ -12,6 +12,6 @@ params.plotBackgroundColor = "#F0F0F0";
 params.subplotBackgroundColor = "#FFFFFF";
 
 % Line params
-params.lineColors = ["#4477AA", "#EE6677", "#228833", "#CCBB44", "#66CCEE", "AA3377", "BBBBBB"];
+params.lineColors = ["#4477AA", "#EE6677", "#228833", "#CCBB44", "#66CCEE", "#AA3377", "#BBBBBB"];
 params.linewidth = 2;
 end
