@@ -1,7 +1,7 @@
 <NMSMPipelineDocument Version="1.4.0">
-	<TrackingOptimizationTool>
+	<DesignOptimizationTool>
 		<!--Directory used for writing results.-->
-		<results_directory>TOResults</results_directory>
+		<results_directory>ResultsDir</results_directory>
 		<!--Directory for optimizer initial guess.-->
 		<initial_guess_directory>InitialGuessDir</initial_guess_directory>
 		<!--Directory for files for the optimizer to track.-->
@@ -121,13 +121,13 @@
 				<load_list>load_1 load_2 load_3</load_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="external force tracking">
+			<RCNLCostTerm name="external_force_tracking">
 				<is_enabled>true</is_enabled>
 				<type>external_force_tracking</type>
 				<force_list>external_force_1 external_force_2 external_force_3</force_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="muscle_activation_tracking">
+			<RCNLCostTerm name="external_moment_tracking">
 				<is_enabled>true</is_enabled>
 				<type>external_moment_tracking</type>
 				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
@@ -169,11 +169,85 @@
 				<controller_list>controller_1 controller_2 controller_3</controller_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
+			<RCNLCostTerm name="controller_shape_tracking">
+				<is_enabled>true</is_enabled>
+				<type>controller_shape_tracking</type>
+				<controller_list>controller_1 controller_2 controller_3</controller_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="joint_energy_absorption_goal">
+				<is_enabled>true</is_enabled>
+				<type>joint_energy_absorption_goal</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="joint_energy_generation_goal">
+				<is_enabled>true</is_enabled>
+				<type>inverse_dynamics_shape_tracking</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="inverse_dynamics_shape_tracking">
+				<is_enabled>true</is_enabled>
+				<type>joint_energy_generation_goal</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="angular_momentum_minimization">
+				<is_enabled>true</is_enabled>
+				<type>angular_momentum_minimization</type>
+				<load_list>load_1 load_2 load_3</load_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
 			<RCNLCostTerm name="synergy_vector_tracking">
 				<is_enabled>true</is_enabled>
 				<type>synergy_vector_tracking</type>
 				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
 				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="relative_walking_speed_goal">
+				<is_enabled>true</is_enabled>
+				<type>relative_walking_speed_goal</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="absolute_metabolic_cost_per_time">
+				<is_enabled>true</is_enabled>
+				<type>absolute_metabolic_cost_per_time</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="absolute_metabolic_cost_per_distance">
+				<is_enabled>true</is_enabled>
+				<type>absolute_metabolic_cost_per_distance</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="relative_metabolic_cost_per_time">
+				<is_enabled>true</is_enabled>
+				<type>relative_metabolic_cost_per_time</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="relative_metabolic_cost_per_distance">
+				<is_enabled>true</is_enabled>
+				<type>relative_metabolic_cost_per_distance</type>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="propulsive_impulse_goal">
+				<is_enabled>true</is_enabled>
+				<type>propulsive_impulse_goal</type>
+				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="braking_impulse_goal">
+				<is_enabled>true</is_enabled>
+				<type>braking_impulse_goal</type>
+				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<max_allowable_error></max_allowable_error>
+				<error_center></error_center>
 			</RCNLCostTerm>
 		</RCNLCostTermSet>
 		<RCNLConstraintTermSet>
@@ -612,5 +686,5 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 		</RCNLConstraintTermSet>
-	</TrackingOptimizationTool>
+	</DesignOptimizationTool>
 </NMSMPipelineDocument>
