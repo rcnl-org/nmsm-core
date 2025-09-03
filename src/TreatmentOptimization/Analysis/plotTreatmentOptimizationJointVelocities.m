@@ -148,7 +148,7 @@ end
 for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
     if subplotNumber > figureSize
-        makeJointAnglesFigure(params, options, tracked, useRadians);
+        makeJointVelocitiesFigure(params, options, tracked, useRadians);
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
@@ -215,10 +215,10 @@ tileFigure = tiledlayout(figureHeight, figureWidth, ...
 xlabel(tileFigure, "Percent Movement [0-100%]", ...
     fontsize=params.axisLabelFontSize)
 if ~useRadians
-    ylabel(tileFigure, "Joint Velocity [deg]", ...
+    ylabel(tileFigure, "Joint Velocity [deg/s]", ...
         fontsize=params.axisLabelFontSize)
 else
-    ylabel(tileFigure, "Joint Velocity [rad]", ...
+    ylabel(tileFigure, "Joint Velocity [rad/s]", ...
         fontsize=params.axisLabelFontSize)
 end
 set(gcf, color=params.plotBackgroundColor)
