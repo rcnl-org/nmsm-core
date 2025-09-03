@@ -103,7 +103,7 @@ titleStrings = makeJointLoadsSubplotTitles(tracked, results, showRmse);
 for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
     if subplotNumber > figureSize
-        makeJointLoadsFigure(params, options, tracked, useRadians);
+        makeJointLoadsFigure(params, options, tracked);
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
@@ -202,6 +202,7 @@ for i = 1 : numel(tracked.labels)
         for j = 1 : numel(results.data)
             rmse = rms(tracked.resampledData{j}(1:end-1, i) - ...
                 results.data{j}(1:end-1, i));
+            titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
         end
     end
     titleStrings{i} = titleString;
