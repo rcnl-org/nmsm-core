@@ -8,8 +8,8 @@ params.legendFontSize = 8;
 params.tickLabelFontSize = 10;
 
 % Color params
-params.plotBackgroundColor = "#F0F0F0";
-params.subplotBackgroundColor = "#FFFFFF";
+params.plotBackgroundColor = "default";
+params.subplotBackgroundColor = "default";
 
 % Line params
 params.lineColors = ["#4477AA", "#EE6677", "#228833", "#CCBB44", "#66CCEE", "#AA3377", "#BBBBBB"];
