@@ -34,6 +34,17 @@ ncpResultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 mtpResultsDirectory = getFieldByName(settingsTree, 'mtp_results_directory');
 inputDataDirectory = getFieldByName(settingsTree, 'data_directory').Text;
 trialPrefixes = findPrefixes(settingsTree, inputDataDirectory);
+inputModelFileName = parseElementTextByName(settingsTree, 'input_model_file');
+inputOsimxFileName = parseElementTextByName(settingsTree, 'input_osimx_file');
+if ~isempty(inputOsimxFileName)
+    [~, osimxFileName, ~] = fileparts(inputOsimxFileName);
+    osimxFileName = fullfile(ncpResultsDirectory, ...
+        strcat(osimxFileName, "_ncp.osimx"));
+else
+    [~, modelFileName, ~] = fileparts(inputModelFileName);
+    osimxFileName = fullfile(ncpResultsDirectory, ...
+        strcat(modelFileName, "_ncp.osimx"));
+end
 for i = 1 : numel (trialPrefixes)
     if isstruct(mtpResultsDirectory) && ~isempty(mtpResultsDirectory.Text)
         plotNeuralControlPersonalizationActivations( ...
@@ -62,7 +73,6 @@ for i = 1 : numel (trialPrefixes)
     plotTreatmentOptimizationSynergyControls( ...
         fullfile(ncpResultsDirectory, strcat(trialPrefixes{i}, "_synergyCommands.sto")), ...
         fullfile(ncpResultsDirectory, "synergyWeights.sto"), [], [], ...
-        "sum", 1)
-
+        osimxFileName, inputModelFileName, "sum", 1)
 end
 

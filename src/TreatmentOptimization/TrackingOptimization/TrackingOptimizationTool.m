@@ -30,9 +30,12 @@
 % ----------------------------------------------------------------------- %
 
 function TrackingOptimizationTool(settingsFileName)
+tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "TrackingOptimizationTool");
 [inputs, params] = parseTrackingOptimizationSettingsTree(settingsTree);
+outputLogFile = fullfile("commandWindowOutput.txt");
+diary(outputLogFile)
 inputs = normalizeSynergyData(inputs);
 inputs = setupMuscleSynergies(inputs);
 inputs = setupMuscleActivations(inputs);
@@ -40,4 +43,11 @@ inputs = setupUserDefinedControls(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
 saveTrackingOptimizationResults(outputs, inputs);
+fprintf("Tracking Optimization Runtime: %f Hours\n", toc/3600);
+diary off
+try
+    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
+    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
+catch
+end
 end

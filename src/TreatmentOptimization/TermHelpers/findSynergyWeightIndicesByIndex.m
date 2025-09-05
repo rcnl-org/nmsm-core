@@ -1,10 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function bounds the muscle activations to the user defined values
-% for the specified muscle. Applicable only if the model is synergy driven.
+% (struct, struct) -> (Array of number, struct)
 %
-% (struct, struct, 2D matrix, Array of string) -> (Array of number)
-% 
+% Finds the indices of included muscles given a synergy index.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,10 +26,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [pathTerm, constraintTerm] = ...
-    calcMuscleActivationsPathConstraint(inputs, ...
-    modeledValues, muscleName, constraintTerm)
-[activation, constraintTerm] = findDataByLabels(constraintTerm, ...
-    modeledValues.muscleActivations, inputs.muscleNames, muscleName);
-pathTerm = activation;
+function [indices, term] = findSynergyWeightIndicesByIndex(term, inputs)
+if isfield(term, 'internalSynergyWeightIndices')
+    indices = term.internalSynergyWeightIndices;
+else
+    synergyIndices = term.internalSynergyIndices;
+    indices = cell(1, length(synergyIndices));
+    for i = 1 : length(synergyIndices)
+        synergyIndex = synergyIndices(i);
+        startSynergyIndex = 0;
+        startMuscleIndex = 1;
+        for j = 1 : length(inputs.synergyGroups)
+            synergyGroup = inputs.synergyGroups{j};
+            if synergyIndex > startSynergyIndex + synergyGroup.numSynergies
+                startSynergyIndex = startSynergyIndex + ...
+                    synergyGroup.numSynergies;
+                startMuscleIndex = startMuscleIndex + length(synergyGroup.muscleNames);
+            else
+                indices{i} = [startMuscleIndex, startMuscleIndex + ...
+                    length(synergyGroup.muscleNames) - 1];
+            end
+        end
+    end
+    term.internalSynergyWeightIndices = indices;
+end
 end

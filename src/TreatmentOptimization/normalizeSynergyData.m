@@ -50,9 +50,10 @@ if inputs.controllerTypes(2)
                 inputs.initialSynergyControls(:, i) = ...
                     inputs.initialSynergyControls(:, i) * total;
             end
+        case "none"
         otherwise
-            throw(MException('', "Only 'sum' and 'magnitude' are " + ...
-                "supported synergy normalization methods."))
+            throw(MException('', "Only 'sum', 'magnitude', and " + ...
+                "'none' are supported synergy normalization methods."))
     end
     inputs.initialSynergyWeights = inputs.synergyWeights;
 end

@@ -27,30 +27,35 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [index, term] = findSynergyIndexByLabel(term, inputs, ...
-    synergyName)
-if isfield(term, 'internalSynergyIndex')
-    index = term.internalSynergyIndex;
+function [indices, term] = findSynergyIndexByLabel(term, inputs, ...
+    synergyNames)
+if isfield(term, 'internalSynergyIndices')
+    indices = term.internalSynergyIndices;
 else
-    index = -1;
-    nameParts = split(synergyName, "_");
-    assert(length(nameParts) > 1 && ~isnan(str2double(nameParts(end))), ...
-        "Synergy names are referenced in terms as " + ...
-        "'<group name>_<index>', such as 'RightLeg_2'.");
-    synergyGroupName = join(nameParts(1:end-1), "_");
-    synergyNumber = str2double(nameParts(end));
+    indices = zeros(1, length(synergyNames));
+    for name = 1 : length(synergyNames)
+        synergyName = synergyNames(name);
+        index = -1;
+        nameParts = split(synergyName, "_");
+        assert(length(nameParts) > 1 && ~isnan(str2double( ...
+            nameParts(end))), "Synergy names are referenced in " + ...
+            "terms as '<group name>_<index>', such as 'RightLeg_2'.");
+        synergyGroupName = join(nameParts(1:end-1), "_");
+        synergyNumber = str2double(nameParts(end));
 
-    counter = 0;
-    for i = 1 : length(inputs.synergyGroups)
-        if strcmp(inputs.synergyGroups{i}.muscleGroupName, ...
-                synergyGroupName)
-            index = counter + synergyNumber;
-            term.internalSynergyIndex = index;
-            break;
+        counter = 0;
+        for i = 1 : length(inputs.synergyGroups)
+            if strcmp(inputs.synergyGroups{i}.muscleGroupName, ...
+                    synergyGroupName)
+                index = counter + synergyNumber;
+                indices(name) = index;
+                break;
+            end
+            counter = counter + inputs.synergyGroups{i}.numSynergies;
         end
-        counter = counter + inputs.synergyGroups{i}.numSynergies;
-    end
 
-    assert(index > 0, "Unable to find synergy " + synergyName);
+        assert(index > 0, "Unable to find synergy " + synergyName);
+    end
+    term.internalSynergyIndices = indices;
 end
 end

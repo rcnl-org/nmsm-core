@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% Design Optimization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function minimizes joint speeds relative to an error center.
 %
-% (string) -> (None)
-% Run DesignOptimization from settings file
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,26 +27,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function DesignOptimizationTool(settingsFileName)
-tic
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "DesignOptimizationTool");
-[inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
-outputLogFile = fullfile("commandWindowOutput.txt");
-diary(outputLogFile)
-inputs = normalizeSynergyData(inputs);
-inputs = setupMuscleSynergies(inputs);
-inputs = setupMuscleActivations(inputs);
-inputs = setupUserDefinedControls(inputs);
-inputs = setupTorqueControls(inputs);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-[inputs, outputs] = solveOptimalControlProblem(inputs, params);
-saveDesignOptimizationResults(outputs, inputs);
-fprintf("Design Optimization Runtime: %f Hours\n", toc/3600);
-diary off
-try
-    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
-catch
-end
+function [cost, costTerm] = calcMinimizingSpeedIntegrand(costTerm, ...
+    inputs, time, velocities, coordinateName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+[velocity, costTerm] = findDataByLabels(costTerm, velocities, ...
+    inputs.coordinateNames, coordinateName);
+
+cost = velocity - valueOrAlternate(costTerm, 'errorCenter', 0);
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
