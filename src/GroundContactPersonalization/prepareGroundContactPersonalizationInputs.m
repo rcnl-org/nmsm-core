@@ -51,6 +51,8 @@ inputs.dynamicFrictionCoefficient = ...
 inputs.viscousFrictionCoefficient = ...
     inputs.initialViscousFrictionCoefficient;
 inputs.restingSpringLength = inputs.initialRestingSpringLength;
+
+inputs.osimVersion = getOpenSimVersion();
 end
 
 % (struct, struct, struct, double) -> (struct)
@@ -107,6 +109,43 @@ surface.model = "footModel_" + surfaceNumber + ".osim";
 taskFootModel.print(surface.model);
 surface.numSpringMarkers = findNumSpringMarkers(surface.model);
 
+if isequal(mexext, 'mexw64')
+    locations = [];
+    bodies = [];
+    for i = 1:length(markerNamesFields)
+        locations = cat(1, locations, ...
+            Vec3ToArray(taskFootModel.getMarkerSet().get(...
+            surface.markerNames.(convertCharsToStrings( ...
+            markerNamesFields(i)))).get_location()));
+        bodies(end + 1) = taskFootModel.getBodySet().getIndex( ...
+            getMarkerBodyName(taskFootModel, surface.markerNames.( ...
+            convertCharsToStrings(markerNamesFields(i)))));
+    end
+    surface.footMarkerLocations = locations;
+    surface.footMarkerBodies = bodies;
+
+    locations = [];
+    bodies = [];
+    for i = 1:surface.numSpringMarkers
+        locations = cat(1, locations, ...
+            Vec3ToArray(taskFootModel.getMarkerSet().get(...
+            "spring_marker_" + i).get_location()));
+        bodies(end + 1) = taskFootModel.getBodySet().getIndex( ...
+            getMarkerBodyName(taskFootModel, "spring_marker_" + i));
+    end
+    surface.springMarkerLocations = locations;
+    surface.springMarkerBodies = bodies;
+
+    labels = {};
+    for i = 0:taskFootModel.getCoordinateSet().getSize() - 1
+        labels{end + 1} = taskFootModel.getCoordinateSet().get(i) ...
+            .getName().toCharArray()';
+    end
+    surface.coordinateLabels = labels;
+
+    copyMexFunction(surfaceNumber);
+end
+
 surface.experimentalMarkerPositions = markerPositions;
 surface.experimentalMarkerVelocities = markerVelocities;
 surface.experimentalJointPositions = footPosition;
@@ -122,6 +161,7 @@ surface.bSplineCoefficients = ones(surface.splineNodes, 7);
 surface.electricalCenterShiftX = 0;
 surface.electricalCenterShiftY = 0;
 surface.electricalCenterShiftZ = 0;
+surface.forcePlateRotation = 0;
 end
 
 % (struct) -> (struct)
@@ -175,4 +215,45 @@ function numSpringMarkers = confirmNumSpringMarkers(tasks)
         throw(MException('', 'Feet have an unequal number of springs'))
     end
     numSpringMarkers = counts(1);
+end
+
+% (double) -> ()
+% Makes a local copy of a mex function for a contact surface so that a
+% model can be stored in a unique function as a static variable and models
+% do not need to be reloaded.
+function copyMexFunction(foot)
+path = mfilename("fullpath");
+[pathParts, splits] = strsplit(path, {'\', '/'});
+indices = find(cellfun(@(x) strcmp(x, 'nmsm-core'), pathParts));
+index = indices(end);
+mexPath = cell(1, 2 * index - 1);
+for i = 1 : index
+    mexPath{2 * i - 1} = pathParts{i};
+    if 2 * i < length(mexPath)
+        mexPath{2 * i} = splits{i};
+    end
+end
+mexPath = strjoin(mexPath, '');
+mexPath = fullfile(mexPath, 'src', 'core', 'mex');
+version = getOpenSimVersion();
+if version >= 40501
+    mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40501.mexw64');
+else
+    mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40400.mexw64');
+end
+warning('off')
+destination = "pointKinematics" + foot + ".mexw64";
+% Needs two attempts to successfully delete a used MEX function
+for pass = 1 : 2
+    if isfile(destination)
+        clear(destination)
+        delete(destination)
+    end
+end
+% Do not copy if the copy already exists for some reason
+try
+    copyfile(mexPath, destination, "f");
+catch
+end
+warning('on')
 end

@@ -51,26 +51,33 @@ function output = computeGpopsEndpointFunction(setup)
     if valueOrAlternate(setup.auxdata, 'calculateBrakingImpulse', false)
         modeledValues.brakingImpulse = setup.phase.integral( ...
             end - length(setup.auxdata.contactSurfaces) - counter + 1 : end - counter);
+        counter = counter + length(setup.auxdata.contactSurfaces);
     end
     if valueOrAlternate(setup.auxdata, 'calculateMetabolicCost', false)
         modeledValues.metabolicCost = setup.phase.integral(end - counter);
     end
 
-[constraintTermCalculations, allowedTypes] = ...
-    generateConstraintTermStruct("terminal", ...
-    setup.auxdata.controllerType, setup.auxdata.toolName);
+persistent constraintTermCalculations, persistent allowedConstraintTypes;
+if isempty(allowedConstraintTypes)
+    [constraintTermCalculations, allowedConstraintTypes] = ...
+        generateConstraintTermStruct("terminal", ...
+        setup.auxdata.controllerType, setup.auxdata.toolName);
+end
 event = ...
     calcGpopsConstraint(setup.auxdata.terminal, ...
-    constraintTermCalculations, allowedTypes, values, ...
+    constraintTermCalculations, allowedConstraintTypes, values, ...
     modeledValues, setup.auxdata);
 if ~isempty(event)
     output.eventgroup.event = event;
 end
 
-[costTermCalculations, allowedTypes] = ...
-    generateCostTermStruct("discrete", setup.auxdata.toolName);
+persistent costTermCalculations, persistent allowedCostTypes;
+if isempty(allowedCostTypes)
+    [costTermCalculations, allowedCostTypes] = ...
+        generateCostTermStruct("discrete", setup.auxdata.toolName);
+end
 discrete = calcTreatmentOptimizationCost( ...
-    costTermCalculations, allowedTypes, values, modeledValues, setup.auxdata);
+    costTermCalculations, allowedCostTypes, values, modeledValues, setup.auxdata);
 discreteObjective = sum(discrete) / length(discrete);
 if isnan(discreteObjective); discreteObjective = 0; end
 
@@ -94,14 +101,8 @@ if isfield(setup.phase, "integral") && ~any(isnan(setup.phase.integral)) && ~ise
         continuousObjective = 0;
     else
         if setup.auxdata.normalizeCostByType
-            termCounts = grouptransform(cellfun(@(x) x.type, ...
-                setup.auxdata.costTerms, 'UniformOutput', false)', ...
-                cellfun(@(x) x.type, setup.auxdata.costTerms, ...
-                'UniformOutput', false)', @numel)';
-
-            continuousObjective = sum(integral ./ termCounts) / ...
-                length(unique(cellfun(@(x) x.type, ...
-                setup.auxdata.costTerms, 'UniformOutput', false)));
+            continuousObjective = normalizeCostByType( ...
+                setup.auxdata.costTerms, allowedCostTypes, integral);
         else
             continuousObjective = sum(integral) / length(integral);
         end
@@ -111,4 +112,26 @@ else
 end
 
 output.objective = continuousObjective + discreteObjective;
+end
+
+function continuousObjective = normalizeCostByType(costTerms, ...
+    allowedCostTypes, integral)
+persistent termCounts, persistent numUnique;
+if isempty(termCounts)
+    isEnabled = cellfun(@(x) x.isEnabled, costTerms);
+    if isempty(allowedCostTypes)
+        isAllowed = isEnabled;
+    else
+        isAllowed = cellfun(@(x) ~ismember(x.type, allowedCostTypes), ...
+            costTerms);
+    end
+    
+    termNames = string(cellfun(@(x) x.type, costTerms, ...
+        'UniformOutput', false));
+    includedTermNames = termNames(isEnabled & isAllowed);
+    termCounts = grouptransform(includedTermNames', includedTermNames', ...
+        @numel)';
+    numUnique = length(unique(includedTermNames));
+end
+continuousObjective = sum(integral ./ termCounts) / numUnique;
 end

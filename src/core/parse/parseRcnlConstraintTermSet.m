@@ -38,10 +38,13 @@ for term = 1:length(tree)
     else
         currentTerm = tree{term};
     end
+    tempTerm = struct();
     % Find general cost term elements
+    tempTerm = struct();
     tempTerm.type = getTextFromField(getFieldByNameOrError( ...
         currentTerm, 'type'));
-    [isValid, isPath] = isTypeValid(tempTerm.type, toolName, controllerType);
+    [isValid, isPath] = isTypeValid(tempTerm.type, toolName, ...
+        controllerType, currentTerm);
     if ~isValid
         throw(MException("ConstraintTermSet:InvalidType", ...
             strcat(tempTerm.type, " is not a valid constraint", ...
@@ -57,6 +60,9 @@ for term = 1:length(tree)
     % Find other cost term elements
     termElements = fieldnames(currentTerm);
     for element = 1:length(termElements)
+        if strcmp(termElements{element}, "Attributes")
+            continue
+        end
         if isempty(intersect(termElements{element}, ["type" ...
                 "is_enabled" "max_error" "min_error"]))
             contents = getTextFromField(getFieldByNameOrError( ...
@@ -67,6 +73,9 @@ for term = 1:length(tree)
                 contents = false;
             elseif ~isnan(str2double(contents))
                 contents = str2double(contents);
+            elseif any(isspace(convertStringsToChars(contents)))
+                contents = parseSpaceSeparatedList(currentTerm, ...
+                    termElements{element});
             end
             tempTerm.(termElements{element}) = contents;
         end
@@ -79,12 +88,21 @@ for term = 1:length(tree)
 end
 end
 
-function [isValid, isPath] = isTypeValid(type, toolName, controllerType)
+function [isValid, isPath] = isTypeValid(type, toolName, ...
+    controllerType, currentTerm)
 [~, allowedTypes] = ...
     generateConstraintTermStruct("path", controllerType, ...
     toolName);
 isPath = true;
 isValid = any(strcmp(type, allowedTypes));
+if strcmp(type, "user_defined")
+    currentTerm.type = type;
+    constraintType = getTermFieldOrError(currentTerm, ...
+        "constraint_term_type").Text;
+    if strcmpi(constraintType, "terminal")
+        isPath = false;
+    end
+end
 if ~isValid
     [~, allowedTypes] = ...
         generateConstraintTermStruct("terminal", controllerType, ...

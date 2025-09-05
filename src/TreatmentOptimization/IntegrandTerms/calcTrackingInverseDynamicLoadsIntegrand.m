@@ -28,34 +28,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicLoadsIntegrand(costTerm, ...
-    inputs, time, inverseDynamicsMoments, loadName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointMoments = inputs.splinedJointMoments;
-else
-    experimentalJointMoments = evaluateGcvSplines( ...
-        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
-end
-if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
-    momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
-    momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-    includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
-    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
-end
-cost = calcTrackingCostArrayTerm(experimentalJointMoments, ...
-    inverseDynamicsMoments, indx);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+function [cost, costTerm] = calcTrackingInverseDynamicLoadsIntegrand( ...
+    costTerm, inputs, time, inverseDynamicsMoments, loadName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+[idMoment, costTerm] = findDataByLabels(costTerm, ...
+    inverseDynamicsMoments, inputs.inverseDynamicsMomentLabels, loadName);
+[experimentalMoment, costTerm] = findSplinedJointMomentsByLabels( ...
+    costTerm, inputs, time, inverseDynamicsMoments);
+
+scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+cost = (experimentalMoment * scaleFactor) - idMoment;
+
+[cost, costTerm] = applyTermTimeRanges(cost, costTerm, time);
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

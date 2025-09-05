@@ -38,19 +38,31 @@ end
 
 function outputFile = getOutputFile(tree)
 outputFile = getFieldByNameOrError(tree, 'output_model_file').Text;
-resultsDir = getFieldByName(tree, 'results_directory').Text;
+resultsDir = getFieldByName(tree, 'results_directory');
+if isstruct(resultsDir)
+    resultsDir = resultsDir.Text;
+end
 if(resultsDir)
     if ~exist(resultsDir, 'dir')
         try
             mkdir(resultsDir)
         catch
-            throw(MException('', "Cannot find output directory " + ...
+            throw(MException('', "Cannot create output directory " + ...
                 resultsDir))
         end
     end
-    outputFile = fullfile(resultsDir, outputFile);
-else
-    outputFile = fullfile(pwd, outputFile);
+    [~, outputFileName, ~] = fileparts(outputFile);
+    outputFileName = strcat(outputFileName, ".osim");
+    outputFile = fullfile(resultsDir, outputFileName);
+end
+[outputDir, ~, ~] = fileparts(outputFile);
+if isempty(outputDir)
+    outputDir = ".";
+end
+if ~exist(outputDir, 'dir')
+    throw(MException('', strcat("Cannot find specified output directory.", ...
+        " Either use <results_directory> in your settings file or verify that your", ...
+        " <output_model_file> is contained in an existing directory.")))
 end
 end
 

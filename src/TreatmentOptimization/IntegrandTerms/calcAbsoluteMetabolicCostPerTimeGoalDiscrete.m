@@ -27,7 +27,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcAbsoluteMetabolicCostPerTimeGoalDiscrete( ...
+function [cost, costTerm] = ...
+    calcAbsoluteMetabolicCostPerTimeGoalDiscrete( ...
     modeledValues, values, inputs, costTerm)
 rawCost = modeledValues.metabolicCost / values.time(end);
 assert(~any(isnan(rawCost)), "Metabolic cost is infinity.")

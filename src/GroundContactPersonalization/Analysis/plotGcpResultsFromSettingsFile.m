@@ -34,6 +34,16 @@ resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 modelFileName = getFieldByName(settingsTree, 'input_model_file').Text;
 modelName = split(modelFileName, ["/", "\"]);
 modelName = erase(modelName(end), ".osim");
+osimxFileName = getFieldByName(settingsTree, "input_osimx_file");
+
+if ~isstruct(osimxFileName) || strcmp(osimxFileName.Text, "")
+    outputOsimxFileName = strcat(modelName, "_gcp.osimx");
+else
+    osimxFilePath = getFieldByName(settingsTree, 'input_osimx_file').Text;
+    osimxFilePathSplit = split(osimxFilePath, ["\", "/"]);
+    osimxFileName = osimxFilePathSplit{end};
+    outputOsimxFileName = strrep(osimxFileName, ".osimx", "_gcp.osimx");
+end
 contactSurfaceSet = getFieldByName(settingsTree, 'GCPContactSurfaceSet');
 for foot = 1 : numel(contactSurfaceSet.GCPContactSurface)
     plotGcpGroundReactionsFromFiles( ...
@@ -54,7 +64,7 @@ end
 % Spring grid
 plotGcpStiffnessCoefficients( ...
     modelFileName, ...
-    fullfile(resultsDirectory, strcat(modelName, "_gcp.osimx")))
+    fullfile(resultsDirectory, outputOsimxFileName))
 end
 
 

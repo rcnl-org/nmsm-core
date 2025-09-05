@@ -53,9 +53,30 @@ for i=1:length(springConstants)
     ymax = 1e-2;
     Kval = springConstants(i);
     height = height - springRestingLength;
-    if height > 0.354237930036971
-        height = 0.354237930036971;
-    end
+    % When the height variable reaches a critical value of 0.70947586,
+    % the calculated vertical ground reaction force goes to fininity. Thus,
+    % it is essential to keep the height variable below this value.
+    % Originally, this goal was achieved with the following line of code:
+    % height = min(height, 0.70947586);
+    % However, allowing the height variable to reach 0.70947586 still
+    % causes a singularity in the calculated vertical ground reaction
+    % force. Backing off this critical value to 0.7 and changing the line
+    % of code above to the following produces faster Tracking Optimization
+    % convergence:
+    % height = min(height, 0.7);
+    % However, this "fix" is still non-smooth, which negatively impacts
+    % Tracking Optimization convergence.
+    % As an alternative, the min function can be replaced with the
+    % following tanh function to create a smooth height variable:
+    % height = 0.7*tanh((1/0.7)*height);
+    % This implementation causes the new height to be 0 when the original
+    % height is zero, the new height to be essentially linear with the
+    % original height when the original height is less than zero (i.e., in
+    % contact situations), and the new height to follow a tanh function
+    % that approaches 0.7 as the original height increases beyond 0.7
+    % (i.e., out of contact situations). This tanh formulation has been
+    % proven to speed up Tracking Optimization convergence substantially.
+    height = 0.7*tanh((1/0.7)*height);
     numFrames = length(height);
     v = ones(numFrames, 1)' .* ((Kval + klow) ./ (Kval - klow));
     s = ones(numFrames, 1)' .* ((Kval - klow) ./ 2);

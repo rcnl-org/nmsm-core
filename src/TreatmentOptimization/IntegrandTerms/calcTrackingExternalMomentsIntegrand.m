@@ -28,36 +28,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingExternalMomentsIntegrand(costTerm, inputs, ...
-    groundReactionMoments, time, loadName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-for i = 1:length(inputs.contactSurfaces)
-    indx = find(strcmp(convertCharsToStrings(inputs.contactSurfaces{i}. ...
-        momentColumns), loadName));
-    if ~isempty(indx)
-        if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-            experimentalGroundReactions = inputs.splinedGroundReactionMoments{i};
-        else
-            experimentalGroundReactions = ...
-                evaluateGcvSplines( ...
-                inputs.splineExperimentalGroundReactionMoments{i}, 0:2, ...
-                time);
-        end
-        cost = calcTrackingCostArrayTerm(...
-            experimentalGroundReactions, groundReactionMoments{i}, ...
-            indx);
-    end
-end
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+function [cost, costTerm] = calcTrackingExternalMomentsIntegrand( ...
+    costTerm, inputs, groundReactionMoments, time, loadName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+[moment, costTerm] = findGroundReactionMomentDataByLabels( ...
+    costTerm, inputs, groundReactionMoments, time, loadName);
+experimentalMoment = findSplinedGroundReactionMomentsByLabels( ...
+    costTerm, inputs, time);
+
+cost = experimentalMoment - moment;
+
+[cost, costTerm] = applyTermTimeRanges(cost, costTerm, time);
+[cost, costTerm] = applyPercentErrorWithMinimum(cost, ...
+    experimentalMoment, costTerm);
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

@@ -56,7 +56,6 @@ if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
     setup.bounds.phase.integral.lower(end + 1) = 0;
     setup.bounds.phase.integral.upper(end + 1) = (inputs.gpops.integralBound + 1) * ...
         max(inputs.initialMetabolicCost);
-    setup.guess.phase.integral(end) = inputs.initialMetabolicCost;
 end
 end
 

@@ -28,38 +28,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingInverseDynamicsShapeIntegrand(costTerm, ...
-    inputs, time, inverseDynamicsMoments, loadName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-indx = find(strcmp(inputs.inverseDynamicsMomentLabels, loadName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointMoments = inputs.splinedJointMoments;
-else
-    experimentalJointMoments = evaluateGcvSplines( ...
-        inputs.splineJointMoments, inputs.inverseDynamicsMomentLabels, time);
-end
-if size(inverseDynamicsMoments, 2) ~= size(experimentalJointMoments, 2)
-    momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
-    momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-    includedJointMomentCols = ismember(momentLabelsNoSuffix, convertCharsToStrings(inputs.coordinateNames));
-    experimentalJointMoments = experimentalJointMoments(:, includedJointMomentCols);
-end
+function [cost, costTerm] = calcTrackingInverseDynamicsShapeIntegrand( ...
+    costTerm, inputs, time, inverseDynamicsMoments, loadName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
 
-experimental = experimentalJointMoments(:, indx);
-modeled = inverseDynamicsMoments(:, indx);
+[idMoment, costTerm] = findDataByLabels(costTerm, ...
+    inverseDynamicsMoments, inputs.inverseDynamicsMomentLabels, loadName);
+[experimentalMoment, costTerm] = findSplinedJointMomentsByLabels( ...
+    costTerm, inputs, time, inverseDynamicsMoments);
+
 scaleFactor = modeled \ experimental;
-cost = experimental - (modeled * scaleFactor);
+cost = experimentalMoment - (idMoment * scaleFactor);
 
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

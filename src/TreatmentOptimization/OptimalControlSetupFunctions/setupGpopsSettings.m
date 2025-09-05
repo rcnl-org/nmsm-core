@@ -45,24 +45,30 @@ setup.derivatives.stepsize1 = inputs.gpops.stepSize;
 setup.scales.method = inputs.gpops.scaleMethods;
 setup.method = inputs.gpops.method;
 setup.mesh.method = inputs.gpops.meshMethod;
-setup.mesh.tolerance = inputs.gpops.meshTolerance;
-setup.mesh.maxiterations = inputs.gpops.meshMaxIterations;
-setup.mesh.colpointsmin = inputs.gpops.meshColpointsMin;
-setup.mesh.colpointsmax = inputs.gpops.meshColpointsMax;
-setup.mesh.splitmult = inputs.gpops.meshSplitMult;
-setup.mesh.curveRatio = inputs.gpops.meshCurveRatio;
-setup.mesh.R = inputs.gpops.meshR;
-setup.mesh.sigma = inputs.gpops.meshSigma;
+if ~strcmp(setup.mesh.method, 'none')
+    setup.mesh.tolerance = inputs.gpops.meshTolerance;
+    setup.mesh.maxiterations = inputs.gpops.meshMaxIterations;
+    setup.mesh.colpointsmin = inputs.gpops.meshColpointsMin;
+    setup.mesh.colpointsmax = inputs.gpops.meshColpointsMax;
+    setup.mesh.splitmult = inputs.gpops.meshSplitMult;
+    % setup.mesh.curveRatio = inputs.gpops.meshCurveRatio;
+    setup.mesh.R = inputs.gpops.meshR;
+    % setup.mesh.sigma = inputs.gpops.meshSigma;
+end
 N = inputs.gpops.numCollocationPoints;
 P = inputs.gpops.numIntervals;
 setup.mesh.phase.colpoints = P * ones(1, N);
 setup.mesh.phase.fraction = ones(1, N) / N;
 setup.nlp.solver = inputs.gpops.solverType;
-setup.nlp.ipoptoptions.linear_solver = inputs.gpops.linearSolverType;
-setup.nlp.ipoptoptions.tolerance = inputs.gpops.solverTolerance;
-setup.nlp.ipoptoptions.maxiterations = inputs.gpops.maxIterations;
-setup.nlp.snoptoptions.linear_solver = inputs.gpops.linearSolverType;
-setup.nlp.snoptoptions.tolerance = inputs.gpops.solverTolerance;
-setup.nlp.snoptoptions.maxiterations = inputs.gpops.maxIterations;
+if strcmpi(setup.nlp.solver, 'ipopt')
+    setup.nlp.ipoptoptions.linear_solver = inputs.gpops.linearSolverType;
+    setup.nlp.ipoptoptions.tolerance = inputs.gpops.solverTolerance;
+    setup.nlp.ipoptoptions.maxiterations = inputs.gpops.maxIterations;
+    setup.nlp.ipoptoptions.warmstart = 0;
+elseif strcmpi(setup.nlp.solver, 'snopt')
+    setup.nlp.snoptoptions.linear_solver = inputs.gpops.linearSolverType;
+    setup.nlp.snoptoptions.tolerance = inputs.gpops.solverTolerance;
+    setup.nlp.snoptoptions.maxiterations = inputs.gpops.maxIterations;
+end
 setup.displaylevel = inputs.gpops.displayLevel;
 end

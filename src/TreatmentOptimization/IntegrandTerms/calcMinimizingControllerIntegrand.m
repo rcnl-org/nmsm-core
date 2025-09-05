@@ -27,37 +27,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingControllerIntegrand(costTerm, inputs, ...
-    values, time, controllerName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-if strcmp(inputs.controllerType, 'synergy')
-    indx = find(strcmp(convertCharsToStrings( ...
-        inputs.synergyLabels), controllerName));
-    if ~isempty(indx)
-        cost = values.controlSynergyActivations(:, indx);
-        if normalizeByFinalTime
-            if all(size(time) == size(inputs.collocationTimeOriginal))
-                cost = cost / time(end);
-            else
-                cost = cost / inputs.collocationTimeOriginal(end);
-            end
-        end
-        return
-    end
-end
-indx = find(strcmp(convertCharsToStrings( ...
-    strcat(inputs.torqueControllerCoordinateNames, '_moment')), ...
-    controllerName));
-cost = values.torqueControls(:, indx);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+function [cost, costTerm] = calcMinimizingControllerIntegrand(costTerm, ...
+    inputs, values, time, controllerName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+[controls, costTerm] = findControlsByLabels(costTerm, inputs, values, ...
+    time, controllerName);
+
+cost = controls;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

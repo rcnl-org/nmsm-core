@@ -27,18 +27,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingMuscleActivationIntegrand(costTerm, time, ...
-    muscleActivations, params, muscleName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-indx = find(strcmp(convertCharsToStrings(params.muscleNames), ...
-    muscleName));
-cost = calcMinimizingCostArrayTerm(muscleActivations(:, indx));
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+function [cost, costTerm] = calcMinimizingMuscleActivationIntegrand( ...
+    costTerm, time, muscleActivations, inputs, muscleName)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+[activation, costTerm] = findDataByLabels(costTerm, muscleActivations, ...
+    inputs.muscleNames, muscleName);
+
+exponent = valueOrAlternate(costTerm, "exponent", 2);
+% Pre divide by max allowable error and raise to exponent divided by 2
+% because calcGpopsIntegrant later divides this by max allowable error and
+% sqaures it.
+cost = (activation./costTerm.maxAllowableError).^(exponent/2) * ...
+    costTerm.maxAllowableError;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

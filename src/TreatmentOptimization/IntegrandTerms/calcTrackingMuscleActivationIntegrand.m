@@ -28,29 +28,19 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTrackingMuscleActivationIntegrand(costTerm, ...
+function [cost, costTerm] = calcTrackingMuscleActivationIntegrand(costTerm, ...
     muscleActivations, time, inputs, muscleName)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-if normalizeByFinalTime && all(size(time) == size(inputs.collocationTimeOriginal))
-    time = time * inputs.collocationTimeOriginal(end) / time(end);
-end
-indx = find(strcmp(convertCharsToStrings(inputs.muscleNames), ...
-    muscleName));
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalMuscleActivations = inputs.splinedMuscleActivations;
-else
-    experimentalMuscleActivations = evaluateGcvSplines( ...
-        inputs.splineMuscleActivations, inputs.muscleNames, time);
-end
-cost = calcTrackingCostArrayTerm(experimentalMuscleActivations, ...
-    muscleActivations, indx);
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+[activation, costTerm] = findDataByLabels(costTerm, muscleActivations, ...
+    inputs.muscleNames, muscleName);
+experimentalActivation = findSplinedMuscleActivationsByLabels(costTerm, ...
+    inputs, time);
+
+scaleFactor = valueOrAlternate(costTerm, "scale_factor", 1);
+cost = (experimentalActivation * scaleFactor) - activation;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

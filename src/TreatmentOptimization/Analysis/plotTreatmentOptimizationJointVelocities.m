@@ -1,21 +1,35 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads .sto files for experimental joint angles, and a
-% states file in the treatment optimization results directory, and an osim
-% model file. It plots joint angles for all joints specified as states for
-% GPOPS2. There is an option to plot multiple model files by passing in a 
-% list of output states files in the modelDataFiles argument.
+% Plots joint velocities from a Treatment Optimization run. 
+% The tracked data file should be inverse kinematics joint angles.
+% The results data files should be states files from the Treatment 
+% Optimization runs.
 %
-% There are 2 optional arguments for figure width and figure height. If no
-% optional arguments are given, the figure size is automatically adjusted
-% to fit all data on one plot. Giving just figure width and no figure
-% height will set figure height to a default value and extra figures will
-% be created as needed. If both figure width and figure height are given,
-% the figure size will be fixed and extra figures will be created as
-% needed.
+% Args:
+% modelFileName (string) - Osim model file being used.
+% trackedDataFile (string) - .sto or .mot file. 
+%   RMSE values will be calculated between this file and all results data 
+%   files.
+% resultsDataFiles (Array of strings) - String array of .sto or .mot files.
 %
-% (string) (string) (List of strings) (int), (int) -> (None)
-% Plot experimental and model joint angles from file
+% Optional varargin:
+% useRadians (boolean) - "useRadians=0" for plotting in degrees, or ...
+%   "useRadians=1" for plotting in radians.
+%   Default is 1.
+% columnsToUse (array of strings) - list of column names to plot in the
+%   given .sto or .mot files. Useful to plot only a subset of the
+%   coordinates in the model. Can be in any order.
+%   Default is use all columns in trackedDataFile.
+% columnNames (array of strings) - overrides the string to be used in
+%   subplot titles (ie subplot titled "Right Hip" instead of
+%   "hip_flexion_r".) Must be the same dimension as columnsToUse.
+%   Default is the column names in trackedDataFile.
+% legend (array of strings) - specify legend values to use instead of the
+%   default.
+%   Default uses the directory structure to create legend names.
+% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
+%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
+%   Default is 1.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -40,134 +54,203 @@
 % ----------------------------------------------------------------------- %
 
 function plotTreatmentOptimizationJointVelocities(modelFileName, ...
-    trackedDataFile, modelDataFiles, figureWidth, figureHeight)
+    trackedDataFile, resultsDataFiles, varargin)
 import org.opensim.modeling.Storage
+params = getPlottingParams();
+if nargin > 3
+    options = parseVarargin(varargin);
+else
+    options = struct();
+end
+if isfield(options, "useRadians")
+    useRadians = options.useRadians;
+else
+    useRadians = 1;
+end
+if isfield(options, "showRmse")
+    showRmse = options.showRmse;
+else
+    showRmse = 1;
+end
+
 model = Model(modelFileName);
-trackedDataStorage = Storage(trackedDataFile);
-[coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
-    model, trackedDataStorage);
-trackedData = trackedData';
-if trackedDataTime(1) ~= 0
-    trackedDataTime = trackedDataTime - trackedDataTime(1);
+[tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
+% Results files should be states files, so we only take the last half of
+% the file where the velocities are.
+for j = 1 : numel(results.data)
+    results.data{j} = results.data{j}(:, size(results.data{j}, 2)/2+1:end);
+    results.labels{j} = results.labels{j}(1:size(results.labels{j}, 2)/2);
 end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
-for i = 1 : size(trackedData, 2)
-    if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
-        .toString().toCharArray()' == "Rotational"
-        trackedData(:, i) = trackedData(:, i) * 1;
-    end
-end
-for j=1:numel(modelDataFiles)
-    modeledStatesStorage = Storage(modelDataFiles(j));
-    [modeledStatesLabels, modeledStatesTime, modeledStates] = ...
-        parseMotToComponents(model, modeledStatesStorage);
-    modeledStates = modeledStates';
-    if modeledStatesTime ~= 0
-        modeledStatesTime = modeledStatesTime - modeledStatesTime(1);
-    end
-    modeledStatesTime = modeledStatesTime / modeledStatesTime(end);
-    
-    modeledVelocities{j} = modeledStates(:, size(modeledStates, 2)/2+1:end);
-    modeledVelocitiesLabels = modeledStatesLabels(size(modeledStates, 2)/2+1:end);
-    modeledVelocitiesTime{j} = modeledStatesTime;
 
-    for i = 1 : size(modeledStates(:, 1:size(modeledStates, 2)/2), 2)
-        if model.getCoordinateSet().get(modeledStatesLabels(i)).getMotionType() ...
-            .toString().toCharArray()' == "Rotational"
-            modeledVelocities{j}(:, i) = modeledVelocities{j}(:, i) * 1;
+% Create tracked velocities
+trackedDataSpline = makeGcvSplineSet(tracked.time, ...
+    tracked.data, tracked.labels);
+tracked.data = evaluateGcvSplines(trackedDataSpline, tracked.labels, ...
+    tracked.time, 1);
 
-        end
+% Reorder labels
+for j = 1 : numel(results.data)
+    [~, ~, indices] = intersect(results.labels{1}, results.labels{j}, 'stable');
+    results.data{j}(:, 1:length(indices)) = results.data{j}(:,indices);
+    results.labels{j}(1:length(indices)) = results.labels{j}(indices);
+end
+
+% Only use the coordinates in the states.
+[~, ~, trackedIndicesToUse] = intersect(results.labels{1}, tracked.labels, 'stable');
+tracked.labels = tracked.labels(trackedIndicesToUse);
+tracked.data = tracked.data(:, trackedIndicesToUse);
+
+if ~useRadians
+    [tracked, results] = convertRadiansToDegrees(model, tracked, results);
+end
+
+tracked = resampleTrackedData(tracked, results);
+
+yLimits = makeJointVelocitiesYLimits(tracked, results, model, useRadians);
+
+% Allow only plot certain column names from the input files
+if isfield(options, "columnsToUse")
+    [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
+    tracked.data = tracked.data(:, trackedIndices);
+    tracked.labels = tracked.labels(trackedIndices);
+
+    for j = 1 : numel(resultsDataFiles)
+        [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
+        results.data{j} = results.data{j}(:, resultsIndices);
+        results.labels{j} = results.labels{j}(resultsIndices);
+    end
+    yLimits = yLimits(trackedIndices);
+end
+
+% Allow renaming columns
+if isfield(options, "columnNames")
+    tracked.labels = options.columnNames;
+    for j = 1 : numel(resultsDataFiles)
+        results.labels{j} = options.columnNames;
     end
 end
-experimentalSpline = makeGcvSplineSet(trackedDataTime, ...
-    trackedData, coordinateLabels);
-trackedVelocities = evaluateGcvSplines(experimentalSpline, coordinateLabels, ...
-    trackedDataTime, 1);
-resampledExperimentalVelocities = {};
-for j = 1 : numel(modelDataFiles)
-    resampledExperimentalVelocities{j}= evaluateGcvSplines(experimentalSpline, ...
-        coordinateLabels, modeledVelocitiesTime{j}, 1);
-end
-if nargin < 4
-    figureWidth = ceil(sqrt(numel(modeledVelocitiesLabels)));
-    figureHeight = ceil(numel(modeledVelocitiesLabels)/figureWidth);
-elseif nargin < 5
-    figureHeight = ceil(sqrt(numel(modeledVelocitiesLabels)));
-end
-figureSize = figureWidth * figureHeight;
-figure(Name = "Treatment Optimization Joint Velocities", ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+
+tileFigure = makeJointVelocitiesFigure(params, options, tracked, useRadians);
+
+figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
+
 subplotNumber = 1;
-figureNumber = 1;
-t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Joint Velocity [deg/s]")
 
-for i=1:numel(modeledVelocitiesLabels)
-    if i > figureSize * figureNumber
-        figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Joint Velocities", ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
-        t = tiledlayout(figureHeight, figureWidth, ...
-            TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Joint Velocity [deg/s]")
+titleStrings = makeSubplotTitles(tracked, results, showRmse);
+
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(trackedDataFile, ...
+        resultsDataFiles);
+end
+
+for i=1:numel(tracked.labels)
+    % If we exceed the specified figure size, create a new figure
+    if subplotNumber > figureSize
+        makeJointVelocitiesFigure(params, options, tracked, useRadians);
         subplotNumber = 1;
     end
-    coordinateIndex = find(modeledStatesLabels(i) == coordinateLabels);
-    if ~isempty(coordinateIndex)
-        nexttile(subplotNumber);
-        hold on
-        plot(trackedDataTime*100, trackedVelocities(:, coordinateIndex), ...
-            lineWidth=2, Color = colors(1))
-        for j = 1 : numel(modelDataFiles)
-            plot(modeledVelocitiesTime{j}*100, modeledVelocities{j}(:, i), ...
-                lineWidth=2, Color = colors(j+1));
-        end
-        hold off
-        titleString = [sprintf("%s", strrep(coordinateLabels(coordinateIndex), "_", " "))];
-        for j = 1 : numel(modelDataFiles)
-            rmse = rms(resampledExperimentalVelocities{j}(:, i) - ...
-                modeledVelocities{j}(:, i));
-            titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
-        end
-        title(titleString)
-        if subplotNumber==1
-            splitFileName = split(trackedDataFile, ["/", "\"]);
-            for k = 1 : numel(splitFileName)
-                if ~strcmp(splitFileName(k), "..")
-                    legendValues = sprintf("%s (T)", ...
-                        strrep(splitFileName(k), "_", " "));
-                    break
-                end
-            end
-            for j = 1 : numel(modelDataFiles)
-                splitFileName = split(modelDataFiles(j), ["/", "\"]);
-                legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
-            end
-            legend(legendValues)
-        end
-        xlim("tight")
-        maxData = [];
-        minData = [];
-        for j = 1 : numel(modelDataFiles)
-            maxData(j) = max(modeledVelocities{j}(:, i), [], "all");
-            minData(j) = min(modeledVelocities{j}(:, i), [], "all");
-        end
-        maxData(j+1) = max(trackedVelocities(:, i), [], "all");
-        minData(j+1) = min(trackedVelocities(:, i), [], "all");
-        yLimitUpper = max(maxData);
-        yLimitLower = min(minData);
-        minimum = 3;
-        if yLimitUpper - yLimitLower < minimum
-            ylim([(yLimitUpper+yLimitLower)/2-minimum, (yLimitUpper+yLimitLower)/2+minimum])
-        end
-        subplotNumber = subplotNumber + 1;
+    nexttile(subplotNumber);
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
+    hold on
+    plot(tracked.normalizedTime*100, tracked.data(:, i), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1))
+    for j = 1 : numel(resultsDataFiles)
+        plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(j+1));
     end
+    hold off
+
+    title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
+        Interpreter="none")
+    if subplotNumber==1
+        legend(legendString, fontsize = params.legendFontSize, ...
+            Interpreter="none")
+    end
+    xlim("tight")
+    ylim(yLimits{i});
+    subplotNumber = subplotNumber + 1;
+end
 end
 
+function options = parseVarargin(varargin)
+options = struct();
+varargin = varargin{1};
+for k = 1 : 2 : numel(varargin)
+    options.(varargin{k}) = varargin{k+1};
+end
+end
+
+function [tracked, results] = convertRadiansToDegrees(model, tracked, results)
+for i = 1 : size(tracked.data, 2)
+    if model.getCoordinateSet().get(tracked.labels(i)).getMotionType() ...
+            .toString().toCharArray()' == "Rotational"
+        tracked.data(:, i) = tracked.data(:, i) * 180/pi;
+        for j = 1 : numel(results.data)
+            results.data{j}(:, i) = results.data{j}(:, i) * 180/pi;
+        end
+    end
+end
+end
+
+function tileFigure = makeJointVelocitiesFigure(params, options, tracked, useRadians)
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
+    figureWidth = ceil(sqrt(numel(tracked.labels)));
+    figureHeight = ceil(numel(tracked.labels)/figureWidth);
+end
+figureSize = figureWidth * figureHeight;
+figure(Name = "Joint Velocities", ...
+    Units=params.units, ...
+    Position=params.figureSize);
+tileFigure = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='compact', Padding='compact');
+xlabel(tileFigure, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+if ~useRadians
+    ylabel(tileFigure, "Joint Velocity [deg/s]", ...
+        fontsize=params.axisLabelFontSize)
+else
+    ylabel(tileFigure, "Joint Velocity [rad/s]", ...
+        fontsize=params.axisLabelFontSize)
+end
+set(gcf, color=params.plotBackgroundColor)
+end
+
+function yLimits = makeJointVelocitiesYLimits(tracked, results, model, useRadians)
+for i = 1 : numel(tracked.labels)
+    maxData = [];
+    minData = [];
+    maxData(1) = max(tracked.data(:, i), [], "all");
+    minData(1) = min(tracked.data(:, i), [], "all");
+    for j = 1 : numel(results.data)
+        maxData(j+1) = max(results.data{j}(:, i), [], "all");
+        minData(j+1) = min(results.data{j}(:, i), [], "all");
+    end
+    yLimitUpper = max(maxData);
+    yLimitLower = min(minData);
+    if model.getCoordinateSet().get(tracked.labels(i)).getMotionType() ...
+            .toString().toCharArray()' == "Rotational"
+        if ~useRadians
+            minimum = 3;
+        else
+            minimum = 3*pi/180;
+        end
+    else
+        minimum = 0.03;
+    end
+    if yLimitUpper - yLimitLower < minimum
+        yLimits{i} = [(yLimitUpper+yLimitLower)/2-minimum, ...
+            (yLimitUpper+yLimitLower)/2+minimum];
+    else
+        yLimits{i} = [yLimitLower, yLimitUpper];
+    end
+end
 end

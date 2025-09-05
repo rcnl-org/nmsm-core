@@ -28,12 +28,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcPropulsiveImpulseGoalIntegrand(modeledValues, ...
-    time, inputs, costTerm)
-for i = 1:length(inputs.contactSurfaces)
-    if i == costTerm.surface
-        cost = ((modeledValues.brakingImpulse(i) - costTerm.errorCenter) ...
-            ./ costTerm.maxAllowableError) .^ 2;
+function [cost, costTerm] = calcPropulsiveImpulseGoalIntegrand( ...
+    modeledValues, time, inputs, costTerm)
+if isfield(costTerm, 'internalSurfaceIndex')
+    surfaceIndex = costTerm.internalSurfaceIndex;
+else
+    hindfootBodyName = getTermFieldOrError(costTerm, 'hindfoot_body');
+    surfaceIndex = 0;
+    for j = 1 : length(inputs.contactSurfaces)
+        if strcmp(inputs.contactSurfaces{j}.hindfootBodyName, ...
+                hindfootBodyName)
+            surfaceIndex = j;
+        end
     end
+    assert(surfaceIndex ~= 0, hindfootBodyName + ...
+        " is not a contact surface hindfoot body.");
+    
+    costTerm.internalSurfaceIndex = surfaceIndex;
 end
+
+assert(isfield(costTerm, 'errorCenter'), "Impulse goal terms " + ...
+    "require an <error_center>.");
+cost = ((modeledValues.propulsiveImpulse(surfaceIndex) - costTerm.errorCenter) ...
+    ./ costTerm.maxAllowableError) .^ 2;
 end

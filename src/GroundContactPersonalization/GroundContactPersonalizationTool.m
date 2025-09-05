@@ -41,11 +41,28 @@ results = GroundContactPersonalization(inputs, params);
 saveGroundContactPersonalizationResults(results, params, ...
     resultsDirectory, inputs.inputOsimxFile);
 
+adjustedGroundReactions = [false, false];
+for task = 1 : length(params.tasks)
+    if any(params.tasks{task}.designVariables(7:9))
+        adjustedGroundReactions(1) = true;
+    end
+    if params.tasks{task}.designVariables(10)
+        adjustedGroundReactions(2) = true;
+    end
+end
+
 for foot = 1 : length(inputs.surfaces)
-    disp("Foot " + foot + " electrical center shift: ")
-    disp([results.surfaces{foot}.electricalCenterShiftX, ...
-        results.surfaces{foot}.electricalCenterShiftY, ...
-        results.surfaces{foot}.electricalCenterShiftZ])
+    if adjustedGroundReactions(1)
+        disp("Foot " + foot + " electrical center shift: ")
+        disp([results.surfaces{foot}.electricalCenterShiftX, ...
+            results.surfaces{foot}.electricalCenterShiftY, ...
+            results.surfaces{foot}.electricalCenterShiftZ])
+    end
+    if adjustedGroundReactions(2)
+        disp("Foot " + foot + " force plate rotation: " + ...
+            rad2deg(results.surfaces{foot}.forcePlateRotation) + ...
+            " degrees")
+    end
 end
 fprintf("Ground Contact Personalization Runtime: %f Hours\n", toc/3600);
 diary off

@@ -101,7 +101,6 @@ contact{i}.latching_velocity.Comment = 'The latching velocity of the surface';
 contact{i}.latching_velocity.Text = ...
     convertStringsToChars(num2str(contactSurface.latchingVelocity));
 
-contact{i}.Comment = 'The contact surface parameters';
 newContactSurface = contact{i};
 newContactSurface.GCPSpringSet.Comment = ...
     'The set of springs for the contact surface';

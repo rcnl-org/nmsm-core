@@ -27,23 +27,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointAccelerationIntegrand( ...
-    jointAccelerations, time, inputs, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
-    costTerm.coordinate));
-if isempty(indx)
-    throw(MException('CostTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", costTerm.coordinate, " is not in the ", ...
-        "<states_coordinate_list>")))
-end
-cost = calcMinimizingCostArrayTerm(jointAccelerations(:, indx));
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+function [cost, costTerm] = calcMinimizingJointAccelerationIntegrand( ...
+    accelerations, time, inputs, costTerm)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+coordinateName = getTermFieldOrError(costTerm, 'coordinate');
+[acceleration, costTerm] = findDataByLabels(costTerm, accelerations, ...
+    inputs.coordinateNames, coordinateName);
+
+cost = acceleration;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

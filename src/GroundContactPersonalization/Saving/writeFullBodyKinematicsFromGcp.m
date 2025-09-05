@@ -64,11 +64,22 @@ for foot = 1:length(inputs.surfaces)
 
 end
 
-% make ikdata
+% make kinematics cropped in time
+[motionColumnLabels, motionTime, motionData] = ...
+    parseMotToComponents(Model(inputs.bodyModel), ...
+    org.opensim.modeling.Storage(inputs.motionFileName));
+includedFrames = ismember(motionTime, timePoints);
+if any(size(timePoints) ~= size(motionTime(includedFrames))) || ...
+        any(timePoints ~= motionTime(includedFrames))
+    return;
+end
+writeToSto(motionColumnLabels, timePoints, ...
+    motionData(:, includedFrames)', "preGcpMotion.sto");
 
+% write trc file from kinematics
 trcFromMotParams.trcFileName = "preGcp.trc";
 trcFromMotParams.dataRate = .00001;
-TrcFromMot(inputs.bodyModel, inputs.motionFileName, trcFromMotParams)
+TrcFromMot(inputs.bodyModel, "preGcpMotion.sto", trcFromMotParams)
 
 % load trc file
 timeSeriesTable = TimeSeriesTableVec3(trcFromMotParams.trcFileName);
@@ -153,5 +164,6 @@ writeToSto(columnNames, timePoints, data, ...
     fullfile(resultsDirectory, "IKData", outfile));
 delete postGcp.trc
 delete preGcp.trc
+delete preGcpMotion.sto
 end
 

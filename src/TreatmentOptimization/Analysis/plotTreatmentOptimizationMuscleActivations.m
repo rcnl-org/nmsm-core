@@ -1,19 +1,28 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads .sto files for experimental and model muscle
-% activations and plots them. There is an option to plot multiple model
-% files by passing in a list of model file names.
+% Plots muscle activations from given .sto or .mot files.
 %
-% There are 2 optional arguments for figure width and figure height. If no
-% optional arguments are given, the figure size is automatically adjusted
-% to fit all data on one plot. Giving just figure width and no figure
-% height will set figure height to a default value and extra figures will
-% be created as needed. If both figure width and figure height are given,
-% the figure size will be fixed and extra figures will be created as
-% needed.
+% Args:
+% trackedDataFile (string) - .sto or .mot file. 
+%   RMSE values will be calculated between this file and all results data 
+%   files.
+% resultsDataFiles (Array of strings) - String array of .sto or .mot files.
 %
-% (string) (List of strings) (int), (int) -> (None)
-% Plot experimental and model activations from file
+% Optional varargin:
+% columnsToUse (array of strings) - list of column names to plot in the
+%   given .sto or .mot files. Useful to plot only a subset of the
+%   coordinates in the model. Can be in any order.
+%   Default is use all columns in trackedDataFile.
+% columnNames (array of strings) - specify the names to use in subplot
+%   titles (ie plot "Right Hip" instead of "hip_flexion_r".) Must be the
+%   same dimension as columnsToUse.
+%   Default is the column names in trackedDataFile.
+% legend (array of strings) - specify legend values to use instead of the
+%   default.
+%   Default uses the directory structure to create legend names.
+% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
+%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
+%   Default is 1.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -37,96 +46,109 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationMuscleActivations(trackedDataFile, ...
-    modelDataFiles, figureWidth, figureHeight)
-
-import org.opensim.modeling.Storage
-trackedDataStorage = Storage(trackedDataFile);
-muscleLabels = getStorageColumnNames(trackedDataStorage);
-trackedData = storageToDoubleMatrix(trackedDataStorage)';
-trackedDataTime = findTimeColumn(trackedDataStorage);
-if trackedDataTime(1) ~= 0
-    trackedDataTime = trackedDataTime - trackedDataTime(1);
+    resultsDataFiles, varargin)
+import org.opensim.modeling.Model
+params = getPlottingParams();
+if ~isempty(varargin)
+    options = parseVarargin(varargin);
+else
+    options = struct();
 end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
-for j=1:numel(modelDataFiles)
-    modelDataStorage = Storage(modelDataFiles(j));
-    modelData{j} = storageToDoubleMatrix(modelDataStorage)';
-    modelLabels{j} = getStorageColumnNames(modelDataStorage);
-    modelDataTime{j} = findTimeColumn(modelDataStorage);
-    if modelDataTime{j} ~= 0
-        modelDataTime{j} = modelDataTime{j} - modelDataTime{j}(1);
+if isfield(options, "showRmse")
+    showRmse = options.showRmse;
+else
+    showRmse = 1;
+end
+
+model = org.opensim.modeling.Model();
+[tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
+tracked = resampleTrackedData(tracked, results);
+
+% Allow only plot certain column names from the input files
+if isfield(options, "columnsToUse")
+    [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
+    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.labels = tracked.labels(trackedIndices);
+    for j = 1 : numel(resultsDataFiles)
+        [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
+        results.data{j} = results.data{j}(:, resultsIndices); 
+        results.labels{j} = results.labels{j}(resultsIndices);
     end
-    modelDataTime{j} = modelDataTime{j} / modelDataTime{j}(end);
 end
 
-% Spline experimental time to the same time points as the model.
-experimentalDataaSpline = makeGcvSplineSet(trackedDataTime, ...
-    trackedData, muscleLabels);
-resampledExperimentalData = {};
-for j = 1 : numel(modelDataFiles)
-    resampledExperimentalData{j}= evaluateGcvSplines(experimentalDataaSpline, ...
-        muscleLabels, modelDataTime{j});
+% Allow renaming columns in the subplot titles
+if isfield(options, "columnNames")
+    tracked.labels = options.columnNames;
+    for j = 1 : numel(resultsDataFiles)
+        results.labels{j} = options.columnNames;
+    end
 end
-if nargin < 3
-    figureWidth = ceil(sqrt(numel(muscleLabels)));
-    figureHeight = ceil(numel(muscleLabels)/figureWidth);
-elseif nargin < 4
-    figureHeight = ceil(sqrt(numel(muscleLabels)));
-end
-figureSize = figureWidth * figureHeight;
-figure(Name = "Treatment Optimization Muscle Activations", ...
-    Units='normalized', ...
-    Position=[0.05 0.05 0.9 0.85])
-colors = getPlottingColors();
+
+tileFigure = makeMuscleActivationsFigure(params, options, tracked);
+figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
-figureNumber = 1;
-t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]")
-ylabel(t, "Muscle Activations")
-for i=1:numel(muscleLabels)
-    if i > figureSize * figureNumber
-        figureNumber = figureNumber + 1;
-        figure(Name="Treatment Optimization Muscle Activations", ...
-            Units='normalized', ...
-            Position=[0.05 0.05 0.9 0.85])
-        t = tiledlayout(figureHeight, figureWidth, ...
-            TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]")
-        ylabel(t, "Muscle Activations")
+titleStrings = makeSubplotTitles(tracked, results, showRmse);
+
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(trackedDataFile, ...
+                resultsDataFiles);
+end
+
+for i=1:numel(tracked.labels)
+    if subplotNumber > figureSize
+        tileFigure = makeMuscleActivationsFigure(params, options, tracked);
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     hold on
-    plot(trackedDataTime*100, trackedData(:, i), LineWidth=2, ...
-        Color = colors(1));
-    for j = 1 : numel(modelDataFiles)
-        plot(modelDataTime{j}*100, modelData{j}(:, i), LineWidth=2, ...
-            Color = colors(j+1));
+    plot(tracked.normalizedTime*100, tracked.data(:, i), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(1));
+    for j = 1 : numel(results.data)
+        plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
+            LineWidth=params.linewidth, ...
+            Color = params.lineColors(j+1));
     end
     hold off
-    titleString = [sprintf("%s", strrep(muscleLabels(i), "_", " "))];
-    for j = 1 : numel(modelDataFiles)
-        rmse = rms(resampledExperimentalData{j}(:, i) - modelData{j}(:, i));
-        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
-    end
-    title(titleString)
+    title(titleStrings{i}, fontsize = params.subplotTitleFontSize)
     if subplotNumber==1
-        splitFileName = split(trackedDataFile, ["/", "\"]);
-        for k = 1 : numel(splitFileName)
-            if ~strcmp(splitFileName(k), "..")
-                legendValues = sprintf("%s (T)", ...
-                    strrep(splitFileName(k), "_", " "));
-                break
-            end
-        end
-        for j = 1 : numel(modelDataFiles)
-            splitFileName = split(modelDataFiles(j), ["/", "\"]);
-            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
-        end
-        legend(legendValues)
+        legend(legendString, fontsize = params.legendFontSize)
     end
     xlim("tight")
     ylim([0, 1])
     subplotNumber = subplotNumber + 1;
+end
+end
+
+function options = parseVarargin(varargin)
+    options = struct();
+    varargin = varargin{1};
+    for k = 1 : 2 : numel(varargin)
+        options.(varargin{k}) = varargin{k+1};
+    end
+end
+
+function tileFigure = makeMuscleActivationsFigure(params, options, tracked)
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
+    figureWidth = ceil(sqrt(numel(tracked.labels)));
+    figureHeight = ceil(numel(tracked.labels)/figureWidth);
+end
+figure(Name = "Muscle Activations", ...
+    Units=params.units, ...
+    Position=params.figureSize)
+tileFigure = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='compact', Padding='compact');
+xlabel(tileFigure, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(tileFigure, "Muscle Activations", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
 end

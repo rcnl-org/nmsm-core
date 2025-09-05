@@ -74,6 +74,23 @@ if isfield(setup.auxdata, "splineMarkerPositions")
             setup.auxdata.splineMarkerPositions{i}, 0:2, time, 0);
     end
 end
+if isfield(setup.auxdata, "splineMarkerVelocities")
+    for i = 1:length(setup.auxdata.splineMarkerVelocities)
+        setup.auxdata.splinedMarkerVelocities{i} = evaluateGcvSplines( ...
+            setup.auxdata.splineMarkerVelocities{i}, 0:2, time, 0);
+    end
+end
+if isfield(setup.auxdata, 'splineBodyOrientations')
+    setup.auxdata.splinedBodyOrientations = evaluateGcvSplines( ...
+        setup.auxdata.splineBodyOrientations, ...
+        setup.auxdata.splineBodyOrientationsLabels, time, 0);
+end
+if isfield(setup.auxdata, 'splineCenterOfPressure')
+    for i = 1:length(setup.auxdata.contactSurfaces)
+        setup.auxdata.splinedCenterOfPressure{i} = evaluateGcvSplines( ...
+            setup.auxdata.splineCenterOfPressure{i}, 0:1, time, 0);
+    end
+end
 for i = 1:length(setup.auxdata.contactSurfaces)
     setup.auxdata.splinedGroundReactionForces{i} = evaluateGcvSplines( ...
         setup.auxdata.splineExperimentalGroundReactionForces{i}, 0:2, time, 0);

@@ -30,6 +30,25 @@
 
 function cost = calcBrakingImpulseGoalIntegrand(modeledValues, ...
     time, inputs, costTerm)
-cost = ((modeledValues.brakingImpulse - costTerm.errorCenter) ...
+if isfield(costTerm, 'internalSurfaceIndex')
+    surfaceIndex = costTerm.internalSurfaceIndex;
+else
+    hindfootBodyName = getTermFieldOrError(costTerm, 'hindfoot_body');
+    surfaceIndex = 0;
+    for j = 1 : length(inputs.contactSurfaces)
+        if strcmp(inputs.contactSurfaces{j}.hindfootBodyName, ...
+                hindfootBodyName)
+            surfaceIndex = j;
+        end
+    end
+    assert(surfaceIndex ~= 0, hindfootBodyName + ...
+        " is not a contact surface hindfoot body.");
+    
+    costTerm.internalSurfaceIndex = surfaceIndex;
+end
+
+assert(isfield(costTerm, 'errorCenter'), "Impulse goal terms " + ...
+    "require an <error_center>.");
+cost = ((modeledValues.brakingImpulse(surfaceIndex) - costTerm.errorCenter) ...
     ./ costTerm.maxAllowableError) .^ 2;
 end

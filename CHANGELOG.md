@@ -1,13 +1,89 @@
 # Changelog
 
-## v1.3.3 - 2024-11-21
+## v.1.4.3 - 2025-07-14
 
 ### Added
-- Tracking Optimization supports a `muscle_activation_minimization` cost term
-- Design Optimization (DO) supports `inverse_dynamics_load_minimization` and `controller_minimization` cost terms
-- DO supports user-defined constraint terms, with similar functionality available to user-defined cost terms
+- The Joint Model Personalization GUI tool now allows for selection of markers to be used in a task
+- The Treatment Optimization GUIs now allow for the trial prefix to be specified in the tool.
+- The `muscle_activation_tracking` cost term supports a `<scale_factor>` to track scaled versions of previous muscle activations. 
+- New Treatment Optimization cost term `synergy_vector_symmetry` keeps two synergy vectors weights' similar. 
+- New Treatment Optimization constraint terms: `muscle_activation_deviation`, `muscle_activation_value`, `controller_deviation`, `controller_value`
+- The Treatment Optimization `<synergy_normalization_method>` can be set to `none` to retain input synergy magnitudes. 
+
+
+### Fixed
+- Bugs related to parsing EMG column names from files with inconsistent ordering have been fixed for Muscle Tendon Personalization. 
+
+
+### Changed
+- Metabolic cost calculation has been revised for consistency with previously published research. 
+
+
+## v1.4.2 - 2025-06-06
+
+### Fixed
+- Treatment Optimization tools correctly load previous results with different state and control column name orders.
+- `IntegratedQuantitiesPreviewTool()` correctly displays impulses for multiple contact surfaces alongside metabolic cost.
+
+
+### Changed
+- 'plotTreatmentOptimizationSynergyControls()' splits synergy weights plots by synergy set for readability. This function now requires an osimx file input to parse the synergy set from.
+- 'plotNcpResultsFromSettingsFile()' and 'plotTreatmentOptimizationResultsFromSettingsFile()' have been updated to support the new 'plotTreatmentOptimizationSynergyControls()' change.
+
+
+## v1.4.1 - 2025-05-30
+
+### Added
+- Treatment Optimization joint positions and velocities may be plotted in degrees or radians (`useRadians=0` for degrees, `1` for radians).
+- `IntegratedQuantitiesPreviewTool()` can read a Design Optimization settings file and display initial values for integrated quantities (metabolic cost, propulsive/braking impulse) that are otherwise difficult to estimate. 
+
+
+### Fixed
+- States are reordered when parsing initial values to account for initial/tracked quantities having a different order from the current states.
+
+
+### Changed
+- The `<surrogate_model_coordinate_list>` to choose which coordinates to include in muscle model fitting can include non-state coordinates.
+- Treatment Optimization plotting functions plot synergy weights when relevant.
+- `plotNcpResultsFromSettingsFile()` plots synergy controls.
+- The GUI recognizes cost and constraint term fields `<axes>` and `<sequence>`.
+- The GUI recognizes synergy-driven Treatment Optimization fields `<load_surrogate_model>`, `<save_surrogate_model>`, `<synergy_vector_normalization_method>`, and `<synergy_vector_normalization_value>`.
+
+
+## v1.4.0 - 2025-04-24
+
+### Added
+- This release includes the first version of the NMSM Pipeline GUI for OpenSim. This allows users to create settings files compatible with all tools through the OpenSim GUI
+	- Steps for installing the GUI are included in the `How to Install.pdf` document
+- For GUI compatibility, Treatment Optimization cost and constraint terms using various components can now be formed on lists of components
+	- Example: two coordinate tracking terms with `<coordinate>` elements can be combined into a single term with a space-separated `<coordinate_list>`
+- Ground Contact Personalization (GCP) supports force plate rotation adjustment alongside the existing force plate electrical center location adjustment
+- Many new cost and constraint terms have been added to Treatment Optimization tools
+	- These include constraint forms of previously existing cost terms as well as terms based on new quantities such as body orientation and center of pressure
+	- For the full list, review the documents `Cost Terms.pdf` and `Constraint Terms.pdf` included with this release
+- Terms like marker or body orientation tracking that depend on axes now take an `<axes>` element where users specify some combination of X, Y, and Z
+- Cost and constraint terms using external loads (including center of pressure) support a `<time_ranges>` element to limit the range of a term's application
+	- Times are given as normalized time ranges, such as `<time_ranges>0.2 0.6</time_ranges>`, which would only apply a cost or constraint from 20% to 60% of a motion
+	- This may be useful in cases such as constraining a vertical force to be close to zero only when a foot is required to be out of contact
+	- Multiple time ranges may be used on a single term by giving multiple time pairs (Example: `<time_ranges>0 0.2 0.6 1</time_ranges>` to apply a term in the opposite of the above example range)
+- Design Optimization (DO) supports user-defined constraint terms, with similar functionality available to user-defined cost terms
 	- User-defined constraint terms have the signature `function constraintValue = function_name(values, modeledValues, inputs, costTerm)`
 	- User-defined constraints can be either `path` or `terminal`, similar to how user-defined cost functions are `continuous` or `discrete`
+- GCP and Treatment Optimiation save copies of optimized ground reactions in a center of pressure format for easy visualization in the OpenSim GUI
+
+
+### Fixed
+- Optimized ground reactions from GCP are saved with the column order expected by the OpenSim GUI
+- .osimx files created by Model Personalization tools are printed with correct indentation for readability
+- JMP safely handles absolute file paths given in the `<output_model_file>` element
+- plotTreatmentOptimizationJointVelocities properly normalizes splined data points
+
+
+### Changed
+- On Windows machines, GCP is five to ten times faster by using precompiled functions for point kinematics analyses
+- GCP handles motions that lift contact elements high above the ground more accurately with vertical force curve adjustments
+- Treatment Optimization is significantly faster due to more efficent point kinematics analyses and improved indexing of modeled data
+	- Speed is particularly improved for models with external loads
 
 
 ## v1.3.2 - 2024-10-28

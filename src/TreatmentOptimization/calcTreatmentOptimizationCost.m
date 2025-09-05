@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcTreatmentOptimizationCost( ...
+function [cost, auxdata] = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedTypes, values, modeledValues, auxdata)
 cost = [];
 for i = 1:length(auxdata.costTerms)
@@ -37,9 +37,13 @@ for i = 1:length(auxdata.costTerms)
         if isfield(costTermCalculations, costTerm.type) && ...
                 any(ismember(allowedTypes, costTerm.type))
             fn = costTermCalculations.(costTerm.type);
-            cost = cat(2, ...
-                cost,  ...
-                fn(values, modeledValues, auxdata, costTerm));
+            try
+                [newCost, auxdata.costTerms{i}] = ...
+                    fn(values, modeledValues, auxdata, costTerm);
+            catch
+                newCost = fn(values, modeledValues, auxdata, costTerm);
+            end
+            cost = cat(2, cost, newCost);
 %          else
 %              throw(MException('', ['Cost term type ' costTerm.type ...
 %                  ' does not exist for this tool.']))

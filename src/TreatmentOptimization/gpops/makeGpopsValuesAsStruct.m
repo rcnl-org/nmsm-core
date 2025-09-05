@@ -105,20 +105,17 @@ elseif size(values.time) == size(inputs.collocationTimeOriginal) + [1, 0]
     velocities = inputs.splinedJointSpeeds;
     positions(end+1, :) = inputs.experimentalJointAngles(end, :);
     velocities(end+1, :) = inputs.experimentalJointVelocities(end, :);
+elseif size(values.time) == [2, 1]
+    positions = inputs.experimentalJointAngles([1 end], :);
+    velocities = inputs.experimentalJointVelocities([1 end], :);
 else
     positions = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time);
     velocities = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 1);
 end
-for i = 1:length(inputs.coordinateNames)
-    index = find(ismember( ...
-        inputs.statesCoordinateNames, inputs.coordinateNames{i}));
-    if ~isempty(index)
-        positions(:, i) = values.statePositions(:, index);
-        velocities(:, i) = values.stateVelocities(:, index);
-    end
-end
+positions(:, inputs.statesCoordinateIndices) = values.statePositions;
+velocities(:, inputs.statesCoordinateIndices) = values.stateVelocities;
 end
 
 function accelerations = recombineFullAccelerations(values, inputs)
@@ -127,15 +124,12 @@ if size(values.time) == size(inputs.collocationTimeOriginal)
 elseif size(values.time) == size(inputs.collocationTimeOriginal) + [1, 0]
     accelerations = inputs.splinedJointAccelerations;
     accelerations(end+1, :) = inputs.experimentalJointAccelerations(end, :);
+elseif size(values.time) == [2, 1]
+    accelerations = inputs.experimentalJointAccelerations([1 end], :);
 else
     accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 2);
 end
-for i = 1:length(inputs.coordinateNames)
-    index = find(ismember( ...
-        inputs.statesCoordinateNames, inputs.coordinateNames{i}));
-    if ~isempty(index)
-        accelerations(:, i) = values.controlAccelerations(:, index);
-    end
-end
+accelerations(:, inputs.statesCoordinateIndices) = ...
+    values.controlAccelerations;
 end
