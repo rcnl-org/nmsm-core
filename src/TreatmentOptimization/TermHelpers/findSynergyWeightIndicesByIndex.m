@@ -1,10 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the sum of squared errors between two synergy 
-% vectors.
+% (struct, struct) -> (Array of number, struct)
 %
-% (Array of number, struct, Array of string) -> (Number)
-% 
+% Finds the indices of included muscles given a synergy index.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,23 +26,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [cost, costTerm] = calcSynergyVectorSymmetry( ...
-    costTerm, synergyWeights, inputs, synergyNames)
-assert(length(synergyNames) == 2, "synergy_vector_symmetry requires " + ...
-    "exactly two <synergies> to compare.")
-
-[synergyIndices, costTerm] = findSynergyIndexByLabel( ...
-    costTerm, inputs, synergyNames);
-[weightIndices, costTerm] = findSynergyWeightIndicesByIndex( ...
-    costTerm, inputs);
-
-vector1 = synergyWeights(synergyIndices(1), weightIndices{1}(1) : ...
-    weightIndices{1}(2));
-vector2 = synergyWeights(synergyIndices(2), weightIndices{2}(1) : ...
-    weightIndices{2}(2));
-assert(length(vector1) == length(vector2), "synergy_vector_symmetry " + ...
-    "must compare vectors of the same length.")
-
-cost = sum(((vector1 - vector2) / ...
-    costTerm.maxAllowableError) .^ 2) / length(vector1);
+function [indices, term] = findSynergyWeightIndicesByIndex(term, inputs)
+if isfield(term, 'internalSynergyWeightIndices')
+    indices = term.internalSynergyWeightIndices;
+else
+    synergyIndices = term.internalSynergyIndices;
+    indices = cell(1, length(synergyIndices));
+    for i = 1 : length(synergyIndices)
+        synergyIndex = synergyIndices(i);
+        startSynergyIndex = 0;
+        startMuscleIndex = 1;
+        for j = 1 : length(inputs.synergyGroups)
+            synergyGroup = inputs.synergyGroups{j};
+            if synergyIndex > startSynergyIndex + synergyGroup.numSynergies
+                startSynergyIndex = startSynergyIndex + ...
+                    synergyGroup.numSynergies;
+                startMuscleIndex = startMuscleIndex + length(synergyGroup.muscleNames);
+            else
+                indices{i} = [startMuscleIndex, startMuscleIndex + ...
+                    length(synergyGroup.muscleNames) - 1];
+            end
+        end
+    end
+    term.internalSynergyWeightIndices = indices;
+end
 end
