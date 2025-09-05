@@ -22,7 +22,32 @@
 		<joint_velocity_range_scale_factor>1.5</joint_velocity_range_scale_factor>
 		<!--*Optional* Default is 1.-->
 		<joint_acceleration_range_scale_factor>1</joint_acceleration_range_scale_factor>
-		<!--Set of synergy controls for GPOPS2.-->
+		<!--*Optional* Default is 1.-->
+		<joint_jerk_range_scale_factor>1</joint_jerk_range_scale_factor>
+		<!--*Optional* Default is 0.-->
+		<joint_position_range_minimum_range>0</joint_position_range_minimum_range>
+		<!--*Optional* Default is 0.-->
+		<joint_velocity_range_minimum_range>0</joint_velocity_range_minimum_range>
+		<!--*Optional* Default is 0.-->
+		<joint_acceleration_range_minimum_range>0</joint_acceleration_range_minimum_range>
+		<!--*Optional* Default is 0.-->
+		<joint_jerk_range_minimum_range>0</joint_jerk_range_minimum_range>
+		<!--*Optional* Default is false.-->
+		<use_control_derivatives>false</use_control_derivatives>
+		<!--*Optional* Default is false.-->
+		<use_jerk>false</use_jerk>
+		<RCNLTorqueController>
+			<!--Space separated list containing the coordinates controlled by the torque controller.-->
+			<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+			<!--*Optional* Default is 1.-->
+			<torque_controls_range_scale_factor>1</torque_controls_range_scale_factor>
+			<!--*Optional* Default is 0.-->
+			<torque_controls_minimum_range>0</torque_controls_minimum_range>
+			<!--*Optional* Default is 1.-->
+			<torque_control_derivatives_range_scale_factor>1</torque_control_derivatives_range_scale_factor>
+			<!--*Optional* Default is 0.-->
+			<torque_control_derivatives_minimum_range>0</torque_control_derivatives_minimum_range>
+		</RCNLTorqueController>
 		<RCNLSynergyController>
 			<!--Space separated list containing the coordinates controlled by the synergy controller.-->
 			<surrogate_model_coordinate_list>coordinate_1 coordinate_2 coordinate_3</surrogate_model_coordinate_list>
@@ -43,10 +68,6 @@
 			<synergy_vector_normalization_method>sum</synergy_vector_normalization_method>
 			<synergy_vector_normalization_value>1</synergy_vector_normalization_value>
 		</RCNLSynergyController>
-		<RCNLTorqueController>
-			<!--Space separated list containing the coordinates controlled by the torque controller.-->
-			<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
-		</RCNLTorqueController>
 		<!--Set of cost terms used for this optimization. For a full list of cost terms, see documentation at nmsm.rice.edu.-->
 		<RCNLCostTermSet>
 			<RCNLCostTerm name="generalized_coordinate_tracking">
