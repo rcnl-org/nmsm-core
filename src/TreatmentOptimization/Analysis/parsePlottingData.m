@@ -1,11 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% Design Optimization module and saves the results correctly for
-% use in the OpenSim GUI.
-%
-% (string) -> (None)
-% Run DesignOptimization from settings file
+% For plotting functions only
+% Creates tracked and results structs from given data files
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,27 +24,35 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-
-function DesignOptimizationTool(settingsFileName)
-tic
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "DesignOptimizationTool");
-[inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
-outputLogFile = fullfile("commandWindowOutput.txt");
-diary(outputLogFile)
-inputs = normalizeSynergyData(inputs);
-inputs = setupMuscleSynergies(inputs);
-inputs = setupMuscleActivations(inputs);
-inputs = setupUserDefinedControls(inputs);
-inputs = setupTorqueControls(inputs);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-[inputs, outputs] = solveOptimalControlProblem(inputs, params);
-saveDesignOptimizationResults(outputs, inputs);
-fprintf("Design Optimization Runtime: %f Hours\n", toc/3600);
-diary off
-try
-    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
-catch
-end
+function [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model)
+    import org.opensim.modeling.*
+    if nargin < 3
+        model = org.opensim.modeling.Model();
+    end
+    tracked = struct();
+    results = struct();
+    tracked.dataFile = trackedDataFile;
+    results.dataFiles = resultsDataFiles;
+    trackedDataStorage = Storage(trackedDataFile);
+    [tracked.labels, tracked.time, tracked.data] = parseMotToComponents(...
+        model, trackedDataStorage);
+    tracked.data = tracked.data';
+    % We want time points to start at zero.
+    if tracked.time(1) ~= 0
+        tracked.time = tracked.time - tracked.time(1);
+    end
+    tracked.normalizedTime = tracked.time / tracked.time(end);
+    results.data = {};
+    results.labels = {};
+    results.time = {};
+    for j=1:numel(resultsDataFiles)
+        resultsDataStorage = Storage(resultsDataFiles(j));
+        [results.labels{j}, results.time{j}, results.data{j}] = parseMotToComponents(...
+            model, resultsDataStorage);
+        results.data{j} = results.data{j}';
+        if results.time{j} ~= 0
+            results.time{j} = results.time{j} - results.time{j}(1);
+        end
+        results.normalizedTime{j} = results.time{j} / results.time{j}(end);
+    end
 end

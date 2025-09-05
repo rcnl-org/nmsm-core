@@ -8,6 +8,7 @@ if isfield(ncpInputs, 'mtpActivationsColumnNames')
         ncpInputs.mtpActivationsColumnNames);
 else
     nonMtpEntries = ones(1, length(ncpInputs.muscleTendonColumnNames));
+    nonMtpEntries = xor(nonMtpEntries, 0);
 end
 if precalInputs.useAbsoluteLengths
     ncpInputs.optimalFiberLength(nonMtpEntries) = ...

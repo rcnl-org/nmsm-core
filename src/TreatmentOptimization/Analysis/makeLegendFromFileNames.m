@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% Design Optimization module and saves the results correctly for
-% use in the OpenSim GUI.
-%
-% (string) -> (None)
-% Run DesignOptimization from settings file
+% For plotting functions only
+% Creates strings for legends using the given filepath. It chooses the
+% legend label for each series of data to be the directory one level down
+% from the top. In most cases this should be the results directory or
+% tracked quantities directory.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,26 +28,28 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function DesignOptimizationTool(settingsFileName)
-tic
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "DesignOptimizationTool");
-[inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
-outputLogFile = fullfile("commandWindowOutput.txt");
-diary(outputLogFile)
-inputs = normalizeSynergyData(inputs);
-inputs = setupMuscleSynergies(inputs);
-inputs = setupMuscleActivations(inputs);
-inputs = setupUserDefinedControls(inputs);
-inputs = setupTorqueControls(inputs);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-[inputs, outputs] = solveOptimalControlProblem(inputs, params);
-saveDesignOptimizationResults(outputs, inputs);
-fprintf("Design Optimization Runtime: %f Hours\n", toc/3600);
-diary off
-try
-    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
-catch
+function legendString = makeLegendFromFileNames(trackedDataFile, resultsDataFiles)
+[directory, fileName, ~] = fileparts(trackedDataFile);
+directoryFolderNames = split(directory, ["/", "\"]);
+topFolderName = directoryFolderNames(end);
+if any(strcmp(topFolderName, ["GRFData", "IDData", "IKData", "EMGData"]))
+    topFolderName = directoryFolderNames(end-1);
+end
+legendString = sprintf("%s (T)", topFolderName);
+% Logic to change the legend if using the replaced experimental ground
+% reactions file because in that case, the legend labels will be the same
+% for both lines.
+if contains(fileName, "replacedExperimentalGroundReactions")
+    legendString = sprintf("%s (T)", fileName);
+end
+for j = 1 : numel(resultsDataFiles)
+    [directory, ~, ~] = fileparts(resultsDataFiles(j));
+    directoryFolderNames = split(directory, ["/", "\"]);
+    topFolderName = directoryFolderNames(end);
+    if any(strcmp(topFolderName, ["GRFData", "IDData", "IKData", "EMGData"]))
+        topFolderName = directoryFolderNames(end-1);
+    end
+    legendString(j+1) = sprintf("%s (%d)", topFolderName, j);
 end
 end
+

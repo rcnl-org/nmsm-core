@@ -30,9 +30,12 @@
 % ----------------------------------------------------------------------- %
 
 function VerificationOptimizationTool(settingsFileName)
+tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "VerificationOptimizationTool");
 [inputs, params] = parseVerificationOptimizationSettingsTree(settingsTree);
+outputLogFile = fullfile("commandWindowOutput.txt");
+diary(outputLogFile)
 inputs = normalizeSynergyData(inputs);
 inputs = setupMuscleSynergies(inputs);
 inputs = setupMuscleActivations(inputs);
@@ -41,4 +44,11 @@ inputs = setupTorqueControls(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
 saveVerificationOptimizationResults(outputs, inputs);
+fprintf("Verification Optimization Runtime: %f Hours\n", toc/3600);
+diary off
+try
+    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
+    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
+catch
+end
 end

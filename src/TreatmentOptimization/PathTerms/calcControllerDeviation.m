@@ -1,11 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% Design Optimization module and saves the results correctly for
-% use in the OpenSim GUI.
+% This function calculates deviations in controls from reference values.
 %
-% (string) -> (None)
-% Run DesignOptimization from settings file
+% (struct, struct, Array of number, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +13,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,26 +27,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function DesignOptimizationTool(settingsFileName)
-tic
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "DesignOptimizationTool");
-[inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
-outputLogFile = fullfile("commandWindowOutput.txt");
-diary(outputLogFile)
-inputs = normalizeSynergyData(inputs);
-inputs = setupMuscleSynergies(inputs);
-inputs = setupMuscleActivations(inputs);
-inputs = setupUserDefinedControls(inputs);
-inputs = setupTorqueControls(inputs);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-[inputs, outputs] = solveOptimalControlProblem(inputs, params);
-saveDesignOptimizationResults(outputs, inputs);
-fprintf("Design Optimization Runtime: %f Hours\n", toc/3600);
-diary off
-try
-    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
-catch
-end
+function [pathTerm, constraintTerm] = calcControllerDeviation( ...
+    constraintTerm, inputs, values, time, controllerName)
+[controls, constraintTerm] = findControlsByLabels(constraintTerm, ...
+    inputs, values, time, controllerName);
+experimentalControls = findSplinedControlsByLabels(constraintTerm, ...
+    inputs, time);
+
+scaleFactor = valueOrAlternate(constraintTerm, "scale_factor", 1);
+pathTerm = controls - (experimentalControls * scaleFactor);
 end

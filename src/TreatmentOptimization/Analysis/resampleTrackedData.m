@@ -1,11 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes a properly formatted XML file and runs the
-% Design Optimization module and saves the results correctly for
-% use in the OpenSim GUI.
-%
-% (string) -> (None)
-% Run DesignOptimization from settings file
+% For plotting functions only
+% Resamples tracked data to the time points of the results data so that
+% RMSE can be calculated.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,27 +25,11 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-
-function DesignOptimizationTool(settingsFileName)
-tic
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "DesignOptimizationTool");
-[inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
-outputLogFile = fullfile("commandWindowOutput.txt");
-diary(outputLogFile)
-inputs = normalizeSynergyData(inputs);
-inputs = setupMuscleSynergies(inputs);
-inputs = setupMuscleActivations(inputs);
-inputs = setupUserDefinedControls(inputs);
-inputs = setupTorqueControls(inputs);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
-[inputs, outputs] = solveOptimalControlProblem(inputs, params);
-saveDesignOptimizationResults(outputs, inputs);
-fprintf("Design Optimization Runtime: %f Hours\n", toc/3600);
-diary off
-try
-    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
-catch
-end
+function tracked = resampleTrackedData(tracked, results)
+    trackedDataSpline = makeGcvSplineSet(tracked.time, ...
+        tracked.data, tracked.labels);
+    for j = 1 : numel(results.data)
+        tracked.resampledData{j} = evaluateGcvSplines(trackedDataSpline, ...
+            tracked.labels, results.time{j});
+    end
 end
