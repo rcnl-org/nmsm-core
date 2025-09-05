@@ -68,6 +68,13 @@
 			<synergy_vector_normalization_method>sum</synergy_vector_normalization_method>
 			<synergy_vector_normalization_value>1</synergy_vector_normalization_value>
 		</RCNLSynergyController>
+		<RCNLMuscleController>
+			<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
+			<!--*Optional* Default is 1.-->
+			<muscle_control_derivatives_range_scale_factor>1</muscle_control_derivatives_range_scale_factor>
+			<!--*Optional* Default is 0.-->
+			<muscle_control_derivatives_minimum_range>0</muscle_control_derivatives_minimum_range>
+		</RCNLMuscleController>
 		<!--Set of cost terms used for this optimization. For a full list of cost terms, see documentation at nmsm.rice.edu.-->
 		<RCNLCostTermSet>
 			<RCNLCostTerm name="generalized_coordinate_tracking">
