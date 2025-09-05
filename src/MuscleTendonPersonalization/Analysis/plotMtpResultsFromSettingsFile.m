@@ -50,7 +50,13 @@ function plotMtpResultsFromDirectory(resultsDirectory)
 plotMtpJointMoments(resultsDirectory);
 plotMtpMuscleExcitationsAndActivations(resultsDirectory);
 plotMtpNormalizedFiberLengths(resultsDirectory);
-plotMtpPassiveForceCurves(resultsDirectory);
+% Account for older mtp versions where active and total force were not
+% saved
+if isfolder(fullfile(resultsDirectory, "Analysis", "activeMuscleForces"))
+    plotMtpMuscleForces(resultsDirectory)
+else
+    plotMtpPassiveForceCurves(resultsDirectory);
+end
 if isfolder(fullfile(resultsDirectory, "Analysis", "passiveJointMomentsExperimental"))
     plotMtpPassiveMomentCurves(resultsDirectory);
 end
