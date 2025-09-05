@@ -42,7 +42,6 @@ inputs = setupTorqueControls(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
 saveDesignOptimizationResults(outputs, inputs);
-copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
 fprintf("Design Optimization Runtime: %f Hours\n", toc/3600);
 diary off
 try

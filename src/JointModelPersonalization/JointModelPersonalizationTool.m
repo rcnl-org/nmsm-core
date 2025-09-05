@@ -30,7 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function JointModelPersonalizationTool(settingsFileName)
-tic;
+tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "JointModelPersonalizationTool");
 [outputFile, inputs, params] = ...
