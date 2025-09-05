@@ -1,18 +1,30 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads one .sto file for treatment optimization synergy
-% controls and plots it.
+% Plots synergy activations and weights from given .sto or .mot files. 
+% Can plot with different normalization methods and values.
+% Automatically splits weights between synergy sets.
 %
-% There are 2 optional arguments for figure width and figure height. If no
-% optional arguments are given, the figure size is automatically adjusted
-% to fit all data on one plot. Giving just figure width and no figure
-% height will set figure height to a default value and extra figures will
-% be created as needed. If both figure width and figure height are given,
-% the figure size will be fixed and extra figures will be created as
-% needed.
+% Args:
+% trackedDataFile (string) - .sto or .mot file. 
+%   RMSE values will be calculated between this file and all results data 
+%   files.
+% resultsDataFiles (Array of strings) - String array of .sto or .mot files.
 %
-% (string) -> (None)
-% Plot joint moment curves from file.
+% Optional varargin:
+% columnsToUse (array of strings) - list of column names to plot in the
+%   given .sto or .mot files. Useful to plot only a subset of the
+%   coordinates in the model. Can be in any order.
+%   Default is use all columns in trackedDataFile.
+% columnNames (array of strings) - specify the names to use in subplot
+%   titles (ie plot "Right Hip" instead of "hip_flexion_r".) Must be the
+%   same dimension as columnsToUse.
+%   Default is the column names in trackedDataFile.
+% legend (array of strings) - specify legend values to use instead of the
+%   default.
+%   Default uses the directory structure to create legend names.
+% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
+%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
+%   Default is 1.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -38,171 +50,151 @@
 function plotTreatmentOptimizationSynergyControls(...
     trackedActivationsFile, trackedWeightsFile, ...
     resultsActivationsFiles, resultsWeightsFiles, ...
-    osimx, synergyNormalizationMethod, synergyNormalizationValue, varargin)
-import org.opensim.modeling.Storage
+    osimxFileName, modelFileName, ...
+    synergyNormalizationMethod, synergyNormalizationValue, varargin)
+params = getPlottingParams();
 if ~isempty(varargin)
     options = parseVarargin(varargin);
 else
     options = struct();
 end
-params = getPlottingParams();
 
-trackedActivationsStorage = Storage(trackedActivationsFile);
-[trackedActivationsLabels, trackedActivationsTime, trackedActivationsData] = ...
-    parseMotToComponents(org.opensim.modeling.Model(), trackedActivationsStorage);
-trackedActivationsTime = trackedActivationsTime - trackedActivationsTime(1);
-trackedActivationsTime = trackedActivationsTime / trackedActivationsTime(end);
+model = Model(modelFileName);
+osimx = parseOsimxFile(osimxFileName, Model(modelFileName));
+[trackedActivations, resultsActivations] = parsePlottingData(...
+    trackedActivationsFile, resultsActivationsFiles, model);
+[trackedWeights, resultsWeights] = parsePlottingData(...
+    trackedWeightsFile, resultsWeightsFiles, model);
 
-trackedWeightsStorage = Storage(trackedWeightsFile);
-[trackedWeightsLabels, trackedWeightsTime, trackedWeightsData] = ...
-    parseMotToComponents(org.opensim.modeling.Model(), trackedWeightsStorage);
-
-[trackedActivationsData, trackedWeightsData] = normalizeSynergyData(trackedActivationsData', ...
-    trackedWeightsData', synergyNormalizationMethod, synergyNormalizationValue);
-% Max tracked synergy activation. Used to set the plot y axis.
-maxActivation = [max(trackedActivationsData, [], "all")];
-
-resultsActivationsData = {};
-resultsActivationsTime = {};
-resultsWeightsData = {};
-for i = 1 : numel(resultsActivationsFiles)
-    resultsActivationsStorage = Storage(resultsActivationsFiles(i));
-    [~, resultsActivationsTime{i}, resultsActivationsData{i}] = ...
-        parseMotToComponents(org.opensim.modeling.Model(), resultsActivationsStorage);
-    resultsActivationsTime{i} = resultsActivationsTime{i} - resultsActivationsTime{i}(1);
-    resultsActivationsTime{i} = resultsActivationsTime{i} / resultsActivationsTime{i}(end);
-
-    resultsWeightsStorage = Storage(resultsWeightsFiles(i));
-    [resultsWeightsLabels, resultsWeightsTime, resultsWeightsData{i}] = ...
-        parseMotToComponents(org.opensim.modeling.Model(), resultsWeightsStorage);
-
-    [resultsActivationsData{i}, resultsWeightsData{i}] = ...
+if ~strcmp(synergyNormalizationMethod, "none")
+[trackedActivations.data, trackedWeights.data] = normalizeSynergyData(...
+    trackedActivations.data, trackedWeights.data, ...
+    synergyNormalizationMethod, synergyNormalizationValue);
+for i = 1 : numel(resultsActivations.data)
+    [resultsActivations.data{i}, resultsWeights.data{i}] = ...
         normalizeSynergyData(...
-            resultsActivationsData{i}', resultsWeightsData{i}', ...
-            synergyNormalizationMethod, synergyNormalizationValue);
-    % Max results synergy activation. Used to set the plot y axis.
-    maxActivation(i+1) = max(resultsActivationsData{i}, [], "all");
+        resultsActivations.data{i}, resultsWeights.data{i}, ...
+        synergyNormalizationMethod, synergyNormalizationValue);
+end
 end
 
-% Upper y limit for each plot window is the max synergy activation from all
-% trials.
-upperYLimit = max(maxActivation);
+trackedActivations = resampleTrackedData(trackedActivations, ...
+    resultsActivations);
 
-trackedActivationsSpline = makeGcvSplineSet(trackedActivationsTime, ...
-    trackedActivationsData, trackedActivationsLabels);
-for j = 1 : numel(resultsActivationsFiles)
-    resampledTrackedActivations{j}= evaluateGcvSplines(trackedActivationsSpline, ...
-        trackedActivationsLabels, resultsActivationsTime{j});
+plotSynergyActivations(trackedActivations, resultsActivations, ...
+    params, options);
+plotSynergyVectors(trackedWeights, trackedActivations.labels, ...
+    resultsWeights, params, osimx, options);
 end
 
-if isfield(options, "figureGridSize")
-    figureWidth = options.figureGridSize(1);
-    figureHeight = options.figureGridSize(2);
+function plotSynergyActivations(tracked, results, params, options)
+if isfield(options, "showRmse")
+    showRmse = options.showRmse;
 else
-    figureWidth = ceil(sqrt(numel(trackedActivationsLabels)));
-    figureHeight = ceil(numel(trackedActivationsLabels)/figureWidth);
+    showRmse = 1;
 end
-figureSize = figureWidth * figureHeight;
-figure(Name = "Synergy Controls", ...
-    Units=params.units, ...
-    Position=params.figureSize)
+if isfield(options, "columnsToUse")
+    [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
+    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.labels = tracked.labels(trackedIndices);
+    for j = 1 : numel(results.dataFiles)
+        [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
+        results.data{j} = results.data{j}(:, resultsIndices); 
+        results.labels{j} = results.labels{j}(resultsIndices);
+    end
+end
+% Allow renaming columns in the subplot titles
+if isfield(options, "columnNames")
+    tracked.labels = options.columnNames;
+    for j = 1 : numel(results.dataFiles)
+        results.labels{j} = options.columnNames;
+    end
+end
+tileFigure = makeSynergyActivationsFigure(params, options, tracked);
+figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
-figureNumber = 1;
-t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]", ...
-    fontsize=params.axisLabelFontSize)
-ylabel(t, "Synergy Control", ...
-    fontsize=params.axisLabelFontSize)
-set(gcf, color=params.plotBackgroundColor)
+titleStrings = makeSubplotTitles(tracked, results, showRmse);
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(tracked.dataFile, ...
+            results.dataFiles);
+end
+% Max tracked synergy activation. Used to set the plot y axis.
+maxActivations = [max(tracked.data, [], "all")];
+for i = 1 : numel(results.data)
+    maxActivations(i+1) = max(results.data{i}, [], "all");
+end
+upperYLimit = max(maxActivations);
 
-for i=1:numel(trackedActivationsLabels)
-    if i > figureSize * figureNumber
-        figureNumber = figureNumber + 1;
-        figure(Name="Synergy Controls", ...
-            Units=params.units, ...
-            Position=params.figureSize)
-        t = tiledlayout(figureHeight, figureWidth, ...
-            TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]", ...
-            fontsize=params.axisLabelFontSize)
-        ylabel(t, "Synergy Control", ...
-            fontsize=params.axisLabelFontSize)
-        set(gcf, color=params.plotBackgroundColor)
+for i=1:numel(tracked.labels)
+    if subplotNumber > figureSize
+        tileFigure = makeSynergyActivationsFigure(params, options, tracked);
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
     set(gca, ...
         fontsize = params.tickLabelFontSize, ...
         color=params.subplotBackgroundColor)
+    set(gca, ...
+        fontsize = params.tickLabelFontSize, ...
+        color=params.subplotBackgroundColor)
     hold on
-    titleString = [strrep(trackedActivationsLabels(i), "_", " ")];
-    plot(trackedActivationsTime*100, trackedActivationsData(:, i), ...
+    plot(tracked.normalizedTime*100, tracked.data(:, i), ...
         LineWidth=params.linewidth, ...
-        Color = params.lineColors(1))
-    for j = 1 : numel(resultsActivationsFiles)
-        plot(resultsActivationsTime{j}*100, resultsActivationsData{j}(:, i), ...
+        Color = params.lineColors(1));
+    for j = 1 : numel(results.data)
+        plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
             LineWidth=params.linewidth, ...
-        Color = params.lineColors(j+1))
-        rmse = rms(resampledTrackedActivations{j}(:, i) - ...
-            resultsActivationsData{j}(:, i));
-        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+            Color = params.lineColors(j+1));
     end
-    title(titleString, fontsize = params.subplotTitleFontSize)
     hold off
+
+    title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
+            Interpreter="none")
     if subplotNumber==1
-        splitFileName = split(trackedActivationsFile, ["/", "\"]);
-        for k = 1 : numel(splitFileName)
-            if ~strcmp(splitFileName(k), "..")
-                legendValues = sprintf("%s (T)", ...
-                    strrep(splitFileName(k), "_", " "));
-                break
-            end
-        end
-        for j = 1 : numel(resultsActivationsFiles)
-            splitFileName = split(resultsActivationsFiles(j), ["/", "\"]);
-            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
-        end
-        legend(legendValues, fontsize = params.legendFontSize)
+        legend(legendString, fontsize = params.legendFontSize, ...
+            Interpreter="none")
     end
     xlim("tight")
     ylim([0 upperYLimit])
     subplotNumber = subplotNumber + 1;
 end
+end
 
+function plotSynergyVectors(tracked, synergyLabels, results, params, osimx, options)
 % Outer level: iterate through synergy sets. We get 1 plot for each synergy
 % set for readability.
 synergyNumber = 1;
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(tracked.dataFile, ...
+            results.dataFiles);
+end
 for synergyGroup = 1 : numel(osimx.synergyGroups)
     synergyGroup = osimx.synergyGroups{synergyGroup};
-    muscleIndices = contains(trackedWeightsLabels, ...
-        synergyGroup.muscleNames);
-    figureHeight = synergyGroup.numSynergies;
-    figureWidth=1;
-    figure(Name = "Synergy Weights", ...
-        Units=params.units, ...
-        Position=params.figureSize)
-    t = tiledlayout(figureHeight, figureWidth, ...
-        TileSpacing='compact', Padding='compact');
-    xlabel(t, "Muscle Name", ...
-        fontsize=params.axisLabelFontSize)
-    ylabel(t, "Synergy Weight", ...
-        fontsize=params.axisLabelFontSize)
-    set(gcf, color=params.plotBackgroundColor)
+    muscleIndices = contains(tracked.labels, synergyGroup.muscleNames);
+    tileFigure = makeSynergyVectorsFigure(params, synergyGroup);
+    figureHeight = tileFigure.GridSize(1);
     for i = 1 : synergyGroup.numSynergies
-        nexttile(i)
-        weightsPlottingArray = [trackedWeightsData(synergyNumber, muscleIndices)];
-        for k = 1 : numel(resultsWeightsData)
+        weightsPlottingArray = [tracked.data(synergyNumber, ...
+            muscleIndices)];
+        for k = 1 : numel(results.data)
             weightsPlottingArray = [weightsPlottingArray; ...
-                resultsWeightsData{k}(synergyNumber, muscleIndices)];
+                results.data{k}(synergyNumber, muscleIndices)];
         end
+
+        nexttile(i)
+        set(gca, ...
+            fontsize = params.tickLabelFontSize, ...
+            color=params.subplotBackgroundColor)
         b = bar(1:numel(synergyGroup.muscleNames), ...
             weightsPlottingArray);
         b(1).FaceColor = params.lineColors(1);
-        for k = 1 : numel(resultsWeightsData)
+        for k = 1 : numel(results.data)
             b(k+1).FaceColor = params.lineColors(k+1);
         end
-        title(strrep(trackedActivationsLabels(synergyNumber), "_", " "))
         if i == figureHeight
             xticks(1:numel(synergyGroup.muscleNames))
             xticklabels(synergyGroup.muscleNames)
@@ -210,32 +202,55 @@ for synergyGroup = 1 : numel(osimx.synergyGroups)
             xticks(1:numel(synergyGroup.muscleNames))
             xticklabels([])
         end
-        synergyNumber = synergyNumber + 1;
-        set(gca, ...
-            fontsize = params.tickLabelFontSize, ...
-            color=params.subplotBackgroundColor)
-        maxWeights = max(trackedWeightsData, [], "all");
-        for k = 1 : numel(resultsWeightsData)
-            maxWeights(k) = max(resultsWeightsData{k}, [], "all");
+        
+        title(strrep(synergyLabels(synergyNumber), "_", " "))
+        if i == 1
+            legend(legendString, fontsize = params.legendFontSize, ...
+                Interpreter="none")
+        end
+        maxWeights = max(tracked.data, [], "all");
+        for k = 1 : numel(results.data)
+            maxWeights(k) = max(results.data{k}, [], "all");
         end
         ylim([0 max(maxWeights)])
-        if i == 1
-            splitFileName = split(trackedWeightsFile, ["/", "\"]);
-            for k = 1 : numel(splitFileName)
-                if ~strcmp(splitFileName(k), "..")
-                    legendValues = sprintf("%s (T)", ...
-                        strrep(splitFileName(k), "_", " "));
-                    break
-                end
-            end
-            for j = 1 : numel(resultsWeightsFiles)
-                splitFileName = split(resultsWeightsFiles(j), ["/", "\"]);
-                legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
-            end
-            legend(legendValues, fontsize = params.legendFontSize)
-        end
+        synergyNumber = synergyNumber + 1;
     end
 end
+end
+
+function tileFigure = makeSynergyActivationsFigure(params, options, tracked)
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
+    figureWidth = ceil(sqrt(numel(tracked.labels)));
+    figureHeight = ceil(numel(tracked.labels)/figureWidth);
+end
+figure(Name = "Synergy Controls", ...
+    Units=params.units, ...
+    Position=params.figureSize)
+tileFigure = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='compact', Padding='compact');
+xlabel(tileFigure, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(tileFigure, "Synergy Control", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
+end
+
+function tileFigure = makeSynergyVectorsFigure(params, synergyGroup)
+figureHeight = synergyGroup.numSynergies;
+    figureWidth=1;
+    figure(Name = "Synergy Weights", ...
+        Units=params.units, ...
+        Position=params.figureSize)
+    tileFigure = tiledlayout(figureHeight, figureWidth, ...
+        TileSpacing='compact', Padding='compact');
+    xlabel(tileFigure, "Muscle Name", ...
+        fontsize=params.axisLabelFontSize)
+    ylabel(tileFigure, "Synergy Weight", ...
+        fontsize=params.axisLabelFontSize)
+    set(gcf, color=params.plotBackgroundColor)
 end
 
 function options = parseVarargin(varargin)
@@ -272,5 +287,3 @@ switch synergyNormalizationMethod
             "supported synergy normalization methods."))
 end
 end
-
-% function []

@@ -1,19 +1,28 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function reads .sto files for experimental and model ground
-% reactions and plots them. There is an option to plot multiple model files
-% by passing in a list of model file names.
+% Plots ground reaction forces and moments from given .sto or .mot files.
 %
-% There are 2 optional arguments for figure width and figure height. If no
-% optional arguments are given, the figure size is automatically adjusted
-% to fit all data on one plot. Giving just figure width and no figure
-% height will set figure height to a default value and extra figures will
-% be created as needed. If both figure width and figure height are given,
-% the figure size will be fixed and extra figures will be created as
-% needed.
+% Args:
+% trackedDataFile (string) - .sto or .mot file. 
+%   RMSE values will be calculated between this file and all results data 
+%   files.
+% resultsDataFiles (Array of strings) - String array of .sto or .mot files.
 %
-% (string) (List of strings) (int), (int) -> (None)
-% Plot experimental and model ground reactions from file
+% Optional varargin:
+% columnsToUse (array of strings) - list of column names to plot in the
+%   given .sto or .mot files. Useful to plot only a subset of the
+%   coordinates in the model. Can be in any order.
+%   Default is use all columns in trackedDataFile.
+% columnNames (array of strings) - specify the names to use in subplot
+%   titles (ie plot "Right Hip" instead of "hip_flexion_r".) Must be the
+%   same dimension as columnsToUse.
+%   Default is the column names in trackedDataFile.
+% legend (array of strings) - specify legend values to use instead of the
+%   default.
+%   Default uses the directory structure to create legend names.
+% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
+%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
+%   Default is 1.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -38,96 +47,62 @@
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationGroundReactions(trackedDataFile, ...
     resultsDataFiles, varargin)
-import org.opensim.modeling.Storage
-if nargin > 3
+import org.opensim.modeling.Model
+params = getPlottingParams();
+if ~isempty(varargin)
     options = parseVarargin(varargin);
 else
     options = struct();
 end
-params = getPlottingParams();
-trackedDataStorage = Storage(trackedDataFile);
-trackedDataLabels = getStorageColumnNames(trackedDataStorage);
-trackedData = storageToDoubleMatrix(trackedDataStorage)';
-trackedDataTime = findTimeColumn(trackedDataStorage);
-if trackedDataTime(1) ~= 0
-    trackedDataTime = trackedDataTime - trackedDataTime(1);
-end
-trackedDataTime = trackedDataTime / trackedDataTime(end);
-for j = 1 : numel(resultsDataFiles)
-    resultsDataStorage = Storage(resultsDataFiles(j));
-    resultsData{j} = storageToDoubleMatrix(resultsDataStorage)';
-    resultsDataLabels{j} = getStorageColumnNames(resultsDataStorage);
-    resultsDataTime{j} = findTimeColumn(resultsDataStorage);
-    if resultsDataTime{j} ~= 0
-        resultsDataTime{j} = resultsDataTime{j} - resultsDataTime{j}(1);
-    end
-    resultsDataTime{j} = resultsDataTime{j} / resultsDataTime{j}(end);
-end
-
-experimentalMomentIndices = contains(trackedDataLabels, ["_m", "M"]);
-experimentalForceIndices = contains(trackedDataLabels, ["_v", "F"]);
-experimentalIncludedIndices = experimentalMomentIndices | experimentalForceIndices;
-trackedData = trackedData(:, experimentalIncludedIndices);
-trackedDataLabels = trackedDataLabels(experimentalIncludedIndices);
-experimentalForcePlate1 = contains(trackedDataLabels, "1");
-for j = 1 : numel(resultsDataFiles)
-    resultsMomentIndices = contains(resultsDataLabels{j}, "_m");
-    resultsForceIndices = contains(resultsDataLabels{j}, "_v");
-    resultsIncludedIndices = resultsMomentIndices | resultsForceIndices;
-    resultsData{j} = resultsData{j}(:, resultsIncludedIndices);
-    resultsDataLabels{j} = resultsDataLabels{j}(resultsIncludedIndices);
-    resultsForcePlate1 = contains(resultsDataLabels{j}, "1");
-    if experimentalForcePlate1 ~= resultsForcePlate1
-        temp = resultsData{j};
-        resultsData{j}(:, ~experimentalForcePlate1) = ...
-            resultsData{j}(:, experimentalForcePlate1);
-        resultsData{j}(:, experimentalForcePlate1) = ...
-            temp(:, ~experimentalForcePlate1);
-    end
-end
-
-% Spline experimental time to the same time points as the model.
-trackedDataSpline = makeGcvSplineSet(trackedDataTime, ...
-    trackedData, trackedDataLabels);
-resampledTrackedData = {};
-for i = 1 : numel(resultsDataFiles)
-    resampledTrackedData{i} = evaluateGcvSplines(trackedDataSpline, ...
-        trackedDataLabels, resultsDataTime{i});
-end
-if isfield(options, "figureGridSize")
-    figureWidth = options.figureGridSize(1);
-    figureHeight = options.figureGridSize(2);
+if isfield(options, "showRmse")
+    showRmse = options.showRmse;
 else
-    figureWidth = 3;
-    figureHeight = 2;
+    showRmse = 1;
 end
-figureSize = figureWidth * figureHeight;
-figure(Name = "Ground Reactions", ...
-    Units=params.units, ...
-    Position=params.figureSize)
-colors = getPlottingParams();
+
+model = org.opensim.modeling.Model();
+[tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
+% Tracked and results files can have columns in different order sometimes.
+[tracked, results] = sortGroundReactionData(tracked, results);
+tracked = resampleTrackedData(tracked, results);
+yLimits = makeGroundReactionsYLimits(tracked, results);
+
+% Allow only plot certain column names from the input files
+if isfield(options, "columnsToUse")
+    [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
+    tracked.data = tracked.data(:, trackedIndices); 
+    tracked.labels = tracked.labels(trackedIndices);
+    for j = 1 : numel(resultsDataFiles)
+        [~, ~, resultsIndices] = intersect(options.columnsToUse, results.labels{j}, "stable");
+        results.data{j} = results.data{j}(:, resultsIndices); 
+        results.labels{j} = results.labels{j}(resultsIndices);
+    end
+    yLimits = yLimits(trackedIndices);
+end
+
+% Allow renaming columns in the subplot titles
+if isfield(options, "columnNames")
+    tracked.labels = options.columnNames;
+    for j = 1 : numel(resultsDataFiles)
+        results.labels{j} = options.columnNames;
+    end
+end
+
+tileFigure = makeGroundReactionsFigure(params, options);
+figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
-figureNumber = 1;
-t = tiledlayout(figureHeight, figureWidth, ...
-    TileSpacing='compact', Padding='compact');
-xlabel(t, "Percent Movement [0-100%]", ...
-    fontsize=params.axisLabelFontSize)
-ylabel(t, "Ground Reaction", ...
-    fontsize=params.axisLabelFontSize)
-set(gcf, color=params.plotBackgroundColor)
-for i=1:numel(trackedDataLabels)
-    if i > figureSize * figureNumber
-        figureNumber = figureNumber + 1;
-        figure(Name="Ground Reactions", ...
-            Units=params.units, ...
-            Position=params.figureSize)
-        t = tiledlayout(figureHeight, figureWidth, ...
-            TileSpacing='Compact', Padding='Compact');
-        xlabel(t, "Percent Movement [0-100%]", ...
-            fontsize=params.axisLabelFontSize)
-        ylabel(t, "Ground Reaction", ...
-            fontsize=params.axisLabelFontSize)
-        set(gcf, color=params.plotBackgroundColor)
+titleStrings = makeGroundReactionsSubplotTitles(tracked, results, showRmse);
+ 
+if isfield(options, "legend")
+    legendString = options.legend;
+else
+    legendString = makeLegendFromFileNames(trackedDataFile, ...
+                resultsDataFiles);
+end
+
+for i=1:numel(tracked.labels)
+    if subplotNumber > figureSize
+        tileFigure = makeGroundReactionsFigure(params, options);
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
@@ -135,49 +110,24 @@ for i=1:numel(trackedDataLabels)
         fontsize = params.tickLabelFontSize, ...
         color=params.subplotBackgroundColor)
     hold on
-    plot(trackedDataTime*100, trackedData(:, i), ...
+    plot(tracked.normalizedTime*100, tracked.data(:, i), ...
         LineWidth=params.linewidth, ...
-        Color = params.lineColors(1));
+        Color = params.lineColors(1))
     for j = 1 : numel(resultsDataFiles)
-        plot(resultsDataTime{j}*100, resultsData{j}(:, i), ...
-            LineWidth=params.linewidth, ...
-            Color = params.lineColors(j+1));
+        plot(results.normalizedTime{j}*100, results.data{j}(:, i), ...
+        LineWidth=params.linewidth, ...
+        Color = params.lineColors(j+1));
     end
     hold off
-    titleString = [sprintf("%s", strrep(trackedDataLabels(i), "_", " "))];
-    for j = 1 : numel(resultsDataFiles)
-        rmse = rms(resampledTrackedData{j}(1:end-1, i) - ...
-            resultsData{j}(1:end-1, i));
-        titleString(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
-    end
-    title(titleString, fontsize = params.subplotTitleFontSize)
-    if subplotNumber==1
-        splitFileName = split(trackedDataFile, ["/", "\"]);
-        for k = 1 : numel(splitFileName)
-            if ~strcmp(splitFileName(k), "..")
-                legendValues = sprintf("Replaced Experimental Ground Reactions (T)", ...
-                    strrep(splitFileName(k), "_", " "));
-                break
-            end
-        end
-        for j = 1 : numel(resultsDataFiles)
-            splitFileName = split(resultsDataFiles(j), ["/", "\"]);
-            legendValues(j+1) = sprintf("%s (%d)", splitFileName(1), j);
-        end
-        legend(legendValues, fontsize = params.legendFontSize)
+
+    title(titleStrings{i}, fontsize = params.subplotTitleFontSize, ...
+            Interpreter="none")
+    if subplotNumber==figureSize || i == numel(tracked.labels)
+        legend(legendString, fontsize = params.legendFontSize, ...
+            Interpreter="none")
     end
     xlim("tight")
-    maxData = [];
-    minData = [];
-    maxData(1) = max(trackedData(1:end-1, i), [], "all");
-    minData(1) = min(trackedData(1:end-1, i), [], "all");
-    for j = 1 : numel(resultsDataFiles)
-        maxData(j+1) = max(resultsData{j}(1:end-1, i), [], "all");
-        minData(j+1) = min(resultsData{j}(1:end-1, i), [], "all");
-    end
-    yLimitUpper = max(maxData);
-    yLimitLower = min(minData);
-    ylim([yLimitLower, yLimitUpper]);
+    ylim(yLimits{i});
     subplotNumber = subplotNumber + 1;
 end
 end
@@ -188,4 +138,64 @@ function options = parseVarargin(varargin)
     for k = 1 : 2 : numel(varargin)
         options.(varargin{k}) = varargin{k+1};
     end
+end
+
+function [tracked, results] = sortGroundReactionData(tracked, results)
+% Sort results ground reactions to be in the same order as the tracked
+% ground reactions. Also removes the point columns
+pointIndices = contains(tracked.labels, "_p");
+tracked.labels = tracked.labels(~pointIndices);
+tracked.data = tracked.data(:, ~pointIndices);
+for j = 1 : numel(results.data)
+    [~, ~, indices] = intersect(tracked.labels, results.labels{j}, "stable");
+    results.data{j} = results.data{j}(:,indices);
+    results.labels{j} = results.labels{j}(indices);
+end
+end
+
+function titleStrings = makeGroundReactionsSubplotTitles(tracked, results, showRmse)
+for i = 1 : numel(tracked.labels)
+    titleStrings{i} = [sprintf("%s", strrep(tracked.labels(i), "_", " "))];
+    if showRmse
+        for j = 1 : numel(results.data)
+            rmse = rms(tracked.resampledData{j}(1:end-1, i) - ...
+                results.data{j}(1:end-1, i));
+            titleStrings{i}(j+1) = sprintf("RMSE %d: %.4f", j, rmse);
+        end
+    end
+end
+end
+
+function tileFigure = makeGroundReactionsFigure(params, options)
+if isfield(options, "figureGridSize")
+    figureWidth = options.figureGridSize(1);
+    figureHeight = options.figureGridSize(2);
+else
+    figureWidth = 3;
+    figureHeight = 2;
+end
+figure(Name = "Ground Reactions", ...
+    Units=params.units, ...
+    Position=params.figureSize)
+tileFigure = tiledlayout(figureHeight, figureWidth, ...
+    TileSpacing='compact', Padding='compact');
+xlabel(tileFigure, "Percent Movement [0-100%]", ...
+    fontsize=params.axisLabelFontSize)
+ylabel(tileFigure, "Ground Reaction", ...
+    fontsize=params.axisLabelFontSize)
+set(gcf, color=params.plotBackgroundColor)
+end
+
+function yLimits = makeGroundReactionsYLimits(tracked, results)
+for i = 1 : numel(tracked.labels)
+    maxData = [];
+    minData = [];
+    maxData(1) = max(tracked.data(1:end-1, i), [], "all");
+    minData(1) = min(tracked.data(1:end-1, i), [], "all");
+    for j = 1 : numel(results.data)
+        maxData(j+1) = max(results.data{j}(1:end-1, i), [], "all");
+        minData(j+1) = min(results.data{j}(1:end-1, i), [], "all");
+    end
+    yLimits{i} = [min(minData), max(maxData)];
+end
 end
