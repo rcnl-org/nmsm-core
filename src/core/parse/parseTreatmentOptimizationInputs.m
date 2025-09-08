@@ -31,6 +31,7 @@
 
 function inputs = parseTreatmentOptimizationInputs(tree)
 inputs = parseBasicInputs(tree);
+checkTreatmentOptimizationSpelling(tree, inputs);
 inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
 inputs = parseController(tree, inputs);
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
@@ -98,6 +99,8 @@ inputs = parseModel(tree, inputs);
 inputs.mass = inputs.model.getTotalMass(state);
 inputs.normalizeCostByType = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, 'normalize_cost_by_term_type', false));
+inputs.checkFieldSpelling = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'check_field_spelling', true));
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
