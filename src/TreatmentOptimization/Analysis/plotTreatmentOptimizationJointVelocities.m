@@ -67,58 +67,25 @@ if isfield(options, "useRadians")
 else
     useRadians = 1;
 end
-model = Model(modelFileName);
-trackedDataStorage = Storage(trackedDataFile);
-[coordinateLabels, trackedDataTime, trackedData] = parseMotToComponents(...
-    model, trackedDataStorage);
-trackedData = trackedData';
-if trackedDataTime(1) ~= 0
-    trackedDataTime = trackedDataTime - trackedDataTime(1);
-end
-trackedTimeNormalized = trackedDataTime ./ trackedDataTime(end);
-if ~useRadians
-    for i = 1 : size(trackedData, 2)
-        if model.getCoordinateSet().get(coordinateLabels(i)).getMotionType() ...
-                .toString().toCharArray()' == "Rotational"
-            trackedData(:, i) = trackedData(:, i) * 180/pi;
-        end
-    end
-end
-for j=1:numel(resultsDataFiles)
-    resultsStatesStorage = Storage(resultsDataFiles(j));
-    [resultsStatesLabels{j}, resultsStatesTime, resultsStates] = ...
-        parseMotToComponents(model, resultsStatesStorage);
-    resultsStates = resultsStates';
-    if resultsStatesTime ~= 0
-        resultsStatesTime = resultsStatesTime - resultsStatesTime(1);
-    end
-    resultsTimeNormalized{j} = resultsStatesTime ./ resultsStatesTime(end);
-    if endsWith(resultsStatesLabels{j}(end), "_dudt")
-        resultsVelocities{j} = resultsStates(:, size(resultsStates, 2)/3+1:size(resultsStates, 2)*2/3);
-        resultsVelocitiesLabels{j} = resultsStatesLabels{j}(size(resultsStates, 2)/3+1:size(resultsStates, 2)*2/3);
-    else
-        resultsVelocities{j} = resultsStates(:, size(resultsStates, 2)/2+1:end);
-        resultsVelocitiesLabels{j} = resultsStatesLabels{j}(size(resultsStates, 2)/2+1:end);
-    end
-    resultsVelocitiesTime{j} = resultsStatesTime;
-    if ~useRadians
-        for i = 1 : size(resultsStates(:, 1:size(resultsStates, 2)/2), 2)
-            if model.getCoordinateSet().get(resultsStatesLabels(i)).getMotionType() ...
-                    .toString().toCharArray()' == "Rotational"
-                resultsVelocities{j}(:, i) = resultsVelocities{j}(:, i) * 180/pi;
-    
-            end
-        end
-    end
+if isfield(options, "showRmse")
+    showRmse = options.showRmse;
+else
+    showRmse = 1;
 end
 
 model = Model(modelFileName);
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
-% Results files should be states files, so we only take the last half of
-% the file where the velocities are.
+% Results files are states files. Velocities always end in "_u" when
+% output from the pipeline. This will catch other coordinates also ending
+% with "_u".
 for j = 1 : numel(results.data)
-    results.data{j} = results.data{j}(:, size(results.data{j}, 2)/2+1:end);
-    results.labels{j} = results.labels{j}(1:size(results.labels{j}, 2)/2);
+    % results.
+    results.data{j} = results.data{j}(:, endsWith(results.labels{j}, "_u"));
+    results.labels{j} = results.labels{j}(endsWith(results.labels{j}, "_u"));
+    for k = 1 : numel(results.labels{j})
+        tempLabel = convertStringsToChars(results.labels{j}(k));
+        results.labels{j}(k) = convertCharsToStrings(tempLabel(1:end-2));
+    end
 end
 
 % Create tracked velocities
@@ -130,8 +97,9 @@ tracked.data = evaluateGcvSplines(trackedDataSpline, tracked.labels, ...
 % Reorder labels
 for j = 1 : numel(results.data)
     [~, ~, indices] = intersect(results.labels{1}, results.labels{j}, 'stable');
-    results.data{j}(:, 1:length(indices)) = results.data{j}(:,indices);
-    results.labels{j}(1:length(indices)) = results.labels{j}(indices);
+    results.data{j} = results.data{j}(:,indices);
+    results.labels{j} = results.labels{j}(indices);
+    % results.labels{j} = ;
 end
 
 % Only use the coordinates in the states.
