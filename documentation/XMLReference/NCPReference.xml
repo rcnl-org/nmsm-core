@@ -22,6 +22,8 @@
 		<MuscleTendonLengthInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization.-->
 			<is_enabled>false</is_enabled>
+			<!--Directory containing kinematics and moments for passive trials. Leave blank if passive data will not be used.-->
+			<passive_data_input_directory>PassiveDataDir</passive_data_input_directory>
 			<!--Maximum normalized fiber length. If a muscle has a normalized fiber length above this value, it will be penalized with a cost term.-->
 			<max_normalized_muscle_fiber_length>1</max_normalized_muscle_fiber_length>
 			<!--Minimum normalized fiber length. If a muscle has a normalized fiber length below this value, it will be penalized with a cost term.-->

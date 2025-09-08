@@ -20,6 +20,8 @@
 		<missing_emg_channel_muscle_groups>missing_emg_group_1 missing_emg_group_2 missing_emg_group_3</missing_emg_channel_muscle_groups>
 		<!--A space-separated list of collected EMG channel names.-->
 		<collected_emg_channel_muscle_groups>emg_channel_1 emg_channel_2 emg_channel_3</collected_emg_channel_muscle_groups>
+		<!--*Optional* space-separated list of prefixes to use for data files, if left blank, use all prefixes fron IK folder-->
+		<trial_prefixes>gait_1</trial_prefixes>
 		<!--Properties that describe MuscleTendonLengthInitialization settings.-->
 		<MuscleTendonLengthInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization.-->

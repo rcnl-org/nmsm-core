@@ -73,5 +73,6 @@
 	<function_tolerance>1e-6</function_tolerance>
 	<!--*Optional* The number of allowed iterations for the lsqnonlin, setting this lower can help cancel an optimization that won't converge-->
 	<max_function_evaluations>5000</max_function_evaluations>
+	<check_field_spelling>true</check_field_spelling>
 </JointModelPersonalizationTool>
 </NMSMPipelineDocument>
