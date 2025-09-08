@@ -174,5 +174,6 @@
 		<max_iterations>1000</max_iterations>
 		<!--*Optional* The number of allowed cost function calls for the fmincon optimization,  setting this lower can help cancel an optimization that won't converge.-->
 		<max_function_evaluations>100000000</max_function_evaluations>
+		<check_field_spelling>true</check_field_spelling>
 	</NeuralControlPersonalizationTool>
 </NMSMPipelineDocument>
