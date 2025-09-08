@@ -37,6 +37,11 @@
 
 function plotTreatmentOptimizationResultsFromSettingsFile(settingsFileName, ...
     resultsDirectories)
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 resultsDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'results_directory'));
