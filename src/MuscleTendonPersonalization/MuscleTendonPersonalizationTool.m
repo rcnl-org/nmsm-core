@@ -33,6 +33,7 @@ function MuscleTendonPersonalizationTool(settingsFileName)
 tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
+checkSettingsFileSpelling(settingsTree);
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);

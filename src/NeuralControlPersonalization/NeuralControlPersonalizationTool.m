@@ -33,6 +33,7 @@ function NeuralControlPersonalizationTool(settingsFileName)
 tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
+checkSettingsFileSpelling(settingsTree);
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
 outputLogFile = fullfile("commandWindowOutput.txt");

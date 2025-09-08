@@ -33,6 +33,7 @@ function GroundContactPersonalizationTool(settingsFileName)
 tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "GroundContactPersonalizationTool");
+checkSettingsFileSpelling(settingsTree);
 [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(settingsTree);
 outputLogFile = fullfile("commandWindowOutput.txt");

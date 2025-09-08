@@ -33,6 +33,7 @@ function JointModelPersonalizationTool(settingsFileName)
 tic
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "JointModelPersonalizationTool");
+checkSettingsFileSpelling(settingsTree);
 [outputFile, inputs, params] = ...
     parseJointModelPersonalizationSettingsTree(settingsTree);
 outputLogFile = fullfile("commandWindowOutput.txt");

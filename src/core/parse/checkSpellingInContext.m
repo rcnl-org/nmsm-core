@@ -28,7 +28,7 @@
 % ----------------------------------------------------------------------- %
 
 function checkSpellingInContext(tree, referenceTree, contextString)
-validFields = ["", string(fieldnames(referenceTree))'];
+validFields = ["", "Attributes", string(fieldnames(referenceTree))'];
 
 fileFields = string(fieldnames(tree))';
 
