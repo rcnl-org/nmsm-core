@@ -1,7 +1,7 @@
 
 % (Model, string, cell array) -> (None)
 function reportDistanceErrorByMarker(model, markerFileName, ...
-    markerNames, outputSto)
+    markerNames, outputSto, timeRange)
 import org.opensim.modeling.InverseKinematicsSolver
 import org.opensim.modeling.SimTKArrayCoordinateReference
 import org.opensim.modeling.Storage
@@ -15,13 +15,16 @@ ikSolver = InverseKinematicsSolver(model, ...
     markersReference, SimTKArrayCoordinateReference());
 ikSolver.setAccuracy(1e-6);
 state = initModelSystem(model);
-state.setTime(markersReference.getValidTimeRange().get(0));
+if nargin > 4
+    state.setTime(timeRange(1));
+else
+    state.setTime(markersReference.getValidTimeRange().get(0))
+end
 frequency = markersReference.getSamplingFrequency();
 markerTable = markersReference.getMarkerTable();
 times = markerTable.getIndependentColumn();
 frameCounter = 0;
 ikSolver.assemble(state);
-
 storage = Storage();
 names = ArrayStr();
 names.append('time');
@@ -34,8 +37,6 @@ for i=1:length(markerNames)
 end
 storage.setColumnLabels(names);
 
-state.setTime(markersReference.getValidTimeRange().get(0));
-
 for i=1:markersReference.getNumFrames() - 1 %start time is set so start with recording error
     ikSolver.track(state);
     error = [];
@@ -44,6 +45,9 @@ for i=1:markersReference.getNumFrames() - 1 %start time is set so start with rec
     end
     addToRowToStorage(state, storage, error)
     frameCounter = frameCounter + 1;
+    if nargin > 4 && (state.getTime() + 1/frequency > timeRange(2))
+        break
+    end
     time = times.get(markerTable.getNearestRowIndexForTime( ...
         state.getTime() + 1/frequency - 0.00001));
     state.setTime(double(time));
