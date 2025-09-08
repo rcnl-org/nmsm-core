@@ -7,6 +7,8 @@ import org.opensim.modeling.SimTKArrayCoordinateReference
 import org.opensim.modeling.Storage
 import org.opensim.modeling.ArrayStr
 
+markerNames = verifyMarkerNames(markerFileName, markerNames);
+
 model = Model(model);
 params.markerNames = markerNames;
 markersReference = makeJmpMarkerRef(model, markerFileName, ...
@@ -64,3 +66,25 @@ end
 storage.append(state.getTime(), vec);
 end
 
+function markerNames = verifyMarkerNames(markerFileName, markerNames)
+    import org.opensim.modeling.TimeSeriesTableVec3
+    import org.opensim.modeling.SetMarkerWeights
+    import org.opensim.modeling.MarkerWeight
+    import org.opensim.modeling.MarkersReference
+    timeSeriesTable = TimeSeriesTableVec3(markerFileName);
+    strings = {};
+    columnNames = timeSeriesTable.getColumnLabels();
+    for i=0:columnNames.size()-1
+        strings{end+1} = columnNames.get(i);
+    end
+    markerNamesInFile = string(strings);
+    
+    markerIndices = ismember(markerNames, markerNamesInFile);
+
+    markersNotInFile = markerNames(~markerIndices);
+    for marker = markersNotInFile
+        warning(strcat(marker, " is in the settings file but not the marker file. ", ...
+            "Removing this marker from the IK problem."));
+    end
+    markerNames = markerNames(markerIndices);
+end
