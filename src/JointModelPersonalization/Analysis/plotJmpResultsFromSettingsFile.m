@@ -35,29 +35,33 @@ settingsTree = xml2struct(settingsFileName);
 
 inputModelFileName = inputs.modelFileName;
 [~, settingsFileNameNoExt, ~] = fileparts(settingsFileName);
-mkdir("MarkerErrors")
+if ~exist("MarkerErrors", "dir")
+    mkdir("MarkerErrors")
+end
 markerNames = [];
 for i = 1 : numel(inputs.tasks)
     task = inputs.tasks{i};
     markerNames = [markerNames, task.markerNames];
-    % Plot marker errors
     initialErrorFile = fullfile("MarkerErrors", ...
         strcat(settingsFileNameNoExt, "_task_", num2str(i), ...
         "_initialErrors.sto"));
     finalErrorFile = fullfile("MarkerErrors", ...
         strcat(settingsFileNameNoExt, "_task_", num2str(i), ...
         "_finalErrors.sto"));
+    % Calculate marker errors
     reportDistanceErrorByMarker(inputModelFileName, ...
         task.markerFile, task.markerNames, initialErrorFile, ...
         [task.startTime task.finishTime]);
     reportDistanceErrorByMarker(outputModelFileName, ...
         task.markerFile, task.markerNames, finalErrorFile, ...
         [task.startTime task.finishTime]);
+    % Plot marker errors
     plotMarkerDistanceErrors([initialErrorFile, finalErrorFile], false)
 
 
 end
 markerNames = unique(markerNames);
+if nargin > 1
 for j = 1 : numel(extraMarkerFiles)
     [~, markerFileName, ~] = fileparts(extraMarkerFiles(j));
     initialErrorFile = fullfile("MarkerErrors", ...
@@ -73,4 +77,4 @@ for j = 1 : numel(extraMarkerFiles)
     plotMarkerDistanceErrors([initialErrorFile, finalErrorFile], false)
 end
 end
-
+end
