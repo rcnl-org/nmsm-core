@@ -1,5 +1,18 @@
 # Changelog
 
+## v.1.4.4 - 2025-xx-xx
+### Added
+- All tools now check whether the project file is opened and throw a useful error message if it is not opened.
+- Created plotJmpResultsFromSettingsFile to be in line with other tools.
+- Treatment optimization plotting functions have optional arguments columnsToUse, columnNames, legend, displayRmse, and figureGridSize
+- plotTreatmentOptimizationJointAngles and plotTreatmentOptimizationJointVelocities have optional argument useRadians. 
+
+### Fixed
+- plotJmpResultsFromSettingsFile now checks for markers in the settings file that are not in the marker file. 
+
+### Changed
+- getPlottingParams sets the default plot color to "default" for compatibility with Matlab 2025a dark mode. 
+
 ## v.1.4.3 - 2025-07-14
 
 ### Added
