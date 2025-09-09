@@ -29,6 +29,11 @@
 
 function plotJmpResultsFromSettingsFile(settingsFileName, extraMarkerFiles)
 import org.opensim.modeling.Storage
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 [outputModelFileName, inputs, ~] = ...
     parseJointModelPersonalizationSettingsTree(settingsTree);
