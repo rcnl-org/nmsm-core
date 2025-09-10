@@ -48,7 +48,7 @@ trackedQuantitiesDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'tracked_quantities_directory'));
 initialGuessDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'initial_guess_directory'));
-[isTorque, isSynergy] = parseControllers(settingsTree);
+[isTorque, isSynergy, isMuscle, isUser] = parseControllers(settingsTree);
 trialPrefix = getTextFromField(getFieldByName(settingsTree, ...
     'trial_name'));
 modelFileName = parseElementTextByName(settingsTree, 'input_model_file');
@@ -69,6 +69,10 @@ if isSynergy
     plotSynergyControls(settingsTree, resultsDirectory, ...
         trackedQuantitiesDirectory, initialGuessDirectory, trialPrefix, ...
         modelFileName);
+end
+if isMuscle 
+    plotMuscleActivations(resultsDirectory, trackedQuantitiesDirectory, ...
+        initialGuessDirectory, trialPrefix)
 end
 end
 
