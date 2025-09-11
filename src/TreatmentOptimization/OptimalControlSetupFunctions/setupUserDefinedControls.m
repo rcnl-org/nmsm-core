@@ -52,6 +52,11 @@ if inputs.controllerTypes(4)
                 inputs.initialUserDefinedControlLabels, ...
                 inputs.initialTime, 1);
         end
+        if inputs.useControlDynamicsFilter
+            inputs.initialUserDefinedControlDerivatives = ...
+                (inputs.initialUserDefinedControlDerivatives - inputs.initialUserDefinedControls) ...
+                / inputs.controlDynamicsFilterConstant;
+        end
     end
 end
 end

@@ -53,6 +53,11 @@ if inputs.controllerTypes(2)
                 inputs.initialSynergyControlsLabels, ...
                 inputs.initialTime, 1);
         end
+        if inputs.useControlDynamicsFilter
+            inputs.initialSynergyControlDerivatives = ...
+                (inputs.initialSynergyControlDerivatives - inputs.initialSynergyActivations) ...
+                / inputs.controlDynamicsFilterConstant;
+        end
     end
 end
 end

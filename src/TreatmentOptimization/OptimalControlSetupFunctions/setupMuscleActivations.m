@@ -63,6 +63,11 @@ if inputs.controllerTypes(3)
                 inputs.initialMuscleControlsLabels, ...
                 inputs.initialTime, 1);
         end
+        if inputs.useControlDynamicsFilter
+            inputs.initialMuscleControlDerivatives = ...
+                (inputs.initialMuscleControlDerivatives - inputs.initialMuscleControls) ...
+                / inputs.controlDynamicsFilterConstant;
+        end
     end
 end
 end

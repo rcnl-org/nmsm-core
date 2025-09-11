@@ -36,16 +36,32 @@ if params.useJerk
 end
 if params.useControlDerivatives
     if params.controllerTypes(4)
-        derivatives = [derivatives, values.userDefinedControlDerivatives];
+        if params.useControlDynamicsFilter
+            derivatives = [derivatives, (values.userDefinedControlDerivatives - values.userDefinedControls) / params.controlDynamicsFilterConstant];
+        else
+            derivatives = [derivatives, values.userDefinedControlDerivatives];
+        end
     end
     if params.controllerTypes(3)
-        derivatives = [derivatives, values.controlMuscleActivationDerivatives];
+        if params.useControlDynamicsFilter
+            derivatives = [derivatives, (values.controlMuscleActivationDerivatives - values.controlMuscleActivations) / params.controlDynamicsFilterConstant];
+        else
+            derivatives = [derivatives, values.controlMuscleActivationDerivatives];
+        end
     end
     if params.controllerTypes(2)
-        derivatives = [derivatives, values.controlSynergyActivationDerivatives];
+        if params.useControlDynamicsFilter
+            derivatives = [derivatives, (values.controlSynergyActivationDerivatives - values.controlSynergyActivations) / params.controlDynamicsFilterConstant];
+        else
+            derivatives = [derivatives, values.controlSynergyActivationDerivatives];
+        end
     end
     if params.controllerTypes(1)
-        derivatives = [derivatives, values.torqueControlDerivatives];
+        if params.useControlDynamicsFilter
+            derivatives = [derivatives, (values.torqueControlDerivatives - values.torqueControls) / params.controlDynamicsFilterConstant];
+        else
+            derivatives = [derivatives, values.torqueControlDerivatives];
+        end
     end
 end
 
