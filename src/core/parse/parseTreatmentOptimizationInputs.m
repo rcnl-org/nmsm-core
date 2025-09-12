@@ -80,6 +80,7 @@ end
 [inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
     inputs.controllerTypes, inputs.toolName);
+checkCostAndConstraintTermSpelling(inputs);
 inputs.path = splitListTerms(inputs.path);
 inputs.path = splitAxesTerms(inputs.path);
 inputs.path = convertValueToError(inputs.path);
