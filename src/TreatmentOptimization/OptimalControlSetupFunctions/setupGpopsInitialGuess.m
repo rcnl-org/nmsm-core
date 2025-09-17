@@ -231,7 +231,7 @@ if inputs.useControlDynamicsFilter && inputs.controllerTypes(1)
                     inputs.collocationTimeOriginalWithEnd);
             end
         end
-        torqueDerivatives = (torqueDerivatives - inputs.initialTorqueControls) / inputs.controlDynamicsFilterConstant;
+        torqueDerivatives = inputs.controlDynamicsFilterConstant * torqueDerivatives + inputs.initialTorqueControls;
         controls = [controls, torqueDerivatives];
     end
 else
