@@ -58,7 +58,7 @@ else
     stateIndex = length(inputs.statesCoordinateNames) * 2 + 1;
 end
 
-if inputs.useControlDerivatives
+if inputs.useControlDynamicsFilter
     if inputs.controllerTypes(4)
         values.userDefinedControls = state(:, ...
             stateIndex : stateIndex - 1 + inputs.numUserDefinedControls);

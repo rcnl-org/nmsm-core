@@ -49,7 +49,7 @@ if isfield(inputs, "initialStates")
         inputs.initialStates, ...
         inputs.initialStatesLabels, ...
         inputs.statesCoordinateNames, inputs.useJerk);
-    if inputs.useControlDerivatives
+    if inputs.useControlDynamicsFilter
         if inputs.controllerTypes(4)
             states = [states, inputs.initialUserDefinedControls];
         end
@@ -90,7 +90,7 @@ else
             inputs.statesCoordinateNames);
         stateGuess = [stateGuess, stateJointAccelerations];
     end
-    if inputs.useControlDerivatives
+    if inputs.useControlDynamicsFilter
         if inputs.controllerTypes(4)
             stateGuess = [stateGuess, inputs.initialUserDefinedControls];
         end
@@ -162,7 +162,7 @@ else
     end
 end
 if inputs.controllerTypes(4)
-    if inputs.useControlDerivatives
+    if inputs.useControlDynamicsFilter
         controls = [controls, inputs.initialUserDefinedControlDerivatives];
     else
         if isfield(inputs, "initialUserDefinedControls")
@@ -176,7 +176,7 @@ if inputs.controllerTypes(4)
     end
 end
 if inputs.controllerTypes(3)
-    if inputs.useControlDerivatives
+    if inputs.useControlDynamicsFilter
         controls = [controls, inputs.initialMuscleControlDerivatives];
     else
         if isfield(inputs, "initialMuscleControls")
@@ -190,7 +190,7 @@ if inputs.controllerTypes(3)
     end
 end
 if inputs.controllerTypes(2)
-    if inputs.useControlDerivatives
+    if inputs.useControlDynamicsFilter
         controls = [controls, inputs.initialSynergyControlDerivatives];
     else
         if isfield(inputs, "initialSynergyControls")
@@ -202,7 +202,7 @@ if inputs.controllerTypes(2)
         end
     end
 end
-if inputs.useControlDerivatives && inputs.controllerTypes(1)
+if inputs.useControlDynamicsFilter && inputs.controllerTypes(1)
     if isfield(inputs, "initialTorqueControlDerivatives")
         controls = [controls, inputs.initialTorqueControlDerivatives];
     else

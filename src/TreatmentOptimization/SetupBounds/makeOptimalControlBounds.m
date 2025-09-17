@@ -80,7 +80,7 @@ if inputs.useJerk
     inputs.minState = [inputs.minState, minStateAccelerations];
 end
 
-if inputs.useControlDerivatives
+if inputs.useControlDynamicsFilter
     [maxControl, minControl] = makeNonDerivativeControlBounds(inputs);
     inputs.maxState = [inputs.maxState, maxControl];
     inputs.minState = [inputs.minState, minControl];
@@ -108,7 +108,7 @@ else
     inputs.minControl = min(stateJointAccelerations) - minRange;
 end
 
-if inputs.useControlDerivatives
+if inputs.useControlDynamicsFilter
     [maxControl, minControl] = makeDerivativeControlBounds(inputs);
     inputs.maxControl = [inputs.maxControl, maxControl];
     inputs.minControl = [inputs.minControl, minControl];
@@ -283,7 +283,7 @@ if inputs.controllerTypes(1)
     end
 end
 
-if inputs.useControlDerivatives
+if inputs.useControlDynamicsFilter
     numControls = ...
         repelem([length(inputs.torqueControllerCoordinateNames), ...
         inputs.numSynergies, inputs.numIndividualMuscles, ...

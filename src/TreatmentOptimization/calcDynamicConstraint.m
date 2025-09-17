@@ -34,34 +34,18 @@ derivatives = [values.stateVelocities, values.controlAccelerations];
 if params.useJerk
     derivatives = [derivatives, values.controlJerks];
 end
-if params.useControlDerivatives
+if params.useControlDynamicsFilter
     if params.controllerTypes(4)
-        if params.useControlDynamicsFilter
-            derivatives = [derivatives, (values.userDefinedControlDerivatives - values.userDefinedControls) / params.controlDynamicsFilterConstant];
-        else
-            derivatives = [derivatives, values.userDefinedControlDerivatives];
-        end
+        derivatives = [derivatives, (values.userDefinedControlDerivatives - values.userDefinedControls) / params.controlDynamicsFilterConstant];
     end
     if params.controllerTypes(3)
-        if params.useControlDynamicsFilter
-            derivatives = [derivatives, (values.controlMuscleActivationDerivatives - values.controlMuscleActivations) / params.controlDynamicsFilterConstant];
-        else
-            derivatives = [derivatives, values.controlMuscleActivationDerivatives];
-        end
+        derivatives = [derivatives, (values.controlMuscleActivationDerivatives - values.controlMuscleActivations) / params.controlDynamicsFilterConstant];
     end
     if params.controllerTypes(2)
-        if params.useControlDynamicsFilter
-            derivatives = [derivatives, (values.controlSynergyActivationDerivatives - values.controlSynergyActivations) / params.controlDynamicsFilterConstant];
-        else
-            derivatives = [derivatives, values.controlSynergyActivationDerivatives];
-        end
+        derivatives = [derivatives, (values.controlSynergyActivationDerivatives - values.controlSynergyActivations) / params.controlDynamicsFilterConstant];
     end
     if params.controllerTypes(1)
-        if params.useControlDynamicsFilter
-            derivatives = [derivatives, (values.torqueControlDerivatives - values.torqueControls) / params.controlDynamicsFilterConstant];
-        else
-            derivatives = [derivatives, values.torqueControlDerivatives];
-        end
+        derivatives = [derivatives, (values.torqueControlDerivatives - values.torqueControls) / params.controlDynamicsFilterConstant];
     end
 end
 

@@ -110,7 +110,7 @@ controls(end, i) = solution.inverseDynamicsMoments(end, inverseDynamicsIndex);
         fullfile(inputs.resultsDirectory, ...
         strcat(inputs.trialName, "_torqueControls.sto")));
 end
-if inputs.useControlDerivatives
+if inputs.useControlDynamicsFilter
     if inputs.controllerTypes(4)
         [time, controls] = splineToEvenlySpaced(values.time, ...
             values.userDefinedControlDerivatives, length(inputs.experimentalTime));
