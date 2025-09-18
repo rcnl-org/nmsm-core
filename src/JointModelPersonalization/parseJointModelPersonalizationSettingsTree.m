@@ -124,21 +124,14 @@ if isstruct(getFieldByName(tree, 'JMPBodySet')) || ~isempty(freeMarkers)
     [output.scaling, output.markers] = ...
         getBodyParameters(tree.JMPBodySet, model, freeMarkers);
 end
-translationBounds = getFieldByName(tree, 'translation_bounds');
-if(isstruct(translationBounds))
-    translationBounds = str2double(translationBounds.Text);
-end
-orientationBounds = getFieldByName(tree, 'orientation_bounds');
-if(isstruct(orientationBounds))
-    orientationBounds = str2double(orientationBounds.Text);
-end
+[translationBounds, orientationBounds, jointNames] = parseJointBounds(tree);
 output.initialValues = getInitialValues(model, output.parameters, ...
     output.scaling, output.markers);
-if(translationBounds || orientationBounds)
+if any(translationBounds) || any(orientationBounds)
     [output.lowerBounds, output.upperBounds] = getBounds(...
         output.parameters, output.initialValues, ...
         translationBounds, orientationBounds, output.scaling, ...
-        output.markers);
+        output.markers, jointNames);
 end
 end
 
@@ -291,16 +284,22 @@ end
 end
 
 function [lowerBounds, upperBounds] = getBounds(parameters, ...
-    initialValues, translationBounds, orientationBounds, scaling, markers)
+    initialValues, translationBounds, orientationBounds, scaling, ...
+    markers, jointNames)
 lowerBounds = [];
 upperBounds = [];
 for i=1:length(parameters)
-    if(parameters{i}{3})
-        lowerBounds(i) = initialValues(i) - translationBounds;
-        upperBounds(i) = initialValues(i) + translationBounds;
-    else
-        lowerBounds(i) = initialValues(i) - orientationBounds;
-        upperBounds(i) = initialValues(i) + orientationBounds;
+    for j = 1 : length(jointNames) % Iterate through joints in task
+        % Check which joint the current parameter belongs to
+        if strcmp(parameters{i}{1}, jointNames{j})
+            if(parameters{i}{3})
+                lowerBounds(i) = initialValues(i) - translationBounds(j);
+                upperBounds(i) = initialValues(i) + translationBounds(j);
+            else
+                lowerBounds(i) = initialValues(i) - orientationBounds(j);
+                upperBounds(i) = initialValues(i) + orientationBounds(j);
+            end
+        end
     end
 end
 for i = 1 : length(scaling)
@@ -326,4 +325,36 @@ for i=1:length(paramArgs)
         output.(paramName{i}) = str2double(value.Text);
     end
 end
+end
+
+function [translationBounds, orientationBounds, jointNames] = parseJointBounds(tree)
+
+jointSet = getFieldByName(tree, "JMPJoint");
+translationBounds = [];
+orientationBounds = [];
+jointNames = {};
+% if isstruct(jointSet)
+for i = 1 : length(jointSet)
+    if length(jointSet) == 1
+        joint = jointSet;
+    else
+        joint = jointSet{i};
+    end
+    if isstruct(joint) % Joint will be logical 0 if the task has no joints.
+        jointNames{i} = string(joint.Attributes.name);
+    end
+    translationBoundsStr = getFieldByName(joint, 'translation_bounds');
+    if(isstruct(translationBoundsStr))
+        translationBounds(i) = str2double(translationBoundsStr.Text);
+    else 
+        translationBounds(i) = false;
+    end
+    orientationBoundStr = getFieldByName(joint, 'orientation_bounds');
+    if(isstruct(orientationBoundStr))
+        orientationBounds(i) = str2double(orientationBoundStr.Text);
+    else
+        orientationBounds(i) = false;
+    end
+end
+% end
 end
