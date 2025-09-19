@@ -3,15 +3,20 @@
 ## v.1.4.4 - 2025-xx-xx
 ### Added
 - All tools now check whether the project file is opened and throw a useful error message if it is not opened.
+- The project file now has a startup script that checks installation status of GPOPS-II and OpenSim.
 - Created plotJmpResultsFromSettingsFile to be in line with other tools.
 - Treatment optimization plotting functions have optional arguments columnsToUse, columnNames, legend, displayRmse, and figureGridSize
 - plotTreatmentOptimizationJointAngles and plotTreatmentOptimizationJointVelocities have optional argument useRadians. 
+- MTP now saves total, passive, and active muscle forces, along with tendon forces. 
+- plotMtpResultsFromSettingsFile now plots total, passive, and active muscle forces.
 
 ### Fixed
 - plotJmpResultsFromSettingsFile now checks for markers in the settings file that are not in the marker file. 
+- JMP GUI now correctly has orientation bounds in radians instead of degrees.
 
 ### Changed
 - getPlottingParams sets the default plot color to "default" for compatibility with Matlab 2025a dark mode. 
+- muscle_activation_minimization cost term in treatment optimization allows users to specify the exponent to raise the activations to using <exponent>. Default is 2. 
 
 ## v.1.4.3 - 2025-07-14
 
