@@ -289,15 +289,28 @@ function [lowerBounds, upperBounds] = getBounds(parameters, ...
 lowerBounds = [];
 upperBounds = [];
 for i=1:length(parameters)
-    for j = 1 : length(jointNames) % Iterate through joints in task
+    numJoints = length(jointNames);
+    for j = 1 : numJoints % Iterate through joints in task
         % Check which joint the current parameter belongs to
         if strcmp(parameters{i}{1}, jointNames{j})
-            if(parameters{i}{3})
-                lowerBounds(i) = initialValues(i) - translationBounds(j);
-                upperBounds(i) = initialValues(i) + translationBounds(j);
-            else
-                lowerBounds(i) = initialValues(i) - orientationBounds(j);
-                upperBounds(i) = initialValues(i) + orientationBounds(j);
+            % translation bounds and orientation bounds are grouped by
+            % joint with parent coming first and child coming second
+            % parent frame transformation
+            if(parameters{i}{2} && parameters{i}{3})
+                lowerBounds(i) = initialValues(i) - translationBounds(j*2-1);
+                upperBounds(i) = initialValues(i) + translationBounds(j*2-1);
+            % parent frame orientation
+            elseif(parameters{i}{2} && ~parameters{i}{3})
+                lowerBounds(i) = initialValues(i) - orientationBounds(j*2-1);
+                upperBounds(i) = initialValues(i) + orientationBounds(j*2-1);
+            % child frame translation
+            elseif(~parameters{i}{2} && parameters{i}{3})
+                lowerBounds(i) = initialValues(i) - translationBounds(j*2);
+                upperBounds(i) = initialValues(i) + translationBounds(j*2);
+            % child frame orientation
+            elseif(~parameters{i}{2} && ~parameters{i}{3})
+                lowerBounds(i) = initialValues(i) - orientationBounds(j*2);
+                upperBounds(i) = initialValues(i) + orientationBounds(j*2);
             end
         end
     end
@@ -335,6 +348,8 @@ orientationBounds = [];
 jointNames = {};
 % if isstruct(jointSet)
 for i = 1 : length(jointSet)
+    % For each joint, create parent and child bounds for translations and
+    % orientations. These are later used in getBounds.
     if length(jointSet) == 1
         joint = jointSet;
     else
@@ -343,18 +358,36 @@ for i = 1 : length(jointSet)
     if isstruct(joint) % Joint will be logical 0 if the task has no joints.
         jointNames{i} = string(joint.Attributes.name);
     end
-    translationBoundsStr = getFieldByName(joint, 'translation_bounds');
+
+    parentFrameTrans = getFieldByName(joint, "parent_frame_transformation");
+    % parse parent frame bounds
+    translationBoundsStr = getFieldByName(parentFrameTrans, 'translation_bounds');
     if(isstruct(translationBoundsStr))
-        translationBounds(i) = str2double(translationBoundsStr.Text);
+        translationBounds(end+1) = str2double(translationBoundsStr.Text);
     else 
-        translationBounds(i) = false;
+        translationBounds(end+1) = false;
     end
-    orientationBoundStr = getFieldByName(joint, 'orientation_bounds');
+    orientationBoundStr = getFieldByName(parentFrameTrans, 'orientation_bounds');
     if(isstruct(orientationBoundStr))
-        orientationBounds(i) = str2double(orientationBoundStr.Text);
+        orientationBounds(end+1) = str2double(orientationBoundStr.Text);
     else
-        orientationBounds(i) = false;
+        orientationBounds(end+1) = false;
     end
+
+    childFrameTrans = getFieldByName(joint, "child_frame_transformation");
+    % parse child frame bounds
+    translationBoundsStr = getFieldByName(childFrameTrans, 'translation_bounds');
+    if(isstruct(translationBoundsStr))
+        translationBounds(end+1) = str2double(translationBoundsStr.Text);
+    else 
+        translationBounds(end+1) = false;
+    end
+    orientationBoundStr = getFieldByName(childFrameTrans, 'orientation_bounds');
+    if(isstruct(orientationBoundStr))
+        orientationBounds(end+1) = str2double(orientationBoundStr.Text);
+    else
+        orientationBounds(end+1) = false;
+    end
+
 end
-% end
 end
