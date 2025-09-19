@@ -154,7 +154,7 @@ if isfield(jointSetTree, 'JMPJoint')
         verifyLength(parentTrans, 3);
         % Create parameter cell arrays. First element is the joint name,
         % second parameter is isParent, third parameter is isTranslational,
-        % and the fourth parameter is coordinate number (x->1, y->2, z->3)
+        % and the fourth parameter is coordinate number (x->0, y->1, z->2)
         for j=0:2
             if(strcmp(parentTrans{j+1}, 'true'))
                 inputs{counter} = {jointName, true, true, j};
