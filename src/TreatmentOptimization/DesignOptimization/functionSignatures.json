@@ -1,0 +1,13 @@
+{
+  "_schemaVersion": "1.0.0",
+  "DesignOptimizationTool":
+  {
+     "inputs":
+     [
+        {"name":"settingsFileName", 
+         "kind":"required", 
+         "type":["file=*.xml"], 
+         "purpose":"(String) DO settings file"}
+     ]
+  }
+}

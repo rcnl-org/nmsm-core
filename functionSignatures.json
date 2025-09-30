@@ -1,0 +1,10 @@
+{
+  "_schemaVersion": "1.0.0",
+  "JointModelPersonalizationTool":
+  {
+     "inputs":
+     [
+        {"name":"settingsFileName", "kind":"required", "type":["file=*.xml"], "purpose":"ID of item"}
+     ]
+  }
+}
