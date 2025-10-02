@@ -12,6 +12,7 @@
 - `plotTreatmentOptimizationJointAngles()` and `plotTreatmentOptimizationJointVelocities()` have optional argument `useRadians`. 
 - Treatment Optimization has new cost and constraint terms for `synergy_vector_symmetry`.
 - Treatment Optimization has an additional new cost term: `generalized_speed_minimization`.
+- Function arguments have autocomplete for main tool functions and plotting functions. 
 
 ### Fixed
 - `plotJmpResultsFromSettingsFile()` now checks for markers in the settings file that are not in the marker file. 
