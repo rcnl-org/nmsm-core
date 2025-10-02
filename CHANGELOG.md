@@ -1,6 +1,6 @@
 # Changelog
 
-## v.1.5.0 - 2025-xx-xx
+## v.1.5.0 - 2025-10-02
 
 ### Added
 - All tools now check whether the project file is opened and throw a useful error message if it is not opened.
