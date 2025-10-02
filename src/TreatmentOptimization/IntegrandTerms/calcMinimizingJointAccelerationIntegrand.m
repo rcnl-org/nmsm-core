@@ -33,6 +33,7 @@ defaultTimeNormalization = true;
 [time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
     defaultTimeNormalization);
 
+coordinateName = getTermFieldOrError(costTerm, 'coordinate');
 [acceleration, costTerm] = findDataByLabels(costTerm, accelerations, ...
     inputs.coordinateNames, coordinateName);
 

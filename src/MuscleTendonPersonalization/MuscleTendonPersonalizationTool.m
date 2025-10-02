@@ -30,11 +30,19 @@
 % ----------------------------------------------------------------------- %
 
 function MuscleTendonPersonalizationTool(settingsFileName)
+tic
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+outputLogFile = fullfile("commandWindowOutput.txt");
+diary(outputLogFile)
 if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
@@ -55,4 +63,11 @@ else
         resultsStruct, resultsDirectory);
 end
 printMtpJointMomentMatchingError(resultsDirectory);
+fprintf("Muscle-Tendon Personalization Runtime: %f Hours\n", toc/3600);
+diary off
+try
+    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
+    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+catch
+end
 end

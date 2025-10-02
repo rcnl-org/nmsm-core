@@ -1,0 +1,13 @@
+{
+  "_schemaVersion": "1.0.0",
+  "GroundContactPersonalizationTool":
+  {
+     "inputs":
+     [
+        {"name":"settingsFileName", 
+         "kind":"required", 
+         "type":["file=*.xml"], 
+         "purpose":"(String) GCP settings file"}
+     ]
+  }
+}

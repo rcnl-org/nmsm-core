@@ -33,6 +33,11 @@
 
 function plotMtpResultsFromSettingsFile(settingsFileName1, settingsFileName2)
 import org.opensim.modeling.Storage
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree1 = xml2struct(settingsFileName1);
 resultsDirectory1 = getFieldByName(settingsTree1, 'results_directory').Text;
 plotMtpResultsFromDirectory(resultsDirectory1)
@@ -50,7 +55,13 @@ function plotMtpResultsFromDirectory(resultsDirectory)
 plotMtpJointMoments(resultsDirectory);
 plotMtpMuscleExcitationsAndActivations(resultsDirectory);
 plotMtpNormalizedFiberLengths(resultsDirectory);
-plotMtpPassiveForceCurves(resultsDirectory);
+% Account for older mtp versions where active and total force were not
+% saved
+if isfolder(fullfile(resultsDirectory, "Analysis", "activeMuscleForces"))
+    plotMtpMuscleForces(resultsDirectory)
+else
+    plotMtpPassiveForceCurves(resultsDirectory);
+end
 if isfolder(fullfile(resultsDirectory, "Analysis", "passiveJointMomentsExperimental"))
     plotMtpPassiveMomentCurves(resultsDirectory);
 end

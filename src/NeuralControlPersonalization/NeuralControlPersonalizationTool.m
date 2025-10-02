@@ -30,11 +30,18 @@
 % ----------------------------------------------------------------------- %
 
 function NeuralControlPersonalizationTool(settingsFileName)
+tic
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
-
+outputLogFile = fullfile("commandWindowOutput.txt");
+diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
@@ -56,6 +63,13 @@ ncpMuscleJointMoments = calcFinalMuscleJointMoments(inputs, ...
 saveNeuralControlPersonalizationResults(synergyWeights, ...
     synergyCommands, combinedActivations, combinedMuscleJointMoments, ...
     ncpMuscleJointMoments, inputs, resultsDirectory, precalInputs);
+fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
+diary off
+try
+    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
+    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+catch
+end
 end
 
 function [combinedActivations, synergyActivations] = ...

@@ -29,6 +29,11 @@
 % ----------------------------------------------------------------------- %
 
 function plotNcpResultsFromSettingsFile(settingsFileName)
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 ncpResultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 mtpResultsDirectory = getFieldByName(settingsTree, 'mtp_results_directory');
@@ -38,14 +43,12 @@ inputModelFileName = parseElementTextByName(settingsTree, 'input_model_file');
 inputOsimxFileName = parseElementTextByName(settingsTree, 'input_osimx_file');
 if ~isempty(inputOsimxFileName)
     [~, osimxFileName, ~] = fileparts(inputOsimxFileName);
-    osimx = parseOsimxFile(fullfile(ncpResultsDirectory, ...
-        strcat(osimxFileName, "_ncp.osimx")), ...
-        Model(inputModelFileName));
+    osimxFileName = fullfile(ncpResultsDirectory, ...
+        strcat(osimxFileName, "_ncp.osimx"));
 else
     [~, modelFileName, ~] = fileparts(inputModelFileName);
-    osimx = parseOsimxFile(fullfile(ncpResultsDirectory, ...
-        strcat(modelFileName, "_ncp.osimx")), ...
-        Model(inputModelFileName));
+    osimxFileName = fullfile(ncpResultsDirectory, ...
+        strcat(modelFileName, "_ncp.osimx"));
 end
 for i = 1 : numel (trialPrefixes)
     if isstruct(mtpResultsDirectory) && ~isempty(mtpResultsDirectory.Text)
@@ -75,6 +78,6 @@ for i = 1 : numel (trialPrefixes)
     plotTreatmentOptimizationSynergyControls( ...
         fullfile(ncpResultsDirectory, strcat(trialPrefixes{i}, "_synergyCommands.sto")), ...
         fullfile(ncpResultsDirectory, "synergyWeights.sto"), [], [], ...
-        osimx, "sum", 1)
+        osimxFileName, inputModelFileName, "sum", 1)
 end
 

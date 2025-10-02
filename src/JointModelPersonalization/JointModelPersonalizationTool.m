@@ -30,11 +30,27 @@
 % ----------------------------------------------------------------------- %
 
 function JointModelPersonalizationTool(settingsFileName)
+tic
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "JointModelPersonalizationTool");
 [outputFile, inputs, params] = ...
     parseJointModelPersonalizationSettingsTree(settingsTree);
+outputLogFile = fullfile("commandWindowOutput.txt");
+diary(outputLogFile)
 newModel = JointModelPersonalization(inputs, params);
 newModel.print(outputFile);
+fprintf("Joint Model Personalization Runtime: %f Hours\n", toc/3600);
+diary off
+try
+    resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
+    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+catch
+end
 end
 

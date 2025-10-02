@@ -45,6 +45,7 @@ end
 if ~isempty(precalInputs)
     saveMtpPassiveMomentData(precalInputs, modeledValues, analysisDirectory);
 end
+saveMtpMuscleForceData(mtpInputs, resultsStruct, analysisDirectory)
 saveMtpPassiveForceData(mtpInputs, resultsStruct, analysisDirectory);
 saveMtpActivationAndExcitationData(mtpInputs, resultsStruct, analysisDirectory);
 writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
