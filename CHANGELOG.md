@@ -16,6 +16,7 @@
 ### Fixed
 - `plotJmpResultsFromSettingsFile()` now checks for markers in the settings file that are not in the marker file. 
 - Joint Model Personalization GUI now correctly has orientation bounds in radians instead of degrees.
+- Fixed a bug that could prevent Ground Contact Personalization from starting on Windows
 
 ### Changed
 - `getPlottingParams()` sets the default plot color to `"default"` for compatibility with Matlab 2025a dark mode. 
