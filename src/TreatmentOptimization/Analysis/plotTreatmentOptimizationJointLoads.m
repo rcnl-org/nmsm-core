@@ -47,7 +47,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function plotTreatmentOptimizationJointLoads(trackedDataFile, ...
-    resultsDataFiles)
+    resultsDataFiles, varargin)
 import org.opensim.modeling.Model
 params = getPlottingParams();
 if ~isempty(varargin)
