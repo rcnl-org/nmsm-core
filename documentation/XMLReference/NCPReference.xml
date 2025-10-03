@@ -145,6 +145,20 @@
 				<max_allowable_error>0.05</max_allowable_error>
 			</RCNLCostTerm>
 		</RCNLCostTermSet>
+		
+		
+		<!--Indicate whether negative synergy vector weights are allowed or not. Default is false.-->
+		<allow_negative_synergy_vector_weights>true</allow_negative_synergy_vector_weights>
+		<!--Indicate whether activation saturation is enabled or not. Default is false.-->
+		<use_activation_saturation>true</use_activation_saturation>
+		<!--Sharpness parameter for activation saturation (higher value = steeper transition).-->
+		<activation_saturation_sharpness>600</activation_saturation_sharpness>
+		<!--Method for normalizing synergy vectors (e.g., 'magnitude', 'sum').-->
+		<synergy_vector_normalization_method>magnitude</synergy_vector_normalization_method>
+		<!--Target value for synergy vector normalization.-->
+		<synergy_vector_normalization_value>1</synergy_vector_normalization_value>	
+		
+		
 		<!--Set of separate synergy groups for the model to use.-->
 		<RCNLSynergySet>
 			<RCNLSynergy>

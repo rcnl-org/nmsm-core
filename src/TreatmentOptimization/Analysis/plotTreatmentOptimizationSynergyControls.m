@@ -51,7 +51,8 @@ function plotTreatmentOptimizationSynergyControls(...
     trackedActivationsFile, trackedWeightsFile, ...
     resultsActivationsFiles, resultsWeightsFiles, ...
     osimxFileName, modelFileName, ...
-    synergyNormalizationMethod, synergyNormalizationValue, varargin)
+    synergyNormalizationMethod, synergyNormalizationValue, ...
+    allow_negative_synergy_vector_weights, varargin)
 params = getPlottingParams();
 if ~isempty(varargin)
     options = parseVarargin(varargin);
@@ -82,12 +83,13 @@ trackedActivations = resampleTrackedData(trackedActivations, ...
     resultsActivations);
 
 plotSynergyActivations(trackedActivations, resultsActivations, ...
-    params, options);
+    params, options, allow_negative_synergy_vector_weights);
 plotSynergyVectors(trackedWeights, trackedActivations.labels, ...
-    resultsWeights, params, osimx, options);
+    resultsWeights, params, osimx, options, allow_negative_synergy_vector_weights);
 end
 
-function plotSynergyActivations(tracked, results, params, options)
+function plotSynergyActivations(tracked, results, params, options, ...
+    allow_negative_synergy_vector_weights)
 if isfield(options, "showRmse")
     showRmse = options.showRmse;
 else
@@ -122,11 +124,16 @@ else
 end
 % Max tracked synergy activation. Used to set the plot y axis.
 maxActivations = [max(tracked.data, [], "all")];
+minActivations = [min(tracked.data, [], "all")];
 for i = 1 : numel(results.data)
     maxActivations(i+1) = max(results.data{i}, [], "all");
+    minActivations(i+1) = min(results.data{i}, [], "all");
 end
 upperYLimit = max(maxActivations);
-
+lowerYLimit = 0;
+if allow_negative_synergy_vector_weights
+    lowerYLimit = min(minActivations);
+end
 for i=1:numel(tracked.labels)
     if subplotNumber > figureSize
         tileFigure = makeSynergyActivationsFigure(params, options, tracked);
@@ -157,12 +164,13 @@ for i=1:numel(tracked.labels)
             Interpreter="none")
     end
     xlim("tight")
-    ylim([0 upperYLimit])
+    ylim([lowerYLimit upperYLimit])
     subplotNumber = subplotNumber + 1;
 end
 end
 
-function plotSynergyVectors(tracked, synergyLabels, results, params, osimx, options)
+function plotSynergyVectors(tracked, synergyLabels, results, params, osimx, ...
+    options, allow_negative_synergy_vector_weights)
 % Outer level: iterate through synergy sets. We get 1 plot for each synergy
 % set for readability.
 synergyNumber = 1;
@@ -213,6 +221,14 @@ for synergyGroup = 1 : numel(osimx.synergyGroups)
             maxWeights(k) = max(results.data{k}, [], "all");
         end
         ylim([0 max(maxWeights)])
+
+        if allow_negative_synergy_vector_weights
+            minWeights = min(tracked.data, [], "all");
+            for k = 1 : numel(results.data)
+                minWeights(k) = min(results.data{k}, [], "all");
+            end
+            ylim([min(minWeights) max(maxWeights)])
+        end
         synergyNumber = synergyNumber + 1;
     end
 end

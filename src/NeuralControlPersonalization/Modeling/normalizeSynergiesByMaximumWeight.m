@@ -33,7 +33,11 @@
 
 function [synergyWeights, synergyCommands] = ...
     normalizeSynergiesByMaximumWeight(synergyWeights, synergyCommands)
-scaleFactors = max(synergyWeights')';
+
+[~, index] = max(abs(synergyWeights), [], 2);
+rowIndex = (1:size(synergyWeights,1))';  
+scaleFactors = abs(synergyWeights(sub2ind(size(synergyWeights), rowIndex, index)));
+
 synergyWeights = synergyWeights ./ scaleFactors;
 synergyCommands = synergyCommands .* permute(scaleFactors, [3 2 1]);
 end

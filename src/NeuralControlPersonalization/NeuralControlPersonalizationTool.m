@@ -46,7 +46,7 @@ end
 
 [optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
 [synergyWeights, synergyCommands] = findSynergyWeightsAndCommands( ...
-    optimizedValues, inputs, params);
+    optimizedValues, inputs);
 [synergyWeights, synergyCommands] = normalizeSynergiesByMaximumWeight(...
     synergyWeights, synergyCommands);
 [combinedActivations, ncpActivations] = combineFinalActivations(inputs, ...
@@ -74,6 +74,10 @@ synergyActivations = zeros(inputs.numTrials, inputs.numMuscles, ...
 for i = 1:inputs.numTrials
     synergyActivations(i, :, :) = synergyWeights' * ...
         squeeze(synergyCommands(i, :, :))';
+end
+if inputs.use_activation_saturation
+    synergyActivations = applyActivationSaturation(synergyActivations, ...
+        inputs.activation_saturation_sharpness);
 end
 combinedActivations = synergyActivations;
 if isfield(inputs, 'mtpActivationsColumnNames')

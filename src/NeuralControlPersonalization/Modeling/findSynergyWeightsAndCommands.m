@@ -1,4 +1,4 @@
-function [weights, commands] = findSynergyWeightsAndCommands(values, inputs, params)
+function [weights, commands] = findSynergyWeightsAndCommands(values, inputs)
 weights = zeros(inputs.numSynergies, inputs.numMuscles);
 valuesIndex = 1;
 row = 1;
@@ -33,6 +33,7 @@ for i = 1:inputs.numTrials
     for j = 1:inputs.numSynergies
         commands(i, :, j) = spline(percentNodes, commandNodes(i, :, j), ...
             percent);
+        % commands(i,:,j) = pchip(percentNodes, commandNodes(i,:,j), percent);
     end
 end
 end
