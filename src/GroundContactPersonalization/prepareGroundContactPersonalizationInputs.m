@@ -224,7 +224,7 @@ end
 function copyMexFunction(foot)
 path = mfilename("fullpath");
 [pathParts, splits] = strsplit(path, {'\', '/'});
-indices = find(cellfun(@(x) strcmp(x, 'nmsm-core'), pathParts));
+indices = find(cellfun(@(x) contains(x, 'nmsm-core'), pathParts));
 index = indices(end);
 mexPath = cell(1, 2 * index - 1);
 for i = 1 : index
