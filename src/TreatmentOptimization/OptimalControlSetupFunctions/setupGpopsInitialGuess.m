@@ -231,6 +231,29 @@ if inputs.useControlDynamicsFilter && inputs.controllerTypes(1)
                     inputs.collocationTimeOriginalWithEnd);
             end
         end
+        if ~isfield(inputs, "initialTorqueControls")
+            if ~isempty(valueOrAlternate(inputs, "torqueControllerCoordinateNames", []))
+                stateTorqueControls = subsetDataByCoordinates( ...
+                    inputs.initialJointMoments, ...
+                    erase(erase(inputs.initialInverseDynamicsMomentLabels, '_moment'), '_force'), ...
+                    inputs.torqueControllerCoordinateNames);
+                if size(controls, 1) ~= size(stateTorqueControls, 1)
+                    torqueSplines = makeGcvSplineSet(inputs.initialTime, ...
+                        stateTorqueControls, ...
+                        inputs.torqueControllerCoordinateNames);
+                    if strcmp(inputs.solverType, 'gpops')
+                        stateTorqueControls = evaluateGcvSplines(torqueSplines, ...
+                            inputs.torqueControllerCoordinateNames, ...
+                            inputs.collocationTimeOriginal);
+                    else
+                        stateTorqueControls = evaluateGcvSplines(torqueSplines, ...
+                            inputs.torqueControllerCoordinateNames, ...
+                            inputs.collocationTimeOriginalWithEnd);
+                    end
+                end
+                inputs.initialTorqueControls = stateTorqueControls;
+            end
+        end
         torqueDerivatives = inputs.controlDynamicsFilterConstant * torqueDerivatives + inputs.initialTorqueControls;
         controls = [controls, torqueDerivatives];
     end
