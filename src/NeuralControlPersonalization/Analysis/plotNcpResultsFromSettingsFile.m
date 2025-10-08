@@ -29,6 +29,11 @@
 % ----------------------------------------------------------------------- %
 
 function plotNcpResultsFromSettingsFile(settingsFileName)
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 ncpResultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 mtpResultsDirectory = getFieldByName(settingsTree, 'mtp_results_directory');
