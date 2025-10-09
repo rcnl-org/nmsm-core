@@ -65,6 +65,22 @@ for i = 1 : length(params.costTerms)
                     cost = calcNormalizedFiberLengthDeviationCost( ...
                         modeledValues, inputs, costTerm);
                 end
+            case "minimum_normalized_muscle_fiber_length"
+                if isfield(inputs, "synergyExtrapolation")
+                    cost = calcMinimumNormalizedFiberLengthMtpDeviationCost( ...
+                        synxModeledValues, params, costTerm);
+                else
+                    cost = calcMinimumNormalizedFiberLengthMtpDeviationCost( ...
+                        modeledValues, params, costTerm);
+                end
+            case "maximum_normalized_muscle_fiber_length"
+                if isfield(inputs, "synergyExtrapolation")
+                    cost = calcMaximumNormalizedFiberLengthMtpDeviationCost( ...
+                        synxModeledValues, params, costTerm);
+                else
+                    cost = calcMaximumNormalizedFiberLengthMtpDeviationCost( ...
+                        modeledValues, params, costTerm);
+                end
             case "passive_muscle_force"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcPassiveForceCost(synxModeledValues, costTerm);

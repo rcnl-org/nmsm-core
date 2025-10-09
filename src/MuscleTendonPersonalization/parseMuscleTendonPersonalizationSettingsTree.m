@@ -131,6 +131,22 @@ output.isIncluded(6) = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, ...
     "optimize_tendon_slack_lengths", true));
 output.costTerms = parseRcnlCostTermSet(tree.RCNLCostTermSet.RCNLCostTerm);
+maxNormalizedMuscleFiberLength = getFieldByNameOrAlternate(tree, ...
+    'max_normalized_muscle_fiber_length', 1.05);
+if(isstruct(maxNormalizedMuscleFiberLength))
+    output.maxNormalizedMuscleFiberLength = ...
+        str2double(maxNormalizedMuscleFiberLength.Text);
+else
+    output.maxNormalizedMuscleFiberLength = maxNormalizedMuscleFiberLength;
+end
+minNormalizedMuscleFiberLength = getFieldByNameOrAlternate(tree, ...
+    'min_normalized_muscle_fiber_length', 0.75);
+if(isstruct(minNormalizedMuscleFiberLength))
+    output.minNormalizedMuscleFiberLength = ...
+        str2double(minNormalizedMuscleFiberLength.Text);
+else
+    output.minNormalizedMuscleFiberLength = minNormalizedMuscleFiberLength;
+end
 end
 
 % (struct) -> (struct)
