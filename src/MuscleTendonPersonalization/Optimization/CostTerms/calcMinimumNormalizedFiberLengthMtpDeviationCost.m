@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of double, Array of double) -> (Array of double)
-% Calculate error in modeled foot coordinate periodicity. 
+% (Array of number, struct) -> (Array of number)
+% returns the cost for muscles violating normalized fiber length ranges
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams                          %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,10 +25,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcFootPositionPeriodicityError(coordinates, experimental)
-difference = coordinates(:, 1) - coordinates(:, end);
-experimentalDifference = max( ...
-    abs(experimental(:, 1) - experimental(:, end)), ...
-    [0.0175; 0.0175; 0.0175; 0.0175; 0.001; 0.001; 0.001]);
-cost = (difference ./ experimentalDifference)';
+function cost = calcMinimumNormalizedFiberLengthMtpDeviationCost( ...
+    modeledValues, params, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.05);
+minNormalizedFiberLengthError = min(modeledValues.normalizedFiberLength, [], 3);
+minNormalizedFiberLengthError(minNormalizedFiberLengthError > ...
+    params.minNormalizedMuscleFiberLength) = 0;
+
+cost = calcDeviationCostTerm(...
+    minNormalizedFiberLengthError, errorCenter, maximumAllowableError);
 end
