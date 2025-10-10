@@ -44,8 +44,14 @@ verifyInputs(inputs); % (struct) -> (None)
 params = finalizeParams(params);
 inputs = finalizeInputs(inputs);
 initialValues = prepareInitialValues(inputs);
-finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
-    params);
+if params.useCasadi
+    [finalValues, inputs] = ...
+        computeNeuralControlOptimizationWithCasadi(initialValues, ...
+        inputs, params);
+else
+    finalValues = computeNeuralControlOptimization(initialValues, ...
+        inputs, params);
+end
 end
 
 % (struct) -> (None)

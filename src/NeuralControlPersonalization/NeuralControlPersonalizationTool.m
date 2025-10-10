@@ -49,9 +49,21 @@ if isstruct(precalInputs)
         optimizedInitialGuess);
 end
 
+originalInputs = inputs;
 [optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
-[synergyWeights, synergyCommands] = findSynergyWeightsAndCommands( ...
-    optimizedValues, inputs, params);
+if params.useCasadi
+    synergyWeights = zeros(inputs.weightMatrixDimensions);
+    synergyWeights(inputs.weightMatrixMap) = optimizedValues.weights;
+    synergyWeights = synergyWeights';
+    synergyCommands = zeros(inputs.numTrials, size(optimizedValues.commandsState, 2), size(optimizedValues.commandsState, 1) / inputs.numTrials);
+    for i = 1 : inputs.numTrials
+        synergyCommands(i, :, :) = resplineDataToNewTime(optimizedValues.commandsState((i - 1) * size(synergyCommands, 3) + 1 : i * size(synergyCommands, 3), :), inputs.collocationTime, inputs.time)';
+    end
+    inputs = restoreInputs(inputs, originalInputs);
+else
+    [synergyWeights, synergyCommands] = findSynergyWeightsAndCommands( ...
+        optimizedValues, inputs, params);
+end
 [synergyWeights, synergyCommands] = normalizeSynergiesByMaximumWeight(...
     synergyWeights, synergyCommands);
 [combinedActivations, ncpActivations] = combineFinalActivations(inputs, ...
@@ -99,4 +111,12 @@ function muscleJointMoments = calcFinalMuscleJointMoments(inputs, ...
 muscleJointMoments = calcMuscleJointMoments(inputs, ...
     activations, normalizedFiberLengths, ...
     normalizedFiberVelocities);
+end
+
+function inputs = restoreInputs(inputs, originalInputs)
+inputs.inverseDynamicsMoments = originalInputs.inverseDynamicsMoments;
+inputs.muscleTendonLength = originalInputs.muscleTendonLength;
+inputs.muscleTendonVelocity = originalInputs.muscleTendonVelocity;
+inputs.mtpActivations = originalInputs.mtpActivations;
+inputs.momentArms = originalInputs.momentArms;
 end
