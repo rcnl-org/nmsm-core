@@ -28,7 +28,13 @@
 
 function resplinedData = resplineDataToNewTime(data, oldTime, newTime)
 % Assume data in Model Personalization orientation
-splineSet = makeGcvSplineSet(oldTime, data', string(1:size(data, 1)));
-resplinedData = evaluateGcvSplines(splineSet, string(1:size(data, 1)), ...
-    newTime)';
+resplinedData = zeros(size(data));
+sizePerTrial = size(data, 1) / size(oldTime, 1);
+for i = 1 : size(oldTime, 1)
+    indicesToUse = (i - 1) * sizePerTrial + 1 : i * sizePerTrial;
+    splineSet = makeGcvSplineSet(oldTime(i, :), data(indicesToUse, :)', ...
+        string(indicesToUse));
+    resplinedData(indicesToUse, :) = evaluateGcvSplines(splineSet, ...
+        string(indicesToUse), newTime(i, :))';
+end
 end

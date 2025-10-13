@@ -45,7 +45,11 @@ end
 prefixes = string([]);
 for i=1:length(files)
     if(~files(i).isdir) && (islogical(includedPrefixes) || contains(files(i).name, includedPrefixes))
-        prefixes(end+1) = files(i).name(1:end-4);
+        % prefixes(end+1) = files(i).name(1:end-4);
+        prefixes(end+1) = includedPrefixes{find( ...
+            cellfun(@(x) contains(files(i).name, x), ...
+            includedPrefixes), 1)};
     end
 end
+prefixes = unique(prefixes);
 end

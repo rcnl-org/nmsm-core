@@ -183,20 +183,24 @@ function inputs = calcCollocationPointTimes(inputs, params)
 rootTime = casadi.collocation_points( ...
     params.numCollocationPerMesh, 'radau');
 rootTime = rootTime(1:end-1);
-meshTime = linspace(inputs.time(1), ...
-    inputs.time(end), ...
-    params.numMeshes + 1);
-meshDuration = mean(diff(meshTime));
-collocationTime = [];
-for i = 1 : length(meshTime) - 1
-    collocationTime(end+1:end+1+length(rootTime)) ...
-        = [meshTime(i), meshTime(i) + meshDuration * rootTime];
+inputs.collocationTime = zeros(size(inputs.time, 1), ...
+    params.numCollocationPerMesh * params.numMeshes + 1);
+for i = 1 : size(inputs.time, 1)
+    meshTime = linspace(inputs.time(i, 1), ...
+        inputs.time(i, end), ...
+        params.numMeshes + 1);
+    meshDuration = mean(diff(meshTime));
+    collocationTime = [];
+    for j = 1 : length(meshTime) - 1
+        collocationTime(end+1:end+1+length(rootTime)) ...
+            = [meshTime(j), meshTime(j) + meshDuration * rootTime];
+    end
+    % inputs.collocationTimeOriginal = collocationTime';
+    % inputs.collocationTimeOriginalWithEnd = inputs.collocationTimeOriginal;
+    % inputs.collocationTimeOriginalWithEnd(end + 1) = ...
+    %     inputs.time(end);
+    collocationTime(end + 1) = inputs.time(i, end);
+    inputs.collocationTime(i, :) = collocationTime;
 end
-% inputs.collocationTimeOriginal = collocationTime';
-% inputs.collocationTimeOriginalWithEnd = inputs.collocationTimeOriginal;
-% inputs.collocationTimeOriginalWithEnd(end + 1) = ...
-%     inputs.time(end);
-inputs.collocationTime = collocationTime;
-inputs.collocationTime(end + 1) = inputs.time(end);
 end
 

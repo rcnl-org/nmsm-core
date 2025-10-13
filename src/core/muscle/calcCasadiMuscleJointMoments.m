@@ -29,7 +29,7 @@
 function muscleJointMoments = calcCasadiMuscleJointMoments(inputs, ...
     activations)
 
-maxIsometricForce = repmat(inputs.maxIsometricForce', 1, ...
+maxIsometricForce = repmat(inputs.maxIsometricForce', inputs.numTrials, ...
     size(activations, 2));
 
 activeForce = activeForceLengthCurve(inputs.normalizedFiberLengths);
@@ -39,7 +39,7 @@ muscleVelocity = forceVelocityCurve(inputs.normalizedFiberVelocities);
 passiveForce = passiveForceLengthCurve(inputs.normalizedFiberLengths);
 
 parallelComponentOfPennationAngle = repmat(cos(inputs.pennationAngle)', ...
-    1, size(activations, 2));
+    inputs.numTrials, size(activations, 2));
 
 if isa(activations, 'casadi.MX')
     muscleJointMoments = casadi.MX.zeros( ...
@@ -49,12 +49,28 @@ else
         size(activeForce, 2));
 end
 
-for i = 1 : size(muscleJointMoments, 1)
+for i = 1 : size(muscleJointMoments, 1) / inputs.numTrials
+    indexBasis = (i - 1) * inputs.numMuscles + 1 : i * inputs.numMuscles;
+    indices = indexBasis;
+    for j = 2 : inputs.numTrials
+        indices = [indices, indexBasis + (j - 1) * inputs.numMuscles * ...
+            size(inputs.inverseDynamicsMoments, 1) / inputs.numTrials];
+    end
     muscleContributions = inputs.momentArms( ...
-        (i - 1) * inputs.numMuscles + 1 : i * inputs.numMuscles, :) .* ...
+        indices, :) .* ...
         maxIsometricForce .* (activations .* activeForce .* ...
         muscleVelocity + passiveForce) .* ...
         parallelComponentOfPennationAngle;
-    muscleJointMoments(i, :) = sum(muscleContributions, 1);
+    if isa(activations, 'casadi.MX')
+        muscleContributionSums = casadi.MX.zeros( ...
+            inputs.numTrials, size(muscleContributions, 2));
+    else
+        muscleContributionSums = zeros( ...
+            inputs.numTrials, size(muscleContributions, 2));
+    end
+    for j = 1 : inputs.numTrials
+        muscleContributionSums(j, :) = sum(muscleContributions((j - 1) * inputs.numMuscles + 1 : j * inputs.numMuscles, :), 1);
+    end
+    muscleJointMoments(i:size(muscleJointMoments, 1) / inputs.numTrials:end, :) = muscleContributionSums;
 end
 end
