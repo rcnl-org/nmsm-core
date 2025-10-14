@@ -57,7 +57,7 @@ if params.useCasadi
     synergyWeights = synergyWeights';
     synergyCommands = zeros(inputs.numTrials, size(optimizedValues.commandsState, 2), size(optimizedValues.commandsState, 1) / inputs.numTrials);
     for i = 1 : inputs.numTrials
-        synergyCommands(i, :, :) = resplineDataToNewTime(optimizedValues.commandsState((i - 1) * size(synergyCommands, 3) + 1 : i * size(synergyCommands, 3), :), inputs.collocationTime, inputs.time)';
+        synergyCommands(i, :, :) = resplineDataToNewTime(optimizedValues.commandsState((i - 1) * size(synergyCommands, 3) + 1 : i * size(synergyCommands, 3), :), inputs.collocationTime(i, :), inputs.time(i, :))';
     end
     inputs = restoreInputs(inputs, originalInputs);
 else
