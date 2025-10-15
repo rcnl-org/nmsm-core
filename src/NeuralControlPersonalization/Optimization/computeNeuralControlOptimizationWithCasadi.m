@@ -106,8 +106,9 @@ optimizer.minimize(objective);
 
 % Apply solver settings
 casadiSettings.detect_simple_bounds = true;
-casadiSettings.ipopt.tol = 1e-6;
+casadiSettings.ipopt.tol = 1e-1;
 casadiSettings.ipopt.constr_viol_tol = 1e-4;
+casadiSettings.ipopt.hessian_approximation = 'limited-memory';
 optimizer.solver('ipopt', casadiSettings);
 
 % Solve problem, catching solver failures if needed
