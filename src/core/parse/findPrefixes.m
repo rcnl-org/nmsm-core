@@ -30,7 +30,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function prefixes = findPrefixes(tree, inputDirectory)
+function prefixes = findPrefixes(tree, inputDirectory, passiveParsing)
+if nargin < 3
+    passiveParsing = false;
+end
 prefixField = getFieldByName(tree, 'trial_prefixes');
 if isstruct(prefixField) && length(prefixField.Text) > 0
     includedPrefixes = strsplit(prefixField.Text, ' ');
@@ -44,7 +47,9 @@ end
 
 prefixes = string([]);
 for i=1:length(files)
-    if(~files(i).isdir) && (islogical(includedPrefixes) || contains(files(i).name, includedPrefixes))
+    if (~files(i).isdir) && passiveParsing
+        prefixes(end+1) = files(i).name(1:end-4);
+    elseif(~files(i).isdir) && (islogical(includedPrefixes) || contains(files(i).name, includedPrefixes))
         % prefixes(end+1) = files(i).name(1:end-4);
         prefixes(end+1) = includedPrefixes{find( ...
             cellfun(@(x) contains(files(i).name, x), ...
