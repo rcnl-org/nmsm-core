@@ -72,7 +72,7 @@ commandsControl = optimizer.variable( ...
     params.numMeshes * params.numCollocationPerMesh + 1);
 
 % Initialize variables
-optimizer.set_initial(weights, 0.01 * ones(size(weights)));
+optimizer.set_initial(weights, 0.1 * ones(size(weights)));
 optimizer.set_initial(commandsState, 1 * ones(size(commandsState)));
 optimizer.set_initial(commandsControl, 0 * ones(size(commandsControl)));
 
