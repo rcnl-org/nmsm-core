@@ -151,7 +151,7 @@ for i = 1:length(timePoints)
     kinematicsReporter.step(state, i);
 end
 [~,name,ext] = fileparts(inputs.motionFileName);
-outfile = strcat(name, ext);
+outfile = strcat("gcp_adjusted_", name, ext);
 if ~exist(fullfile(resultsDirectory, "IKData"), "dir")
     mkdir(fullfile(resultsDirectory, "IKData"))
 end
