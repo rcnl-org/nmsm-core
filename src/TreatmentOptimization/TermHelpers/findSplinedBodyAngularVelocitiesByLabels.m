@@ -1,11 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function initializes the point kinematics and inverse dynamics mex 
-% files if the appropriate mex extention exists. It also clears previous
-% parallel workers 
+% (struct, Array of double, Array of string) -> (Array of number)
 %
-% (Array of string) -> (double)
-% Intializes mex files or clear previous parallel workers 
+% Finds splined body angular velocities given labels.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Spencer Williams, Marleny Vega                               %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,28 +26,24 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function version = initializeMexOrMatlabParallelFunctions(modelFile)
-version = getOpenSimVersion();
-if isequal(mexext, 'mexw64')
-    if version >= 40501
-        pointKinematicsMexWindows40501(modelFile);
-        inverseDynamicsBasedModeledValuesMexWindows40501(modelFile);
-    else
-        pointKinematicsMexWindows40400(modelFile);
-        inverseDynamicsBasedModeledValuesMexWindows40400(modelFile);
-    end
+function experimentalBodyAngularVelocities = ...
+    findSplinedBodyAngularVelocitiesByLabels(term, inputs, time)
+indices = term.internalBodyAxesIndices;
+if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
+    experimentalBodyAngularVelocities = ...
+        inputs.splinedBodyAngularVelocities(:, indices);
+elseif all(size(time) == size(inputs.collocationTimeOriginalWithEnd)) &&...
+        max(abs(time - inputs.collocationTimeOriginalWithEnd)) < 1e-6
+    experimentalBodyAngularVelocities = ...
+        inputs.splinedBodyAngularVelocities(:, indices);
+    experimentalBodyAngularVelocities(end + 1, :) = ...
+        inputs.experimentalBodyAngularVelocities(end, indices);
+elseif length(time) == 2
+    experimentalBodyAngularVelocities = ...
+        inputs.experimentalBodyAngularVelocities([1 end], indices);
+else
+    experimentalBodyAngularVelocities = evaluateGcvSplines( ...
+        inputs.splineBodyAngularVelocities, indices - 1, time);
 end
-clear inverseDynamicsMatlabParallel
-clear pointKinematicsMatlabParallel
-
-clear calcGpopsIntegrand
-clear computeGpopsEndpointFunction
-clear computeGpopsContinuousFunction
-clear calcCasadiIntegrand
-clear computeCasadiSymbolicModelFunction
-clear computeCasadiFiniteDifferenceModelFunction
-clear calcCasadiDynamicConstraint
-clear calcSynergyBasedModeledValues
-clear calcTorqueBasedModeledValues
-clear calcSurrogateModel
 end
