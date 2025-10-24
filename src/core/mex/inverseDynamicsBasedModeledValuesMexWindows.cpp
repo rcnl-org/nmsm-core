@@ -39,20 +39,20 @@
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
-#define numThreads 20 //
+//#define numThreads 20 //
 
 //______________________________________________________________________________
 
-static Model *osimModel[numThreads];
-static State *osimState[numThreads];
-static InverseDynamicsSolver *idSolver[numThreads];
+static vector<Model *> osimModel;
+static vector<State *> osimState;
+static vector<InverseDynamicsSolver *> idSolver;
 static bool modelIsLoaded = false;
+static int numThreads;
 
 void ClearMemory(void){
-    for (int i = 0; i < numThreads; i++){
-		delete osimModel[i];
-		delete idSolver[i];
-	}
+    osimModel.clear();
+    osimState.clear();
+    idSolver.clear();
     modelIsLoaded = false;
     mexPrintf("Cleared memory from inverseDynamics mex file.\n");
 }
@@ -74,7 +74,7 @@ vector<vector<double>> mexArrayToVector(const mxArray *input) {
 
 void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
     mexAtExit(ClearMemory);
-    if (nrhs == 1) {    
+    if (nrhs <= 2) {    
         if (modelIsLoaded == true){
             ClearMemory();
         }
@@ -82,15 +82,20 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
         std::streambuf* oldCoutStreamBuf = std::cout.rdbuf();
 		std::ostringstream strCout;
 		std::cout.rdbuf(strCout.rdbuf());
+        if (nrhs > 1) {
+            numThreads = *(double *) mxGetData(prhs[1]);
+        } else {
+            numThreads = 20;
+        }
         for (int i = 0; i < numThreads; i++){
-			osimModel[i] = new Model(modelName); 
-			osimState[i] = &osimModel[i]->initSystem();
-			idSolver[i] = new InverseDynamicsSolver(*osimModel[i]);
+			osimModel.push_back(new Model(modelName)); 
+			osimState.push_back(&osimModel[i]->initSystem());
+			idSolver.push_back(new InverseDynamicsSolver(*osimModel[i]));
 		}  
 		std::cout.rdbuf(oldCoutStreamBuf);
         modelIsLoaded = true;
     }
-    else if (nrhs > 1) {
+    else if (nrhs > 2) {
         if (modelIsLoaded == false){
             mexErrMsgTxt("!!!No OpenSim model has been loaded!!!\n");
         }   
