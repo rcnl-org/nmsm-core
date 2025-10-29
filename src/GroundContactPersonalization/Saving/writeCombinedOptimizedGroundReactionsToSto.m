@@ -33,8 +33,8 @@ for foot = 1:length(inputs.surfaces)
     models.("model_" + foot) = Model(inputs.surfaces{foot}.model);
 end
 [~,name,ext] = fileparts(inputs.grfFileName);
-outfile = strcat("gcp_adjusted_", name, ext);
-outfileCoP = strcat("gcp_adjusted_", name, "_CoP", ext);
+outfile = strcat("gcp_modeled_", name, ext);
+outfileCoP = strcat("gcp_modeled_", name, "_CoP", ext);
 
 timePoints = inputs.surfaces{1}.time;
 data = zeros(length(timePoints), 9 * length(inputs.surfaces));
