@@ -31,8 +31,8 @@
 function writeExperimentalGroundReactionsNewElectricalCenterToSto( ...
     inputs, resultsDirectory)
 [~, name, ext] = fileparts(inputs.grfFileName);
-outfile = strcat("updated_", name, ext);
-outfileCoP = strcat("updated_", name, "_CoP", ext);
+outfile = strcat("gcp_adjusted", name, ext);
+outfileCoP = strcat("gcp_adjusted", name, "_CoP", ext);
 
 storage = org.opensim.modeling.Storage(inputs.grfFileName);
 [columnNames, time, data] = parseMotToComponents( ...
