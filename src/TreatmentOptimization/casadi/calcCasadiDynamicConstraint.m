@@ -35,6 +35,9 @@ if isempty(collocationCoefficients)
 end
 meshDuration = (values.time(end) - values.time(1)) / inputs.numMeshes;
 
+% Check type of state positions so that dynamics will have the same type.
+% This is an object-oriented programming sort of function, so use this
+% carefully in Matlab.
 if isa(values.statePositions, 'casadi.MX')
     dynamics = casadi.MX.zeros(inputs.numMeshes * ...
         inputs.numCollocationPerMesh * 2, size(values.statePositions, 2));

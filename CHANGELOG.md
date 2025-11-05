@@ -1,9 +1,33 @@
 # Changelog
 
+## v.1.5.0 - 2025-10-02
+
+### Added
+- All tools now check whether the project file is opened and throw a useful error message if it is not opened.
+- The project file now has a startup script that checks the installation status of GPOPS-II and OpenSim.
+- Created `plotJmpResultsFromSettingsFile()` to be in line with plotting functions for other tools.
+- Muscle-Tendon Personalization now saves total, passive, and active muscle forces, along with tendon forces. 
+- `plotMtpResultsFromSettingsFile()` now plots total, passive, and active muscle forces.
+- Treatment Optimization plotting functions have optional arguments `columnsToUse`, `columnNames`, `legend`, `displayRmse`, and `figureGridSize`.
+- `plotTreatmentOptimizationJointAngles()` and `plotTreatmentOptimizationJointVelocities()` have optional argument `useRadians`. 
+- Treatment Optimization has new cost and constraint terms for `synergy_vector_symmetry`.
+- Treatment Optimization has an additional new cost term: `generalized_speed_minimization`.
+- Function arguments have autocomplete for main tool functions and plotting functions. 
+
+### Fixed
+- `plotJmpResultsFromSettingsFile()` now checks for markers in the settings file that are not in the marker file. 
+- Joint Model Personalization GUI now correctly has orientation bounds in radians instead of degrees.
+- Fixed a bug that could prevent Ground Contact Personalization from starting on Windows
+
+### Changed
+- `getPlottingParams()` sets the default plot color to `"default"` for compatibility with Matlab 2025a dark mode. 
+- The `muscle_activation_minimization` cost term in Treatment Optimization allows users to specify the exponent to raise activations to minimize to using `<exponent>`. Default is 2. 
+
+
 ## v.1.4.3 - 2025-07-14
 
 ### Added
-- The Joint Model Personalization GUI tool now allows for selection of markers to be used in a task
+- The Joint Model Personalization GUI tool now allows for selection of markers to be used in a task.
 - The Treatment Optimization GUIs now allow for the trial prefix to be specified in the tool.
 - The `muscle_activation_tracking` cost term supports a `<scale_factor>` to track scaled versions of previous muscle activations. 
 - New Treatment Optimization cost term `synergy_vector_symmetry` keeps two synergy vectors weights' similar. 

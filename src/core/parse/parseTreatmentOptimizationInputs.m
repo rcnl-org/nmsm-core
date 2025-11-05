@@ -226,7 +226,7 @@ end
 end
 
 
-
+% Find left-handed Radau collocation points
 function inputs = calcCasadiCollocationPointTimes(inputs)
 rootTime = casadi.collocation_points( ...
     inputs.numCollocationPerMesh, 'radau');

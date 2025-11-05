@@ -33,6 +33,7 @@
 
 function  params = getTrialIndexes(params, nTrials, TrialNames)
 %---Identify the trial index according to the labels in 'Tasks'
+params.taskNames = unique(params.taskNames);
 trialIndex = cell(1, length(params.taskNames));
 for i=1:nTrials
     for j=1:length(params.taskNames)
