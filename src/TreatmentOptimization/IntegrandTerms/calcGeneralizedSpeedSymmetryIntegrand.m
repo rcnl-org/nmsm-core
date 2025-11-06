@@ -43,7 +43,8 @@ defaultTimeNormalization = true;
 baselineVelocity = velocities(:, 1);
 shiftedVelocity = velocities(:, 2);
 if valueOrAlternate(costTerm, 'apply_half_cycle_shift', true)
-    shiftedVelocity = shiftSignalHalfCycle(shiftedVelocity);
+    shiftedVelocity = shiftSignalHalfCycle(shiftedVelocity, ...
+    values.time);
 end
 cost = shiftedVelocity - baselineVelocity;
 

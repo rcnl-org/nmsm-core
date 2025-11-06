@@ -27,12 +27,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function shifted = shiftSignalHalfCycle(original)
-transform = fft(original);
-magnitude = abs(transform);
-phase = angle(transform);
+function shifted = shiftSignalHalfCycle(original, time)
+% transform = fft(original);
+% magnitude = abs(transform);
+% phase = angle(transform);
+% 
+% phaseShift = pi * 0.98;
+% 
+% shifted = real(ifft(magnitude .* exp(1i * phase * phaseShift)));
 
-phaseShift = pi * 0.98;
+repeatedSignal = [original(1 : end - 1); original; original(2 : end)];
+repeatedTime = [time(1) - time(end : - 1 : 2); time; ...
+    time(2 : end) + time(end)];
 
-shifted = real(ifft(magnitude .* exp(1i * phase * phaseShift)));
+duration = time(end) - time(1);
+timeShift = duration * 0.5;
+shiftedTime = time + timeShift;
+
+shifted = interp1(repeatedTime, repeatedSignal, shiftedTime);
 end

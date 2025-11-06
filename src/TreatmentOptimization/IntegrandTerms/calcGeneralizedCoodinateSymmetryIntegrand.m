@@ -43,7 +43,8 @@ defaultTimeNormalization = true;
 baselinePosition = positions(:, 1);
 shiftedPosition = positions(:, 2);
 if valueOrAlternate(costTerm, 'apply_half_cycle_shift', true)
-    shiftedPosition = shiftSignalHalfCycle(shiftedPosition);
+    shiftedPosition = shiftSignalHalfCycle(shiftedPosition, ...
+    values.time);
 end
 cost = shiftedPosition - baselinePosition;
 

@@ -42,7 +42,7 @@ defaultTimeNormalization = true;
 baselineControl = controls(:, 1);
 shiftedControl = controls(:, 2);
 if valueOrAlternate(costTerm, 'apply_half_cycle_shift', true)
-    shiftedControl = shiftSignalHalfCycle(shiftedControl);
+    shiftedControl = shiftSignalHalfCycle(shiftedControl, values.time);
 end
 cost = shiftedControl - baselineControl;
 
