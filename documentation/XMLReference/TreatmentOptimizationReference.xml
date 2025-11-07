@@ -1,4 +1,4 @@
-<NMSMPipelineDocument Version="1.4.0">
+<NMSMPipelineDocument Version="1.5.0">
 	<DesignOptimizationTool>
 		<!--Directory used for writing results.-->
 		<results_directory>ResultsDir</results_directory>
