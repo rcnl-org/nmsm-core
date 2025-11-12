@@ -31,24 +31,32 @@
 % ----------------------------------------------------------------------- %
 
 function groundReactions = calcFootGroundReactions(springPositions, ...
-    springVelocities, params, bodyLocations)
+    springVelocities, params, bodyLocations, reshapeSpringPositions)
+if nargin < 5
+    reshapeSpringPositions = true;
+end
     
 for i = 1:length(params.contactSurfaces)
     [groundReactions.parentForces{i}, groundReactions.parentMoments{i}] = ...
         calcGroundReactionForcesAndMoments(springPositions.parent{i}, ...
         springVelocities.parent{i}, params.contactSurfaces{i}.parentSpringConstants, ...
-        bodyLocations.midfootSuperior{i}, params.contactSurfaces{i});
+        bodyLocations.midfootSuperior{i}, params.contactSurfaces{i}, ...
+        reshapeSpringPositions);
     [groundReactions.childForces{i}, groundReactions.childMoments{i}] = ...
         calcGroundReactionForcesAndMoments(springPositions.child{i}, ...
         springVelocities.child{i}, params.contactSurfaces{i}.childSpringConstants, ...
-        bodyLocations.midfootSuperior{i}, params.contactSurfaces{i});
+        bodyLocations.midfootSuperior{i}, params.contactSurfaces{i}, ...
+        reshapeSpringPositions);
 end
 end
 function [forces, moments] = calcGroundReactionForcesAndMoments(markerPositions, ...
-    markerVelocities, springConstants, midfootSuperiorPosition, contactSurface)
+    markerVelocities, springConstants, midfootSuperiorPosition, contactSurface, ...
+    reshapeSpringPositions)
 
-markerPositions = reshape(markerPositions, [], 3, size(springConstants, 2));
-markerVelocities = reshape(markerVelocities, [], 3, size(springConstants, 2));
+if reshapeSpringPositions
+    markerPositions = reshape(markerPositions, [], 3, size(springConstants, 2));
+    markerVelocities = reshape(markerVelocities, [], 3, size(springConstants, 2));
+end
 
 for i = 1:size(markerPositions, 1)
 markerKinematics.xPosition = squeeze(markerPositions(i, 1, :))';
@@ -70,7 +78,11 @@ contactSurface.springConstants = springConstants;
     calcModeledHorizontalGroundReactionForces(contactSurface, ...
     contactSurface.beltSpeed, contactSurface.latchingVelocity, markerKinematics, springForces);
 
-task.midfootSuperiorPosition = midfootSuperiorPosition';
+if reshapeSpringPositions
+    task.midfootSuperiorPosition = midfootSuperiorPosition';
+else
+    task.midfootSuperiorPosition = midfootSuperiorPosition;
+end
 [moments(i, 1), moments(i, 2), moments(i, 3)] = ...
     calcModeledGroundReactionMoments(contactSurface, task, markerKinematics, ...
     springForces, i);
