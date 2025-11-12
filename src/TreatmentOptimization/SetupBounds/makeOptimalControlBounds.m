@@ -85,6 +85,14 @@ if inputs.useControlDynamicsFilter
     inputs.maxState = [inputs.maxState, maxControl];
     inputs.minState = [inputs.minState, minControl];
 end
+
+if inputs.useGroundReactionControls
+    minRange = max(inputs.groundReactionControlsMultiple .* ...
+        range(inputs.initialGroundReactionControls), ...
+        inputs.groundReactionControlsMinRange);
+    inputs.maxState = [inputs.maxState, max(inputs.initialGroundReactionControls) + minRange];
+    inputs.minState = [inputs.minState, min(inputs.initialGroundReactionControls) - minRange];
+end
 end
 
 function inputs = makeControlBounds(inputs)

@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function calculates the dynamic constraint for treatment
-% optimization.
+% This function calculates the difference between the ground reactions and 
+% the ground reaction control for the specified load. Loads are split
+% between parent and child bodies.
 %
-% (struct, struct) -> (2D matrix)
-% Returns the dynamic constraint
+% (struct, struct, string) -> (number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,31 +29,26 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function dynamics = calcDynamicConstraint(values, ...
-    params)
-derivatives = [values.stateVelocities, values.controlAccelerations];
-if params.useJerk
-    derivatives = [derivatives, values.controlJerks];
-end
-if params.useControlDynamicsFilter
-    if params.controllerTypes(4)
-        derivatives = [derivatives, (values.userDefinedControlDerivatives - values.userDefinedControls) / params.controlDynamicsFilterConstant];
-    end
-    if params.controllerTypes(3)
-        derivatives = [derivatives, (values.controlMuscleActivationDerivatives - values.controlMuscleActivations) / params.controlDynamicsFilterConstant];
-    end
-    if params.controllerTypes(2)
-        derivatives = [derivatives, (values.controlSynergyActivationDerivatives - values.controlSynergyActivations) / params.controlDynamicsFilterConstant];
-    end
-    if params.controllerTypes(1)
-        derivatives = [derivatives, (values.torqueControlDerivatives - values.torqueControls) / params.controlDynamicsFilterConstant];
-    end
+function [pathTerm, constraintTerm] = ...
+    calcGroundReactionConsistencyPathConstraint( ...
+    constraintTerm, inputs, modeledValues, values)
+if isfield(constraintTerm, 'internalDataIndices')
+    loadName = '';
+else
+    loadName = constraintTerm.load;
+    assert(ismember(loadName, ...
+        inputs.initialGroundReactionControlLabels), loadName + ...
+        " is not a valid load name for ground reaction controls and " + ...
+        "consistency. These load names are based on GRF column " + ...
+        "names and are body-specific: <grf_column_name>_parent or " + ...
+        "<grf_column_name>_child")
 end
 
-dynamics = (params.maxTime - params.minTime) * ...
-    derivatives ./ (params.maxState(1 : size(derivatives, 2)) - ...
-    params.minState(1 : size(derivatives, 2)));
-if size(dynamics, 2) < length(params.maxState)
-    dynamics(:, end + 1 : length(params.maxState)) = 0;
-end
+[controlGroundReaction, constraintTerm] = findDataByLabels( ...
+    constraintTerm, values.controlGroundReactions, ...
+    inputs.initialGroundReactionControlLabels, loadName);
+bodyGroundReaction = modeledValues.groundReactionsBody(:, ...
+    constraintTerm.internalDataIndices);
+
+pathTerm = controlGroundReaction - bodyGroundReaction;
 end

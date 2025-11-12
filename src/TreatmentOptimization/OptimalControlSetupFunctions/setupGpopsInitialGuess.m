@@ -63,6 +63,9 @@ if isfield(inputs, "initialStates")
             states = [states, inputs.initialTorqueControls];
         end
     end
+    if inputs.useGroundReactionControls
+        states = [states, inputs.initialGroundReactionControls];
+    end
     guess.phase.state = scaleToBounds(states, ...
         inputs.maxState, inputs.minState);
     if strcmp(inputs.solverType, 'casadi')
@@ -122,6 +125,9 @@ else
             end
             stateGuess = [stateGuess, stateTorqueControls];
         end
+    end
+    if inputs.useGroundReactionControls
+        stateGuess = [stateGuess, inputs.initialGroundReactionControls];
     end
 
     guess.phase.state = scaleToBounds(stateGuess, inputs.maxState, ...
