@@ -1,4 +1,4 @@
-<NMSMPipelineDocument Version="1.4">
+<NMSMPipelineDocument Version="1.5.0">
 	<MuscleTendonPersonalizationTool>
 		<!--Name of the directory where results are written. Be default this is the directory in which the setup file is be  executed.-->
 		<results_directory>MTPResults</results_directory>
