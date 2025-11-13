@@ -32,7 +32,7 @@ splinedSetup = applyPreSpline(setup, collocationPointTimes);
 end
 
 function collocationPointTimes = findCollocationPointsForSetup(tempSetup)
-output = gpops2(tempSetup);
+[~, output] = evalc('gpops2(tempSetup)');
 collocationPointTimes = output.result.solution.phase.timeRadau;
 end
 
