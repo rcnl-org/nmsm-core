@@ -32,6 +32,7 @@ function [indices, term] = findSynergyIndexByLabel(term, inputs, ...
 if isfield(term, 'internalSynergyIndices')
     indices = term.internalSynergyIndices;
 else
+    synergyNames = string(synergyNames);
     indices = zeros(1, length(synergyNames));
     for name = 1 : length(synergyNames)
         synergyName = synergyNames(name);
