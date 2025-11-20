@@ -30,15 +30,27 @@
 
 function values = makeGpopsValuesAsStruct(phase, inputs)
 if isfield(phase, 'time')
-    values.time = scaleToOriginal(phase.time, inputs.maxTime, ...
-        inputs.minTime);
+    if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+        values.time = phase.time;
+    else
+        values.time = scaleToOriginal(phase.time, inputs.maxTime, ...
+            inputs.minTime);
+    end
 else
     values.time = inputs.collocationTimeOriginalWithEnd;
 end
-state = scaleToOriginal(phase.state, ones(size(phase.state, 1), 1) .* ...
-    inputs.maxState, ones(size(phase.state, 1), 1) .* inputs.minState);
-control = scaleToOriginal(phase.control, ones(size(phase.control, 1), 1) .* ...
-    inputs.maxControl, ones(size(phase.control, 1), 1) .* inputs.minControl);
+if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+    state = phase.state;
+else
+    state = scaleToOriginal(phase.state, ones(size(phase.state, 1), 1) .* ...
+        inputs.maxState, ones(size(phase.state, 1), 1) .* inputs.minState);
+end
+if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+    control = phase.control;
+else
+    control = scaleToOriginal(phase.control, ones(size(phase.control, 1), 1) .* ...
+        inputs.maxControl, ones(size(phase.control, 1), 1) .* inputs.minControl);
+end
 values.statePositions = getCorrectStates( ...
     state, 1, length(inputs.statesCoordinateNames));
 values.stateVelocities = getCorrectStates( ...
@@ -120,8 +132,12 @@ if strcmp(inputs.toolName, "TrackingOptimization")
                     size(inputs.synergyWeights, 1), ...
                     size(inputs.synergyWeights, 2));
             end
-            parameters = scaleToOriginal(phase.parameter(1,:), ...
-                inputs.maxParameter, inputs.minParameter);
+            if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+                parameters = phase.parameter(1,:);
+            else
+                parameters = scaleToOriginal(phase.parameter(1,:), ...
+                    inputs.maxParameter, inputs.minParameter);
+            end
             values.synergyWeights(inputs.synergyWeightsIndices) = ...
                 parameters(1 : length(inputs.synergyWeightsIndices));
         end
@@ -142,8 +158,12 @@ if strcmp(inputs.toolName, "DesignOptimization")
                     size(inputs.synergyWeights, 1), ...
                     size(inputs.synergyWeights, 2));
             end
-            parameters = scaleToOriginal(phase.parameter(1,:), ...
-                inputs.maxParameter, inputs.minParameter);
+            if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+                parameters = phase.parameter(1,:);
+            else
+                parameters = scaleToOriginal(phase.parameter(1,:), ...
+                    inputs.maxParameter, inputs.minParameter);
+            end
             values.synergyWeights(inputs.synergyWeightsIndices) = ...
                 parameters(1 : length(inputs.synergyWeightsIndices));
             counter = length(inputs.synergyWeightsIndices) + 1;
@@ -152,8 +172,12 @@ if strcmp(inputs.toolName, "DesignOptimization")
 end
 if isfield(inputs, 'userDefinedVariables') && ...
         ~isempty(inputs.userDefinedVariables)
-    parameters = scaleToOriginal(phase.parameter(1,:), ...
-        inputs.maxParameter, inputs.minParameter);
+    if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+        parameters = phase.parameter(1,:);
+    else
+        parameters = scaleToOriginal(phase.parameter(1,:), ...
+            inputs.maxParameter, inputs.minParameter);
+    end
     for i = 1:length(inputs.userDefinedVariables)
         values.parameters.(inputs.userDefinedVariables{i}.type) ...
             = parameters(counter : counter + ...

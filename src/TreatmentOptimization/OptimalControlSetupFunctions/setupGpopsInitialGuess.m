@@ -63,15 +63,23 @@ if isfield(inputs, "initialStates")
             states = [states, inputs.initialTorqueControls];
         end
     end
-    guess.phase.state = scaleToBounds(states, ...
-        inputs.maxState, inputs.minState);
+    if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+        guess.phase.state = states;
+    else
+        guess.phase.state = scaleToBounds(states, ...
+            inputs.maxState, inputs.minState);
+    end
     if strcmp(inputs.solverType, 'casadi')
         guess.phase.time = scaleToBounds( ...
             inputs.collocationTimeOriginalWithEnd, inputs.maxTime, ...
             inputs.minTime);
     else
-        guess.phase.time = scaleToBounds(inputs.initialTime, ...
-            inputs.maxTime, inputs.minTime);
+        if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+            guess.phase.time = inputs.initialTime;
+        else
+            guess.phase.time = scaleToBounds(inputs.initialTime, ...
+                inputs.maxTime, inputs.minTime);
+        end
     end
 else
     stateJointAngles = subsetDataByCoordinates( ...
@@ -124,15 +132,23 @@ else
         end
     end
 
-    guess.phase.state = scaleToBounds(stateGuess, inputs.maxState, ...
-        inputs.minState);
+    if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+        guess.phase.state = stateGuess;
+    else
+        guess.phase.state = scaleToBounds(stateGuess, inputs.maxState, ...
+            inputs.minState);
+    end
     if strcmp(inputs.solverType, 'casadi')
         guess.phase.time = scaleToBounds( ...
             inputs.collocationTimeOriginalWithEnd, inputs.maxTime, ...
             inputs.minTime);
     else
-        guess.phase.time = scaleToBounds(inputs.initialTime, ...
-            inputs.maxTime, inputs.minTime);
+        if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+            guess.phase.time = inputs.initialTime;
+        else
+            guess.phase.time = scaleToBounds(inputs.initialTime, ...
+                inputs.maxTime, inputs.minTime);
+        end
     end
 end
 end
@@ -284,8 +300,12 @@ else
         end
     end
 end
-guess.phase.control = scaleToBounds(controls, inputs.maxControl, ...
-    inputs.minControl);
+if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+    guess.phase.control = controls;
+else
+    guess.phase.control = scaleToBounds(controls, inputs.maxControl, ...
+        inputs.minControl);
+end
 end
 
 function [inputs, guess] = setupInitialParametersGuess(inputs, guess)
@@ -316,8 +336,11 @@ for i = 1:length(inputs.userDefinedVariables)
         inputs.userDefinedVariables{i}.initial_values];
 end
 if isfield(guess, "parameter")
-    guess.parameter = scaleToBounds(guess.parameter, inputs.maxParameter, ...
-        inputs.minParameter);
+
+    if ~isfield(inputs, 'gpops') || strcmpi(inputs.gpops.scaleMethods, 'none')
+        guess.parameter = scaleToBounds(guess.parameter, inputs.maxParameter, ...
+            inputs.minParameter);
+    end
     guess.phase.parameter = guess.parameter;
 end
 end

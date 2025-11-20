@@ -25,7 +25,11 @@
 % ----------------------------------------------------------------------- %
 
 function [setup, inputs] = convertToGpopsInputs(inputs, params)
-bounds = setupTreatmentOptimizationBounds(inputs, params);
+if isfield(inputs, 'gpops') && ~strcmpi(inputs.gpops.scaleMethods, 'none')
+    bounds = setupUnscaledTreatmentOptimizationBounds(inputs, params);
+else
+    bounds = setupTreatmentOptimizationBounds(inputs, params);
+end
 [inputs, guess] = setupGpopsInitialGuess(inputs);
 setup = setupGpopsSettings(inputs, ...
     bounds, guess, params, ...

@@ -38,8 +38,12 @@ end
 
 function setup = applyPreSpline(setup, collocationPointTimes)
 setup.auxdata.collocationTimeBound = collocationPointTimes;
-time = scaleToOriginal(collocationPointTimes, setup.auxdata.maxTime, ...
-    setup.auxdata.minTime);
+if isfield(setup.auxdata, 'gpops') && ~strcmpi(setup.auxdata.gpops.scaleMethods, 'none')
+    time = collocationPointTimes;
+else
+    time = scaleToOriginal(collocationPointTimes, setup.auxdata.maxTime, ...
+        setup.auxdata.minTime);
+end
 setup.auxdata.collocationTimeOriginal = time;
 
 % The 'spline' variables store GCV spline objects that can be evaluated at
