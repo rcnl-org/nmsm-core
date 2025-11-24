@@ -39,4 +39,10 @@ for i = 1 : length(fields)
         endpointStruct.(fields{i}) = currentTerm;
     end
 end
+if contains("synergyWeights", fieldnames(continuousStruct))
+    endpointStruct.synergyWeights = continuousStruct.synergyWeights;
+end
+if contains("parameters", fieldnames(continuousStruct))
+    endpointStruct.parameters = continuousStruct.parameters;
+end
 end
