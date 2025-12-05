@@ -109,7 +109,7 @@ end
 % taskFootModel.print(surface.model);
 
 % Choose foot model for current run
-surface.model = "footModelSpheresHeight_" + surfaceNumber + ".osim";
+surface.model = "footModelSpheres_" + surfaceNumber + ".osim";
 % surface.model = "footModelSpheres_" + surfaceNumber + ".osim";
 taskFootModel = Model(surface.model);
 surface.numSpringMarkers = findNumSpringMarkers(surface.model);
