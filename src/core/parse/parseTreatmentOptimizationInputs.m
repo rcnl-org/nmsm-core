@@ -35,6 +35,8 @@ inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
 inputs = parseController(tree, inputs);
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs = parseOptimalControlSolverSettings(tree, inputs);
+inputs = buildMeyerFregly2016Muscle(inputs);   % NEW
+inputs = buildMeyerFregly2016Force(inputs);   % NEW
 inputs.costTerms = parseRcnlCostTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet'));
 inputs.costTerms = splitListTerms(inputs.costTerms);
@@ -91,7 +93,7 @@ inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = parseControllerType(tree);
 inputs = parseModel(tree, inputs);
-[~, state] = Model(inputs.model);
+state = inputs.model.initSystem();   
 inputs.mass = inputs.model.getTotalMass(state);
 inputs.normalizeCostByType = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, 'normalize_cost_by_term_type', false));
@@ -211,3 +213,125 @@ for i = 1 : length(terms)
     end
 end
 end
+
+
+function input = buildMeyerFregly2016Muscle(input)
+% Build MeyerFregly2016Muscle objects matching the NMSM parameters
+% without modifying input.model. Store them in input.MFMuscles
+
+import org.opensim.modeling.*
+origModel = input.model;
+forces = origModel.getForceSet();
+
+muscleNames = cellstr(input.muscleNames);             
+nMuscles = numel(muscleNames);
+MFMuscles = cell(1, nMuscles);
+
+for i = 1:nMuscles
+    thisMuscle  = muscleNames{i};
+    oldMuscle = Millard2012EquilibriumMuscle.safeDownCast(forces.get(thisMuscle));
+
+    % Create new MeyerFregly2016Muscle
+    muscle = MeyerFregly2016Muscle();
+    muscle.setName(thisMuscle);
+
+    % Parameters from NMSM inputs
+    muscle.set_max_isometric_force(input.maxIsometricForce(i));
+    muscle.set_optimal_fiber_length(input.optimalFiberLength(i));
+    muscle.set_tendon_slack_length(input.tendonSlackLength(i));
+    muscle.set_pennation_angle_at_optimal(input.pennationAngle(i));
+
+    muscle.set_max_contraction_velocity( ...
+        oldMuscle.getMaxContractionVelocity());
+    muscle.set_activation_time_constant( ...
+        oldMuscle.getActivationTimeConstant());
+    muscle.set_deactivation_time_constant( ...
+        oldMuscle.getDeactivationTimeConstant());
+    muscle.set_fiber_damping( ...
+        oldMuscle.getFiberDamping());
+
+    muscle.set_ignore_tendon_compliance(false);
+    muscle.set_ignore_activation_dynamics(false);
+    muscle.set_ignore_passive_fiber_force(false);
+
+    MFMuscles{i} = muscle;
+end
+
+input.MFMuscles = MFMuscles;
+end
+
+
+function inputs = buildMeyerFregly2016Force(inputs)
+% Build MeyerFregly2016Force contact springs using information in 
+% inputs.contactSurfaces and store in a *separate* model
+% without changing inputs.model
+
+import org.opensim.modeling.*
+
+% Make a copy of the original model
+origModel = inputs.model;
+modelWithContact = Model(origModel);
+
+% Loop over contact surfaces 
+for i = 1:numel(inputs.contactSurfaces)
+    contactSurface = inputs.contactSurfaces{i};
+
+    parentIdx = [];
+    childIdx  = [];
+
+    for j = 1:numel(contactSurface.springs)
+        spring = contactSurface.springs{j};
+
+        parentBody = modelWithContact.getBodySet().get(char(spring.parentBody));
+
+        springName = char(spring.name);
+        location = spring.location(:);
+
+        % Create Station 
+        station = Station(parentBody, Vec3(location(1), location(2), location(3)));
+        station.setName(springName);
+        modelWithContact.addComponent(station);
+
+        % Create MeyerFregly2016Force
+        MFforce = MeyerFregly2016Force();
+        MFforce.setName(springName);
+        MFforce.set_stiffness(spring.springConstant);
+        MFforce.set_spring_resting_length(contactSurface.restingSpringLength);
+        MFforce.set_dynamic_friction(contactSurface.dynamicFrictionCoefficient);
+        MFforce.set_viscous_friction(contactSurface.viscousFrictionCoefficient);
+        MFforce.set_dissipation(contactSurface.dampingFactor);
+        MFforce.set_latch_velocity(contactSurface.latchingVelocity);
+        modelWithContact.addForce(MFforce);
+
+        % Connect socket to the station
+        mfInModel = MeyerFregly2016Force.safeDownCast( ...
+            modelWithContact.updForceSet().get(springName));
+        mfInModel.connectSocket_station(station);
+
+        % record parent vs child indices
+        if strcmp('calcn_l', spring.parentBody)
+            parentIdx(end+1) = j;   %#ok<AGROW>
+        else
+            childIdx(end+1) = j;    %#ok<AGROW>
+        end
+
+    end
+
+    contactSurface.parentSpringIndices = parentIdx;
+    contactSurface.childSpringIndices  = childIdx;
+    inputs.contactSurfaces{i} = contactSurface;
+
+end
+
+modelWithContact.finalizeConnections();
+modelWithContact.initSystem();
+
+newModelFileName = 'KickingModel_MeyerFregly2016.osim';
+modelWithContact.print(newModelFileName);
+
+% Store separately, do NOT overwrite inputs.model
+inputs.contactModelFileName = newModelFileName;
+inputs.contactModel = modelWithContact;
+end
+
+
