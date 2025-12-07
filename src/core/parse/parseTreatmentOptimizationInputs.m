@@ -93,7 +93,7 @@ inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = parseControllerType(tree);
 inputs = parseModel(tree, inputs);
-state = inputs.model.initSystem();   
+[~, state] = Model(inputs.model);
 inputs.mass = inputs.model.getTotalMass(state);
 inputs.normalizeCostByType = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, 'normalize_cost_by_term_type', false));

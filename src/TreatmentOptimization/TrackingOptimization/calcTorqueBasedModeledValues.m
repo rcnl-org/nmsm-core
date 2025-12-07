@@ -79,36 +79,41 @@ appliedLoads = [zeros(length(values.time), ...
     inputs.model.getForceSet().getMuscles().getSize()) ...
     coordinateLoads];
 
+if isfield(inputs, 'contactModel') && ~isempty(inputs.contactModel)
+    % Build OpenSim states
+    persistent state0 
+    global osimModel osimStates
+    import org.opensim.modeling.*
 
-% Build OpenSim states
-persistent state0 
-if isempty(state0)
-    % Only initialize the system once
-    state0 = inputs.contactModel.initSystem();
-end
-global osimStates 
-import org.opensim.modeling.*
-osimModel = inputs.contactModel; 
-osimStates = cell(length(values.time), 1);
+    osimModel = inputs.contactModel; 
+    osimStates = cell(length(values.time), 1);
 
-coordSet = osimModel.getCoordinateSet();
-tic
-for i = 1:length(values.time)
-    % Create a copy of the pre-initialized state
-    state = State(state0);
-    
-    for j = 1:length(inputs.coordinateNames)
-        coordName = inputs.coordinateNames{j};
-        qVal = values.positions(i, j);
-        uVal = values.velocities(i, j);
-        coord = coordSet.get(coordName);
-        coord.setValue(state,  qVal);
-        coord.setSpeedValue(state, uVal);
+    if isempty(state0)
+        % Only initialize the system once
+        state0 = inputs.contactModel.initSystem();
     end
-    osimStates{i} = state;
-end
-% fprintf('Built %d states in %.3f s\n', i, toc);
 
+    coordSet = osimModel.getCoordinateSet();
+    tic
+    for i = 1:length(values.time)
+        % Create a copy of the pre-initialized state
+        state = State(state0);
+        for j = 1:length(inputs.coordinateNames)
+            coordName = inputs.coordinateNames{j};
+            qVal = values.positions(i, j);
+            uVal = values.velocities(i, j);
+            coord = coordSet.get(coordName);
+            coord.setValue(state,  qVal);
+            coord.setSpeedValue(state, uVal);
+        end
+        osimStates{i} = state;
+    end
+    % fprintf('Built %d states in %.3f s\n', i, toc);
+% else
+%     global osimModel osimStates   
+%     osimModel  = [];
+%     osimStates = [];
+end
 
 if ~isempty(inputs.contactSurfaces)
     groundReactions = calcFootGroundReactions(springPositions, ...
