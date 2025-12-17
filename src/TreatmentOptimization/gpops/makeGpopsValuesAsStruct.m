@@ -110,7 +110,7 @@ else
         controlIndex - 1 + length(inputs.torqueControllerCoordinateNames));
 end
 
-
+counter = 1;
 if strcmp(inputs.toolName, "TrackingOptimization")
     if inputs.controllerTypes(2)
         values.synergyWeights = inputs.synergyWeights;
@@ -124,6 +124,7 @@ if strcmp(inputs.toolName, "TrackingOptimization")
                 inputs.maxParameter, inputs.minParameter);
             values.synergyWeights(inputs.synergyWeightsIndices) = ...
                 parameters(1 : length(inputs.synergyWeightsIndices));
+            counter = length(inputs.synergyWeightsIndices) + 1;
         end
     end
 end
@@ -133,7 +134,6 @@ if strcmp(inputs.toolName, "VerificationOptimization")
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
-    counter = 1;
     if inputs.controllerTypes(2)
         values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
