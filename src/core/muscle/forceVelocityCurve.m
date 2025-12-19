@@ -30,12 +30,12 @@
 function normalizedForce = forceVelocityCurve(...
     normalizedMuscleFiberVelocity)
 
-d1 = -12.4090551101489;
-d2 = 9.35818070443882;
-d3 = 7.93116233095206;
-d4 = 2.70637350085154;
-d5 = -0.274108493130008;
-d6 = 8.03512618783281;
+d1 = -32.51401019139919;
+d2 = 22.160392466960214;
+d3 = 18.7932134796918;
+d4 = 6.320952269683997;
+d5 = -0.27671677680513945;
+d6 = 8.053304562566995;
 normalizedForce = d1 + d2 * atan(d3 + d4 * atan(d5 + d6 * ...
     normalizedMuscleFiberVelocity));
 end
