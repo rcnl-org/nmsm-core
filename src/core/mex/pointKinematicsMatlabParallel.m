@@ -78,8 +78,9 @@ for j = 1 + (worker - 1) * ceil(numPts / numWorkers) : min(worker * ceil(numPts 
     osimState.setTime(time(j,1));
     for k=1:size(coordinateNames,2)
         if ~osimModel.getCoordinateSet.get(coordinateNames{k}).get_locked
+            %
             osimModel.getCoordinateSet.get(coordinateNames{k}). ...
-                setValue(osimState,jointAngles(j,k));
+                setValue(osimState,jointAngles(j,k), false);
             osimModel.getCoordinateSet.get(coordinateNames{k}). ...
                 setSpeedValue(osimState,jointVelocities(j,k));
         end
