@@ -72,18 +72,12 @@ if inputs.controllerTypes(2)
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
 end
-for i = 1:length(inputs.userDefinedVariables)
-    lower = -0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
-    upper = 0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
-    if ~isfield(bounds, "parameter") || ...
-            ~isfield(bounds.parameter, "lower")
-        bounds.parameter.lower = lower;
-        bounds.parameter.upper = upper;
-    else
-        bounds.parameter.lower = [bounds.parameter.lower, ...
-            lower];
-        bounds.parameter.upper = [bounds.parameter.upper, ...
-            upper];
+if ~isfield(bounds, 'parameter')
+    for i = 1:length(inputs.userDefinedVariables)
+        lower = -0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
+        upper = 0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
+            bounds.parameter.lower = lower;
+            bounds.parameter.upper = upper;
     end
 end
 end
