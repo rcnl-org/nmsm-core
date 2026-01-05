@@ -29,6 +29,12 @@
 function printUserDefinedVariablesToXml(solution, inputs)
 if isfield(inputs, 'userDefinedVariables')
     counter = 1;
+    if inputs.controllerTypes(2) && inputs.optimizeSynergyVectors
+        for i = 1 : length(inputs.synergyGroups)
+            counter = counter + inputs.synergyGroups{i}.numSynergies * ...
+                length(inputs.synergyGroups{i}.muscleNames);
+        end
+    end
     for i = 1:length(inputs.userDefinedVariables)
         numParameters = length(inputs.userDefinedVariables{i}.initial_values);
         parameterResults = scaleToOriginal( ...
