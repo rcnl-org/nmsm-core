@@ -59,7 +59,7 @@ if strcmpi(getTextFromField(getFieldByNameOrAlternate( ...
     inputs.synergyExtrapolation = getSynergyExtrapolationParameters(tree, ...
         inputs.model, inputs);
     inputs.synergyExtrapolation = getTrialIndexes( ...
-        inputs.synergyExtrapolation, size(inputs.emgData, 1), inputs.prefixes);
+        inputs.synergyExtrapolation, size(inputs.emgData, 1), inputs.trialNames);
 end
 inputs = reorderPreprocessedDataByMuscleNames(inputs, inputs.muscleNames);
 if ~isfield(inputs, 'emgSplines')
@@ -71,6 +71,7 @@ end
 function inputs = parseEmgData(tree, inputs, dataDirectory)
 emgDataFileNames = findFileListFromPrefixList( ...
     fullfile(dataDirectory, "EMGData"), inputs.prefixes);
+[~, inputs.trialNames, ~] = fileparts(emgDataFileNames);
 collectedEmgGroupNames = parseSpaceSeparatedList(tree, 'collected_emg_channel_muscle_groups');
 [inputs.fullEmgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
 [~, ~, collectedEmgGroupNamesMembers] = intersect(collectedEmgGroupNames, inputs.emgDataColumnNames, 'stable');
@@ -130,6 +131,22 @@ output.isIncluded(6) = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, ...
     "optimize_tendon_slack_lengths", true));
 output.costTerms = parseRcnlCostTermSet(tree.RCNLCostTermSet.RCNLCostTerm);
+maxNormalizedMuscleFiberLength = getFieldByNameOrAlternate(tree, ...
+    'max_normalized_muscle_fiber_length', 1.05);
+if(isstruct(maxNormalizedMuscleFiberLength))
+    output.maxNormalizedMuscleFiberLength = ...
+        str2double(maxNormalizedMuscleFiberLength.Text);
+else
+    output.maxNormalizedMuscleFiberLength = maxNormalizedMuscleFiberLength;
+end
+minNormalizedMuscleFiberLength = getFieldByNameOrAlternate(tree, ...
+    'min_normalized_muscle_fiber_length', 0.75);
+if(isstruct(minNormalizedMuscleFiberLength))
+    output.minNormalizedMuscleFiberLength = ...
+        str2double(minNormalizedMuscleFiberLength.Text);
+else
+    output.minNormalizedMuscleFiberLength = minNormalizedMuscleFiberLength;
+end
 end
 
 % (struct) -> (struct)

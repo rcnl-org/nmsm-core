@@ -20,7 +20,8 @@ function [SpringPos, SpringVel] = pointKinematicsMatlab(time,q,qp,SpringMat,Spri
         osimState.setTime(time(j,1));
         for k=1:size(IKLabels,2)
             if ~osimModel.getCoordinateSet.get(IKLabels{k}).get_locked
-                osimModel.getCoordinateSet.get(IKLabels{k}).setValue(osimState,q(j,k));
+                % 
+                osimModel.getCoordinateSet.get(IKLabels{k}).setValue(osimState,q(j,k), false);
                 osimModel.getCoordinateSet.get(IKLabels{k}).setSpeedValue(osimState,qp(j,k));
             end
         end

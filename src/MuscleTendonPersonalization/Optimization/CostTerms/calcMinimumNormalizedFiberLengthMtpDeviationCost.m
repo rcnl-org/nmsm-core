@@ -1,13 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function pulls the files from the directory given as the input
-% starting with 1.sto, 2.sto and continuing to n.sto and stops when the
-% file cannot be found in the directory. These files are then organized
-% into a 3D matrix with dimensions matching: (numFrames, numTrials,
-% numMuscles)
-%
-% (Array of string) -> (3D matrix of number)
-% returns a 3D matrix of the loaded data trials
+% (Array of number, struct) -> (Array of number)
+% returns the cost for muscles violating normalized fiber length ranges
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -17,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -31,15 +25,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function files = findFileListFromPrefixList(directory, prefixes)
-files = string([]);
-for i=1:length(prefixes)
-    temp = findFullFileFromPrefix(directory, prefixes(i));
-    if(isempty(temp))
-        throw(MException('', "unable to find file with prefix " + ...
-            prefixes(i) + " in directory " + strrep(directory, '\','\\')))
-    end
-    files = [files, temp];
-end
-end
+function cost = calcMinimumNormalizedFiberLengthMtpDeviationCost( ...
+    modeledValues, params, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.05);
+minNormalizedFiberLengthError = min(modeledValues.normalizedFiberLength, [], 3);
+minNormalizedFiberLengthError(minNormalizedFiberLengthError > ...
+    params.minNormalizedMuscleFiberLength) = 0;
 
+cost = calcDeviationCostTerm(...
+    minNormalizedFiberLengthError, errorCenter, maximumAllowableError);
+end
