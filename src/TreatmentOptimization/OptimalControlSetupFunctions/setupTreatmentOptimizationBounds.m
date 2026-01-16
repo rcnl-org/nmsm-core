@@ -73,11 +73,13 @@ if inputs.controllerTypes(2)
     end
 end
 if ~isfield(bounds, 'parameter')
+    bounds.parameter.lower = [];
+    bounds.parameter.upper = [];
     for i = 1:length(inputs.userDefinedVariables)
         lower = -0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
         upper = 0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
-            bounds.parameter.lower = lower;
-            bounds.parameter.upper = upper;
+        bounds.parameter.lower = [bounds.parameter.lower lower];
+        bounds.parameter.upper = [bounds.parameter.upper upper]; 
     end
 end
 end
