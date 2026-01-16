@@ -1,5 +1,11 @@
 # Changelog
 
+## v.1.5.1 - 2026-01-16
+
+### Fixed
+- The OpenSim GUI no longer labels constraint terms as using "synergy_group"
+- The OpenSim GUI now correctly parses cost and constraint terms with the "synergy" component type.
+
 ## v.1.5.0 - 2026-01-06
 
 ### Added
