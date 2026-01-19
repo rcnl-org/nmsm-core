@@ -60,7 +60,7 @@ end
 if isfield(options, "useRadians")
     useRadians = options.useRadians;
 else
-    useRadians = 0;
+    useRadians = 1;
 end
 if isfield(options, "showRmse")
     showRmse = options.showRmse;
@@ -75,7 +75,7 @@ if ~useRadians
 end
 % Resample tracked data to experimental for calculating RMSE
 tracked = resampleTrackedData(tracked, results);
-yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians);
+yLimits = makeJointAccelerationsYLimits(tracked, results, model, useRadians);
 
 % Allow only plot certain column names from the input files
 if isfield(options, "columnsToUse")
@@ -98,7 +98,7 @@ if isfield(options, "columnNames")
     end
 end
 
-tileFigure = makeJointAnglesFigure(params, options, tracked, useRadians);
+tileFigure = makeJointAccelerationsFigure(params, options, tracked, useRadians);
 figureSize = tileFigure.GridSize(1)*tileFigure.GridSize(2);
 subplotNumber = 1;
 titleStrings = makeSubplotTitles(tracked, results, showRmse);
@@ -111,7 +111,7 @@ end
 for i=1:numel(tracked.labels)
     % If we exceed the specified figure size, create a new figure
     if subplotNumber > figureSize
-        makeJointAnglesFigure(params, options, tracked, useRadians);
+        makeJointAccelerationsFigure(params, options, tracked, useRadians);
         subplotNumber = 1;
     end
     nexttile(subplotNumber);
@@ -163,7 +163,7 @@ for i = 1 : size(tracked.data, 2)
 end
 end
 
-function tileFigure = makeJointAnglesFigure(params, options, tracked, useRadians)
+function tileFigure = makeJointAccelerationsFigure(params, options, tracked, useRadians)
 if isfield(options, "figureGridSize")
     figureWidth = options.figureGridSize(1);
     figureHeight = options.figureGridSize(2);
@@ -188,7 +188,7 @@ end
 set(gcf, color=params.plotBackgroundColor)
 end
 
-function yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians)
+function yLimits = makeJointAccelerationsYLimits(tracked, results, model, useRadians)
 for i = 1 : numel(tracked.labels)
     maxData = [];
     minData = [];

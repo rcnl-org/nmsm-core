@@ -75,30 +75,13 @@ end
 
 model = Model(modelFileName);
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
-% Results files should be states files, so we only take the last half of
-% the file where the velocities are.
-for j = 1 : numel(results.data)
-    results.data{j} = results.data{j}(:, size(results.data{j}, 2)/2+1:end);
-    results.labels{j} = results.labels{j}(1:size(results.labels{j}, 2)/2);
-end
-
-% Create tracked velocities
-trackedDataSpline = makeGcvSplineSet(tracked.time, ...
-    tracked.data, tracked.labels);
-tracked.data = evaluateGcvSplines(trackedDataSpline, tracked.labels, ...
-    tracked.time, 1);
 
 % Reorder labels
-for j = 1 : numel(results.data)
-    [~, ~, indices] = intersect(results.labels{1}, results.labels{j}, 'stable');
-    results.data{j}(:, 1:length(indices)) = results.data{j}(:,indices);
-    results.labels{j}(1:length(indices)) = results.labels{j}(indices);
-end
-
-% Only use the coordinates in the states.
-[~, ~, trackedIndicesToUse] = intersect(results.labels{1}, tracked.labels, 'stable');
-tracked.labels = tracked.labels(trackedIndicesToUse);
-tracked.data = tracked.data(:, trackedIndicesToUse);
+% for j = 1 : numel(results.data)
+%     [~, ~, indices] = intersect(results.labels{1}, results.labels{j}, 'stable');
+%     results.data{j}(:, 1:length(indices)) = results.data{j}(:,indices);
+%     results.labels{j}(1:length(indices)) = results.labels{j}(indices);
+% end
 
 if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);
