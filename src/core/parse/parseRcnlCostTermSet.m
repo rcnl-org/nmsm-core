@@ -67,6 +67,8 @@ for term = 1:length(tree)
                 contents = true;
             elseif strcmpi(contents, "false")
                 contents = false;
+            elseif strcmpi(termElements{element}, "sequence")
+                % Keep contents as-is if a rotation sequence
             elseif ~isnan(str2double(contents))
                 contents = str2double(contents);
             elseif any(isspace(convertStringsToChars(contents)))
