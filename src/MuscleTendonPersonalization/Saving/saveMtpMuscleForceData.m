@@ -35,20 +35,6 @@ else
     results = resultsStruct.results;
 end
 
-% activeForce = activeForceLengthCurve(results.normalizedFiberLength);
-% 
-% muscleVelocity = forceVelocityCurve(results.normalizedFiberVelocity);
-% 
-% passiveMuscleForce = passiveForceLengthCurve(results.normalizedFiberLength) .* ...
-%     mtpInputs.maxIsometricForce;
-% 
-% activeMuscleForce = mtpInputs.maxIsometricForce .* ...
-%     (results.muscleActivations .* activeForce .* muscleVelocity);
-% 
-% totalMuscleForce = passiveMuscleForce + activeMuscleForce;
-% 
-% tendonForce = totalMuscleForce .* cos(mtpInputs.pennationAngle);
-
 [activeMuscleForce, passiveMuscleForce, totalMuscleForce] = ...
     calcMuscleForce(results.normalizedFiberLength, ...
     results.normalizedFiberVelocity, mtpInputs.maxIsometricForce, ...

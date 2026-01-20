@@ -7,7 +7,7 @@ activeMuscleForce = maxIsometricForce .* (muscleActivation .* ...
     forceVelocityCurve(normalizedFiberVelocity));
 
 passiveMuscleForce = maxIsometricForce .* ...
-    passiveForceLengthCurve(normalizedFiberVelocity);
+    passiveForceLengthCurve(normalizedFiberLength);
 
 totalMuscleForce = activeMuscleForce + passiveMuscleForce;
 
