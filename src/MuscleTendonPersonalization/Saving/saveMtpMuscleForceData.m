@@ -35,19 +35,28 @@ else
     results = resultsStruct.results;
 end
 
-activeForce = activeForceLengthCurve(results.normalizedFiberLength);
+% activeForce = activeForceLengthCurve(results.normalizedFiberLength);
+% 
+% muscleVelocity = forceVelocityCurve(results.normalizedFiberVelocity);
+% 
+% passiveMuscleForce = passiveForceLengthCurve(results.normalizedFiberLength) .* ...
+%     mtpInputs.maxIsometricForce;
+% 
+% activeMuscleForce = mtpInputs.maxIsometricForce .* ...
+%     (results.muscleActivations .* activeForce .* muscleVelocity);
+% 
+% totalMuscleForce = passiveMuscleForce + activeMuscleForce;
+% 
+% tendonForce = totalMuscleForce .* cos(mtpInputs.pennationAngle);
 
-muscleVelocity = forceVelocityCurve(results.normalizedFiberVelocity);
+[activeMuscleForce, passiveMuscleForce, totalMuscleForce] = ...
+    calcMuscleForce(results.normalizedFiberLength, ...
+    results.normalizedFiberVelocity, mtpInputs.maxIsometricForce, ...
+    results.muscleActivations);
 
-passiveMuscleForce = passiveForceLengthCurve(results.normalizedFiberLength) .* ...
-    mtpInputs.maxIsometricForce;
-
-activeMuscleForce = mtpInputs.maxIsometricForce .* ...
-    (results.muscleActivations .* activeForce .* muscleVelocity);
-
-totalMuscleForce = passiveMuscleForce + activeMuscleForce;
-
-tendonForce = totalMuscleForce .* cos(mtpInputs.pennationAngle);
+tendonForce = calcTendonForce(results.normalizedFiberLength, ...
+    results.normalizedFiberVelocity, mtpInputs.maxIsometricForce, ...
+    results.muscleActivations, mtpInputs.pennationAngle);
 
 writeMtpDataToSto(mtpInputs.muscleNames, mtpInputs.prefixes, ...
     totalMuscleForce, results.time, ...
