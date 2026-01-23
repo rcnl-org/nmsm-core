@@ -99,6 +99,10 @@ end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
 osimxFileName = parseTextOrAlternate(tree, "input_osimx_file", "");
+if ~exist(osimxFileName, "file")
+    error(sprintf("Cannot find Input Osimx File: %s", ...
+        osimxFileName))
+end
 osimx = parseOsimxFile(osimxFileName, inputs.model);
 if strcmp(inputs.controllerType, "synergy")
     if strcmp(osimxFileName, "")
