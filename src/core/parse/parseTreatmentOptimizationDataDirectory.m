@@ -49,6 +49,14 @@ if strcmp(initialGuessDirectory, "")
     throw(MException("ParseError:RequiredElement", ...
         strcat("Element <initial_guess_directory> required")))
 end
+if ~exist(trackedDirectory, "dir")
+    error(sprintf("Cannot find Tracked Quantities Directory: %s", ...
+        fullfile(trackedDirectory)))
+end
+if ~exist(initialGuessDirectory, "dir")
+    error(sprintf("Cannot find Initial Guess Directory: %s", ...
+        fullfile(initialGuessDirectory)))
+end
 end
 
 function inputs = parseExperimentalData(inputs, dataDirectory)
@@ -139,6 +147,10 @@ function inputs = parseSynergyExperimentalData(tree, inputs)
 if strcmp(inputs.controllerType, "synergy")
     surrogateModelDataDirectory = getTextFromField( ...
         getFieldByNameOrError(tree, 'surrogate_model_data_directory'));
+    if ~exist(surrogateModelDataDirectory, "dir")
+        error(sprintf("Cannot find Surrogate Model Data Directory: %s", ...
+            fullfile(surrogateModelDataDirectory)))
+    end
     [inputs.experimentalMuscleActivations, inputs.muscleLabels] = ...
         parseTrialData(inputs.initialGuessDirectory, ...
         strcat(inputs.trialName, "_combinedActivations"), inputs.model);
