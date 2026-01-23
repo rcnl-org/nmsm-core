@@ -99,7 +99,7 @@ end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
 osimxFileName = parseTextOrAlternate(tree, "input_osimx_file", "");
-if ~exist(osimxFileName, "file")
+if ~exist(osimxFileName, "file") && ~strcmp(osimxFileName, "")
     error(sprintf("Cannot find Input Osimx File: %s", ...
         osimxFileName))
 end
