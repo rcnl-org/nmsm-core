@@ -1,5 +1,13 @@
 # Changelog
 
+## v.1.5.2 - 2026-01-26
+
+### Added
+- The OpenSim GUI can now load and save relative file paths.
+
+### Fixed
+- The OpenSim GUI now correctly loads cost terms using the "synergy_list" tag
+
 ## v.1.5.1 - 2026-01-20
 
 ### Added
