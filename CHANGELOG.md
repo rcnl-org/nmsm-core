@@ -7,6 +7,9 @@
 
 ### Fixed
 - The OpenSim GUI now correctly loads cost terms using the "synergy_list" tag
+- Treatment Optimization tracking cost terms and deviation constraint terms track appropriate reference data when allowing the duration of the motion to change
+- Joint Model Personalization is supported on newer builds of the OpenSim API, adding support for Apple silicon processors such as M1 and newer models
+
 
 ## v.1.5.1 - 2026-01-20
 
