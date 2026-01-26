@@ -30,9 +30,26 @@
 % ----------------------------------------------------------------------- %
 
 function error = calculateFrameSquaredError(ikSolver)
-error = zeros(1, ikSolver.getNumMarkersInUse());
-for i=0:ikSolver.getNumMarkersInUse()-1
-    error(i+1) = ikSolver.computeCurrentMarkerError(i);
+% Old implementation for reference and readability
+% error = zeros(1, ikSolver.getNumMarkersInUse());
+% for i=0:ikSolver.getNumMarkersInUse()-1
+%     error(i+1) = ikSolver.computeCurrentMarkerError(i);
+% end
+% error = error / sqrt(length(error));
+
+% New implementation to account for OpenSim API removed support for indexed
+% computeCurrentMarkerError() function. The persistent variable eliminates
+% most overhead from this method, so it may be slightly faster than the
+% previous version. 
+persistent arrayDouble
+numMarkers = ikSolver.getNumMarkersInUse();
+if isempty(arrayDouble)
+    arrayDouble = org.opensim.modeling.SimTKArrayDouble(numMarkers, 0.0);
+end
+ikSolver.computeCurrentMarkerErrors(arrayDouble);
+error = zeros(1, numMarkers);
+for i = 1 : numMarkers
+    error(i) = arrayDouble.at(i - 1);
 end
 error = error / sqrt(length(error));
 end
