@@ -81,8 +81,27 @@ for foot = 1:length(inputs.surfaces)
         newSurface.springs{i} = addGcpSpring(inputs, foot, i);
     end
 
-    index = 1 + length(osimx.groundContact.contactSurface);
+    index = findMatchingContactSurfaceIndex( ...
+        osimx.groundContact.contactSurface, newSurface.hindfootBodyName);
+    if isempty(index)
+        index = 1 + length(osimx.groundContact.contactSurface);
+    end
     osimx.groundContact.contactSurface{index} = newSurface;
+end
+end
+
+% Returns the index of the contact surface in the osimx with a matching
+% hindfoot body, or an empty array if none match. Matching surfaces are
+% overwritten by the current run; non-matching surfaces are preserved.
+function index = findMatchingContactSurfaceIndex(contactSurfaces, ...
+    hindfootBodyName)
+index = [];
+for i = 1:length(contactSurfaces)
+    if isfield(contactSurfaces{i}, 'hindfootBodyName') && ...
+            strcmp(contactSurfaces{i}.hindfootBodyName, hindfootBodyName)
+        index = i;
+        return
+    end
 end
 end
 

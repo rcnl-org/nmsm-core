@@ -29,25 +29,33 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function TrackingOptimizationTool(settingsFileName)
+function TrackingOptimizationTool(settingsFileName, app)
 tic
-try 
+try
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
 end
+% app is the optional TreatmentOptimizationRun dialog, absent when the
+% tool is called from a script
+if nargin < 2
+    app = [];
+end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "TrackingOptimizationTool");
 [inputs, params] = parseTrackingOptimizationSettingsTree(settingsTree);
+updateRunStageGui(app, 'ParsingLabel', 'off');
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 inputs = normalizeSynergyData(inputs);
 inputs = setupMuscleSynergies(inputs);
 inputs = setupMuscleActivations(inputs);
 inputs = setupUserDefinedControls(inputs);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
+inputs = makeTreatmentOptimizationInputs(inputs, params, app);
+updateRunStageGui(app, 'RunningLabel', 'on');
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
 saveTrackingOptimizationResults(outputs, inputs);
+updateRunStageGui(app, 'RunningLabel', 'off');
 fprintf("Tracking Optimization Runtime: %f Hours\n", toc/3600);
 diary off
 try

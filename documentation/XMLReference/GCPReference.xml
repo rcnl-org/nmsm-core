@@ -20,6 +20,8 @@
 		<grid_width>5</grid_width>
 		<!--Number of spring markers in height of spring marker grid. Default is 15.-->
 		<grid_height>15</grid_height>
+		<!--*Optional* Flag indicating whether the initial guess should be seeded from the given osimx file for contact surfaces that are in both the osimx file and the GCP run-->
+		<parse_initial_guess_from_osimx>false</parse_initial_guess_from_osimx>
 		<!--List of Contact Surfaces, each specified as GCPContactSurface.-->
 		<GCPContactSurfaceSet>
 			<GCPContactSurface name="Right foot">

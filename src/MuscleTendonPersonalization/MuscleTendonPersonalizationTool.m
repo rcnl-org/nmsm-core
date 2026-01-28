@@ -31,30 +31,52 @@
 
 function MuscleTendonPersonalizationTool(settingsFileName, app)
 tic
-if nargin < 2
-    app = [];
-end
-try
+try 
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
+end
+if nargin < 2
+    app = [];
 end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
-resultsDirectory = getUniqueResultsDirectory(resultsDirectory);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+if ~isempty(app)
+    app.ParsingLabel.Enable = 'off';
+end
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 if isstruct(precalInputs)
+    if valueOrAlternate(inputs, "parseInitialGuessFromOsimx", false)
+        warning("MuscleTendonLengthInitialization and " + ...
+            "parse_initial_guess_from_osimx are both enabled. The " + ...
+            "MuscleTendonLengthInitialization initial guess will be " + ...
+            "overwritten for muscles found in the osimx file.");
+    end
+    if ~isempty(app)
+        app.RunningMTLILabel.Enable = 'on';
+    end
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
+    if ~isempty(app)
+        app.RunningMTLILabel.Enable = 'off';
+    end
 else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
+if ~isempty(app)
+    app.RunningMTPLabel.Enable = 'on';
+end
 results = MuscleTendonPersonalization(inputs, params, app);
+if ~isempty(app)
+    app.RunningMTPLabel.Enable = 'off';
+    app.SavingResultsLabel.Enable = 'on';
+end
+drawnow
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
         getMtpResultsToSave(inputs, params, results, precalInputs);
@@ -66,11 +88,13 @@ else
     saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory);
 end
+app.SavingResultsLabel.Enable = 'off';
 printMtpJointMomentMatchingError(resultsDirectory);
 fprintf("Muscle-Tendon Personalization Runtime: %f Hours\n", toc/3600);
 diary off
 try
-    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
+    [~, settingsFile] = fileparts(settingsFileName);
+    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFile));
     movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
 catch
 end

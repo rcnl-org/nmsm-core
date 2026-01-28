@@ -185,17 +185,10 @@ end
 function emgSplines = createEmgSignals(emgData, emgTime, timeDelay)
 
 emgSplines = cell(size(emgData, 1), size(emgData, 2));
-if size(timeDelay, 2) <= 2
-    for j = 1 : size(emgData, 1)
-        emgSplines{j} = spline(emgTime(j, 1 : 4 : end), ...
-            emgData(j, :, 1 : 4 : end)');
-    end
-else
-    for i = 1 : size(emgData, 2)
-        for j = 1:size(emgData, 1)
-            emgSplines{j, i} = spline(emgTime(j, 1 : 4 : end), ...
-                emgData(j, i, 1 : 4 : end));
-        end
+for i = 1 : size(emgData, 2)
+    for j = 1:size(emgData, 1)
+        emgSplines{j, i} = spline(emgTime(j, 1 : 4 : end), ...
+            emgData(j, i, 1 : 4 : end));
     end
 end
 end

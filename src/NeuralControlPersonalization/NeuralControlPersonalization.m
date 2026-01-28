@@ -6,7 +6,10 @@
 % to a per-synergy normalization constraint (and, optionally, a hard
 % bilateral-symmetry constraint between two synergy groups).
 %
-% (struct, struct) -> (Array of number, struct)
+% The optional app is the GUI's run window, passed through to the optimizer
+% so its Cancel button can stop fmincon. A scripted run omits it.
+%
+% (struct, struct, App) -> (Array of number, struct)
 % Runs the Neural Control Personalization algorithm
 
 % ----------------------------------------------------------------------- %
@@ -40,12 +43,6 @@ verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
 params = finalizeParams(params);
 inputs = finalizeInputs(inputs);
-if ~inputs.optimize_synergy_vectors
-    packed = repackDesignVariables(inputs.fixedSynergyWeights, ...
-        zeros(inputs.numTrials, inputs.numNodes, inputs.numSynergies), ...
-        inputs);
-    inputs.fixedSynergyVectorFlat = packed(1:sum(inputs.numWeightsPerGroup));
-end
 initialValues = prepareNcpInitialValues(inputs, params);
 finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
     params, app);

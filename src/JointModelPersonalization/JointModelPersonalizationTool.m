@@ -31,28 +31,38 @@
 
 function JointModelPersonalizationTool(settingsFileName, app)
 tic
-if nargin < 2
-    app = [];
-end
-try
+try 
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
 end
+if nargin < 2
+    app = [];
+end
+if ~isempty(app)
+    app.parsing = true;
+end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "JointModelPersonalizationTool");
-[outputFile, inputs, params, resultsDirectory] = ...
+[outputFile, inputs, params] = ...
     parseJointModelPersonalizationSettingsTree(settingsTree);
+app.ParsingLabel.Enable = 'off';
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
+app.RunningJMPLabel.Enable = 'on';
 newModel = JointModelPersonalization(inputs, params, app);
+app.RunningJMPLabel.Enable = 'off';
+app.SavingResultsLabel.Enable = 'on';
+drawnow
 newModel.print(outputFile);
 fprintf("Joint Model Personalization Runtime: %f Hours\n", toc/3600);
 diary off
 try
+    resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
     copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
     movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
 catch
 end
+app.SavingResultsLabel.Enable = 'off';
 end
 

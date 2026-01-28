@@ -82,6 +82,18 @@ end
 % Get inputs for each foot
 inputs.surfaces = getContactSurfaces(inputs, tree);
 inputs = getInitialValues(inputs, tree);
+inputs.parseInitialGuessFromOsimx = strcmpi(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, ...
+    'parse_initial_guess_from_osimx', 'false')), 'true');
+if inputs.parseInitialGuessFromOsimx
+    if strcmp(inputs.inputOsimxFile, "") || ~isfile(inputs.inputOsimxFile)
+        warning("parse_initial_guess_from_osimx is true but input_osimx_file " + ...
+            "is missing; using default initial guesses.");
+        inputs.parseInitialGuessFromOsimx = false;
+    else
+        inputs.osimx = parseOsimxFile(inputs.inputOsimxFile, inputs.bodyModel);
+    end
+end
 end
 
 % (struct, struct) -> (struct)
