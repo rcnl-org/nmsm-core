@@ -29,8 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function plotNeuralControlPersonalizationActivations(weightsFile, ...
-    commandsFile, mtpActivationsFile, use_activation_saturation, ...
-    activation_saturation_sharpness, figureWidth, figureHeight)
+    commandsFile, mtpActivationsFile, figureWidth, figureHeight)
 
 % use vargin for optional arguments, use figureGridSize (ex. plotTreatmentOptimizationJointLoads)
 % add activation saturation 
@@ -57,15 +56,15 @@ else
     mtpMuscleNames = "";
 end
 
-if use_activation_saturation
-    muscleActivations = applyActivationSaturation(muscleActivations, ...
-        activation_saturation_sharpness);
-end
+% if use_activation_saturation
+%     muscleActivations = applyActivationSaturation(muscleActivations, ...
+%         activation_saturation_sharpness);
+% end
 
-if nargin < 6
+if nargin < 4
     figureWidth = ceil(sqrt(numel(muscleNames)));
     figureHeight = ceil(numel(muscleNames)/figureWidth);
-elseif nargin < 7
+elseif nargin < 5
     figureHeight = ceil(sqrt(numel(muscleNames)));
 end
 figureSize = figureWidth * figureHeight;

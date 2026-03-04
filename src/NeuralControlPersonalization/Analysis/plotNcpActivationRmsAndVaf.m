@@ -31,7 +31,7 @@
 % ----------------------------------------------------------------------- %
 
 function plotNcpActivationRmsAndVaf(weightsFile, commandsFile, ...
-    mtpActivationsFile, use_activation_saturation, activation_saturation_sharpness)
+    mtpActivationsFile)
 import org.opensim.modeling.Storage
 params = getPlottingParams();
 weightsStorage = Storage(weightsFile);
@@ -41,10 +41,10 @@ commandsStorage = Storage(commandsFile);
 synergyCommands = storageToDoubleMatrix(commandsStorage);
 ncpActivations = synergyWeights * synergyCommands;
 
-if use_activation_saturation
-    ncpActivations = applyActivationSaturation(ncpActivations, ...
-        activation_saturation_sharpness);
-end
+% if use_activation_saturation
+%     ncpActivations = applyActivationSaturation(ncpActivations, ...
+%         activation_saturation_sharpness);
+% end
 
 mtpStorage = Storage(mtpActivationsFile);
 mtpMuscleNames = getStorageColumnNames(mtpStorage);

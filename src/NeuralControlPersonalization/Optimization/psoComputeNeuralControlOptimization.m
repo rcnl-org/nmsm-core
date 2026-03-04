@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalValues = computeNeuralControlOptimization(initialValuesLong, ...
+function finalValues = psoComputeNeuralControlOptimization(initialValuesLong, ...
     inputs, params)
 [initWeights, ~, ~] = findSynergyWeightsAndCommands(initialValuesLong, inputs);
 initialValues = initialValuesLong;
@@ -48,9 +48,14 @@ if strcmpi(inputs.synergy_vector_normalization_method,'magnitude')
 
 elseif strcmpi(inputs.synergy_vector_normalization_method,'sum')
     % linear constraints
-    finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
-        inputs, params, initialValuesLong), initialValues, [], [], ...
-        synergyWeightEquations, synergyWeightSums, lowerBounds, [], [], optimizerOptions);
+    % finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
+    %     inputs, params, initialValuesLong), initialValues, [], [], ...
+    %     synergyWeightEquations, synergyWeightSums, lowerBounds, [], [], optimizerOptions);
+    psoOptions = psoset('Display','iter','MaxFunEvals',100000,'Plot','output');
+    fprintf('Solving optimization problem using pso:\n')
+    finalValues = pso(@(values)psoComputeNeuralControlCostFunction(values, ...
+        inputs, params, initialValuesLong, synergyWeightEquations, ...
+        synergyWeightSums),initialValues,lowerBounds,upperbounds,psoOptions);
 else
     error('Unknown normalization method: %s', ...
         inputs.synergy_vector_normalization_method);
@@ -74,6 +79,69 @@ fprintf('  Final activation range: [%g, %g], error = %g\n', min(finalActivations
 plotSynergyWeightsComparison(initialValues, finalValues, inputs);
 
 end
+
+
+function  cost = psoComputeNeuralControlCostFunction(values_short, inputs, params, ...
+    initialValues, synergyWeightEquations, synergyWeightSums)
+if inputs.use_bilateral_symmetry
+    weights_part = values_short(1:inputs.numWeightsOneLeg);
+    values = [weights_part; values_short];
+end
+[activations, ~] = calcActivationsFromSynergyDesignVariables(values, inputs);
+
+error = [];
+weightsByGroup = findSynergyWeightsByGroup(values, inputs);
+
+% Split activations into subsets ahead of cost computation
+if isfield(inputs, 'mtpActivationsColumnNames')
+    [activationsWithMtpData, activationsWithoutMtpData] = ...
+        makeMtpActivatonSubset(activations, ...
+        inputs.mtpActivationsColumnNames, inputs.muscleTendonColumnNames);
+else
+    activationsWithoutMtpData = activations;
+end
+for term = 1:length(params.costTerms)
+    costTerm = params.costTerms{term};
+    if costTerm.isEnabled
+        switch costTerm.type
+            case "moment_tracking"
+                [normalizedFiberLengths, normalizedFiberVelocities] = ...
+                    calcNormalizedMuscleFiberLengthsAndVelocities( ...
+                    inputs, inputs.optimalFiberLengthScaleFactors, ...
+                    inputs.tendonSlackLengthScaleFactors);
+                muscleJointMoments = calcMuscleJointMoments(inputs, ...
+                    activations, normalizedFiberLengths, ...
+                    normalizedFiberVelocities);
+                rawCost = muscleJointMoments - ...
+                    inputs.inverseDynamicsMoments; 
+                % fprintf("moment_tracking\n")
+            case "activation_tracking"
+                if isfield(inputs, 'mtpActivations')
+                    rawCost = activationsWithMtpData - inputs.mtpActivations;
+                else
+                    rawCost = 0;
+                end
+                % fprintf("activation_tracking\n")
+            case "bilateral_symmetry"
+                if length(inputs.synergyGroups) ~= 2
+                    throw(MException('', ['Bilateral symmetry cost ' ...
+                        'requires exactly two synergy groups.']))
+                end
+                rawCost = weightsByGroup(1, :, :) - weightsByGroup(2, :, :);
+                % fprintf("bilateral_symmetry\n")
+        end
+        rawCost = rawCost(:);
+        rawCost_scaled = (rawCost/ costTerm.maxAllowableError) / sqrt(numel(rawCost));
+        error = [error; rawCost_scaled];
+    end
+end
+constraint_err = synergyWeightSums-synergyWeightEquations*values_short;
+constraint_err_maxAllowableError = 5;
+constraint_err_scaled = (constraint_err/ constraint_err_maxAllowableError) / sqrt(numel(constraint_err));
+error = [error; constraint_err_scaled];
+cost = error' * error;
+end
+
 
 function [data1, data2] = reorderUsingSimilarity(data1, data2, inputs)
 [weights1, ~, ~] = findSynergyWeightsAndCommands(data1, inputs);
@@ -151,7 +219,7 @@ else
 end
 
 lowerBounds = zeros(numDesignVariables, 1);
-upperBounds = inf(numDesignVariables, 1);
+upperBounds = ones(numDesignVariables, 1)*10;
 
 numberOfWeights = 0;
 if inputs.use_bilateral_symmetry

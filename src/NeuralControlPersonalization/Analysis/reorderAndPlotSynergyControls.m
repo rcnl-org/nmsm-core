@@ -1,72 +1,54 @@
-% This function is part of the NMSM Pipeline, see file for full license.
-%
-% Plots synergy activations and weights from given .sto or .mot files. 
-% Can plot with different normalization methods and values.
-% Automatically splits weights between synergy sets.
-%
-% Args:
-% trackedDataFile (string) - .sto or .mot file. 
-%   RMSE values will be calculated between this file and all results data 
-%   files.
-% resultsDataFiles (Array of strings) - String array of .sto or .mot files.
-%
-% Optional varargin:
-% columnsToUse (array of strings) - list of column names to plot in the
-%   given .sto or .mot files. Useful to plot only a subset of the
-%   coordinates in the model. Can be in any order.
-%   Default is use all columns in trackedDataFile.
-% columnNames (array of strings) - specify the names to use in subplot
-%   titles (ie plot "Right Hip" instead of "hip_flexion_r".) Must be the
-%   same dimension as columnsToUse.
-%   Default is the column names in trackedDataFile.
-% legend (array of strings) - specify legend values to use instead of the
-%   default.
-%   Default uses the directory structure to create legend names.
-% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
-%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
-%   Default is 1.
+function reorderAndPlotSynergyControls(...
+    trackedActivationsFile1, trackedWeightsFile1, ...
+    resultsActivationsFiles1, resultsWeightsFiles1, ...
+    osimxFileName1, modelFileName1, ...
+    synergyNormalizationMethod1, synergyNormalizationValue1, ...
+    allow_negative_synergy_vector_weights1, ...
+    trackedActivationsFile2, trackedWeightsFile2, ...
+    resultsActivationsFiles2, resultsWeightsFiles2, ...
+    osimxFileName2, modelFileName2, ...
+    synergyNormalizationMethod2, synergyNormalizationValue2, ...
+    allow_negative_synergy_vector_weights2, ...
+    varargin)
 
-% ----------------------------------------------------------------------- %
-% The NMSM Pipeline is a toolkit for model personalization and treatment  %
-% optimization of neuromusculoskeletal models through OpenSim. See        %
-% nmsm.rice.edu and the NOTICE file for more information. The             %
-% NMSM Pipeline is developed at Rice University and supported by the US   %
-% National Institutes of Health (R01 EB030520).                           %
-%                                                                         %
-% Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Robert Salati                                                %
-%                                                                         %
-% Licensed under the Apache License, Version 2.0 (the "License");         %
-% you may not use this file except in compliance with the License.        %
-% You may obtain a copy of the License at                                 %
-% http://www.apache.org/licenses/LICENSE-2.0.                             %
-%                                                                         %
-% Unless required by applicable law or agreed to in writing, software     %
-% distributed under the License is distributed on an "AS IS" BASIS,       %
-% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
-% implied. See the License for the specific language governing            %
-% permissions and limitations under the License.                          %
-% ----------------------------------------------------------------------- %
-function plotTreatmentOptimizationSynergyControls(...
-    trackedActivationsFile, trackedWeightsFile, ...
-    resultsActivationsFiles, resultsWeightsFiles, ...
-    osimxFileName, modelFileName, ...
-    synergyNormalizationMethod, synergyNormalizationValue, ...
-    allow_negative_synergy_vector_weights, varargin)
 params = getPlottingParams();
 if ~isempty(varargin)
     options = parseVarargin(varargin);
 else
     options = struct();
 end
+osimx1 = parseOsimxFile(osimxFileName1, Model(modelFileName1));
+osimx2 = parseOsimxFile(osimxFileName2, Model(modelFileName2));
 
+data1 = prepareData(modelFileName1, trackedActivationsFile1, ...
+    resultsActivationsFiles1, trackedWeightsFile1,resultsWeightsFiles1, ...
+    synergyNormalizationMethod1, synergyNormalizationValue1);
+data2 = prepareData(modelFileName2, trackedActivationsFile2, ...
+    resultsActivationsFiles2, trackedWeightsFile2,resultsWeightsFiles2, ...
+    synergyNormalizationMethod2, synergyNormalizationValue2);
+
+[data1, data2] = reorderUsingSimilarity(data1, data2);
+
+plotSynergyActivations(data1.trackedActivations, data1.resultsActivations, ...
+    params, options, allow_negative_synergy_vector_weights1);
+plotSynergyActivations(data2.trackedActivations, data2.resultsActivations, ...
+    params, options, allow_negative_synergy_vector_weights2);
+
+plotSynergyVectors(data1.trackedWeights, data1.trackedActivations.labels, ...
+    data1.resultsWeights, params, osimx1, options, allow_negative_synergy_vector_weights1);
+plotSynergyVectors(data2.trackedWeights, data2.trackedActivations.labels, ...
+    data2.resultsWeights, params, osimx2, options, allow_negative_synergy_vector_weights2);
+end
+
+
+function data = prepareData(modelFileName, trackedActivationsFile, ...
+    resultsActivationsFiles, trackedWeightsFile,resultsWeightsFiles, ...
+    synergyNormalizationMethod, synergyNormalizationValue)
 model = Model(modelFileName);
-osimx = parseOsimxFile(osimxFileName, Model(modelFileName));
 [trackedActivations, resultsActivations] = parsePlottingData(...
     trackedActivationsFile, resultsActivationsFiles, model);
 [trackedWeights, resultsWeights] = parsePlottingData(...
     trackedWeightsFile, resultsWeightsFiles, model);
-
 [trackedActivations.data, trackedWeights.data] = normalizeSynergyData(...
     trackedActivations.data, trackedWeights.data, ...
     synergyNormalizationMethod, synergyNormalizationValue);
@@ -76,15 +58,115 @@ for i = 1 : numel(resultsActivations.data)
         resultsActivations.data{i}, resultsWeights.data{i}, ...
         synergyNormalizationMethod, synergyNormalizationValue);
 end
-
 trackedActivations = resampleTrackedData(trackedActivations, ...
     resultsActivations);
-
-plotSynergyActivations(trackedActivations, resultsActivations, ...
-    params, options, allow_negative_synergy_vector_weights);
-plotSynergyVectors(trackedWeights, trackedActivations.labels, ...
-    resultsWeights, params, osimx, options, allow_negative_synergy_vector_weights);
+data.trackedActivations = trackedActivations;
+data.resultsActivations = resultsActivations;
+data.trackedWeights = trackedWeights;
+data.resultsWeights = resultsWeights;
 end
+
+function [data1, data2] = reorderUsingSimilarity(data1, data2)
+% Reorder data2 to match data1 using GLOBAL optimal assignment on weights
+
+weights1 = data1.trackedWeights.data;   % (numSyn x numMus)
+weights2 = data2.trackedWeights.data;   % (numSyn x numMus)
+
+numSyn1 = size(weights1,1);
+numSyn2 = size(weights2,1);
+if numSyn1 ~= numSyn2
+    error('Number of synergies mismatch: data1=%d, data2=%d', numSyn1, numSyn2);
+end
+numSyn = numSyn1;
+
+similarity = pairwiseCosineRows(weights1, weights2);
+cost = -similarity;
+pairs = matchpairs(cost, 1e9);   % [rowIdx, colIdx]
+
+% Build perm so that data2(perm(i),:) aligns with data1(i,:)
+perm = zeros(1, numSyn);
+for p = 1:size(pairs,1)
+    i = pairs(p,1);
+    j = pairs(p,2);
+    perm(i) = j;
+end
+
+% Apply permutation to data2
+data2.trackedWeights.data = data2.trackedWeights.data(perm,:);
+data2.trackedActivations.data = data2.trackedActivations.data(:,perm);
+
+for k = 1:numel(data2.resultsWeights.data)
+    data2.resultsWeights.data{k} = data2.resultsWeights.data{k}(perm,:);
+end
+for k = 1:numel(data2.resultsActivations.data)
+    data2.resultsActivations.data{k} = data2.resultsActivations.data{k}(:,perm);
+end
+
+% Keep labels consistent if present
+if isfield(data2.trackedActivations,'labels') && numel(data2.trackedActivations.labels)==numSyn
+    data2.trackedActivations.labels = data2.trackedActivations.labels(perm);
+end
+if isfield(data2.resultsActivations,'labels')
+    for k = 1:numel(data2.resultsActivations.labels)
+        if numel(data2.resultsActivations.labels{k})==numSyn
+            data2.resultsActivations.labels{k} = data2.resultsActivations.labels{k}(perm);
+        end
+    end
+end
+
+
+fprintf('[reorderUsingSimilarity] perm (data2 -> data1 order): ');
+fprintf('%d ', perm);
+fprintf('\n');
+
+similarity_after_weight = pairwiseCosineRows(data1.trackedWeights.data, data2.trackedWeights.data);
+fprintf("Similarity score of weights after reordering {sum(diag) percent score, min(diag)}: {%.4f %.4f}\n", ...
+    sum(diag(similarity_after_weight))/numSyn*100, min(diag(similarity_after_weight)));
+
+similarity_after_command = pairwiseCosineRows(data1.trackedActivations.data', data2.trackedActivations.data');
+fprintf("Similarity score of commands after reordering {sum(diag) percent score, min(diag)}: {%.4f %.4f}\n", ...
+    sum(diag(similarity_after_command))/numSyn*100, min(diag(similarity_after_command)));
+fprintf('\n');
+% matrix print
+for i = 1:size(similarity_after_weight,1)
+    fprintf('%.6g', similarity_after_weight(i,1));
+    fprintf('\t%.6g', similarity_after_weight(i,2:end));
+    fprintf('\n');
+end
+fprintf('\n');
+for i = 1:size(similarity_after_command,1)
+    fprintf('%.6g', similarity_after_command(i,1));
+    fprintf('\t%.6g', similarity_after_command(i,2:end));
+    fprintf('\n');
+end
+
+end
+
+
+function S = pairwiseCosineRows(A, B)
+% A: n x d, B: n x d
+% S(i,j) = cosineSim(A(i,:), B(j,:))
+nA = size(A,1);
+nB = size(B,1);
+S = zeros(nA, nB);
+for i = 1:nA
+    for j = 1:nB
+        S(i,j) = cosineSim(A(i,:), B(j,:));
+    end
+end
+end
+
+
+function s = cosineSim(a,b)
+a = a(:); b = b(:);
+na = norm(a); nb = norm(b);
+if na < eps || nb < eps
+    s = 0;
+else
+    s = (a' * b) / (na * nb);
+end
+end
+
 
 function plotSynergyActivations(tracked, results, params, options, ...
     allow_negative_synergy_vector_weights)
@@ -167,6 +249,9 @@ for i=1:numel(tracked.labels)
 end
 end
 
+
+
+
 function plotSynergyVectors(tracked, synergyLabels, results, params, osimx, ...
     options, allow_negative_synergy_vector_weights)
 % Outer level: iterate through synergy sets. We get 1 plot for each synergy
@@ -232,6 +317,9 @@ for synergyGroup = 1 : numel(osimx.synergyGroups)
 end
 end
 
+
+
+
 function tileFigure = makeSynergyActivationsFigure(params, options, tracked)
 if isfield(options, "figureGridSize")
     figureWidth = options.figureGridSize(1);
@@ -278,28 +366,7 @@ end
 function [synergyActivations, synergyWeights] = normalizeSynergyData(synergyActivations, ...
     synergyWeights, synergyNormalizationMethod, synergyNormalizationValue)
 switch synergyNormalizationMethod
-    case "sum"
-        for i = 1:size(synergyWeights, 1)
-            total = sum(synergyWeights(i, :)) / ...
-                synergyNormalizationValue;
-            synergyWeights(i, :) = ...
-                synergyWeights(i, :) / total;
-            synergyActivations(:, i) = ...
-                synergyActivations(:, i) * total;
-        end
-    case "magnitude"
-        for i = 1:size(synergyWeights, 1)
-            total = norm(synergyWeights(i, :)) / ...
-                synergyNormalizationValue;
-            synergyWeights(i, :) = ...
-                synergyWeights(i, :) / total;
-            synergyActivations(:, i) = ...
-                synergyActivations(:, i) * total;
-        end
     case "none"
         return
-    otherwise
-        throw(MException('', "Only 'sum', 'magnitude', and 'none' are " + ...
-            "supported synergy normalization methods."))
 end
 end

@@ -4,7 +4,7 @@
 % ID, and MuscleAnalysis so the values can be used as inputs for
 % MuscleTendonPersonalization.
 %
-% (struct, struct) -> (None)
+% (struct, struct) -> (None) 
 % Prepares raw data for MuscleTendonPersonalization
 
 % ----------------------------------------------------------------------- %
@@ -29,7 +29,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = computeNeuralControlCostFunction(values, inputs, params)
-activations = calcActivationsFromSynergyDesignVariables(values, inputs, params);
-cost = calcNcpCost(activations, inputs, params, values);
+function cost = computeNeuralControlCostFunction(values, inputs, params, initialValues)
+if inputs.use_bilateral_symmetry
+    weights_part = values(1:inputs.numWeightsOneLeg);
+    values = [weights_part; values];
+end
+cost = calcNcpCost(values, inputs, params, initialValues);
 end

@@ -33,7 +33,6 @@
 
 function [synergyWeights, synergyCommands] = ...
     normalizeSynergiesByMaximumWeight(synergyWeights, synergyCommands)
-
 [~, index] = max(abs(synergyWeights), [], 2);
 rowIndex = (1:size(synergyWeights,1))';  
 scaleFactors = abs(synergyWeights(sub2ind(size(synergyWeights), rowIndex, index)));

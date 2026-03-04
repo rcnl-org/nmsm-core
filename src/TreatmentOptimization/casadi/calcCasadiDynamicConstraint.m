@@ -52,7 +52,7 @@ for i = 1 : inputs.numMeshes
         values.stateVelocities(index + 2 : ...
         index + inputs.numCollocationPerMesh + 1, :) * meshDuration;
     index = index + inputs.numCollocationPerMesh;
-    dynamicsIndex = dynamicsIndex + inputs.numCollocationPerMesh;
+    dynamicsIndex = dynamicsIndex + inputs.numCollocationPerMesh; 
 end
 index = 0;
 for i = 1 : inputs.numMeshes

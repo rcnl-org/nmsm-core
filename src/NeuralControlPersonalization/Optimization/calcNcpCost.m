@@ -29,9 +29,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcNcpCost(activations, inputs, params, values)
+function cost = calcNcpCost(values, inputs, params, initialValues)
+[activations, weights, commands] = calcActivationsFromSynergyDesignVariables(values, inputs);
 
 error = [];
+weightsByGroup = findSynergyWeightsByGroup(values, inputs);
+weightsByGroupInit = findSynergyWeightsByGroup(initialValues, inputs);
+
 % Split activations into subsets ahead of cost computation
 if isfield(inputs, 'mtpActivationsColumnNames')
     [activationsWithMtpData, activationsWithoutMtpData] = ...
@@ -53,35 +57,48 @@ for term = 1:length(params.costTerms)
                     activations, normalizedFiberLengths, ...
                     normalizedFiberVelocities);
                 rawCost = muscleJointMoments - ...
-                    inputs.inverseDynamicsMoments;
+                    inputs.inverseDynamicsMoments; 
+                % fprintf("moment_tracking\n")
             case "activation_tracking"
                 if isfield(inputs, 'mtpActivations')
                     rawCost = activationsWithMtpData - inputs.mtpActivations;
                 else
                     rawCost = 0;
                 end
+                % fprintf("activation_tracking\n")
             case "activation_minimization"
                 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
                 rawCost = reshape(activationsWithoutMtpData, [], 1) - errorCenter;
+                % fprintf("activation_minimization\n")
             case "grouped_activations"
                 rawCost = calcGroupedActivationCost(activations, ...
                     inputs, params);
+                % fprintf("grouped_activations\n")
             case "grouped_fiber_lengths"
                 rawCost = calcGroupedNormalizedFiberLengthCost( ...
                     activations, inputs, params);
+                % fprintf("grouped_fiber_lengths\n")
             case "bilateral_symmetry"
                 if length(inputs.synergyGroups) ~= 2
                     throw(MException('', ['Bilateral symmetry cost ' ...
                         'requires exactly two synergy groups.']))
                 end
-                weights = findSynergyWeightsByGroup(values, inputs);
-                rawCost = weights(1, :, :) - weights(2, :, :);
+                rawCost = weightsByGroup(1, :, :) - weightsByGroup(2, :, :);
+                % fprintf("bilateral_symmetry\n")
+            case "synergy_activation_minimization"
+                % synergy_activation_minimization
+                rawCost = commands(:);
+                % fprintf("weights_deviation\n")
+            case "minimize_weights_changes"
+                rawCost = weightsByGroup-weightsByGroupInit;
+                % fprintf("minimize_weights_changes\n")
             otherwise
                 throw(MException('', ['Cost term type ' costTerm.type ...
                     ' does not exist for this tool.']))
         end
-        error = [error; (rawCost(:) / costTerm.maxAllowableError) / ...
-            sqrt(numel(rawCost))];
+        rawCost = rawCost(:);
+        rawCost_scaled = (rawCost/ costTerm.maxAllowableError) / sqrt(numel(rawCost));
+        error = [error; rawCost_scaled];
     end
 end
 
