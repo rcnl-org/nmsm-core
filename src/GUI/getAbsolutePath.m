@@ -7,4 +7,3 @@ function fullPath = getAbsolutePath(relativePath, basePath)
     fullPath = char(java.io.File(fullPath).getCanonicalPath());
 
 end
-end
