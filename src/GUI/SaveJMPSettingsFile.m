@@ -3,7 +3,8 @@ function SaveJMPSettingsFile(app, fileName)
 settingsTree = makeJMPSettingsStruct(app);
 settingsFileStruct.NMSMPipelineDocument.JointModelPersonalizationTool = ...
     settingsTree;
-settingsFileStruct.NMSMPipelineDocument.Attributes.Version = '0_dot_1_dot_0';
+settingsFileStruct.NMSMPipelineDocument.Attributes.Version = ...
+    convertStringsToChars(getPipelineVersion());
 struct2xml(settingsFileStruct, fileName)
 end
 
