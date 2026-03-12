@@ -4,6 +4,11 @@ function rel = getRelativePath(filePath, basePath)
         basePath = pwd;
     end
 
+    % if ~exist(filePath, "file")
+    %     rel = filePath;
+    %     return
+    % end
+
     file = java.io.File(filePath).getCanonicalFile();
     base = java.io.File(basePath).getCanonicalFile();
 
