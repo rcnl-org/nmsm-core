@@ -17,14 +17,17 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
             message = "The given model file exists but could not be parsed by OpenSim.";
             return
         end
-        if isfield(app, "model_markers")
+        try
             parseModelMarkers(app, model);
+        catch
         end
-        if isfield(app, "model_joints")
+        try
             parseModelJoints(app, model);
+        catch
         end
-        if isfield(app, "model_bodies")
+        try
             parseModelBodies(app, model);
+        catch
         end
     end
 
