@@ -29,6 +29,14 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
             parseModelBodies(app, model);
         catch
         end
+        try 
+            parseModelCoordinates(app, model);
+        catch
+        end
+        try 
+            parseModelGroups(app, model);
+        catch
+        end
     end
 
     function parseModelMarkers(app, model)
@@ -59,4 +67,24 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
             model_bodies(end+1) = bodySet.get(i-1).getName();
         end
         app.SetModelBodies(model_bodies);
+    end
+
+    function parseModelCoordinates(app, model)
+        coordinateSet = model.getCoordinateSet();
+        numCoordinates = coordinateSet.getSize();
+        model_coordinates = string([]);
+        for i = 1 : numCoordinates
+            model_coordinates(end+1) = coordinateSet.get(i-1).getName();
+        end
+        app.SetModelCoordinates(model_coordinates);
+    end
+
+    function parseModelGroups(app, model)
+        forceSet = model.getForceSet();
+        numGroups = forceSet.getNumGroups;
+        model_groups = string([]);
+        for i = 1 : numGroups
+            model_groups(end+1) = forceSet.getGroup(i-1).getName();
+        end
+        app.SetModelGroups(model_groups);
     end
