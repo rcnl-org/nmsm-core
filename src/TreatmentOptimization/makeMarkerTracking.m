@@ -55,7 +55,7 @@ markerConstraintTerms = [ ...
     ];
 for i = 1:length(inputs.costTerms)
     costTerm = inputs.costTerms{i};
-    if any(strcmp(costTerm.type, markerCostTerms))
+    if costTerm.isEnabled && any(strcmp(costTerm.type, markerCostTerms))
         names(end + 1) = convertCharsToStrings(inputs.model.getMarkerSet().get( ...
             costTerm.marker).getName().toCharArray()');
         locations = cat(1, locations, ...
@@ -67,7 +67,7 @@ for i = 1:length(inputs.costTerms)
 end
 for i = 1:length(inputs.path)
     constraintTerm = inputs.path{i};
-    if any(strcmp(constraintTerm.type, markerConstraintTerms))
+    if constraintTerm.isEnabled && any(strcmp(constraintTerm.type, markerConstraintTerms))
         names(end + 1) = convertCharsToStrings(inputs.model.getMarkerSet().get( ...
             constraintTerm.marker).getName().toCharArray()');
         locations = cat(1, locations, ...
@@ -79,7 +79,7 @@ for i = 1:length(inputs.path)
 end
 for i = 1:length(inputs.terminal)
     constraintTerm = inputs.terminal{i};
-    if any(strcmp(constraintTerm.type, markerConstraintTerms))
+    if constraintTerm.isEnabled && any(strcmp(constraintTerm.type, markerConstraintTerms))
         names(end + 1) = convertCharsToStrings(inputs.model.getMarkerSet().get( ...
             constraintTerm.marker).getName().toCharArray()');
         locations = cat(1, locations, ...

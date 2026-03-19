@@ -34,10 +34,10 @@ version = getOpenSimVersion();
 if isequal(mexext, 'mexw64')
     if version >= 40501
         pointKinematicsMexWindows40501(modelFile);
-        inverseDynamicsMomentumMetabolicOrientationMexWindows40501(modelFile);
+        inverseDynamicsBasedModeledValuesMexWindows40501(modelFile);
     else
         pointKinematicsMexWindows40400(modelFile);
-        inverseDynamicsMomentumMetabolicOrientationMexWindows40400(modelFile);
+        inverseDynamicsBasedModeledValuesMexWindows40400(modelFile);
     end
 end
 clear inverseDynamicsMatlabParallel
@@ -46,6 +46,10 @@ clear pointKinematicsMatlabParallel
 clear calcGpopsIntegrand
 clear computeGpopsEndpointFunction
 clear computeGpopsContinuousFunction
+clear calcCasadiIntegrand
+clear computeCasadiSymbolicModelFunction
+clear computeCasadiFiniteDifferenceModelFunction
+clear calcCasadiDynamicConstraint
 clear calcSynergyBasedModeledValues
 clear calcTorqueBasedModeledValues
 clear calcSurrogateModel

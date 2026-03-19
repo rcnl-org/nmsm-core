@@ -29,8 +29,12 @@
 % ----------------------------------------------------------------------- %
 
 function values = makeGpopsValuesAsStruct(phase, inputs)
-values.time = scaleToOriginal(phase.time, inputs.maxTime, ...
-    inputs.minTime);
+if isfield(phase, 'time')
+    values.time = scaleToOriginal(phase.time, inputs.maxTime, ...
+        inputs.minTime);
+else
+    values.time = inputs.collocationTimeOriginalWithEnd;
+end
 state = scaleToOriginal(phase.state, ones(size(phase.state, 1), 1) .* ...
     inputs.maxState, ones(size(phase.state, 1), 1) .* inputs.minState);
 control = scaleToOriginal(phase.control, ones(size(phase.control, 1), 1) .* ...
@@ -39,40 +43,83 @@ values.statePositions = getCorrectStates( ...
     state, 1, length(inputs.statesCoordinateNames));
 values.stateVelocities = getCorrectStates( ...
     state, 2, length(inputs.statesCoordinateNames));
-values.controlAccelerations = control(:, 1 : length(inputs.statesCoordinateNames));
+if inputs.useJerk
+    values.controlAccelerations = getCorrectStates(state, 3, length(inputs.statesCoordinateNames));
+    values.controlJerks = control(:, 1 : length(inputs.statesCoordinateNames));
+else
+    values.controlAccelerations = control(:, 1 : length(inputs.statesCoordinateNames));
+end
 [values.positions, values.velocities] = recombineFullState(values, inputs);
 values.accelerations = recombineFullAccelerations(values, inputs);
-if strcmp(inputs.controllerType, 'synergy')
-    values.controlSynergyActivations = control(:, ...
-        length(inputs.statesCoordinateNames) + 1 : ...
-        length(inputs.statesCoordinateNames) + inputs.numSynergies);
+controlIndex = length(inputs.statesCoordinateNames) + 1;
+if inputs.useJerk
+    stateIndex = length(inputs.statesCoordinateNames) * 3 + 1;
+else
+    stateIndex = length(inputs.statesCoordinateNames) * 2 + 1;
 end
-values.torqueControls = control(:, ...
-    length(inputs.statesCoordinateNames) + 1 + inputs.numSynergies : ...
-    length(inputs.statesCoordinateNames) + inputs.numSynergies + ...
-    length(inputs.torqueControllerCoordinateNames));
 
+if inputs.useControlDynamicsFilter
+    if inputs.controllerTypes(4)
+        values.userDefinedControls = state(:, ...
+            stateIndex : stateIndex - 1 + inputs.numUserDefinedControls);
+        stateIndex = stateIndex + inputs.numUserDefinedControls;
+        values.userDefinedControlDerivatives = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numUserDefinedControls);
+        controlIndex = controlIndex + inputs.numUserDefinedControls;
+    end
+    if inputs.controllerTypes(3)
+        values.controlMuscleActivations = state(:, ...
+            stateIndex : stateIndex - 1 + inputs.numIndividualMuscles);
+        stateIndex = stateIndex + inputs.numIndividualMuscles;
+        values.controlMuscleActivationDerivatives = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numIndividualMuscles);
+        controlIndex = controlIndex + inputs.numIndividualMuscles;
+    end
+    if inputs.controllerTypes(2)
+        values.controlSynergyActivations = state(:, ...
+            stateIndex : stateIndex - 1 + inputs.numSynergies);
+        stateIndex = stateIndex + inputs.numSynergies;
+        values.controlSynergyActivationDerivatives = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numSynergies);
+        controlIndex = controlIndex + inputs.numSynergies;
+    end
+    values.torqueControls = state(:, ...
+        stateIndex : ...
+        stateIndex - 1 + length(inputs.torqueControllerCoordinateNames));
+    values.torqueControlDerivatives = control(:, ...
+        controlIndex : ...
+        controlIndex - 1 + length(inputs.torqueControllerCoordinateNames));
+else
+    if inputs.controllerTypes(4)
+        values.userDefinedControls = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numUserDefinedControls);
+        controlIndex = controlIndex + inputs.numUserDefinedControls;
+    end
+    if inputs.controllerTypes(3)
+        values.controlMuscleActivations = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numIndividualMuscles);
+        controlIndex = controlIndex + inputs.numIndividualMuscles;
+    end
+    if inputs.controllerTypes(2)
+        values.controlSynergyActivations = control(:, ...
+            controlIndex : controlIndex - 1 + inputs.numSynergies);
+        controlIndex = controlIndex + inputs.numSynergies;
+    end
+    values.torqueControls = control(:, ...
+        controlIndex : ...
+        controlIndex - 1 + length(inputs.torqueControllerCoordinateNames));
+end
+
+counter = 1;
 if strcmp(inputs.toolName, "TrackingOptimization")
-    if strcmp(inputs.controllerType, 'synergy')
+    if inputs.controllerTypes(2)
         values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
-            parameters = scaleToOriginal(phase.parameter(1,:), ...
-                inputs.maxParameter, inputs.minParameter);
-            values.synergyWeights(inputs.synergyWeightsIndices) = ...
-                parameters(1 : length(inputs.synergyWeightsIndices));
-        end
-    end
-end
-if strcmp(inputs.toolName, "VerificationOptimization")
-    if strcmp(inputs.controllerType, 'synergy')
-        values.synergyWeights = inputs.synergyWeights;
-    end
-end
-if strcmp(inputs.toolName, "DesignOptimization")
-    counter = 1;
-    if strcmp(inputs.controllerType, 'synergy')
-        values.synergyWeights = inputs.synergyWeights;
-        if inputs.optimizeSynergyVectors
+            if isa(phase.parameter, 'casadi.MX')
+                values.synergyWeights = casadi.MX.zeros( ...
+                    size(inputs.synergyWeights, 1), ...
+                    size(inputs.synergyWeights, 2));
+            end
             parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
             values.synergyWeights(inputs.synergyWeightsIndices) = ...
@@ -80,17 +127,39 @@ if strcmp(inputs.toolName, "DesignOptimization")
             counter = length(inputs.synergyWeightsIndices) + 1;
         end
     end
-    if isfield(inputs, 'userDefinedVariables') && ...
-            ~isempty(inputs.userDefinedVariables)
-        parameters = scaleToOriginal(phase.parameter(1,:), ...
-            inputs.maxParameter, inputs.minParameter);
-        for i = 1:length(inputs.userDefinedVariables)
-            values.parameters.(inputs.userDefinedVariables{i}.type) ...
-                = parameters(counter : counter + ...
-                length(inputs.userDefinedVariables{i}.initial_values) - 1);
-            counter = counter + ...
-                length(inputs.userDefinedVariables{i}.initial_values);
+end
+if strcmp(inputs.toolName, "VerificationOptimization")
+    if inputs.controllerTypes(2)
+        values.synergyWeights = inputs.synergyWeights;
+    end
+end
+if strcmp(inputs.toolName, "DesignOptimization")
+    if inputs.controllerTypes(2)
+        values.synergyWeights = inputs.synergyWeights;
+        if inputs.optimizeSynergyVectors
+            if isa(phase.parameter, 'casadi.MX')
+                values.synergyWeights = casadi.MX.zeros( ...
+                    size(inputs.synergyWeights, 1), ...
+                    size(inputs.synergyWeights, 2));
+            end
+            parameters = scaleToOriginal(phase.parameter(1,:), ...
+                inputs.maxParameter, inputs.minParameter);
+            values.synergyWeights(inputs.synergyWeightsIndices) = ...
+                parameters(1 : length(inputs.synergyWeightsIndices));
+            counter = length(inputs.synergyWeightsIndices) + 1;
         end
+    end
+end
+if isfield(inputs, 'userDefinedVariables') && ...
+        ~isempty(inputs.userDefinedVariables)
+    parameters = scaleToOriginal(phase.parameter(1,:), ...
+        inputs.maxParameter, inputs.minParameter);
+    for i = 1:length(inputs.userDefinedVariables)
+        values.parameters.(inputs.userDefinedVariables{i}.type) ...
+            = parameters(counter : counter + ...
+            length(inputs.userDefinedVariables{i}.initial_values) - 1);
+        counter = counter + ...
+            length(inputs.userDefinedVariables{i}.initial_values);
     end
 end
 end
@@ -114,6 +183,10 @@ else
     velocities = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 1);
 end
+if isa(values.statePositions, 'casadi.MX')
+    positions = casadi.MX(positions);
+    velocities = casadi.MX(velocities);
+end
 positions(:, inputs.statesCoordinateIndices) = values.statePositions;
 velocities(:, inputs.statesCoordinateIndices) = values.stateVelocities;
 end
@@ -129,6 +202,9 @@ elseif size(values.time) == [2, 1]
 else
     accelerations = evaluateGcvSplines(inputs.splineJointAngles, ...
         inputs.coordinateNames, values.time, 2);
+end
+if isa(values.controlAccelerations, 'casadi.MX')
+    accelerations = casadi.MX(accelerations);
 end
 accelerations(:, inputs.statesCoordinateIndices) = ...
     values.controlAccelerations;

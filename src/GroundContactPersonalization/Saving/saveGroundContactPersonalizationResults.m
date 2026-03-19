@@ -47,7 +47,10 @@ if any(cellfun(@(task) any(task.designVariables(7:10)), params.tasks))
     writeExperimentalGroundReactionsNewElectricalCenterToSto(inputs, ...
         resultsDirectory);
 end
+try
 writeFullBodyKinematicsFromGcp(inputs, params, resultsDirectory);
+catch
+end
 % Needs two attempts to successfully delete a used MEX function
 warning('off')
 for pass = 1 : 2

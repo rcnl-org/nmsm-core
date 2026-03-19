@@ -1,12 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% There are two controllers that can be used to solve optimal control
-% problems in the NMSM Pipeline. This function finds the correct element to
-% determine which controller is being used. This informs the XML parsing
-% logic.
+% This function calculates the difference between experimental and
+% modeled coordinate accelerations. 
 %
-% (struct) -> (string)
-% returns "synergy" or "torque" depending on the settings file
+% (2D matrix, Cell, Array of string) -> (Number)
+% 
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Spencer Williams                                             %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,17 +28,16 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function controllerType = parseControllerType(tree)
-synergy = getFieldByName(tree, 'RCNLSynergyController');
-if isstruct(synergy)
-    controllerType = "synergy";
-    return
-end
-torque = getFieldByName(tree, 'RCNLTorqueController');
-if isstruct(torque)
-    controllerType = "torque";
-    return
-end
-throw(MException("ParseTreatmentOptimization:NoController", ...
-    "Could not find <RCNLTorqueController> or <RCNLSynergyController>"))
+function [pathTerm, constraintTerm] = ...
+    calcInitialGeneralizedAccelerationDeviation( ...
+    constraintTerm, inputs, time, accelerations)
+assert(inputs.useJerk, "The initial_generalized_acceleration_deviation " + ...
+    "constraint requires enabling joint jerk controls with " + ...
+    "<use_jerk_controls>true</use_jerk_controls>.")
+[acceleration, constraintTerm] = findDataByLabels(constraintTerm, ...
+    accelerations, inputs.coordinateNames, constraintTerm.coordinate);
+experimentalAcceleration = findSplinedJointAccelerationsByLabels( ...
+    constraintTerm, inputs, time);
+
+pathTerm = acceleration(1) - experimentalAcceleration(1);
 end

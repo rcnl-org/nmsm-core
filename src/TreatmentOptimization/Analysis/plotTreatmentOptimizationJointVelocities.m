@@ -75,13 +75,37 @@ end
 
 model = Model(modelFileName);
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
+% Results files are states files. Velocities always end in "_u" when
+% output from the pipeline. This will catch other coordinates also ending
+% with "_u".
+for j = 1 : numel(results.data)
+    % results.
+    results.data{j} = results.data{j}(:, endsWith(results.labels{j}, "_u"));
+    results.labels{j} = results.labels{j}(endsWith(results.labels{j}, "_u"));
+    for k = 1 : numel(results.labels{j})
+        tempLabel = convertStringsToChars(results.labels{j}(k));
+        results.labels{j}(k) = convertCharsToStrings(tempLabel(1:end-2));
+    end
+end
+
+% Create tracked velocities
+trackedDataSpline = makeGcvSplineSet(tracked.time, ...
+    tracked.data, tracked.labels);
+tracked.data = evaluateGcvSplines(trackedDataSpline, tracked.labels, ...
+    tracked.time, 1);
 
 % Reorder labels
-% for j = 1 : numel(results.data)
-%     [~, ~, indices] = intersect(results.labels{1}, results.labels{j}, 'stable');
-%     results.data{j}(:, 1:length(indices)) = results.data{j}(:,indices);
-%     results.labels{j}(1:length(indices)) = results.labels{j}(indices);
-% end
+for j = 1 : numel(results.data)
+    [~, ~, indices] = intersect(results.labels{1}, results.labels{j}, 'stable');
+    results.data{j} = results.data{j}(:,indices);
+    results.labels{j} = results.labels{j}(indices);
+    % results.labels{j} = ;
+end
+
+% Only use the coordinates in the states.
+[~, ~, trackedIndicesToUse] = intersect(results.labels{1}, tracked.labels, 'stable');
+tracked.labels = tracked.labels(trackedIndicesToUse);
+tracked.data = tracked.data(:, trackedIndicesToUse);
 
 if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);

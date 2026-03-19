@@ -39,7 +39,7 @@ for i = 1:inputs.numMuscles
                         inputs.surrogateModelJointAngles(:,j);
                     inputs.muscleSpecificMomentArms{i}(:,counter) = ...
                         inputs.surrogateModelMomentArms(:,k,i);
-                    counter = counter + 1;
+                    counter = counter + 1; 
                 end
             end
         end
