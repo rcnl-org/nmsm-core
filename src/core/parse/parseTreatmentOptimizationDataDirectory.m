@@ -35,6 +35,7 @@ function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
     findDataDirectory(tree);
 inputs.trialName = parseTrialName(tree);
 inputs = parseExperimentalData(inputs, inputs.trackedDirectory);
+inputs = parseTrackedStateDerivatives(inputs);
 inputs = parseSynergyExperimentalData(tree, inputs);
 inputs = parseMuscleExperimentalData(tree, inputs);
 inputs = parseUserDefinedExperimentalData(tree, inputs);
@@ -69,6 +70,7 @@ inputs.coordinateNames = cellstr(inputs.coordinateNames);
 inputs.statesCoordinateIndices = findStatesCoordinateIndices(inputs);
 inputs.experimentalTime = experimentalTime - experimentalTime(1);
 inputs.initialTime = inputs.experimentalTime;
+
 if isfield(inputs.osimx, 'groundContact') && ...
         isfield(inputs.osimx.groundContact, 'contactSurface')
     inputs.contactSurfaces = inputs.osimx.groundContact.contactSurface;
@@ -83,6 +85,27 @@ if isfield(inputs.osimx, 'groundContact') && ...
     end
 else
     inputs.contactSurfaces = {};
+end
+end
+
+function inputs = parseTrackedStateDerivatives(inputs)
+
+import org.opensim.modeling.Storage
+if exist(fullfile(inputs.trackedDirectory, ...
+        strcat(inputs.trialName, "_states.sto")), 'file') && ...
+    exist(fullfile(inputs.trackedDirectory, ...
+        strcat(inputs.trialName, "_accelerations.sto")), 'file')
+
+    [~, ~, stateData] = parseMotToComponents(Model(inputs.model), ...
+        Storage(fullfile(inputs.trackedDirectory, ...
+            strcat(inputs.trialName, "_states.sto"))));
+    [stateNames, ~, accelerationData] = ...
+        parseMotToComponents(Model(inputs.model), ...
+            Storage(fullfile(inputs.trackedDirectory, ...
+            strcat(inputs.trialName, "_accelerations.sto"))));
+    inputs.trackedStateVelocities = stateData(end/2+1:end,:)';
+    inputs.trackedStateAccelerations = accelerationData';
+    inputs.trackedStateNames = stateNames;
 end
 end
 
