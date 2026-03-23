@@ -1,5 +1,5 @@
 function [errorFlag, message] = parseModelFileGui(app, input_model_file)
-        message = [];
+        message = "";
         errorFlag = false;
         if strcmp(input_model_file, "")
             return
