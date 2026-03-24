@@ -4,6 +4,7 @@ function struct = formatGuiDataForXml(struct)
             struct, " "));
         return
     end
+
     
     if isstruct(struct)
         structFields = fields(struct);

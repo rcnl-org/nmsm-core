@@ -1,5 +1,8 @@
 function rel = getRelativePath(filePath, basePath)
-
+    if strcmp(filePath, "")
+        rel = filePath;
+        return
+    end
     if nargin < 2
         basePath = pwd;
     end
