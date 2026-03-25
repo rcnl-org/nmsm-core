@@ -1,5 +1,9 @@
-function throwGuiWarning(warningMessage, fieldObject, iconObject)
-    % fieldObject.BackgroundColor = [1.00,1.00,0.67];
-    iconObject.Visible = 'on';
-    iconObject.Tooltip = warningMessage;
+function throwGuiWarning(message, fieldObject, iconObject)
+    if ~isempty(fieldObject)
+        fieldObject.BackgroundColor = [1.00,1.00,0.67];
+    end
+    if ~isempty(iconObject)
+        iconObject.Visible = 'on';
+        iconObject.Tooltip = message;
+    end
 end
