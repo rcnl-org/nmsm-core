@@ -4,6 +4,5 @@ function fullPath = getAbsolutePath(relativePath, basePath)
     end
 
     fullPath = fullfile(basePath, relativePath);
-    fullPath = char(java.io.File(fullPath).getCanonicalPath());
-
+    % fullPath = char(java.io.File(fullPath).getCanonicalPath());
 end

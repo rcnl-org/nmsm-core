@@ -46,7 +46,7 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
         for i = 1 : numMarkers
             model_markers(end+1) = markerSet.get(i-1).getName();
         end
-        app.SetModelMarkers(model_markers);
+        app.setModelMarkers(model_markers);
     end
 
     function parseModelJoints(app, model)
@@ -56,7 +56,7 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
         for i = 1 : numJoints
             model_joints(end+1) = jointSet.get(i-1).getName();
         end
-        app.SetModelJoints(model_joints);
+        app.setModelJoints(model_joints);
     end
 
     function parseModelBodies(app, model)
@@ -66,7 +66,7 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
         for i = 1 : numBodies
             model_bodies(end+1) = bodySet.get(i-1).getName();
         end
-        app.SetModelBodies(model_bodies);
+        app.setModelBodies(model_bodies);
     end
 
     function parseModelCoordinates(app, model)
@@ -76,7 +76,7 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
         for i = 1 : numCoordinates
             model_coordinates(end+1) = coordinateSet.get(i-1).getName();
         end
-        app.SetModelCoordinates(model_coordinates);
+        app.setModelCoordinates(model_coordinates);
     end
 
     function parseModelGroups(app, model)
@@ -86,5 +86,5 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
         for i = 1 : numGroups
             model_groups(end+1) = forceSet.getGroup(i-1).getName();
         end
-        app.SetModelGroups(model_groups);
+        app.setModelGroups(model_groups);
     end
