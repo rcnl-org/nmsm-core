@@ -1,29 +1,22 @@
-function rel = getRelativePath(filePath, basePath)
+function relativePath = getRelativePath(filePath, basePath)
     if strcmp(filePath, "")
-        rel = filePath;
+        relativePath = filePath;
         return
     end
     if nargin < 2
         basePath = pwd;
     end
-
-    % Check if path is absolute
-    filepath = fileparts(filePath);
-
-    pwdParts = strsplit(fileparts(pwd), ["\", "/"]);
-
-    if startsWith(filepath, pwdParts{1})
-        filePath = fullfile(pwd, filePath);
+    
+    % If the path given is already relative, or is in a different drive, we
+    % are not dealing with it.
+    basePathParts = strsplit(fileparts(basePath), ["\", "/"]);
+    if ~startsWith(fileparts(filePath), basePathParts(1))
+        relativePath = filePath;
+        return
     end
-
-
-    % if ~exist(filePath, "file")
-    %     rel = filePath;
-    %     return
-    % end
 
     file = java.io.File(filePath).getCanonicalFile();
     base = java.io.File(basePath).getCanonicalFile();
 
-    rel = char(base.toURI().relativize(file.toURI()).getPath());
+    relativePath = char(base.toURI().relativize(file.toURI()).getPath());
 end
