@@ -134,6 +134,12 @@ if strcmp(inputs.toolName, "VerificationOptimization")
     end
 end
 if strcmp(inputs.toolName, "DesignOptimization")
+    if strcmpi(inputs.solverType, 'casadi') && isfield(inputs, 'finalTimeRange')
+        parameters = scaleToOriginal(phase.parameter(1,:), ...
+                inputs.maxParameter, inputs.minParameter);
+        values.time = values.time .* parameters(counter);
+        counter = counter + 1;
+    end
     if inputs.controllerTypes(2)
         values.synergyWeights = inputs.synergyWeights;
         if inputs.optimizeSynergyVectors
@@ -145,8 +151,8 @@ if strcmp(inputs.toolName, "DesignOptimization")
             parameters = scaleToOriginal(phase.parameter(1,:), ...
                 inputs.maxParameter, inputs.minParameter);
             values.synergyWeights(inputs.synergyWeightsIndices) = ...
-                parameters(1 : length(inputs.synergyWeightsIndices));
-            counter = length(inputs.synergyWeightsIndices) + 1;
+                parameters(counter : counter + length(inputs.synergyWeightsIndices) - 1);
+            counter = counter + length(inputs.synergyWeightsIndices);
         end
     end
 end

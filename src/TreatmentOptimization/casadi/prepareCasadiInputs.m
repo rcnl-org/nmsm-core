@@ -29,6 +29,9 @@ inputs.bounds = setupTreatmentOptimizationBounds(inputs, params);
 [inputs, inputs.guess] = setupGpopsInitialGuess(inputs);
 inputs = preSplineCasadiInputs(inputs);
 
+% Handle free final time
+inputs = setupFreeFinalTime(inputs);
+
 % First run of model functions to check for errors, preindex cost and
 % constraint terms, and find initial integrated quantities
 [outputsSymbolic, modeledValues, inputs] = ...
@@ -40,4 +43,26 @@ outputs.path = outputsSymbolic.path + outputsFinite.path;
 outputs.terminal = outputsSymbolic.terminal + outputsFinite.terminal;
 outputs.objective = outputsSymbolic.objective + outputsFinite.objective;
 inputs.initialOutputs = outputs;
+end
+
+function inputs = setupFreeFinalTime(inputs)
+    if isfield(inputs, 'finalTimeRange')
+        if ~isfield(inputs.guess.phase, 'parameter')
+            inputs.guess.phase.parameter = [];
+            inputs.bounds.phase.parameter = struct('lower', [], 'upper', []);
+        end
+        lowerScale = (inputs.finalTimeRange(1) / ...
+            inputs.collocationTimeOriginalWithEnd(end));
+        upperScale = (inputs.finalTimeRange(end) / ...
+            inputs.collocationTimeOriginalWithEnd(end));
+        inputs.guess.phase.parameter = [ ...
+            scaleToBounds(1, upperScale, lowerScale) ...
+            inputs.guess.phase.parameter];
+        inputs.bounds.phase.parameter.lower = [-0.5 ...
+            inputs.bounds.phase.parameter.lower];
+        inputs.bounds.phase.parameter.upper = [0.5 ...
+            inputs.bounds.phase.parameter.upper];
+        inputs.minParameter = [lowerScale inputs.minParameter];
+        inputs.maxParameter = [upperScale inputs.maxParameter];
+    end
 end
