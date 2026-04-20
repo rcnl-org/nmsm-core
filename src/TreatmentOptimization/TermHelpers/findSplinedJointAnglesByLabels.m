@@ -29,19 +29,19 @@
 function experimentalJointAngles = ...
     findSplinedJointAnglesByLabels(term, inputs, time)
 indices = term.internalDataIndices;
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointAngles = inputs.splinedJointAngles(:, indices);
-elseif all(size(time) == size(inputs.collocationTimeOriginalWithEnd)) &&...
-        max(abs(time - inputs.collocationTimeOriginalWithEnd)) < 1e-6
-    experimentalJointAngles = inputs.splinedJointAngles(:, indices);
-    experimentalJointAngles(end + 1, :) = ...
-        inputs.experimentalJointAngles(end, indices);
-elseif length(time) == 2
-    experimentalJointAngles = inputs.experimentalJointAngles( ...
-        [1 end], indices);
-else
-    experimentalJointAngles = evaluateGcvSplines( ...
-        inputs.splineJointAngles, indices - 1, time);
+timeCase = findCurrentTimeCase(time, inputs);
+switch timeCase
+    case 1
+        experimentalJointAngles = inputs.splinedJointAngles(:, indices);
+    case 2
+        experimentalJointAngles = inputs.splinedJointAngles(:, indices);
+        experimentalJointAngles(end + 1, :) = ...
+            inputs.experimentalJointAngles(end, indices);
+    case 3
+        experimentalJointAngles = inputs.experimentalJointAngles( ...
+            [1 end], indices);
+    case 4
+        experimentalJointAngles = evaluateGcvSplines( ...
+            inputs.splineJointAngles, indices - 1, time);
 end
 end

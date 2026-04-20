@@ -43,19 +43,19 @@ else
     end
     term.internalExperimentalDataIndices = indices;
 end
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointMoments = inputs.splinedJointMoments(:, indices);
-elseif all(size(time) == size(inputs.collocationTimeOriginalWithEnd)) &&...
-        max(abs(time - inputs.collocationTimeOriginalWithEnd)) < 1e-6
-    experimentalJointMoments = inputs.splinedJointMoments(:, indices);
-    experimentalJointMoments(end+1, :) = ...
-        inputs.experimentalJointMoments(end, indices);
-elseif size(time) == [2, 1]
-    experimentalJointMoments = inputs.experimentalJointMoments([1 end], ...
-        indices);
-else
-    experimentalJointMoments = evaluateGcvSplines( ...
-        inputs.splineJointMoments, indices - 1, time);
+timeCase = findCurrentTimeCase(time, inputs);
+switch timeCase
+    case 1
+        experimentalJointMoments = inputs.splinedJointMoments(:, indices);
+    case 2
+        experimentalJointMoments = inputs.splinedJointMoments(:, indices);
+        experimentalJointMoments(end+1, :) = ...
+            inputs.experimentalJointMoments(end, indices);
+    case 3
+        experimentalJointMoments = inputs.experimentalJointMoments([1 end], ...
+            indices);
+    case 4
+        experimentalJointMoments = evaluateGcvSplines( ...
+            inputs.splineJointMoments, indices - 1, time);
 end
 end

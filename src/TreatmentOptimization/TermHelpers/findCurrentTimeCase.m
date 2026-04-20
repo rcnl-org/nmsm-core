@@ -1,8 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, Array of double, Array of string) -> (Array of number)
+% (Array of double, struct) -> (double)
 %
-% Finds splined joint moments given labels, saving indices.
+% Compares current and expected time ranges for fetching precomputed data.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,40 +26,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [experimentalJointMoments, term] = ...
-    findSplinedJointMomentsByLabels(term, inputs, time, ...
-    inverseDynamicsMoments)
-indices = term.internalDataIndices;
-if nargin == 4 && size(inverseDynamicsMoments, 2) ~= ...
-        size(inputs.splinedJointMoments, 2)
-    if isfield(term, 'internalExperimentalDataIndices')
-        indices = term.internalExperimentalDataIndices;
+function timeCase = findCurrentTimeCase(time, inputs)
+try
+    timeCase = inputs.timeCase;
+catch
+    if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
+            max(abs(time ./ time(end) - inputs.collocationTimeOriginal ./ ...
+            inputs.collocationTimeOriginal(end))) < 1e-6
+        timeCase = 1;
+    elseif all(size(time) == size(inputs.collocationTimeOriginalWithEnd)) &&...
+            max(abs(time ./ time(end) - ...
+            inputs.collocationTimeOriginalWithEnd ./ ...
+            inputs.collocationTimeOriginalWithEnd(end))) < 1e-6
+        timeCase = 2;
+    elseif size(time) == [2, 1]
+        timeCase = 3;
     else
-        momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels,...
-            '_moment');
-        momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
-        includedJointMomentCols = ismember(momentLabelsNoSuffix, ...
-            convertCharsToStrings(inputs.coordinateNames));
-        for i = 1 : length(indices)
-            tempIndices = find(includedJointMomentCols, indices(i));
-            indices(i) = tempIndices(end);
-        end
-        term.internalExperimentalDataIndices = indices;
+        timeCase = 4;
     end
-end
-timeCase = findCurrentTimeCase(time, inputs);
-switch timeCase
-    case 1
-        experimentalJointMoments = inputs.splinedJointMoments(:, indices);
-    case 2
-        experimentalJointMoments = inputs.splinedJointMoments(:, indices);
-        experimentalJointMoments(end+1, :) = ...
-            inputs.experimentalJointMoments(end, indices);
-    case 3
-        experimentalJointMoments = inputs.experimentalJointMoments([1 end], ...
-            indices);
-    case 4
-        experimentalJointMoments = evaluateGcvSplines( ...
-            inputs.splineJointMoments, indices - 1, time);
 end
 end

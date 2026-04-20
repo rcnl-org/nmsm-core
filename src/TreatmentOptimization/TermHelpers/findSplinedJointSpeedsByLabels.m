@@ -29,19 +29,19 @@
 function experimentalJointSpeeds = ...
     findSplinedJointSpeedsByLabels(term, inputs, time)
 indices = term.internalDataIndices;
-if all(size(time) == size(inputs.collocationTimeOriginal)) && ...
-        max(abs(time - inputs.collocationTimeOriginal)) < 1e-6
-    experimentalJointSpeeds = inputs.splinedJointSpeeds(:, indices);
-elseif all(size(time) == size(inputs.collocationTimeOriginalWithEnd)) &&...
-        max(abs(time - inputs.collocationTimeOriginalWithEnd)) < 1e-6
-    experimentalJointSpeeds = inputs.splinedJointSpeeds(:, indices);
-    experimentalJointSpeeds(end+1, :) = ...
-        inputs.experimentalJointVelocities(end, indices);
-elseif length(time) == 2
-    experimentalJointSpeeds = inputs.experimentalJointVelocities( ...
-        [1 end], indices);
-else
-    experimentalJointSpeeds = evaluateGcvSplines( ...
-        inputs.splineJointAngles, indices - 1, time, 1);
+timeCase = findCurrentTimeCase(time, inputs);
+switch timeCase
+    case 1
+        experimentalJointSpeeds = inputs.splinedJointSpeeds(:, indices);
+    case 2
+        experimentalJointSpeeds = inputs.splinedJointSpeeds(:, indices);
+        experimentalJointSpeeds(end+1, :) = ...
+            inputs.experimentalJointVelocities(end, indices);
+    case 3
+        experimentalJointSpeeds = inputs.experimentalJointVelocities( ...
+            [1 end], indices);
+    case 4
+        experimentalJointSpeeds = evaluateGcvSplines( ...
+            inputs.splineJointAngles, indices - 1, time, 1);
 end
 end
