@@ -44,6 +44,8 @@ muscleDensity = 1059.7; % kg/cubic meters
 b1 = 10; % smooth the power by returning 0 (negative power) or 1 (non-negative power)
 b2 = 10; % smooth the heat rate by returning 0 (1-heat rate < 0)  or 1 (1-heat rate > 0)
 b3 = 10; % smooth the velocities of the muscle fibers by returning 0 (shortening) or 1 (lengthening or eccentric contraction)
+b4 = 50; % smooth the function to continuous evaluate normalizedMuscleFiberLengths to obtain lengthFactor
+
 % basal rate constants 
 % basalRate = basalCoefficient * modelMass ^ basalExponent
 % OpenSim Bhargava2004SmoothedMuscleMetabolics.cpp
@@ -75,7 +77,7 @@ for i = 1:size(allMuscleActivations, 2)
         slowActivation);
     % maintenance heat rate
     maintenanceHeatRate = calcMaintenanceHeatRate(muscleMass, fastActivation, ...
-        slowActivation, normalizedMuscleFiberLengths(:, i));
+        slowActivation, normalizedMuscleFiberLengths(:, i), b4);
     % shortening heat rate
     shorteningHeatRate = calcShorteningHeatRate(...
         normalizedMuscleFiberLengths(:, i), normalizedMuscleFiberVelocities(:, i), ...
@@ -136,7 +138,7 @@ activationHeatRate = phi * mass .* (fastActivation .* fastActivationConstant ...
 end
 
 function maintenanceHeatRate = calcMaintenanceHeatRate(mass, ...
-    fastActivation, slowActivation, normalizedMuscleFiberLengths)
+    fastActivation, slowActivation, normalizedMuscleFiberLengths, b4)
 % This function calculates the maintenanceHeatRate of an individual muscle 
 % using muscle mass, activations of both fast and slow twitch fibers, and
 % normalized muscle fiber lengths
@@ -146,16 +148,26 @@ slowMaintenanceConstant = 74; % (W/kg) maintenance heat rate constants for fast 
 
 % length factor returns values between 0 and 1 depending on the ranges of
 % normalized muscle fiber length
-lengthFactor = zeros(length(normalizedMuscleFiberLengths), 1);
-for i = 1:length(normalizedMuscleFiberLengths)
-    if normalizedMuscleFiberLengths(i) <= 0.5
-        lengthFactor(i) = 0.5;
-    elseif normalizedMuscleFiberLengths(i) <= 1
-        lengthFactor(i) = normalizedMuscleFiberLengths(i);
-    elseif normalizedMuscleFiberLengths(i) <= 1.5
-        lengthFactor(i) = -2 * normalizedMuscleFiberLengths(i) + 3;
-    end
-end
+% lengthFactor = zeros(length(normalizedMuscleFiberLengths), 1);
+% for i = 1:length(normalizedMuscleFiberLengths)
+%     if normalizedMuscleFiberLengths(i) <= 0.5
+%         lengthFactor(i) = 0.5;
+%     elseif normalizedMuscleFiberLengths(i) <= 1
+%         lengthFactor(i) = normalizedMuscleFiberLengths(i);
+%     elseif normalizedMuscleFiberLengths(i) <= 1.5
+%         lengthFactor(i) = -2 * normalizedMuscleFiberLengths(i) + 3;
+%     end
+% end
+
+sigma0pt5 = 1./(1 + exp(-b4*(normalizedMuscleFiberLengths-0.5)));
+sigma1pt0 = 1./(1 + exp(-b4*(normalizedMuscleFiberLengths-1.0)));
+sigma1pt5 = 1./(1 + exp(-b4*(normalizedMuscleFiberLengths-1.5)));
+
+% Smooth blending of the segments
+lengthFactor = ...
+    0.5 .* (1 - sigma0pt5) + ...
+    normalizedMuscleFiberLengths .* (sigma0pt5 - sigma1pt0) + ...
+    (-2*normalizedMuscleFiberLengths + 3) .* (sigma1pt0 - sigma1pt5);
 
 maintenanceHeatRate = mass .* lengthFactor .* ...
     ((fastMaintenanceConstant * fastActivation) + ...

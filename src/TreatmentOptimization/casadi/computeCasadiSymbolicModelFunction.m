@@ -76,6 +76,9 @@ end
 if valueOrAlternate(inputs, 'calculateMetabolicCost', false)
     modeledValues.metabolicCost = integrateRadauQuadrature( ...
         modeledValues.metabolicCost, inputs, values.time);
+    if ~isfield(inputs, 'initialMetabolicCost')
+        inputs.initialMetabolicCost = modeledValues.metabolicCost;
+    end
 end
 
 % Switch to endpoint function
