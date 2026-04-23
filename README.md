@@ -98,7 +98,9 @@ The NMSM Pipeline uses MATLAB's built-in testing suite alongside GitHub Action s
 
 ## How to Cite
 
-The paper for the NMSM Pipeline is pending publication.
+Please cite the following paper:
+
+Hammond CV, Williams ST, Vega MM, Ao D, Li G, Salati RM, Pariser KM, Shourijeh MS, Habib AW, Patten C, Fregly BJ. The Neuromusculoskeletal Modeling Pipeline: MATLAB-based model personalization and treatment optimization functionality for OpenSim. J Neuroeng Rehabil. 2025 May 19;22(1):112. doi: 10.1186/s12984-025-01629-5. PMID: 40383769; PMCID: PMC12087055.
 
 ## Acknowledgments
 

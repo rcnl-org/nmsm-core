@@ -60,8 +60,8 @@ modelFileName = parseElementTextByName(settingsTree, 'input_model_file');
 
 plotJointAngles(resultsDirectory, trackedQuantitiesDirectory, ...
     trialPrefix, modelFileName);
-plotJointVelocities(resultsDirectory, trialPrefix, modelFileName);
-plotJointAccelerations(resultsDirectory, trialPrefix, modelFileName);
+% plotJointVelocities(resultsDirectory, trialPrefix, modelFileName);
+% plotJointAccelerations(resultsDirectory, trialPrefix, modelFileName);
 plotJointLoads(resultsDirectory, trackedQuantitiesDirectory, trialPrefix);
 plotGroundReactions(resultsDirectory, trialPrefix);
 if isTorque

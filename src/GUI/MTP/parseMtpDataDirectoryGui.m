@@ -1,6 +1,7 @@
 function [errorFlag, message] = parseMtpDataDirectoryGui(app, dataDirectory)
 % requiredTypes logical = [EMGData GRFData IDData IKData MAData] 
 import org.opensim.modeling.Storage
+import org.opensim.modeling.Model
 errorFlag = false;
 message = "";
 
@@ -41,11 +42,28 @@ emgFileNames = {emgFolder.name};
 idFileNames = {idFolder.name};
 maFolderNames = {maFolder.name};
 
+files = dir(fullfile(dataDirectory, "IDData"));
+if isempty(files)
+    files = dir(fullfile(dataDirectory, "IKData"));
+end
+
+trialNames = string([]);
+for i=1:length(files)
+    if (~files(i).isdir)
+        trialNames(end+1) = files(i).name(1:end-4);
+    elseif(~files(i).isdir) && (islogical(includedPrefixes) || contains(files(i).name, includedPrefixes))
+        % prefixes(end+1) = files(i).name(1:end-4);
+        trialNames(end+1) = includedPrefixes{find( ...
+            cellfun(@(x) contains(files(i).name, x), ...
+            includedPrefixes), 1)};
+    end
+end
 
 try 
     emgNames = {};
     for i = 1 : length(trialNames)
-        [emgNames{i}, emgTime, emgData] = parseMotToComponents(Model(), ...
+        [emgNames{i}, emgTime, emgData] = parseMotToComponents( ...
+            org.opensim.modeling.Model(), ...
             Storage(fullfile(dataDirectory, "EMGData", ...
             strcat(trialNames(i), ".sto"))));
     end
@@ -56,7 +74,8 @@ end
 try 
     idNames = {};
     for i = 1 : length(trialNames)
-        [idNames{i}, idTime, idData] = parseMotToComponents(Model(), ...
+        [idNames{i}, idTime, idData] = parseMotToComponents( ...
+            org.opensim.modeling.Model(), ...
             Storage(fullfile(dataDirectory, "IDData", ...
             strcat(trialNames(i), ".sto"))));
     end
