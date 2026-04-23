@@ -14,12 +14,13 @@ classdef RCNLCostTermClass < handle
         function obj = RCNLCostTermClass()
         end
 
-        function struct = toStruct(obj)
-            struct.Attributes.name = obj.name;
-            struct.is_enabled = obj.is_enabled;
-            struct.type = obj.type;
-            struct.max_allowable_error = obj.max_allowable_error;
-            struct.error_center = obj.error_center;
+        function s = toStruct(obj)
+            s = struct();
+            s.Attributes.name = obj.name;
+            s.is_enabled = obj.is_enabled;
+            s.type = obj.type;
+            s.max_allowable_error = obj.max_allowable_error;
+            s.error_center = obj.error_center;
         end
     end
 end

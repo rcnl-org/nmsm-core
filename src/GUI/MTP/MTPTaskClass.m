@@ -29,7 +29,6 @@ classdef MTPTaskClass < handle
             );
 
         RCNLCostTerm = cell(1);
-        RCNLCostTermSet = struct("RCNLCostTerm", []);
     end
 
     methods
@@ -37,7 +36,29 @@ classdef MTPTaskClass < handle
             % obj.RCNLCostTermSet.
         end
 
-        function struct = toStruct(obj)
+        function s = toStruct(obj)
+            s = struct();
+            s.Attributes.name = obj.name;
+            s.index = obj.index;
+            s.is_enabled = obj.is_enabled;
+            s.muscle_specific_electromechanical_delays = obj.muscle_specific_electromechanical_delays;
+            s.optimize_electromechanical_delays = obj.optimize_electromechanical_delays;
+            s.optimize_activation_time_constants = obj.optimize_activation_time_constants;
+            s.optimize_activation_nonlinearity_constants = obj.optimize_activation_nonlinearity_constants;
+            s.optimize_emg_scale_factors = obj.optimize_emg_scale_factors;
+            s.optimize_optimal_fiber_lengths = obj.optimize_optimal_fiber_lengths;
+            s.optimize_tendon_slack_lengths = obj.optimize_tendon_slack_lengths;
+            n = numel(obj.RCNLCostTerm);
+            costTermStructs = cell(1, n);
+            for i = 1:n
+                if ~isempty(obj.RCNLCostTerm{i})
+                    costTermStructs{i} = obj.RCNLCostTerm{i}.toStruct();
+                else
+                    costTermStructs{i} = [];
+                end
+            end
+            s.RCNLCostTermSet = struct();
+            s.RCNLCostTermSet.RCNLCostTerm = costTermStructs;
         end
 
         function makeDefaultCostTermSet(obj)
@@ -50,7 +71,48 @@ classdef MTPTaskClass < handle
                 costTerm.max_allowable_error = obj.costTermStruct.(costTermNames{i}){3};
                 obj.RCNLCostTerm{i} = costTerm;
             end
-            obj.RCNLCostTermSet.RCNLCostTerm = obj.RCNLCostTerm;
+        end
+
+        function setParameterValueByIndex(obj, index, value)
+            % This function is needed because ideally I could store these
+            % values in an array, but struct2xml requires that I have the
+            % fields of the struct be the xml elements, therefore I need to
+            % individually assign these values like this.
+            switch index
+                case 1
+                    obj.muscle_specific_electromechanical_delays = value;
+                case 2
+                    obj.optimize_electromechanical_delays = value;
+                case 3
+                    obj.optimize_activation_time_constants = value;
+                case 4
+                    obj.optimize_activation_nonlinearity_constants = value;
+                case 5
+                    obj.optimize_emg_scale_factors = value;
+                case 6
+                    obj.optimize_optimal_fiber_lengths = value;
+                case 7
+                    obj.optimize_tendon_slack_lengths = value;
+            end
+        end
+
+        function value = getParameterValueByIndex(obj, index)
+            switch index
+                case 1
+                    value = obj.muscle_specific_electromechanical_delays;
+                case 2
+                    value = obj.optimize_electromechanical_delays;
+                case 3
+                    value = obj.optimize_activation_time_constants;
+                case 4
+                    value = obj.optimize_activation_nonlinearity_constants;
+                case 5
+                    value = obj.optimize_emg_scale_factors;
+                case 6
+                    value = obj.optimize_optimal_fiber_lengths;
+                case 7
+                    value = obj.optimize_tendon_slack_lengths;
+            end
         end
     end
 end
