@@ -44,7 +44,7 @@ precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 if isstruct(precalInputs)
-    optimizedInitialGuess = MuscleTendonLengthInitializationClass(precalInputs);
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
 else
