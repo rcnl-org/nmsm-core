@@ -18,7 +18,7 @@ end
 
 % The data directory must have EMGData, IDData, MAData
 if ~exist(fullfile(dataDirectory, "EMGData"), "dir")
-    errorFlag = true;
+    errorFlag = true; 
     message = "The given directory must contain a folder named 'EMGData'";
     return
 elseif ~exist(fullfile(dataDirectory, "IDData"), "dir")

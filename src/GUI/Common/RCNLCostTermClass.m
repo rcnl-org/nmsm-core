@@ -3,7 +3,7 @@ classdef RCNLCostTermClass < handle
     %   Detailed explanation goes here
 
     properties (Access = public, SetObservable)
-        name = "";
+        name = [];
         is_enabled = 'true';
         type = "";
         error_center = 0;
@@ -16,7 +16,9 @@ classdef RCNLCostTermClass < handle
 
         function s = toStruct(obj)
             s = struct();
-            s.Attributes.name = obj.name;
+            if ~isempty(obj.name)
+                s.Attributes.name = obj.name;
+            end
             s.is_enabled = obj.is_enabled;
             s.type = obj.type;
             s.max_allowable_error = obj.max_allowable_error;
