@@ -42,6 +42,7 @@ inputs.costTerms = parseRcnlCostTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet'));
 inputs.costTerms = splitListTerms(inputs.costTerms);
 inputs.costTerms = splitAxesTerms(inputs.costTerms);
+% Convert cost terms here, set aside converted terms
 if isequal(mexext, 'mexw64') 
     inputs.calculateAngularMomentum = any(all([ ...
         strcmp(cellfun(@(term) term.type, inputs.costTerms, ...
@@ -93,6 +94,7 @@ inputs.path = convertValueToError(inputs.path);
 inputs.terminal = splitListTerms(inputs.terminal);
 inputs.terminal = splitAxesTerms(inputs.terminal);
 inputs.terminal = convertValueToError(inputs.terminal);
+% Add costs converted to constraints
 end
 
 function inputs = parseBasicInputs(tree)
