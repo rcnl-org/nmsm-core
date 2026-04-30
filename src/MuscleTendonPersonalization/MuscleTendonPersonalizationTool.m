@@ -59,7 +59,6 @@ end
 app.RunningMTPLabel.Enable = 'on';
 results = MuscleTendonPersonalization(inputs, params, app);
 app.RunningMTPLabel.Enable = 'off';
-drawnow
 app.SavingResultsLabel.Enable = 'on';
 drawnow
 if params.performMuscleTendonLengthInitialization

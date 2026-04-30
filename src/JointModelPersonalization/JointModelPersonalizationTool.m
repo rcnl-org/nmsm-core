@@ -46,12 +46,14 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "JointModelPersonalizationTool");
 [outputFile, inputs, params] = ...
     parseJointModelPersonalizationSettingsTree(settingsTree);
+app.ParsingLabel.Enable = 'off';
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
-if ~isempty(app)
-    app.parsing = false;
-end
+app.RunningJMPLabel.Enable = 'on';
 newModel = JointModelPersonalization(inputs, params, app);
+app.RunningJMPLabel.Enable = 'off';
+app.SavingResultsLabel.Enable = 'on';
+drawnow
 newModel.print(outputFile);
 fprintf("Joint Model Personalization Runtime: %f Hours\n", toc/3600);
 diary off
@@ -61,5 +63,6 @@ try
     movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
 catch
 end
+app.SavingResultsLabel.Enable = 'off';
 end
 

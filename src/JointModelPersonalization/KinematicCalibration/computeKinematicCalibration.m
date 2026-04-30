@@ -64,13 +64,7 @@ end
 % (struct) -> (struct)
 % Prepare params for outer optimizer for Kinematic Calibration
 function output = prepareOptimizerOptions(params, app)
-if isempty(app)
-    output = optimoptions('lsqnonlin', 'UseParallel', true);
-else
-output = optimoptions('lsqnonlin', 'UseParallel', true, ...
-    'OutputFcn', @(x, optimValues, state)  ...
-    app.CancelOptimizationGui(x, optimValues, state));
-end
+output = optimoptions('lsqnonlin', 'UseParallel', true);
 output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
 output.OptimalityTolerance = valueOrAlternate(params, ...
     'optimalityTolerance', 1e-6);
@@ -85,5 +79,7 @@ output.MaxIterations = valueOrAlternate(params, ...
 output.Display = valueOrAlternate(params, ...
     'display','iter');
 output.FiniteDifferenceType = 'central';
+output.OutputFcn = @(x, optimValues, state, varargin)  ...
+    app.CancelOptimizationGui(x, optimValues, state);
 end
 
