@@ -28,11 +28,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function optimizedValues = MuscleTendonLengthInitialization(inputs)
+function optimizedValues = MuscleTendonLengthInitialization(inputs, app)
 primaryValues = prepareInitialValues(inputs);
 lowerBounds = makeLowerBounds(inputs);
 upperBounds = makeUpperBounds(inputs);
-optimizerOptions = makeOptimizerOptions(struct());
+optimizerOptions = makeOptimizerOptions(struct(), app);
 [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
     primaryValues, inputs, lowerBounds, upperBounds);
 optimizedValues = computeMuscleTendonLengthInitializationOptimization(taskValues, ...
@@ -81,12 +81,14 @@ end
 
 % (struct) -> (struct)
 % setup optimizer options struct to pass to fmincon
-function output = makeOptimizerOptions(params)
+function output = makeOptimizerOptions(params, app)
 output = optimset('UseParallel', true);
 output.MaxIter = valueOrAlternate(params, 'maxIterations', 100);
 output.MaxFunEvals = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 100000000);
 output.Display = 'iter';
+output.OutputFcn = @(x, optimValues, state)  ...
+    app.CancelOptimizationGui(x, optimValues, state);
 end
 
 % (struct, struct) -> (Array of number)

@@ -40,12 +40,12 @@
 % ----------------------------------------------------------------------- %
 
 function results = MuscleTendonPersonalization(inputs, ...
-    params)
+    params, app)
 inputs.primaryValues = prepareInitialValues(inputs, params);
 inputs = finalizeInputs(inputs, inputs.primaryValues, params);
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
-optimizerOptions = makeOptimizerOptions(params);
+optimizerOptions = makeOptimizerOptions(params, app);
 for i=1:length(inputs.tasks)
     [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
         inputs.primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
@@ -197,6 +197,8 @@ output.Hessian = 'lbfgs';
 output.GradObj = 'off';
 output.DiffMaxChange = 10;
 output.DiffMinChange = 1e-5;
+output.OutputFcn = @(x, optimValues, state)  ...
+    app.CancelOptimizationGui(x, optimValues, state);
 end
 
 % (struct, struct) -> (Array of number)
