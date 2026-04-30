@@ -44,16 +44,24 @@ verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+app.ParsingLabel.Enable = 'off';
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 if isstruct(precalInputs)
+    app.RunningMTLILabel.Enable = 'on';
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
+    app.RunningMTLILabel.Enable = 'off';
 else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
+app.RunningMTPLabel.Enable = 'on';
 results = MuscleTendonPersonalization(inputs, params, app);
+app.RunningMTPLabel.Enable = 'off';
+drawnow
+app.SavingResultsLabel.Enable = 'on';
+drawnow
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
         getMtpResultsToSave(inputs, params, results, precalInputs);
@@ -65,6 +73,7 @@ else
     saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory);
 end
+app.SavingResultsLabel.Enable = 'off';
 printMtpJointMomentMatchingError(resultsDirectory);
 fprintf("Muscle-Tendon Personalization Runtime: %f Hours\n", toc/3600);
 diary off

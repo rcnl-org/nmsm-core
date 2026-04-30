@@ -182,7 +182,7 @@ end
 
 % (struct) -> (struct)
 % setup optimizer options struct to pass to fmincon
-function output = makeOptimizerOptions(params)
+function output = makeOptimizerOptions(params, app)
 output = optimset('UseParallel', true);
 output.MaxIter = valueOrAlternate(params, 'maxIterations', 10000);
 output.MaxFunEvals = valueOrAlternate(params, ...
@@ -197,7 +197,7 @@ output.Hessian = 'lbfgs';
 output.GradObj = 'off';
 output.DiffMaxChange = 10;
 output.DiffMinChange = 1e-5;
-output.OutputFcn = @(x, optimValues, state)  ...
+output.OutputFcn = @(x, optimValues, state, varargin)  ...
     app.CancelOptimizationGui(x, optimValues, state);
 end
 
