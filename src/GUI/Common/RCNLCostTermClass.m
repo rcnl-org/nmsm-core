@@ -11,7 +11,17 @@ classdef RCNLCostTermClass < handle
     end
 
     methods
-        function obj = RCNLCostTermClass()
+        function obj = RCNLCostTermClass(s)
+            if nargin == 0
+                return
+            end
+            if isfield(s, "Attributes") 
+                obj.name = s.Attributes.name;
+            end
+            obj.is_enabled = s.is_enabled;
+            obj.type = s.type;
+            obj.max_allowable_error = s.max_allowable_error;
+            obj.error_center = s.error_center;
         end
 
         function s = toStruct(obj)
