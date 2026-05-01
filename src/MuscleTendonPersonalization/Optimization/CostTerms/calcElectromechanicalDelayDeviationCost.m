@@ -1,12 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function finds the prefixes of the trials to be used in the
-% personalization process. If the trial_prefixes field is present in the
-% config file, the prefixes are taken from there. Otherwise, the prefixes
-% are taken from the names of the files in the IDData folder.
-%
-% (struct, string) -> (None)
-% finds the prefixes of the trials to be used in the personalization
+% (struct, struct, struct) -> (Array of number)
+% returns the deviation cost for electromechanical delay from initial
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -16,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Marleny Vega                              %
+% Author(s): Max Ahlquist, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,30 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function prefixes = findPrefixes(tree, inputDirectory, passiveParsing)
-if nargin < 3
-    passiveParsing = false;
-end
-prefixField = getFieldByName(tree, 'trial_prefixes');
-if isstruct(prefixField) && length(prefixField.Text) > 0
-    includedPrefixes = strsplit(prefixField.Text, ' ');
-else
-    includedPrefixes = false;
-end
-files = dir(fullfile(inputDirectory, "IDData"));
-if isempty(files)
-    files = dir(fullfile(inputDirectory, "IKData"));
-end
-
-prefixes = string([]);
-for i=1:length(files)
-    if (~files(i).isdir) && (passiveParsing || islogical(includedPrefixes))
-        prefixes(end+1) = files(i).name(1:end-4);
-    elseif(~files(i).isdir) && contains(files(i).name, includedPrefixes)
-        % prefixes(end+1) = files(i).name(1:end-4);
-        prefixes(end+1) = includedPrefixes{find( ...
-            cellfun(@(x) contains(files(i).name, x), ...
-            includedPrefixes), 1)};
-    end
-end
+function cost = calcElectromechanicalDelayDeviationCost(values, ...
+    experimentalData, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
+cost = calcDeviationCostTerm( ...
+    values.electromechanicalDelays - ...
+    experimentalData.electromechanicalDelays, errorCenter, ...
+    maximumAllowableError);
 end
