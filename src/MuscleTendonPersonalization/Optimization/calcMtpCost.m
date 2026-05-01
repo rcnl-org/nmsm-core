@@ -57,6 +57,9 @@ for i = 1 : length(params.costTerms)
                     inputs, costTerm);
             case "emg_scale_factor"
                 cost = calcEmgScaleFactorDevationCost(values, costTerm);
+            case "electromechanical_delay"
+                cost = calcElectromechanicalDelayDeviationCost(values, ...
+                    inputs, costTerm);
             case "normalized_muscle_fiber_length"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcNormalizedFiberLengthDeviationCost( ...
