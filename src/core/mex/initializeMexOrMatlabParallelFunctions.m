@@ -32,7 +32,10 @@
 function version = initializeMexOrMatlabParallelFunctions(modelFile)
 version = getOpenSimVersion();
 if isequal(mexext, 'mexw64')
-    if version >= 40501
+    if version >= 40600
+        pointKinematicsMexWindows40600(modelFile);
+        inverseDynamicsMomentumMetabolicOrientationMexWindows40501(modelFile);
+    elseif version >= 40501
         pointKinematicsMexWindows40501(modelFile);
         inverseDynamicsMomentumMetabolicOrientationMexWindows40501(modelFile);
     else

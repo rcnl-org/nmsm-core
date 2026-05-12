@@ -236,7 +236,9 @@ end
 mexPath = strjoin(mexPath, '');
 mexPath = fullfile(mexPath, 'src', 'core', 'mex');
 version = getOpenSimVersion();
-if version >= 40501
+if version >= 40600
+    mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40600.mexw64');
+elseif version >= 40501
     mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40501.mexw64');
 else
     mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40400.mexw64');
