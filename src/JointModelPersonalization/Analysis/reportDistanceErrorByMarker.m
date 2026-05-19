@@ -6,7 +6,6 @@ import org.opensim.modeling.InverseKinematicsSolver
 import org.opensim.modeling.SimTKArrayCoordinateReference
 import org.opensim.modeling.Storage
 import org.opensim.modeling.ArrayStr
-import org.opensim.modeling.SimTKArrayDouble
 
 markerNames = verifyMarkerNames(markerFileName, markerNames);
 
@@ -40,22 +39,12 @@ for i=1:length(markerNames)
 end
 storage.setColumnLabels(names);
 
-numMarkers = ikSolver.getNumMarkersInUse();
-arrayDouble = org.opensim.modeling.SimTKArrayDouble(numMarkers, 0.0);
 for i=1:markersReference.getNumFrames() - 1 %start time is set so start with recording error
     ikSolver.track(state);
-    % error = [];
-    % for j=0:ikSolver.getNumMarkersInUse()-1
-    %     error(length(error)+1) = ikSolver.computeCurrentMarkerError(j);
-    % end
-    
-    ikSolver.computeCurrentMarkerErrors(arrayDouble);
-    numMarkers = ikSolver.getNumMarkersInUse();
-    error = zeros(1, numMarkers);
-    for j = 1:numMarkers
-        error(j) = arrayDouble.at(j - 1);
+    error = [];
+    for j=0:ikSolver.getNumMarkersInUse()-1
+        error(length(error)+1) = ikSolver.computeCurrentMarkerError(j);
     end
-
     addToRowToStorage(state, storage, error)
     frameCounter = frameCounter + 1;
     if nargin > 4 && (state.getTime() + 1/frequency > timeRange(2))
