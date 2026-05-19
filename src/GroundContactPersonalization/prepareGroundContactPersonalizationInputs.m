@@ -224,7 +224,7 @@ end
 function copyMexFunction(foot)
 path = mfilename("fullpath");
 [pathParts, splits] = strsplit(path, {'\', '/'});
-indices = find(cellfun(@(x) contains(x, 'nmsm-core'), pathParts));
+indices = find(cellfun(@(x) strcmp(x, 'nmsm-core'), pathParts));
 index = indices(end);
 mexPath = cell(1, 2 * index - 1);
 for i = 1 : index
@@ -236,7 +236,9 @@ end
 mexPath = strjoin(mexPath, '');
 mexPath = fullfile(mexPath, 'src', 'core', 'mex');
 version = getOpenSimVersion();
-if version >= 40501
+if version >= 40600
+    mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40600.mexw64');
+elseif version >= 40501
     mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40501.mexw64');
 else
     mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40400.mexw64');

@@ -32,7 +32,10 @@
 function version = initializeMexOrMatlabParallelFunctions(modelFile)
 version = getOpenSimVersion();
 if isequal(mexext, 'mexw64')
-    if version >= 40501
+    if version >= 40600
+        pointKinematicsMexWindows40600(modelFile);
+        inverseDynamicsMomentumMetabolicOrientationMexWindows40600(modelFile);
+    elseif version >= 40501
         pointKinematicsMexWindows40501(modelFile);
         inverseDynamicsMomentumMetabolicOrientationMexWindows40501(modelFile);
     else
@@ -46,6 +49,10 @@ clear pointKinematicsMatlabParallel
 clear calcGpopsIntegrand
 clear computeGpopsEndpointFunction
 clear computeGpopsContinuousFunction
+clear calcCasadiIntegrand
+clear computeCasadiSymbolicModelFunction
+clear computeCasadiFiniteDifferenceModelFunction
+clear calcCasadiDynamicConstraint
 clear calcSynergyBasedModeledValues
 clear calcTorqueBasedModeledValues
 clear calcSurrogateModel
