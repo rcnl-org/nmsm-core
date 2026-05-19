@@ -44,6 +44,9 @@ function [outputs, inputs, modeledValues] = ...
 %     modeledValues = storedModeledValues;
 % end
 
+% Signal continuous function
+inputs.timeCase = 2;
+
 % Prepare values and modeled values
 values = makeGpopsValuesAsStruct(casadiValues, inputs);
 [inputs, values] = updateSystemFromUserDefinedFunctions(inputs, values);
@@ -88,6 +91,9 @@ end
 % Switch to endpoint function
 values = reduceValuesStructsToEndpoints(values);
 modeledValuesTerminal = reduceValuesStructsToEndpoints(modeledValues);
+
+% Signal endpoint function
+inputs.timeCase = 3;
 
 % Terminal constraint terms
 persistent terminalConstraintTermCalculations;

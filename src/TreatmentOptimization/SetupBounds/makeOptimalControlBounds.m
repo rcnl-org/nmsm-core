@@ -118,6 +118,12 @@ else
     inputs.minControl = [inputs.minControl, minControl];
 end
 
+if strcmpi(inputs.solverType, 'casadi') && inputs.convertFdCostTerms
+    inputs.maxControl = [inputs.maxControl, inputs.convertedControlBounds];
+    inputs.minControl = [inputs.minControl, ...
+        -1 * inputs.convertedControlBounds];
+end
+
 if inputs.controllerTypes(2) && inputs.optimizeSynergyVectors
     numParameters = 0;
     for i = 1 : length(inputs.synergyGroups)
@@ -138,6 +144,12 @@ for i = 1:length(inputs.userDefinedVariables)
         inputs.userDefinedVariables{i}.upper_bounds];
     inputs.minParameter = [inputs.minParameter ...
         inputs.userDefinedVariables{i}.lower_bounds];
+end
+if strcmpi(inputs.solverType, 'casadi') && inputs.convertFdCostTerms
+    inputs.maxParameter = [inputs.maxParameter, ...
+        inputs.convertedParameterBounds];
+    inputs.minParameter = [inputs.minParameter, ...
+        -1 * inputs.convertedParameterBounds];
 end
 end
 

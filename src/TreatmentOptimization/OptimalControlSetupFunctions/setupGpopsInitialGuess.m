@@ -284,6 +284,11 @@ else
         end
     end
 end
+if strcmpi(inputs.solverType, 'casadi') && inputs.convertFdCostTerms
+    controls = [controls, zeros( ...
+        length(inputs.collocationTimeOriginalWithEnd), ...
+        inputs.numConvertedContinuousCosts)];
+end
 guess.phase.control = scaleToBounds(controls, inputs.maxControl, ...
     inputs.minControl);
 end
@@ -314,6 +319,14 @@ for i = 1:length(inputs.userDefinedVariables)
     end
     guess.parameter = [guess.parameter, ...
         inputs.userDefinedVariables{i}.initial_values];
+end
+if strcmpi(inputs.solverType, 'casadi') && inputs.convertFdCostTerms && ...
+        inputs.numConvertedDiscreteCosts > 0
+    if ~isfield(guess, "parameter")
+        guess.parameter = [];
+    end
+    guess.parameter = [guess.parameter, ... 
+        zeros(1, inputs.numConvertedDiscreteCosts)];
 end
 if isfield(guess, "parameter")
     guess.parameter = scaleToBounds(guess.parameter, inputs.maxParameter, ...
