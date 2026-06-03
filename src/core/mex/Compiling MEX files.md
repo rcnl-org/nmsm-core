@@ -41,4 +41,29 @@ These steps will compile new MEX files. To add them to the NMSM Pipeline:
 
 6. Change the version number in your copied if statement at the top of the block to your current version number from the first step, and change the function call inside this if statment to use your new MEX file. 
 
-The NMSM Pipeline will now be able to use your new MEX functions when needed. 
+The NMSM Pipeline will now be able to use your new MEX functions when needed.
+
+## Compiling the single-thread point kinematics MEX for GCP
+
+Ground Contact Personalization (GCP) uses MATLAB's parallel computing toolbox to compute finite-difference gradients in parallel. Each parallel worker calls the point kinematics MEX function, which internally uses multiple threads. Running both at the same time causes thread over-subscription and significantly slows down GCP. To avoid this, GCP uses a separate single-thread version of the point kinematics MEX, so that MATLAB's parallel workers are the only level of parallelism.
+
+The source file `PointKinematicsSingleThread.cpp` is identical to `PointKinematics.cpp` with one change: `#define NTHREADS 1` instead of `#define NTHREADS 20`.
+
+To compile it:
+
+1. Follow the same compilation steps as for the standard point kinematics MEX, but in `compilePointKinematicsMex.m` change `PointKinematics.cpp` to `PointKinematicsSingleThread.cpp` before running.
+
+2. Rename the compiled file to `pointKinematicsSingleThreadMexWindowsXXXXX.mexw64`, where `XXXXX` is the OpenSim version number from `getOpenSimVersion()`.
+
+3. Open `prepareGroundContactPersonalizationInputs.m` and find the `copyMexFunction` subfunction near the bottom of the file. Add a new version check at the top of the if block that routes the new version to your single-thread file:
+
+```matlab
+if version >= XXXXX
+    mexPath = fullfile(mexPath, 'pointKinematicsSingleThreadMexWindowsXXXXX.mexw64');
+elseif version >= 40600
+    mexPath = fullfile(mexPath, 'pointKinematicsSingleThreadMexWindows40600.mexw64');
+elseif version >= 40501
+    ...
+```
+
+GCP will now automatically use the single-thread MEX for the new OpenSim version. Treatment Optimization continues to use the standard multi-thread MEX through `pointKinematics.m`, which is unaffected by this change.
