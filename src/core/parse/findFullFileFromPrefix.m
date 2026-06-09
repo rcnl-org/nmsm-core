@@ -28,14 +28,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function fullfilename = findFullFileFromPrefix(directory, prefix)
-fullfilename = '';
+function fullfilelist = findFullFileFromPrefix(directory, prefix)
+fullfilelist = string([]);
 files = dir(directory);
 for i=1:length(files)
     index = strfind(files(i).name, prefix);
     if(length(index)==1)
-        fullfilename = fullfile(directory, files(i).name);
-        break;
+        fullfilelist(end+1) = fullfile(directory, files(i).name);
     end
 end
 end

@@ -33,6 +33,11 @@
 
 function plotMtpResultsFromSettingsFile(settingsFileName1, settingsFileName2)
 import org.opensim.modeling.Storage
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree1 = xml2struct(settingsFileName1);
 resultsDirectory1 = getFieldByName(settingsTree1, 'results_directory').Text;
 plotMtpResultsFromDirectory(resultsDirectory1)

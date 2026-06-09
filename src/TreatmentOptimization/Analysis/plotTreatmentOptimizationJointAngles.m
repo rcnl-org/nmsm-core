@@ -10,7 +10,7 @@
 % resultsDataFiles (Array of strings) - String array of .sto or .mot files.
 %
 % Optional varargin:
-% useRadians (boolean) - "useRadians=0" for plotting in degrees, or ...
+% useRadians (logical) - "useRadians=0" for plotting in degrees, or ...
 %   "useRadians=1" for plotting in radians.
 %   Default is 0.
 % columnsToUse (array of strings) - list of column names to plot in the
@@ -24,8 +24,8 @@
 % legend (array of strings) - specify legend values to use instead of the
 %   default.
 %   Default uses the directory structure to create legend names.
-% displayRmse (boolean) - "displayRmse=1" to display RMSE values for all
-%   subplots. "displayRmse=0" to hide RMSE values for all subplots.
+% showRmse (boolean) - "showRmse=1" to show RMSE values for all
+%   subplots. "showRmse=0" to hide RMSE values for all subplots.
 %   Default is 1.
 
 % ----------------------------------------------------------------------- %

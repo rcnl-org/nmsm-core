@@ -1,0 +1,75 @@
+{
+  "_schemaVersion": "1.0.0",
+  "plotNcpResultsFromSettingsFile":
+  {
+     "inputs":
+     [
+        {"name":"settingsFileName", 
+         "kind":"required", 
+         "type":["file=*.xml"], 
+         "purpose":"(String) NCP settings file"}
+     ]
+  },
+  "plotNeuralControlPersonalizationActivations":
+  {
+     "inputs":
+     [
+        {"name":"weightsFile", 
+         "kind":"required", 
+         "type":["file=*.sto"], 
+         "purpose":"(String) File containing synergy vector weights."},
+        {"name":"commandsFile", 
+         "kind":"required", 
+         "type":["file=*.sto"], 
+         "purpose":"(String) File containing synergy commands."},
+        {"name":"mtpActivationsFile", 
+         "kind":"optional", 
+         "type":["file=*.sto"], 
+         "purpose":"(String) File containing MTP muscle activations."},
+        {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]},
+        {"name":"figureHeight", 
+         "kind":"optional", 
+         "type":["integer"]}
+     ]
+  },
+  "plotNcpActivationRmsAndVaf":
+  {
+     "inputs":
+     [
+        {"name":"weightsFile", 
+         "kind":"required", 
+         "type":["file=*.sto"], 
+         "purpose":"(String) File containing synergy vector weights."},
+        {"name":"commandsFile", 
+         "kind":"required", 
+         "type":["file=*.sto"], 
+         "purpose":"(String) File containing synergy commands."},
+        {"name":"mtpActivationsFile", 
+         "kind":"optional", 
+         "type":["file=*.sto"], 
+         "purpose":"(String) File containing MTP muscle activations."}
+     ]
+  },
+  "plotMomentMatchingResults":
+  {
+     "inputs":
+     [
+        {"name":"experimentalMomentsFile", 
+         "kind":"required", 
+         "type":[["file=*.sto"], ["file=*.mot"]], 
+         "purpose":"(String) File containing inverse dynamics joint moments"},
+        {"name":"modeledMomentsFile", 
+         "kind":"required", 
+         "type":[["file=*.sto"], ["file=*.mot"]], 
+         "purpose":"(String) File containing NCP joint moments"},
+        {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]},
+        {"name":"figureHeight", 
+         "kind":"optional", 
+         "type":["integer"]}
+     ]
+  }
+}

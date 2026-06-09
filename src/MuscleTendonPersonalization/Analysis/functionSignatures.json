@@ -1,0 +1,137 @@
+{
+  "_schemaVersion": "1.0.0",
+  "plotMtpResultsFromSettingsFile":
+  {
+     "inputs":
+     [
+        {"name":"settingsFileName1", 
+         "kind":"required", 
+         "type":["file=*.xml"], 
+         "purpose":"(String) MTP settings file"},
+        {"name":"settingsFileName2", 
+         "kind":"optional", 
+         "type":["file=*.xml"], 
+         "purpose":"(String) MTP settings file"}
+     ]
+  },
+  "plotMtpPassiveMomentCurves":
+  {
+     "inputs":
+     [
+        {"name":"resultsDirectory", 
+         "kind":"required", 
+         "type":["folder"], 
+         "purpose":"(String) MTP results directory"},
+        {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]},
+        {"name":"figureHeight", 
+         "kind":"optional", 
+         "type":["integer"]}
+     ]
+  },
+  "plotMtpPassiveForceCurves":
+  {
+     "inputs":
+     [
+        {"name":"resultsDirectory", 
+         "kind":"required", 
+         "type":["folder"], 
+         "purpose":"(String) MTP results directory"},
+        {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]},
+        {"name":"figureHeight", 
+         "kind":"optional", 
+         "type":["integer"]}
+     ]
+  },
+  "plotMtpNormalizedFiberLengths":
+  {
+     "inputs":
+     [
+        {"name":"resultsDirectory", 
+         "kind":"required", 
+         "type":["folder"], 
+         "purpose":"(String) MTP results directory"},
+        {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]},
+        {"name":"figureHeight", 
+         "kind":"optional", 
+         "type":["integer"]}
+     ]
+  },
+  "plotMtpMuscleForces":
+  {
+     "inputs":
+     [
+        {"name":"resultsDirectory", 
+         "kind":"required", 
+         "type":["folder"], 
+         "purpose":"(String) MTP results directory"},
+        {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]},
+        {"name":"figureHeight", 
+         "kind":"optional", 
+         "type":["integer"]}
+     ]
+  },
+  "plotMtpMuscleExcitationsAndActivations":
+  {
+     "inputs":
+     [
+        {"name":"resultsDirectory", 
+         "kind":"required", 
+         "type":["folder"], 
+         "purpose":"(String) MTP results directory"},
+        {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]},
+        {"name":"figureHeight", 
+         "kind":"optional", 
+         "type":["integer"]}
+     ]
+  },
+  "plotMtpJointMoments":
+  {
+     "inputs":
+     [
+        {"name":"resultsDirectory", 
+         "kind":"required", 
+         "type":["folder"], 
+         "purpose":"(String) MTP results directory"},
+        {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]},
+        {"name":"figureHeight", 
+         "kind":"optional", 
+         "type":["integer"]}
+     ]
+  },
+  "plotMtpHillTypeMuscleParams":
+  {
+     "inputs":
+     [
+        {"name":"resultsDirectory", 
+         "kind":"required", 
+         "type":["folder"], 
+         "purpose":"(String) MTP results directory"}
+     ]
+  },
+  "plotMtpHillTypeMuscleParamsCompare":
+  {
+     "inputs":
+     [
+        {"name":"resultsDirectory1", 
+         "kind":"required", 
+         "type":["folder"], 
+         "purpose":"(String) MTP results directory"},
+        {"name":"resultsDirectory2", 
+         "kind":"required", 
+         "type":["folder"], 
+         "purpose":"(String) MTP results directory"}
+     ]
+  }
+}

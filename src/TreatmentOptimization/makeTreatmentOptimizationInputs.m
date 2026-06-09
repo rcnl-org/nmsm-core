@@ -45,6 +45,7 @@ inputs = makeSurrogateModel(inputs);
     = makeMaxAllowableError(inputs.toolName, inputs.controllerTypes, inputs.costTerms);
 inputs = makeMarkerTracking(inputs);
 inputs = makeOrientationTracking(inputs);
+inputs = makeAngularVelocityTracking(inputs);
 inputs = makeCenterOfPressureTracking(inputs);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);

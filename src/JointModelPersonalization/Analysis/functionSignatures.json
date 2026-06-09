@@ -1,0 +1,63 @@
+{
+  "_schemaVersion": "1.0.0",
+  "plotJmpResultsFromSettingsFile":
+  {
+     "inputs":
+     [
+        {"name":"settingsFileName", 
+         "kind":"required", 
+         "type":["file=*.xml"], 
+         "purpose":"(String) JMP settings file to plot from."},
+         {"name":"extraMarkerFiles", 
+         "kind":"optional", 
+         "type":["file=*.trc"], 
+         "purpose":"(List of Strings) Extra .trc marker files to plot marker errors from."}
+     ]
+  },
+  "plotMarkerDistanceErrors":
+  {
+     "inputs":
+     [
+        {"name":"files", 
+         "kind":"required", 
+         "type":["file=*.trc"], 
+         "purpose":"(String) .trc marker files to plot marker distance errors for."}, 
+         {"name":"onePlot", 
+         "kind":"optional", 
+         "type":["logical"], 
+         "purpose":"(Logical) Flag for if to include all lines on one subplot."},
+         {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]},
+         {"name":"figureWidth", 
+         "kind":"optional", 
+         "type":["integer"]}
+     ]
+  },
+  "reportDistanceErrorByMarker":
+  {
+     "inputs":
+     [
+        {"name":"model", 
+         "kind":"required", 
+         "type":["file=*.osim"], 
+         "purpose":"(String) .osim model to use in the inverse kinematics problem"}, 
+         {"name":"markerFileName", 
+         "kind":"required", 
+         "type":["file=*.trc"], 
+         "purpose":"(String) .trc marker file name to use in the inverse kinematics problem"},
+         {"name":"markerNames", 
+         "kind":"required", 
+         "purpose":"(List of Strings) List of markers to be used in the inverse kinematics problem"},
+         {"name":"outputSto", 
+         "kind":"required", 
+         "type":["file=*.sto"], 
+         "purpose":"(String) .sto file to write the marker errors output to."},
+         {"name":"timeRange", 
+         "kind":"optional",  
+         "type":["numeric", "numel=2"],
+         "purpose":"(List of Doubles, numel=2) Time range for which to solve the inverse kinematics problem"}
+     ]
+  }
+
+}

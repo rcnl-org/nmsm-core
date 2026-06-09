@@ -31,6 +31,11 @@
 
 function GroundContactPersonalizationTool(settingsFileName)
 tic
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "GroundContactPersonalizationTool");
 [inputs, params, resultsDirectory] = ...

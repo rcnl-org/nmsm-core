@@ -1,0 +1,55 @@
+{
+  "_schemaVersion": "1.0.0",
+  "plotGcpResultsFromSettingsFile":
+  {
+     "inputs":
+     [
+        {"name":"settingsFileName", 
+         "kind":"required", 
+         "type":["file=*.xml"], 
+         "purpose":"(String) GCP settings file"}
+     ]
+  },
+  "plotGcpStiffnessCoefficients":
+  {
+     "inputs":
+     [
+        {"name":"modelFileName", 
+         "kind":"required", 
+         "type":["file=*.osim"], 
+         "purpose":"(String) .osim model file used in the GCP run."},
+        {"name":"osimxFileName", 
+         "kind":"required", 
+         "type":["file=*.osimx"], 
+         "purpose":"(String) .osimx model file with GCP parameters."}
+     ]
+  },
+  "plotGcpGroundReactionsFromFiles":
+  {
+     "inputs":
+     [
+        {"name":"experimentalGroundReactionsFileName", 
+         "kind":"required", 
+         "type":[["file=*.sto"], ["file=*.mot"]], 
+         "purpose":"(String) File containing experimental ground reactions."},
+        {"name":"optimizedGroundReactionsFileName", 
+         "kind":"required", 
+         "type":[["file=*.sto"], ["file=*.mot"]], 
+         "purpose":"(String) File containing GCP modeled ground reactions."}
+     ]
+  },
+  "plotGcpFootKinematicsFromFiles":
+  {
+     "inputs":
+     [
+        {"name":"experimentalKinematicsFileName", 
+         "kind":"required", 
+         "type":[["file=*.sto"], ["file=*.mot"]], 
+         "purpose":"(String) File containing experimental inverse kinematics results"},
+        {"name":"optimizedKinematicsFileName", 
+         "kind":"required", 
+         "type":[["file=*.sto"], ["file=*.mot"]], 
+         "purpose":"(String) File containing GCP modeled inverse kinematics results"}
+     ]
+  }
+}

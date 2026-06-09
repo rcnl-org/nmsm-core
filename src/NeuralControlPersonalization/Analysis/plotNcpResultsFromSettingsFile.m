@@ -28,9 +28,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function plotNcpResultsFromSettingsFile(settingsFileName)
+function plotNcpResultsFromSettingsFile(settingsFileName, resultsDirectory)
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 ncpResultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+if nargin > 1
+    ncpResultsDirectory = resultsDirectory;
+end
 mtpResultsDirectory = getFieldByName(settingsTree, 'mtp_results_directory');
 inputDataDirectory = getFieldByName(settingsTree, 'data_directory').Text;
 trialPrefixes = findPrefixes(settingsTree, inputDataDirectory);

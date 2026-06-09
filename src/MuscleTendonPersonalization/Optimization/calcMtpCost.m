@@ -57,6 +57,12 @@ for i = 1 : length(params.costTerms)
                     inputs, costTerm);
             case "emg_scale_factor"
                 cost = calcEmgScaleFactorDevationCost(values, costTerm);
+            case "electromechanical_delay"
+                cost = calcElectromechanicalDelayRegularizationCost( ...
+                    values, inputs, costTerm);
+            case "electromechanical_delay_deviation"
+                cost = calcElectromechanicalDelayDeviationCost(values, ...
+                    inputs, costTerm);
             case "normalized_muscle_fiber_length"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcNormalizedFiberLengthDeviationCost( ...
@@ -64,6 +70,22 @@ for i = 1 : length(params.costTerms)
                 else
                     cost = calcNormalizedFiberLengthDeviationCost( ...
                         modeledValues, inputs, costTerm);
+                end
+            case "minimum_normalized_muscle_fiber_length"
+                if isfield(inputs, "synergyExtrapolation")
+                    cost = calcMinimumNormalizedFiberLengthMtpDeviationCost( ...
+                        synxModeledValues, params, costTerm);
+                else
+                    cost = calcMinimumNormalizedFiberLengthMtpDeviationCost( ...
+                        modeledValues, params, costTerm);
+                end
+            case "maximum_normalized_muscle_fiber_length"
+                if isfield(inputs, "synergyExtrapolation")
+                    cost = calcMaximumNormalizedFiberLengthMtpDeviationCost( ...
+                        synxModeledValues, params, costTerm);
+                else
+                    cost = calcMaximumNormalizedFiberLengthMtpDeviationCost( ...
+                        modeledValues, params, costTerm);
                 end
             case "passive_muscle_force"
                 if isfield(inputs, "synergyExtrapolation")

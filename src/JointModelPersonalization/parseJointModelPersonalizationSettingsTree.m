@@ -124,21 +124,14 @@ if isstruct(getFieldByName(tree, 'JMPBodySet')) || ~isempty(freeMarkers)
     [output.scaling, output.markers] = ...
         getBodyParameters(tree.JMPBodySet, model, freeMarkers);
 end
-translationBounds = getFieldByName(tree, 'translation_bounds');
-if(isstruct(translationBounds))
-    translationBounds = str2double(translationBounds.Text);
-end
-orientationBounds = getFieldByName(tree, 'orientation_bounds');
-if(isstruct(orientationBounds))
-    orientationBounds = str2double(orientationBounds.Text);
-end
+[translationBounds, orientationBounds, jointNames] = parseJointBounds(tree);
 output.initialValues = getInitialValues(model, output.parameters, ...
     output.scaling, output.markers);
-if(translationBounds || orientationBounds)
+if any(translationBounds) || any(orientationBounds)
     [output.lowerBounds, output.upperBounds] = getBounds(...
         output.parameters, output.initialValues, ...
         translationBounds, orientationBounds, output.scaling, ...
-        output.markers);
+        output.markers, jointNames);
 end
 end
 
@@ -159,6 +152,9 @@ if isfield(jointSetTree, 'JMPJoint')
         parentTrans = strsplit( ...
             joint.parent_frame_transformation.translation.Text, ' ');
         verifyLength(parentTrans, 3);
+        % Create parameter cell arrays. First element is the joint name,
+        % second parameter is isParent, third parameter is isTranslational,
+        % and the fourth parameter is coordinate number (x->0, y->1, z->2)
         for j=0:2
             if(strcmp(parentTrans{j+1}, 'true'))
                 inputs{counter} = {jointName, true, true, j};
@@ -291,16 +287,35 @@ end
 end
 
 function [lowerBounds, upperBounds] = getBounds(parameters, ...
-    initialValues, translationBounds, orientationBounds, scaling, markers)
+    initialValues, translationBounds, orientationBounds, scaling, ...
+    markers, jointNames)
 lowerBounds = [];
 upperBounds = [];
 for i=1:length(parameters)
-    if(parameters{i}{3})
-        lowerBounds(i) = initialValues(i) - translationBounds;
-        upperBounds(i) = initialValues(i) + translationBounds;
-    else
-        lowerBounds(i) = initialValues(i) - orientationBounds;
-        upperBounds(i) = initialValues(i) + orientationBounds;
+    numJoints = length(jointNames);
+    for j = 1 : numJoints % Iterate through joints in task
+        % Check which joint the current parameter belongs to
+        if strcmp(parameters{i}{1}, jointNames{j})
+            % translation bounds and orientation bounds are grouped by
+            % joint with parent coming first and child coming second
+            % parent frame transformation
+            if(parameters{i}{2} && parameters{i}{3})
+                lowerBounds(i) = initialValues(i) - translationBounds(j*2-1);
+                upperBounds(i) = initialValues(i) + translationBounds(j*2-1);
+            % parent frame orientation
+            elseif(parameters{i}{2} && ~parameters{i}{3})
+                lowerBounds(i) = initialValues(i) - orientationBounds(j*2-1);
+                upperBounds(i) = initialValues(i) + orientationBounds(j*2-1);
+            % child frame translation
+            elseif(~parameters{i}{2} && parameters{i}{3})
+                lowerBounds(i) = initialValues(i) - translationBounds(j*2);
+                upperBounds(i) = initialValues(i) + translationBounds(j*2);
+            % child frame orientation
+            elseif(~parameters{i}{2} && ~parameters{i}{3})
+                lowerBounds(i) = initialValues(i) - orientationBounds(j*2);
+                upperBounds(i) = initialValues(i) + orientationBounds(j*2);
+            end
+        end
     end
 end
 for i = 1 : length(scaling)
@@ -325,5 +340,57 @@ for i=1:length(paramArgs)
     if(isstruct(value))
         output.(paramName{i}) = str2double(value.Text);
     end
+end
+end
+
+function [translationBounds, orientationBounds, jointNames] = parseJointBounds(tree)
+
+jointSet = getFieldByName(tree, "JMPJoint");
+translationBounds = [];
+orientationBounds = [];
+jointNames = {};
+% if isstruct(jointSet)
+for i = 1 : length(jointSet)
+    % For each joint, create parent and child bounds for translations and
+    % orientations. These are later used in getBounds.
+    if length(jointSet) == 1
+        joint = jointSet;
+    else
+        joint = jointSet{i};
+    end
+    if isstruct(joint) % Joint will be logical 0 if the task has no joints.
+        jointNames{i} = string(joint.Attributes.name);
+    end
+
+    parentFrameTrans = getFieldByName(joint, "parent_frame_transformation");
+    % parse parent frame bounds
+    translationBoundsStr = getFieldByName(parentFrameTrans, 'translation_bounds');
+    if(isstruct(translationBoundsStr))
+        translationBounds(end+1) = str2double(translationBoundsStr.Text);
+    else 
+        translationBounds(end+1) = false;
+    end
+    orientationBoundStr = getFieldByName(parentFrameTrans, 'orientation_bounds');
+    if(isstruct(orientationBoundStr))
+        orientationBounds(end+1) = str2double(orientationBoundStr.Text);
+    else
+        orientationBounds(end+1) = false;
+    end
+
+    childFrameTrans = getFieldByName(joint, "child_frame_transformation");
+    % parse child frame bounds
+    translationBoundsStr = getFieldByName(childFrameTrans, 'translation_bounds');
+    if(isstruct(translationBoundsStr))
+        translationBounds(end+1) = str2double(translationBoundsStr.Text);
+    else 
+        translationBounds(end+1) = false;
+    end
+    orientationBoundStr = getFieldByName(childFrameTrans, 'orientation_bounds');
+    if(isstruct(orientationBoundStr))
+        orientationBounds(end+1) = str2double(orientationBoundStr.Text);
+    else
+        orientationBounds(end+1) = false;
+    end
+
 end
 end

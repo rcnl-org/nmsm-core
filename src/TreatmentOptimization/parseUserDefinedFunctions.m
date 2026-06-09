@@ -34,6 +34,23 @@ if isstruct(getFieldByName(tree, "model_functions"))
         inputs.systemFns = systemFns;
     end
 end
+if isstruct(getFieldByName(tree, "user_defined_data"))
+    userFiles = parseSpaceSeparatedList(tree, "user_defined_data");
+    if ~isempty(userFiles)
+        for file = userFiles
+            try
+                tempStruct = load(file);
+                fields = fieldnames(tempStruct);
+                for j = 1 : length(fields)
+                    inputs.userDefinedData.(fields{j}) = ...
+                        tempStruct.(fields{j});
+                end
+            catch
+                error("Unable to load <user_defined_data> at " + file)
+            end
+        end
+    end
+end
 parameterTree = getFieldByName(tree, "RCNLParameterTermSet");
 if isstruct(parameterTree) && isfield(parameterTree, "RCNLParameterTerm")
     inputs.userDefinedVariables = parseRcnlCostTermSet( ...

@@ -27,6 +27,8 @@
 
 function cost = calcFootPositionPeriodicityError(coordinates, experimental)
 difference = coordinates(:, 1) - coordinates(:, end);
-experimentalDifference = experimental(:, 1) - experimental(:, end);
+experimentalDifference = max( ...
+    abs(experimental(:, 1) - experimental(:, end)), ...
+    [0.0175; 0.0175; 0.0175; 0.0175; 0.001; 0.001; 0.001]);
 cost = (difference ./ experimentalDifference)';
 end

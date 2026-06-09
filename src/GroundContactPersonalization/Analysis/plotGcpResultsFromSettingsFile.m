@@ -29,6 +29,11 @@
 % ----------------------------------------------------------------------- %
 function plotGcpResultsFromSettingsFile(settingsFileName)
 import org.opensim.modeling.Storage
+try 
+    verifyProjectOpened()
+catch
+    error("NMSM Pipeline Project is not opened.")
+end
 settingsTree = xml2struct(settingsFileName);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 modelFileName = getFieldByName(settingsTree, 'input_model_file').Text;
