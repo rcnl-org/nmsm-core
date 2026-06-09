@@ -29,13 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcNcpCost(values, inputs, params, initialValues)
-[activations, weights, commands] = calcActivationsFromSynergyDesignVariables(values, inputs);
-
-error = [];
-weightsByGroup = findSynergyWeightsByGroup(values, inputs);
-weightsByGroupInit = findSynergyWeightsByGroup(initialValues, inputs);
-
+function cost = calcNcpCost(values, inputs, params)
+[activations, ~, commands] = calcActivationsFromSynergyDesignVariables(values, inputs);
+cost = 0;
 % Split activations into subsets ahead of cost computation
 if isfield(inputs, 'mtpActivationsColumnNames')
     [activationsWithMtpData, activationsWithoutMtpData] = ...
@@ -49,58 +45,65 @@ for term = 1:length(params.costTerms)
     if costTerm.isEnabled
         switch costTerm.type
             case "moment_tracking"
-                [normalizedFiberLengths, normalizedFiberVelocities] = ...
-                    calcNormalizedMuscleFiberLengthsAndVelocities( ...
-                    inputs, inputs.optimalFiberLengthScaleFactors, ...
-                    inputs.tendonSlackLengthScaleFactors);
+                % TODO compare two methods, result and time
                 muscleJointMoments = calcMuscleJointMoments(inputs, ...
-                    activations, normalizedFiberLengths, ...
-                    normalizedFiberVelocities);
+                    activations, inputs.normalizedFiberLengths, ...
+                    inputs.normalizedFiberVelocities);
+                % muscleJointMoments2 = calcMuscleJointMoments2(inputs, ...
+                %     activations, normalizedFiberLengths, ...
+                %     normalizedFiberVelocities);
                 rawCost = muscleJointMoments - ...
                     inputs.inverseDynamicsMoments; 
-                % fprintf("moment_tracking\n")
             case "activation_tracking"
                 if isfield(inputs, 'mtpActivations')
                     rawCost = activationsWithMtpData - inputs.mtpActivations;
                 else
                     rawCost = 0;
                 end
-                % fprintf("activation_tracking\n")
             case "activation_minimization"
                 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
                 rawCost = reshape(activationsWithoutMtpData, [], 1) - errorCenter;
-                % fprintf("activation_minimization\n")
             case "grouped_activations"
                 rawCost = calcGroupedActivationCost(activations, ...
                     inputs, params);
-                % fprintf("grouped_activations\n")
             case "grouped_fiber_lengths"
                 rawCost = calcGroupedNormalizedFiberLengthCost( ...
                     activations, inputs, params);
-                % fprintf("grouped_fiber_lengths\n")
-            case "bilateral_symmetry"
-                if length(inputs.synergyGroups) ~= 2
-                    throw(MException('', ['Bilateral symmetry cost ' ...
-                        'requires exactly two synergy groups.']))
-                end
-                rawCost = weightsByGroup(1, :, :) - weightsByGroup(2, :, :);
-                % fprintf("bilateral_symmetry\n")
             case "synergy_activation_minimization"
-                % synergy_activation_minimization
                 rawCost = commands(:);
-                % fprintf("weights_deviation\n")
-            case "minimize_weights_changes"
-                rawCost = weightsByGroup-weightsByGroupInit;
-                % fprintf("minimize_weights_changes\n")
             otherwise
                 throw(MException('', ['Cost term type ' costTerm.type ...
                     ' does not exist for this tool.']))
         end
         rawCost = rawCost(:);
         rawCost_scaled = (rawCost/ costTerm.maxAllowableError) / sqrt(numel(rawCost));
-        error = [error; rawCost_scaled];
+        cost = cost + rawCost_scaled.' * rawCost_scaled;
     end
 end
+end
 
-cost = error' * error;
+function muscleJointMoments = calcMuscleJointMoments2(experimentalData, ...
+    muscleActivations, normalizedFiberLength, normalizedFiberVelocity)
+activeForce = activeForceLengthCurve(normalizedFiberLength);
+muscleVelocity = forceVelocityCurve(normalizedFiberVelocity);
+passiveForce = passiveForceLengthCurve(normalizedFiberLength);
+
+% Expand maxIsometricForce and pennationAngle to [1 x 1 x Muscle x 1]
+% for broadcasting against momentArms [Trial x Joint x Muscle x Time]
+maxIsoForce = reshape(experimentalData.maxIsometricForce, 1, 1, [], 1);
+pennAngle   = reshape(cos(experimentalData.pennationAngle), 1, 1, [], 1);
+
+% Expand muscle-wise variables from [Trial x Muscle x Time]
+% to [Trial x 1 x Muscle x Time] for broadcasting with momentArms
+act = reshape(muscleActivations, size(muscleActivations,1), 1, size(muscleActivations,2), size(muscleActivations,3));
+af  = reshape(activeForce,       size(activeForce,1),       1, size(activeForce,2),       size(activeForce,3));
+mv  = reshape(muscleVelocity,    size(muscleVelocity,1),    1, size(muscleVelocity,2),    size(muscleVelocity,3));
+pf  = reshape(passiveForce,      size(passiveForce,1),      1, size(passiveForce,2),      size(passiveForce,3));
+
+% Compute per-muscle contribution, sum across muscle dim (3)
+muscleJointMoments = experimentalData.momentArms .* maxIsoForce .* ...
+    (act .* af .* mv + pf) .* pennAngle;           % [Trial x Joint x Muscle x Time]
+muscleJointMoments = sum(muscleJointMoments, 3);   % [Trial x Joint x 1 x Time]
+muscleJointMoments = permute(muscleJointMoments, [1 2 4 3]); % [Trial x Joint x Time]
+ 
 end

@@ -23,17 +23,8 @@ for i = 1:inputs.numTrials
         valuesIndex = valuesIndex + inputs.numNodes;
     end
 end
-% Spline fit command nodes to create synergy commands
-percent = linspace(0, 100, inputs.numPoints)';
-percentNodes = linspace(0, 100, inputs.numNodes)';
-
-commands = zeros(inputs.numTrials, inputs.numPoints, inputs.numSynergies);
-
-for i = 1:inputs.numTrials
-    for j = 1:inputs.numSynergies
-        commands(i, :, j) = spline(percentNodes, commandNodes(i, :, j), ...
-            percent);
-    end
+commandNodes2d = reshape(permute(commandNodes, [2 1 3]), inputs.numNodes, []);
+commands2d  = inputs.Bmatrix * commandNodes2d;
+commands = permute(reshape(commands2d, inputs.numPoints, inputs.numTrials, ...
+    inputs.numSynergies), [2 1 3]);
 end
-end
-

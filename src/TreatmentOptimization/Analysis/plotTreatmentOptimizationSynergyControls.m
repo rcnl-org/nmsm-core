@@ -179,11 +179,11 @@ else
             results.dataFiles);
 end
 for synergyGroup = 1 : numel(osimx.synergyGroups)
-    synergyGroup = osimx.synergyGroups{synergyGroup};
-    muscleIndices = contains(tracked.labels, synergyGroup.muscleNames);
-    tileFigure = makeSynergyVectorsFigure(params, synergyGroup);
+    synergyGroupData = osimx.synergyGroups{synergyGroup};
+    muscleIndices = contains(tracked.labels, synergyGroupData.muscleNames);
+    tileFigure = makeSynergyVectorsFigure(params, synergyGroupData);
     figureHeight = tileFigure.GridSize(1);
-    for i = 1 : synergyGroup.numSynergies
+    for i = 1 : synergyGroupData.numSynergies
         weightsPlottingArray = [tracked.data(synergyNumber, ...
             muscleIndices)];
         for k = 1 : numel(results.data)
@@ -195,17 +195,17 @@ for synergyGroup = 1 : numel(osimx.synergyGroups)
         set(gca, ...
             fontsize = params.tickLabelFontSize, ...
             color=params.subplotBackgroundColor)
-        b = bar(1:numel(synergyGroup.muscleNames), ...
+        b = bar(1:numel(synergyGroupData.muscleNames), ...
             weightsPlottingArray);
         b(1).FaceColor = params.lineColors(1);
         for k = 1 : numel(results.data)
             b(k+1).FaceColor = params.lineColors(k+1);
         end
         if i == figureHeight
-            xticks(1:numel(synergyGroup.muscleNames))
-            xticklabels(synergyGroup.muscleNames)
+            xticks(1:numel(synergyGroupData.muscleNames))
+            xticklabels(synergyGroupData.muscleNames)
         else
-            xticks(1:numel(synergyGroup.muscleNames))
+            xticks(1:numel(synergyGroupData.muscleNames))
             xticklabels([])
         end
         

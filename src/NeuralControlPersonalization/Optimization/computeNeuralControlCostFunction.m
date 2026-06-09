@@ -29,10 +29,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = computeNeuralControlCostFunction(values, inputs, params, initialValues)
-if inputs.use_bilateral_symmetry
-    weights_part = values(1:inputs.numWeightsOneLeg);
-    values = [weights_part; values];
+function cost = computeNeuralControlCostFunction(values, inputs, params)
+if inputs.enforce_bilateral_symmetry
+    weightsPart = values(1:inputs.numWeightsPerGroup(1));
+    values = [weightsPart; values];
 end
-cost = calcNcpCost(values, inputs, params, initialValues);
+cost = calcNcpCost(values, inputs, params);
 end

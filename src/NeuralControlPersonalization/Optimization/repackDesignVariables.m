@@ -1,10 +1,6 @@
 function values = repackDesignVariables(weights, commands, inputs)
 % design variables size
-length_weights   = 0;
-for i = 1:length(inputs.synergyGroups)
-    length_weights = length_weights + length(inputs.synergyGroups{i}.muscleNames) * ...
-        inputs.synergyGroups{i}.numSynergies;
-end
+length_weights   = sum(inputs.numWeightsPerGroup);
 length_commands = inputs.numTrials*inputs.numNodes*inputs.numSynergies;
 values = zeros(length_weights + length_commands, 1);
 

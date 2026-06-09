@@ -32,240 +32,133 @@ function finalValues = computeNeuralControlOptimization(initialValuesLong, ...
     inputs, params)
 [initWeights, ~, ~] = findSynergyWeightsAndCommands(initialValuesLong, inputs);
 initialValues = initialValuesLong;
-if inputs.use_bilateral_symmetry
-    initialValues(1:inputs.numWeightsOneLeg) = [];
+if inputs.enforce_bilateral_symmetry
+    initialValues(1:inputs.numWeightsPerGroup(1)) = [];
 end
 numDesignVariables = length(initialValues);
 [synergyWeightEquations, synergyWeightSums, lowerBounds, upperbounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights);
 optimizerOptions = prepareOptimizerOptions(params);
 
-if strcmpi(inputs.synergy_vector_normalization_method,'magnitude')
-    % nonlinear constraints
-    finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
-        inputs, params, initialValuesLong), initialValues, [], [], [], [], lowerBounds, upperbounds, ...
-        @(values)nonlinearConstraints(values, inputs, params), optimizerOptions);
-
-elseif strcmpi(inputs.synergy_vector_normalization_method,'sum')
+if strcmpi(inputs.synergy_vector_normalization_method,'sum')
     % linear constraints
     finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
-        inputs, params, initialValuesLong), initialValues, [], [], ...
-        synergyWeightEquations, synergyWeightSums, lowerBounds, [], [], optimizerOptions);
+        inputs, params), initialValues, [], [], ...
+        synergyWeightEquations, synergyWeightSums, lowerBounds, upperbounds,...
+        [], optimizerOptions);
+elseif strcmpi(inputs.synergy_vector_normalization_method,'magnitude')
+    % nonlinear constraints
+    normalizationTarget = sum(initWeights.^2, 2);   % (numSynergies x 1)
+    finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
+        inputs, params), initialValues, [], [], ...
+        [], [], lowerBounds, upperbounds, ...
+        @(values)nonlinearConstraints(values, inputs, normalizationTarget),optimizerOptions);
 else
     error('Unknown normalization method: %s', ...
         inputs.synergy_vector_normalization_method);
 end
 
-if inputs.use_bilateral_symmetry
-    weightsVariables = finalValues(1:inputs.numWeightsOneLeg);
+if inputs.enforce_bilateral_symmetry
+    weightsVariables = finalValues(1:inputs.numWeightsPerGroup(1));
     finalValues = [weightsVariables; finalValues];
-    weightsVariablesInit = initialValues(1:inputs.numWeightsOneLeg);
-    initialValues = [weightsVariablesInit; initialValues];
 end
-initActivations = calcActivationsFromSynergyDesignVariables(initialValues, inputs);
-finalActivations = calcActivationsFromSynergyDesignVariables(finalValues, inputs);
-fprintf('[computeNeuralControlOptimization] Compare init and final activation: \n');
-fprintf('  Init activation range: [%g, %g], error = %g\n', min(initActivations(:)), max(initActivations(:)), mean((initActivations(:) - inputs.mtpActivations(:)).^2));
-fprintf('  Final activation range: [%g, %g], error = %g\n', min(finalActivations(:)), max(finalActivations(:)), mean((finalActivations(:) - inputs.mtpActivations(:)).^2));
 
-% Reorder synergies to enforce a consistent ordering for easier comparison
-% [initialValues, finalValues] = reorderDesignVariables(initialValues, finalValues, inputs, params);
-[initialValues, finalValues] = reorderUsingSimilarity(initialValues, finalValues, inputs);
-plotSynergyWeightsComparison(initialValues, finalValues, inputs);
+finalValues = sortSynergies(finalValues, inputs);
 
 end
 
-function [data1, data2] = reorderUsingSimilarity(data1, data2, inputs)
-[weights1, ~, ~] = findSynergyWeightsAndCommands(data1, inputs);
-[weights2, ~, commandNodes2] = findSynergyWeightsAndCommands(data2, inputs);
-
-numSyn = size(weights1,1);
-similarity = zeros(numSyn, numSyn);
-for i = 1:numSyn
-    for j = 1:numSyn
-        similarity(i,j) = cosineSim(weights1(i,:), weights2(j,:));
-    end
-end
-% for each i pick best unused 
-perm = zeros(1,numSyn);
-used = false(1,numSyn);
-for i = 1:numSyn
-    row = similarity(i,:);
-    row(used) = -Inf;
-    [~, j] = max(row);
-    perm(i) = j;
-    used(j) = true;
-end
-% apply to data2
-weights2 = weights2(perm,:);
-commandNodes2 = commandNodes2(:,:,perm);
-fprintf('[reorderUsingSimilarity] perm (data2 -> data1 order): '); fprintf('%d ', perm); fprintf('\n');
-
-data2 = repackDesignVariables(weights2, commandNodes2, inputs);
-end
-
-function s = cosineSim(a,b)
-a = a(:); b = b(:);
-na = norm(a); nb = norm(b);
-if na < eps || nb < eps
-    s = 0;
-else
-    s = (a' * b) / (na * nb);
-end
-end
 
 % Generate constraints for synergy weight vectors and design variable bounds
 function [synergyWeightEquations, synergyWeightSums, lowerBounds, upperBounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights)
-% for linear sum constraint use (only positive synergy)
-initWeightSum = sum(initWeights,2);
-numSynergiesOneLeg = inputs.synergyGroups{1}.numSynergies;
-numMuscleOneLeg = length(inputs.synergyGroups{1}.muscleNames);
-row = 1; 
-column = 1;
-if inputs.use_bilateral_symmetry
-    synergyWeightEquations = zeros(numSynergiesOneLeg, numDesignVariables);
-    % synergyWeightSums = zeros(numSynergiesOneLeg, 1);
-    synergyWeightSums = initWeightSum(1:numSynergiesOneLeg);
-        for j = 1: numSynergiesOneLeg
-            synergyWeightEquations(row, column:column + ...
-                numMuscleOneLeg - 1) = 1;
-            % synergyWeightSums(row) = numMuscleOneLeg / 100;
+
+if strcmpi(inputs.synergy_vector_normalization_method, 'sum')
+    if inputs.enforce_bilateral_symmetry
+        activeGroups = inputs.synergyGroups(1);
+        activeWeights = initWeights(1:inputs.synergyGroups{1}.numSynergies, ...
+                                    1:length(inputs.synergyGroups{1}.muscleNames));
+    else
+        activeGroups  = inputs.synergyGroups;
+        activeWeights = initWeights;
+    end
+
+    numActiveRows = sum(cellfun(@(g) g.numSynergies, activeGroups));
+    synergyWeightEquations = zeros(numActiveRows, numDesignVariables);
+    synergyWeightSums = sum(activeWeights, 2);
+    row = 1; 
+    column = 1;
+    for i = 1:length(activeGroups)
+        nSyn = activeGroups{i}.numSynergies;
+        nMus = length(activeGroups{i}.muscleNames);
+        for j = 1:nSyn
+            synergyWeightEquations(row, column:column + nMus - 1) = 1;
             row = row + 1;
-            column = column + numMuscleOneLeg;
-        end
-else
-    synergyWeightEquations = zeros(inputs.numSynergies, numDesignVariables);
-    % synergyWeightSums = zeros(inputs.numSynergies, 1);
-    synergyWeightSums = initWeightSum;
-    for i = 1:length(inputs.synergyGroups)
-        for j = 1: inputs.synergyGroups{i}.numSynergies
-            synergyWeightEquations(row, column:column + ...
-                length(inputs.synergyGroups{i}.muscleNames) - 1) = 1;
-            % synergyWeightSums(row) = ...
-            %     length(inputs.synergyGroups{i}.muscleNames) / 100;
-            row = row + 1;
-            column = column + length(inputs.synergyGroups{i}.muscleNames);
+            column = column + nMus;
         end
     end
+else
+    % magnitude: nonlinear constraints handle normalization, 
+    % no linear constraints needed
+    synergyWeightEquations = [];
+    synergyWeightSums      = [];
+end
+
+if inputs.enforce_bilateral_symmetry
+    numberOfWeights = inputs.numWeightsPerGroup(1);
+else
+    numberOfWeights = sum(inputs.numWeightsPerGroup);
 end
 
 lowerBounds = zeros(numDesignVariables, 1);
 upperBounds = inf(numDesignVariables, 1);
-
-numberOfWeights = 0;
-if inputs.use_bilateral_symmetry
-    numberOfWeights = inputs.numWeightsOneLeg;
-else
-    for g = 1:length(inputs.synergyGroups)
-        numberOfWeights = numberOfWeights + length(inputs.synergyGroups{g}.muscleNames)...
-            * inputs.synergyGroups{g}.numSynergies;
-    end
-end
 if inputs.allow_negative_synergy_vector_weights
     lowerBounds(1:numberOfWeights) = -Inf;
-    upperBounds(1:numberOfWeights) = Inf;
+end
+end
 
-    % maxValue = max(initialValues(:))*1.5;
-    % lowerBounds(1:numberOfWeights) = -maxValue;
-    % upperBounds(1:numberOfWeights) = maxValue;
-end
-end
 
 % Set optimizer options from params struct
 function optimizerOptions = prepareOptimizerOptions(params)
-optimizerOptions = optimoptions('fmincon', 'UseParallel', 'always');
-optimizerOptions.DiffMinChange = valueOrAlternate(params, ...
-    'diffMinChange', 1e-6);
-% optimizerOptions.DiffMaxChange = valueOrAlternate(params, ...
-%     'diffMaxChange', 1);
-optimizerOptions.OptimalityTolerance = valueOrAlternate(params, ...
-    'optimalityTolerance', 1e-3);
-optimizerOptions.FunctionTolerance = valueOrAlternate(params, ...
-    'functionTolerance', 1e-6);
-optimizerOptions.StepTolerance = valueOrAlternate(params, ...
-    'stepTolerance', 1e-16);
-optimizerOptions.MaxFunctionEvaluations = valueOrAlternate(params, ...
-    'maxFunctionEvaluations', 1e6);
-optimizerOptions.MaxIterations = valueOrAlternate(params, ...
-    'maxIterations', 1e3);
-optimizerOptions.Display = valueOrAlternate(params, ...
-    'display','iter');
-optimizerOptions.Algorithm = valueOrAlternate(params, 'algorithm', 'sqp');
-% optimizerOptions.ConstraintTolerance = valueOrAlternate(params,'ConstraintTolerance', 1e-5);
-% optimizerOptions.TypicalX = valueOrAlternate(params,'TypicalX', initialValues);
-% optimizerOptions.FiniteDifferenceType = valueOrAlternate(params,'FiniteDifferenceType', 'central');
-% optimizerOptions.FiniteDifferenceStepSize = valueOrAlternate(params,'FiniteDifferenceStepSize', 1e-6);
-% optimizerOptions.EnableFeasibilityMode = valueOrAlternate(params,'EnableFeasibilityMode', true);
-% optimizerOptions.ScaleProblem = valueOrAlternate(params,'ScaleProblem', 'obj-and-constr');
-
-optimizerOptions.PlotFcn = {@optimplotfval, @optimplotconstrviolation, @optimplotstepsize};
+optimizerOptions = optimoptions('fmincon', 'UseParallel',true);
+optimizerOptions.DiffMinChange = params.diffMinChange;
+optimizerOptions.OptimalityTolerance = params.optimalityTolerance;
+optimizerOptions.FunctionTolerance = params.functionTolerance;
+optimizerOptions.StepTolerance = params.stepTolerance;
+optimizerOptions.MaxFunctionEvaluations = params.maxFunctionEvaluations;
+optimizerOptions.MaxIterations = params.maxIterations;
+optimizerOptions.Algorithm = params.algorithm;
+optimizerOptions.FiniteDifferenceType = params.finiteDifferenceType;
+% optimizerOptions.PlotFcn = {@optimplotfval, @optimplotconstrviolation, @optimplotstepsize};
+optimizerOptions.Display = valueOrAlternate(params,'display','iter');
 end
 
-function [c, ceq] = nonlinearConstraints(values, inputs, params)  
-if inputs.use_bilateral_symmetry
-    weights_part = values(1:inputs.numWeightsOneLeg);
-    values = [weights_part; values];
+
+function [c, ceq] = nonlinearConstraints(values, inputs, normalizationTarget)  
+if inputs.enforce_bilateral_symmetry
+    weightsPart = values(1:inputs.numWeightsPerGroup(1));
+    values = [weightsPart; values];
 end
-[synergyActivations, weights] = calcActivationsFromSynergyDesignVariables(values, inputs);
-normalizationTarget = inputs.synergy_vector_normalization_value;        
-switch lower(params.algorithm)
-    case 'interior-point'
-        if inputs.use_activation_saturation
-            %  -0.5 <= activation <= 1.5
-            c = [ synergyActivations(:) - 1.5;  
-                 -synergyActivations(:) - 0.5]; 
-        else
-            %   0 <= activation <= 1
-            c = [ synergyActivations(:) - 1;   
-                 -synergyActivations(:)];   
-        end
 
-        % if use_bilateral_symmetry
-        %     ceq = zeros(inputs.numSynergies/2, 1, 'double');
-        % else
-        %     ceq = zeros(inputs.numSynergies, 1, 'double');
-        % end
-        ceq = zeros(inputs.numSynergies, 1, 'double');
-        valuesIndex = 1;
-        row = 1; 
-        for i = 1:length(inputs.synergyGroups)
-            numSynergies = inputs.synergyGroups{i}.numSynergies;
-            for j = 1:numSynergies
-                weightsTemp = weights(valuesIndex, :);
-                % norm: ||w||^2 = target^2
-                ceq(row) = sum(weightsTemp.^2) - normalizationTarget^2;
-                valuesIndex = valuesIndex + 1;
-                row = row + 1;
-            end
-            % if use_bilateral_symmetry
-            %     break;
-            % end
-        end
-    case 'sqp'
-        c   = [];
-        ceq = [];
+% Inequality constraints: activation bounds (only for negative synergy)
+if inputs.allow_negative_synergy_vector_weights
+    [muscleActivations, weights] = ...
+        calcActivationsFromSynergyDesignVariables(values, inputs);
+    % 0 <= activation <= 1
+    minActivations = min(muscleActivations, [], 3);
+    maxActivations = max(muscleActivations, [], 3);
+    c = [ maxActivations(:) - 1;
+         -minActivations(:)];
+else
+    [weights, ~, ~] = findSynergyWeightsAndCommands(values, inputs);
+    c = [];
+end
 
-        % tolerance = 1e-6;
-        % targetLow  = (1-tolerance)*normalizationTarget;
-        % targetHigh = (1+tolerance)*normalizationTarget;
-        % 
-        % valuesIndex = 1;
-        % row = 1;
-        % for i = 1:length(inputs.synergyGroups)
-        %     numSynergies = inputs.synergyGroups{i}.numSynergies;
-        %     numMuscle = length(inputs.synergyGroups{i}.muscleNames);
-        %     for j = 1:numSynergies
-        %         weights = values(valuesIndex:(valuesIndex + numMuscle - 1));
-        %         norm2 = sum(weights.^2);
-        %         % upper bound:  ||w||^2 - targetHigh^2 <= 0
-        %         c(row)   = norm2 - targetHigh^2;
-        %         % lower bound:  targetLow^2 - ||w||^2 <= 0
-        %         c(row+1) = targetLow^2 - norm2;
-        % 
-        %         valuesIndex = valuesIndex + numMuscle;
-        %         row = row + 2;
-        %     end
-        % end
+% Equality constraints: magnitude normalization per synergy
+
+if inputs.enforce_bilateral_symmetry
+    nSyn1 = inputs.synergyGroups{1}.numSynergies;
+    ceq = sum(weights(1:nSyn1,:).^2, 2) - normalizationTarget(1:nSyn1);
+else
+    ceq = sum(weights.^2, 2) - normalizationTarget;
 end
 end

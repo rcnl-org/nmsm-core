@@ -61,7 +61,8 @@ saveNeuralControlPersonalizationResults(synergyWeights, ...
 fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
 diary off
 try
-    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
+    [~, fname, fext] = fileparts(settingsFileName);
+    copyfile(settingsFileName, fullfile(resultsDirectory, [fname fext]));
     movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
 catch
 end
@@ -76,8 +77,8 @@ for i = 1:inputs.numTrials
         squeeze(synergyCommands(i, :, :))';
 end
 
-synergyActivations = applyActivationSaturation(synergyActivations, ...
-    inputs.activation_saturation_sharpness);
+% synergyActivations = applyActivationSaturation(synergyActivations, ...
+%     inputs.activation_saturation_sharpness);
 
 combinedActivations = synergyActivations;
 if isfield(inputs, 'mtpActivationsColumnNames')
@@ -91,11 +92,7 @@ end
 
 function muscleJointMoments = calcFinalMuscleJointMoments(inputs, ...
     activations)
-[normalizedFiberLengths, normalizedFiberVelocities] = ...
-    calcNormalizedMuscleFiberLengthsAndVelocities( ...
-    inputs, inputs.optimalFiberLengthScaleFactors, ...
-    inputs.tendonSlackLengthScaleFactors);
 muscleJointMoments = calcMuscleJointMoments(inputs, ...
-    activations, normalizedFiberLengths, ...
-    normalizedFiberVelocities);
+    activations, inputs.normalizedFiberLengths, ...
+    inputs.normalizedFiberVelocities);
 end

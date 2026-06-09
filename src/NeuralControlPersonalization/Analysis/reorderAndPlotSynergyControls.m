@@ -66,108 +66,6 @@ data.trackedWeights = trackedWeights;
 data.resultsWeights = resultsWeights;
 end
 
-function [data1, data2] = reorderUsingSimilarity(data1, data2)
-% Reorder data2 to match data1 using GLOBAL optimal assignment on weights
-
-weights1 = data1.trackedWeights.data;   % (numSyn x numMus)
-weights2 = data2.trackedWeights.data;   % (numSyn x numMus)
-
-numSyn1 = size(weights1,1);
-numSyn2 = size(weights2,1);
-if numSyn1 ~= numSyn2
-    error('Number of synergies mismatch: data1=%d, data2=%d', numSyn1, numSyn2);
-end
-numSyn = numSyn1;
-
-similarity = pairwiseCosineRows(weights1, weights2);
-cost = -similarity;
-pairs = matchpairs(cost, 1e9);   % [rowIdx, colIdx]
-
-% Build perm so that data2(perm(i),:) aligns with data1(i,:)
-perm = zeros(1, numSyn);
-for p = 1:size(pairs,1)
-    i = pairs(p,1);
-    j = pairs(p,2);
-    perm(i) = j;
-end
-
-% Apply permutation to data2
-data2.trackedWeights.data = data2.trackedWeights.data(perm,:);
-data2.trackedActivations.data = data2.trackedActivations.data(:,perm);
-
-for k = 1:numel(data2.resultsWeights.data)
-    data2.resultsWeights.data{k} = data2.resultsWeights.data{k}(perm,:);
-end
-for k = 1:numel(data2.resultsActivations.data)
-    data2.resultsActivations.data{k} = data2.resultsActivations.data{k}(:,perm);
-end
-
-% Keep labels consistent if present
-if isfield(data2.trackedActivations,'labels') && numel(data2.trackedActivations.labels)==numSyn
-    data2.trackedActivations.labels = data2.trackedActivations.labels(perm);
-end
-if isfield(data2.resultsActivations,'labels')
-    for k = 1:numel(data2.resultsActivations.labels)
-        if numel(data2.resultsActivations.labels{k})==numSyn
-            data2.resultsActivations.labels{k} = data2.resultsActivations.labels{k}(perm);
-        end
-    end
-end
-
-
-fprintf('[reorderUsingSimilarity] perm (data2 -> data1 order): ');
-fprintf('%d ', perm);
-fprintf('\n');
-
-similarity_after_weight = pairwiseCosineRows(data1.trackedWeights.data, data2.trackedWeights.data);
-fprintf("Similarity score of weights after reordering {sum(diag) percent score, min(diag)}: {%.4f %.4f}\n", ...
-    sum(diag(similarity_after_weight))/numSyn*100, min(diag(similarity_after_weight)));
-
-similarity_after_command = pairwiseCosineRows(data1.trackedActivations.data', data2.trackedActivations.data');
-fprintf("Similarity score of commands after reordering {sum(diag) percent score, min(diag)}: {%.4f %.4f}\n", ...
-    sum(diag(similarity_after_command))/numSyn*100, min(diag(similarity_after_command)));
-fprintf('\n');
-% matrix print
-for i = 1:size(similarity_after_weight,1)
-    fprintf('%.6g', similarity_after_weight(i,1));
-    fprintf('\t%.6g', similarity_after_weight(i,2:end));
-    fprintf('\n');
-end
-fprintf('\n');
-for i = 1:size(similarity_after_command,1)
-    fprintf('%.6g', similarity_after_command(i,1));
-    fprintf('\t%.6g', similarity_after_command(i,2:end));
-    fprintf('\n');
-end
-
-end
-
-
-function S = pairwiseCosineRows(A, B)
-% A: n x d, B: n x d
-% S(i,j) = cosineSim(A(i,:), B(j,:))
-nA = size(A,1);
-nB = size(B,1);
-S = zeros(nA, nB);
-for i = 1:nA
-    for j = 1:nB
-        S(i,j) = cosineSim(A(i,:), B(j,:));
-    end
-end
-end
-
-
-function s = cosineSim(a,b)
-a = a(:); b = b(:);
-na = norm(a); nb = norm(b);
-if na < eps || nb < eps
-    s = 0;
-else
-    s = (a' * b) / (na * nb);
-end
-end
-
-
 function plotSynergyActivations(tracked, results, params, options, ...
     allow_negative_synergy_vector_weights)
 if isfield(options, "showRmse")
@@ -249,9 +147,6 @@ for i=1:numel(tracked.labels)
 end
 end
 
-
-
-
 function plotSynergyVectors(tracked, synergyLabels, results, params, osimx, ...
     options, allow_negative_synergy_vector_weights)
 % Outer level: iterate through synergy sets. We get 1 plot for each synergy
@@ -264,11 +159,11 @@ else
             results.dataFiles);
 end
 for synergyGroup = 1 : numel(osimx.synergyGroups)
-    synergyGroup = osimx.synergyGroups{synergyGroup};
-    muscleIndices = contains(tracked.labels, synergyGroup.muscleNames);
-    tileFigure = makeSynergyVectorsFigure(params, synergyGroup);
+    synergyGroupData = osimx.synergyGroups{synergyGroup};
+    muscleIndices = contains(tracked.labels, synergyGroupData.muscleNames);
+    tileFigure = makeSynergyVectorsFigure(params, synergyGroupData);
     figureHeight = tileFigure.GridSize(1);
-    for i = 1 : synergyGroup.numSynergies
+    for i = 1 : synergyGroupData.numSynergies
         weightsPlottingArray = [tracked.data(synergyNumber, ...
             muscleIndices)];
         for k = 1 : numel(results.data)
@@ -280,17 +175,17 @@ for synergyGroup = 1 : numel(osimx.synergyGroups)
         set(gca, ...
             fontsize = params.tickLabelFontSize, ...
             color=params.subplotBackgroundColor)
-        b = bar(1:numel(synergyGroup.muscleNames), ...
+        b = bar(1:numel(synergyGroupData.muscleNames), ...
             weightsPlottingArray);
         b(1).FaceColor = params.lineColors(1);
         for k = 1 : numel(results.data)
             b(k+1).FaceColor = params.lineColors(k+1);
         end
         if i == figureHeight
-            xticks(1:numel(synergyGroup.muscleNames))
-            xticklabels(synergyGroup.muscleNames)
+            xticks(1:numel(synergyGroupData.muscleNames))
+            xticklabels(synergyGroupData.muscleNames)
         else
-            xticks(1:numel(synergyGroup.muscleNames))
+            xticks(1:numel(synergyGroupData.muscleNames))
             xticklabels([])
         end
         
@@ -301,24 +196,17 @@ for synergyGroup = 1 : numel(osimx.synergyGroups)
         end
         maxWeights = max(tracked.data, [], "all");
         for k = 1 : numel(results.data)
-            maxWeights(k) = max(results.data{k}, [], "all");
+            maxWeights(end+1) = max(results.data{k}, [], "all");
         end
         ylim([0 max(maxWeights)])
 
         if allow_negative_synergy_vector_weights
-            minWeights = min(tracked.data, [], "all");
-            for k = 1 : numel(results.data)
-                minWeights(k) = min(results.data{k}, [], "all");
-            end
             ylim([-1 1])
         end
         synergyNumber = synergyNumber + 1;
     end
 end
 end
-
-
-
 
 function tileFigure = makeSynergyActivationsFigure(params, options, tracked)
 if isfield(options, "figureGridSize")

@@ -69,7 +69,7 @@ if nargin < 3
     figureWidth = ceil(sqrt(numel(experimentalColumns)));
     figureHeight = ceil(numel(experimentalColumns)/figureWidth);
 elseif nargin < 4
-    figureHeight = ceil(sqrt(numel(experimentalColumns)));
+    figureHeight = ceil(numel(experimentalColumns)/figureWidth);
 end
 if nargin < 5
     figureNumber = 1;
@@ -87,7 +87,6 @@ figure(Name = figureName, ...
     Position=params.figureSize)
 colors = getPlottingParams();
 subplotNumber = 1;
-figureNumber = 1;
 figureIndex = 1;
 hasLegend = false;
 t = tiledlayout(figureHeight, figureWidth, ...

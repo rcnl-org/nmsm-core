@@ -41,11 +41,6 @@ commandsStorage = Storage(commandsFile);
 synergyCommands = storageToDoubleMatrix(commandsStorage);
 ncpActivations = synergyWeights * synergyCommands;
 
-% if use_activation_saturation
-%     ncpActivations = applyActivationSaturation(ncpActivations, ...
-%         activation_saturation_sharpness);
-% end
-
 mtpStorage = Storage(mtpActivationsFile);
 mtpMuscleNames = getStorageColumnNames(mtpStorage);
 mtpActivations = storageToDoubleMatrix(mtpStorage);

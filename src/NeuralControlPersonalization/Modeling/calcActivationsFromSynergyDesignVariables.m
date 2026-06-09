@@ -2,20 +2,8 @@ function [activations, weights, commands] = calcActivationsFromSynergyDesignVari
     values, inputs)
 [weights, commands, ~] = findSynergyWeightsAndCommands(values, inputs);
 
-activations = zeros(inputs.numTrials, inputs.numMuscles, inputs.numPoints);
-
-for i = 1:inputs.numTrials
-    activations(i, :, :) =  weights' * squeeze(commands(i, :, :))';
-end
-
-% if inputs.use_activation_saturation
-%     activations_result = applyActivationSaturation(activations, ...
-%         inputs.activation_saturation_sharpness);
-%     if any(isnan(activations_result(:))) || any(isinf(activations_result(:)))
-%         minActivations = min(activations(:), [], 'omitnan');
-%         maxActivations = max(activations(:), [], 'omitnan');
-%         fprintf('Activation saturation produced NaN/Inf. Input range=[%g,%g]. ', minActivations, maxActivations);
-%     end
-%     activations = activations_result;
-% end
+commands2d = reshape(commands, [], inputs.numSynergies);
+activations2d = commands2d * weights;
+activations = permute(reshape(activations2d, inputs.numTrials, ...
+    inputs.numPoints, inputs.numMuscles), [1 3 2]);
 end

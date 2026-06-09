@@ -30,9 +30,6 @@
 
 function plotNeuralControlPersonalizationActivations(weightsFile, ...
     commandsFile, mtpActivationsFile, figureWidth, figureHeight)
-
-% use vargin for optional arguments, use figureGridSize (ex. plotTreatmentOptimizationJointLoads)
-% add activation saturation 
 import org.opensim.modeling.Storage
 params = getPlottingParams();
 weightsStorage = Storage(weightsFile);
@@ -56,16 +53,11 @@ else
     mtpMuscleNames = "";
 end
 
-% if use_activation_saturation
-%     muscleActivations = applyActivationSaturation(muscleActivations, ...
-%         activation_saturation_sharpness);
-% end
-
 if nargin < 4
     figureWidth = ceil(sqrt(numel(muscleNames)));
     figureHeight = ceil(numel(muscleNames)/figureWidth);
 elseif nargin < 5
-    figureHeight = ceil(sqrt(numel(muscleNames)));
+    figureHeight = ceil(numel(muscleNames) / figureWidth);
 end
 figureSize = figureWidth * figureHeight;
 splitFileName = split(commandsFile, "_synergyCommands.sto");

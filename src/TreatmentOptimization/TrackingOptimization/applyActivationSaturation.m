@@ -36,17 +36,10 @@ function muscleActivations = applyActivationSaturation( ...
 
 % Revised version allows for higher corner coefficients without reaching
 % infinity
-% numPower = cornerCoefficient .* (muscleActivations);
-% denomPower = cornerCoefficient .* (muscleActivations - 1);
-% muscleActivations = (log(exp(0.5 * numPower) + exp(-0.5 * numPower)) + ...
-%     log(exp(0.5 * numPower)) - log(exp(0.5 * denomPower) + ...
-%     exp(-0.5 * denomPower)) - log(exp(0.5 * denomPower))) .* ...
-%     (1 ./ cornerCoefficient);
-
-LB = 0; 
-UB = 1;
-softplus = @(x) log1p(exp(-abs(x))) + max(x,0);
-numPower = cornerCoefficient .* (muscleActivations - LB);
-denomPower = cornerCoefficient .* (muscleActivations - UB);
-muscleActivations = LB + (softplus(numPower) - softplus(denomPower)) .* (1 ./ cornerCoefficient);
+numPower = cornerCoefficient .* (muscleActivations);
+denomPower = cornerCoefficient .* (muscleActivations - 1);
+muscleActivations = (log(exp(0.5 * numPower) + exp(-0.5 * numPower)) + ...
+    log(exp(0.5 * numPower)) - log(exp(0.5 * denomPower) + ...
+    exp(-0.5 * denomPower)) - log(exp(0.5 * denomPower))) .* ...
+    (1 ./ cornerCoefficient);
 end

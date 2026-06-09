@@ -33,10 +33,13 @@
 
 function [synergyWeights, synergyCommands] = ...
     normalizeSynergiesByMaximumWeight(synergyWeights, synergyCommands)
-[~, index] = max(abs(synergyWeights), [], 2);
-rowIndex = (1:size(synergyWeights,1))';  
-scaleFactors = abs(synergyWeights(sub2ind(size(synergyWeights), rowIndex, index)));
-
+scaleFactors = max(abs(synergyWeights), [], 2);
 synergyWeights = synergyWeights ./ scaleFactors;
-synergyCommands = synergyCommands .* permute(scaleFactors, [3 2 1]);
+if ismatrix(synergyCommands)
+    % 2D case: [nTime x nSyns]
+    synergyCommands = synergyCommands .* scaleFactors';
+else
+    % 3D case: [nTrials x nTime x nSyns]
+    synergyCommands = synergyCommands .* permute(scaleFactors, [3 2 1]);
+end
 end
