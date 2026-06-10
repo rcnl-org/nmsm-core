@@ -94,8 +94,11 @@ output.MaxIter = valueOrAlternate(params, 'maxIterations', 100);
 output.MaxFunEvals = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 100000000);
 output.Display = 'iter';
-output.OutputFcn = @(x, optimValues, state, varargin)  ...
-    app.CancelOptimizationGui(x, optimValues, state);
+
+if ismethod(app, "CancelOptimizationGui")
+    output.OutputFcn = @(x, optimValues, state, varargin)  ...
+        app.CancelOptimizationGui(x, optimValues, state);
+end
 end
 
 % (struct, struct) -> (Array of number)

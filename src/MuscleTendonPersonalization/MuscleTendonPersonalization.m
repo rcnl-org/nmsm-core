@@ -201,8 +201,10 @@ output.Hessian = 'lbfgs';
 output.GradObj = 'off';
 output.DiffMaxChange = 10;
 output.DiffMinChange = 1e-5;
-output.OutputFcn = @(x, optimValues, state, varargin)  ...
-    app.CancelOptimizationGui(x, optimValues, state);
+if ismethod(app, "CancelOptimizationGui")
+    output.OutputFcn = @(x, optimValues, state, varargin)  ...
+        app.CancelOptimizationGui(x, optimValues, state);
+end
 end
 
 % (struct, struct) -> (Array of number)
