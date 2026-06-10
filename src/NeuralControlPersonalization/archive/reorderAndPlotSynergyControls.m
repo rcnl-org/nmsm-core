@@ -64,6 +64,8 @@ data.trackedActivations = trackedActivations;
 data.resultsActivations = resultsActivations;
 data.trackedWeights = trackedWeights;
 data.resultsWeights = resultsWeights;
+data.weights = trackedWeights.data;
+data.activations = reshape(trackedActivations.data, [1, size(trackedActivations.data)]);
 end
 
 function plotSynergyActivations(tracked, results, params, options, ...

@@ -104,6 +104,32 @@ data.activations = data.activations(:, :, perm);
 if isfield(data, 'labels') && numel(data.labels) == numel(perm)
     data.labels = data.labels(perm);
 end
+if isfield(data, 'trackedWeights') && isfield(data.trackedWeights, 'data')
+    data.trackedWeights.data = data.trackedWeights.data(perm, :);
+end
+if isfield(data, 'resultsWeights') && isfield(data.resultsWeights, 'data')
+    for k = 1:numel(data.resultsWeights.data)
+        data.resultsWeights.data{k} = data.resultsWeights.data{k}(perm, :);
+    end
+end
+if isfield(data, 'trackedActivations') && isfield(data.trackedActivations, 'data')
+    data.trackedActivations.data = data.trackedActivations.data(:, perm);
+    if isfield(data.trackedActivations, 'labels') && numel(data.trackedActivations.labels) == numel(perm)
+        data.trackedActivations.labels = data.trackedActivations.labels(perm);
+    end
+end
+if isfield(data, 'resultsActivations') && isfield(data.resultsActivations, 'data')
+    for k = 1:numel(data.resultsActivations.data)
+        data.resultsActivations.data{k} = data.resultsActivations.data{k}(:, perm);
+    end
+    if isfield(data.resultsActivations, 'labels')
+        for k = 1:numel(data.resultsActivations.labels)
+            if numel(data.resultsActivations.labels{k}) == numel(perm)
+                data.resultsActivations.labels{k} = data.resultsActivations.labels{k}(perm);
+            end
+        end
+    end
+end
 fprintf('[applyPermutation] %s | perm: ', label);
 fprintf('%d ', perm);
 fprintf('\n');

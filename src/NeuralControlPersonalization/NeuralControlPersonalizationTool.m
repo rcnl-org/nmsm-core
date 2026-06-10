@@ -40,7 +40,20 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
-outputLogFile = fullfile("commandWindowOutput.txt");
+if exist(resultsDirectory, "dir")
+    answer = input(sprintf( ...
+        'Results folder "%s" already exists. Continue and overwrite? [y/n]: ', ...
+        resultsDirectory), 's');
+    if ~strcmpi(strtrim(answer), 'y')
+        fprintf('NCP run cancelled.\n');
+        return
+    end
+else
+    mkdir(resultsDirectory);
+end
+[~, fname, fext] = fileparts(settingsFileName);
+copyfile(settingsFileName, fullfile(resultsDirectory, [fname fext]));
+outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
 diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
@@ -65,12 +78,6 @@ saveNeuralControlPersonalizationResults(synergyWeights, ...
     ncpMuscleJointMoments, inputs, resultsDirectory, precalInputs);
 fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
 diary off
-try
-    [~, fname, fext] = fileparts(settingsFileName);
-    copyfile(settingsFileName, fullfile(resultsDirectory, [fname fext]));
-    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
-catch
-end
 end
 
 function [combinedActivations, synergyActivations] = ...
