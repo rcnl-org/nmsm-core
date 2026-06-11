@@ -63,6 +63,9 @@ inputs.convertedCostConstraintBound = getDoubleFromField( ...
 inputs.casadi.ipopt.output_file = 'TreatmentOptimizationIPOPTinfo.txt';
 inputs.casadi.ipopt.tol = 1e0;
 inputs.casadi.ipopt.constr_viol_tol = 1e-4;
+inputs.casadiObjectiveGradientStepSize = getDoubleFromField( ...
+    getFieldByNameOrAlternate(settingsTree, ...
+    "objective_gradient_step_size", 1e-6));
 
 % Other user-defined settings, which can overwrite above options, and
 % assume field names are correct

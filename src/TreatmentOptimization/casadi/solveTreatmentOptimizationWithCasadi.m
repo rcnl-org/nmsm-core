@@ -50,13 +50,23 @@ end
 [derivativeDependencies, casadiDependencies] = ...
     findCasadiDerivativeDependencies(inputs);
 
-% Connect optimizer variables to model functions
+% Connect optimizer variables to model functions. FD constraints and
+% objective are evaluated in separate functions to support separate
+% derivative methods. The constraint Jacobians are calculated using
+% CasADi's native functionality that does a good job taking advantage of
+% matrix sparsity. The objective gradients are slow, so we can ideally
+% calculate their derivatives using a different method. 
 fprintf('%s\n\n', "Setting up symbolic model function...")
 symbolicOutputs = wrapSymbolicModelFunction(state, control, parameter);
-mainFunction = TreatmentOptimizationCallback( ...
-    'mainFunction', inputs, derivativeDependencies, casadiDependencies, ...
+mainFunctionConstraints = TreatmentOptimizationCallbackConstraints( ...
+    'mainFunctionConstraints', inputs, derivativeDependencies(1:2, :), ...
+    casadiDependencies(1:2, :), ...
     struct('enable_fd', true, 'fd_method', 'forward'));
-[path, terminal, objective] = mainFunction(state, control, parameter);
+[path, terminal] = mainFunctionConstraints(state, control, parameter);
+mainFunctionObjective = TreatmentOptimizationCallbackObjective( ...
+    'mainFunctionObjective', inputs, derivativeDependencies(3, :), ...
+    casadiDependencies(3, :), struct());
+objective = mainFunctionObjective(state, control, parameter);
 
 % Combine constraints and objective from symbolic and finite difference
 % model functions

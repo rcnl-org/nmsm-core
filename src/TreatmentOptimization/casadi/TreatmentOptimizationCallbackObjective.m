@@ -1,14 +1,16 @@
-classdef TreatmentOptimizationCallback < casadi.Callback
+classdef TreatmentOptimizationCallbackObjective < casadi.Callback
     properties
         inputs
         derivativeDependencies
         casadiDependencies
+        jacobianFunction
     end
     methods
         % Construct callback with optional struct input for callback
         % options, such as how to calculate derivatives. 
-        function self = TreatmentOptimizationCallback(name, inputs, ...
-                derivativeDependencies, casadiDependencies, options)
+        function self = TreatmentOptimizationCallbackObjective(name, ...
+                inputs, derivativeDependencies, casadiDependencies, ...
+                options)
             self@casadi.Callback();
             self.inputs = inputs;
             self.derivativeDependencies = derivativeDependencies;
@@ -24,7 +26,7 @@ classdef TreatmentOptimizationCallback < casadi.Callback
             v=3;
         end
         function v=get_n_out(self)
-            v=3;
+            v=1;
         end
 
         % Return sparsity patterns (shapes of dense matrices in this case)
@@ -54,14 +56,6 @@ classdef TreatmentOptimizationCallback < casadi.Callback
             switch i
                 case 0
                     res = casadi.Sparsity.dense( ...
-                        size(self.inputs.initialOutputs.path, 1), ...
-                        size(self.inputs.initialOutputs.path, 2));
-                case 1
-                    res = casadi.Sparsity.dense( ...
-                        size(self.inputs.initialOutputs.terminal, 1), ...
-                        size(self.inputs.initialOutputs.terminal, 2));
-                case 2
-                    res = casadi.Sparsity.dense( ...
                         size(self.inputs.initialOutputs.objective, 1), ...
                         size(self.inputs.initialOutputs.objective, 2));
             end
@@ -78,10 +72,26 @@ classdef TreatmentOptimizationCallback < casadi.Callback
             res = ~isempty(self.casadiDependencies{oind+1, iind+1});
         end
 
-%         % Tell CasADi to use provided Jacobian calculations
-%         function res = has_jacobian(self)
-%             res = true;
-%         end
+        % Tell CasADi to use provided Jacobian calculations
+        function res = has_jacobian(self)
+            res = true;
+        end
+
+        % Provide Jacobian calculations as a callback function. The
+        % 'varargin' input allows this function to be parsed with various
+        % inputs that CasADi may expect to be present that we do not use 
+        % (lists of input and output names and options). Not that
+        % get_jacobian() is not called iteratively, only once to give
+        % CasADi a handle to this function's Jacobian. (In CasADi, these
+        % functions are always called Jacobians, even when they are cost
+        % gradients)
+        function f = get_jacobian(self, jacobianName, ...
+                varargin)
+            self.jacobianFunction = ...
+                TreatmentOptimizationCallbackObjectiveJacobian( ...
+                jacobianName, self.inputs, self.derivativeDependencies);
+            f = self.jacobianFunction;
+        end
 
         % Iterative call to use main model function
         function output = eval(self, casadiValues)
@@ -90,9 +100,10 @@ classdef TreatmentOptimizationCallback < casadi.Callback
             structValues.parameter = full(casadiValues{3});
 
             outputs = computeCasadiFiniteDifferenceModelFunction( ...
-                structValues, self.inputs);
+                structValues, self.inputs, self.derivativeDependencies, ...
+                false, true);
 
-            output = {outputs.path, outputs.terminal, outputs.objective};
+            output = {outputs.objective};
         end
     end
 end

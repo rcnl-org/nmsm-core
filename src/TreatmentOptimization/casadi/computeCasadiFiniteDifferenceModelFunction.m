@@ -30,7 +30,7 @@
 
 function [outputs, inputs, modeledValues] = ...
     computeCasadiFiniteDifferenceModelFunction(casadiValues, inputs, ...
-    ~)
+    ~, calculateConstraints, calculateObjective)
 % persistent storedModeledValues;
 % if nargin == 1
 %     storedModeledValues = struct();
@@ -44,6 +44,13 @@ function [outputs, inputs, modeledValues] = ...
 %     modeledValues = storedModeledValues;
 % end
 
+% When constraint and objective functions are separated at a higher level,
+% we want to avoid unnecessary constraint and objective calculations. 
+if nargin < 5
+    calculateConstraints = true;
+    calculateObjective = true;
+end
+
 % Signal continuous function
 inputs.timeCase = 2;
 
@@ -54,6 +61,7 @@ modeledValues = calcSynergyBasedModeledValues(values, inputs);
 modeledValues = calcTorqueBasedModeledValues(values, inputs, ...
     modeledValues);
 
+if calculateConstraints
 % Path constraints
 persistent pathConstraintTermCalculations, persistent pathAllowedTypes;
 persistent pathNoAD;
@@ -68,13 +76,16 @@ persistent pathNoAD;
         inputs.path, pathConstraintTermCalculations, pathAllowedTypes, ...
         values, modeledValues, inputs, pathNoAD);
 % end
+end
 
+if calculateObjective
 % Continuous cost terms
 [integrand, inputs] = calcCasadiIntegrand(values, modeledValues, ...
     inputs, false);
+end
 
 % Integrate continuous cost terms and modeled values
-if ~isempty(integrand)
+if calculateObjective && ~isempty(integrand)
     integral = integrateRadauQuadrature(integrand, inputs, values.time);
 else
     integral = [];
@@ -95,6 +106,7 @@ modeledValuesTerminal = reduceValuesStructsToEndpoints(modeledValues);
 % Signal endpoint function
 inputs.timeCase = 3;
 
+if calculateConstraints
 % Terminal constraint terms
 persistent terminalConstraintTermCalculations;
 persistent terminalAllowedTypes;
@@ -109,7 +121,9 @@ end
     inputs.terminal, terminalConstraintTermCalculations, ...
     terminalAllowedTypes, values, modeledValuesTerminal, inputs, ...
     terminalNoAD);
+end
 
+if calculateObjective
 % Discrete cost terms
 persistent costTermCalculations, persistent allowedCostTypes;
 persistent costNoAD;
@@ -141,6 +155,7 @@ else
 end
 
 outputs.objective = continuousObjective + discreteObjective;
+end
 end
 
 function continuousObjective = normalizeCostByType(costTerms, ...
