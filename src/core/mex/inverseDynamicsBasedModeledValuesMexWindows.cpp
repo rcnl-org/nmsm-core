@@ -51,6 +51,7 @@ static bool modelIsLoaded = false;
 void ClearMemory(void){
     for (int i = 0; i < numThreads; i++){
 		delete osimModel[i];
+        delete osimState[i];
 		delete idSolver[i];
 	}
     modelIsLoaded = false;
@@ -110,10 +111,14 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
         const int numBodies = mxGetN(prhs[7]);
 		double* angularVelocityBodies = mxGetPr(prhs[8]); // body number index for angular velocity
         const int numAngularVelocityBodies = mxGetN(prhs[8]);
-		double* computeAngularMomentum = (double *) mxGetData(prhs[9]);
-		double* computeMetabolicCost = (double *) mxGetData(prhs[10]);
-		double* computeBodyOrientation = (double *) mxGetData(prhs[11]);
-		double* computeBodyAngularVelocity = (double *) mxGetData(prhs[12]);
+        double* imuBodies = mxGetPr(prhs[9]);
+        const int numImuBodies = mxGetN(prhs[9]);
+        vector<vector<double>> imuLocations = mexArrayToVector(prhs[10]);
+		double* computeAngularMomentum = (double *) mxGetData(prhs[11]);
+		double* computeMetabolicCost = (double *) mxGetData(prhs[12]);
+		double* computeBodyOrientation = (double *) mxGetData(prhs[13]);
+		double* computeBodyAngularVelocity = (double *) mxGetData(prhs[14]);
+		double* computeImuQuantities = (double *) mxGetData(prhs[15]);
 
         mwIndex k;
         mwSize numLabels, buflen;
@@ -131,6 +136,8 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
         double* bodyOrientations = mxGetPr(plhs[4]);
         plhs[5] = mxCreateDoubleMatrix(numPts, 3 * numAngularVelocityBodies, mxREAL);
         double* bodyAngularVelocities = mxGetPr(plhs[5]);
+        plhs[6] = mxCreateDoubleMatrix(numPts, 6 * numImuBodies, mxREAL);
+        double* imuQuantities = mxGetPr(plhs[6]);
 
         #pragma omp parallel for num_threads(numThreads)
         for (int i = 0; i < numPts; ++i){
@@ -205,6 +212,29 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
                     bodyAngularVelocities[i + numPts * j * 3] = bodyAngularVelocityVec(0);
                     bodyAngularVelocities[i + numPts * (j * 3 + 1)] = bodyAngularVelocityVec(1);
                     bodyAngularVelocities[i + numPts * (j * 3 + 2)] = bodyAngularVelocityVec(2);
+                }
+            }
+
+            if (*computeImuQuantities > 0.5) {
+                for (int j = 0; j < numImuBodies; j++) {
+                    Vec3 imuLinearAcceleration;
+                    Vec3 imuAngularVelocity;
+                    SpatialVec imuAcceleration = osimModel[thread_id]->getBodySet().get(imuBodies[j]).getAccelerationInGround(*osimState[thread_id]);
+                    SpatialVec imuVelocity = osimModel[thread_id]->getBodySet().get(imuBodies[j]).getVelocityInGround(*osimState[thread_id]);
+                    Vec3 linearOffset = Vec3(imuLocations[j][0], imuLocations[j][1], imuLocations[j][2]);
+                    // Move to point of interest
+                    imuLinearAcceleration = imuAcceleration[1] + cross(imuAcceleration[0], linearOffset) + cross(imuVelocity[0], cross(imuVelocity[0], linearOffset));
+                    // Add gravity
+                    imuLinearAcceleration = imuLinearAcceleration + osimModel[thread_id]->getGravity();
+                    // Express linear acceleration in IMU frame from ground
+                    imuLinearAcceleration = osimModel[thread_id]->getGround().expressVectorInAnotherFrame(*osimState[thread_id], imuLinearAcceleration, osimModel[thread_id]->getBodySet().get(imuBodies[j]));
+                    imuAngularVelocity = osimModel[thread_id]->getGround().expressVectorInAnotherFrame(*osimState[thread_id], imuVelocity[0], osimModel[thread_id]->getBodySet().get(imuBodies[j]));
+                    imuQuantities[i + numPts * j * 3] = imuLinearAcceleration(0);
+                    imuQuantities[i + numPts * (j * 3 + 1)] = imuLinearAcceleration(1);
+                    imuQuantities[i + numPts * (j * 3 + 2)] = imuLinearAcceleration(2);
+                    imuQuantities[i + numPts * (j * 3 + 3)] = imuAngularVelocity(0);
+                    imuQuantities[i + numPts * (j * 3 + 4)] = imuAngularVelocity(1);
+                    imuQuantities[i + numPts * (j * 3 + 5)] = imuAngularVelocity(2);
                 }
             }
 
