@@ -91,6 +91,10 @@ if isfield(setup.auxdata, 'splineCenterOfPressure')
             setup.auxdata.splineCenterOfPressure{i}, 0:1, time, 0);
     end
 end
+if isfield(setup.auxdata, 'splineImuData')
+    setup.auxdata.splinedImuData = evaluateGcvSplines( ...
+        setup.auxdata.splineImuData, setup.auxdata.imuLabels, time, 0);
+end
 for i = 1:length(setup.auxdata.contactSurfaces)
     setup.auxdata.splinedGroundReactionForces{i} = evaluateGcvSplines( ...
         setup.auxdata.splineExperimentalGroundReactionForces{i}, 0:2, time, 0);

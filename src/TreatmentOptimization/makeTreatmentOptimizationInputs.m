@@ -46,6 +46,7 @@ inputs = makeSurrogateModel(inputs);
 inputs = makeMarkerTracking(inputs);
 inputs = makeOrientationTracking(inputs);
 inputs = makeCenterOfPressureTracking(inputs);
+inputs = makeImuTracking(inputs);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);

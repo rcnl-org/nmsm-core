@@ -36,6 +36,7 @@ function inputs = parseTreatmentOptimizationDataDirectory(tree, inputs)
 inputs.trialName = parseTrialName(tree);
 inputs = parseExperimentalData(inputs, inputs.trackedDirectory);
 inputs = parseSynergyExperimentalData(tree, inputs);
+inputs = parseImuExperimentalData(tree, inputs);
 inputs = parseInitialGuessData(inputs, inputs.initialGuessDirectory);
 inputs = parseInitialValues(inputs);
 end
@@ -162,6 +163,27 @@ if strcmp(inputs.controllerType, "synergy")
         inputs.trialName, inputs.model);
 end
 end
+
+
+function inputs = parseImuExperimentalData(tree, inputs)
+try
+    [inputs.experimentalImuData, inputs.imuLabels] = ...
+        parseTrialDataTryDirectories( ...
+        fullfile(inputs.trackedDirectory, "IMUData"), ...
+        fullfile(dataDirectory, "IMUData"), inputs.trialName, ...
+        inputs.model, true);
+catch
+    try
+        [inputs.experimentalImuData, inputs.imuLabels] = ...
+            parseTrialDataTryDirectories( ...
+            fullfile(inputs.initialGuessDirectory, "IMUData"), ...
+            fullfile(dataDirectory, "IMUData"), inputs.trialName, ...
+            inputs.model, true);
+    catch
+    end
+end
+end
+
 
 function inputs = parseInitialValues(inputs)
 try
