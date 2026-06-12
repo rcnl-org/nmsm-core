@@ -47,6 +47,7 @@ inputs = makeMarkerTracking(inputs);
 inputs = makeOrientationTracking(inputs);
 inputs = makeAngularVelocityTracking(inputs);
 inputs = makeCenterOfPressureTracking(inputs);
+inputs = makeImuTracking(inputs);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);

@@ -84,6 +84,10 @@ if isfield(inputs, 'splineCenterOfPressure')
             inputs.splineCenterOfPressure{i}, 0:1, time, 0);
     end
 end
+if isfield(inputs, 'splineImuData')
+    inputs.splinedImuData = evaluateGcvSplines( ...
+        inputs.splineImuData, inputs.imuLabels, time, 0);
+end
 for i = 1:length(inputs.contactSurfaces)
     inputs.splinedGroundReactionForces{i} = evaluateGcvSplines( ...
         inputs.splineExperimentalGroundReactionForces{i}, 0:2, time, 0);

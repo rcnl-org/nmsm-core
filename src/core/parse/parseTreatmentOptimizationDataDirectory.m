@@ -37,6 +37,7 @@ inputs.trialName = parseTrialName(tree);
 inputs = parseExperimentalData(inputs, inputs.trackedDirectory);
 inputs = parseSynergyExperimentalData(tree, inputs);
 inputs = parseMuscleExperimentalData(tree, inputs);
+inputs = parseImuExperimentalData(tree, inputs);
 inputs = parseUserDefinedExperimentalData(tree, inputs);
 inputs = parseSurrogateModelData(tree, inputs);
 inputs = parseInitialGuessData(inputs, inputs.initialGuessDirectory);
@@ -197,6 +198,25 @@ if any(inputs.controllerTypes(2:3))
         "data and values.");
     inputs.experimentalMuscleActivations = ...
         experimentalMuscleActivations(:, newOrder);
+end
+end
+
+function inputs = parseImuExperimentalData(tree, inputs)
+try
+    [inputs.experimentalImuData, inputs.imuLabels] = ...
+        parseTrialDataTryDirectories( ...
+        fullfile(inputs.trackedDirectory, "IMUData"), ...
+        fullfile(dataDirectory, "IMUData"), inputs.trialName, ...
+        inputs.model, true);
+catch
+    try
+        [inputs.experimentalImuData, inputs.imuLabels] = ...
+            parseTrialDataTryDirectories( ...
+            fullfile(inputs.initialGuessDirectory, "IMUData"), ...
+            fullfile(dataDirectory, "IMUData"), inputs.trialName, ...
+            inputs.model, true);
+    catch
+    end
 end
 end
 
