@@ -37,6 +37,7 @@ end
 saveInverseKinematicsResults(inputs, values, inputs.resultsDirectory);
 saveInverseDynamicsResults(solution, inputs, values, inputs.resultsDirectory);
 saveGroundReactionResults(solution, inputs, values, inputs.resultsDirectory);
+saveImuResults(solution, inputs, values, inputs.resultsDirectory);
 saveExperimentalGroundReactions(inputs, inputs.resultsDirectory);
 saveMiscellaneousAnalysisFiles(solution, inputs, values);
 
@@ -155,6 +156,23 @@ if ~isempty(groundContactData)
     end
     writeToSto(groundContactLabels, time, dataCoP, ...
         fullfile(inputs.resultsDirectory, "GRFData", "CoP.sto"));
+end
+end
+
+function saveImuResults(solution, inputs, values, outputDirectory)
+if valueOrAlternate(inputs, 'calculateImuQuantities', false)
+    if ~exist(fullfile(outputDirectory, "IMUData"), "dir")
+        mkdir(fullfile(outputDirectory, "IMUData"))
+    end
+    [time, imuQuantities] = splineToEvenlySpaced(values.time, ...
+        solution.imuQuantities, length(inputs.experimentalTime));
+    imuQuantitiesLabels = repelem(inputs.trackedImuNames, 1, 6);
+    imuQuantitiesLabels = imuQuantitiesLabels + ...
+        repmat(["_agx" "_agy" "_agz" "_wx" "_wy" "_wz"], 1, ...
+        length(inputs.trackedImuNames));
+    writeToSto(imuQuantitiesLabels, time, ...
+        imuQuantities, fullfile(outputDirectory, "IMUData", ...
+        strcat(inputs.trialName, ".sto")));
 end
 end
 
