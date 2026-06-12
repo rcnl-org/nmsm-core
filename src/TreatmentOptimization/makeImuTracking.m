@@ -75,8 +75,11 @@ end
 inputs.trackedImuLocations = locations(indices, :);
 inputs.trackedImuBodyIndices = bodies(indices);
 if ~isempty(inputs.trackedImuNames)
+    inputs.calculateImuQuantities = true;
     inputs.splineImuData = makeGcvSplineSet(inputs.experimentalTime, ...
         inputs.experimentalImuData, inputs.imuLabels);
+else
+    inputs.calculateImuQuantities = false;
 end
 end
 
