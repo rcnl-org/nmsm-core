@@ -43,6 +43,16 @@ classdef SynergyExtrapolationClass < handle
             s.RCNLCostTermSet.RCNLCostTerm = costTermStructs;
         end
 
+        function loadFromStruct(obj, s)
+            applyStructToHandle(obj, s);
+            if isfield(s, 'RCNLCostTermSet') && isfield(s.RCNLCostTermSet, 'RCNLCostTerm')
+                terms = s.RCNLCostTermSet.RCNLCostTerm;
+                for i = 1 : length(terms)
+                    obj.RCNLCostTerm{i} = RCNLCostTermClass(terms{i});
+                end
+            end
+        end
+
         function makeDefaultCostTermSet(obj)
             costTermNames = fieldnames(obj.costTermStruct);
             for i = 1 : length(costTermNames)

@@ -719,77 +719,27 @@ classdef MTPBase < matlab.apps.AppBase
                 MuscleTendonPersonalizationTool;
             settingsTree = formatXmlDataForGui(settingsTree);
         
-            % Top-level file inputs — assigning through the observable properties
-            % so their listeners fire and update the GUI fields automatically
-            app.input_model_file  = settingsTree.input_model_file;
-            app.input_osimx_file  = settingsTree.input_osimx_file;
-            app.data_directory    = settingsTree.data_directory;
-            app.results_directory = settingsTree.results_directory;
-            try
-            app.trial_prefixes = settingsTree.trial_prefixes;
-            catch
+            fields = fieldnames(settingsTree);
+            for i = 1 : length(fields)
+                f = fields{i};
+                if isprop(app, f) && ~isstruct(settingsTree.(f))
+                    app.(f) = settingsTree.(f);
+                end
+            end
+            app.loadAdvancedParams(settingsTree);
+
+            if isfield(settingsTree, 'MuscleTendonLengthInitialization')
+                app.MuscleTendonLengthInitialization.loadFromStruct( ...
+                    settingsTree.MuscleTendonLengthInitialization);
             end
 
-            app.loadAdvancedParams(settingsTree);
-        
-            % Space-separated list fields — split back into string arrays
-            app.coordinate_list = settingsTree.coordinate_list;
-            app.activation_muscle_groups = settingsTree.activation_muscle_groups;
-            app.normalized_fiber_length_muscle_groups = settingsTree.normalized_fiber_length_muscle_groups;
-            app.missing_emg_channel_muscle_groups = settingsTree.missing_emg_channel_muscle_groups;
-            app.collected_emg_channel_muscle_groups = settingsTree.collected_emg_channel_muscle_groups;
-        
-            % MuscleTendonLengthInitialization
-            if isfield(settingsTree, 'MuscleTendonLengthInitialization')
-                mtli = settingsTree.MuscleTendonLengthInitialization;
-                app.MuscleTendonLengthInitialization.is_enabled = mtli.is_enabled;
-                app.MuscleTendonLengthInitialization.passive_data_input_directory = ...
-                    mtli.passive_data_input_directory;
-                app.MuscleTendonLengthInitialization.max_normalized_muscle_fiber_length = ...
-                    mtli.max_normalized_muscle_fiber_length;
-                app.MuscleTendonLengthInitialization.min_normalized_muscle_fiber_length = ...
-                    mtli.min_normalized_muscle_fiber_length;
-                app.MuscleTendonLengthInitialization.optimize_maximum_muscle_stress = ...
-                    mtli.optimize_maximum_muscle_stress;
-                app.MuscleTendonLengthInitialization.optimize_absolute_length_changes = ...
-                    mtli.optimize_absolute_length_changes;
-                app.MuscleTendonLengthInitialization.optimize_isometric_max_force = ...
-                    mtli.optimize_isometric_max_force;
-                app.MuscleTendonLengthInitialization.maximum_muscle_stress = ...
-                    mtli.maximum_muscle_stress;
-                if isfield(mtli, 'RCNLCostTermSet') && ...
-                        isfield(mtli.RCNLCostTermSet, 'RCNLCostTerm')
-                    for j = 1 : length(mtli.RCNLCostTermSet.RCNLCostTerm)
-                        app.MuscleTendonLengthInitialization.RCNLCostTerm{j} = ...
-                            RCNLCostTermClass(mtli.RCNLCostTermSet.RCNLCostTerm{j});
-                    end
-                end
-            end
-        
-            % MTPSynergyExtrapolation
             if isfield(settingsTree, 'MTPSynergyExtrapolation')
-                synx = settingsTree.MTPSynergyExtrapolation;
-                app.MTPSynergyExtrapolation.is_enabled = synx.is_enabled;
-                app.MTPSynergyExtrapolation.matrix_factorization_method = ...
-                    synx.matrix_factorization_method;
-                app.MTPSynergyExtrapolation.number_of_synergies = ...
-                    synx.number_of_synergies;
-                app.MTPSynergyExtrapolation.synergy_extrapolation_categorization = ...
-                    synx.synergy_extrapolation_categorization;
-                app.MTPSynergyExtrapolation.residual_categorization = ...
-                    synx.residual_categorization;
-                if isfield(synx, 'RCNLCostTermSet') && ...
-                        isfield(synx.RCNLCostTermSet, 'RCNLCostTerm')
-                    for j = 1 : length(synx.RCNLCostTermSet.RCNLCostTerm)
-                        app.MTPSynergyExtrapolation.RCNLCostTerm{j} = ...
-                            RCNLCostTermClass(synx.RCNLCostTermSet.RCNLCostTerm{j});
-                    end
-                end
+                app.MTPSynergyExtrapolation.loadFromStruct( ...
+                    settingsTree.MTPSynergyExtrapolation);
             end
-            
-            app.updateAuxPanel()
-        
-            % MTP tasks
+
+            app.updateAuxPanel();
+
             if isfield(settingsTree, 'MTPTaskList') && ...
                     isfield(settingsTree.MTPTaskList, 'MTPTask')
                 tasks = settingsTree.MTPTaskList.MTPTask;
@@ -798,36 +748,10 @@ classdef MTPBase < matlab.apps.AppBase
                 end
                 app.MTPTask = cell(0);
                 for i = 1 : length(tasks)
-                    task = tasks{i};
                     app.createDefaultTask();
-                    if isfield(task, "attributes")
-                        app.MTPTask{i}.name       = task.Attributes.name;
-                    end
-                    app.MTPTask{i}.is_enabled = task.is_enabled;
-                    app.MTPTask{i}.index      = task.index;
-                    app.MTPTask{i}.muscle_specific_electromechanical_delays = ...
-                        task.muscle_specific_electromechanical_delays;
-                    app.MTPTask{i}.optimize_electromechanical_delays = ...
-                        task.optimize_electromechanical_delays;
-                    app.MTPTask{i}.optimize_activation_time_constants = ...
-                        task.optimize_activation_time_constants;
-                    app.MTPTask{i}.optimize_activation_nonlinearity_constants = ...
-                        task.optimize_activation_nonlinearity_constants;
-                    app.MTPTask{i}.optimize_emg_scale_factors = ...
-                        task.optimize_emg_scale_factors;
-                    app.MTPTask{i}.optimize_optimal_fiber_lengths = ...
-                        task.optimize_optimal_fiber_lengths;
-                    app.MTPTask{i}.optimize_tendon_slack_lengths = ...
-                        task.optimize_tendon_slack_lengths;
-                    if isfield(task, 'RCNLCostTermSet') && ...
-                            isfield(task.RCNLCostTermSet, 'RCNLCostTerm')
-                        for j = 1 : length(task.RCNLCostTermSet.RCNLCostTerm)
-                            app.MTPTask{i}.RCNLCostTerm{j} = RCNLCostTermClass( ...
-                                task.RCNLCostTermSet.RCNLCostTerm{j});
-                        end
-                        app.updateMTPCostTermsTable()
-                    end
+                    app.MTPTask{i}.loadFromStruct(tasks{i});
                 end
+                app.updateMTPCostTermsTable();
             end
             app.updateMTPTasksListBox();
             app.needToSave = false;
