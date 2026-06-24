@@ -1252,12 +1252,14 @@ classdef MTPBase < matlab.apps.AppBase
                 return
             end
             costTermIndex = app.MTPTasksCostTermsTable.Selection;
-            app.MTPTasksErrorCenterEditField.Value = ...
-                app.MTPTask{app.taskIndex}.RCNLCostTerm{costTermIndex}. ...
-                error_center;
-            app.MTPTasksMaxAllowableErrorEditField.Value = ...
-                app.MTPTask{app.taskIndex}.RCNLCostTerm{costTermIndex}. ...
-                max_allowable_error;
+            term = app.MTPTask{app.taskIndex}.RCNLCostTerm{costTermIndex};
+            app.MTPTasksErrorCenterEditField.Value = term.error_center;
+            app.MTPTasksMaxAllowableErrorEditField.Value = term.max_allowable_error;
+            if term.uses_error_center
+                app.MTPTasksErrorCenterEditField.Enable = 'on';
+            else
+                app.MTPTasksErrorCenterEditField.Enable = 'off';
+            end
         end
 
         % Value changed function: MTPTasksMaxAllowableErrorEditField
@@ -1400,19 +1402,16 @@ classdef MTPBase < matlab.apps.AppBase
             costTermIndex = app.AuxCostTermsTable.Selection;
             switch app.AuxiliaryToolsTabGroup.SelectedTab
                 case app.SynergyExtrapolationTab
-                    app.AuxErrorCenterEditField.Value = ...
-                        app.MTPSynergyExtrapolation.RCNLCostTerm{costTermIndex}. ...
-                        error_center;
-                    app.AuxMaxAllowableErrorEditField.Value = ...
-                        app.MTPSynergyExtrapolation.RCNLCostTerm{costTermIndex}. ...
-                        max_allowable_error;
+                    term = app.MTPSynergyExtrapolation.RCNLCostTerm{costTermIndex};
                 case app.MuscleTendonLengthInitializationTab
-                    app.AuxErrorCenterEditField.Value = ...
-                        app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex}. ...
-                        error_center;
-                    app.AuxMaxAllowableErrorEditField.Value = ...
-                        app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex}. ...
-                        max_allowable_error;
+                    term = app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex};
+            end
+            app.AuxErrorCenterEditField.Value = term.error_center;
+            app.AuxMaxAllowableErrorEditField.Value = term.max_allowable_error;
+            if term.uses_error_center
+                app.AuxErrorCenterEditField.Enable = 'on';
+            else
+                app.AuxErrorCenterEditField.Enable = 'off';
             end
         end
 

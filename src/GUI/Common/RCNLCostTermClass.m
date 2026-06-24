@@ -8,6 +8,7 @@ classdef RCNLCostTermClass < handle
         type = "";
         error_center = 0;
         max_allowable_error = 0;
+        uses_error_center = true;
     end
 
     methods
@@ -15,13 +16,18 @@ classdef RCNLCostTermClass < handle
             if nargin == 0
                 return
             end
-            if isfield(s, "Attributes") 
+            if isfield(s, "Attributes")
                 obj.name = s.Attributes.name;
             end
             obj.is_enabled = s.is_enabled;
             obj.type = s.type;
             obj.max_allowable_error = s.max_allowable_error;
-            obj.error_center = s.error_center;
+            if isfield(s, 'error_center')
+                obj.error_center = s.error_center;
+                obj.uses_error_center = true;
+            else
+                obj.uses_error_center = false;
+            end
         end
 
         function s = toStruct(obj)
@@ -32,7 +38,9 @@ classdef RCNLCostTermClass < handle
             s.is_enabled = obj.is_enabled;
             s.type = obj.type;
             s.max_allowable_error = obj.max_allowable_error;
-            s.error_center = obj.error_center;
+            if obj.uses_error_center
+                s.error_center = obj.error_center;
+            end
         end
     end
 end
