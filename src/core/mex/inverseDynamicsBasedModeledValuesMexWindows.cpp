@@ -225,7 +225,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
                     // Move to point of interest
                     imuLinearAcceleration = imuAcceleration[1] + cross(imuAcceleration[0], linearOffset) + cross(imuVelocity[0], cross(imuVelocity[0], linearOffset));
                     // Add gravity
-                    imuLinearAcceleration = imuLinearAcceleration + osimModel[thread_id]->getGravity();
+                    imuLinearAcceleration = imuLinearAcceleration - osimModel[thread_id]->getGravity();
                     // Express linear acceleration in IMU frame from ground
                     imuLinearAcceleration = osimModel[thread_id]->getGround().expressVectorInAnotherFrame(*osimState[thread_id], imuLinearAcceleration, osimModel[thread_id]->getBodySet().get(imuBodies[j]));
                     imuAngularVelocity = osimModel[thread_id]->getGround().expressVectorInAnotherFrame(*osimState[thread_id], imuVelocity[0], osimModel[thread_id]->getBodySet().get(imuBodies[j]));
