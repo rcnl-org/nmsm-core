@@ -627,13 +627,13 @@ classdef JMPBase < matlab.apps.AppBase
             app.TasksTable.Selection = 1;
             Options = app.advancedSettingNames;
             Values = [
-                sprintf("%.3f", app.advancedSettingValues(1))
-                sprintf("%.0f", app.advancedSettingValues(2))
-                sprintf("%.3e", app.advancedSettingValues(3))
-                sprintf("%.3e", app.advancedSettingValues(4))
-                sprintf("%.3e", app.advancedSettingValues(5))
-                sprintf("%.3e", app.advancedSettingValues(6))
-                sprintf("%.3e", app.advancedSettingValues(7))];
+                sprintf("%.3f", app.paramValues(1))
+                sprintf("%.0f", app.paramValues(2))
+                sprintf("%.3e", app.paramValues(3))
+                sprintf("%.3e", app.paramValues(4))
+                sprintf("%.3e", app.paramValues(5))
+                sprintf("%.3e", app.paramValues(6))
+                sprintf("%.3e", app.paramValues(7))];
             app.AdvancedSettingsTable.Data = table( ...
                 Options, Values);
             app.updateJointsTable();
