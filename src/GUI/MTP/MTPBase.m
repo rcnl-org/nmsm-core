@@ -575,7 +575,7 @@ classdef MTPBase < matlab.apps.AppBase
         end
 
         function formatTabButtons(app) % good
-            try
+            if ~isvalid(app) || ~isvalid(app.TabGroup); return; end
             switch app.TabGroup.SelectedTab
                 case app.InputsTab
                     app.InputsButton.BackgroundColor = [1 1 1];
@@ -673,8 +673,6 @@ classdef MTPBase < matlab.apps.AppBase
 
                     app.AdvancedButton.BackgroundColor = [1 1 1];
                     app.AdvancedButton.FontColor = [0.13,0.18,0.40];
-            end
-            catch
             end
         end
 
