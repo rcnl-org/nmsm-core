@@ -575,7 +575,9 @@ classdef MTPBase < matlab.apps.AppBase
         end
 
         function formatTabButtons(app) % good
-            if ~isvalid(app) || ~isvalid(app.TabGroup); return; end
+            if ~isvalid(app) || ~isvalid(app.TabGroup)
+                return
+            end
             switch app.TabGroup.SelectedTab
                 case app.InputsTab
                     app.InputsButton.BackgroundColor = [1 1 1];
@@ -929,6 +931,8 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+            app.MuscleTendonLengthInitialization = MuscleTendonLengthInitializationClass();
+            app.MTPSynergyExtrapolation = SynergyExtrapolationClass();
             app.createDefaultTask();
             app.initSynx();
             app.initMtli();
