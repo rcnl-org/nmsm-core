@@ -1,3 +1,30 @@
+% This class is part of the NMSM Pipeline, see file for full license.
+%
+% This class is the main App Designer application for the Neural Control
+% Personalization (NCP) GUI, providing the interface for configuring,
+% saving, and running NCP settings files.
+
+% ----------------------------------------------------------------------- %
+% The NMSM Pipeline is a toolkit for model personalization and treatment  %
+% optimization of neuromusculoskeletal models through OpenSim. See        %
+% nmsm.rice.edu and the NOTICE file for more information. The             %
+% NMSM Pipeline is developed at Rice University and supported by the US   %
+% National Institutes of Health (R01 EB030520).                           %
+%                                                                         %
+% Copyright (c) 2026 Rice University and the Authors                      %
+% Author(s): Robert Salati                                                %
+%                                                                         %
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         %
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
 classdef NCPBase < matlab.apps.AppBase
 
     % Properties that correspond to app components
@@ -115,11 +142,11 @@ classdef NCPBase < matlab.apps.AppBase
         RCNLSynergy cell = cell(0)
 
         costTermStruct = struct( ...
-                'moment_tracking',            {{'true'   0     5}}, ...
-                'activation_tracking',        {{'true'   0     0.05}}, ...
-                'activation_minimization',    {{'false'   0     0.1}}, ...
-                'grouped_activations',        {{'false'   0     0.1}}, ...
-                'grouped_fiber_lengths',      {{'false'   0     0.1}} ...
+                'moment_tracking',            {{'true'    0    5     false}}, ...
+                'activation_tracking',        {{'true'    0    0.05  false}}, ...
+                'activation_minimization',    {{'false'   0    0.1   false}}, ...
+                'grouped_activations',        {{'false'   0    0.1   false}}, ...
+                'grouped_fiber_lengths',      {{'false'   0    0.1   false}} ...
                 );
 
 
@@ -142,6 +169,7 @@ classdef NCPBase < matlab.apps.AppBase
             0.0001]
 
         needToSave = true;
+        currentSettingsFile string = "";
         objectSelectionType;
     end
 
@@ -162,6 +190,7 @@ classdef NCPBase < matlab.apps.AppBase
         selectedTabListener
         
         ncpCostTermListener
+        RCNLSynergyListener
         synergyGroupsListener
         enableMtliListener
         mtliCostTermListener
@@ -233,9 +262,13 @@ classdef NCPBase < matlab.apps.AppBase
                 'is_enabled', 'PostSet', ...
                 @(src, event)updateEnableMtliBox(app));
 
-            app.advancedSettingsListener = addlistener(app, ...
+            app.ncpCostTermListener = addlistener(app, ...
                 'RCNLCostTerm', 'PostSet', ...
                 @(src, event)updateNCPCostTermsTable(app));
+
+            app.RCNLSynergyListener = addlistener(app, ...
+                'RCNLSynergy', 'PostSet', ...
+                @(src, event)updateSynergyGroupsTable(app));
 
             app.synergyGroupsListener = addlistener(app, ...
                 'synergyGroups', 'PostSet', ...
@@ -334,7 +367,9 @@ classdef NCPBase < matlab.apps.AppBase
         end
 
         function formatTabButtons(app) % good
-            if ~isvalid(app) || ~isvalid(app.TabGroup); return; end
+            if ~isvalid(app) || ~isvalid(app.TabGroup)
+                return
+            end
             switch app.TabGroup.SelectedTab
                 case app.InputsTab
                     app.InputsButton.BackgroundColor = [1 1 1];
@@ -426,12 +461,27 @@ classdef NCPBase < matlab.apps.AppBase
                 costTerm.type = costTermNames{i};
                 costTerm.error_center = app.costTermStruct.(costTermNames{i}){2};
                 costTerm.max_allowable_error = app.costTermStruct.(costTermNames{i}){3};
+                costTerm.uses_error_center = app.costTermStruct.(costTermNames{i}){4};
                 app.RCNLCostTerm{i} = costTerm;
             end
         end
 
         function initMtli(app)
             app.MuscleTendonLengthInitialization.makeDefaultCostTermSet();
+            app.updateMtliAdvancedSettingsTable();
+            app.MuscleTendonLengthInitialization.is_enabled = 'false';
+        end
+
+        function updateMtliAdvancedSettingsTable(app)
+            options = ["optimize_maximum_muscle_stress"
+                "optimize_isometric_max_force"
+                "optimize_absolute_length_changes"
+                "maximum_muscle_stress"];
+            value = [string(app.MuscleTendonLengthInitialization.optimize_maximum_muscle_stress)
+                string(app.MuscleTendonLengthInitialization.optimize_isometric_max_force)
+                string(app.MuscleTendonLengthInitialization.optimize_absolute_length_changes)
+                app.formatAdvancedValue(app.MuscleTendonLengthInitialization.maximum_muscle_stress)];
+            app.MtliAdvancedSettingsTable.Data = table(options, value);
         end
 
         function updateNCPCostTermsTable(app)
@@ -530,6 +580,7 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+            app.MuscleTendonLengthInitialization = MuscleTendonLengthInitializationClass();
             app.makeListeners()
             app.makeDefaultCostTermSet();
             app.initMtli()
@@ -540,6 +591,10 @@ classdef NCPBase < matlab.apps.AppBase
                 Options, Values);
             app.updateMtliCostTermsFields()
             app.formatTabButtons()
+        end
+
+        function ResetButtonPushed(app, event)
+            app.resetAllFields();
         end
 
         % Button pushed function: LoadSettingsFileButton
@@ -566,7 +621,7 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
-            
+            NCPRun(app, app.currentSettingsFile);
         end
 
         % Button pushed function: HelpButton
@@ -808,12 +863,14 @@ classdef NCPBase < matlab.apps.AppBase
                 return
             end
             costTermIndex = app.MtliCostTermsTable.Selection;
-            app.MtliErrorCenterEditField.Value = ...
-                app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex}. ...
-                error_center;
-            app.MtliMaxAllowableErrorEditField.Value = ...
-                app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex}. ...
-                max_allowable_error;
+            term = app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex};
+            app.MtliErrorCenterEditField.Value = term.error_center;
+            app.MtliMaxAllowableErrorEditField.Value = term.max_allowable_error;
+            if term.uses_error_center
+                app.MtliErrorCenterEditField.Enable = 'on';
+            else
+                app.MtliErrorCenterEditField.Enable = 'off';
+            end
         end
 
         % Value changed function: MtliMaxAllowableErrorEditField
@@ -848,6 +905,174 @@ classdef NCPBase < matlab.apps.AppBase
             indices = event.Indices;
             app.MuscleTendonLengthInitialization.setParameterValueByIndex(...
                 indices(1), app.MtliAdvancedSettingsTable.Data(indices(1), indices(2)).value);
+        end
+
+        function loadSettingsFile(app, settingsFileName)
+            app.resetAllFields();
+            settingsFilePath = fileparts(settingsFileName);
+            cd(settingsFilePath);
+            app.currentSettingsFile = settingsFileName;
+            settingsTree = xml2struct(settingsFileName);
+            settingsTree = settingsTree.NMSMPipelineDocument. ...
+                NeuralControlPersonalizationTool;
+            settingsTree = formatXmlDataForGui(settingsTree);
+
+            fields = fieldnames(settingsTree);
+            for i = 1 : length(fields)
+                f = fields{i};
+                if isprop(app, f) && ~isstruct(settingsTree.(f))
+                    app.(f) = settingsTree.(f);
+                end
+            end
+            app.loadAdvancedParams(settingsTree);
+
+            if isfield(settingsTree, 'MuscleTendonLengthInitialization')
+                app.MuscleTendonLengthInitialization.loadFromStruct( ...
+                    settingsTree.MuscleTendonLengthInitialization);
+                app.updateMtliAdvancedSettingsTable();
+            end
+
+            if isfield(settingsTree, 'RCNLCostTermSet') && ...
+                    isfield(settingsTree.RCNLCostTermSet, 'RCNLCostTerm')
+                terms = settingsTree.RCNLCostTermSet.RCNLCostTerm;
+                if ~iscell(terms); terms = {terms}; end
+                app.RCNLCostTerm = {};
+                for i = 1 : length(terms)
+                    app.RCNLCostTerm{i} = RCNLCostTermClass(terms{i});
+                end
+            end
+
+            if isfield(settingsTree, 'RCNLSynergySet') && ...
+                    isfield(settingsTree.RCNLSynergySet, 'RCNLSynergy')
+                synergies = settingsTree.RCNLSynergySet.RCNLSynergy;
+                if ~iscell(synergies); synergies = {synergies}; end
+                app.RCNLSynergy = {};
+                for i = 1 : length(synergies)
+                    app.RCNLSynergy{i} = RCNLSynergyClass(synergies{i});
+                end
+            end
+
+            app.needToSave = false;
+        end
+
+        function saveSettingsFile(app, settingsFileName)
+            settingsFilePath = fileparts(settingsFileName);
+            cd(settingsFilePath);
+            app.currentSettingsFile = settingsFileName;
+            settingsTree = makeNCPSettingsStruct(app, settingsFileName);
+            settingsFileStruct.NMSMPipelineDocument.NeuralControlPersonalizationTool = ...
+                settingsTree;
+            settingsFileStruct.NMSMPipelineDocument.Attributes.Version = ...
+                convertStringsToChars(getPipelineVersion());
+            struct2xml(settingsFileStruct, settingsFileName);
+        end
+
+        function settingsTree = makeNCPSettingsStruct(app, settingsFileName)
+            settingsFilePath = fileparts(settingsFileName);
+
+            settingsTree.input_model_file = getRelativePath( ...
+                app.input_model_file, settingsFilePath);
+            settingsTree.input_osimx_file = getRelativePath( ...
+                app.input_osimx_file, settingsFilePath);
+            settingsTree.data_directory = getRelativePath( ...
+                app.data_directory, settingsFilePath);
+            settingsTree.mtp_results_directory = getRelativePath( ...
+                app.mtp_results_directory, settingsFilePath);
+            settingsTree.results_directory = getRelativePath( ...
+                app.results_directory, settingsFilePath);
+            settingsTree.trial_prefixes = app.trial_prefixes;
+
+            settingsTree.coordinate_list = strjoin(app.coordinate_list, " ");
+            settingsTree.activation_muscle_groups = strjoin( ...
+                app.activation_muscle_groups, " ");
+            settingsTree.normalized_fiber_length_muscle_groups = strjoin( ...
+                app.normalized_fiber_length_muscle_groups, " ");
+
+            settingsTree.MuscleTendonLengthInitialization = ...
+                app.MuscleTendonLengthInitialization.toStruct();
+            settingsTree.MuscleTendonLengthInitialization.passive_data_input_directory = ...
+                getRelativePath(settingsTree.MuscleTendonLengthInitialization.passive_data_input_directory);
+
+            settingsTree.RCNLCostTermSet = struct("RCNLCostTerm", cell(1));
+            for i = 1 : length(app.RCNLCostTerm)
+                settingsTree.RCNLCostTermSet.RCNLCostTerm{i} = ...
+                    app.RCNLCostTerm{i}.toStruct();
+            end
+
+            settingsTree.RCNLSynergySet = struct("RCNLSynergy", cell(1));
+            for i = 1 : length(app.RCNLSynergy)
+                settingsTree.RCNLSynergySet.RCNLSynergy{i} = ...
+                    app.RCNLSynergy{i}.toStruct();
+            end
+
+            settingsTree = setOptimizationParams(app, settingsTree);
+            settingsTree = formatGuiDataForXml(settingsTree);
+        end
+
+        function settingsTree = setOptimizationParams(app, settingsTree)
+            for i = 1 : length(app.advancedSettingNames)
+                settingsTree.(app.advancedSettingNames(i)) = ...
+                    app.advancedSettingValues(i);
+            end
+        end
+
+        function loadAdvancedParams(app, settingsTree)
+            for i = 1 : length(app.advancedSettingNames)
+                paramName = app.advancedSettingNames(i);
+                if isfield(settingsTree, paramName)
+                    app.advancedSettingValues(i) = settingsTree.(paramName);
+                end
+            end
+        end
+
+        function resetAllFields(app)
+            app.input_model_file = "";
+            app.input_osimx_file = "";
+            app.data_directory = "";
+            app.mtp_results_directory = "";
+            app.results_directory = "";
+            app.coordinate_list = [];
+            app.trial_prefixes = [];
+            app.v_max_factor = 10;
+
+            app.activation_muscle_groups = [];
+            app.normalized_fiber_length_muscle_groups = [];
+
+            app.MuscleTendonLengthInitialization = ...
+                MuscleTendonLengthInitializationClass();
+            app.initMtli();
+            app.updateMtliCostTermsFields();
+            app.updateEnableMtliBox();
+            app.updatePassiveDataDirectory();
+            app.maxFiberLengthListenerFunction();
+            app.minFiberLengthListenerFunction();
+            app.MtliErrorCenterEditField.Value = 0;
+            app.MtliMaxAllowableErrorEditField.Value = 0;
+            app.makeDefaultCostTermSet();
+            app.RCNLSynergy = cell(0);
+            app.NCPMaxAllowableErrorEditField.Value = [];
+
+            app.objectSelectionType = "";
+            app.currentSettingsFile = "";
+            app.needToSave = false;
+
+            app.advancedSettingNames = ...
+                ["v_max_factor"
+                "max_iterations"
+                "max_function_evaluations"
+                "step_tolerance"
+                "function_tolerance"
+                "optimality_tolerance"
+                "diff_min_change"];
+
+            app.advancedSettingValues = ...
+                [10
+                1000
+                100000000
+                1e-6
+                1e-6
+                1e-6
+                0.0001];
         end
     end
 
@@ -1457,12 +1682,13 @@ classdef NCPBase < matlab.apps.AppBase
             app.RunButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.RunButton.FontSize = 18;
             app.RunButton.FontColor = [1 1 1];
-            app.RunButton.Enable = 'off';
+            app.RunButton.Enable = 'on';
             app.RunButton.Position = [742 23 90 30];
             app.RunButton.Text = 'Run';
 
             % Create ResetButton
             app.ResetButton = uibutton(app.UIFigure, 'push');
+            app.ResetButton.ButtonPushedFcn = createCallbackFcn(app, @ResetButtonPushed, true);
             app.ResetButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.ResetButton.FontSize = 18;
             app.ResetButton.FontColor = [1 1 1];
