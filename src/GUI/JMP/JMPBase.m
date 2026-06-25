@@ -121,7 +121,7 @@ classdef JMPBase < matlab.apps.AppBase
             "diff_min_change"
             "accuracy"]
 
-        advancedSettingValues = ...
+        paramValues = ...
             [0.005
             200
             1e-5
@@ -161,7 +161,7 @@ classdef JMPBase < matlab.apps.AppBase
                 @(src, event)updateTaskIndex(app));
 
             app.advancedSettingsListener = addlistener(app, ...
-                'advancedSettingValues', 'PostSet', ...
+                'paramValues', 'PostSet', ...
                 @(src, event)updateAdvancedSettingValues(app));
 
             app.makeTaskListeners()
@@ -216,7 +216,7 @@ classdef JMPBase < matlab.apps.AppBase
 
         function updateAdvancedSettingValues(app)
             app.AdvancedSettingsTable.Data.Values = ...
-                app.advancedSettingValues;
+                app.paramValues;
         end
 
         function updateMarkersFile(app) % change
@@ -477,7 +477,7 @@ classdef JMPBase < matlab.apps.AppBase
         function settingsTree = setOptimizationParams(app, settingsTree)
             for i = 1 : length(app.advancedSettingNames)
                 settingsTree.(app.advancedSettingNames(i)) = ...
-                    app.advancedSettingValues(i);
+                    app.paramValues(i);
             end
         end
 
@@ -547,7 +547,7 @@ classdef JMPBase < matlab.apps.AppBase
             for i = 1 : length(app.advancedSettingNames)
                 paramName = app.advancedSettingNames(i);
                 if isfield(settingsTree, paramName)
-                    app.advancedSettingValues(i) = settingsTree.(paramName);
+                    app.paramValues(i) = settingsTree.(paramName);
                 end
             end
         end
@@ -912,7 +912,7 @@ classdef JMPBase < matlab.apps.AppBase
             if isnan(double(convertCharsToStrings(app.AdvancedSettingsTable.Data.paramValues(index))))
                 app.AdvancedSettingsTable.Data.paramValues(index) = "NaN";
             else
-                app.advancedSettingValues(index) = app.AdvancedSettingsTable.Data.paramValues(index);
+                app.paramValues(index) = app.AdvancedSettingsTable.Data.paramValues(index);
             end
         end
     end
