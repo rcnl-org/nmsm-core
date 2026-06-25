@@ -370,9 +370,15 @@ classdef MTPBase < matlab.apps.AppBase
                 app.MuscleTendonLengthInitialization.min_normalized_muscle_fiber_length;
         end
 
+        function s = formatAdvancedValue(~, value)
+            % Format values in the advanced params table to use scientific
+            % notation if over 3 sig figs. 
+            s = string(sprintf('%.3g', value));
+        end
+
         function updateAdvancedSettingValues(app)
             app.AdvancedSettingsTable.Data.Values = ...
-                app.advancedSettingValues;
+                arrayfun(@(v) app.formatAdvancedValue(v), app.advancedSettingValues);
         end
         
 
@@ -931,14 +937,7 @@ classdef MTPBase < matlab.apps.AppBase
             app.updateAuxPanel();
             app.makeListeners()
             Options = app.advancedSettingNames;
-            Values = [
-                sprintf("%.0f", app.advancedSettingValues(1))
-                sprintf("%.0f", app.advancedSettingValues(2))
-                sprintf("%.3e", app.advancedSettingValues(3))
-                sprintf("%.3e", app.advancedSettingValues(4))
-                sprintf("%.3e", app.advancedSettingValues(5))
-                sprintf("%.3e", app.advancedSettingValues(6))
-                sprintf("%.3e", app.advancedSettingValues(7))];
+            Values = arrayfun(@(v) app.formatAdvancedValue(v), app.advancedSettingValues);
             app.AdvancedSettingsTable.Data = table( ...
                 Options, Values);
             app.AuxiliaryToolsTabGroup.SelectedTab = app.MuscleTendonLengthInitializationTab;

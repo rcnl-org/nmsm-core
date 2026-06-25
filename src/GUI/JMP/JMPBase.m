@@ -214,9 +214,15 @@ classdef JMPBase < matlab.apps.AppBase
             app.updateBodiesTable()
         end
 
+        function s = formatAdvancedValue(~, value)
+            % Format values in the advanced params table to use scientific
+            % notation if over 3 sig figs. 
+            s = string(sprintf('%.3g', value));
+        end
+
         function updateAdvancedSettingValues(app)
             app.AdvancedSettingsTable.Data.paramValues = ...
-                app.paramValues;
+                arrayfun(@(v) app.formatAdvancedValue(v), app.paramValues);
         end
 
         function updateMarkersFile(app) % change
@@ -598,14 +604,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.TasksTable.Data = table(isEnabled, taskNames);
             app.TasksTable.Selection = 1;
             Options = app.advancedSettingNames;
-            paramValues = [
-                sprintf("%.3f", app.paramValues(1))
-                sprintf("%.0f", app.paramValues(2))
-                sprintf("%.3e", app.paramValues(3))
-                sprintf("%.3e", app.paramValues(4))
-                sprintf("%.3e", app.paramValues(5))
-                sprintf("%.3e", app.paramValues(6))
-                sprintf("%.3e", app.paramValues(7))];
+            paramValues = arrayfun(@(v) app.formatAdvancedValue(v), app.paramValues);
             app.AdvancedSettingsTable.Data = table( ...
                 Options, paramValues);
             app.updateJointsTable();
