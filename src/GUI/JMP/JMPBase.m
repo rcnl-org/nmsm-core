@@ -215,7 +215,7 @@ classdef JMPBase < matlab.apps.AppBase
         end
 
         function updateAdvancedSettingValues(app)
-            app.AdvancedSettingsTable.Data.Values = ...
+            app.AdvancedSettingsTable.Data.paramValues = ...
                 app.paramValues;
         end
 
@@ -463,8 +463,10 @@ classdef JMPBase < matlab.apps.AppBase
 
         function settingsTree = makeJMPSettingsStruct(app, settingsFileName)
             settingsFilePath = fileparts(settingsFileName);
-            settingsTree.input_model_file = getRelativePath(app.input_model_file, settingsFilePath);
-            settingsTree.output_model_file = getRelativePath(app.output_model_file, settingsFilePath);
+            settingsTree.input_model_file = getRelativePath( ...
+                app.input_model_file, settingsFilePath);
+            settingsTree.output_model_file = getRelativePath( ...
+                app.output_model_file, settingsFilePath);
             settingsTree.JMPTaskList = struct("JMPTask", cell(1));
 
             for i = 1 : length(app.JMPTask)
@@ -489,58 +491,28 @@ classdef JMPBase < matlab.apps.AppBase
             settingsTree = settingsTree.NMSMPipelineDocument. ...
                 JointModelPersonalizationTool;
             settingsTree = formatXmlDataForGui(settingsTree);
-            app.input_model_file = settingsTree.input_model_file;
-            app.output_model_file = settingsTree.output_model_file;
 
-            app.loadOptimizationParams(settingsTree);
-            app.JMPTask = {};
-            for i = 1 : length(settingsTree.JMPTaskList.JMPTask)
-                task = settingsTree.JMPTaskList.JMPTask{i};
-                app.createEmptyTask()
-                app.JMPTask{i}.name = task.Attributes.name;
-                app.JMPTask{i}.is_enabled = task.is_enabled;
-                app.JMPTask{i}.index = task.index;
-                app.JMPTask{i}.marker_file_name = task.marker_file_name;
-                app.JMPTask{i}.marker_names = task.marker_names;
-                app.JMPTask{i}.time_range = task.time_range;
-                if isfield(task, "JMPJointSet") && ...
-                        isfield(task.JMPJointSet, "JMPJoint")
-                    if ~strcmp(task.JMPJointSet.JMPJoint, "")
-                        app.JMPTask{i}.JMPJointSet.JMPJoint = ...
-                            {task.JMPJointSet.JMPJoint};
-                        if isscalar(task.JMPJointSet.JMPJoint)
-                            task.JMPJointSet.JMPJoint = {task.JMPJointSet.JMPJoint};
-                        end
-                        for j = 1 : numel(task.JMPJointSet.JMPJoint)
-                            app.JMPTask{i}.jointNames(end+1) = ...
-                                task.JMPJointSet.JMPJoint{j}.Attributes.name;
-                        end
-                    end
-                else
-                    app.JMPTask{i}.JMPJointSet = struct("JMPJoint", []);
+            fields = fieldnames(settingsTree);
+            for i = 1 : length(fields)
+                f = fields{i};
+                if isprop(app, f) && ~isstruct(settingsTree.(f))
+                    app.(f) = settingsTree.(f);
                 end
-                if isfield(task, "JMPBodySet") && ...
-                        isfield(task.JMPBodySet, "JMPBody")
-                    if ~strcmp(task.JMPBodySet.JMPBody, "")
-                        app.JMPTask{i}.JMPBodySet.JMPBody = ...
-                            {task.JMPBodySet.JMPBody};
-                        if isscalar(task.JMPBodySet.JMPBody)
-                            task.JMPBodySet.JMPBody = {task.JMPBodySet.JMPBody};
-                        end
-                        for j = 1 : numel(task.JMPBodySet.JMPBody)
-                            app.JMPTask{i}.bodyNames(end+1) = ...
-                                task.JMPBodySet.JMPBody{j}.Attributes.name;
-                        end
-                    end
-
-                else
-                    app.JMPTask{i}.JMPJointSet = struct("JMPBody", []);
-                end
-                app.JMPTask{i}.JMPBodySet = task.JMPBodySet;
-                app.updateTasksPanel();
-                app.updateJMPTasksListBox();
             end
+            app.loadOptimizationParams(settingsTree);
 
+            app.JMPTask = {};
+            if isfield(settingsTree, 'JMPTaskList') && ...
+                    isfield(settingsTree.JMPTaskList, 'JMPTask')
+                tasks = settingsTree.JMPTaskList.JMPTask;
+                if ~iscell(tasks); tasks = {tasks}; end
+                for i = 1 : length(tasks)
+                    app.createEmptyTask();
+                    app.JMPTask{i}.loadFromStruct(tasks{i});
+                end
+            end
+            app.updateTasksPanel();
+            app.updateJMPTasksListBox();
         end
 
         function loadOptimizationParams(app, settingsTree)
