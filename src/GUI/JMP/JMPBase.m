@@ -626,7 +626,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.TasksTable.Data = table(isEnabled, taskNames);
             app.TasksTable.Selection = 1;
             Options = app.advancedSettingNames;
-            Values = [
+            paramValues = [
                 sprintf("%.3f", app.paramValues(1))
                 sprintf("%.0f", app.paramValues(2))
                 sprintf("%.3e", app.paramValues(3))
@@ -635,7 +635,7 @@ classdef JMPBase < matlab.apps.AppBase
                 sprintf("%.3e", app.paramValues(6))
                 sprintf("%.3e", app.paramValues(7))];
             app.AdvancedSettingsTable.Data = table( ...
-                Options, Values);
+                Options, paramValues);
             app.updateJointsTable();
             app.updateBodiesTable();
             app.makeAllListeners()
