@@ -29,27 +29,46 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function NeuralControlPersonalizationTool(settingsFileName)
+function NeuralControlPersonalizationTool(settingsFileName, app)
 tic
-try 
+try
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
+end
+if nargin < 2
+    app = [];
 end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
+if ~isempty(app)
+    app.ParsingLabel.Enable = 'off';
+end
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
-    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
+    if ~isempty(app)
+        app.RunningMTLILabel.Enable = 'on';
+    end
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
     inputs = updateNcpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
+    if ~isempty(app)
+        app.RunningMTLILabel.Enable = 'off';
+    end
 end
-
-[optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
+if ~isempty(app)
+    app.RunningNCPLabel.Enable = 'on';
+end
+[optimizedValues, inputs] = NeuralControlPersonalization(inputs, params, app);
+if ~isempty(app)
+    app.RunningNCPLabel.Enable = 'off';
+    app.SavingResultsLabel.Enable = 'on';
+end
+drawnow
 [synergyWeights, synergyCommands] = findSynergyWeightsAndCommands( ...
     optimizedValues, inputs, params);
 [synergyWeights, synergyCommands] = normalizeSynergiesByMaximumWeight(...
@@ -63,6 +82,9 @@ ncpMuscleJointMoments = calcFinalMuscleJointMoments(inputs, ...
 saveNeuralControlPersonalizationResults(synergyWeights, ...
     synergyCommands, combinedActivations, combinedMuscleJointMoments, ...
     ncpMuscleJointMoments, inputs, resultsDirectory, precalInputs);
+if ~isempty(app)
+    app.SavingResultsLabel.Enable = 'off';
+end
 fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
 diary off
 try

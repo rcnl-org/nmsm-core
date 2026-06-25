@@ -29,11 +29,11 @@
 % ----------------------------------------------------------------------- %
 
 function finalValues = computeNeuralControlOptimization(initialValues, ...
-    inputs, params)
+    inputs, params, app)
 numDesignVariables = length(initialValues);
 [synergyWeightEquations, synergyWeightSums, lowerBounds] = ...
     makeConstraints(inputs, numDesignVariables);
-optimizerOptions = prepareOptimizerOptions(params);
+optimizerOptions = prepareOptimizerOptions(params, app);
 finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
     inputs, params), initialValues, [], [], synergyWeightEquations, ...
     synergyWeightSums, lowerBounds, [], [], optimizerOptions);
@@ -61,7 +61,7 @@ lowerBounds = zeros(numDesignVariables, 1);
 end
 
 % Set optimizer options from params struct
-function optimizerOptions = prepareOptimizerOptions(params)
+function optimizerOptions = prepareOptimizerOptions(params, app)
 optimizerOptions = optimoptions('fmincon', 'UseParallel', 'always');
 optimizerOptions.DiffMinChange = valueOrAlternate(params, ...
     'diffMinChange', 1e-6);
@@ -78,4 +78,8 @@ optimizerOptions.MaxIterations = valueOrAlternate(params, ...
 optimizerOptions.Display = valueOrAlternate(params, ...
     'display','iter');
 optimizerOptions.Algorithm = valueOrAlternate(params, 'algorithm', 'sqp');
+if ismethod(app, 'CancelOptimizationGui')
+    optimizerOptions.OutputFcn = @(x, optimValues, state, varargin) ...
+        app.CancelOptimizationGui(x, optimValues, state);
+end
 end
