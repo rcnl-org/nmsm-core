@@ -44,22 +44,32 @@ verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
-app.ParsingLabel.Enable = 'off';
+if ~isempty(app)
+    app.ParsingLabel.Enable = 'off';
+end
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 if isstruct(precalInputs)
-    app.RunningMTLILabel.Enable = 'on';
+    if ~isempty(app)
+        app.RunningMTLILabel.Enable = 'on';
+    end
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
-    app.RunningMTLILabel.Enable = 'off';
+    if ~isempty(app)
+        app.RunningMTLILabel.Enable = 'off';
+    end
 else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
-app.RunningMTPLabel.Enable = 'on';
+if ~isempty(app)
+    app.RunningMTPLabel.Enable = 'on';
+end
 results = MuscleTendonPersonalization(inputs, params, app);
-app.RunningMTPLabel.Enable = 'off';
-app.SavingResultsLabel.Enable = 'on';
+if ~isempty(app)
+    app.RunningMTPLabel.Enable = 'off';
+    app.SavingResultsLabel.Enable = 'on';
+end
 drawnow
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
