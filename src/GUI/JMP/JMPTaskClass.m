@@ -58,5 +58,38 @@ classdef JMPTaskClass < handle
             struct.JMPJointSet = obj.JMPJointSet;
             struct.JMPBodySet = obj.JMPBodySet;
         end
+
+        function loadFromStruct(obj, s)
+            if isfield(s, 'Attributes') && isfield(s.Attributes, 'name')
+                obj.name = s.Attributes.name;
+            end
+            applyStructToHandle(obj, s);
+            obj.jointNames = strings(0);
+            if isfield(s, 'JMPJointSet') && isfield(s.JMPJointSet, 'JMPJoint') && ...
+                    ~(ischar(s.JMPJointSet.JMPJoint) && strcmp(s.JMPJointSet.JMPJoint, ''))
+                joints = s.JMPJointSet.JMPJoint;
+                if ~iscell(joints); joints = {joints}; end
+                for j = 1 : numel(joints)
+                    obj.jointNames(end+1) = joints{j}.Attributes.name;
+                end
+                obj.JMPJointSet.JMPJoint = joints;
+            else
+                obj.JMPJointSet = struct('JMPJoint', []);
+            end
+            obj.bodyNames = strings(0);
+            if isfield(s, 'JMPBodySet')
+                obj.JMPBodySet = s.JMPBodySet;
+                if isfield(s.JMPBodySet, 'JMPBody') && ...
+                        ~(ischar(s.JMPBodySet.JMPBody) && strcmp(s.JMPBodySet.JMPBody, ''))
+                    bodies = s.JMPBodySet.JMPBody;
+                    if ~iscell(bodies); bodies = {bodies}; end
+                    for j = 1 : numel(bodies)
+                        obj.bodyNames(end+1) = bodies{j}.Attributes.name;
+                    end
+                end
+            else
+                obj.JMPBodySet = struct('JMPBody', []);
+            end
+        end
     end
 end
