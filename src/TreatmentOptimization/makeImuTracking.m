@@ -47,7 +47,7 @@ for i = 1:length(inputs.costTerms)
     costTerm = inputs.costTerms{i};
     if costTerm.isEnabled && any(strcmp(costTerm.type, imuCostTerms))
         names(end + 1) = costTerm.imu_body;
-        locations = cat(1, locations, costTerm.imu_measurement_point);
+        locations = cat(1, locations, costTerm.imu_measurement_point); % this trips when it is an angular velocity term and has no measurement point
         bodies(end + 1) = inputs.model.getBodySet().getIndex( ...
             costTerm.imu_body);
     end
