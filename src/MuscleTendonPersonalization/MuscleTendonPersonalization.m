@@ -42,11 +42,15 @@
 function results = MuscleTendonPersonalization(inputs, ...
     params)
 inputs.primaryValues = prepareInitialValues(inputs, params);
+inputs.primaryValueNames = ["electromechanical_delay", ...
+    "activation_time_constant", "activation_nonlinearity", ...
+    "emg_scale_factor", "optimal_fiber_length", "tendon_slack_length"];
 inputs = finalizeInputs(inputs, inputs.primaryValues, params);
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
 for i=1:length(inputs.tasks)
+    inputs.electromechanicalDelays = inputs.primaryValues{1};
     [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
         inputs.primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);
     taskParams = makeTaskParams(params);

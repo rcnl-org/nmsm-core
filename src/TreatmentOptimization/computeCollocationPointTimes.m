@@ -7,6 +7,12 @@ else
 end
 inputs.minTime = min(inputs.experimentalTime);
 
+if strcmp(inputs.solverType, 'gpops')
+    inputs = computeGpopsCollocationPointTimes(inputs);
+end
+end
+
+function inputs = computeGpopsCollocationPointTimes(inputs)
 setup.guess.phase.time = scaleToBounds(inputs.initialTime, ...
     inputs.maxTime, inputs.minTime);
 setup.auxdata = inputs;

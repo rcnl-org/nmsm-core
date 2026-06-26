@@ -77,11 +77,11 @@ model = Model(modelFileName);
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
 
 % Reorder labels
-% for j = 1 : numel(results.data)
-%     [~, ~, indices] = intersect(results.labels{1}, results.labels{j}, 'stable');
-%     results.data{j}(:, 1:length(indices)) = results.data{j}(:,indices);
-%     results.labels{j}(1:length(indices)) = results.labels{j}(indices);
-% end
+ for j = 1 : numel(results.data)
+     [~, ~, indices] = intersect(results.labels{1}, results.labels{j}, 'stable');
+     results.data{j}(:, 1:length(indices)) = results.data{j}(:,indices);
+     results.labels{j}(1:length(indices)) = results.labels{j}(indices);
+ end
 
 if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);

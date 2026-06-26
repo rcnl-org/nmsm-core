@@ -42,30 +42,35 @@ function [surrogateMuscles, numArgs] = createSurrogateModel(jointAngles, ...
     muscleTendonLengths, momentArms, polynomialDegree)
 surrogateMuscles = cell(1, size(muscleTendonLengths, 2));
 numArgs = ones(1, size(muscleTendonLengths, 2) * 3);
+parallelLengths = cell(1, size(muscleTendonLengths, 2));
+parallelVelocities = cell(1, size(muscleTendonLengths, 2));
+parallelMomentArms = cell(1, size(muscleTendonLengths, 2));
+coefficients = cell(1, size(muscleTendonLengths, 2));
 % Create surorogate model for all muscles
+parfor i = 1 : size(muscleTendonLengths, 2)
+    [polynomialExpressionMuscleTendonLengths, ...
+        polynomialExpressionMuscleTendonVelocities, ...
+        polynomialExpressionMomentArms, coefficients{i}] = ...
+        createMuscleSpecificSurrogateModel(jointAngles{i}, ...
+        muscleTendonLengths(:, i), momentArms{i}, polynomialDegree);
+
+    parallelLengths{i} = matlabFunction(polynomialExpressionMuscleTendonLengths);
+    parallelVelocities{i} = matlabFunction(polynomialExpressionMuscleTendonVelocities);
+    parallelMomentArms{i} = matlabFunction(polynomialExpressionMomentArms);
+end
 for i = 1 : size(muscleTendonLengths, 2)
-[polynomialExpressionMuscleTendonLengths, ... 
-    polynomialExpressionMuscleTendonVelocities, ...
-    polynomialExpressionMomentArms, coefficients] = ...
-    createMuscleSpecificSurrogateModel(jointAngles{i}, ...
-    muscleTendonLengths(:, i), momentArms{i}, polynomialDegree);
+    polynomialMuscleTendonLengths = str2func(func2str(parallelLengths{i}));
+    polynomialMuscleTendonVelocities = str2func(func2str(parallelVelocities{i}));
+    polynomialMomentArms = str2func(func2str(parallelMomentArms{i}));
 
-polynomialMuscleTendonLengths = matlabFunction(polynomialExpressionMuscleTendonLengths);
-polynomialMuscleTendonVelocities = matlabFunction(polynomialExpressionMuscleTendonVelocities);
-polynomialMomentArms = matlabFunction(polynomialExpressionMomentArms);
+    numArgs(i * 3 - 2) = nargin(polynomialMuscleTendonLengths);
+    numArgs(i * 3 - 1) = nargin(polynomialMuscleTendonVelocities);
+    numArgs(i * 3) = nargin(polynomialMomentArms);
 
-polynomialMuscleTendonLengths = str2func(func2str(polynomialMuscleTendonLengths));
-polynomialMuscleTendonVelocities = str2func(func2str(polynomialMuscleTendonVelocities));
-polynomialMomentArms = str2func(func2str(polynomialMomentArms));
-
-numArgs(i * 3 - 2) = nargin(polynomialMuscleTendonLengths);
-numArgs(i * 3 - 1) = nargin(polynomialMuscleTendonVelocities);
-numArgs(i * 3) = nargin(polynomialMomentArms);
-
-surrogateMuscles{i} = @(jointAngles, jointVelocities, numArgs)evaluateSurrogate( ...
-    jointAngles, jointVelocities, ...
-    polynomialMuscleTendonLengths, ...
-    polynomialMuscleTendonVelocities, ...
-    polynomialMomentArms, coefficients, numArgs(i * 3 - 2 : i * 3));
+    surrogateMuscles{i} = @(jointAngles, jointVelocities, numArgs)evaluateSurrogate( ...
+        jointAngles, jointVelocities, ...
+        polynomialMuscleTendonLengths, ...
+        polynomialMuscleTendonVelocities, ...
+        polynomialMomentArms, coefficients{i}, numArgs(i * 3 - 2 : i * 3));
 end
 end
