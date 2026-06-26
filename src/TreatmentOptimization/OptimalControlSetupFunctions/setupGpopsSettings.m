@@ -69,6 +69,45 @@ elseif strcmpi(setup.nlp.solver, 'snopt')
     setup.nlp.snoptoptions.linear_solver = inputs.gpops.linearSolverType;
     setup.nlp.snoptoptions.tolerance = inputs.gpops.solverTolerance;
     setup.nlp.snoptoptions.maxiterations = inputs.gpops.maxIterations;
+elseif strcmpi(setup.nlp.solver, 'barnlp') || strcmpi(setup.nlp.solver, 'sprnlp')
+    setup.nlp.sosoptions.tolerance = inputs.gpops.solverTolerance;
+    setup.nlp.sosoptions.maxiterations = inputs.gpops.maxIterations;
+    setup.nlp.sosoptions.maxfunctionevaluations = inputs.gpops.maxFunctionEvaluations;
+    setup.nlp.sosoptions.maxsteps = inputs.gpops.maxSteps;
+    setup.nlp.sosoptions.algopt = inputs.gpops.algopt;
+    setup.nlp.sosoptions.ioflag = inputs.gpops.ioFlag;
+    setup.nlp.sosoptions.display = inputs.gpops.display;
+    setup.nlp.sosoptions.newton = inputs.gpops.newton;
+    setup.nlp.sosoptions.iheshn = inputs.gpops.iheshn;
+    setup.nlp.sosoptions.nhold = inputs.gpops.nhold;
+    setup.nlp.sosoptions.nihold = inputs.gpops.nihold;
+    setup.nlp.sosoptions.objtol = inputs.gpops.objtol;
+    setup.nlp.sosoptions.pgdtol = inputs.gpops.pgdtol;
+    setup.nlp.sosoptions.tolktc = inputs.gpops.tolktc;
+    setup.nlp.sosoptions.tolpvt = inputs.gpops.tolpvt;
+    setup.nlp.sosoptions.restoration = inputs.gpops.restoration;
 end
 setup.displaylevel = inputs.gpops.displayLevel;
 end
+
+% function
+% for field = settingsFields
+%     value = settingsTree.CasadiSettings.(field).Text;
+%     % Convert values to numeric when possible
+%     if ~isnan(str2double(value))
+%         value = str2double(value);
+%     end
+%     
+%     settingName = lower(field);
+%     % Differentiate between CasADi and IPOPT settings
+%     % IPOPT settings are defined as fields starting with "ipopt_" and then
+%     % including the name of a setting as defined here: 
+%     % https://coin-or.github.io/Ipopt/OPTIONS.html
+%     if startsWith(settingName, "ipopt_")
+%         settingName = eraseBetween(settingName, 1, 6);
+%         inputs.casadi.ipopt.(settingName) = value;
+%     else
+%         inputs.casadi.(settingName) = value;
+%     end
+% end
+% end

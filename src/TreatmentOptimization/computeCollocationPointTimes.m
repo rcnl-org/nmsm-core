@@ -32,7 +32,16 @@ end
 
 function collocationPointTimes = findCollocationPointsForSetup(tempSetup)
 [~, output] = evalc('gpops2(tempSetup)');
-collocationPointTimes = output.result.solution.phase.timeRadau;
+try
+    % Name for LGR collocation points used by older GPOPS-II versions
+    collocationPointTimes = output.result.solution.phase.timeRadau;
+catch
+    try
+        collocationPointTimes = output.result.solution.phase.timeLGR;
+    catch
+        collocationPointTimes = output.result.solution.phase.timeLGL;
+    end
+end
 end
 
 function tempSetup = makeMinimalSetup(setup)
@@ -41,6 +50,7 @@ tempSetup.functions.continuous = @continuous;
 tempSetup.functions.endpoint = @endpoint;
 
 tempSetup.guess.phase.time = setup.guess.phase.time;
+tempSetup.method = setup.auxdata.gpops.method;
 
 tempSetup.guess.phase.state = zeros(size(tempSetup.guess.phase.time));
 tempSetup.guess.phase.control = zeros(size(tempSetup.guess.phase.time));

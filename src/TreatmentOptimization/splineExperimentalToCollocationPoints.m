@@ -1,7 +1,11 @@
 function inputs = splineExperimentalToCollocationPoints(inputs)
 
 inputs.collocationTimeOriginalWithEnd = inputs.collocationTimeOriginal;
-inputs.collocationTimeOriginalWithEnd(end + 1) = inputs.experimentalTime(end);
+if abs(inputs.collocationTimeOriginalWithEnd(end) - ...
+        inputs.experimentalTime(end)) > 1e-9
+    inputs.collocationTimeOriginalWithEnd(end + 1) = ...
+        inputs.experimentalTime(end);
+end
 
 splineJointAngles = makeGcvSplineSet(inputs.experimentalTime, ...
     inputs.experimentalJointAngles', inputs.coordinateNames);

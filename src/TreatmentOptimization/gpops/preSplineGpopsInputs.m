@@ -33,7 +33,16 @@ end
 
 function collocationPointTimes = findCollocationPointsForSetup(tempSetup)
 [~, output] = evalc('gpops2(tempSetup)');
-collocationPointTimes = output.result.solution.phase.timeRadau;
+try
+    % Name for LGR collocation points used by older GPOPS-II versions
+    collocationPointTimes = output.result.solution.phase.timeRadau;
+catch
+    try
+        collocationPointTimes = output.result.solution.phase.timeLGR;
+    catch
+        collocationPointTimes = output.result.solution.phase.timeLGL;
+    end
+end
 end
 
 function setup = applyPreSpline(setup, collocationPointTimes)
