@@ -1,6 +1,28 @@
 # Changelog
 
-## v.1.5.0 - 2025-10-02
+## v.1.5.2 - 2026-01-26
+
+### Added
+- The OpenSim GUI can now load and save relative file paths.
+
+### Fixed
+- The OpenSim GUI now correctly loads cost terms using the "synergy_list" tag
+- Treatment Optimization tracking cost terms and deviation constraint terms track appropriate reference data when allowing the duration of the motion to change
+- Joint Model Personalization is supported on newer builds of the OpenSim API, adding support for Apple silicon processors such as M1 and newer models
+
+
+## v.1.5.1 - 2026-01-20
+
+### Added
+- Treatment Optimization now outputs new files in a "Analysis" folder.
+- plotTreatmentOptimizationResultsFromSettingsFile plots joint accelerations now.
+
+### Fixed
+- The OpenSim GUI no longer labels constraint terms as using "synergy_group"
+- The OpenSim GUI now correctly parses cost and constraint terms with the "synergy" component type.
+
+
+## v.1.5.0 - 2026-01-06
 
 ### Added
 - All tools now check whether the project file is opened and throw a useful error message if it is not opened.
@@ -13,15 +35,20 @@
 - Treatment Optimization has new cost and constraint terms for `synergy_vector_symmetry`.
 - Treatment Optimization has an additional new cost term: `generalized_speed_minimization`.
 - Function arguments have autocomplete for main tool functions and plotting functions. 
+- Main body MTP added cost terms for minimum and maximum normalized fiber length values. 
+- plotNcpResultsFromSettingsFile() allows an optional argument for a different results directory than the one in the settings file.  
 
 ### Fixed
 - `plotJmpResultsFromSettingsFile()` now checks for markers in the settings file that are not in the marker file. 
 - Joint Model Personalization GUI now correctly has orientation bounds in radians instead of degrees.
 - Fixed a bug that could prevent Ground Contact Personalization from starting on Windows
+- MTP plotting now displays electromechanical delay in units of seconds. 
 
 ### Changed
 - `getPlottingParams()` sets the default plot color to `"default"` for compatibility with Matlab 2025a dark mode. 
 - The `muscle_activation_minimization` cost term in Treatment Optimization allows users to specify the exponent to raise activations to minimize to using `<exponent>`. Default is 2. 
+- GCP output file names now specify gcp_modeled for quantities as modeled by GCP, and gcp_adjusted for experimental forceplate quantities adjusted by GCP. 
+- Changed active force length and force velocity curve parameters to be consistent with OpenSim.
 
 
 ## v.1.4.3 - 2025-07-14

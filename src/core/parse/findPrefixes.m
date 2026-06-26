@@ -30,30 +30,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function prefixes = findPrefixes(tree, inputDirectory, passiveParsing)
-if nargin < 3
-    passiveParsing = false;
-end
+function prefixes = findPrefixes(tree, inputDirectory)
 prefixField = getFieldByName(tree, 'trial_prefixes');
 if isstruct(prefixField) && length(prefixField.Text) > 0
-    includedPrefixes = strsplit(prefixField.Text, ' ');
+    prefixes = strsplit(prefixField.Text, ' ');
 else
-    includedPrefixes = false;
-end
-files = dir(fullfile(inputDirectory, "IDData"));
-if isempty(files)
-    files = dir(fullfile(inputDirectory, "IKData"));
-end
+    files = dir(fullfile(inputDirectory, "IDData"));
+    if isempty(files)
+        files = dir(fullfile(inputDirectory, "IKData"));
+    end
 
-prefixes = string([]);
-for i=1:length(files)
-    if (~files(i).isdir) && (passiveParsing || islogical(includedPrefixes))
-        prefixes(end+1) = files(i).name(1:end-4);
-    elseif(~files(i).isdir) && contains(files(i).name, includedPrefixes)
-        % prefixes(end+1) = files(i).name(1:end-4);
-        prefixes(end+1) = includedPrefixes{find( ...
-            cellfun(@(x) contains(files(i).name, x), ...
-            includedPrefixes), 1)};
+    prefixes = string([]);
+    for i=1:length(files)
+        if(~files(i).isdir)
+            prefixes(end+1) = files(i).name(1:end-4);
+        end
     end
 end
 end

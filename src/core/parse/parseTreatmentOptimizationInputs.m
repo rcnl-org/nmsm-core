@@ -35,9 +35,6 @@ inputs.osimx = parseOsimxFileWithCondition(tree, inputs);
 inputs = parseController(tree, inputs);
 inputs = parseTreatmentOptimizationDataDirectory(tree, inputs);
 inputs = parseOptimalControlSolverSettings(tree, inputs);
-if strcmp(inputs.solverType, 'casadi')
-    inputs = calcCasadiCollocationPointTimes(inputs);
-end
 inputs.costTerms = parseRcnlCostTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet'));
 inputs.costTerms = splitListTerms(inputs.costTerms);
@@ -78,7 +75,7 @@ if isequal(mexext, 'mexw64')
 end
 [inputs.path, inputs.terminal] = parseRcnlConstraintTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLConstraintTermSet'), ...
-    inputs.controllerTypes, inputs.toolName);
+    inputs.controllerType, inputs.toolName);
 inputs.path = splitListTerms(inputs.path);
 inputs.path = splitAxesTerms(inputs.path);
 inputs.path = convertValueToError(inputs.path);
@@ -92,28 +89,18 @@ inputs.toolName = findToolName(tree);
 inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
     'results_directory'));
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
-inputs.controllerTypes = parseControllerTypes(tree);
+inputs.controllerType = parseControllerType(tree);
 inputs = parseModel(tree, inputs);
 [~, state] = Model(inputs.model);
 inputs.mass = inputs.model.getTotalMass(state);
 inputs.normalizeCostByType = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, 'normalize_cost_by_term_type', false));
-% inputs.useControlDerivatives = getBooleanLogicFromField( ...
-%     getFieldByNameOrAlternate(tree, 'use_control_derivatives', false));
-inputs.useControlDynamicsFilter = getBooleanLogicFromField( ...
-    getFieldByNameOrAlternate(tree, ...
-    'use_first_order_control_dynamics_filter', false));
-inputs.controlDynamicsFilterConstant = getDoubleFromField( ...
-    getFieldByNameOrAlternate(tree, ...
-    'first_order_control_dynamics_filter_time_constant', 1));
-inputs.useJerk = getBooleanLogicFromField( ...
-    getFieldByNameOrAlternate(tree, 'use_jerk_controls', false));
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)
 osimxFileName = parseTextOrAlternate(tree, "input_osimx_file", "");
 osimx = parseOsimxFile(osimxFileName, inputs.model);
-if inputs.controllerTypes(2)
+if strcmp(inputs.controllerType, "synergy")
     if strcmp(osimxFileName, "")
         throw(MException("", ...
             strcat("<input_osimx_file> must be specified", ...
@@ -136,12 +123,12 @@ end
 end
 
 function [path, terminal] = parseRcnlConstraintTermSetHelper(tree, ...
-    controllerTypes, toolName)
+    controllerType, toolName)
 if isfield(tree, "RCNLConstraintTerm")
     [path, terminal] = parseRcnlConstraintTermSet( ...
-        tree.RCNLConstraintTerm, toolName, controllerTypes);
+        tree.RCNLConstraintTerm, toolName, controllerType);
 else
-    [path, terminal] = parseRcnlConstraintTermSet({}, controllerTypes, ...
+    [path, terminal] = parseRcnlConstraintTermSet({}, controllerType, ...
         toolName);
 end
 end
@@ -223,25 +210,4 @@ for i = 1 : length(terms)
         terms{i} = rmfield(terms{i}, 'min_value');
     end
 end
-end
-
-
-% Find left-handed Radau collocation points
-function inputs = calcCasadiCollocationPointTimes(inputs)
-rootTime = casadi.collocation_points( ...
-    inputs.numCollocationPerMesh, 'radau');
-rootTime = rootTime(1:end-1);
-meshTime = linspace(inputs.experimentalTime(1), ...
-    inputs.experimentalTime(end), ...
-    inputs.numMeshes + 1);
-meshDuration = mean(diff(meshTime));
-collocationTime = [];
-for i = 1 : length(meshTime) - 1
-    collocationTime(end+1:end+1+length(rootTime)) ...
-        = [meshTime(i), meshTime(i) + meshDuration * rootTime];
-end
-inputs.collocationTimeOriginal = collocationTime';
-inputs.collocationTimeOriginalWithEnd = inputs.collocationTimeOriginal;
-inputs.collocationTimeOriginalWithEnd(end + 1) = ...
-    inputs.experimentalTime(end);
 end

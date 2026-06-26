@@ -29,7 +29,8 @@
 % ----------------------------------------------------------------------- %
 
 function osimx = buildOsimxTemplate(modelName, osimModelFileName)
-osimx.NMSMPipelineDocument.Attributes.Version = '0_dot_1_dot_0';
+osimx.NMSMPipelineDocument.Attributes.Version = convertStringsToChars( ...
+    strrep(getPipelineVersion, ".", "_dot_"));
 osimx.NMSMPipelineDocument.OsimxModel.Attributes.name = convertStringsToChars(modelName);
 osimx.NMSMPipelineDocument.OsimxModel.associated_osim_model.Comment = ...
     'File name of associated .osim file';

@@ -222,21 +222,23 @@ end
 % model can be stored in a unique function as a static variable and models
 % do not need to be reloaded.
 function copyMexFunction(foot)
-path = mfilename("fullpath");
-[pathParts, splits] = strsplit(path, {'\', '/'});
-indices = find(cellfun(@(x) contains(x, 'nmsm-core'), pathParts));
-index = indices(end);
-mexPath = cell(1, 2 * index - 1);
-for i = 1 : index
-    mexPath{2 * i - 1} = pathParts{i};
-    if 2 * i < length(mexPath)
-        mexPath{2 * i} = splits{i};
+currentPath = mfilename('fullpath');
+[pathParts, splits] = strsplit(currentPath, {'\', '/'});
+mexPath = '';
+for i = length(pathParts) : -1 : 1
+    candidate = strjoin(joinWithSplits(pathParts(1:i), splits(1:i-1)), '');
+    if isfolder(fullfile(candidate, 'src', 'core', 'mex'))
+        mexPath = fullfile(candidate, 'src', 'core', 'mex');
+        break;
     end
 end
-mexPath = strjoin(mexPath, '');
-mexPath = fullfile(mexPath, 'src', 'core', 'mex');
+if isempty(mexPath)
+    error('Could not find src/core/mex folder. Make sure the folder names are not changed.');
+end
 version = getOpenSimVersion();
-if version >= 40501
+if version >= 40600
+    mexPath = fullfile(mexPath, 'pointKinematicsSingleThreadMexWindows40600.mexw64');
+elseif version >= 40501
     mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40501.mexw64');
 else
     mexPath = fullfile(mexPath, 'pointKinematicsMexWindows40400.mexw64');
@@ -256,4 +258,14 @@ try
 catch
 end
 warning('on')
+end
+
+function parts = joinWithSplits(pathParts, splits)
+    parts = cell(1, 2 * length(pathParts) - 1);
+    for i = 1 : length(pathParts)
+        parts{2 * i - 1} = pathParts{i};
+        if i < length(pathParts)
+            parts{2 * i} = splits{i};
+        end
+    end
 end

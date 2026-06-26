@@ -53,7 +53,7 @@ trackedQuantitiesDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'tracked_quantities_directory'));
 initialGuessDirectory = getTextFromField(getFieldByName(settingsTree, ...
     'initial_guess_directory'));
-[isTorque, isSynergy, isMuscle, isUser] = parseControllers(settingsTree);
+[isTorque, isSynergy] = parseControllers(settingsTree);
 trialPrefix = getTextFromField(getFieldByName(settingsTree, ...
     'trial_name'));
 modelFileName = parseElementTextByName(settingsTree, 'input_model_file');
@@ -74,30 +74,6 @@ if isSynergy
     plotSynergyControls(settingsTree, resultsDirectory, ...
         trackedQuantitiesDirectory, initialGuessDirectory, trialPrefix, ...
         modelFileName);
-end
-if isMuscle 
-    plotMuscleActivations(resultsDirectory, trackedQuantitiesDirectory, ...
-        initialGuessDirectory, trialPrefix)
-    if strcmp(toolName, "DesignOptimization") || strcmp(toolName, "VerificationOptimization")
-        plotTreatmentOptimizationControls( ...
-            [fullfile(trackedQuantitiesDirectory, strcat(trialPrefix, "_muscleControls.sto")), ...
-            fullfile(resultsDirectory, strcat(trialPrefix, "_muscleControls.sto"))])
-
-    else
-        plotTreatmentOptimizationControls( ...
-            fullfile(resultsDirectory, strcat(trialPrefix, "_muscleControls.sto")))
-    end
-end
-
-if isUser
-    if strcmp(toolName, "DesignOptimization") | strcmp(toolName, "VerificationOptimization")
-        plotTreatmentOptimizationControls( ...
-            [fullfile(trackedQuantitiesDirectory, strcat(trialPrefix, "_userDefinedControls.sto")), ...
-            fullfile(resultsDirectory, strcat(trialPrefix, "_userDefinedControls.sto"))])
-    else
-        plotTreatmentOptimizationControls( ...
-            fullfile(resultsDirectory, strcat(trialPrefix, "_userDefinedControls.sto")))
-    end
 end
 end
 
@@ -289,19 +265,7 @@ elseif exist(fullfile(initialGuessDirectory, ...
 end
 end
 
-function [isTorque, isSynergy, isMuscle, isUser] = parseControllers(settingsTree)
-user = getFieldByName(settingsTree, 'RCNLUserDefinedController');
-if isstruct(user)
-    isUser = true;
-else
-    isUser = false;
-end
-muscle = getFieldByName(settingsTree, 'RCNLMuscleController');
-if isstruct(muscle)
-    isMuscle = true;
-else
-    isMuscle = false;
-end
+function [isTorque, isSynergy] = parseControllers(settingsTree)
 synergy = getFieldByName(settingsTree, 'RCNLSynergyController');
 if isstruct(synergy)
     isSynergy = true;

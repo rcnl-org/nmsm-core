@@ -31,17 +31,19 @@ function [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFile
     end
     tracked = struct();
     results = struct();
-    tracked.dataFile = trackedDataFile;
-    results.dataFiles = resultsDataFiles;
-    trackedDataStorage = Storage(trackedDataFile);
-    [tracked.labels, tracked.time, tracked.data] = parseMotToComponents(...
-        model, trackedDataStorage);
-    tracked.data = tracked.data';
-    % We want time points to start at zero.
-    if tracked.time(1) ~= 0
-        tracked.time = tracked.time - tracked.time(1);
+    if ~isempty(trackedDataFile)
+        tracked.dataFile = trackedDataFile;
+        results.dataFiles = resultsDataFiles;
+        trackedDataStorage = Storage(trackedDataFile);
+        [tracked.labels, tracked.time, tracked.data] = parseMotToComponents(...
+            model, trackedDataStorage);
+        tracked.data = tracked.data';
+        % We want time points to start at zero.
+        if tracked.time(1) ~= 0
+            tracked.time = tracked.time - tracked.time(1);
+        end
+        tracked.normalizedTime = tracked.time / tracked.time(end);
     end
-    tracked.normalizedTime = tracked.time / tracked.time(end);
     results.data = {};
     results.labels = {};
     results.time = {};

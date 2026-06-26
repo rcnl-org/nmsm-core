@@ -52,13 +52,10 @@ bounds.phase.path.upper = 0.5 * ones(1, length(inputs.minPath));
 % setup control bounds
 bounds.phase.control.lower = -0.5 * ones(1, length(inputs.minControl));
 bounds.phase.control.upper = 0.5 * ones(1, length(inputs.minControl));
-if strcmp(inputs.solverType, 'gpops')
-    % setup integral bounds
-    bounds.phase.integral.lower = ...
-        zeros(1, length(inputs.continuousMaxAllowableError));
-    bounds.phase.integral.upper = inputs.gpops.integralBound * ...
-        ones(1, length(inputs.continuousMaxAllowableError));
-end
+% setup integral bounds
+bounds.phase.integral.lower = zeros(1, length(inputs.continuousMaxAllowableError));
+bounds.phase.integral.upper = inputs.gpops.integralBound * ...
+    ones(1, length(inputs.continuousMaxAllowableError));
 % setup terminal constraint bounds
 if ~isempty(inputs.minTerminal)
     bounds.eventgroup.lower = inputs.minTerminal;
@@ -66,22 +63,26 @@ end
 if ~isempty(inputs.maxTerminal)
     bounds.eventgroup.upper = inputs.maxTerminal;
 end
-if inputs.controllerTypes(2)
+if strcmp(inputs.controllerType, 'synergy')
     if inputs.optimizeSynergyVectors
         bounds.parameter.lower = -0.5 * ones(1, length(inputs.minParameter));
         bounds.parameter.upper = 0.5 * ones(1, length(inputs.minParameter));
     end
 end
-if ~isfield(bounds, 'parameter')
-    if ~isempty(inputs.userDefinedVariables)
-        bounds.parameter.lower = [];
-        bounds.parameter.upper = [];
-    end
+if strcmp(inputs.toolName, "DesignOptimization")
     for i = 1:length(inputs.userDefinedVariables)
         lower = -0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
         upper = 0.5 * ones(1, length(inputs.userDefinedVariables{i}.initial_values));
-        bounds.parameter.lower = [bounds.parameter.lower lower];
-        bounds.parameter.upper = [bounds.parameter.upper upper]; 
+        if ~isfield(bounds, "parameter") || ...
+                ~isfield(bounds.parameter, "lower")
+            bounds.parameter.lower = lower;
+            bounds.parameter.upper = upper;
+        else
+            bounds.parameter.lower = [bounds.parameter.lower, ...
+                lower];
+            bounds.parameter.upper = [bounds.parameter.upper, ...
+                upper];
+        end
     end
 end
 end
