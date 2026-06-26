@@ -42,9 +42,8 @@ end
 output.solution = initialGuess;
 inputs.costTerms = initialGuess.auxdata.costTerms;
 inputs.initialIntegrand = output.integrand;
-if isfield(output, 'metabolicCost') && ...
-        length(output.metabolicCost) == length(inputs.experimentalTime)
-    inputs.initialMetabolicCost = output.metabolicCost;
-    inputs.initialMassCenterVelocity = output.massCenterVelocity;
+if length(output.metabolicCost) == length(inputs.experimentalTime)
+inputs.initialMetabolicCost = output.metabolicCost;
+inputs.initialMassCenterVelocity = output.massCenterVelocity;
 end
 end

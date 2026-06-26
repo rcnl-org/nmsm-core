@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = normalizeSynergyData(inputs)
-if inputs.controllerTypes(2)
+if strcmp(inputs.controllerType, "synergy")
     method = lower(inputs.synergyNormalizationMethod);
     switch method
         case "sum"

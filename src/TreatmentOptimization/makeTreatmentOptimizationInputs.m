@@ -42,31 +42,27 @@ inputs = setupGroundContact(inputs);
 inputs = makeExperimentalDataSplines(inputs);
 inputs = makeSurrogateModel(inputs);
 [inputs.continuousMaxAllowableError, inputs.discreteMaxAllowableError] ...
-    = makeMaxAllowableError(inputs.toolName, inputs.controllerTypes, inputs.costTerms);
+    = makeMaxAllowableError(inputs.toolName, inputs.costTerms);
 inputs = makeMarkerTracking(inputs);
 inputs = makeOrientationTracking(inputs);
-inputs = makeAngularVelocityTracking(inputs);
 inputs = makeCenterOfPressureTracking(inputs);
 inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
 
-if any(inputs.controllerTypes(2:3))
-    [path, name, ~] = fileparts(inputs.surrogateModelFileName);
-    fileName = fullfile(path, strcat(name, ".mat"));
-    if isfile(fileName)
-        disp("Loading surrogate geometry from " + fileName);
-        temp = load(fileName);
+if strcmpi(inputs.controllerType, "synergy")
+    if inputs.loadSurrogate && isfile("surrogateMuscles.mat")
+        temp = load("surrogateMuscles.mat");
         inputs.surrogateMuscles = temp.surrogateMuscles;
         inputs.surrogateMusclesNumArgs = temp.surrogateMusclesNumArgs;
         inputs = getMuscleSpecificSurrogateModelData(inputs);
     else
-        disp("Fitting surrogate geometry from data directory...")
         inputs = SurrogateModelCreation(inputs);
+    end
+    if inputs.saveSurrogate
         surrogateMuscles = inputs.surrogateMuscles;
         surrogateMusclesNumArgs = inputs.surrogateMusclesNumArgs;
-        save(fileName, "surrogateMuscles", "surrogateMusclesNumArgs");
-        disp("Saved surrogate geometry to " + fileName);
+        save("surrogateMuscles.mat", "surrogateMuscles", "surrogateMusclesNumArgs");
     end
 end
 end

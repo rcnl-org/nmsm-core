@@ -37,7 +37,7 @@ function output = computeGpopsEndpointFunction(setup)
     end
     values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
     if strcmp(setup.auxdata.toolName, "DesignOptimization")
-        [setup.auxdata, values] = updateSystemFromUserDefinedFunctions(setup.auxdata, values);
+        [setup, values] = updateSystemFromUserDefinedFunctions(setup, values);
     end
     modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
     modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
@@ -61,7 +61,7 @@ persistent constraintTermCalculations, persistent allowedConstraintTypes;
 if isempty(allowedConstraintTypes)
     [constraintTermCalculations, allowedConstraintTypes] = ...
         generateConstraintTermStruct("terminal", ...
-        setup.auxdata.controllerTypes, setup.auxdata.toolName);
+        setup.auxdata.controllerType, setup.auxdata.toolName);
 end
 event = ...
     calcGpopsConstraint(setup.auxdata.terminal, ...
@@ -74,7 +74,7 @@ end
 persistent costTermCalculations, persistent allowedCostTypes;
 if isempty(allowedCostTypes)
     [costTermCalculations, allowedCostTypes] = ...
-        generateCostTermStruct("discrete", setup.auxdata.controllerTypes, setup.auxdata.toolName);
+        generateCostTermStruct("discrete", setup.auxdata.toolName);
 end
 discrete = calcTreatmentOptimizationCost( ...
     costTermCalculations, allowedCostTypes, values, modeledValues, setup.auxdata);
@@ -122,9 +122,7 @@ if isempty(termCounts)
     if isempty(allowedCostTypes)
         isAllowed = isEnabled;
     else
-        isAllowed = cellfun(@(x) ~ismember(x.type, allowedCostTypes) ...
-            || (strcmpi(x.type, "user_defined") && ...
-            strcmpi(x.cost_term_type, "continuous")), ...
+        isAllowed = cellfun(@(x) ~ismember(x.type, allowedCostTypes), ...
             costTerms);
     end
     

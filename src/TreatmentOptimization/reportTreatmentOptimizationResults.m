@@ -29,7 +29,7 @@
 
 function reportTreatmentOptimizationResults(solution, inputs)
 values = makeGpopsValuesAsStruct(solution.solution.phase, inputs);
-if any(inputs.controllerTypes(2:3))
+if strcmp(inputs.controllerType, 'synergy')
     % plot Muscle Activations
     plotMuscleActivations(solution.muscleActivations, values.time, ...
         inputs.experimentalMuscleActivations, inputs.experimentalTime, ...

@@ -34,12 +34,10 @@ tree = ...
     solverSettingsTree.NMSMPipelineDocument.OptimalControlSolverSettings;
 if isfield(tree, 'GpopsSettings')
     inputs.gpops = parseGpopsSolverSettings(tree);
-    inputs.solverType = 'gpops';
-elseif isfield(tree, 'CasadiSettings')
-    inputs = parseCasadiSolverSettings(tree, inputs);
-    inputs.solverType = 'casadi';
+elseif isfield(tree, 'MocoSettings')
+    inputs.moco = parseMocoSolverSettings(tree);
 else
     throw(MException("OptimalControlSolverSettings:UnsupportedSolver", ...
-        "Only <GpopsSettings> and <CasadiSettings> are supported"))
+        "Only <GpopsSettings> and <MocoSettings> are supported"))
 end
 end

@@ -37,10 +37,10 @@ if isequal(mexext, 'mexw64')
         inverseDynamicsMomentumMetabolicOrientationMexWindows40600(modelFile);
     elseif version >= 40501
         pointKinematicsMexWindows40501(modelFile);
-        inverseDynamicsBasedModeledValuesMexWindows40501(modelFile);
+        inverseDynamicsMomentumMetabolicOrientationMexWindows40501(modelFile);
     else
         pointKinematicsMexWindows40400(modelFile);
-        inverseDynamicsBasedModeledValuesMexWindows40400(modelFile);
+        inverseDynamicsMomentumMetabolicOrientationMexWindows40400(modelFile);
     end
 end
 clear inverseDynamicsMatlabParallel

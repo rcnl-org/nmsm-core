@@ -40,15 +40,9 @@ function [muscleTendonLength, muscleTendonVelocity, momentArms] = ...
     polynomialExpressionMuscleTendonVelocity, ...
     polynomialExpressionMomentArms, coefficients, numArgs)
 
-if isa(jointAngles, 'casadi.MX')
-    muscleTendonLength = casadi.MX.zeros(size(jointAngles, 1), 1);
-    muscleTendonVelocity = casadi.MX.zeros(size(jointAngles, 1), 1);
-    momentArms = casadi.MX.zeros(size(jointAngles)).';
-else
-    muscleTendonLength = zeros(size(jointAngles, 1), 1);
-    muscleTendonVelocity = zeros(size(jointAngles, 1), 1);
-    momentArms = zeros(size(jointAngles)).';
-end
+muscleTendonLength = zeros(size(jointAngles, 1), 1);
+muscleTendonVelocity = zeros(size(jointAngles, 1), 1);
+momentArms = zeros(size(jointAngles)).';
 
 for i = 1 : size(jointAngles, 1)
     positionArgs = jointAngles(i, :);
