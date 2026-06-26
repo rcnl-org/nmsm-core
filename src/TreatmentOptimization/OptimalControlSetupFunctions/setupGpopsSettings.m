@@ -89,25 +89,3 @@ elseif strcmpi(setup.nlp.solver, 'barnlp') || strcmpi(setup.nlp.solver, 'sprnlp'
 end
 setup.displaylevel = inputs.gpops.displayLevel;
 end
-
-% function
-% for field = settingsFields
-%     value = settingsTree.CasadiSettings.(field).Text;
-%     % Convert values to numeric when possible
-%     if ~isnan(str2double(value))
-%         value = str2double(value);
-%     end
-%     
-%     settingName = lower(field);
-%     % Differentiate between CasADi and IPOPT settings
-%     % IPOPT settings are defined as fields starting with "ipopt_" and then
-%     % including the name of a setting as defined here: 
-%     % https://coin-or.github.io/Ipopt/OPTIONS.html
-%     if startsWith(settingName, "ipopt_")
-%         settingName = eraseBetween(settingName, 1, 6);
-%         inputs.casadi.ipopt.(settingName) = value;
-%     else
-%         inputs.casadi.(settingName) = value;
-%     end
-% end
-% end
