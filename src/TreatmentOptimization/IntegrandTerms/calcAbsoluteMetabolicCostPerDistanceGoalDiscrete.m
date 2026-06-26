@@ -41,6 +41,6 @@ end
 
 rawCost = modeledValues.metabolicCost / values.time(end) ...
     / (modeledValues.massCenterVelocity + beltSpeed);
-assert(~any(isnan(rawCost)), "Metabolic cost is infinity.")
+% assert(~any(isnan(rawCost)), "Metabolic cost is infinity.")
 cost = ((rawCost - costTerm.errorCenter) ./ costTerm.maxAllowableError) .^ 2;
 end

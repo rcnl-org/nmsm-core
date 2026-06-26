@@ -25,10 +25,16 @@
 % ----------------------------------------------------------------------- %
 
 function [inputs, output] = solveOptimalControlProblem(inputs, params)
-[setup, inputs] = convertToGpopsInputs(inputs, params);
-setup.auxdata = inputs;
-solution = gpops2(setup);
-inputs = setup.auxdata;
-output = convertFromGpopsOutputs(solution, ...
-    inputs, params);
+if strcmp(inputs.solverType, 'gpops')
+    [setup, inputs] = convertToGpopsInputs(inputs, params);
+    setup.auxdata = inputs;
+    solution = gpops2(setup);
+    inputs = setup.auxdata;
+    output = convertFromGpopsOutputs(solution, ...
+        inputs, params);
+else
+    inputs = prepareCasadiInputs(inputs, params);
+    solution = solveTreatmentOptimizationWithCasadi(inputs);
+    output = convertFromCasadiOutputs(solution, inputs);
+end
 end

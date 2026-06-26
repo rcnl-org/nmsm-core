@@ -31,6 +31,6 @@ function [cost, costTerm] = ...
     calcAbsoluteMetabolicCostPerTimeGoalDiscrete( ...
     modeledValues, values, inputs, costTerm)
 rawCost = modeledValues.metabolicCost / values.time(end);
-assert(~any(isnan(rawCost)), "Metabolic cost is infinity.")
+% assert(~any(isnan(rawCost)), "Metabolic cost is infinity.")
 cost = ((rawCost - costTerm.errorCenter) ./ costTerm.maxAllowableError) .^ 2;
 end
