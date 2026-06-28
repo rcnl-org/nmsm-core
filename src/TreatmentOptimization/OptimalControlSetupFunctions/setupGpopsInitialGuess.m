@@ -63,8 +63,6 @@ if isfield(inputs, "initialStates")
             states = [states, inputs.initialTorqueControls];
         end
     end
-    guess.phase.state = scaleToBounds(states, ...
-        inputs.maxState, inputs.minState);
     if strcmp(inputs.solverType, 'casadi')
         guess.phase.time = scaleToBounds( ...
             inputs.collocationTimeOriginalWithEnd, inputs.maxTime, ...
@@ -82,23 +80,23 @@ else
         inputs.initialJointVelocities, ...
         inputs.initialCoordinateNames, ...
         inputs.statesCoordinateNames);
-    stateGuess = [stateJointAngles, stateJointVelocities];
+    states = [stateJointAngles, stateJointVelocities];
     if inputs.useJerk
         stateJointAccelerations = subsetDataByCoordinates( ...
             inputs.initialJointAccelerations, ...
             inputs.initialCoordinateNames, ...
             inputs.statesCoordinateNames);
-        stateGuess = [stateGuess, stateJointAccelerations];
+        states = [states, stateJointAccelerations];
     end
     if inputs.useControlDynamicsFilter
         if inputs.controllerTypes(4)
-            stateGuess = [stateGuess, inputs.initialUserDefinedControls];
+            states = [states, inputs.initialUserDefinedControls];
         end
         if inputs.controllerTypes(3)
-            stateGuess = [stateGuess, inputs.initialMuscleControls];
+            states = [states, inputs.initialMuscleControls];
         end
         if inputs.controllerTypes(2)
-            stateGuess = [stateGuess, inputs.initialSynergyControls];
+            states = [states, inputs.initialSynergyControls];
         end
         if inputs.controllerTypes(1)
             stateTorqueControls = subsetDataByCoordinates( ...
@@ -106,7 +104,7 @@ else
                 erase(erase(inputs.initialInverseDynamicsMomentLabels, ...
                 '_moment'), '_force'), ...
                 inputs.torqueControllerCoordinateNames);
-            if size(stateGuess, 1) ~= size(stateTorqueControls, 1)
+            if size(states, 1) ~= size(stateTorqueControls, 1)
                 torqueSplines = makeGcvSplineSet(inputs.initialTime, ...
                     stateTorqueControls, ...
                     inputs.torqueControllerCoordinateNames);
@@ -120,12 +118,10 @@ else
                         inputs.collocationTimeOriginalWithEnd);
                 end
             end
-            stateGuess = [stateGuess, stateTorqueControls];
+            states = [states, stateTorqueControls];
         end
     end
 
-    guess.phase.state = scaleToBounds(stateGuess, inputs.maxState, ...
-        inputs.minState);
     if strcmp(inputs.solverType, 'casadi')
         guess.phase.time = scaleToBounds( ...
             inputs.collocationTimeOriginalWithEnd, inputs.maxTime, ...
@@ -135,6 +131,11 @@ else
             inputs.maxTime, inputs.minTime);
     end
 end
+if any(inputs.controllerTypes(2:3)) && inputs.useActivationDynamics
+    states = [states, inputs.initialNeuralActivations];
+end
+guess.phase.state = scaleToBounds(states, ...
+    inputs.maxState, inputs.minState);
 end
 
 function guess = setupInitialControlsGuess(inputs, guess)
@@ -283,6 +284,9 @@ else
             controls = [controls, stateTorqueControls];
         end
     end
+end
+if any(inputs.controllerTypes(2:3)) && inputs.useActivationDynamics
+    controls = [controls, inputs.initialExcitationControls];
 end
 guess.phase.control = scaleToBounds(controls, inputs.maxControl, ...
     inputs.minControl);

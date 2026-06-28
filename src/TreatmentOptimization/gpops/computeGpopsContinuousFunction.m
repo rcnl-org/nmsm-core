@@ -34,7 +34,8 @@ values = makeGpopsValuesAsStruct(setup.phase, setup.auxdata);
 modeledValues = calcSynergyBasedModeledValues(values, setup.auxdata);
 modeledValues = calcTorqueBasedModeledValues(values, setup.auxdata, ...
     modeledValues);
-modeledValues.dynamics = calcDynamicConstraint(values, setup.auxdata);
+modeledValues.dynamics = calcDynamicConstraint(values, setup.auxdata, ...
+    modeledValues);
 persistent constraintTermCalculations, persistent allowedTypes;
 if any(cellfun(@(x) x.isEnabled == 1, setup.auxdata.path))
     if isempty(allowedTypes)

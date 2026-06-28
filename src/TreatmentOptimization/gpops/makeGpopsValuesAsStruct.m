@@ -108,6 +108,17 @@ else
     values.torqueControls = control(:, ...
         controlIndex : ...
         controlIndex - 1 + length(inputs.torqueControllerCoordinateNames));
+    controlIndex = controlIndex + ...
+        length(inputs.torqueControllerCoordinateNames);
+end
+
+if any(inputs.controllerTypes(2:3)) && inputs.useActivationDynamics
+    values.neuralActivations = state(:, stateIndex : ...
+        stateIndex - 1 + inputs.numMuscles);
+    values.excitationControls = control(:, controlIndex : ...
+        controlIndex - 1 + inputs.numMuscles);
+    stateIndex = stateIndex + inputs.numMuscles;
+    controlIndex = controlIndex + inputs.numMuscles;
 end
 
 counter = 1;

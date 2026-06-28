@@ -1,0 +1,24 @@
+if system_dependent('IsDebugMode')==1, dbstep; end
+if system_dependent('IsDebugMode')==1, dbstep; end
+if system_dependent('IsDebugMode')==1, dbstep; end
+setupActivationDynamics(inputs);
+open VerificationOptimizationTool.m
+open DesignOptimizationTool.m
+if system_dependent('IsDebugMode')==1, dbstep; end
+if system_dependent('IsDebugMode')==1, dbstep; end
+{Error using <a href="matlab:matlab.internal.language.introspective.errorDocCallback('prepareGroundContactSurfaces')" style="font-weight:bold">prepareGroundContactSurfaces</a>
+Java exception occurred:
+java.io.IOException: Object: Cannot open file RightLegAndPelvis.osim. It may not exist or you do
+not have permission to read it.
+	Thrown at Object.cpp:103 in Object().
+	at org.opensim.modeling.opensimSimulationJNI.new_Model__SWIG_1(Native Method)
+	at org.opensim.modeling.Model.<init>(Model.java:857)
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('makeTreatmentOptimizationInputs', 'C:\GitHub\nmsm-core\src\TreatmentOptimization\makeTreatmentOptimizationInputs.m', 36)" style="font-weight:bold">makeTreatmentOptimizationInputs</a> (<a href="matlab: opentoline('C:\GitHub\nmsm-core\src\TreatmentOptimization\makeTreatmentOptimizationInputs.m',36,0)">line 36</a>)
+inputs.contactSurfaces = prepareGroundContactSurfaces( ...
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('TrackingOptimizationTool', 'C:\GitHub\nmsm-core\src\TreatmentOptimization\TrackingOptimization\TrackingOptimizationTool.m', 48)" style="font-weight:bold">TrackingOptimizationTool</a> (<a href="matlab: opentoline('C:\GitHub\nmsm-core\src\TreatmentOptimization\TrackingOptimization\TrackingOptimizationTool.m',48,0)">line 48</a>)
+inputs = makeTreatmentOptimizationInputs(inputs, params);
+Error in <a href="matlab:matlab.internal.language.introspective.errorDocCallback('runSynergyTO', 'C:\GitHub\nmsm-tutorial\Step-7-Tracking-Optimization\runSynergyTO.m', 5)" style="font-weight:bold">runSynergyTO</a> (<a href="matlab: opentoline('C:\GitHub\nmsm-tutorial\Step-7-Tracking-Optimization\runSynergyTO.m',5,0)">line 5</a>)
+TrackingOptimizationTool(settingsFile);} 
+open setupActivationDynamics.m
+open makeGpopsValuesAsStruct.m
+runSynergyTO

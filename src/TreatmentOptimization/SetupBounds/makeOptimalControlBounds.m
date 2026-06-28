@@ -85,6 +85,13 @@ if inputs.useControlDynamicsFilter
     inputs.maxState = [inputs.maxState, maxControl];
     inputs.minState = [inputs.minState, minControl];
 end
+
+if any(inputs.controllerTypes(2:3)) && inputs.useActivationDynamics
+    inputs.maxState = [inputs.maxState ones(1, ...
+        inputs.numMuscles)];
+    inputs.minState = [inputs.minState zeros(1, ...
+        inputs.numMuscles)];
+end
 end
 
 function inputs = makeControlBounds(inputs)
@@ -116,6 +123,13 @@ else
     [maxControl, minControl] = makeNonDerivativeControlBounds(inputs);
     inputs.maxControl = [inputs.maxControl, maxControl];
     inputs.minControl = [inputs.minControl, minControl];
+end
+
+if any(inputs.controllerTypes(2:3)) && inputs.useActivationDynamics
+    inputs.maxControl = [inputs.maxControl ones(1, ...
+        inputs.numMuscles)];
+    inputs.minControl = [inputs.minControl zeros(1, ...
+        inputs.numMuscles)];
 end
 
 if inputs.controllerTypes(2) && inputs.optimizeSynergyVectors

@@ -28,27 +28,34 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function dynamics = calcDynamicConstraint(values, ...
-    params)
+function dynamics = calcDynamicConstraint(values, inputs, modeledValues)
 derivatives = [values.stateVelocities, values.controlAccelerations];
-if params.useJerk
+if inputs.useJerk
     derivatives = [derivatives, values.controlJerks];
 end
-if params.useControlDynamicsFilter
-    if params.controllerTypes(4)
-        derivatives = [derivatives, (values.userDefinedControlDerivatives - values.userDefinedControls) / params.controlDynamicsFilterConstant];
+if inputs.useControlDynamicsFilter
+    if inputs.controllerTypes(4)
+        derivatives = [derivatives, (values.userDefinedControlDerivatives - values.userDefinedControls) / inputs.controlDynamicsFilterConstant];
     end
-    if params.controllerTypes(3)
-        derivatives = [derivatives, (values.controlMuscleActivationDerivatives - values.controlMuscleActivations) / params.controlDynamicsFilterConstant];
+    if inputs.controllerTypes(3)
+        derivatives = [derivatives, (values.controlMuscleActivationDerivatives - values.controlMuscleActivations) / inputs.controlDynamicsFilterConstant];
     end
-    if params.controllerTypes(2)
-        derivatives = [derivatives, (values.controlSynergyActivationDerivatives - values.controlSynergyActivations) / params.controlDynamicsFilterConstant];
+    if inputs.controllerTypes(2)
+        derivatives = [derivatives, (values.controlSynergyActivationDerivatives - values.controlSynergyActivations) / inputs.controlDynamicsFilterConstant];
     end
-    if params.controllerTypes(1)
-        derivatives = [derivatives, (values.torqueControlDerivatives - values.torqueControls) / params.controlDynamicsFilterConstant];
+    if inputs.controllerTypes(1)
+        derivatives = [derivatives, (values.torqueControlDerivatives - values.torqueControls) / inputs.controlDynamicsFilterConstant];
     end
 end
+if any(inputs.controllerTypes(2:3)) && inputs.useActivationDynamics
+    coefficient1 = 1 ./ inputs.activationTimeConstants - ...
+        1 ./ (4 * inputs.activationTimeConstants);
+    coefficient2 = 1 ./ (4 * inputs.activationTimeConstants);
+    derivatives = [derivatives, ...
+        (coefficient1 .* values.excitationControls + coefficient2) .* ...
+        (values.excitationControls - modeledValues.neuralActivations)];
+end
 
-dynamics = (params.maxTime - params.minTime) * ...
-    derivatives ./ (params.maxState - params.minState);
+dynamics = (inputs.maxTime - inputs.minTime) * ...
+    derivatives ./ (inputs.maxState - inputs.minState);
 end

@@ -44,6 +44,7 @@ diary(outputLogFile)
 inputs = normalizeSynergyData(inputs);
 inputs = setupMuscleSynergies(inputs);
 inputs = setupMuscleActivations(inputs);
+inputs = setupActivationDynamics(inputs);
 inputs = setupUserDefinedControls(inputs);
 inputs = setupTorqueControls(inputs);
 inputs = makeTreatmentOptimizationInputs(inputs, params);

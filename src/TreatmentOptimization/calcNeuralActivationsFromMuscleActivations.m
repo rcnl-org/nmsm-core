@@ -1,0 +1,6 @@
+function neuralActivations = ...
+    calcNeuralActivationsFromMuscleActivations( ...
+    muscleActivations, activationNonlinearityConstants)
+% Fill in function to calculate neural activations here
+neuralActivations = muscleActivations;
+end
