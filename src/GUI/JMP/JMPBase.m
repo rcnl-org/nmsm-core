@@ -50,6 +50,7 @@ classdef JMPBase < matlab.apps.AppBase
         OutputModelFileEditField       matlab.ui.control.EditField
         OutputModelFileEditFieldLabel  matlab.ui.control.Label
         OutputModelFileSearchButton    matlab.ui.control.Button
+        OutputModelFileError           matlab.ui.control.Image
         TasksTab                       matlab.ui.container.Tab
         TasksError                     matlab.ui.control.Image
         TasksWarning                   matlab.ui.control.Image
@@ -131,8 +132,9 @@ classdef JMPBase < matlab.apps.AppBase
             1e-6]
 
         % Error checking and flow control
-        needToSave logical = true;
         currentSettingsFile string = "";
+        inputModelValid logical = false
+        outputModelValid logical = false
     end % Description
 
     properties (Access = public)
@@ -189,18 +191,18 @@ classdef JMPBase < matlab.apps.AppBase
                 @(src,event)updateBodiesTable(app));
         end
 
-        function updateInputModelFile(app) % good
+        function updateInputModelFile(app)
             app.InputModelFileEditField.Value = getRelativePath( ...
                 app.input_model_file);
-            [modelErrorFlag, modelErrorMessage] = parseModelFileGui( ...
-                app, app.input_model_file);
-            app.needToSave = true;
+            app.validateInputModelFile();
+            app.updateRunButton();
         end
 
-        function updateOutputModelFile(app) % good
+        function updateOutputModelFile(app)
             app.OutputModelFileEditField.Value = getRelativePath( ...
                 app.output_model_file);
-            app.needToSave = true;
+            app.validateOutputModelFile();
+            app.updateRunButton();
         end
 
         function updateTaskName(app)
@@ -225,31 +227,39 @@ classdef JMPBase < matlab.apps.AppBase
                 arrayfun(@(v) app.formatAdvancedValue(v), app.paramValues);
         end
 
-        function updateMarkersFile(app) % change
+        function updateMarkersFile(app)
             app.MarkersFileEditField.Value = getRelativePath( ...
                 app.JMPTask{app.taskIndex}.marker_file_name);
-            [error, ~] = app.parseMarkerFileErrors( ...
-                app.JMPTask{app.taskIndex}.marker_file_name);
-            if ~error && ~strcmp(app.JMPTask{app.taskIndex}.marker_file_name, "")
-                app.parseMarkerFileData( ...
-                    app.JMPTask{app.taskIndex}.marker_file_name);
-                app.StartTimeField.Value = app.JMPTask{app.taskIndex}.minTime;
-                app.EndTimeField.Value = app.JMPTask{app.taskIndex}.maxTime;
+            app.validateMarkerFile();
+            app.updateMarkersEditButton();
+            app.updateRunButton();
+        end
+
+        function updateMarkersEditButton(app)
+            if ~isempty(app.JMPTask{app.taskIndex}.markerFileMarkers)
+                app.MarkersEditButton.Enable = 'on';
+            else
+                app.MarkersEditButton.Enable = 'off';
             end
         end
 
         function updateMarkerNames(app)
             app.MarkersTextArea.Value = app.JMPTask{app.taskIndex}.marker_names;
+            app.updateRunButton();
         end
 
         function updateJointsTable(app)
             app.JointsTable.Data = table([app.JMPTask{app.taskIndex}.jointNames'; ...
                 "+ Add new joint"]);
+            app.validateTaskContent();
+            app.updateRunButton();
         end
 
         function updateBodiesTable(app)
             app.BodiesTable.Data = table([app.JMPTask{app.taskIndex}.bodyNames'; ...
                 "+ Add new body"]);
+            app.validateTaskContent();
+            app.updateRunButton();
         end
 
         function updateJMPTasksListBox(app) % good
@@ -272,6 +282,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.StartTimeField.Value = app.JMPTask{app.taskIndex}.time_range(1);
             app.EndTimeField.Value = app.JMPTask{app.taskIndex}.time_range(2);
             app.MarkersTextArea.Value = app.JMPTask{app.taskIndex}.marker_names;
+            app.updateMarkersEditButton();
         end
 
         function formatTabButtons(app) % good
@@ -336,7 +347,6 @@ classdef JMPBase < matlab.apps.AppBase
             if app.taskIndex > 1
                 app.taskIndex = app.taskIndex - 1;
             end
-            app.needToSave = true;
             app.updateJMPTasksListBox();
         end
 
@@ -376,13 +386,19 @@ classdef JMPBase < matlab.apps.AppBase
         function deleteJoint(app, jointIndex)
             app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint = ...
                 app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint(~jointIndex);
-            app.needToSave = true;
+            app.JMPTask{app.taskIndex}.jointNames = ...
+                app.JMPTask{app.taskIndex}.jointNames(~jointIndex);
+            app.validateTaskContent();
+            app.updateRunButton();
         end
 
         function deleteBody(app, bodyIndex)
             app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody = ...
                 app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody(~bodyIndex);
-            app.needToSave = true;
+            app.JMPTask{app.taskIndex}.bodyNames = ...
+                app.JMPTask{app.taskIndex}.bodyNames(~bodyIndex);
+            app.validateTaskContent();
+            app.updateRunButton();
         end
 
         function parseMarkerFileData(app, markerFileName)
@@ -403,58 +419,229 @@ classdef JMPBase < matlab.apps.AppBase
             app.JMPTask{app.taskIndex}.maxTime = endTime;
         end
 
-        function [warningFlag, warningMessage] = checkValidMarkers(app)
-            warningFlag = false;
-            warningMessage = "";
-            if strcmp(app.JMPTask{app.taskIndex}.marker_file_name, "")
-                return
-            end
-            invalidMarkerIndices = ~contains(app.JMPTask{app.taskIndex}.markerFileMarkers, ...
-                app.model_markers);
-            if any(invalidMarkerIndices)
-                invalidMarkers = app.markerFileMarkers(invalidMarkerIndices);
-                warningFlag = true;
-                warningMessage = sprintf("The following markers are " + ...
-                    "in the given marker file but not the given .osim" + ...
-                    " model: %s", strjoin(invalidMarkers, ", "));
+        function validateInputModelFile(app)
+            app.inputModelValid = validateOsimFileGui(app, ...
+                app.input_model_file, ...
+                app.InputModelFileEditField, app.InputModelFileError);
+            if ~isempty(app.JMPTask) && ...
+                    ~strcmp(app.JMPTask{app.taskIndex}.marker_file_name, "")
+                app.checkMarkerModelConsistency();
             end
         end
 
-        function modelErrorsCallback(app) % good
-            % Osim model errors
-            app.modelErrorFlag = false;
-            [app.modelErrorFlag, modelErrorMessage] = parseModelFileGui( ...
-                app, app.input_model_file);
-            if app.modelErrorFlag
-                throwGuiError(modelErrorMessage, ...
-                    app.InputModelFileEditField, app.InputModelFileError)
-                app.ErrorFlag = true;
+        function validateOutputModelFile(app)
+            if strcmp(app.output_model_file, "")
+                clearGuiError(app.OutputModelFileEditField, app.OutputModelFileError);
+                app.outputModelValid = false;
             else
-                clearGuiError(app.InputModelFileEditField, app.InputModelFileError)
+                clearGuiError(app.OutputModelFileEditField, app.OutputModelFileError);
+                app.outputModelValid = true;
             end
         end
 
-        function [error, message] = parseMarkerFileErrors(app, markerFileName)
-            import org.opensim.modeling.TimeSeriesTableVec3
-            error = false;
-            message = "";
-            if strcmp(markerFileName, "")
+        function validateMarkerFile(app)
+            markerFileName = app.JMPTask{app.taskIndex}.marker_file_name;
+            clearGuiError(app.MarkersFileEditField, app.MarkersFileWarning);
+            isValid = validateTrcFileGui(markerFileName, ...
+                app.MarkersFileEditField, app.MarkersFileError);
+            if isValid
+                app.parseMarkerFileData(markerFileName);
+                app.StartTimeField.Value = app.JMPTask{app.taskIndex}.minTime;
+                app.EndTimeField.Value = app.JMPTask{app.taskIndex}.maxTime;
+                app.checkMarkerModelConsistency();
+            end
+        end
+
+        function checkMarkerModelConsistency(app)
+            clearGuiError(app.MarkersFileEditField, app.MarkersFileWarning);
+            if isempty(app.model_markers) || ...
+                    isempty(app.JMPTask{app.taskIndex}.markerFileMarkers)
                 return
+            end
+            markerFileMarkers = app.JMPTask{app.taskIndex}.markerFileMarkers;
+            invalidMarkerIndices = ~ismember(markerFileMarkers, app.model_markers);
+            if any(invalidMarkerIndices)
+                invalidMarkers = markerFileMarkers(invalidMarkerIndices);
+                warningMessage = "The following markers are in the .trc " + ...
+                    "file but not in the .osim model: " + ...
+                    strjoin(invalidMarkers, ", ") + ".";
+                throwGuiWarning(warningMessage, app.MarkersFileEditField, ...
+                    app.MarkersFileWarning);
+            end
+        end
+
+        function isValid = validateTimeRange(app)
+            startTime = app.JMPTask{app.taskIndex}.time_range(1);
+            endTime = app.JMPTask{app.taskIndex}.time_range(2);
+            minTime = app.JMPTask{app.taskIndex}.minTime;
+            maxTime = app.JMPTask{app.taskIndex}.maxTime;
+            clearGuiError([], app.TimeRangeError);
+            if startTime >= endTime
+                throwGuiError("Start time must be less than end time.", ...
+                    [], app.TimeRangeError);
+                isValid = false;
+            elseif maxTime > 0 && (startTime < minTime || endTime > maxTime)
+                throwGuiError(sprintf( ...
+                    "Time range must be within [%.3f, %.3f] seconds.", ...
+                    minTime, maxTime), [], app.TimeRangeError);
+                isValid = false;
+            else
+                isValid = true;
+            end
+        end
+
+        function validateTaskContent(app)
+            clearGuiError([], app.JointsWarning);
+            removeStyle(app.JointsTable);
+            joints = app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint;
+            if iscell(joints) && ~isempty(joints)
+                anyJointNoParams = false;
+                for i = 1:length(joints)
+                    joint = joints{i};
+                    allParams = [joint.parent_frame_transformation.translation, ...
+                        joint.parent_frame_transformation.orientation, ...
+                        joint.child_frame_transformation.translation, ...
+                        joint.child_frame_transformation.orientation];
+                    if ~any(strcmp(allParams, "true"))
+                        anyJointNoParams = true;
+                        addStyle(app.JointsTable, ...
+                            uistyle('BackgroundColor', [1.00 1.00 0.67]), 'row', i);
+                    end
+                end
+                if anyJointNoParams
+                    throwGuiWarning("One or more joints have no parameters " + ...
+                        "selected and will not contribute to the optimization.", ...
+                        [], app.JointsWarning);
+                end
             end
 
-            if ~exist(markerFileName, "file")
-                error = true;
-                message = ...
-                    "The given marker file does not exist.";
+            clearGuiError([], app.BodiesWarning);
+            removeStyle(app.BodiesTable);
+            bodies = app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody;
+            if iscell(bodies) && ~isempty(bodies)
+                anyBodyNoParams = false;
+                for i = 1:length(bodies)
+                    body = bodies{i};
+                    if ~strcmp(body.scale_body, "true") && ...
+                            ~any(strcmp(body.move_markers, "true"))
+                        anyBodyNoParams = true;
+                        addStyle(app.BodiesTable, ...
+                            uistyle('BackgroundColor', [1.00 1.00 0.67]), 'row', i);
+                    end
+                end
+                if anyBodyNoParams
+                    throwGuiWarning("One or more bodies have no parameters " + ...
+                        "selected and will not contribute to the optimization.", ...
+                        [], app.BodiesWarning);
+                end
+            end
+        end
+
+        function isValid = validateAllTasksSilent(app)
+            isValid = true;
+            clearGuiError([], app.TasksError);
+            removeStyle(app.TasksTable);
+            if isempty(app.JMPTask)
+                throwGuiError("At least one task is required.", ...
+                    [], app.TasksError);
+                isValid = false;
                 return
             end
-            try
-                TimeSeriesTableVec3(markerFileName);
-            catch
-                error = true;
-                app.JMPTask{app.taskIndex}.MarkerFileMessage = ...
-                    "Cannot load the given marker file.";
+            hasEnabledTask = false;
+            for i = 1:length(app.JMPTask)
+                if ~strcmp(app.JMPTask{i}.is_enabled, 'true')
+                    continue
+                end
+                hasEnabledTask = true;
+                taskValid = true;
+                taskHasWarning = false;
+                if strcmp(app.JMPTask{i}.marker_file_name, "") || ...
+                        ~exist(app.JMPTask{i}.marker_file_name, 'file')
+                    taskValid = false;
+                end
+                if strcmp(app.JMPTask{i}.marker_names, "")
+                    taskValid = false;
+                end
+                if app.JMPTask{i}.time_range(1) >= app.JMPTask{i}.time_range(2)
+                    taskValid = false;
+                end
+                joints = app.JMPTask{i}.JMPJointSet.JMPJoint;
+                bodies = app.JMPTask{i}.JMPBodySet.JMPBody;
+                hasDesignVar = false;
+                if iscell(joints)
+                    for j = 1:length(joints)
+                        jt = joints{j};
+                        allParams = [jt.parent_frame_transformation.translation, ...
+                            jt.parent_frame_transformation.orientation, ...
+                            jt.child_frame_transformation.translation, ...
+                            jt.child_frame_transformation.orientation];
+                        if any(strcmp(allParams, "true"))
+                            hasDesignVar = true;
+                        else
+                            taskHasWarning = true;
+                        end
+                    end
+                end
+                if iscell(bodies)
+                    for j = 1:length(bodies)
+                        b = bodies{j};
+                        if strcmp(b.scale_body, "true") || ...
+                                any(strcmp(b.move_markers, "true"))
+                            hasDesignVar = true;
+                        else
+                            taskHasWarning = true;
+                        end
+                    end
+                end
+                if ~hasDesignVar
+                    taskValid = false;
+                end
+                if ~isempty(app.model_markers) && ...
+                        ~isempty(app.JMPTask{i}.markerFileMarkers) && ...
+                        any(~ismember(app.JMPTask{i}.markerFileMarkers, app.model_markers))
+                    taskHasWarning = true;
+                end
+                if ~taskValid
+                    isValid = false;
+                    addStyle(app.TasksTable, ...
+                        uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', i);
+                elseif taskHasWarning
+                    addStyle(app.TasksTable, ...
+                        uistyle('BackgroundColor', [1.00 1.00 0.67]), 'row', i);
+                end
+            end
+            if ~hasEnabledTask
+                throwGuiError("At least one task must be enabled to run.", ...
+                    [], app.TasksError);
+                isValid = false;
                 return
+            end
+            if ~isValid
+                throwGuiError("One or more tasks have errors. Check that " + ...
+                    "each enabled task has a valid marker file, at least " + ...
+                    "one marker selected, a valid time range, and at " + ...
+                    "least one design variable.", ...
+                    [], app.TasksError);
+            end
+        end
+
+        function updateRunButton(app)
+            allValid = app.inputModelValid && app.outputModelValid && ...
+                app.validateAllTasksSilent();
+            if allValid
+                app.RunButton.Enable = 'on';
+            else
+                app.RunButton.Enable = 'off';
+            end
+            app.updateTabControls();
+        end
+
+        function updateTabControls(app)
+            inputsReady = app.inputModelValid && app.outputModelValid;
+            if inputsReady
+                app.JMPTasksButton.Enable = 'on';
+            else
+                app.JMPTasksButton.Enable = 'off';
             end
         end
 
@@ -522,6 +709,8 @@ classdef JMPBase < matlab.apps.AppBase
             end
             app.updateTasksPanel();
             app.updateJMPTasksListBox();
+            app.validateTimeRange();
+            app.updateRunButton();
         end
 
         function loadOptimizationParams(app, settingsTree)
@@ -550,6 +739,8 @@ classdef JMPBase < matlab.apps.AppBase
         function editJoint(app, joint)
             selectedJoint = app.JointsTable.Selection;
             app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint{selectedJoint} = joint;
+            app.validateTaskContent();
+            app.updateRunButton();
         end
 
         function addBody(app, body)
@@ -561,6 +752,8 @@ classdef JMPBase < matlab.apps.AppBase
         function editBody(app, body)
             selectedBody = app.BodiesTable.Selection;
             app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody{selectedBody} = body;
+            app.validateTaskContent();
+            app.updateRunButton();
         end
 
         function setModelMarkers(app, markers)
@@ -612,6 +805,9 @@ classdef JMPBase < matlab.apps.AppBase
                 Options, paramValues);
             app.updateJointsTable();
             app.updateBodiesTable();
+            app.RunButton.Enable = 'off';
+            app.JMPTasksButton.Enable = 'off';
+            app.MarkersEditButton.Enable = 'off';
             app.makeAllListeners()
         end
 
@@ -642,12 +838,15 @@ classdef JMPBase < matlab.apps.AppBase
                 return
             end
             app.saveSettingsFile(fullfile(path, file))
-            % app.currentSettingsFile = fullfile(path, file);
-            app.needToSave = false;
         end
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
+            if strcmp(app.currentSettingsFile, "")
+                [file, path] = uiputfile('*.xml', "Save XML Settings File");
+                if isequal(file, 0); return; end
+                app.currentSettingsFile = fullfile(path, file);
+            end
             JMPRun(app, app.currentSettingsFile);
         end
 
@@ -678,8 +877,12 @@ classdef JMPBase < matlab.apps.AppBase
 
         % Value changed function: InputModelFileEditField
         function InputModelFileEditFieldValueChanged(app, event)
-            app.input_model_file = GetFullPath( ...
-                app.InputModelFileEditField.Value);
+            value = app.InputModelFileEditField.Value;
+            if strcmp(value, "")
+                app.input_model_file = "";
+            else
+                app.input_model_file = GetFullPath(value);
+            end
         end
 
         % Button pushed function: OutputModelFileSearchButton
@@ -694,8 +897,12 @@ classdef JMPBase < matlab.apps.AppBase
 
         % Value changed function: OutputModelFileEditField
         function OutputModelFileEditFieldValueChanged(app, event)
-            app.output_model_file = getAbsolutePath( ...
-                app.OutputModelFileEditField.Value);
+            value = app.OutputModelFileEditField.Value;
+            if strcmp(value, "")
+                app.output_model_file = "";
+            else
+                app.output_model_file = GetFullPath(value);
+            end
         end
 
         % Double-clicked callback: TasksTable
@@ -753,16 +960,21 @@ classdef JMPBase < matlab.apps.AppBase
             if indices(2) == 2
                 app.JMPTask{app.taskIndex}.name = event.NewData;
             end
+            app.updateRunButton();
         end
 
         % Value changed function: StartTimeField
         function StartTimeFieldValueChanged(app, event)
             app.JMPTask{app.taskIndex}.time_range(1) = app.StartTimeField.Value;
+            app.validateTimeRange();
+            app.updateRunButton();
         end
 
         % Value changed function: EndTimeField
         function EndTimeFieldValueChanged(app, event)
             app.JMPTask{app.taskIndex}.time_range(2) = app.EndTimeField.Value;
+            app.validateTimeRange();
+            app.updateRunButton();
         end
 
         % Button pushed function: MarkersEditButton
@@ -936,6 +1148,12 @@ classdef JMPBase < matlab.apps.AppBase
             app.OutputModelFileEditField = uieditfield(app.InputsTab, 'text');
             app.OutputModelFileEditField.ValueChangedFcn = createCallbackFcn(app, @OutputModelFileEditFieldValueChanged, true);
             app.OutputModelFileEditField.Position = [178 323 472 30];
+
+            % Create OutputModelFileError
+            app.OutputModelFileError = uiimage(app.InputsTab);
+            app.OutputModelFileError.Visible = 'off';
+            app.OutputModelFileError.Position = [717 323 28 30];
+            app.OutputModelFileError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create InputModelFileError
             app.InputModelFileError = uiimage(app.InputsTab);
