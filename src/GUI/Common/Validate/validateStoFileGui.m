@@ -1,13 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function parses an MTP data directory: trial prefixes are derived
-% from subfolders inside MAData that contain at least one .sto file.
-% Other data folders (EMGData, IDData, IKData) have flat .sto files named
-% {trialPrefix}.sto. EMG and ID channel labels are parsed from those trials
-% and populated into the GUI for muscle group configuration.
+% This function validates a .sto or .mot data file for use in the GUI. If
+% the filepath is empty, the error state is cleared and false is returned.
+% If non-empty, the file's existence and parseability are checked via the
+% OpenSim Storage class. On failure, the field and icon are highlighted as
+% an error with a descriptive tooltip.
 %
-% (App, string) -> ()
-% Parses MTP data directory and populates trial prefixes and channel labels
+% (.mot files are also accepted as they share the same format.)
+%
+% (string, UIComponent, UIComponent) -> (bool)
+% Validates a .sto/.mot data file and wires result to GUI error components
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,47 +32,27 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function parseMtpDataDirectoryGui(app, dataDirectory)
+function isValid = validateStoFileGui(filepath, fieldObj, iconObj)
 import org.opensim.modeling.Storage
-import org.opensim.modeling.Model
-
-if strcmp(dataDirectory, "") || ~exist(dataDirectory, "dir")
+if strcmp(filepath, "")
+    clearGuiError(fieldObj, iconObj);
+    isValid = false;
     return
 end
-
-maDataPath = fullfile(dataDirectory, "MAData");
-if ~exist(maDataPath, "dir")
+if ~exist(filepath, "file")
+    throwGuiError("The given data file does not exist. " + ...
+        "Check the file path and try again.", fieldObj, iconObj);
+    isValid = false;
     return
 end
-
-trialNames = findPrefixesFromSubdirectories(maDataPath);
-
-if isempty(trialNames)
-    return
-end
-
 try
-    emgNames = {};
-    for i = 1:length(trialNames)
-        [emgNames{i}, ~, ~] = parseMotToComponents( ...
-            org.opensim.modeling.Model(), ...
-            Storage(fullfile(dataDirectory, "EMGData", ...
-            strcat(trialNames(i), ".sto"))));
-    end
-    app.setEmgLabels(emgNames{1});
+    Storage(filepath);
 catch
+    throwGuiError("The data file could not be loaded. " + ...
+        "Verify that it is a valid .sto or .mot file.", fieldObj, iconObj);
+    isValid = false;
+    return
 end
-
-try
-    idNames = {};
-    for i = 1:length(trialNames)
-        [idNames{i}, ~, ~] = parseMotToComponents( ...
-            org.opensim.modeling.Model(), ...
-            Storage(fullfile(dataDirectory, "IDData", ...
-            strcat(trialNames(i), ".sto"))));
-    end
-    app.setIDLabels(idNames{1});
-catch
-end
-
+clearGuiError(fieldObj, iconObj);
+isValid = true;
 end

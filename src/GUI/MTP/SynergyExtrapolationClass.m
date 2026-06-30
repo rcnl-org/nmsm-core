@@ -32,7 +32,7 @@ classdef SynergyExtrapolationClass < handle
     properties (Access = public, SetObservable)
         is_enabled = 'true';
         matrix_factorization_method = 'PCA';
-        number_of_synergies = 0;
+        number_of_synergies = 1;
         synergy_extrapolation_categorization = 'trial';
         residual_categorization = 'task';
 

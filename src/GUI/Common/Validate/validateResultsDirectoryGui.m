@@ -1,13 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function parses an MTP data directory: trial prefixes are derived
-% from subfolders inside MAData that contain at least one .sto file.
-% Other data folders (EMGData, IDData, IKData) have flat .sto files named
-% {trialPrefix}.sto. EMG and ID channel labels are parsed from those trials
-% and populated into the GUI for muscle group configuration.
+% This function validates a results directory path for use in the GUI.
+% If empty, the warning is cleared and false is returned. If the directory
+% already exists, a warning is shown that results will be overwritten. If
+% the path is set and does not yet exist, it is considered valid with no
+% icon shown.
 %
-% (App, string) -> ()
-% Parses MTP data directory and populates trial prefixes and channel labels
+% (string, UIComponent, UIComponent) -> (bool)
+% Validates a results directory path and wires result to GUI components
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,47 +30,15 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function parseMtpDataDirectoryGui(app, dataDirectory)
-import org.opensim.modeling.Storage
-import org.opensim.modeling.Model
-
-if strcmp(dataDirectory, "") || ~exist(dataDirectory, "dir")
+function isValid = validateResultsDirectoryGui(resultsDir, fieldObj, warningIcon)
+clearGuiError(fieldObj, warningIcon);
+if strcmp(resultsDir, "")
+    isValid = false;
     return
 end
-
-maDataPath = fullfile(dataDirectory, "MAData");
-if ~exist(maDataPath, "dir")
-    return
+if exist(resultsDir, "dir")
+    throwGuiWarning("Results directory already exists and will be overwritten.", ...
+        fieldObj, warningIcon);
 end
-
-trialNames = findPrefixesFromSubdirectories(maDataPath);
-
-if isempty(trialNames)
-    return
-end
-
-try
-    emgNames = {};
-    for i = 1:length(trialNames)
-        [emgNames{i}, ~, ~] = parseMotToComponents( ...
-            org.opensim.modeling.Model(), ...
-            Storage(fullfile(dataDirectory, "EMGData", ...
-            strcat(trialNames(i), ".sto"))));
-    end
-    app.setEmgLabels(emgNames{1});
-catch
-end
-
-try
-    idNames = {};
-    for i = 1:length(trialNames)
-        [idNames{i}, ~, ~] = parseMotToComponents( ...
-            org.opensim.modeling.Model(), ...
-            Storage(fullfile(dataDirectory, "IDData", ...
-            strcat(trialNames(i), ".sto"))));
-    end
-    app.setIDLabels(idNames{1});
-catch
-end
-
+isValid = true;
 end
