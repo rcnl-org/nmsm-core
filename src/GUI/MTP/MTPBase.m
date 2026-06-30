@@ -141,6 +141,10 @@ classdef MTPBase < matlab.apps.AppBase
         AuxAdvancedSettingsError        matlab.ui.control.Image
         AuxCostTermsError               matlab.ui.control.Image
         AdvancedSettingsError           matlab.ui.control.Image
+        InputModelFileRequired          matlab.ui.control.Image
+        InputDataRequired               matlab.ui.control.Image
+        ResultsDirectoryRequired        matlab.ui.control.Image
+        PassiveDataDirectoryRequired    matlab.ui.control.Image
     end
 
 
@@ -1001,6 +1005,14 @@ classdef MTPBase < matlab.apps.AppBase
     methods (Access = private)
 
         function validateInputModelFile(app)
+            if strcmp(app.input_model_file, "")
+                clearGuiError(app.InputModelFileEditField, app.InputModelFileError);
+                throwGuiRequired("Input model file is required.", ...
+                    [], app.InputModelFileRequired);
+                app.inputModelValid = false;
+                return
+            end
+            clearGuiError([], app.InputModelFileRequired);
             app.inputModelValid = validateOsimFileGui(app, ...
                 app.input_model_file, ...
                 app.InputModelFileEditField, app.InputModelFileError);
@@ -1019,6 +1031,14 @@ classdef MTPBase < matlab.apps.AppBase
         end
 
         function validateDataDirectory(app)
+            if strcmp(app.data_directory, "")
+                clearGuiError(app.InputDataEditField, app.InputDataError);
+                throwGuiRequired("Input data directory is required.", ...
+                    [], app.InputDataRequired);
+                app.dataDirectoryValid = false;
+                return
+            end
+            clearGuiError([], app.InputDataRequired);
             app.dataDirectoryValid = validateDataDirectoryGui( ...
                 app.data_directory, ["EMGData", "IDData", "MAData"], ...
                 app.InputDataEditField, app.InputDataError);
@@ -1063,6 +1083,14 @@ classdef MTPBase < matlab.apps.AppBase
         end
 
         function validateResultsDirectory(app)
+            if strcmp(app.results_directory, "")
+                clearGuiError(app.ResultsDirectoryEditField, app.ResultsDirectoryWarning);
+                throwGuiRequired("Results directory is required.", ...
+                    [], app.ResultsDirectoryRequired);
+                app.resultsDirectoryValid = false;
+                return
+            end
+            clearGuiError([], app.ResultsDirectoryRequired);
             app.resultsDirectoryValid = validateResultsDirectoryGui( ...
                 app.results_directory, ...
                 app.ResultsDirectoryEditField, app.ResultsDirectoryWarning);
@@ -1072,7 +1100,7 @@ classdef MTPBase < matlab.apps.AppBase
             if isempty(app.coordinate_list) || ...
                     (isstring(app.coordinate_list) && ...
                     all(strcmp(app.coordinate_list, "")))
-                throwGuiError("At least one coordinate must be selected.", ...
+                throwGuiRequired("At least one coordinate must be selected.", ...
                     [], app.CoordinateListWarning);
                 isValid = false;
             else
@@ -1085,19 +1113,21 @@ classdef MTPBase < matlab.apps.AppBase
             if ~strcmp(app.MuscleTendonLengthInitialization.is_enabled, "true")
                 clearGuiError(app.PassiveDataDirectoryEditField, ...
                     app.PassiveDataDirectoryError);
+                clearGuiError([], app.PassiveDataDirectoryRequired);
                 isValid = true;
                 return
             end
             passive_dir = app.MuscleTendonLengthInitialization. ...
                 passive_data_input_directory;
             if strcmp(passive_dir, "")
-                throwGuiError("MTLI is enabled but no passive data " + ...
-                    "directory is specified.", ...
-                    app.PassiveDataDirectoryEditField, ...
+                clearGuiError(app.PassiveDataDirectoryEditField, ...
                     app.PassiveDataDirectoryError);
+                throwGuiRequired("Passive data directory is required when MTLI is enabled.", ...
+                    [], app.PassiveDataDirectoryRequired);
                 isValid = false;
                 return
             end
+            clearGuiError([], app.PassiveDataDirectoryRequired);
             isValid = validateFileExistsGui(passive_dir, ...
                 app.PassiveDataDirectoryEditField, ...
                 app.PassiveDataDirectoryError);
@@ -1932,6 +1962,13 @@ classdef MTPBase < matlab.apps.AppBase
             app.InputModelFileError.Position = [718 516 28 30];
             app.InputModelFileError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
+            % Create InputModelFileRequired
+            app.InputModelFileRequired = uiimage(app.InputsTab);
+            app.InputModelFileRequired.Visible = 'on';
+            app.InputModelFileRequired.Tooltip = 'Input model file is required.';
+            app.InputModelFileRequired.Position = [718 516 28 30];
+            app.InputModelFileRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+
             % Create InputOsimxFileSearchButton
             app.InputOsimxFileSearchButton = uibutton(app.InputsTab, 'push');
             app.InputOsimxFileSearchButton.ButtonPushedFcn = createCallbackFcn(app, @InputOsimxFileSearchButtonPushed, true);
@@ -1986,6 +2023,13 @@ classdef MTPBase < matlab.apps.AppBase
             app.InputDataError.Position = [718 409 28 30];
             app.InputDataError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
+            % Create InputDataRequired
+            app.InputDataRequired = uiimage(app.InputsTab);
+            app.InputDataRequired.Visible = 'on';
+            app.InputDataRequired.Tooltip = 'Input data directory is required.';
+            app.InputDataRequired.Position = [718 409 28 30];
+            app.InputDataRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+
             % Create ResultsDirectorySearchButton
             app.ResultsDirectorySearchButton = uibutton(app.InputsTab, 'push');
             app.ResultsDirectorySearchButton.ButtonPushedFcn = createCallbackFcn(app, @ResultsDirectorySearchButtonPushed, true);
@@ -2020,6 +2064,13 @@ classdef MTPBase < matlab.apps.AppBase
             app.ResultsDirectoryWarning.Position = [718 354 28 30];
             app.ResultsDirectoryWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
 
+            % Create ResultsDirectoryRequired
+            app.ResultsDirectoryRequired = uiimage(app.InputsTab);
+            app.ResultsDirectoryRequired.Visible = 'on';
+            app.ResultsDirectoryRequired.Tooltip = 'Results directory is required.';
+            app.ResultsDirectoryRequired.Position = [718 354 28 30];
+            app.ResultsDirectoryRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+
             % Create InputDataDirectoryEditFieldLabel
             app.InputDataDirectoryEditFieldLabel = uilabel(app.InputsTab);
             app.InputDataDirectoryEditFieldLabel.HorizontalAlignment = 'right';
@@ -2044,9 +2095,10 @@ classdef MTPBase < matlab.apps.AppBase
 
             % Create CoordinateListWarning
             app.CoordinateListWarning = uiimage(app.InputsTab);
-            app.CoordinateListWarning.Visible = 'off';
+            app.CoordinateListWarning.Visible = 'on';
+            app.CoordinateListWarning.Tooltip = 'At least one coordinate must be selected.';
             app.CoordinateListWarning.Position = [718 230 28 30];
-            app.CoordinateListWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            app.CoordinateListWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create CoordinateListEditButton
             app.CoordinateListEditButton = uibutton(app.InputsTab, 'push');
@@ -2354,6 +2406,13 @@ classdef MTPBase < matlab.apps.AppBase
             app.PassiveDataDirectoryError.Visible = 'off';
             app.PassiveDataDirectoryError.Position = [723 455 28 30];
             app.PassiveDataDirectoryError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PassiveDataDirectoryRequired
+            app.PassiveDataDirectoryRequired = uiimage(app.MuscleTendonLengthInitializationTab);
+            app.PassiveDataDirectoryRequired.Visible = 'on';
+            app.PassiveDataDirectoryRequired.Tooltip = 'Passive data directory is required when MTLI is enabled.';
+            app.PassiveDataDirectoryRequired.Position = [723 455 28 30];
+            app.PassiveDataDirectoryRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create PassiveDataDirectorySearchButton
             app.PassiveDataDirectorySearchButton = uibutton(app.MuscleTendonLengthInitializationTab, 'push');
