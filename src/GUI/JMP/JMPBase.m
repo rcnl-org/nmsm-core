@@ -50,7 +50,6 @@ classdef JMPBase < matlab.apps.AppBase
         OutputModelFileEditField       matlab.ui.control.EditField
         OutputModelFileEditFieldLabel  matlab.ui.control.Label
         OutputModelFileSearchButton    matlab.ui.control.Button
-        OutputModelFileError           matlab.ui.control.Image
         TasksTab                       matlab.ui.container.Tab
         TasksError                     matlab.ui.control.Image
         TasksWarning                   matlab.ui.control.Image
@@ -139,6 +138,11 @@ classdef JMPBase < matlab.apps.AppBase
 
     properties (Access = public)
 
+    end
+
+    properties (Access = private)  % private UI components not in appModel
+        OutputModelFileError           matlab.ui.control.Image
+        OutputModelFileWarning         matlab.ui.control.Image
     end
 
     properties(Access = private)  % listner properties
@@ -430,11 +434,22 @@ classdef JMPBase < matlab.apps.AppBase
         end
 
         function validateOutputModelFile(app)
+            clearGuiError(app.OutputModelFileEditField, app.OutputModelFileError);
+            clearGuiError(app.OutputModelFileEditField, app.OutputModelFileWarning);
             if strcmp(app.output_model_file, "")
-                clearGuiError(app.OutputModelFileEditField, app.OutputModelFileError);
                 app.outputModelValid = false;
+                return
+            end
+            [~, ~, ext] = fileparts(app.output_model_file);
+            if ~strcmp(ext, '.osim')
+                throwGuiError("Output model file must have a .osim extension.", ...
+                    app.OutputModelFileEditField, app.OutputModelFileError);
+                app.outputModelValid = false;
+            elseif exist(app.output_model_file, 'file')
+                throwGuiWarning("Output file already exists and will be overwritten.", ...
+                    app.OutputModelFileEditField, app.OutputModelFileWarning);
+                app.outputModelValid = true;
             else
-                clearGuiError(app.OutputModelFileEditField, app.OutputModelFileError);
                 app.outputModelValid = true;
             end
         end
@@ -1154,6 +1169,12 @@ classdef JMPBase < matlab.apps.AppBase
             app.OutputModelFileError.Visible = 'off';
             app.OutputModelFileError.Position = [717 323 28 30];
             app.OutputModelFileError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create OutputModelFileWarning
+            app.OutputModelFileWarning = uiimage(app.InputsTab);
+            app.OutputModelFileWarning.Visible = 'off';
+            app.OutputModelFileWarning.Position = [717 323 28 30];
+            app.OutputModelFileWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
 
             % Create InputModelFileError
             app.InputModelFileError = uiimage(app.InputsTab);
