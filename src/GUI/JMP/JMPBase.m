@@ -134,6 +134,7 @@ classdef JMPBase < matlab.apps.AppBase
         currentSettingsFile string = "";
         inputModelValid logical = false
         outputModelValid logical = false
+        advancedSettingsValid logical = true
     end % Description
 
     properties (Access = public)
@@ -143,6 +144,13 @@ classdef JMPBase < matlab.apps.AppBase
     properties (Access = private)  % private UI components not in appModel
         OutputModelFileError           matlab.ui.control.Image
         OutputModelFileWarning         matlab.ui.control.Image
+        InputModelFileRequired         matlab.ui.control.Image
+        OutputModelFileRequired        matlab.ui.control.Image
+        TasksRequired                  matlab.ui.control.Image
+        MarkersFileRequired            matlab.ui.control.Image
+        MarkersRequired                matlab.ui.control.Image
+        JointBodyRequired              matlab.ui.control.Image
+        AdvancedSettingsError          matlab.ui.control.Image
     end
 
     properties(Access = private)  % listner properties
@@ -229,6 +237,8 @@ classdef JMPBase < matlab.apps.AppBase
         function updateAdvancedSettingValues(app)
             app.AdvancedSettingsTable.Data.paramValues = ...
                 arrayfun(@(v) app.formatAdvancedValue(v), app.paramValues);
+            app.validateAdvancedSettings();
+            app.updateRunButton();
         end
 
         function updateMarkersFile(app)
@@ -249,6 +259,13 @@ classdef JMPBase < matlab.apps.AppBase
 
         function updateMarkerNames(app)
             app.MarkersTextArea.Value = app.JMPTask{app.taskIndex}.marker_names;
+            markerNames = app.JMPTask{app.taskIndex}.marker_names;
+            if isempty(markerNames) || (isstring(markerNames) && all(strcmp(markerNames, "")))
+                throwGuiRequired("At least one marker must be selected for this task.", ...
+                    [], app.MarkersRequired);
+            else
+                clearGuiError([], app.MarkersRequired);
+            end
             app.updateRunButton();
         end
 
@@ -287,6 +304,14 @@ classdef JMPBase < matlab.apps.AppBase
             app.EndTimeField.Value = app.JMPTask{app.taskIndex}.time_range(2);
             app.MarkersTextArea.Value = app.JMPTask{app.taskIndex}.marker_names;
             app.updateMarkersEditButton();
+            app.validateMarkerFile();
+            markerNames = app.JMPTask{app.taskIndex}.marker_names;
+            if isempty(markerNames) || (isstring(markerNames) && all(strcmp(markerNames, "")))
+                throwGuiRequired("At least one marker must be selected for this task.", ...
+                    [], app.MarkersRequired);
+            else
+                clearGuiError([], app.MarkersRequired);
+            end
         end
 
         function formatTabButtons(app) % good
@@ -424,6 +449,14 @@ classdef JMPBase < matlab.apps.AppBase
         end
 
         function validateInputModelFile(app)
+            if strcmp(app.input_model_file, "")
+                clearGuiError(app.InputModelFileEditField, app.InputModelFileError);
+                throwGuiRequired("Input model file is required.", ...
+                    [], app.InputModelFileRequired);
+                app.inputModelValid = false;
+                return
+            end
+            clearGuiError([], app.InputModelFileRequired);
             app.inputModelValid = validateOsimFileGui(app, ...
                 app.input_model_file, ...
                 app.InputModelFileEditField, app.InputModelFileError);
@@ -437,9 +470,12 @@ classdef JMPBase < matlab.apps.AppBase
             clearGuiError(app.OutputModelFileEditField, app.OutputModelFileError);
             clearGuiError(app.OutputModelFileEditField, app.OutputModelFileWarning);
             if strcmp(app.output_model_file, "")
+                throwGuiRequired("Output model file is required.", ...
+                    [], app.OutputModelFileRequired);
                 app.outputModelValid = false;
                 return
             end
+            clearGuiError([], app.OutputModelFileRequired);
             [~, ~, ext] = fileparts(app.output_model_file);
             if ~strcmp(ext, '.osim')
                 throwGuiError("Output model file must have a .osim extension.", ...
@@ -457,6 +493,13 @@ classdef JMPBase < matlab.apps.AppBase
         function validateMarkerFile(app)
             markerFileName = app.JMPTask{app.taskIndex}.marker_file_name;
             clearGuiError(app.MarkersFileEditField, app.MarkersFileWarning);
+            clearGuiError(app.MarkersFileEditField, app.MarkersFileError);
+            if strcmp(markerFileName, "")
+                throwGuiRequired("Marker file is required for this task.", ...
+                    [], app.MarkersFileRequired);
+                return
+            end
+            clearGuiError([], app.MarkersFileRequired);
             isValid = validateTrcFileGui(markerFileName, ...
                 app.MarkersFileEditField, app.MarkersFileError);
             if isValid
@@ -506,9 +549,16 @@ classdef JMPBase < matlab.apps.AppBase
         end
 
         function validateTaskContent(app)
+            joints = app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint;
+            bodies = app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody;
+            if (~iscell(joints) || isempty(joints)) && (~iscell(bodies) || isempty(bodies))
+                throwGuiRequired("At least one joint or body is required for this task.", ...
+                    [], app.JointBodyRequired);
+            else
+                clearGuiError([], app.JointBodyRequired);
+            end
             clearGuiError([], app.JointsWarning);
             removeStyle(app.JointsTable);
-            joints = app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint;
             if iscell(joints) && ~isempty(joints)
                 anyJointNoParams = false;
                 for i = 1:length(joints)
@@ -532,7 +582,6 @@ classdef JMPBase < matlab.apps.AppBase
 
             clearGuiError([], app.BodiesWarning);
             removeStyle(app.BodiesTable);
-            bodies = app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody;
             if iscell(bodies) && ~isempty(bodies)
                 anyBodyNoParams = false;
                 for i = 1:length(bodies)
@@ -552,33 +601,59 @@ classdef JMPBase < matlab.apps.AppBase
             end
         end
 
+        function validateAdvancedSettings(app)
+            removeStyle(app.AdvancedSettingsTable);
+            invalidRows = find(isnan(app.paramValues) | app.paramValues <= 0);
+            if isempty(invalidRows)
+                clearGuiError([], app.AdvancedSettingsError);
+                app.advancedSettingsValid = true;
+                return
+            end
+            for i = 1:length(invalidRows)
+                addStyle(app.AdvancedSettingsTable, ...
+                    uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', invalidRows(i));
+            end
+            throwGuiError("One or more advanced parameters are not valid. " + ...
+                "Enter a positive numeric value for each parameter.", ...
+                [], app.AdvancedSettingsError);
+            app.advancedSettingsValid = false;
+        end
+
         function isValid = validateAllTasksSilent(app)
             isValid = true;
+            clearGuiError([], app.TasksRequired);
             clearGuiError([], app.TasksError);
             removeStyle(app.TasksTable);
             if isempty(app.JMPTask)
-                throwGuiError("At least one task is required.", ...
-                    [], app.TasksError);
+                throwGuiRequired("At least one task is required.", ...
+                    [], app.TasksRequired);
                 isValid = false;
                 return
             end
             hasEnabledTask = false;
+            hasMissingRequired = false;
+            hasError = false;
             for i = 1:length(app.JMPTask)
                 if ~strcmp(app.JMPTask{i}.is_enabled, 'true')
                     continue
                 end
                 hasEnabledTask = true;
-                taskValid = true;
+                taskMissingRequired = false;
+                taskHasError = false;
                 taskHasWarning = false;
-                if strcmp(app.JMPTask{i}.marker_file_name, "") || ...
-                        ~exist(app.JMPTask{i}.marker_file_name, 'file')
-                    taskValid = false;
+                if strcmp(app.JMPTask{i}.marker_file_name, "")
+                    taskMissingRequired = true;
+                elseif ~exist(app.JMPTask{i}.marker_file_name, 'file')
+                    taskHasError = true;
                 end
-                if strcmp(app.JMPTask{i}.marker_names, "")
-                    taskValid = false;
+                markerNames = app.JMPTask{i}.marker_names;
+                if isempty(markerNames) || (isstring(markerNames) && all(strcmp(markerNames, "")))
+                    taskMissingRequired = true;
                 end
-                if app.JMPTask{i}.time_range(1) >= app.JMPTask{i}.time_range(2)
-                    taskValid = false;
+                if isequal(app.JMPTask{i}.time_range, [0 0])
+                    taskMissingRequired = true;
+                elseif app.JMPTask{i}.time_range(1) >= app.JMPTask{i}.time_range(2)
+                    taskHasError = true;
                 end
                 joints = app.JMPTask{i}.JMPJointSet.JMPJoint;
                 bodies = app.JMPTask{i}.JMPBodySet.JMPBody;
@@ -609,17 +684,23 @@ classdef JMPBase < matlab.apps.AppBase
                     end
                 end
                 if ~hasDesignVar
-                    taskValid = false;
+                    taskMissingRequired = true;
                 end
                 if ~isempty(app.model_markers) && ...
                         ~isempty(app.JMPTask{i}.markerFileMarkers) && ...
                         any(~ismember(app.JMPTask{i}.markerFileMarkers, app.model_markers))
                     taskHasWarning = true;
                 end
-                if ~taskValid
+                if taskHasError
                     isValid = false;
+                    hasError = true;
                     addStyle(app.TasksTable, ...
                         uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', i);
+                elseif taskMissingRequired
+                    isValid = false;
+                    hasMissingRequired = true;
+                    addStyle(app.TasksTable, ...
+                        uistyle('BackgroundColor', [0.67 0.84 1.00]), 'row', i);
                 elseif taskHasWarning
                     addStyle(app.TasksTable, ...
                         uistyle('BackgroundColor', [1.00 1.00 0.67]), 'row', i);
@@ -631,18 +712,21 @@ classdef JMPBase < matlab.apps.AppBase
                 isValid = false;
                 return
             end
-            if ~isValid
+            if hasError
                 throwGuiError("One or more tasks have errors. Check that " + ...
-                    "each enabled task has a valid marker file, at least " + ...
-                    "one marker selected, a valid time range, and at " + ...
-                    "least one design variable.", ...
-                    [], app.TasksError);
+                    "each enabled task's marker file exists and the time " + ...
+                    "range is valid.", [], app.TasksError);
+            elseif hasMissingRequired
+                throwGuiRequired("One or more tasks are missing required " + ...
+                    "fields. Check that each enabled task has a marker " + ...
+                    "file, at least one marker selected, and at least " + ...
+                    "one design variable.", [], app.TasksRequired);
             end
         end
 
         function updateRunButton(app)
             allValid = app.inputModelValid && app.outputModelValid && ...
-                app.validateAllTasksSilent();
+                app.advancedSettingsValid && app.validateAllTasksSilent();
             if allValid
                 app.RunButton.Enable = 'on';
             else
@@ -1109,12 +1193,12 @@ classdef JMPBase < matlab.apps.AppBase
         % Cell edit callback: AdvancedSettingsTable
         function AdvancedSettingsTableCellEdit(app, event)
             index = event.Indices(1);
-
-            if isnan(double(convertCharsToStrings(app.AdvancedSettingsTable.Data.paramValues(index))))
+            newValue = double(convertCharsToStrings( ...
+                app.AdvancedSettingsTable.Data.paramValues(index)));
+            if isnan(newValue)
                 app.AdvancedSettingsTable.Data.paramValues(index) = "NaN";
-            else
-                app.paramValues(index) = app.AdvancedSettingsTable.Data.paramValues(index);
             end
+            app.paramValues(index) = newValue;
         end
     end
 
@@ -1176,11 +1260,25 @@ classdef JMPBase < matlab.apps.AppBase
             app.OutputModelFileWarning.Position = [717 323 28 30];
             app.OutputModelFileWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
 
+            % Create OutputModelFileRequired
+            app.OutputModelFileRequired = uiimage(app.InputsTab);
+            app.OutputModelFileRequired.Visible = 'on';
+            app.OutputModelFileRequired.Tooltip = 'Output model file is required.';
+            app.OutputModelFileRequired.Position = [717 323 28 30];
+            app.OutputModelFileRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+
             % Create InputModelFileError
             app.InputModelFileError = uiimage(app.InputsTab);
             app.InputModelFileError.Visible = 'off';
             app.InputModelFileError.Position = [717 383 28 30];
             app.InputModelFileError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create InputModelFileRequired
+            app.InputModelFileRequired = uiimage(app.InputsTab);
+            app.InputModelFileRequired.Visible = 'on';
+            app.InputModelFileRequired.Tooltip = 'Input model file is required.';
+            app.InputModelFileRequired.Position = [717 383 28 30];
+            app.InputModelFileRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create InputModelFileSearchButton
             app.InputModelFileSearchButton = uibutton(app.InputsTab, 'push');
@@ -1242,6 +1340,13 @@ classdef JMPBase < matlab.apps.AppBase
             app.MarkersFileError.Visible = 'off';
             app.MarkersFileError.Position = [519 397 35 35];
             app.MarkersFileError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create MarkersFileRequired
+            app.MarkersFileRequired = uiimage(app.TasksPanel);
+            app.MarkersFileRequired.Visible = 'on';
+            app.MarkersFileRequired.Tooltip = 'Marker file is required for this task.';
+            app.MarkersFileRequired.Position = [519 397 35 35];
+            app.MarkersFileRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create TimeRangeError
             app.TimeRangeError = uiimage(app.TasksPanel);
@@ -1358,12 +1463,26 @@ classdef JMPBase < matlab.apps.AppBase
             app.MarkersWarning.Position = [529 229 35 35];
             app.MarkersWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
 
+            % Create MarkersRequired
+            app.MarkersRequired = uiimage(app.TasksPanel);
+            app.MarkersRequired.Visible = 'on';
+            app.MarkersRequired.Tooltip = 'At least one marker must be selected for this task.';
+            app.MarkersRequired.Position = [529 229 35 35];
+            app.MarkersRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+
             % Create JointsWarning
             app.JointsWarning = uiimage(app.TasksPanel);
             app.JointsWarning.Visible = 'off';
             app.JointsWarning.Tooltip = {'You must select markers for this task.'};
             app.JointsWarning.Position = [193 146 35 35];
             app.JointsWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
+
+            % Create JointBodyRequired
+            app.JointBodyRequired = uiimage(app.TasksPanel);
+            app.JointBodyRequired.Visible = 'off';
+            app.JointBodyRequired.Tooltip = 'At least one joint or body is required for this task.';
+            app.JointBodyRequired.Position = [269 146 35 35];
+            app.JointBodyRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create BodiesWarning
             app.BodiesWarning = uiimage(app.TasksPanel);
@@ -1419,6 +1538,13 @@ classdef JMPBase < matlab.apps.AppBase
             app.TasksError.Position = [133 346 35 35];
             app.TasksError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
+            % Create TasksRequired
+            app.TasksRequired = uiimage(app.TasksTab);
+            app.TasksRequired.Visible = 'on';
+            app.TasksRequired.Tooltip = 'At least one task is required.';
+            app.TasksRequired.Position = [133 346 35 35];
+            app.TasksRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+
             % Create AdvancedTab
             app.AdvancedTab = uitab(app.TabGroup);
             app.AdvancedTab.BackgroundColor = [0.851 0.851 0.851];
@@ -1432,6 +1558,12 @@ classdef JMPBase < matlab.apps.AppBase
             app.AdvancedSettingsTable.CellEditCallback = createCallbackFcn(app, @AdvancedSettingsTableCellEdit, true);
             app.AdvancedSettingsTable.FontSize = 20;
             app.AdvancedSettingsTable.Position = [122 20 528 407];
+
+            % Create AdvancedSettingsError
+            app.AdvancedSettingsError = uiimage(app.AdvancedTab);
+            app.AdvancedSettingsError.Visible = 'off';
+            app.AdvancedSettingsError.Position = [615 430 35 35];
+            app.AdvancedSettingsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);
