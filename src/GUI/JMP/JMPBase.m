@@ -96,22 +96,22 @@ classdef JMPBase < matlab.apps.AppBase
     properties (Access = private, SetObservable)
         input_model_file string = "";
         output_model_file string = "";
-        JMPTaskList struct;
-        JMPTask cell = cell(1);
+        JMPTask cell = cell(0);
         taskIndex double = 1;
 
         model_markers string;
         model_bodies string;
         model_joints string;
 
-        % Optimization params
-        max_function_evaluations double = 200;
-        step_tolerance double = 1e-5;
-        function_tolerance double = 1e-5;
-        optimality_tolerance double = 1e-5;
-        diff_min_change double = 0.001;
-        accuracy double = 1e-6;
+        advancedSettingValues double = [];
 
+        % Error checking and flow control
+        currentSettingsFile string = "";
+        inputModelValid logical = false
+        outputModelValid logical = false
+    end
+
+    properties (Constant, Access = private)
         advancedSettingNames = ...
             ["allowable_error"
             "max_function_evaluations"
@@ -121,7 +121,7 @@ classdef JMPBase < matlab.apps.AppBase
             "diff_min_change"
             "accuracy"]
 
-        paramValues = ...
+        defaultAdvancedSettingValues = ...
             [0.005
             200
             1e-5
@@ -129,16 +129,6 @@ classdef JMPBase < matlab.apps.AppBase
             1e-5
             1e-3
             1e-6]
-
-        % Error checking and flow control
-        currentSettingsFile string = "";
-        inputModelValid logical = false
-        outputModelValid logical = false
-        advancedSettingsValid logical = true
-    end % Description
-
-    properties (Access = public)
-
     end
 
     properties (Access = private)  % private UI components not in appModel
@@ -153,54 +143,51 @@ classdef JMPBase < matlab.apps.AppBase
         AdvancedSettingsError          matlab.ui.control.Image
     end
 
-    properties(Access = private)  % listner properties
+    properties (Access = private)  % listener handles
         inputModelFileListener
         outputModelFileListener
         taskIndexListener
         advancedSettingsListener
+        selectedTabListener
     end
 
     methods (Access = private) % listener methods
         function makeAllListeners(app)
             app.inputModelFileListener = addlistener(app, ...
                 'input_model_file', 'PostSet', ...
-                @(src,event)updateInputModelFile(app));
+                @(src, event)updateInputModelFile(app));
 
             app.outputModelFileListener = addlistener(app, ...
                 'output_model_file', 'PostSet', ...
-                @(src,event)updateOutputModelFile(app));
+                @(src, event)updateOutputModelFile(app));
 
             app.taskIndexListener = addlistener(app, ...
                 'taskIndex', 'PostSet', ...
                 @(src, event)updateTaskIndex(app));
 
             app.advancedSettingsListener = addlistener(app, ...
-                'paramValues', 'PostSet', ...
-                @(src, event)updateAdvancedSettingValues(app));
+                'advancedSettingValues', 'PostSet', ...
+                @(src, event)refreshAdvancedSettingsTable(app));
+
+            app.selectedTabListener = addlistener(app.TabGroup, ...
+                'SelectedTab', 'PostSet', ...
+                @(src, event)formatTabButtons(app));
 
             app.makeTaskListeners()
         end
 
         function makeTaskListeners(app)
-            addlistener(app.JMPTask{app.taskIndex}, ...
-                'name', 'PostSet', ...
-                @(src,event)updateTaskName(app));
-
-            addlistener(app.JMPTask{app.taskIndex}, ...
-                'marker_file_name', 'PostSet', ...
-                @(src,event)updateMarkersFile(app));
-
-            addlistener(app.JMPTask{app.taskIndex}, ...
-                'marker_names', 'PostSet', ...
-                @(src,event)updateMarkerNames(app));
-
-            addlistener(app.JMPTask{app.taskIndex}, ...
-                'jointNames', 'PostSet', ...
-                @(src,event)updateJointsTable(app));
-
-            addlistener(app.JMPTask{app.taskIndex}, ...
-                'bodyNames', 'PostSet', ...
-                @(src,event)updateBodiesTable(app));
+            task = app.JMPTask{app.taskIndex};
+            addlistener(task, 'name', 'PostSet', ...
+                @(src, event)updateJMPTasksListBox(app));
+            addlistener(task, 'marker_file_name', 'PostSet', ...
+                @(src, event)updateMarkersFile(app));
+            addlistener(task, 'marker_names', 'PostSet', ...
+                @(src, event)updateMarkerNames(app));
+            addlistener(task, 'jointNames', 'PostSet', ...
+                @(src, event)updateJointsTable(app));
+            addlistener(task, 'bodyNames', 'PostSet', ...
+                @(src, event)updateBodiesTable(app));
         end
 
         function updateInputModelFile(app)
@@ -217,10 +204,6 @@ classdef JMPBase < matlab.apps.AppBase
             app.updateRunButton();
         end
 
-        function updateTaskName(app)
-            % app.JMPTask{app.taskIndex}.name = app.JMPTask{app.taskIndex}.name;
-        end
-
         function updateTaskIndex(app)
             app.TasksTable.Selection = app.taskIndex;
             app.updateTasksPanel()
@@ -228,16 +211,10 @@ classdef JMPBase < matlab.apps.AppBase
             app.updateBodiesTable()
         end
 
-        function s = formatAdvancedValue(~, value)
-            % Format values in the advanced params table to use scientific
-            % notation if over 3 sig figs. 
-            s = string(sprintf('%.3g', value));
-        end
-
-        function updateAdvancedSettingValues(app)
-            app.AdvancedSettingsTable.Data.paramValues = ...
-                arrayfun(@(v) app.formatAdvancedValue(v), app.paramValues);
-            app.validateAdvancedSettings();
+        function refreshAdvancedSettingsTable(app)
+            Options = app.advancedSettingNames;
+            Values = arrayfun(@formatGuiNumber, app.advancedSettingValues);
+            app.AdvancedSettingsTable.Data = table(Options, Values);
             app.updateRunButton();
         end
 
@@ -250,22 +227,13 @@ classdef JMPBase < matlab.apps.AppBase
         end
 
         function updateMarkersEditButton(app)
-            if ~isempty(app.JMPTask{app.taskIndex}.markerFileMarkers)
-                app.MarkersEditButton.Enable = 'on';
-            else
-                app.MarkersEditButton.Enable = 'off';
-            end
+            app.MarkersEditButton.Enable = ...
+                ~isempty(app.JMPTask{app.taskIndex}.markerFileMarkers);
         end
 
         function updateMarkerNames(app)
             app.MarkersTextArea.Value = app.JMPTask{app.taskIndex}.marker_names;
-            markerNames = app.JMPTask{app.taskIndex}.marker_names;
-            if isempty(markerNames) || (isstring(markerNames) && all(strcmp(markerNames, "")))
-                throwGuiRequired("At least one marker must be selected for this task.", ...
-                    [], app.MarkersRequired);
-            else
-                clearGuiError([], app.MarkersRequired);
-            end
+            app.validateMarkerSelection();
             app.updateRunButton();
         end
 
@@ -283,79 +251,40 @@ classdef JMPBase < matlab.apps.AppBase
             app.updateRunButton();
         end
 
-        function updateJMPTasksListBox(app) % good
-            taskEnabled = true(length(app.JMPTask), 1);
-            taskNames = strings(length(app.JMPTask), 1);
-            for i = 1 : length(app.JMPTask)
-                taskEnabled(i) = strcmp(app.JMPTask{i}.is_enabled, 'true');
-                taskNames(i) = app.JMPTask{i}.name;
-            end
-            app.TasksTable.Data = table([taskEnabled; false], [taskNames; ...
-                "Add a new task"]);
+        function updateJMPTasksListBox(app)
+            updateTaskListTableGui(app.TasksTable, app.JMPTask);
         end
 
         function updateTasksPanel(app)
             if isempty(app.JMPTask)
                 app.createEmptyTask()
             end
+            task = app.JMPTask{app.taskIndex};
             app.MarkersFileEditField.Value = getRelativePath( ...
-                app.JMPTask{app.taskIndex}.marker_file_name);
-            app.StartTimeField.Value = app.JMPTask{app.taskIndex}.time_range(1);
-            app.EndTimeField.Value = app.JMPTask{app.taskIndex}.time_range(2);
-            app.MarkersTextArea.Value = app.JMPTask{app.taskIndex}.marker_names;
+                task.marker_file_name);
+            app.StartTimeField.Value = task.time_range(1);
+            app.EndTimeField.Value = task.time_range(2);
+            app.MarkersTextArea.Value = task.marker_names;
             app.updateMarkersEditButton();
             app.validateMarkerFile();
-            markerNames = app.JMPTask{app.taskIndex}.marker_names;
-            if isempty(markerNames) || (isstring(markerNames) && all(strcmp(markerNames, "")))
-                throwGuiRequired("At least one marker must be selected for this task.", ...
-                    [], app.MarkersRequired);
-            else
-                clearGuiError([], app.MarkersRequired);
-            end
+            app.validateMarkerSelection();
         end
 
-        function formatTabButtons(app) % good
+        function formatTabButtons(app)
             if ~isvalid(app) || ~isvalid(app.TabGroup)
                 return
             end
-            switch app.TabGroup.SelectedTab
-                case app.InputsTab
-                    app.JMPInputsButton.BackgroundColor = [1 1 1];
-                    app.JMPInputsButton.FontColor = [0.13,0.18,0.40];
-
-                    app.JMPTasksButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.JMPTasksButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                case app.TasksTab
-                    app.JMPInputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.JMPInputsButton.FontColor = [1 1 1];
-
-                    app.JMPTasksButton.BackgroundColor = [1 1 1];
-                    app.JMPTasksButton.FontColor = [0.13,0.18,0.40];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                case app.AdvancedTab
-                    app.JMPInputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.JMPInputsButton.FontColor = [1 1 1];
-
-                    app.JMPTasksButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.JMPTasksButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [1 1 1];
-                    app.AdvancedButton.FontColor = [0.13,0.18,0.40];
-            end
+            updateTabButtonStyles(app.TabGroup.SelectedTab, ...
+                [app.InputsTab, app.TasksTab, app.AdvancedTab], ...
+                [app.JMPInputsButton, app.JMPTasksButton, ...
+                app.AdvancedButton]);
         end
     end
 
     methods (Access = private)
 
         function createEmptyTask(app)
-            app.JMPTask{length(app.JMPTask) + 1} = JMPTaskClass();
+            app.JMPTask{end + 1} = JMPTaskClass();
             app.taskIndex = length(app.JMPTask);
             app.makeTaskListeners();
             app.JMPTask{app.taskIndex}.name = "Task " + num2str(app.taskIndex);
@@ -364,103 +293,75 @@ classdef JMPBase < matlab.apps.AppBase
             app.updateJMPTasksListBox();
         end
 
-        function deleteTask(app, taskIndex)
-            app.JMPTask = app.JMPTask(~taskIndex);
-            for i = 1 : length(app.JMPTask)
-                app.JMPTask{i}.index = i;
-            end
+        function deleteTask(app, deletionIndex)
+            [app.JMPTask, newTaskIndex] = removeTaskFromList( ...
+                app.JMPTask, deletionIndex, app.taskIndex);
             if isempty(app.JMPTask)
-                app.taskIndex = [];
-                return
-            end
-            if app.taskIndex > 1
-                app.taskIndex = app.taskIndex - 1;
+                app.createEmptyTask();
+            else
+                app.taskIndex = newTaskIndex;
             end
             app.updateJMPTasksListBox();
+            app.updateRunButton();
         end
 
         function moveTaskUp(app)
-            if app.taskIndex == 1 || ...
-                    app.taskIndex >= height(app.TasksTable.Data)
-                return
-            end
-
-            indicesList = 1:1:length(app.JMPTask);
-
-            indicesList(app.taskIndex) = app.taskIndex-1;
-            indicesList(app.taskIndex-1) = app.taskIndex;
-            app.JMPTask{app.taskIndex}.index = app.taskIndex-1;
-            app.JMPTask{app.taskIndex-1}.index = app.taskIndex;
-            app.JMPTask = {app.JMPTask{indicesList}};
-            app.taskIndex = app.taskIndex-1;
+            [app.JMPTask, app.taskIndex] = moveTaskInList( ...
+                app.JMPTask, app.taskIndex, -1);
             app.updateJMPTasksListBox();
         end
 
         function moveTaskDown(app)
-            if app.taskIndex == height(app.TasksTable.Data)-1 || ...
-                    app.taskIndex >= height(app.TasksTable.Data)
-                return
-            end
-
-            indicesList = 1:1:length(app.JMPTask);
-            indicesList(app.taskIndex) = app.taskIndex+1;
-            indicesList(app.taskIndex+1) = app.taskIndex;
-            app.JMPTask{app.taskIndex}.index = app.taskIndex+1;
-            app.JMPTask{app.taskIndex+1}.index = app.taskIndex;
-            app.JMPTask = {app.JMPTask{indicesList}};
-            app.taskIndex = app.taskIndex+1;
+            [app.JMPTask, app.taskIndex] = moveTaskInList( ...
+                app.JMPTask, app.taskIndex, 1);
             app.updateJMPTasksListBox();
         end
 
         function deleteJoint(app, jointIndex)
-            app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint = ...
-                app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint(~jointIndex);
-            app.JMPTask{app.taskIndex}.jointNames = ...
-                app.JMPTask{app.taskIndex}.jointNames(~jointIndex);
-            app.validateTaskContent();
-            app.updateRunButton();
+            task = app.JMPTask{app.taskIndex};
+            if isempty(jointIndex) || ~iscell(task.JMPJointSet.JMPJoint) || ...
+                    jointIndex > length(task.JMPJointSet.JMPJoint)
+                return
+            end
+            task.JMPJointSet.JMPJoint(jointIndex) = [];
+            task.jointNames(jointIndex) = [];
         end
 
         function deleteBody(app, bodyIndex)
-            app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody = ...
-                app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody(~bodyIndex);
-            app.JMPTask{app.taskIndex}.bodyNames = ...
-                app.JMPTask{app.taskIndex}.bodyNames(~bodyIndex);
-            app.validateTaskContent();
-            app.updateRunButton();
+            task = app.JMPTask{app.taskIndex};
+            if isempty(bodyIndex) || ~iscell(task.JMPBodySet.JMPBody) || ...
+                    bodyIndex > length(task.JMPBodySet.JMPBody)
+                return
+            end
+            task.JMPBodySet.JMPBody(bodyIndex) = [];
+            task.bodyNames(bodyIndex) = [];
         end
 
         function parseMarkerFileData(app, markerFileName)
             import org.opensim.modeling.TimeSeriesTableVec3
-            timeSeriesTable = TimeSeriesTableVec3( ...
-                markerFileName);
-            numTimePoints = timeSeriesTable.getNumRows;
-            timeVector = timeSeriesTable.getIndependentColumn;
-            columnLabelsStringVector = char(timeSeriesTable.getColumnLabels);
-            app.JMPTask{app.taskIndex}.markerFileMarkers = strsplit( ...
-                columnLabelsStringVector(2:end-1), ", ");
+            task = app.JMPTask{app.taskIndex};
+            timeSeriesTable = TimeSeriesTableVec3(markerFileName);
+            columnLabels = char(timeSeriesTable.getColumnLabels);
+            task.markerFileMarkers = strsplit(columnLabels(2:end-1), ", ");
 
-            startTime = double(timeVector.get(0));
-            endTime = double(timeVector.get(numTimePoints-1));
-            app.JMPTask{app.taskIndex}.time_range = ...
-                [startTime endTime];
-            app.JMPTask{app.taskIndex}.minTime = startTime;
-            app.JMPTask{app.taskIndex}.maxTime = endTime;
+            timeVector = timeSeriesTable.getIndependentColumn;
+            task.minTime = double(timeVector.get(0));
+            task.maxTime = double(timeVector.get( ...
+                timeSeriesTable.getNumRows - 1));
+            if isequal(task.time_range, [0 0]) || ...
+                    task.time_range(1) < task.minTime || ...
+                    task.time_range(2) > task.maxTime
+                task.time_range = [task.minTime task.maxTime];
+            end
         end
 
         function validateInputModelFile(app)
-            if strcmp(app.input_model_file, "")
-                clearGuiError(app.InputModelFileEditField, app.InputModelFileError);
-                throwGuiRequired("Input model file is required.", ...
-                    [], app.InputModelFileRequired);
-                app.inputModelValid = false;
-                return
-            end
-            clearGuiError([], app.InputModelFileRequired);
-            app.inputModelValid = validateOsimFileGui(app, ...
-                app.input_model_file, ...
-                app.InputModelFileEditField, app.InputModelFileError);
-            if ~isempty(app.JMPTask) && ...
+            app.inputModelValid = validateRequiredFieldGui( ...
+                app.input_model_file, "Input model file is required.", ...
+                app.InputModelFileEditField, app.InputModelFileError, ...
+                app.InputModelFileRequired, ...
+                @(value, field, icon)validateOsimFileGui(app, value, field, icon));
+            if app.inputModelValid && ~isempty(app.JMPTask) && ...
                     ~strcmp(app.JMPTask{app.taskIndex}.marker_file_name, "")
                 app.checkMarkerModelConsistency();
             end
@@ -476,37 +377,41 @@ classdef JMPBase < matlab.apps.AppBase
                 return
             end
             clearGuiError([], app.OutputModelFileRequired);
-            [~, ~, ext] = fileparts(app.output_model_file);
-            if ~strcmp(ext, '.osim')
+            [~, ~, extension] = fileparts(app.output_model_file);
+            if ~strcmp(extension, '.osim')
                 throwGuiError("Output model file must have a .osim extension.", ...
                     app.OutputModelFileEditField, app.OutputModelFileError);
                 app.outputModelValid = false;
-            elseif exist(app.output_model_file, 'file')
+                return
+            end
+            app.outputModelValid = true;
+            if exist(app.output_model_file, 'file')
                 throwGuiWarning("Output file already exists and will be overwritten.", ...
                     app.OutputModelFileEditField, app.OutputModelFileWarning);
-                app.outputModelValid = true;
-            else
-                app.outputModelValid = true;
             end
         end
 
         function validateMarkerFile(app)
-            markerFileName = app.JMPTask{app.taskIndex}.marker_file_name;
+            task = app.JMPTask{app.taskIndex};
             clearGuiError(app.MarkersFileEditField, app.MarkersFileWarning);
-            clearGuiError(app.MarkersFileEditField, app.MarkersFileError);
-            if strcmp(markerFileName, "")
-                throwGuiRequired("Marker file is required for this task.", ...
-                    [], app.MarkersFileRequired);
-                return
-            end
-            clearGuiError([], app.MarkersFileRequired);
-            isValid = validateTrcFileGui(markerFileName, ...
-                app.MarkersFileEditField, app.MarkersFileError);
+            isValid = validateRequiredFieldGui(task.marker_file_name, ...
+                "Marker file is required for this task.", ...
+                app.MarkersFileEditField, app.MarkersFileError, ...
+                app.MarkersFileRequired, @validateTrcFileGui);
             if isValid
-                app.parseMarkerFileData(markerFileName);
-                app.StartTimeField.Value = app.JMPTask{app.taskIndex}.minTime;
-                app.EndTimeField.Value = app.JMPTask{app.taskIndex}.maxTime;
+                app.parseMarkerFileData(task.marker_file_name);
+                app.StartTimeField.Value = task.time_range(1);
+                app.EndTimeField.Value = task.time_range(2);
                 app.checkMarkerModelConsistency();
+            end
+        end
+
+        function validateMarkerSelection(app)
+            if isEmptyStringList(app.JMPTask{app.taskIndex}.marker_names)
+                throwGuiRequired("At least one marker must be selected " + ...
+                    "for this task.", [], app.MarkersRequired);
+            else
+                clearGuiError([], app.MarkersRequired);
             end
         end
 
@@ -529,19 +434,18 @@ classdef JMPBase < matlab.apps.AppBase
         end
 
         function isValid = validateTimeRange(app)
-            startTime = app.JMPTask{app.taskIndex}.time_range(1);
-            endTime = app.JMPTask{app.taskIndex}.time_range(2);
-            minTime = app.JMPTask{app.taskIndex}.minTime;
-            maxTime = app.JMPTask{app.taskIndex}.maxTime;
+            task = app.JMPTask{app.taskIndex};
             clearGuiError([], app.TimeRangeError);
-            if startTime >= endTime
+            if task.time_range(1) >= task.time_range(2)
                 throwGuiError("Start time must be less than end time.", ...
                     [], app.TimeRangeError);
                 isValid = false;
-            elseif maxTime > 0 && (startTime < minTime || endTime > maxTime)
+            elseif task.maxTime > 0 && ...
+                    (task.time_range(1) < task.minTime || ...
+                    task.time_range(2) > task.maxTime)
                 throwGuiError(sprintf( ...
                     "Time range must be within [%.3f, %.3f] seconds.", ...
-                    minTime, maxTime), [], app.TimeRangeError);
+                    task.minTime, task.maxTime), [], app.TimeRangeError);
                 isValid = false;
             else
                 isValid = true;
@@ -549,78 +453,60 @@ classdef JMPBase < matlab.apps.AppBase
         end
 
         function validateTaskContent(app)
-            joints = app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint;
-            bodies = app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody;
-            if (~iscell(joints) || isempty(joints)) && (~iscell(bodies) || isempty(bodies))
-                throwGuiRequired("At least one joint or body is required for this task.", ...
-                    [], app.JointBodyRequired);
+            task = app.JMPTask{app.taskIndex};
+            joints = task.JMPJointSet.JMPJoint;
+            bodies = task.JMPBodySet.JMPBody;
+            if (~iscell(joints) || isempty(joints)) && ...
+                    (~iscell(bodies) || isempty(bodies))
+                throwGuiRequired("At least one joint or body is required " + ...
+                    "for this task.", [], app.JointBodyRequired);
             else
                 clearGuiError([], app.JointBodyRequired);
             end
-            clearGuiError([], app.JointsWarning);
-            removeStyle(app.JointsTable);
-            if iscell(joints) && ~isempty(joints)
-                anyJointNoParams = false;
-                for i = 1:length(joints)
-                    joint = joints{i};
-                    allParams = [joint.parent_frame_transformation.translation, ...
-                        joint.parent_frame_transformation.orientation, ...
-                        joint.child_frame_transformation.translation, ...
-                        joint.child_frame_transformation.orientation];
-                    if ~any(strcmp(allParams, "true"))
-                        anyJointNoParams = true;
-                        addStyle(app.JointsTable, ...
-                            uistyle('BackgroundColor', [1.00 1.00 0.67]), 'row', i);
-                    end
-                end
-                if anyJointNoParams
-                    throwGuiWarning("One or more joints have no parameters " + ...
-                        "selected and will not contribute to the optimization.", ...
-                        [], app.JointsWarning);
+            app.warnEntriesWithoutParameters(app.JointsTable, joints, ...
+                @app.jointHasParameters, app.JointsWarning, ...
+                "One or more joints have no parameters selected and " + ...
+                "will not contribute to the optimization.");
+            app.warnEntriesWithoutParameters(app.BodiesTable, bodies, ...
+                @app.bodyHasParameters, app.BodiesWarning, ...
+                "One or more bodies have no parameters selected and " + ...
+                "will not contribute to the optimization.");
+        end
+
+        function warnEntriesWithoutParameters(~, uiTable, entries, ...
+                hasParametersFcn, warningIcon, warningMessage)
+            clearGuiError([], warningIcon);
+            removeStyle(uiTable);
+            if ~iscell(entries)
+                return
+            end
+            anyMissingParameters = false;
+            for i = 1:length(entries)
+                if ~hasParametersFcn(entries{i})
+                    anyMissingParameters = true;
+                    addStyle(uiTable, uistyle('BackgroundColor', ...
+                        [1.00 1.00 0.67]), 'row', i);
                 end
             end
-
-            clearGuiError([], app.BodiesWarning);
-            removeStyle(app.BodiesTable);
-            if iscell(bodies) && ~isempty(bodies)
-                anyBodyNoParams = false;
-                for i = 1:length(bodies)
-                    body = bodies{i};
-                    if ~strcmp(body.scale_body, "true") && ...
-                            ~any(strcmp(body.move_markers, "true"))
-                        anyBodyNoParams = true;
-                        addStyle(app.BodiesTable, ...
-                            uistyle('BackgroundColor', [1.00 1.00 0.67]), 'row', i);
-                    end
-                end
-                if anyBodyNoParams
-                    throwGuiWarning("One or more bodies have no parameters " + ...
-                        "selected and will not contribute to the optimization.", ...
-                        [], app.BodiesWarning);
-                end
+            if anyMissingParameters
+                throwGuiWarning(warningMessage, [], warningIcon);
             end
         end
 
-        function validateAdvancedSettings(app)
-            removeStyle(app.AdvancedSettingsTable);
-            invalidRows = find(isnan(app.paramValues) | app.paramValues <= 0);
-            if isempty(invalidRows)
-                clearGuiError([], app.AdvancedSettingsError);
-                app.advancedSettingsValid = true;
-                return
-            end
-            for i = 1:length(invalidRows)
-                addStyle(app.AdvancedSettingsTable, ...
-                    uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', invalidRows(i));
-            end
-            throwGuiError("One or more advanced parameters are not valid. " + ...
-                "Enter a positive numeric value for each parameter.", ...
-                [], app.AdvancedSettingsError);
-            app.advancedSettingsValid = false;
+        function hasParameters = jointHasParameters(~, joint)
+            allParameters = [joint.parent_frame_transformation.translation, ...
+                joint.parent_frame_transformation.orientation, ...
+                joint.child_frame_transformation.translation, ...
+                joint.child_frame_transformation.orientation];
+            hasParameters = any(strcmp(allParameters, "true"));
+        end
+
+        function hasParameters = bodyHasParameters(~, body)
+            hasParameters = strcmp(body.scale_body, "true") || ...
+                any(strcmp(body.move_markers, "true"));
         end
 
         function isValid = validateAllTasksSilent(app)
-            isValid = true;
             clearGuiError([], app.TasksRequired);
             clearGuiError([], app.TasksError);
             removeStyle(app.TasksTable);
@@ -631,79 +517,26 @@ classdef JMPBase < matlab.apps.AppBase
                 return
             end
             hasEnabledTask = false;
-            hasMissingRequired = false;
-            hasError = false;
+            anyMissingRequired = false;
+            anyError = false;
             for i = 1:length(app.JMPTask)
                 if ~strcmp(app.JMPTask{i}.is_enabled, 'true')
                     continue
                 end
                 hasEnabledTask = true;
-                taskMissingRequired = false;
-                taskHasError = false;
-                taskHasWarning = false;
-                if strcmp(app.JMPTask{i}.marker_file_name, "")
-                    taskMissingRequired = true;
-                elseif ~exist(app.JMPTask{i}.marker_file_name, 'file')
-                    taskHasError = true;
-                end
-                markerNames = app.JMPTask{i}.marker_names;
-                if isempty(markerNames) || (isstring(markerNames) && all(strcmp(markerNames, "")))
-                    taskMissingRequired = true;
-                end
-                if isequal(app.JMPTask{i}.time_range, [0 0])
-                    taskMissingRequired = true;
-                elseif app.JMPTask{i}.time_range(1) >= app.JMPTask{i}.time_range(2)
-                    taskHasError = true;
-                end
-                joints = app.JMPTask{i}.JMPJointSet.JMPJoint;
-                bodies = app.JMPTask{i}.JMPBodySet.JMPBody;
-                hasDesignVar = false;
-                if iscell(joints)
-                    for j = 1:length(joints)
-                        jt = joints{j};
-                        allParams = [jt.parent_frame_transformation.translation, ...
-                            jt.parent_frame_transformation.orientation, ...
-                            jt.child_frame_transformation.translation, ...
-                            jt.child_frame_transformation.orientation];
-                        if any(strcmp(allParams, "true"))
-                            hasDesignVar = true;
-                        else
-                            taskHasWarning = true;
-                        end
-                    end
-                end
-                if iscell(bodies)
-                    for j = 1:length(bodies)
-                        b = bodies{j};
-                        if strcmp(b.scale_body, "true") || ...
-                                any(strcmp(b.move_markers, "true"))
-                            hasDesignVar = true;
-                        else
-                            taskHasWarning = true;
-                        end
-                    end
-                end
-                if ~hasDesignVar
-                    taskMissingRequired = true;
-                end
-                if ~isempty(app.model_markers) && ...
-                        ~isempty(app.JMPTask{i}.markerFileMarkers) && ...
-                        any(~ismember(app.JMPTask{i}.markerFileMarkers, app.model_markers))
-                    taskHasWarning = true;
-                end
-                if taskHasError
-                    isValid = false;
-                    hasError = true;
-                    addStyle(app.TasksTable, ...
-                        uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', i);
-                elseif taskMissingRequired
-                    isValid = false;
-                    hasMissingRequired = true;
-                    addStyle(app.TasksTable, ...
-                        uistyle('BackgroundColor', [0.67 0.84 1.00]), 'row', i);
-                elseif taskHasWarning
-                    addStyle(app.TasksTable, ...
-                        uistyle('BackgroundColor', [1.00 1.00 0.67]), 'row', i);
+                [missingRequired, hasError, hasWarning] = ...
+                    app.getTaskState(app.JMPTask{i});
+                if hasError
+                    anyError = true;
+                    addStyle(app.TasksTable, uistyle('BackgroundColor', ...
+                        [1.00 0.67 0.67]), 'row', i);
+                elseif missingRequired
+                    anyMissingRequired = true;
+                    addStyle(app.TasksTable, uistyle('BackgroundColor', ...
+                        [0.67 0.84 1.00]), 'row', i);
+                elseif hasWarning
+                    addStyle(app.TasksTable, uistyle('BackgroundColor', ...
+                        [1.00 1.00 0.67]), 'row', i);
                 end
             end
             if ~hasEnabledTask
@@ -712,48 +545,89 @@ classdef JMPBase < matlab.apps.AppBase
                 isValid = false;
                 return
             end
-            if hasError
+            if anyError
                 throwGuiError("One or more tasks have errors. Check that " + ...
                     "each enabled task's marker file exists and the time " + ...
                     "range is valid.", [], app.TasksError);
-            elseif hasMissingRequired
+            elseif anyMissingRequired
                 throwGuiRequired("One or more tasks are missing required " + ...
                     "fields. Check that each enabled task has a marker " + ...
                     "file, at least one marker selected, and at least " + ...
                     "one design variable.", [], app.TasksRequired);
             end
+            isValid = ~anyError && ~anyMissingRequired;
+        end
+
+        function [missingRequired, hasError, hasWarning] = ...
+                getTaskState(app, task)
+            missingRequired = false;
+            hasError = false;
+            hasWarning = false;
+            if strcmp(task.marker_file_name, "")
+                missingRequired = true;
+            elseif ~exist(task.marker_file_name, 'file')
+                hasError = true;
+            end
+            if isEmptyStringList(task.marker_names)
+                missingRequired = true;
+            end
+            if isequal(task.time_range, [0 0])
+                missingRequired = true;
+            elseif task.time_range(1) >= task.time_range(2)
+                hasError = true;
+            end
+            hasDesignVariable = false;
+            joints = task.JMPJointSet.JMPJoint;
+            if iscell(joints)
+                for i = 1:length(joints)
+                    if app.jointHasParameters(joints{i})
+                        hasDesignVariable = true;
+                    else
+                        hasWarning = true;
+                    end
+                end
+            end
+            bodies = task.JMPBodySet.JMPBody;
+            if iscell(bodies)
+                for i = 1:length(bodies)
+                    if app.bodyHasParameters(bodies{i})
+                        hasDesignVariable = true;
+                    else
+                        hasWarning = true;
+                    end
+                end
+            end
+            if ~hasDesignVariable
+                missingRequired = true;
+            end
+            if ~isempty(app.model_markers) && ...
+                    ~isempty(task.markerFileMarkers) && ...
+                    any(~ismember(task.markerFileMarkers, app.model_markers))
+                hasWarning = true;
+            end
         end
 
         function updateRunButton(app)
-            allValid = app.inputModelValid && app.outputModelValid && ...
-                app.advancedSettingsValid && app.validateAllTasksSilent();
-            if allValid
-                app.RunButton.Enable = 'on';
-            else
-                app.RunButton.Enable = 'off';
-            end
+            advancedSettingsValid = validateAdvancedSettingsGui( ...
+                app.AdvancedSettingsTable, app.advancedSettingNames, ...
+                app.advancedSettingValues, app.AdvancedSettingsError);
+            tasksValid = app.validateAllTasksSilent();
+            app.RunButton.Enable = app.inputModelValid && ...
+                app.outputModelValid && advancedSettingsValid && tasksValid;
             app.updateTabControls();
         end
 
         function updateTabControls(app)
-            inputsReady = app.inputModelValid && app.outputModelValid;
-            if inputsReady
-                app.JMPTasksButton.Enable = 'on';
-            else
-                app.JMPTasksButton.Enable = 'off';
-            end
+            app.JMPTasksButton.Enable = app.inputModelValid && ...
+                app.outputModelValid;
         end
 
         function saveSettingsFile(app, settingsFileName)
-            settingsFilePath = fileparts(settingsFileName);
-            cd (settingsFilePath);
+            cd(fileparts(settingsFileName));
             app.currentSettingsFile = settingsFileName;
-            settingsTree = makeJMPSettingsStruct(app, settingsFileName);
-            settingsFileStruct.NMSMPipelineDocument.JointModelPersonalizationTool = ...
-                settingsTree;
-            settingsFileStruct.NMSMPipelineDocument.Attributes.Version = ...
-                convertStringsToChars(getPipelineVersion());
-            struct2xml(settingsFileStruct, settingsFileName)
+            saveGuiSettings(settingsFileName, ...
+                'JointModelPersonalizationTool', ...
+                app.makeJMPSettingsStruct(settingsFileName));
         end
 
         function settingsTree = makeJMPSettingsStruct(app, settingsFileName)
@@ -763,44 +637,48 @@ classdef JMPBase < matlab.apps.AppBase
             settingsTree.output_model_file = getRelativePath( ...
                 app.output_model_file, settingsFilePath);
             settingsTree.JMPTaskList = struct("JMPTask", cell(1));
-
             for i = 1 : length(app.JMPTask)
                 settingsTree.JMPTaskList.JMPTask{i} = app.JMPTask{i}.toStruct();
+                settingsTree.JMPTaskList.JMPTask{i}.marker_file_name = ...
+                    getRelativePath(settingsTree.JMPTaskList.JMPTask{i}. ...
+                    marker_file_name, settingsFilePath);
             end
-            settingsTree = setOptimizationParams(app, settingsTree);
+            settingsTree = app.setOptimizationParams(settingsTree);
             settingsTree = formatGuiDataForXml(settingsTree);
         end
 
         function settingsTree = setOptimizationParams(app, settingsTree)
             for i = 1 : length(app.advancedSettingNames)
                 settingsTree.(app.advancedSettingNames(i)) = ...
-                    app.paramValues(i);
+                    app.advancedSettingValues(i);
             end
         end
 
-        function loadSettingsFile(app, settingsFileName)
-            settingsFilePath = fileparts(settingsFileName);
-            cd (settingsFilePath);
-            app.currentSettingsFile = settingsFileName;
-            settingsTree = xml2struct(settingsFileName);
-            settingsTree = settingsTree.NMSMPipelineDocument. ...
-                JointModelPersonalizationTool;
-            settingsTree = formatXmlDataForGui(settingsTree);
-
-            fields = fieldnames(settingsTree);
-            for i = 1 : length(fields)
-                f = fields{i};
-                if isprop(app, f) && ~isstruct(settingsTree.(f))
-                    app.(f) = settingsTree.(f);
+        function loadOptimizationParams(app, settingsTree)
+            values = app.advancedSettingValues;
+            for i = 1 : length(app.advancedSettingNames)
+                if isfield(settingsTree, app.advancedSettingNames(i))
+                    values(i) = settingsTree.(app.advancedSettingNames(i));
                 end
             end
+            app.advancedSettingValues = values;
+        end
+
+        function loadSettingsFile(app, settingsFileName)
+            cd(fileparts(settingsFileName));
+            app.currentSettingsFile = settingsFileName;
+            settingsTree = loadGuiSettings(settingsFileName, ...
+                'JointModelPersonalizationTool');
+            applyStructToHandle(app, settingsTree);
             app.loadOptimizationParams(settingsTree);
 
             app.JMPTask = {};
             if isfield(settingsTree, 'JMPTaskList') && ...
                     isfield(settingsTree.JMPTaskList, 'JMPTask')
                 tasks = settingsTree.JMPTaskList.JMPTask;
-                if ~iscell(tasks); tasks = {tasks}; end
+                if ~iscell(tasks)
+                    tasks = {tasks};
+                end
                 for i = 1 : length(tasks)
                     app.createEmptyTask();
                     app.JMPTask{i}.loadFromStruct(tasks{i});
@@ -810,15 +688,6 @@ classdef JMPBase < matlab.apps.AppBase
             app.updateJMPTasksListBox();
             app.validateTimeRange();
             app.updateRunButton();
-        end
-
-        function loadOptimizationParams(app, settingsTree)
-            for i = 1 : length(app.advancedSettingNames)
-                paramName = app.advancedSettingNames(i);
-                if isfield(settingsTree, paramName)
-                    app.paramValues(i) = settingsTree.(paramName);
-                end
-            end
         end
     end
 
@@ -838,6 +707,8 @@ classdef JMPBase < matlab.apps.AppBase
         function editJoint(app, joint)
             selectedJoint = app.JointsTable.Selection;
             app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint{selectedJoint} = joint;
+            app.JMPTask{app.taskIndex}.jointNames{selectedJoint} = ...
+                joint.Attributes.name;
             app.validateTaskContent();
             app.updateRunButton();
         end
@@ -851,6 +722,8 @@ classdef JMPBase < matlab.apps.AppBase
         function editBody(app, body)
             selectedBody = app.BodiesTable.Selection;
             app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody{selectedBody} = body;
+            app.JMPTask{app.taskIndex}.bodyNames{selectedBody} = ...
+                body.Attributes.name;
             app.validateTaskContent();
             app.updateRunButton();
         end
@@ -891,42 +764,31 @@ classdef JMPBase < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
-            app.JMPTask{1} = JMPTaskClass();
-            app.JMPTask{1}.name = "Task 1";
-            app.JMPTask{1}.index = 1;
-            taskNames = ["Task 1"; "Add a new task"];
-            isEnabled = [true; false];
-            app.TasksTable.Data = table(isEnabled, taskNames);
+            app.advancedSettingValues = app.defaultAdvancedSettingValues;
+            app.refreshAdvancedSettingsTable();
+            app.createEmptyTask();
             app.TasksTable.Selection = 1;
-            Options = app.advancedSettingNames;
-            paramValues = arrayfun(@(v) app.formatAdvancedValue(v), app.paramValues);
-            app.AdvancedSettingsTable.Data = table( ...
-                Options, paramValues);
             app.updateJointsTable();
             app.updateBodiesTable();
-            app.RunButton.Enable = 'off';
-            app.JMPTasksButton.Enable = 'off';
-            app.MarkersEditButton.Enable = 'off';
+            app.RunButton.Enable = false;
+            app.JMPTasksButton.Enable = false;
+            app.MarkersEditButton.Enable = false;
             app.makeAllListeners()
         end
 
         % Button pushed function: JMPInputsButton
         function JMPInputsButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.InputsTab;
-            app.formatTabButtons();
         end
 
         % Button pushed function: AdvancedButton
         function AdvancedButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.AdvancedTab;
-            app.formatTabButtons();
         end
 
         % Button pushed function: JMPTasksButton
         function JMPTasksButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.TasksTab;
-            app.formatTabButtons();
-            % app.updateTaskErrorColors()
         end
 
         % Button pushed function: SaveButton
@@ -943,9 +805,13 @@ classdef JMPBase < matlab.apps.AppBase
         function RunButtonPushed(app, event)
             if strcmp(app.currentSettingsFile, "")
                 [file, path] = uiputfile('*.xml', "Save XML Settings File");
-                if isequal(file, 0); return; end
+                % User hit "Cancel"
+                if isequal(file, 0)
+                    return
+                end
                 app.currentSettingsFile = fullfile(path, file);
             end
+            app.saveSettingsFile(app.currentSettingsFile);
             JMPRun(app, app.currentSettingsFile);
         end
 
@@ -966,7 +832,6 @@ classdef JMPBase < matlab.apps.AppBase
             if isequal(file, 0)
                 return
             end
-
             app.input_model_file = fullfile(path, file);
             if strcmp(app.output_model_file, "")
                 app.output_model_file = fullfile(path, ...
@@ -976,12 +841,8 @@ classdef JMPBase < matlab.apps.AppBase
 
         % Value changed function: InputModelFileEditField
         function InputModelFileEditFieldValueChanged(app, event)
-            value = app.InputModelFileEditField.Value;
-            if strcmp(value, "")
-                app.input_model_file = "";
-            else
-                app.input_model_file = GetFullPath(value);
-            end
+            app.input_model_file = ...
+                getPathFieldValue(app.InputModelFileEditField);
         end
 
         % Button pushed function: OutputModelFileSearchButton
@@ -996,17 +857,8 @@ classdef JMPBase < matlab.apps.AppBase
 
         % Value changed function: OutputModelFileEditField
         function OutputModelFileEditFieldValueChanged(app, event)
-            value = app.OutputModelFileEditField.Value;
-            if strcmp(value, "")
-                app.output_model_file = "";
-            else
-                app.output_model_file = GetFullPath(value);
-            end
-        end
-
-        % Double-clicked callback: TasksTable
-        function TasksTableDoubleClicked(app, event)
-
+            app.output_model_file = ...
+                getPathFieldValue(app.OutputModelFileEditField);
         end
 
         % Button pushed function: MarkerFileSearchButton
@@ -1016,19 +868,13 @@ classdef JMPBase < matlab.apps.AppBase
             if isequal(file, 0)
                 return
             end
-
-            fullpath = fullfile(path, file);
-            app.JMPTask{app.taskIndex}.marker_file_name = fullpath;
+            app.JMPTask{app.taskIndex}.marker_file_name = fullfile(path, file);
         end
 
         % Value changed function: MarkersFileEditField
         function MarkersFileEditFieldValueChanged(app, event)
-            if strcmp(app.MarkersFileEditField.Value, "")
-                app.JMPTask{app.taskIndex}.marker_file_name = "";
-                return
-            end
             app.JMPTask{app.taskIndex}.marker_file_name = ...
-                GetFullPath(app.MarkersFileEditField.Value);
+                getPathFieldValue(app.MarkersFileEditField);
         end
 
         % Selection changed function: TasksTable
@@ -1036,10 +882,8 @@ classdef JMPBase < matlab.apps.AppBase
             if isempty(app.TasksTable.Selection)
                 return
             end
-
-            if app.TasksTable.Selection == height(app.TasksTable.Data) % if last element
-                app.createEmptyTask();
-                return
+            if app.TasksTable.Selection == height(app.TasksTable.Data)
+                app.createEmptyTask(); % last row adds a new task
             else
                 app.taskIndex = app.TasksTable.Selection;
             end
@@ -1047,17 +891,16 @@ classdef JMPBase < matlab.apps.AppBase
 
         % Cell edit callback: TasksTable
         function TasksTableCellEdit(app, event)
-            indices = event.Indices;
-            app.taskIndex = indices(1);
-            if indices(2) == 1
-                if app.TasksTable.Data.isEnabled(indices(1))
-                    app.JMPTask{app.taskIndex}.is_enabled = 'true';
-                else
-                    app.JMPTask{app.taskIndex}.is_enabled = 'false';
-                end
+            rowIndex = event.Indices(1);
+            if rowIndex > length(app.JMPTask)
+                app.updateJMPTasksListBox(); % restore the add-task row
+                return
             end
-            if indices(2) == 2
-                app.JMPTask{app.taskIndex}.name = event.NewData;
+            app.taskIndex = rowIndex;
+            if event.Indices(2) == 1
+                app.JMPTask{rowIndex}.is_enabled = boolToString(event.NewData);
+            else
+                app.JMPTask{rowIndex}.name = event.NewData;
             end
             app.updateRunButton();
         end
@@ -1082,53 +925,30 @@ classdef JMPBase < matlab.apps.AppBase
                 app.JMPTask{app.taskIndex}.marker_names);
         end
 
+        % Menu selected function: RenameMenu
+        function RenameMenuSelected(app, event)
+            oldName = app.JMPTask{app.taskIndex}.name;
+            newName = inputdlg("Rename task:", "Rename", [1 40], ...
+                {char(oldName)});
+            if isempty(newName)
+                return
+            end
+            app.JMPTask{app.taskIndex}.name = newName{1};
+        end
+
+        % Menu selected function: CopyTaskMenu
+        function CopyTaskMenuSelected(app, event)
+            sourceTask = app.JMPTask{app.taskIndex}.toStruct();
+            app.createEmptyTask();
+            app.JMPTask{app.taskIndex}.loadFromStruct(sourceTask);
+            app.JMPTask{app.taskIndex}.name = "Copy of " + ...
+                sourceTask.Attributes.name;
+            app.updateTasksPanel();
+        end
+
         % Menu selected function: DeleteTaskMenu
         function DeleteTaskMenuSelected(app, event)
-            deletionIndex = 1 : 1 : length(app.JMPTask) == ...
-                app.TasksTable.Selection;
-            app.deleteTask(deletionIndex);
-        end
-
-        % Selection changed function: JointsTable
-        function JointsTableSelectionChanged(app, event)
-            selection = app.JointsTable.Selection;
-            if selection > length(app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint) % if clicked on add new joint
-                JMPJointSelection(app, []);
-            end
-        end
-
-        % Selection changed function: BodiesTable
-        function BodiesTableSelectionChanged(app, event)
-            selection = app.BodiesTable.Selection;
-            if selection > length(app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody) % if clicked on add new body
-                JMPBodySelection(app, []);
-            end
-        end
-
-        % Menu selected function: EditJointMenu
-        function EditJointMenuSelected(app, event)
-            selection = app.JointsTable.Selection;
-            JMPJointSelection(app, app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint{selection});
-        end
-
-        % Menu selected function: DeleteJointMenu
-        function DeleteJointMenuSelected(app, event)
-            deletionIndex = 1 : 1 : length(app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint) == ...
-                app.JointsTable.Selection;
-            app.deleteJoint(deletionIndex);
-        end
-
-        % Menu selected function: EditBodyMenu
-        function EditBodyMenuSelected(app, event)
-            selection = app.BodiesTable.Selection;
-            JMPBodySelection(app, app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody{selection});
-        end
-
-        % Menu selected function: DeleteBodyMenu
-        function DeleteBodyMenuSelected(app, event)
-            deletionIndex = 1 : 1 : length(app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody) == ...
-                app.BodiesTable.Selection;
-            app.deleteBody(deletionIndex);
+            app.deleteTask(app.TasksTable.Selection);
         end
 
         % Button pushed function: MoveTaskUpButton
@@ -1141,9 +961,28 @@ classdef JMPBase < matlab.apps.AppBase
             app.moveTaskDown()
         end
 
+        % Selection changed function: JointsTable
+        function JointsTableSelectionChanged(app, event)
+            selection = app.JointsTable.Selection;
+            if selection > length(app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint)
+                JMPJointSelection(app, []); % last row adds a new joint
+            end
+        end
+
+        % Selection changed function: BodiesTable
+        function BodiesTableSelectionChanged(app, event)
+            selection = app.BodiesTable.Selection;
+            if selection > length(app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody)
+                JMPBodySelection(app, []); % last row adds a new body
+            end
+        end
+
         % Double-clicked callback: JointsTable
         function JointsTableDoubleClicked(app, event)
             selection = event.InteractionInformation.DisplayRow;
+            if selection > length(app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint)
+                return
+            end
             JMPJointSelection(app, ...
                 app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint{selection})
         end
@@ -1151,23 +990,41 @@ classdef JMPBase < matlab.apps.AppBase
         % Double-clicked callback: BodiesTable
         function BodiesTableDoubleClicked(app, event)
             selection = event.InteractionInformation.DisplayRow;
+            if selection > length(app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody)
+                return
+            end
             JMPBodySelection(app, ...
                 app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody{selection})
         end
 
-        % Menu selected function: RenameMenu
-        function RenameMenuSelected(app, event)
-            oldName = app.JMPTask{app.taskIndex}.name;
-            newName = inputdlg("Rename task:", "Rename", [1 40], {oldName});
-            if isempty(newName)
+        % Menu selected function: EditJointMenu
+        function EditJointMenuSelected(app, event)
+            selection = app.JointsTable.Selection;
+            if selection > length(app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint)
                 return
             end
-            app.JMPTask{app.taskIndex}.name = newName;
+            JMPJointSelection(app, ...
+                app.JMPTask{app.taskIndex}.JMPJointSet.JMPJoint{selection});
         end
 
-        % Display data changed function: TasksTable
-        function TasksTableDisplayDataChanged(app, event)
+        % Menu selected function: DeleteJointMenu
+        function DeleteJointMenuSelected(app, event)
+            app.deleteJoint(app.JointsTable.Selection);
+        end
 
+        % Menu selected function: EditBodyMenu
+        function EditBodyMenuSelected(app, event)
+            selection = app.BodiesTable.Selection;
+            if selection > length(app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody)
+                return
+            end
+            JMPBodySelection(app, ...
+                app.JMPTask{app.taskIndex}.JMPBodySet.JMPBody{selection});
+        end
+
+        % Menu selected function: DeleteBodyMenu
+        function DeleteBodyMenuSelected(app, event)
+            app.deleteBody(app.BodiesTable.Selection);
         end
 
         % Button pushed function: LoadSettingsFileButton
@@ -1180,25 +1037,10 @@ classdef JMPBase < matlab.apps.AppBase
             app.loadSettingsFile(fullfile(path, file));
         end
 
-        % Menu selected function: CopyTaskMenu
-        function CopyTaskMenuSelected(app, event)
-            app.JMPTask{end+1} = app.JMPTask{app.taskIndex};
-            app.JMPTaskAux{end+1} = app.JMPTaskAux{app.taskIndex};
-            app.JMPTask{end}.Attributes.name = sprintf("Copy of %s", ...
-                app.JMPTask{app.taskIndex}.Attributes.name);
-            app.TaskEnabled(end+1) = strcmp(app.JMPTask{app.taskIndex}.is_enabled, 'true');
-            app.TaskNames(end+1) = app.JMPTask{end}.Attributes.name;
-        end
-
         % Cell edit callback: AdvancedSettingsTable
         function AdvancedSettingsTableCellEdit(app, event)
-            index = event.Indices(1);
-            newValue = double(convertCharsToStrings( ...
-                app.AdvancedSettingsTable.Data.paramValues(index)));
-            if isnan(newValue)
-                app.AdvancedSettingsTable.Data.paramValues(index) = "NaN";
-            end
-            app.paramValues(index) = newValue;
+            app.advancedSettingValues(event.Indices(1)) = ...
+                str2double(event.NewData);
         end
     end
 
@@ -1519,8 +1361,6 @@ classdef JMPBase < matlab.apps.AppBase
             app.TasksTable.ColumnEditable = true;
             app.TasksTable.RowStriping = 'off';
             app.TasksTable.CellEditCallback = createCallbackFcn(app, @TasksTableCellEdit, true);
-            app.TasksTable.DoubleClickedFcn = createCallbackFcn(app, @TasksTableDoubleClicked, true);
-            app.TasksTable.DisplayDataChangedFcn = createCallbackFcn(app, @TasksTableDisplayDataChanged, true);
             app.TasksTable.SelectionChangedFcn = createCallbackFcn(app, @TasksTableSelectionChanged, true);
             app.TasksTable.Multiselect = 'off';
             app.TasksTable.FontSize = 18;
@@ -1670,7 +1510,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.DeleteTaskMenu = uimenu(app.TasksContextMenu);
             app.DeleteTaskMenu.MenuSelectedFcn = createCallbackFcn(app, @DeleteTaskMenuSelected, true);
             app.DeleteTaskMenu.Text = 'Delete';
-            
+
             % Assign app.TasksContextMenu
             app.TasksTable.ContextMenu = app.TasksContextMenu;
 
@@ -1686,7 +1526,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.DeleteJointMenu = uimenu(app.JointsContextMenu);
             app.DeleteJointMenu.MenuSelectedFcn = createCallbackFcn(app, @DeleteJointMenuSelected, true);
             app.DeleteJointMenu.Text = 'Delete';
-            
+
             % Assign app.JointsContextMenu
             app.JointsTable.ContextMenu = app.JointsContextMenu;
 
@@ -1702,7 +1542,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.DeleteBodyMenu = uimenu(app.BodiesContextMenu);
             app.DeleteBodyMenu.MenuSelectedFcn = createCallbackFcn(app, @DeleteBodyMenuSelected, true);
             app.DeleteBodyMenu.Text = 'Delete';
-            
+
             % Assign app.BodiesContextMenu
             app.BodiesTable.ContextMenu = app.BodiesContextMenu;
 

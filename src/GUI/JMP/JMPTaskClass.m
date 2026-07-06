@@ -26,8 +26,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 classdef JMPTaskClass < handle
-    %JMPTASK Summary of this class goes here
-    %   Detailed explanation goes here
+    % Holds the settings for a single Joint Model Personalization task:
+    % the marker file, time range, selected markers, and the joints and
+    % bodies to personalize.
 
     properties (Access = public, SetObservable)
         name = "";
@@ -64,31 +65,45 @@ classdef JMPTaskClass < handle
                 obj.name = s.Attributes.name;
             end
             applyStructToHandle(obj, s);
-            obj.jointNames = strings(0);
-            if isfield(s, 'JMPJointSet') && isfield(s.JMPJointSet, 'JMPJoint') && ...
-                    ~(ischar(s.JMPJointSet.JMPJoint) && strcmp(s.JMPJointSet.JMPJoint, ''))
+
+            joints = {};
+            if isfield(s, 'JMPJointSet') && isfield(s.JMPJointSet, 'JMPJoint')
                 joints = s.JMPJointSet.JMPJoint;
-                if ~iscell(joints); joints = {joints}; end
-                for j = 1 : numel(joints)
-                    obj.jointNames(end+1) = joints{j}.Attributes.name;
-                end
-                obj.JMPJointSet.JMPJoint = joints;
-            else
+            end
+            % xml2struct yields '' or [] for an empty set and a bare
+            % struct for a single entry
+            if isempty(joints) || ischar(joints)
+                joints = {};
+            elseif ~iscell(joints)
+                joints = {joints};
+            end
+            obj.jointNames = strings(0);
+            for i = 1 : numel(joints)
+                obj.jointNames(end + 1) = joints{i}.Attributes.name;
+            end
+            if isempty(joints)
                 obj.JMPJointSet = struct('JMPJoint', []);
+            else
+                obj.JMPJointSet.JMPJoint = joints;
+            end
+
+            bodies = {};
+            if isfield(s, 'JMPBodySet') && isfield(s.JMPBodySet, 'JMPBody')
+                bodies = s.JMPBodySet.JMPBody;
+            end
+            if isempty(bodies) || ischar(bodies)
+                bodies = {};
+            elseif ~iscell(bodies)
+                bodies = {bodies};
             end
             obj.bodyNames = strings(0);
-            if isfield(s, 'JMPBodySet')
-                obj.JMPBodySet = s.JMPBodySet;
-                if isfield(s.JMPBodySet, 'JMPBody') && ...
-                        ~(ischar(s.JMPBodySet.JMPBody) && strcmp(s.JMPBodySet.JMPBody, ''))
-                    bodies = s.JMPBodySet.JMPBody;
-                    if ~iscell(bodies); bodies = {bodies}; end
-                    for j = 1 : numel(bodies)
-                        obj.bodyNames(end+1) = bodies{j}.Attributes.name;
-                    end
-                end
-            else
+            for i = 1 : numel(bodies)
+                obj.bodyNames(end + 1) = bodies{i}.Attributes.name;
+            end
+            if isempty(bodies)
                 obj.JMPBodySet = struct('JMPBody', []);
+            else
+                obj.JMPBodySet.JMPBody = bodies;
             end
         end
     end

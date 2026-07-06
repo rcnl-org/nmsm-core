@@ -26,8 +26,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 classdef RCNLCostTermClass < handle
-    %RCNLCOSTTERMSET Summary of this class goes here
-    %   Detailed explanation goes here
+    % Holds a single RCNL cost term: its type, enabled state, max
+    % allowable error, and (for cost term types that use one) error
+    % center.
 
     properties (Access = public, SetObservable)
         name = [];

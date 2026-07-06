@@ -1,8 +1,11 @@
 % This class is part of the NMSM Pipeline, see file for full license.
 %
-% This class represents the data model for the Synergy Extrapolation
-% (SynX) subtool within the MTP GUI, including the matrix factorization
-% method, synergy count, categorization settings, and cost terms.
+% This class holds the settings for Synergy Extrapolation in the MTP
+% GUI. Settings are stored as individual properties (rather than an
+% array) because struct2xml requires each XML element to be a struct
+% field; parameterNames maps table row indices to those properties. Use
+% reset() to restore defaults in place so that listeners attached to an
+% instance stay valid.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,27 +29,41 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 classdef SynergyExtrapolationClass < handle
-    %SYNERGYEXTRAPOLATION Summary of this class goes here
-    %   Detailed explanation goes here
 
     properties (Access = public, SetObservable)
-        is_enabled = 'true';
-        matrix_factorization_method = 'PCA';
-        number_of_synergies = 1;
-        synergy_extrapolation_categorization = 'trial';
-        residual_categorization = 'task';
+        is_enabled
+        matrix_factorization_method
+        number_of_synergies
+        synergy_extrapolation_categorization
+        residual_categorization
+        RCNLCostTerm
+    end
+
+    properties (Constant)
+        parameterNames = ...
+            ["matrix_factorization_method"
+            "synergy_extrapolation_categorization"
+            "residual_categorization"]
 
         costTermStruct = struct( ...
-                'measured_inverse_dynamics_joint_moment',   {{'true'   0  2    false}}, ...
-                'extrapolated_muscle_activation',           {{'true'   0  0.5  true}}, ...
-                'residual_muscle_activation',               {{'true'   0  0.01 false}} ...
-                );
-
-        RCNLCostTerm = cell(1);
+            'measured_inverse_dynamics_joint_moment',   {{'true'   0  2    false}}, ...
+            'extrapolated_muscle_activation',           {{'true'   0  0.5  true}}, ...
+            'residual_muscle_activation',               {{'true'   0  0.01 false}} ...
+            );
     end
 
     methods
         function obj = SynergyExtrapolationClass()
+            obj.reset();
+        end
+
+        function reset(obj)
+            obj.is_enabled = 'true';
+            obj.matrix_factorization_method = 'PCA';
+            obj.number_of_synergies = 1;
+            obj.synergy_extrapolation_categorization = 'trial';
+            obj.residual_categorization = 'task';
+            obj.RCNLCostTerm = makeDefaultCostTerms(obj.costTermStruct);
         end
 
         function s = toStruct(obj)
@@ -54,64 +71,49 @@ classdef SynergyExtrapolationClass < handle
             s.is_enabled = obj.is_enabled;
             s.matrix_factorization_method = obj.matrix_factorization_method;
             s.number_of_synergies = obj.number_of_synergies;
-            s.synergy_extrapolation_categorization = obj.synergy_extrapolation_categorization;
+            s.synergy_extrapolation_categorization = ...
+                obj.synergy_extrapolation_categorization;
             s.residual_categorization = obj.residual_categorization;
-
-            n = numel(obj.RCNLCostTerm);
-            costTermStructs = cell(1, n);
-            for i = 1:n
-                if ~isempty(obj.RCNLCostTerm{i})
-                    costTermStructs{i} = obj.RCNLCostTerm{i}.toStruct();
-                else
-                    costTermStructs{i} = [];
-                end
-            end
-            s.RCNLCostTermSet = struct();
-            s.RCNLCostTermSet.RCNLCostTerm = costTermStructs;
+            s.RCNLCostTermSet = makeCostTermSetStruct(obj.RCNLCostTerm);
         end
 
         function loadFromStruct(obj, s)
             applyStructToHandle(obj, s);
-            if isfield(s, 'RCNLCostTermSet') && isfield(s.RCNLCostTermSet, 'RCNLCostTerm')
-                terms = s.RCNLCostTermSet.RCNLCostTerm;
-                for i = 1 : length(terms)
-                    obj.RCNLCostTerm{i} = RCNLCostTermClass(terms{i});
-                end
-            end
-        end
-
-        function makeDefaultCostTermSet(obj)
-            costTermNames = fieldnames(obj.costTermStruct);
-            for i = 1 : length(costTermNames)
-                costTerm = RCNLCostTermClass();
-                costTerm.is_enabled = obj.costTermStruct.(costTermNames{i}){1};
-                costTerm.type = costTermNames{i};
-                costTerm.error_center = obj.costTermStruct.(costTermNames{i}){2};
-                costTerm.max_allowable_error = obj.costTermStruct.(costTermNames{i}){3};
-                costTerm.uses_error_center = obj.costTermStruct.(costTermNames{i}){4};
-                obj.RCNLCostTerm{i} = costTerm;
+            costTerms = parseCostTermsFromStruct(s);
+            if ~isempty(costTerms)
+                obj.RCNLCostTerm = costTerms;
             end
         end
 
         function setParameterValueByIndex(obj, index, value)
-            switch index
-                case 1
-                    obj.matrix_factorization_method = value;
-                case 2
-                    obj.synergy_extrapolation_categorization = value;
-                case 3
-                    obj.residual_categorization = value;
-            end
+            obj.(obj.parameterNames(index)) = value;
         end
 
         function value = getParameterValueByIndex(obj, index)
-            switch index
-                case 1
-                    value = obj.matrix_factorization_method;
-                case 2
-                    value = obj.synergy_extrapolation_categorization;
-                case 3
-                    value = obj.residual_categorization;
+            value = obj.(obj.parameterNames(index));
+        end
+
+        function [invalidIndices, messages] = validateParameters(obj)
+            invalidIndices = [];
+            messages = strings(0, 1);
+            if ~ismember(string(obj.matrix_factorization_method), ...
+                    ["NMF", "PCA"])
+                invalidIndices(end + 1) = 1;
+                messages(end + 1) = ...
+                    "matrix_factorization_method: must be NMF or PCA";
+            end
+            validCategories = ["trial", "task", "subject"];
+            if ~ismember(string(obj.synergy_extrapolation_categorization), ...
+                    validCategories)
+                invalidIndices(end + 1) = 2;
+                messages(end + 1) = "synergy_extrapolation_" + ...
+                    "categorization: must be trial, task, or subject";
+            end
+            if ~ismember(string(obj.residual_categorization), ...
+                    validCategories)
+                invalidIndices(end + 1) = 3;
+                messages(end + 1) = ...
+                    "residual_categorization: must be trial, task, or subject";
             end
         end
     end

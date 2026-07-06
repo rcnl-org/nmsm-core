@@ -1,8 +1,11 @@
 % This class is part of the NMSM Pipeline, see file for full license.
 %
-% This class represents the data model for the Muscle-Tendon Length
-% Initialization (MTLI) subtool within the MTP GUI, including optimization
-% flags, fiber length bounds, muscle stress settings, and cost terms.
+% This class holds the settings for Muscle-Tendon Length Initialization,
+% shared by the MTP and NCP GUIs. Settings are stored as individual
+% properties (rather than an array) because struct2xml requires each XML
+% element to be a struct field; parameterNames maps table row indices to
+% those properties. Use reset() to restore defaults in place so that
+% listeners attached to an instance stay valid.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,108 +29,102 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 classdef MuscleTendonLengthInitializationClass < handle
-    %MUSCLETENDONLENGTHINITIALIZATION Summary of this class goes here
-    %   Detailed explanation goes here
 
     properties (Access = public, SetObservable)
-        is_enabled = 'true';
-        passive_data_input_directory = "";
-        max_normalized_muscle_fiber_length = 1.0;
-        min_normalized_muscle_fiber_length = 0.7;
-        optimize_maximum_muscle_stress = 'true';
-        optimize_isometric_max_force = 'true';
-        optimize_absolute_length_changes = 'true';
-        maximum_muscle_stress = 610000;
+        is_enabled
+        passive_data_input_directory
+        max_normalized_muscle_fiber_length
+        min_normalized_muscle_fiber_length
+        optimize_maximum_muscle_stress
+        optimize_isometric_max_force
+        optimize_absolute_length_changes
+        maximum_muscle_stress
+        RCNLCostTerm
+    end
+
+    properties (Constant)
+        parameterNames = ...
+            ["optimize_maximum_muscle_stress"
+            "optimize_isometric_max_force"
+            "optimize_absolute_length_changes"
+            "maximum_muscle_stress"]
 
         costTermStruct = struct( ...
-                'passive_joint_moment',                             {{'true'   0     2     false}}, ...
-                'optimal_muscle_fiber_length',                      {{'true'   1     0.3   true}}, ...
-                'tendon_slack_length',                              {{'true'   1     0.3   true}}, ...
-                'minimum_normalized_muscle_fiber_length',           {{'true'   0     0.3   false}}, ...
-                'maximum_normalized_muscle_fiber_length',           {{'true'   0     0.03  false}}, ...
-                'maximum_muscle_stress',                            {{'true'   1.2   0.1   true}}, ...
-                'passive_muscle_force',                             {{'false'  0     10    false}}, ...
-                'grouped_normalized_muscle_fiber_length',           {{'true'   0     0.1   false}}, ...
-                'grouped_maximum_normalized_muscle_fiber_length',   {{'true'   0     0.1   false}} ...
-                );
-
-        RCNLCostTerm = cell(1);
+            'passive_joint_moment',                             {{'true'   0     2     false}}, ...
+            'optimal_muscle_fiber_length',                      {{'true'   1     0.3   true}}, ...
+            'tendon_slack_length',                              {{'true'   1     0.3   true}}, ...
+            'minimum_normalized_muscle_fiber_length',           {{'true'   0     0.3   false}}, ...
+            'maximum_normalized_muscle_fiber_length',           {{'true'   0     0.03  false}}, ...
+            'maximum_muscle_stress',                            {{'true'   1.2   0.1   true}}, ...
+            'passive_muscle_force',                             {{'false'  0     10    false}}, ...
+            'grouped_normalized_muscle_fiber_length',           {{'true'   0     0.1   false}}, ...
+            'grouped_maximum_normalized_muscle_fiber_length',   {{'true'   0     0.1   false}} ...
+            );
     end
 
     methods
         function obj = MuscleTendonLengthInitializationClass()
+            obj.reset();
+        end
+
+        function reset(obj)
+            obj.is_enabled = 'false';
+            obj.passive_data_input_directory = "";
+            obj.max_normalized_muscle_fiber_length = 1.0;
+            obj.min_normalized_muscle_fiber_length = 0.7;
+            obj.optimize_maximum_muscle_stress = 'true';
+            obj.optimize_isometric_max_force = 'true';
+            obj.optimize_absolute_length_changes = 'true';
+            obj.maximum_muscle_stress = 610000;
+            obj.RCNLCostTerm = makeDefaultCostTerms(obj.costTermStruct);
         end
 
         function s = toStruct(obj)
             s = struct();
             s.is_enabled = obj.is_enabled;
             s.passive_data_input_directory = obj.passive_data_input_directory;
-            s.max_normalized_muscle_fiber_length = obj.max_normalized_muscle_fiber_length;
-            s.min_normalized_muscle_fiber_length = obj.min_normalized_muscle_fiber_length;
-            s.optimize_maximum_muscle_stress = obj.optimize_maximum_muscle_stress;
-            s.optimize_isometric_max_force = obj.optimize_isometric_max_force;
-            s.maximum_muscle_stress = obj.maximum_muscle_stress;
-            s.optimize_absolute_length_changes = obj.optimize_absolute_length_changes;
-
-            n = numel(obj.RCNLCostTerm);
-            costTermStructs = cell(1, n);
-            for i = 1:n
-                if ~isempty(obj.RCNLCostTerm{i})
-                    costTermStructs{i} = obj.RCNLCostTerm{i}.toStruct();
-                else
-                    costTermStructs{i} = [];
-                end
+            s.max_normalized_muscle_fiber_length = ...
+                obj.max_normalized_muscle_fiber_length;
+            s.min_normalized_muscle_fiber_length = ...
+                obj.min_normalized_muscle_fiber_length;
+            for i = 1:length(obj.parameterNames)
+                s.(obj.parameterNames(i)) = obj.(obj.parameterNames(i));
             end
-            s.RCNLCostTermSet = struct();
-            s.RCNLCostTermSet.RCNLCostTerm = costTermStructs;
+            s.RCNLCostTermSet = makeCostTermSetStruct(obj.RCNLCostTerm);
         end
 
         function loadFromStruct(obj, s)
             applyStructToHandle(obj, s);
-            if isfield(s, 'RCNLCostTermSet') && isfield(s.RCNLCostTermSet, 'RCNLCostTerm')
-                terms = s.RCNLCostTermSet.RCNLCostTerm;
-                for i = 1 : length(terms)
-                    obj.RCNLCostTerm{i} = RCNLCostTermClass(terms{i});
-                end
-            end
-        end
-
-        function makeDefaultCostTermSet(obj)
-            costTermNames = fieldnames(obj.costTermStruct);
-            for i = 1 : length(costTermNames)
-                costTerm = RCNLCostTermClass();
-                costTerm.is_enabled = obj.costTermStruct.(costTermNames{i}){1};
-                costTerm.type = costTermNames{i};
-                costTerm.error_center = obj.costTermStruct.(costTermNames{i}){2};
-                costTerm.max_allowable_error = obj.costTermStruct.(costTermNames{i}){3};
-                costTerm.uses_error_center = obj.costTermStruct.(costTermNames{i}){4};
-                obj.RCNLCostTerm{i} = costTerm;
+            costTerms = parseCostTermsFromStruct(s);
+            if ~isempty(costTerms)
+                obj.RCNLCostTerm = costTerms;
             end
         end
 
         function setParameterValueByIndex(obj, index, value)
-            switch index
-                case 1
-                    obj.optimize_maximum_muscle_stress = value;
-                case 2
-                    obj.optimize_isometric_max_force = value;
-                case 3
-                    obj.optimize_absolute_length_changes = value;
-                case 4
-                    obj.maximum_muscle_stress = value;
-            end
+            obj.(obj.parameterNames(index)) = value;
         end
 
         function value = getParameterValueByIndex(obj, index)
-            switch index
-                case 1
-                    value = obj.optimize_maximum_muscle_stress;
-                case 2
-                    value = obj.optimize_isometric_max_force;
-                case 3
-                    value = obj.optimize_absolute_length_changes;
-                case 4
-                    value = obj.maximum_muscle_stress;
+            value = obj.(obj.parameterNames(index));
+        end
+
+        function [invalidIndices, messages] = validateParameters(obj)
+            invalidIndices = [];
+            messages = strings(0, 1);
+            for i = 1:3
+                if ~ismember(string(obj.(obj.parameterNames(i))), ...
+                        ["true", "false"])
+                    invalidIndices(end + 1) = i;
+                    messages(end + 1) = obj.parameterNames(i) + ...
+                        ": must be true or false";
+                end
+            end
+            stressValue = str2double(string(obj.maximum_muscle_stress));
+            if isnan(stressValue) || stressValue <= 0
+                invalidIndices(end + 1) = 4;
+                messages(end + 1) = ...
+                    "maximum_muscle_stress: must be a positive number";
             end
         end
     end

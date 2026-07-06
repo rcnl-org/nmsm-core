@@ -151,14 +151,13 @@ classdef MTPBase < matlab.apps.AppBase
     properties (Access = private, SetObservable)
         model_coordinates string = [];
         model_groups string = [];
-        
+
         input_model_file string = "";
         input_osimx_file string = "";
         data_directory string = "";
         results_directory string = "MTPResults";
         coordinate_list string = [];
         trial_prefixes string = [];
-        v_max_factor double = 10;
 
         activation_muscle_groups string = [];
         normalized_fiber_length_muscle_groups string = [];
@@ -166,26 +165,17 @@ classdef MTPBase < matlab.apps.AppBase
         collected_emg_channel_muscle_groups string = [];
 
         MTPTask cell = cell(0)
-        taskIndex = 1;
+        taskIndex double = 1;
 
-        designVariables string = ["Muscle Specific Electromechanical Delays"
-            "Electromechanical Delays"
-            "Activation Time Constants"
-            "Activation Non-linearity Constants"
-            "EMG Scale Factors"
-            "Optimal Fiber Lengths"
-            "Tendon Slack Lengths"];
-        
         MuscleTendonLengthInitialization handle = ...
             MuscleTendonLengthInitializationClass();
-
-
         MTPSynergyExtrapolation handle = ...
             SynergyExtrapolationClass();
 
+        advancedSettingValues double = [];
+
         objectSelectionType string = "";  % Used to filter in setSelectedObjects
-        currentSettingsFile string = ""; % Variable to store the current settings file name.
-        needToSave logical = false; % flag indicating if the settings file changed and needs to be saved before running.
+        currentSettingsFile string = "";
 
         % Error checking and flow control
         inputModelValid       logical = false
@@ -195,6 +185,17 @@ classdef MTPBase < matlab.apps.AppBase
         timePoints double = [];
         idLabels string = [];
         emgLabels string = [];
+    end
+
+    properties (Constant, Access = private)
+        designVariables = ...
+            ["Muscle Specific Electromechanical Delays"
+            "Electromechanical Delays"
+            "Activation Time Constants"
+            "Activation Non-linearity Constants"
+            "EMG Scale Factors"
+            "Optimal Fiber Lengths"
+            "Tendon Slack Lengths"]
 
         advancedSettingNames = ...
             ["v_max_factor"
@@ -205,7 +206,7 @@ classdef MTPBase < matlab.apps.AppBase
             "optimality_tolerance"
             "diff_min_change"]
 
-        advancedSettingValues = ...
+        defaultAdvancedSettingValues = ...
             [10
             1000
             100000000
@@ -213,9 +214,9 @@ classdef MTPBase < matlab.apps.AppBase
             1e-6
             1e-6
             0.0001]
+    end
 
-    end % Description
-    properties(Access = private)  % listner properties
+    properties (Access = private)  % listener handles
         InputModelFileListener
         OsimXFileListener
         DataDirectoryListener
@@ -298,12 +299,12 @@ classdef MTPBase < matlab.apps.AppBase
 
             app.advancedSettingsListener = addlistener(app, ...
                 'advancedSettingValues', 'PostSet', ...
-                @(src, event)updateAdvancedSettingValues(app));
+                @(src, event)refreshAdvancedSettingsTable(app));
 
             app.selectedTabListener = addlistener(app.TabGroup, ...
                 'SelectedTab', 'PostSet', ...
                 @(src, event)formatTabButtons(app));
-           
+
             app.auxTabListener = addlistener(app.AuxiliaryToolsTabGroup, ...
                 'SelectedTab', 'PostSet', ...
                 @(src, event)formatTabButtons(app));
@@ -313,7 +314,6 @@ classdef MTPBase < matlab.apps.AppBase
             app.InputModelFileEditField.Value = getRelativePath( ...
                 app.input_model_file);
             app.validateInputModelFile();
-            app.needToSave = true;
             app.updateRunButton();
         end
 
@@ -321,7 +321,6 @@ classdef MTPBase < matlab.apps.AppBase
             app.InputOsimxFileEditField.Value = getRelativePath( ...
                 app.input_osimx_file);
             app.validateInputOsimxFile();
-            app.needToSave = true;
             app.updateRunButton();
         end
 
@@ -329,7 +328,6 @@ classdef MTPBase < matlab.apps.AppBase
             app.InputDataEditField.Value = getRelativePath( ...
                 app.data_directory);
             app.validateDataDirectory();
-            app.needToSave = true;
             app.updateRunButton();
         end
 
@@ -337,16 +335,13 @@ classdef MTPBase < matlab.apps.AppBase
             app.ResultsDirectoryEditField.Value = getRelativePath( ...
                 app.results_directory);
             app.validateResultsDirectory();
-            app.needToSave = true;
             app.updateRunButton();
         end
 
         function CoordinateListListenerFunction(app)
-            app.CoordinatesListTextArea.Value =  ...
+            app.CoordinatesListTextArea.Value = ...
                 strjoin(app.coordinate_list, ", ");
-            app.validateCoordinateList();
             app.updateRunButton();
-            app.needToSave = true;
         end
 
         function updateTrialPrefixes(app)
@@ -357,25 +352,21 @@ classdef MTPBase < matlab.apps.AppBase
         function ActivationGroupsListenerFunction(app)
             app.ActivationMuscleGroupsTextArea.Value = ...
                 strjoin(app.activation_muscle_groups, ", ");
-            app.needToSave;
         end
 
         function FiberLengthGroupsListenerFunction(app)
             app.NormalizedFiberLengthMuscleGroupsTextArea.Value = ...
                 strjoin(app.normalized_fiber_length_muscle_groups, ", ");
-            app.needToSave;
         end
 
         function MissingEmgGroupsListenerFunction(app)
             app.MissingEMGMuscleGroupsTextArea.Value = ...
                 strjoin(app.missing_emg_channel_muscle_groups, ", ");
-            app.needToSave;
         end
 
         function CollectedEmgGroupsListenerFunction(app)
             app.CollectedEMGMuscleGroupsTextArea.Value = ...
                 strjoin(app.collected_emg_channel_muscle_groups, ", ");
-            app.needToSave;
         end
 
         function updatePassiveDataDirectory(app)
@@ -396,21 +387,17 @@ classdef MTPBase < matlab.apps.AppBase
                 app.MuscleTendonLengthInitialization.min_normalized_muscle_fiber_length;
         end
 
-        function s = formatAdvancedValue(~, value)
-            % Format values in the advanced params table to use scientific
-            % notation if over 3 sig figs. 
-            s = string(sprintf('%.3g', value));
+        function refreshAdvancedSettingsTable(app)
+            Options = app.advancedSettingNames;
+            Values = arrayfun(@formatGuiNumber, app.advancedSettingValues);
+            app.AdvancedSettingsTable.Data = table(Options, Values);
+            app.updateRunButton();
         end
 
-        function updateAdvancedSettingValues(app)
-            app.AdvancedSettingsTable.Data.Values = ...
-                arrayfun(@(v) app.formatAdvancedValue(v), app.advancedSettingValues);
-        end
-        
 
         function updateMtliPanel(app)
             app.EnableMTLICheckBox.Value = strcmp( ...
-                app.MuscleTendonLengthInitialization.is_enabled, "true");
+                app.MuscleTendonLengthInitialization.is_enabled, 'true');
             app.PassiveDataDirectoryEditField.Value = ...
                 getRelativePath(app.MuscleTendonLengthInitialization. ...
                 passive_data_input_directory);
@@ -422,244 +409,112 @@ classdef MTPBase < matlab.apps.AppBase
 
         function updateSynxPanel(app)
             app.EnableSynergyExtrapolationCheckBox.Value = strcmp( ...
-                app.MTPSynergyExtrapolation.is_enabled, "true");
+                app.MTPSynergyExtrapolation.is_enabled, 'true');
             app.NumSynergiesSpinner.Value = ...
                 app.MTPSynergyExtrapolation.number_of_synergies;
         end
 
+        function auxTool = getSelectedAuxTool(app)
+            % Both auxiliary tools share the parameter and cost term
+            % interface, so aux tab callbacks can be written once.
+            if app.AuxiliaryToolsTabGroup.SelectedTab == ...
+                    app.SynergyExtrapolationTab
+                auxTool = app.MTPSynergyExtrapolation;
+            else
+                auxTool = app.MuscleTendonLengthInitialization;
+            end
+        end
+
         function updateAuxPanel(app)
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    app.updateSynxPanel()
-                case app.MuscleTendonLengthInitializationTab
-                    app.updateMtliPanel()
+            if app.AuxiliaryToolsTabGroup.SelectedTab == ...
+                    app.SynergyExtrapolationTab
+                app.updateSynxPanel()
+            else
+                app.updateMtliPanel()
             end
             app.updateAuxCostTermsTable()
             app.updateAuxAdvancedOptionsTable()
         end
 
         function updateAuxCostTermsTable(app)
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    numCostTerms = length(app.MTPSynergyExtrapolation. ...
-                        RCNLCostTerm);
-                    isEnabled = false(numCostTerms, 1);
-                    costTermNames = strings(numCostTerms, 1);
-                    for i = 1 : numCostTerms
-                        isEnabled(i) = strcmp(app.MTPSynergyExtrapolation. ...
-                            RCNLCostTerm{i}.is_enabled, "true");
-                        costTermNames(i) = app.MTPSynergyExtrapolation. ...
-                            RCNLCostTerm{i}.type;
-                        app.AuxCostTermsTable.Data = table(isEnabled, costTermNames);
-                    end
-                case app.MuscleTendonLengthInitializationTab
-                    numCostTerms = length(app.MuscleTendonLengthInitialization. ...
-                        RCNLCostTerm);
-                    isEnabled = false(numCostTerms, 1);
-                    costTermNames = strings(numCostTerms, 1);
-                    for i = 1 : numCostTerms
-                        isEnabled(i) = strcmp(app.MuscleTendonLengthInitialization. ...
-                            RCNLCostTerm{i}.is_enabled, "true");
-                        costTermNames(i) = app.MuscleTendonLengthInitialization. ...
-                            RCNLCostTerm{i}.type;
-                        app.AuxCostTermsTable.Data = table(isEnabled, costTermNames);
-                    end
-            end
+            updateCostTermsTableGui(app.AuxCostTermsTable, ...
+                app.getSelectedAuxTool().RCNLCostTerm);
             app.validateAuxCostTermsSilent();
         end
 
-        function validateAuxCostTermsSilent(app)
-            removeStyle(app.AuxCostTermsTable);
-            clearGuiError([], app.AuxCostTermsError);
-            app.AuxMaxAllowableErrorEditField.BackgroundColor = [1 1 1];
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    costTerms = app.MTPSynergyExtrapolation.RCNLCostTerm;
-                case app.MuscleTendonLengthInitializationTab
-                    costTerms = app.MuscleTendonLengthInitialization.RCNLCostTerm;
-                otherwise
-                    return
-            end
-            hasEnabledCostTerm = false;
-            selectedCostTerm = app.AuxCostTermsTable.Selection;
-            for k = 1:length(costTerms)
-                if strcmp(costTerms{k}.is_enabled, 'true')
-                    hasEnabledCostTerm = true;
-                    if costTerms{k}.max_allowable_error <= 0
-                        addStyle(app.AuxCostTermsTable, ...
-                            uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', k);
-                        if ~isempty(selectedCostTerm) && selectedCostTerm == k
-                            app.AuxMaxAllowableErrorEditField.BackgroundColor = ...
-                                [1.00 0.67 0.67];
-                        end
-                    end
-                end
-            end
-            if ~hasEnabledCostTerm
-                throwGuiError("At least one cost term must be enabled.", ...
-                    [], app.AuxCostTermsError);
-            end
+        function isValid = validateAuxCostTermsSilent(app)
+            isValid = validateCostTermsGui( ...
+                app.getSelectedAuxTool().RCNLCostTerm, ...
+                app.AuxCostTermsTable, app.AuxMaxAllowableErrorEditField, ...
+                app.AuxCostTermsError, "cost term");
         end
 
         function updateAuxAdvancedOptionsTable(app)
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    options = ["matrix_factorization_method"
-                        "synergy_extrapolation_categorization"
-                        "residual_categorization"];
-                    value = strings(3, 1);
-                    for i = 1:3
-                        value(i) = string( ...
-                            app.MTPSynergyExtrapolation.getParameterValueByIndex(i));
-                    end
-                    app.AuxAdvancedSettingsTable.Data = table(options, value);
-                case app.MuscleTendonLengthInitializationTab
-                    options = ["optimize_maximum_muscle_stress"
-                        "optimize_isometric_max_force"
-                        "optimize_absolute_length_changes"
-                        "maximum_muscle_stress"];
-                    value = strings(4, 1);
-                    for i = 1:4
-                        value(i) = string( ...
-                            app.MuscleTendonLengthInitialization.getParameterValueByIndex(i));
-                    end
-                    app.AuxAdvancedSettingsTable.Data = table(options, value);
+            auxTool = app.getSelectedAuxTool();
+            options = auxTool.parameterNames;
+            value = strings(length(options), 1);
+            for i = 1 : length(options)
+                value(i) = string(auxTool.getParameterValueByIndex(i));
             end
+            app.AuxAdvancedSettingsTable.Data = table(options, value);
             app.validateAuxAdvancedSettingsSilent();
         end
 
         function validateAuxAdvancedSettingsSilent(app)
-            removeStyle(app.AuxAdvancedSettingsTable);
-            clearGuiError([], app.AuxAdvancedSettingsError);
-            app.AuxAdvancedSettingsTable.Tooltip = '';
-            validBools = ["true", "false"];
-            validCategories = ["trial", "task", "subject"];
-            validMethods = ["NMF", "PCA"];
-            data = app.AuxAdvancedSettingsTable.Data;
-            messages = string([]);
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    app.NumSynergiesSpinner.BackgroundColor = [1 1 1];
-                    app.NumSynergiesSpinner.Tooltip = '';
-                    if app.MTPSynergyExtrapolation.number_of_synergies <= 0
-                        app.NumSynergiesSpinner.BackgroundColor = [1.00 0.67 0.67];
-                        app.NumSynergiesSpinner.Tooltip = ...
-                            'Number of synergies must be greater than zero.';
-                    end
-                    if ~ismember(data.value(1), validMethods)
-                        addStyle(app.AuxAdvancedSettingsTable, ...
-                            uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', 1);
-                        messages(end+1) = ...
-                            "matrix_factorization_method: must be NMF or PCA";
-                    end
-                    if ~ismember(data.value(2), validCategories)
-                        addStyle(app.AuxAdvancedSettingsTable, ...
-                            uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', 2);
-                        messages(end+1) = ...
-                            "synergy_extrapolation_categorization: must be trial, task, or subject";
-                    end
-                    if ~ismember(data.value(3), validCategories)
-                        addStyle(app.AuxAdvancedSettingsTable, ...
-                            uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', 3);
-                        messages(end+1) = ...
-                            "residual_categorization: must be trial, task, or subject";
-                    end
-                case app.MuscleTendonLengthInitializationTab
-                    boolNames = ["optimize_maximum_muscle_stress", ...
-                        "optimize_isometric_max_force", ...
-                        "optimize_absolute_length_changes"];
-                    for row = 1:3
-                        if ~ismember(data.value(row), validBools)
-                            addStyle(app.AuxAdvancedSettingsTable, ...
-                                uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', row);
-                            messages(end+1) = boolNames(row) + ...
-                                ": must be true or false";
-                        end
-                    end
-                    stressVal = str2double(data.value(4));
-                    if isnan(stressVal) || stressVal <= 0
-                        addStyle(app.AuxAdvancedSettingsTable, ...
-                            uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', 4);
-                        messages(end+1) = ...
-                            "maximum_muscle_stress: must be a positive number";
-                    end
+            if app.AuxiliaryToolsTabGroup.SelectedTab == ...
+                    app.SynergyExtrapolationTab
+                app.validateNumSynergiesSpinner();
             end
-            if ~isempty(messages)
-                errorMsg = strjoin(messages, newline);
-                app.AuxAdvancedSettingsTable.Tooltip = errorMsg;
-                throwGuiError(errorMsg, [], app.AuxAdvancedSettingsError);
+            validateParameterTableGui(app.getSelectedAuxTool(), ...
+                app.AuxAdvancedSettingsTable, app.AuxAdvancedSettingsError);
+        end
+
+        function validateNumSynergiesSpinner(app)
+            if app.MTPSynergyExtrapolation.number_of_synergies <= 0
+                app.NumSynergiesSpinner.BackgroundColor = [1.00 0.67 0.67];
+                app.NumSynergiesSpinner.Tooltip = ...
+                    'Number of synergies must be greater than zero.';
+            else
+                app.NumSynergiesSpinner.BackgroundColor = [1 1 1];
+                app.NumSynergiesSpinner.Tooltip = '';
             end
         end
 
         function createDefaultTask(app)
-            app.MTPTask{end+1} = MTPTaskClass();
-            app.MTPTask{end}.makeDefaultCostTermSet();
+            app.MTPTask{end + 1} = MTPTaskClass();
             app.MTPTask{end}.name = "Task " + num2str(length(app.MTPTask));
+            app.MTPTask{end}.index = length(app.MTPTask);
             app.taskIndex = length(app.MTPTask);
-            app.MTPTask{end}.index = app.taskIndex;
             app.MTPTasksCostTermsTable.Selection = [];
             app.MTPDesignVariablesTable.Selection = [];
-            app.updateMTPTasksListBox()
-            app.updateDesignVariablesTable()
             app.MTPTasksMaxAllowableErrorEditField.Value = [];
             app.MTPTasksErrorCenterEditField.Value = [];
+            app.updateMTPTasksListBox()
+            app.updateDesignVariablesTable()
             app.updateMTPCostTermsTable()
         end
 
-        function initSynx(app)
-            app.MTPSynergyExtrapolation.makeDefaultCostTermSet();
-        end
-
-        function initMtli(app)
-            app.MuscleTendonLengthInitialization.makeDefaultCostTermSet();
-        end
-
-        function deleteTask(app, taskIndex)
-            app.MTPTask = app.MTPTask(~taskIndex);
-            for i = 1 : length(app.MTPTask)
-                app.MTPTask{i}.index = i;
-            end
+        function deleteTask(app, deletionIndex)
+            [app.MTPTask, newTaskIndex] = removeTaskFromList( ...
+                app.MTPTask, deletionIndex, app.taskIndex);
             if isempty(app.MTPTask)
-                app.MTPTask = [];
-                return
+                app.createDefaultTask();
+            else
+                app.taskIndex = newTaskIndex;
             end
-            if app.taskIndex > 1
-                app.taskIndex = app.taskIndex - 1;
-            end
-            app.needToSave = true;
             app.updateMTPTasksListBox();
+            app.updateRunButton();
         end
 
         function moveTaskUp(app)
-            if app.taskIndex == 1 || ...
-                    app.taskIndex >= height(app.MTPTasksTable.Data)
-                return
-            end
-
-            indicesList = 1:1:length(app.MTPTask);
-
-            indicesList(app.taskIndex) = app.taskIndex-1;
-            indicesList(app.taskIndex-1) = app.taskIndex;
-            app.MTPTask{app.taskIndex}.index = app.taskIndex-1;
-            app.MTPTask{app.taskIndex-1}.index = app.taskIndex;
-            app.MTPTask = {app.MTPTask{indicesList}};
-            app.taskIndex = app.taskIndex-1;
+            [app.MTPTask, app.taskIndex] = moveTaskInList( ...
+                app.MTPTask, app.taskIndex, -1);
             app.updateMTPTasksListBox();
         end
 
         function moveTaskDown(app)
-            if app.taskIndex == height(app.MTPTasksTable.Data)-1 || ...
-                    app.taskIndex >= height(app.MTPTasksTable.Data)
-                return
-            end
-
-            indicesList = 1:1:length(app.MTPTask);
-            indicesList(app.taskIndex) = app.taskIndex+1;
-            indicesList(app.taskIndex+1) = app.taskIndex;
-            app.MTPTask{app.taskIndex}.index = app.taskIndex+1;
-            app.MTPTask{app.taskIndex+1}.index = app.taskIndex;
-            app.MTPTask = {app.MTPTask{indicesList}};
-            app.taskIndex = app.taskIndex+1;
+            [app.MTPTask, app.taskIndex] = moveTaskInList( ...
+                app.MTPTask, app.taskIndex, 1);
             app.updateMTPTasksListBox();
         end
 
@@ -672,155 +527,54 @@ classdef MTPBase < matlab.apps.AppBase
         end
 
         function updateMTPTasksListBox(app)
-            taskNames = strings(length(app.MTPTask)+1, 1);
-            isEnabled = true(size(taskNames));
-            for i = 1 : length(app.MTPTask)
-                taskNames(i) = app.MTPTask{i}.name;
-                isEnabled(i) = strcmp(app.MTPTask{i}.is_enabled, "true");
-            end
-            isEnabled(end) = false;
-            taskNames(end) = "Add a new task";
-            app.MTPTasksTable.Data = table(isEnabled, taskNames);
+            updateTaskListTableGui(app.MTPTasksTable, app.MTPTask);
         end
 
         function updateDesignVariablesTable(app)
-            isEnabled = false(length(app.designVariables), 1);
+            designVariableNames = app.designVariables;
+            isEnabled = false(length(designVariableNames), 1);
             for i = 1 : length(isEnabled)
                 isEnabled(i) = strcmp(app.MTPTask{app.taskIndex}. ...
-                    getParameterValueByIndex(i), "true");
+                    getParameterValueByIndex(i), 'true');
             end
-            app.MTPDesignVariablesTable.Data = table(isEnabled, app.designVariables);
+            app.MTPDesignVariablesTable.Data = ...
+                table(isEnabled, designVariableNames);
         end
 
         function updateMTPCostTermsTable(app)
-            isEnabled = true(length(app.MTPTask{app.taskIndex}.RCNLCostTerm), 1);
-            costTermTypes = strings(length(app.MTPTask{app.taskIndex}.RCNLCostTerm), 1);
-            for i = 1 : length(app.MTPTask{app.taskIndex}.RCNLCostTerm)
-                isEnabled(i) = strcmp(app.MTPTask{app.taskIndex}.RCNLCostTerm{i}.is_enabled, "true");
-                costTermTypes(i) = app.MTPTask{app.taskIndex}.RCNLCostTerm{i}.type;
-            end
-            app.MTPTasksCostTermsTable.Data = table(isEnabled, costTermTypes);
+            updateCostTermsTableGui(app.MTPTasksCostTermsTable, ...
+                app.MTPTask{app.taskIndex}.RCNLCostTerm);
         end
 
-        function formatTabButtons(app) % good
+        function formatTabButtons(app)
             if ~isvalid(app) || ~isvalid(app.TabGroup)
                 return
             end
-            switch app.TabGroup.SelectedTab
-                case app.InputsTab
-                    app.InputsButton.BackgroundColor = [1 1 1];
-                    app.InputsButton.FontColor = [0.13,0.18,0.40];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MuscleGroupsButton.FontColor = [1 1 1];
-
-                    app.MTPTasksButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MTPTasksButton.FontColor = [1 1 1];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AuxiliaryToolsButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                case app.MuscleGroupsTab
-                    app.InputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.InputsButton.FontColor = [1 1 1];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [1 1 1];
-                    app.MuscleGroupsButton.FontColor = [0.13,0.18,0.40];
-
-                    app.MTPTasksButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MTPTasksButton.FontColor = [1 1 1];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AuxiliaryToolsButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                case app.MTPTasksTab
-                    app.InputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.InputsButton.FontColor = [1 1 1];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MuscleGroupsButton.FontColor = [1 1 1];
-
-                    app.MTPTasksButton.BackgroundColor = [1 1 1];
-                    app.MTPTasksButton.FontColor = [0.13,0.18,0.40];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AuxiliaryToolsButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                case app.AuxiliaryTab
-                    app.InputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.InputsButton.FontColor = [1 1 1];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MuscleGroupsButton.FontColor = [1 1 1];
-
-                    app.MTPTasksButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MTPTasksButton.FontColor = [1 1 1];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [1 1 1];
-                    app.AuxiliaryToolsButton.FontColor = [0.13,0.18,0.40];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                    switch app.AuxiliaryToolsTabGroup.SelectedTab
-
-                        case app.MuscleTendonLengthInitializationTab
-                            app.MTLIButton.BackgroundColor = [1 1 1];
-                            app.MTLIButton.FontColor = [0.13,0.18,0.40];
-
-                            app.SynxButton.BackgroundColor = [0.13,0.18,0.40];
-                            app.SynxButton.FontColor = [1 1 1];
-
-                        case app.SynergyExtrapolationTab
-                            app.SynxButton.BackgroundColor = [1 1 1];
-                            app.SynxButton.FontColor = [0.13,0.18,0.40];
-
-                            app.MTLIButton.BackgroundColor = [0.13,0.18,0.40];
-                            app.MTLIButton.FontColor = [1 1 1];
-                    end
-
-                case app.AdvancedTab
-                    app.InputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.InputsButton.FontColor = [1 1 1];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MuscleGroupsButton.FontColor = [1 1 1];
-
-                    app.MTPTasksButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MTPTasksButton.FontColor = [1 1 1];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AuxiliaryToolsButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [1 1 1];
-                    app.AdvancedButton.FontColor = [0.13,0.18,0.40];
+            updateTabButtonStyles(app.TabGroup.SelectedTab, ...
+                [app.InputsTab, app.MuscleGroupsTab, app.MTPTasksTab, ...
+                app.AuxiliaryTab, app.AdvancedTab], ...
+                [app.InputsButton, app.MuscleGroupsButton, ...
+                app.MTPTasksButton, app.AuxiliaryToolsButton, ...
+                app.AdvancedButton]);
+            if app.TabGroup.SelectedTab == app.AuxiliaryTab
+                updateTabButtonStyles(app.AuxiliaryToolsTabGroup.SelectedTab, ...
+                    [app.MuscleTendonLengthInitializationTab, ...
+                    app.SynergyExtrapolationTab], ...
+                    [app.MTLIButton, app.SynxButton]);
             end
         end
 
         function saveSettingsFile(app, settingsFileName)
-            settingsFilePath = fileparts(settingsFileName);
-            cd (settingsFilePath);
+            cd(fileparts(settingsFileName));
             app.currentSettingsFile = settingsFileName;
-            settingsTree = makeMTPSettingsStruct(app, settingsFileName);
-            settingsFileStruct.NMSMPipelineDocument.MuscleTendonPersonalizationTool = ...
-                settingsTree;
-            settingsFileStruct.NMSMPipelineDocument.Attributes.Version = ...
-                convertStringsToChars(getPipelineVersion());
-            struct2xml(settingsFileStruct, settingsFileName)
+            saveGuiSettings(settingsFileName, ...
+                'MuscleTendonPersonalizationTool', ...
+                app.makeMTPSettingsStruct(settingsFileName));
         end
-        
+
         function settingsTree = makeMTPSettingsStruct(app, settingsFileName)
             settingsFilePath = fileparts(settingsFileName);
-        
+
             % Top-level file inputs
             settingsTree.input_model_file = getRelativePath( ...
                 app.input_model_file, settingsFilePath);
@@ -831,7 +585,7 @@ classdef MTPBase < matlab.apps.AppBase
             settingsTree.results_directory = getRelativePath( ...
                 app.results_directory, settingsFilePath);
             settingsTree.trial_prefixes = app.trial_prefixes;
-        
+
             % Coordinate and muscle group lists
             settingsTree.coordinate_list = strjoin(app.coordinate_list, " ");
             settingsTree.activation_muscle_groups = strjoin( ...
@@ -842,25 +596,25 @@ classdef MTPBase < matlab.apps.AppBase
                 app.missing_emg_channel_muscle_groups, " ");
             settingsTree.collected_emg_channel_muscle_groups = strjoin( ...
                 app.collected_emg_channel_muscle_groups, " ");
-        
+
             % MuscleTendonLengthInitialization
             settingsTree.MuscleTendonLengthInitialization = ...
                 app.MuscleTendonLengthInitialization.toStruct();
             settingsTree.MuscleTendonLengthInitialization.passive_data_input_directory = ...
                 getRelativePath(settingsTree.MuscleTendonLengthInitialization.passive_data_input_directory);
-        
+
             % MTPSynergyExtrapolation
             settingsTree.MTPSynergyExtrapolation = ...
                 app.MTPSynergyExtrapolation.toStruct();
-        
+
             % MTP task list
             settingsTree.MTPTaskList = struct("MTPTask", cell(1));
             for i = 1 : length(app.MTPTask)
                 settingsTree.MTPTaskList.MTPTask{i} = app.MTPTask{i}.toStruct();
             end
-        
+
             % Optimization parameters
-            settingsTree = setOptimizationParams(app, settingsTree);
+            settingsTree = app.setOptimizationParams(settingsTree);
             settingsTree = formatGuiDataForXml(settingsTree);
         end
 
@@ -873,33 +627,21 @@ classdef MTPBase < matlab.apps.AppBase
 
         function loadSettingsFile(app, settingsFileName)
             app.resetAllFields();
-            settingsFilePath = fileparts(settingsFileName);
-            cd (settingsFilePath);
+            cd(fileparts(settingsFileName));
             app.currentSettingsFile = settingsFileName;
-            settingsTree = xml2struct(settingsFileName);
-            settingsTree = settingsTree.NMSMPipelineDocument. ...
-                MuscleTendonPersonalizationTool;
-            settingsTree = formatXmlDataForGui(settingsTree);
-        
-            fields = fieldnames(settingsTree);
-            for i = 1 : length(fields)
-                f = fields{i};
-                if isprop(app, f) && ~isstruct(settingsTree.(f))
-                    app.(f) = settingsTree.(f);
-                end
-            end
-            app.loadAdvancedParams(settingsTree);
+            settingsTree = loadGuiSettings(settingsFileName, ...
+                'MuscleTendonPersonalizationTool');
+            applyStructToHandle(app, settingsTree);
+            app.loadOptimizationParams(settingsTree);
 
             if isfield(settingsTree, 'MuscleTendonLengthInitialization')
                 app.MuscleTendonLengthInitialization.loadFromStruct( ...
                     settingsTree.MuscleTendonLengthInitialization);
             end
-
             if isfield(settingsTree, 'MTPSynergyExtrapolation')
                 app.MTPSynergyExtrapolation.loadFromStruct( ...
                     settingsTree.MTPSynergyExtrapolation);
             end
-
             app.updateAuxPanel();
 
             if isfield(settingsTree, 'MTPTaskList') && ...
@@ -916,18 +658,17 @@ classdef MTPBase < matlab.apps.AppBase
                 app.updateMTPCostTermsTable();
             end
             app.updateMTPTasksListBox();
-            app.validateCoordinateList();
             app.updateRunButton();
-            app.needToSave = false;
         end
 
-        function loadAdvancedParams(app, settingsTree)
+        function loadOptimizationParams(app, settingsTree)
+            values = app.advancedSettingValues;
             for i = 1 : length(app.advancedSettingNames)
-                paramName = app.advancedSettingNames(i);
-                if isfield(settingsTree, paramName)
-                    app.advancedSettingValues(i) = settingsTree.(paramName);
+                if isfield(settingsTree, app.advancedSettingNames(i))
+                    values(i) = settingsTree.(app.advancedSettingNames(i));
                 end
             end
+            app.advancedSettingValues = values;
         end
 
         function resetAllFields(app)
@@ -937,85 +678,48 @@ classdef MTPBase < matlab.apps.AppBase
 
             app.model_coordinates = [];
             app.model_groups = [];
-            
+
             app.input_model_file = "";
             app.input_osimx_file = "";
             app.data_directory = "";
             app.results_directory = "";
             app.coordinate_list = [];
             app.trial_prefixes = [];
-            app.v_max_factor = 10;
-    
+
             app.activation_muscle_groups = [];
             app.normalized_fiber_length_muscle_groups = [];
             app.missing_emg_channel_muscle_groups = [];
             app.collected_emg_channel_muscle_groups = [];
-    
+
             app.MTPTask = cell(0);
             app.createDefaultTask();
             app.taskIndex = 1;
-    
-            app.designVariables = ["Muscle Specific Electromechanical Delays"
-                "Electromechanical Delays"
-                "Activation Time Constants"
-                "Activation Non-linearity Constants"
-                "EMG Scale Factors"
-                "Optimal Fiber Lengths"
-                "Tendon Slack Lengths"];
-            
-            app.MuscleTendonLengthInitialization = ...
-                MuscleTendonLengthInitializationClass();
-    
-    
-            app.MTPSynergyExtrapolation = ...
-                SynergyExtrapolationClass();
-    
-            
-    
-            app.objectSelectionType = "";  % Used to filter in setSelectedObjects
-            app.ErrorFlag = false;
-            app.currentSettingsFile = ""; % Variable to store the current settings file name.
-            app.needToSave = false; % flag indicating if the settings file changed and needs to be saved before running.
+
+            % Reset in place so listeners on these objects stay valid
+            app.MuscleTendonLengthInitialization.reset();
+            app.MTPSynergyExtrapolation.reset();
+            app.updateAuxPanel();
+
+            app.objectSelectionType = "";
+            app.currentSettingsFile = "";
 
             app.timePoints = [];
             app.idLabels = [];
             app.emgLabels = [];
-    
-            app.advancedSettingNames = ...
-                ["v_max_factor"
-                "max_iterations"
-                "max_function_evaluations"
-                "step_tolerance"
-                "function_tolerance"
-                "optimality_tolerance"
-                "diff_min_change"];
-    
-            app.advancedSettingValues = ...
-                [10
-                1000
-                100000000
-                1e-6
-                1e-6
-                1e-6
-                0.0001];
+
+            app.advancedSettingValues = app.defaultAdvancedSettingValues;
             app.updateRunButton();
         end
-        end
-    
+    end
+
     methods (Access = private)
 
         function validateInputModelFile(app)
-            if strcmp(app.input_model_file, "")
-                clearGuiError(app.InputModelFileEditField, app.InputModelFileError);
-                throwGuiRequired("Input model file is required.", ...
-                    [], app.InputModelFileRequired);
-                app.inputModelValid = false;
-                return
-            end
-            clearGuiError([], app.InputModelFileRequired);
-            app.inputModelValid = validateOsimFileGui(app, ...
-                app.input_model_file, ...
-                app.InputModelFileEditField, app.InputModelFileError);
+            app.inputModelValid = validateRequiredFieldGui( ...
+                app.input_model_file, "Input model file is required.", ...
+                app.InputModelFileEditField, app.InputModelFileError, ...
+                app.InputModelFileRequired, ...
+                @(value, field, icon)validateOsimFileGui(app, value, field, icon));
         end
 
         function validateInputOsimxFile(app)
@@ -1031,17 +735,12 @@ classdef MTPBase < matlab.apps.AppBase
         end
 
         function validateDataDirectory(app)
-            if strcmp(app.data_directory, "")
-                clearGuiError(app.InputDataEditField, app.InputDataError);
-                throwGuiRequired("Input data directory is required.", ...
-                    [], app.InputDataRequired);
-                app.dataDirectoryValid = false;
-                return
-            end
-            clearGuiError([], app.InputDataRequired);
-            app.dataDirectoryValid = validateDataDirectoryGui( ...
-                app.data_directory, ["EMGData", "IDData", "MAData"], ...
-                app.InputDataEditField, app.InputDataError);
+            app.dataDirectoryValid = validateRequiredFieldGui( ...
+                app.data_directory, "Input data directory is required.", ...
+                app.InputDataEditField, app.InputDataError, ...
+                app.InputDataRequired, ...
+                @(value, field, icon)validateDataDirectoryGui(value, ...
+                ["EMGData", "IDData", "MAData"], field, icon));
             if app.dataDirectoryValid
                 app.parseTrialPrefixes();
                 parseMtpDataDirectoryGui(app, app.data_directory);
@@ -1049,149 +748,72 @@ classdef MTPBase < matlab.apps.AppBase
         end
 
         function parseTrialPrefixes(app)
-            maDataPath = fullfile(app.data_directory, "MAData");
-            if ~exist(maDataPath, "dir")
-                return
-            end
-            trialNames = findPrefixesFromSubdirectories(maDataPath);
-            if ~isempty(trialNames)
-                app.trial_prefixes = trialNames;
+            prefixes = findPrefixesFromSubdirectories( ...
+                fullfile(app.data_directory, "MAData"));
+            if ~isempty(prefixes)
+                app.trial_prefixes = prefixes;
             end
         end
 
         function isValid = validateTrialPrefixes(app)
-            isValid = true;
-            clearGuiError(app.TrialPrefixesEditField, app.TrialPrefixesError);
-            if isempty(app.trial_prefixes) || all(strcmp(app.trial_prefixes, ""))
-                return
-            end
-            if strcmp(app.data_directory, "") || ~exist(app.data_directory, "dir")
-                return
-            end
-            maDataPath = fullfile(app.data_directory, "MAData");
-            if ~exist(maDataPath, "dir")
-                return
-            end
-            available = findPrefixesFromSubdirectories(maDataPath);
-            invalid = app.trial_prefixes(~ismember(app.trial_prefixes, available));
-            if ~isempty(invalid)
-                throwGuiError("Trial prefix(es) not found in data directory: " + ...
-                    strjoin(invalid, ", "), ...
-                    app.TrialPrefixesEditField, app.TrialPrefixesError);
-                isValid = false;
-            end
+            isValid = validateTrialPrefixesGui(app.trial_prefixes, ...
+                app.data_directory, app.TrialPrefixesEditField, ...
+                app.TrialPrefixesError);
         end
 
         function validateResultsDirectory(app)
-            if strcmp(app.results_directory, "")
-                clearGuiError(app.ResultsDirectoryEditField, app.ResultsDirectoryWarning);
-                throwGuiRequired("Results directory is required.", ...
-                    [], app.ResultsDirectoryRequired);
-                app.resultsDirectoryValid = false;
-                return
-            end
-            clearGuiError([], app.ResultsDirectoryRequired);
-            app.resultsDirectoryValid = validateResultsDirectoryGui( ...
-                app.results_directory, ...
-                app.ResultsDirectoryEditField, app.ResultsDirectoryWarning);
+            app.resultsDirectoryValid = validateRequiredFieldGui( ...
+                app.results_directory, "Results directory is required.", ...
+                app.ResultsDirectoryEditField, app.ResultsDirectoryWarning, ...
+                app.ResultsDirectoryRequired, @validateResultsDirectoryGui);
         end
 
         function isValid = validateCoordinateList(app)
-            if isempty(app.coordinate_list) || ...
-                    (isstring(app.coordinate_list) && ...
-                    all(strcmp(app.coordinate_list, "")))
+            isValid = ~isEmptyStringList(app.coordinate_list);
+            if isValid
+                clearGuiError([], app.CoordinateListWarning);
+            else
                 throwGuiRequired("At least one coordinate must be selected.", ...
                     [], app.CoordinateListWarning);
-                isValid = false;
-            else
-                clearGuiError([], app.CoordinateListWarning);
-                isValid = true;
             end
         end
 
         function isValid = validateMtliConfig(app)
-            if ~strcmp(app.MuscleTendonLengthInitialization.is_enabled, "true")
-                clearGuiError(app.PassiveDataDirectoryEditField, ...
-                    app.PassiveDataDirectoryError);
-                clearGuiError([], app.PassiveDataDirectoryRequired);
-                isValid = true;
-                return
-            end
-            passive_dir = app.MuscleTendonLengthInitialization. ...
-                passive_data_input_directory;
-            if strcmp(passive_dir, "")
-                clearGuiError(app.PassiveDataDirectoryEditField, ...
-                    app.PassiveDataDirectoryError);
-                throwGuiRequired("Passive data directory is required when MTLI is enabled.", ...
-                    [], app.PassiveDataDirectoryRequired);
-                isValid = false;
-                return
-            end
-            clearGuiError([], app.PassiveDataDirectoryRequired);
-            isValid = validateFileExistsGui(passive_dir, ...
+            isValid = validateMtliConfigGui( ...
+                app.MuscleTendonLengthInitialization, ...
                 app.PassiveDataDirectoryEditField, ...
-                app.PassiveDataDirectoryError);
+                app.PassiveDataDirectoryError, ...
+                app.PassiveDataDirectoryRequired);
         end
 
         function isValid = validateAllTasksSilent(app)
             isValid = true;
             clearGuiError([], app.MTPTasksError);
             removeStyle(app.MTPTasksTable);
-            removeStyle(app.MTPTasksCostTermsTable);
-            app.MTPTasksMaxAllowableErrorEditField.BackgroundColor = [1 1 1];
-            if isempty(app.MTPTask) || ...
-                    (iscell(app.MTPTask) && isempty(app.MTPTask))
+            if isempty(app.MTPTask)
                 throwGuiError("At least one task must be enabled to run.", ...
                     [], app.MTPTasksError);
                 isValid = false;
                 return
             end
+            currentTaskValid = validateCostTermsGui( ...
+                app.MTPTask{app.taskIndex}.RCNLCostTerm, ...
+                app.MTPTasksCostTermsTable, ...
+                app.MTPTasksMaxAllowableErrorEditField, [], "cost term");
             hasEnabledTask = false;
             for i = 1:length(app.MTPTask)
                 if ~strcmp(app.MTPTask{i}.is_enabled, 'true')
                     continue
                 end
                 hasEnabledTask = true;
-                taskValid = true;
-                hasDesignVar = false;
-                for j = 1:length(app.designVariables)
-                    if strcmp(app.MTPTask{i}.getParameterValueByIndex(j), 'true')
-                        hasDesignVar = true;
-                        break
-                    end
+                if i == app.taskIndex
+                    taskValid = currentTaskValid;
+                else
+                    [hasEnabledCostTerm, invalidCostTerms] = ...
+                        checkCostTermsValid(app.MTPTask{i}.RCNLCostTerm);
+                    taskValid = hasEnabledCostTerm && isempty(invalidCostTerms);
                 end
-                if ~hasDesignVar
-                    taskValid = false;
-                end
-                if taskValid
-                    hasEnabledCostTerm = false;
-                    for k = 1:length(app.MTPTask{i}.RCNLCostTerm)
-                        if strcmp(app.MTPTask{i}.RCNLCostTerm{k}.is_enabled, 'true')
-                            hasEnabledCostTerm = true;
-                            break
-                        end
-                    end
-                    if ~hasEnabledCostTerm
-                        taskValid = false;
-                    end
-                end
-                if taskValid
-                    selectedCostTerm = app.MTPTasksCostTermsTable.Selection;
-                    for k = 1:length(app.MTPTask{i}.RCNLCostTerm)
-                        if strcmp(app.MTPTask{i}.RCNLCostTerm{k}.is_enabled, 'true') && ...
-                                app.MTPTask{i}.RCNLCostTerm{k}.max_allowable_error <= 0
-                            taskValid = false;
-                            if i == app.taskIndex
-                                addStyle(app.MTPTasksCostTermsTable, ...
-                                    uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', k);
-                                if ~isempty(selectedCostTerm) && selectedCostTerm == k
-                                    app.MTPTasksMaxAllowableErrorEditField.BackgroundColor = ...
-                                        [1.00 0.67 0.67];
-                                end
-                            end
-                        end
-                    end
-                end
+                taskValid = taskValid && app.MTPTask{i}.anyParameterEnabled();
                 if ~taskValid
                     isValid = false;
                     addStyle(app.MTPTasksTable, ...
@@ -1218,87 +840,43 @@ classdef MTPBase < matlab.apps.AppBase
             mtliValid = app.validateMtliConfig();
             auxValid = app.validateAuxToolsSilent();
             trialPrefixesValid = app.validateTrialPrefixes();
-            advancedValid = app.validateAdvancedSettingsSilent();
+            advancedValid = validateAdvancedSettingsGui( ...
+                app.AdvancedSettingsTable, app.advancedSettingNames, ...
+                app.advancedSettingValues, app.AdvancedSettingsError);
             coordinatesValid = app.validateCoordinateList();
-            allValid = app.inputModelValid && app.dataDirectoryValid && ...
-                app.resultsDirectoryValid && tasksValid && mtliValid && ...
-                auxValid && trialPrefixesValid && advancedValid && coordinatesValid;
-            if allValid
-                app.RunButton.Enable = 'on';
-            else
-                app.RunButton.Enable = 'off';
-            end
+            app.RunButton.Enable = app.inputModelValid && ...
+                app.dataDirectoryValid && app.resultsDirectoryValid && ...
+                tasksValid && mtliValid && auxValid && ...
+                trialPrefixesValid && advancedValid && coordinatesValid;
             app.updateTabControls();
         end
 
         function isValid = validateAuxToolsSilent(app)
             isValid = true;
-            validBools = ["true", "false"];
-            validMethods = ["NMF", "PCA"];
-            validCategories = ["trial", "task", "subject"];
-
-            if strcmp(app.MTPSynergyExtrapolation.is_enabled, 'true')
-                if app.MTPSynergyExtrapolation.number_of_synergies <= 0
-                    isValid = false;
-                end
-                if ~ismember(string(app.MTPSynergyExtrapolation. ...
-                        matrix_factorization_method), validMethods)
-                    isValid = false;
-                end
-                if ~ismember(string(app.MTPSynergyExtrapolation. ...
-                        synergy_extrapolation_categorization), validCategories)
-                    isValid = false;
-                end
-                if ~ismember(string(app.MTPSynergyExtrapolation. ...
-                        residual_categorization), validCategories)
-                    isValid = false;
-                end
-                isValid = isValid && app.auxCostTermsValid( ...
-                    app.MTPSynergyExtrapolation.RCNLCostTerm);
+            synx = app.MTPSynergyExtrapolation;
+            if strcmp(synx.is_enabled, 'true')
+                [hasEnabledTerm, invalidTerms] = ...
+                    checkCostTermsValid(synx.RCNLCostTerm);
+                isValid = isempty(synx.validateParameters()) && ...
+                    synx.number_of_synergies > 0 && ...
+                    hasEnabledTerm && isempty(invalidTerms);
             end
-
-            if strcmp(app.MuscleTendonLengthInitialization.is_enabled, 'true')
-                for i = 1:3
-                    if ~ismember(string(app.MuscleTendonLengthInitialization. ...
-                            getParameterValueByIndex(i)), validBools)
-                        isValid = false;
-                    end
-                end
-                stressVal = str2double(string( ...
-                    app.MuscleTendonLengthInitialization.maximum_muscle_stress));
-                if isnan(stressVal) || stressVal <= 0
-                    isValid = false;
-                end
-                isValid = isValid && app.auxCostTermsValid( ...
-                    app.MuscleTendonLengthInitialization.RCNLCostTerm);
-            end
-        end
-
-        function isValid = auxCostTermsValid(~, costTerms)
-            isValid = false;
-            for k = 1:length(costTerms)
-                if strcmp(costTerms{k}.is_enabled, 'true')
-                    isValid = true;
-                    if costTerms{k}.max_allowable_error <= 0
-                        isValid = false;
-                        return
-                    end
-                end
+            mtli = app.MuscleTendonLengthInitialization;
+            if isValid && strcmp(mtli.is_enabled, 'true')
+                [hasEnabledTerm, invalidTerms] = ...
+                    checkCostTermsValid(mtli.RCNLCostTerm);
+                isValid = isempty(mtli.validateParameters()) && ...
+                    hasEnabledTerm && isempty(invalidTerms);
             end
         end
 
         function updateTabControls(app)
             inputsReady = app.inputModelValid && app.dataDirectoryValid;
-            if inputsReady
-                app.MuscleGroupsButton.Enable = 'on';
-                app.MTPTasksButton.Enable = 'on';
-            else
-                app.MuscleGroupsButton.Enable = 'off';
-                app.MTPTasksButton.Enable = 'off';
-            end
+            app.MuscleGroupsButton.Enable = inputsReady;
+            app.MTPTasksButton.Enable = inputsReady;
         end
     end
-    
+
     methods (Access = public)
         function setSelectedObjects(app, objects)
             % Function to assign objects selected by ObjectSelectionWindow
@@ -1315,7 +893,7 @@ classdef MTPBase < matlab.apps.AppBase
                 app.collected_emg_channel_muscle_groups = objects;
         end
         end
-        
+
         function modelFile = getInputModelFile(app)
             modelFile = app.input_model_file;
         end
@@ -1331,7 +909,7 @@ classdef MTPBase < matlab.apps.AppBase
         function setModelGroups(app, groups)
             app.model_groups = groups;
         end
-        
+
         function setTimePoints(app, timePoints)
             app.timePoints = timePoints;
         end
@@ -1339,7 +917,7 @@ classdef MTPBase < matlab.apps.AppBase
         function setIDLabels(app, idLabels)
             app.idLabels = idLabels;
         end
-        
+
         function setEmgLabels(app, emgLabels)
             app.emgLabels = emgLabels;
         end
@@ -1351,21 +929,18 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
-            app.MuscleTendonLengthInitialization = MuscleTendonLengthInitializationClass();
+            app.MuscleTendonLengthInitialization = ...
+                MuscleTendonLengthInitializationClass();
             app.MTPSynergyExtrapolation = SynergyExtrapolationClass();
             app.createDefaultTask();
-            app.initSynx();
-            app.initMtli();
-            app.updateAuxPanel();
             app.makeListeners()
-            Options = app.advancedSettingNames;
-            Values = arrayfun(@(v) app.formatAdvancedValue(v), app.advancedSettingValues);
-            app.AdvancedSettingsTable.Data = table( ...
-                Options, Values);
-            app.AuxiliaryToolsTabGroup.SelectedTab = app.MuscleTendonLengthInitializationTab;
-            app.RunButton.Enable = 'off';
-            app.MuscleGroupsButton.Enable = 'off';
-            app.MTPTasksButton.Enable = 'off';
+            app.advancedSettingValues = app.defaultAdvancedSettingValues;
+            app.AuxiliaryToolsTabGroup.SelectedTab = ...
+                app.MuscleTendonLengthInitializationTab;
+            app.updateAuxPanel();
+            app.RunButton.Enable = false;
+            app.MuscleGroupsButton.Enable = false;
+            app.MTPTasksButton.Enable = false;
             app.formatTabButtons()
         end
 
@@ -1397,18 +972,19 @@ classdef MTPBase < matlab.apps.AppBase
                 return
             end
             app.saveSettingsFile(fullfile(path, file))
-            app.needToSave = false;
         end
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
             if strcmp(app.currentSettingsFile, "")
                 [file, path] = uiputfile('*.xml', "Save XML Settings File");
-                if isequal(file, 0); return; end
+                % User hit "Cancel"
+                if isequal(file, 0)
+                    return
+                end
                 app.currentSettingsFile = fullfile(path, file);
             end
             app.saveSettingsFile(app.currentSettingsFile);
-            app.needToSave = false;
             close all
             MTPRun(app, app.currentSettingsFile);
         end
@@ -1421,41 +997,32 @@ classdef MTPBase < matlab.apps.AppBase
         % Button pushed function: InputsButton
         function InputsButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.InputsTab;
-            % app.formatTabButtons()
         end
 
         % Button pushed function: MuscleGroupsButton
         function MuscleGroupsButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.MuscleGroupsTab;
-            % app.formatTabButtons()
         end
 
         % Button pushed function: MTPTasksButton
         function MTPTasksButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.MTPTasksTab;
-            % app.formatTabButtons()
         end
 
         % Button pushed function: AuxiliaryToolsButton
         function AuxiliaryToolsButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.AuxiliaryTab;
-            % app.formatTabButtons()
         end
 
         % Button pushed function: AdvancedButton
         function AdvancedButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.AdvancedTab;
-            % app.formatTabButtons()
         end
 
         % Value changed function: InputModelFileEditField
         function InputModelFileEditFieldValueChanged(app, event)
-            value = app.InputModelFileEditField.Value;
-            if strcmp(value, "")
-                app.input_model_file = "";
-            else
-                app.input_model_file = GetFullPath(value);
-            end
+            app.input_model_file = ...
+                getPathFieldValue(app.InputModelFileEditField);
         end
 
         % Button pushed function: InputModelFileSearchButton
@@ -1470,12 +1037,8 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Value changed function: InputOsimxFileEditField
         function InputOsimxFileEditFieldValueChanged(app, event)
-            value = app.InputOsimxFileEditField.Value;
-            if strcmp(value, "")
-                app.input_osimx_file = "";
-            else
-                app.input_osimx_file = GetFullPath(value);
-            end
+            app.input_osimx_file = ...
+                getPathFieldValue(app.InputOsimxFileEditField);
         end
 
         % Button pushed function: InputOsimxFileSearchButton
@@ -1490,12 +1053,8 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Value changed function: ResultsDirectoryEditField
         function ResultsDirectoryEditFieldValueChanged(app, event)
-            value = app.ResultsDirectoryEditField.Value;
-            if strcmp(value, "")
-                app.results_directory = "";
-            else
-                app.results_directory = GetFullPath(value);
-            end
+            app.results_directory = ...
+                getPathFieldValue(app.ResultsDirectoryEditField);
         end
 
         % Button pushed function: ResultsDirectorySearchButton
@@ -1510,12 +1069,7 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Value changed function: InputDataEditField
         function InputDataEditFieldValueChanged(app, event)
-            value = app.InputDataEditField.Value;
-            if strcmp(value, "")
-                app.data_directory = "";
-            else
-                app.data_directory = GetFullPath(value);
-            end
+            app.data_directory = getPathFieldValue(app.InputDataEditField);
         end
 
         % Button pushed function: InputDataSearchButton
@@ -1543,7 +1097,6 @@ classdef MTPBase < matlab.apps.AppBase
             else
                 app.trial_prefixes = strsplit(value, " ");
             end
-            app.updateRunButton();
         end
 
         % Button pushed function: EditActivationGroupsButton
@@ -1570,7 +1123,7 @@ classdef MTPBase < matlab.apps.AppBase
         % Button pushed function: EditCollectedEmgGroupsButton
         function EditCollectedEmgGroupsButtonPushed(app, event)
             %% should read directly from EMG file
-            
+
             ObjectSelectionWindow(app, app.emgLabels, ...
                 app.collected_emg_channel_muscle_groups)
             app.objectSelectionType = 'collectedEmgGroup';
@@ -1581,10 +1134,8 @@ classdef MTPBase < matlab.apps.AppBase
             if isempty(app.MTPTasksTable.Selection)
                 return
             end
-
-            if app.MTPTasksTable.Selection == height(app.MTPTasksTable.Data) % if last element
-                app.createDefaultTask();
-                return
+            if app.MTPTasksTable.Selection == height(app.MTPTasksTable.Data)
+                app.createDefaultTask(); % last row adds a new task
             else
                 app.taskIndex = app.MTPTasksTable.Selection;
             end
@@ -1592,17 +1143,18 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Cell edit callback: MTPTasksTable
         function MTPTasksTableCellEdit(app, event)
-            indices = event.Indices;
-            if indices(2) == 1
-                if event.NewData
-                    app.MTPTask{indices(1)}.is_enabled = 'true';
-                else
-                    app.MTPTask{indices(1)}.is_enabled = 'false';
-                end
-            elseif indices(2) == 2
-                app.MTPTask{indices(1)}.name = event.NewData;
+            rowIndex = event.Indices(1);
+            if rowIndex > length(app.MTPTask)
+                app.updateMTPTasksListBox(); % restore the add-task row
+                return
             end
-            app.taskIndex = indices(1);
+            app.taskIndex = rowIndex;
+            if event.Indices(2) == 1
+                app.MTPTask{rowIndex}.is_enabled = boolToString(event.NewData);
+            else
+                app.MTPTask{rowIndex}.name = event.NewData;
+            end
+            app.updateMTPTasksListBox();
             app.updateRunButton();
         end
 
@@ -1619,32 +1171,37 @@ classdef MTPBase < matlab.apps.AppBase
         % Menu selected function: RenameMenu
         function RenameMenuSelected(app, event)
             oldName = app.MTPTask{app.taskIndex}.name;
-            newName = inputdlg("Rename task:", "Rename", [1 40], {oldName});
+            newName = inputdlg("Rename task:", "Rename", [1 40], ...
+                {char(oldName)});
             if isempty(newName)
                 return
             end
-            app.MTPTask{app.taskIndex}.name = newName;
+            app.MTPTask{app.taskIndex}.name = newName{1};
             app.updateMTPTasksListBox()
+        end
+
+        % Menu selected function: CopyMenu
+        function CopyMenuSelected(app, event)
+            sourceTask = app.MTPTask{app.taskIndex}.toStruct();
+            app.createDefaultTask();
+            app.MTPTask{app.taskIndex}.loadFromStruct(sourceTask);
+            app.MTPTask{app.taskIndex}.name = "Copy of " + ...
+                sourceTask.Attributes.name;
+            app.updateMTPTasksListBox();
+            app.updateDesignVariablesTable();
+            app.updateMTPCostTermsTable();
+            app.updateRunButton();
         end
 
         % Menu selected function: DeleteMenu
         function DeleteMenuSelected(app, event)
-            deletionIndex = 1 : 1 : length(app.MTPTask) == ...
-                app.MTPTasksTable.Selection;
-            app.deleteTask(deletionIndex);
+            app.deleteTask(app.MTPTasksTable.Selection);
         end
 
         % Cell edit callback: MTPTasksCostTermsTable
         function MTPTasksCostTermsTableCellEdit(app, event)
-            indices = event.Indices;
-            isEnabled = app.MTPTasksCostTermsTable.Data.isEnabled(indices(1));
-            if isEnabled
-                app.MTPTask{app.taskIndex}.RCNLCostTerm{indices(1)}. ...
-                    is_enabled = 'true';
-            else
-                app.MTPTask{app.taskIndex}.RCNLCostTerm{indices(1)}. ...
-                    is_enabled = 'false';
-            end
+            app.MTPTask{app.taskIndex}.RCNLCostTerm{event.Indices(1)}. ...
+                is_enabled = boolToString(event.NewData);
             app.updateRunButton();
         end
 
@@ -1653,15 +1210,10 @@ classdef MTPBase < matlab.apps.AppBase
             if isempty(app.MTPTasksCostTermsTable.Selection)
                 return
             end
-            costTermIndex = app.MTPTasksCostTermsTable.Selection;
-            term = app.MTPTask{app.taskIndex}.RCNLCostTerm{costTermIndex};
-            app.MTPTasksErrorCenterEditField.Value = term.error_center;
-            app.MTPTasksMaxAllowableErrorEditField.Value = term.max_allowable_error;
-            if term.uses_error_center
-                app.MTPTasksErrorCenterEditField.Enable = 'on';
-            else
-                app.MTPTasksErrorCenterEditField.Enable = 'off';
-            end
+            showCostTermGui(app.MTPTask{app.taskIndex}.RCNLCostTerm{ ...
+                app.MTPTasksCostTermsTable.Selection}, ...
+                app.MTPTasksMaxAllowableErrorEditField, ...
+                app.MTPTasksErrorCenterEditField);
             app.updateRunButton();
         end
 
@@ -1684,51 +1236,38 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Cell edit callback: MTPDesignVariablesTable
         function MTPDesignVariablesTableCellEdit(app, event)
-            indices = event.Indices;
-            isEnabled = app.MTPDesignVariablesTable.Data.isEnabled(indices(1));
-            if isEnabled
-                app.MTPTask{app.taskIndex}.setParameterValueByIndex(...
-                    indices(1), 'true')
-            else
-                app.MTPTask{app.taskIndex}.setParameterValueByIndex(...
-                    indices(1), 'false')
-            end
+            app.MTPTask{app.taskIndex}.setParameterValueByIndex( ...
+                event.Indices(1), boolToString(event.NewData));
             app.updateRunButton();
         end
 
         % Button pushed function: MTLIButton
         function MTLIButtonPushed(app, event)
-            app.AuxiliaryToolsTabGroup.SelectedTab = app.MuscleTendonLengthInitializationTab;
-            % app.formatTabButtons()
+            app.AuxiliaryToolsTabGroup.SelectedTab = ...
+                app.MuscleTendonLengthInitializationTab;
             app.updateAuxPanel()
         end
 
         % Button pushed function: SynxButton
         function SynxButtonPushed(app, event)
-            app.AuxiliaryToolsTabGroup.SelectedTab = app.SynergyExtrapolationTab;
-            % app.formatTabButtons()
+            app.AuxiliaryToolsTabGroup.SelectedTab = ...
+                app.SynergyExtrapolationTab;
             app.updateAuxPanel()
         end
 
         % Value changed function: EnableMTLICheckBox
         function EnableMTLICheckBoxValueChanged(app, event)
-            if app.EnableMTLICheckBox.Value
-                app.MuscleTendonLengthInitialization.is_enabled = "true";
-            else
-                app.MuscleTendonLengthInitialization.is_enabled = "false";
-            end
+            app.MuscleTendonLengthInitialization.is_enabled = ...
+                boolToString(app.EnableMTLICheckBox.Value);
             app.validateMtliConfig();
             app.updateRunButton();
         end
 
         % Value changed function: PassiveDataDirectoryEditField
         function PassiveDataDirectoryEditFieldValueChanged(app, event)
-            value = app.PassiveDataDirectoryEditField.Value;
-            if strcmp(value, "")
-                app.MuscleTendonLengthInitialization.passive_data_input_directory = "";
-            else
-                app.MuscleTendonLengthInitialization.passive_data_input_directory = GetFullPath(value);
-            end
+            app.MuscleTendonLengthInitialization. ...
+                passive_data_input_directory = ...
+                getPathFieldValue(app.PassiveDataDirectoryEditField);
         end
 
         % Button pushed function: PassiveDataDirectorySearchButton
@@ -1755,58 +1294,31 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Value changed function: EnableSynergyExtrapolationCheckBox
         function EnableSynergyExtrapolationCheckBoxValueChanged(app, event)
-            if app.EnableSynergyExtrapolationCheckBox.Value
-                app.MTPSynergyExtrapolation.is_enabled = "true";
-            else
-                app.MTPSynergyExtrapolation.is_enabled = "false";
-            end
+            app.MTPSynergyExtrapolation.is_enabled = ...
+                boolToString(app.EnableSynergyExtrapolationCheckBox.Value);
             app.updateRunButton();
         end
 
         % Value changed function: NumSynergiesSpinner
         function NumSynergiesSpinnerValueChanged(app, event)
-            app.MTPSynergyExtrapolation.number_of_synergies = app.NumSynergiesSpinner.Value;
+            app.MTPSynergyExtrapolation.number_of_synergies = ...
+                app.NumSynergiesSpinner.Value;
             app.validateAuxAdvancedSettingsSilent();
             app.updateRunButton();
         end
 
         % Cell edit callback: AuxAdvancedSettingsTable
         function AuxAdvancedSettingsTableCellEdit(app, event)
-            indices = event.Indices;
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    app.MTPSynergyExtrapolation.setParameterValueByIndex(...
-                        indices(1), app.AuxAdvancedSettingsTable.Data(indices(1), indices(2)).value);
-                case app.MuscleTendonLengthInitializationTab
-                    app.MuscleTendonLengthInitialization.setParameterValueByIndex(...
-                        indices(1), app.AuxAdvancedSettingsTable.Data(indices(1), indices(2)).value);
-            end
+            app.getSelectedAuxTool().setParameterValueByIndex( ...
+                event.Indices(1), event.NewData);
             app.validateAuxAdvancedSettingsSilent();
             app.updateRunButton();
         end
 
         % Cell edit callback: AuxCostTermsTable
         function AuxCostTermsTableCellEdit(app, event)
-            indices = event.Indices;
-            isEnabled = app.AuxCostTermsTable.Data.isEnabled(indices(1));
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    if isEnabled
-                        app.MTPSynergyExtrapolation.RCNLCostTerm{indices(1)}. ...
-                            is_enabled = "true";
-                    else
-                        app.MTPSynergyExtrapolation.RCNLCostTerm{indices(1)}. ...
-                            is_enabled = "false";
-                    end
-                case app.MuscleTendonLengthInitializationTab
-                    if isEnabled
-                        app.MuscleTendonLengthInitialization.RCNLCostTerm{indices(1)}. ...
-                            is_enabled = "true";
-                    else
-                        app.MuscleTendonLengthInitialization.RCNLCostTerm{indices(1)}. ...
-                            is_enabled = "false";
-                    end
-            end
+            app.getSelectedAuxTool().RCNLCostTerm{event.Indices(1)}. ...
+                is_enabled = boolToString(event.NewData);
             app.validateAuxCostTermsSilent();
             app.updateRunButton();
         end
@@ -1816,89 +1328,33 @@ classdef MTPBase < matlab.apps.AppBase
             if isempty(app.AuxCostTermsTable.Selection)
                 return
             end
-            costTermIndex = app.AuxCostTermsTable.Selection;
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    term = app.MTPSynergyExtrapolation.RCNLCostTerm{costTermIndex};
-                case app.MuscleTendonLengthInitializationTab
-                    term = app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex};
-            end
-            app.AuxErrorCenterEditField.Value = term.error_center;
-            app.AuxMaxAllowableErrorEditField.Value = term.max_allowable_error;
-            if term.uses_error_center
-                app.AuxErrorCenterEditField.Enable = 'on';
-            else
-                app.AuxErrorCenterEditField.Enable = 'off';
-            end
+            showCostTermGui(app.getSelectedAuxTool().RCNLCostTerm{ ...
+                app.AuxCostTermsTable.Selection}, ...
+                app.AuxMaxAllowableErrorEditField, ...
+                app.AuxErrorCenterEditField);
             app.validateAuxCostTermsSilent();
         end
 
         % Value changed function: AuxMaxAllowableErrorEditField
         function AuxMaxAllowableErrorEditFieldValueChanged(app, event)
-            value = app.AuxMaxAllowableErrorEditField.Value;
-            costTermIndex = app.AuxCostTermsTable.Selection;
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    app.MTPSynergyExtrapolation.RCNLCostTerm{costTermIndex}. ...
-                        max_allowable_error = value;
-                case app.MuscleTendonLengthInitializationTab
-                    app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex}. ...
-                        max_allowable_error = value;
-            end
+            app.getSelectedAuxTool().RCNLCostTerm{ ...
+                app.AuxCostTermsTable.Selection}.max_allowable_error = ...
+                app.AuxMaxAllowableErrorEditField.Value;
             app.validateAuxCostTermsSilent();
             app.updateRunButton();
         end
 
         % Value changed function: AuxErrorCenterEditField
         function AuxErrorCenterEditFieldValueChanged(app, event)
-            value = app.AuxErrorCenterEditField.Value;
-            costTermIndex = app.AuxCostTermsTable.Selection;
-            switch app.AuxiliaryToolsTabGroup.SelectedTab
-                case app.SynergyExtrapolationTab
-                    app.MTPSynergyExtrapolation.RCNLCostTerm{costTermIndex}. ...
-                        error_center = value;
-                case app.MuscleTendonLengthInitializationTab
-                    app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex}. ...
-                        error_center = value;
-            end
-        end
-
-        function isValid = validateAdvancedSettingsSilent(app)
-            removeStyle(app.AdvancedSettingsTable);
-            clearGuiError([], app.AdvancedSettingsError);
-            app.AdvancedSettingsTable.Tooltip = '';
-            isValid = true;
-            data = app.AdvancedSettingsTable.Data;
-            if isempty(data)
-                return
-            end
-            messages = string([]);
-            for row = 1:height(data)
-                if strcmp(data.Values(row), "NaN")
-                    addStyle(app.AdvancedSettingsTable, ...
-                        uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', row);
-                    messages(end+1) = data.Options(row) + ": must be a valid number";
-                    isValid = false;
-                end
-            end
-            if ~isValid
-                errorMsg = strjoin(messages, newline);
-                app.AdvancedSettingsTable.Tooltip = errorMsg;
-                throwGuiError(errorMsg, [], app.AdvancedSettingsError);
-            end
+            app.getSelectedAuxTool().RCNLCostTerm{ ...
+                app.AuxCostTermsTable.Selection}.error_center = ...
+                app.AuxErrorCenterEditField.Value;
         end
 
         % Cell edit callback: AdvancedSettingsTable
         function AdvancedSettingsTableCellEdit(app, event)
-            index = event.Indices(1);
-
-            if isnan(double(convertCharsToStrings(app.AdvancedSettingsTable.Data.Values(index))))
-                app.AdvancedSettingsTable.Data.Values(index) = "NaN";
-            else
-                app.advancedSettingValues(index) = app.AdvancedSettingsTable.Data.Values(index);
-            end
-            app.validateAdvancedSettingsSilent();
-            app.updateRunButton();
+            app.advancedSettingValues(event.Indices(1)) = ...
+                str2double(event.NewData);
         end
     end
 
@@ -2396,6 +1852,7 @@ classdef MTPBase < matlab.apps.AppBase
             % Create EnableMTLICheckBox
             app.EnableMTLICheckBox = uicheckbox(app.MuscleTendonLengthInitializationTab);
             app.EnableMTLICheckBox.ValueChangedFcn = createCallbackFcn(app, @EnableMTLICheckBoxValueChanged, true);
+            app.EnableMTLICheckBox.Value = false;
             app.EnableMTLICheckBox.Text = 'Enable Muscle-tendon Length Initialization';
             app.EnableMTLICheckBox.FontSize = 18;
             app.EnableMTLICheckBox.FontWeight = 'bold';
@@ -2738,13 +2195,14 @@ classdef MTPBase < matlab.apps.AppBase
 
             % Create CopyMenu
             app.CopyMenu = uimenu(app.ContextMenu);
+            app.CopyMenu.MenuSelectedFcn = createCallbackFcn(app, @CopyMenuSelected, true);
             app.CopyMenu.Text = 'Copy';
 
             % Create DeleteMenu
             app.DeleteMenu = uimenu(app.ContextMenu);
             app.DeleteMenu.MenuSelectedFcn = createCallbackFcn(app, @DeleteMenuSelected, true);
             app.DeleteMenu.Text = 'Delete';
-            
+
             % Assign app.ContextMenu
             app.MTPTasksTable.ContextMenu = app.ContextMenu;
 

@@ -1,8 +1,11 @@
 % This class is part of the NMSM Pipeline, see file for full license.
 %
-% This class represents the data model for a single Muscle-Tendon
-% Personalization (MTP) task within the MTP GUI, including design variable
-% flags, cost terms, and serialization to and from XML struct format.
+% This class holds the settings for a single Muscle-Tendon
+% Personalization task: which design variables are optimized and the
+% task's cost terms. Design variables are stored as individual
+% properties (rather than an array) because struct2xml requires each XML
+% element to be a struct field; parameterNames maps table row indices to
+% those properties.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -26,8 +29,6 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 classdef MTPTaskClass < handle
-    %MTPTASKCLASS Summary of this class goes here
-    %   Detailed explanation goes here
 
     properties
         name = "";
@@ -40,29 +41,40 @@ classdef MTPTaskClass < handle
         optimize_emg_scale_factors = 'true';
         optimize_optimal_fiber_lengths = 'true';
         optimize_tendon_slack_lengths = 'true';
-        costTermStruct = struct( ...
-                'inverse_dynamics_joint_moment',            {{'true'   0     2.5   false}}, ...
-                'activation_time_constant',                 {{'true'   0.02  0.015 true}}, ...
-                'activation_nonlinearity_constant',         {{'true'   0     0.1   true}}, ...
-                'optimal_muscle_fiber_length',              {{'true'   0     0.1   false}}, ...
-                'tendon_slack_length',                      {{'true'   0     0.1   false}}, ...
-                'electromechanical_delay',                  {{'true'   0     0.1   true}}, ...
-                'electromechanical_delay_deviation',        {{'false'  0.1   0.05  true}}, ...
-                'emg_scale_factor',                         {{'true'   0.3   0.2   true}}, ...
-                'normalized_muscle_fiber_length',           {{'true'   0     0.01  false}}, ...
-                'passive_muscle_force',                     {{'false'  0     50    false}}, ...
-                'grouped_normalized_muscle_fiber_length',   {{'true'   0     0.05  false}}, ...
-                'grouped_emg_scale_factor',                 {{'true'   0     0.1   false}}, ...
-                'grouped_electromechanical_delay',          {{'true'   0     0.2   false}}, ...
-                'muscle_excitation_penalty',                {{'true'   0.5   0.25  true}} ...
-            );
-
         RCNLCostTerm = cell(1);
+    end
+
+    properties (Constant)
+        parameterNames = ...
+            ["muscle_specific_electromechanical_delays"
+            "optimize_electromechanical_delays"
+            "optimize_activation_time_constants"
+            "optimize_activation_nonlinearity_constants"
+            "optimize_emg_scale_factors"
+            "optimize_optimal_fiber_lengths"
+            "optimize_tendon_slack_lengths"]
+
+        costTermStruct = struct( ...
+            'inverse_dynamics_joint_moment',            {{'true'   0     2.5   false}}, ...
+            'activation_time_constant',                 {{'true'   0.02  0.015 true}}, ...
+            'activation_nonlinearity_constant',         {{'true'   0     0.1   true}}, ...
+            'optimal_muscle_fiber_length',              {{'true'   0     0.1   false}}, ...
+            'tendon_slack_length',                      {{'true'   0     0.1   false}}, ...
+            'electromechanical_delay',                  {{'true'   0     0.1   true}}, ...
+            'electromechanical_delay_deviation',        {{'false'  0.1   0.05  true}}, ...
+            'emg_scale_factor',                         {{'true'   0.3   0.2   true}}, ...
+            'normalized_muscle_fiber_length',           {{'true'   0     0.01  false}}, ...
+            'passive_muscle_force',                     {{'false'  0     50    false}}, ...
+            'grouped_normalized_muscle_fiber_length',   {{'true'   0     0.05  false}}, ...
+            'grouped_emg_scale_factor',                 {{'true'   0     0.1   false}}, ...
+            'grouped_electromechanical_delay',          {{'true'   0     0.2   false}}, ...
+            'muscle_excitation_penalty',                {{'true'   0.5   0.25  true}} ...
+            );
     end
 
     methods
         function obj = MTPTaskClass()
-            % obj.RCNLCostTermSet.
+            obj.RCNLCostTerm = makeDefaultCostTerms(obj.costTermStruct);
         end
 
         function s = toStruct(obj)
@@ -70,24 +82,10 @@ classdef MTPTaskClass < handle
             s.Attributes.name = obj.name;
             s.index = obj.index;
             s.is_enabled = obj.is_enabled;
-            s.muscle_specific_electromechanical_delays = obj.muscle_specific_electromechanical_delays;
-            s.optimize_electromechanical_delays = obj.optimize_electromechanical_delays;
-            s.optimize_activation_time_constants = obj.optimize_activation_time_constants;
-            s.optimize_activation_nonlinearity_constants = obj.optimize_activation_nonlinearity_constants;
-            s.optimize_emg_scale_factors = obj.optimize_emg_scale_factors;
-            s.optimize_optimal_fiber_lengths = obj.optimize_optimal_fiber_lengths;
-            s.optimize_tendon_slack_lengths = obj.optimize_tendon_slack_lengths;
-            n = numel(obj.RCNLCostTerm);
-            costTermStructs = cell(1, n);
-            for i = 1:n
-                if ~isempty(obj.RCNLCostTerm{i})
-                    costTermStructs{i} = obj.RCNLCostTerm{i}.toStruct();
-                else
-                    costTermStructs{i} = [];
-                end
+            for i = 1:length(obj.parameterNames)
+                s.(obj.parameterNames(i)) = obj.(obj.parameterNames(i));
             end
-            s.RCNLCostTermSet = struct();
-            s.RCNLCostTermSet.RCNLCostTerm = costTermStructs;
+            s.RCNLCostTermSet = makeCostTermSetStruct(obj.RCNLCostTerm);
         end
 
         function loadFromStruct(obj, s)
@@ -95,66 +93,27 @@ classdef MTPTaskClass < handle
                 obj.name = s.Attributes.name;
             end
             applyStructToHandle(obj, s);
-            if isfield(s, 'RCNLCostTermSet') && isfield(s.RCNLCostTermSet, 'RCNLCostTerm')
-                terms = s.RCNLCostTermSet.RCNLCostTerm;
-                for i = 1 : length(terms)
-                    obj.RCNLCostTerm{i} = RCNLCostTermClass(terms{i});
-                end
-            end
-        end
-
-        function makeDefaultCostTermSet(obj)
-            costTermNames = fieldnames(obj.costTermStruct);
-            for i = 1 : length(costTermNames)
-                costTerm = RCNLCostTermClass();
-                costTerm.is_enabled = obj.costTermStruct.(costTermNames{i}){1};
-                costTerm.type = costTermNames{i};
-                costTerm.error_center = obj.costTermStruct.(costTermNames{i}){2};
-                costTerm.max_allowable_error = obj.costTermStruct.(costTermNames{i}){3};
-                costTerm.uses_error_center = obj.costTermStruct.(costTermNames{i}){4};
-                obj.RCNLCostTerm{i} = costTerm;
+            costTerms = parseCostTermsFromStruct(s);
+            if ~isempty(costTerms)
+                obj.RCNLCostTerm = costTerms;
             end
         end
 
         function setParameterValueByIndex(obj, index, value)
-            % This function is needed because ideally I could store these
-            % values in an array, but struct2xml requires that I have the
-            % fields of the struct be the xml elements, therefore I need to
-            % individually assign these values like this.
-            switch index
-                case 1
-                    obj.muscle_specific_electromechanical_delays = value;
-                case 2
-                    obj.optimize_electromechanical_delays = value;
-                case 3
-                    obj.optimize_activation_time_constants = value;
-                case 4
-                    obj.optimize_activation_nonlinearity_constants = value;
-                case 5
-                    obj.optimize_emg_scale_factors = value;
-                case 6
-                    obj.optimize_optimal_fiber_lengths = value;
-                case 7
-                    obj.optimize_tendon_slack_lengths = value;
-            end
+            obj.(obj.parameterNames(index)) = value;
         end
 
         function value = getParameterValueByIndex(obj, index)
-            switch index
-                case 1
-                    value = obj.muscle_specific_electromechanical_delays;
-                case 2
-                    value = obj.optimize_electromechanical_delays;
-                case 3
-                    value = obj.optimize_activation_time_constants;
-                case 4
-                    value = obj.optimize_activation_nonlinearity_constants;
-                case 5
-                    value = obj.optimize_emg_scale_factors;
-                case 6
-                    value = obj.optimize_optimal_fiber_lengths;
-                case 7
-                    value = obj.optimize_tendon_slack_lengths;
+            value = obj.(obj.parameterNames(index));
+        end
+
+        function anyEnabled = anyParameterEnabled(obj)
+            anyEnabled = false;
+            for i = 1:length(obj.parameterNames)
+                if strcmp(obj.(obj.parameterNames(i)), 'true')
+                    anyEnabled = true;
+                    return
+                end
             end
         end
     end

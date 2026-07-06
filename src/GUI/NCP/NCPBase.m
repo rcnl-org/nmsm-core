@@ -110,10 +110,6 @@ classdef NCPBase < matlab.apps.AppBase
         AdvancedTab                     matlab.ui.container.Tab
         AdvancedSettingsTable           matlab.ui.control.Table
         NeuralControlModelPersonalizationToolLabel  matlab.ui.control.Label
-        ContextMenu                     matlab.ui.container.ContextMenu
-        RenameMenu                      matlab.ui.container.Menu
-        CopyMenu                        matlab.ui.container.Menu
-        DeleteMenu                      matlab.ui.container.Menu
     end
 
     properties (Access = private)  % private UI components not in appModel
@@ -143,7 +139,6 @@ classdef NCPBase < matlab.apps.AppBase
         results_directory string = "";
         coordinate_list string = [];
         trial_prefixes string = [];
-        v_max_factor double = 10;
 
         activation_muscle_groups string = [];
         normalized_fiber_length_muscle_groups string = [];
@@ -153,17 +148,30 @@ classdef NCPBase < matlab.apps.AppBase
             MuscleTendonLengthInitializationClass();
 
         RCNLCostTerm cell = cell(0)
-
         RCNLSynergy cell = cell(0)
 
-        costTermStruct = struct( ...
-                'moment_tracking',            {{'true'    0    5     false}}, ...
-                'activation_tracking',        {{'true'    0    0.05  false}}, ...
-                'activation_minimization',    {{'false'   0    0.1   false}}, ...
-                'grouped_activations',        {{'false'   0    0.1   false}}, ...
-                'grouped_fiber_lengths',      {{'false'   0    0.1   false}} ...
-                );
+        advancedSettingValues double = [];
 
+        objectSelectionType string = "";  % Used to filter in setSelectedObjects
+        currentSettingsFile string = "";
+
+        % Error checking and flow control
+        inputModelValid          logical = false
+        dataDirectoryValid       logical = false
+        mtpResultsDirectoryValid logical = false
+        ncpResultsDirectoryValid logical = false
+        coordinateListValid      logical = false
+        synergyGroupsValid       logical = false
+    end
+
+    properties (Constant, Access = private)
+        costTermStruct = struct( ...
+            'moment_tracking',            {{'true'    0    5     false}}, ...
+            'activation_tracking',        {{'true'    0    0.05  false}}, ...
+            'activation_minimization',    {{'false'   0    0.1   false}}, ...
+            'grouped_activations',        {{'false'   0    0.1   false}}, ...
+            'grouped_fiber_lengths',      {{'false'   0    0.1   false}} ...
+            );
 
         advancedSettingNames = ...
             ["v_max_factor"
@@ -174,7 +182,7 @@ classdef NCPBase < matlab.apps.AppBase
             "optimality_tolerance"
             "diff_min_change"]
 
-        advancedSettingValues = ...
+        defaultAdvancedSettingValues = ...
             [10
             1000
             100000000
@@ -182,20 +190,9 @@ classdef NCPBase < matlab.apps.AppBase
             1e-6
             1e-6
             0.0001]
-
-        needToSave = true;
-        currentSettingsFile string = "";
-        objectSelectionType;
-
-        inputModelValid          logical = false
-        dataDirectoryValid       logical = false
-        mtpResultsDirectoryValid logical = false
-        ncpResultsDirectoryValid logical = false
-        coordinateListValid      logical = false
-        synergyGroupsValid       logical = false
     end
 
-    properties(Access = private)  % listner properties
+    properties (Access = private)  % listener handles
         InputModelFileListener
         OsimXFileListener
         DataDirectoryListener
@@ -210,7 +207,7 @@ classdef NCPBase < matlab.apps.AppBase
         MinFiberLengthListener
         advancedSettingsListener
         selectedTabListener
-        
+
         ncpCostTermListener
         RCNLSynergyListener
         synergyGroupsListener
@@ -274,7 +271,7 @@ classdef NCPBase < matlab.apps.AppBase
 
             app.advancedSettingsListener = addlistener(app, ...
                 'advancedSettingValues', 'PostSet', ...
-                @(src, event)updateAdvancedSettingValues(app));
+                @(src, event)refreshAdvancedSettingsTable(app));
 
             app.selectedTabListener = addlistener(app.TabGroup, ...
                 'SelectedTab', 'PostSet', ...
@@ -306,7 +303,6 @@ classdef NCPBase < matlab.apps.AppBase
                 app.input_model_file);
             app.validateInputModelFile();
             app.updateRunButton();
-            app.needToSave = true;
         end
 
         function OsimXFileListenerFunction(app)
@@ -314,7 +310,6 @@ classdef NCPBase < matlab.apps.AppBase
                 app.input_osimx_file);
             app.validateInputOsimxFile();
             app.updateRunButton();
-            app.needToSave = true;
         end
 
         function DataDirectoryListenerFunction(app)
@@ -322,7 +317,6 @@ classdef NCPBase < matlab.apps.AppBase
                 app.data_directory);
             app.validateDataDirectory();
             app.updateRunButton();
-            app.needToSave = true;
         end
 
         function MtpResultsDirectoryListenerFunction(app)
@@ -330,7 +324,6 @@ classdef NCPBase < matlab.apps.AppBase
                 app.mtp_results_directory);
             app.validateMtpResultsDirectory();
             app.updateRunButton();
-            app.needToSave = true;
         end
 
         function NcpResultsDirectoryListenerFunction(app)
@@ -338,14 +331,13 @@ classdef NCPBase < matlab.apps.AppBase
                 app.results_directory);
             app.validateNcpResultsDirectory();
             app.updateRunButton();
-            app.needToSave = true;
         end
 
         function CoordinateListListenerFunction(app)
-            app.CoordinatesListTextArea.Value = strjoin(app.coordinate_list, ", ");
+            app.CoordinatesListTextArea.Value = ...
+                strjoin(app.coordinate_list, ", ");
             app.validateCoordinateList();
             app.updateRunButton();
-            app.needToSave = true;
         end
 
         function updateTrialPrefixes(app)
@@ -356,13 +348,11 @@ classdef NCPBase < matlab.apps.AppBase
         function ActivationGroupsListenerFunction(app)
             app.ActivationMuscleGroupsTextArea.Value = ...
                 strjoin(app.activation_muscle_groups, ", ");
-            app.needToSave;
         end
 
         function FiberLengthGroupsListenerFunction(app)
             app.NormalizedFiberLengthMuscleGroupsTextArea.Value = ...
                 strjoin(app.normalized_fiber_length_muscle_groups, ", ");
-            app.needToSave;
         end
 
         function updateEnableMtliBox(app)
@@ -388,239 +378,84 @@ classdef NCPBase < matlab.apps.AppBase
                 app.MuscleTendonLengthInitialization.min_normalized_muscle_fiber_length;
         end
 
-        function s = formatAdvancedValue(~, value)
-            % Format values in the advanced params table to use scientific
-            % notation if over 3 sig figs. 
-            s = string(sprintf('%.3g', value));
+        function refreshAdvancedSettingsTable(app)
+            Options = app.advancedSettingNames;
+            Values = arrayfun(@formatGuiNumber, app.advancedSettingValues);
+            app.AdvancedSettingsTable.Data = table(Options, Values);
+            app.updateRunButton();
         end
 
-        function updateAdvancedSettingValues(app)
-            app.AdvancedSettingsTable.Data.Values = ...
-                arrayfun(@(v) app.formatAdvancedValue(v), ...
-                app.advancedSettingValues);
-        end
-
-        function formatTabButtons(app) % good
+        function formatTabButtons(app)
             if ~isvalid(app) || ~isvalid(app.TabGroup)
                 return
             end
-            switch app.TabGroup.SelectedTab
-                case app.InputsTab
-                    app.InputsButton.BackgroundColor = [1 1 1];
-                    app.InputsButton.FontColor = [0.13,0.18,0.40];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MuscleGroupsButton.FontColor = [1 1 1];
-
-                    app.CostTermsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.CostTermsButton.FontColor = [1 1 1];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AuxiliaryToolsButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                case app.MuscleGroupsTab
-                    app.InputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.InputsButton.FontColor = [1 1 1];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [1 1 1];
-                    app.MuscleGroupsButton.FontColor = [0.13,0.18,0.40];
-
-                    app.CostTermsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.CostTermsButton.FontColor = [1 1 1];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AuxiliaryToolsButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                case app.CostTermsTab
-                    app.InputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.InputsButton.FontColor = [1 1 1];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MuscleGroupsButton.FontColor = [1 1 1];
-
-                    app.CostTermsButton.BackgroundColor = [1 1 1];
-                    app.CostTermsButton.FontColor = [0.13,0.18,0.40];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AuxiliaryToolsButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                case app.AuxiliaryTab
-                    app.InputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.InputsButton.FontColor = [1 1 1];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MuscleGroupsButton.FontColor = [1 1 1];
-
-                    app.CostTermsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.CostTermsButton.FontColor = [1 1 1];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [1 1 1];
-                    app.AuxiliaryToolsButton.FontColor = [0.13,0.18,0.40];
-
-                    app.AdvancedButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AdvancedButton.FontColor = [1 1 1];
-
-                case app.AdvancedTab
-                    app.InputsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.InputsButton.FontColor = [1 1 1];
-                    
-                    app.MuscleGroupsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.MuscleGroupsButton.FontColor = [1 1 1];
-
-                    app.CostTermsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.CostTermsButton.FontColor = [1 1 1];
-
-                    app.AuxiliaryToolsButton.BackgroundColor = [0.13,0.18,0.40];
-                    app.AuxiliaryToolsButton.FontColor = [1 1 1];
-
-                    app.AdvancedButton.BackgroundColor = [1 1 1];
-                    app.AdvancedButton.FontColor = [0.13,0.18,0.40];
-            end
+            updateTabButtonStyles(app.TabGroup.SelectedTab, ...
+                [app.InputsTab, app.MuscleGroupsTab, app.CostTermsTab, ...
+                app.AuxiliaryTab, app.AdvancedTab], ...
+                [app.InputsButton, app.MuscleGroupsButton, ...
+                app.CostTermsButton, app.AuxiliaryToolsButton, ...
+                app.AdvancedButton]);
         end
 
         function makeDefaultCostTermSet(app)
-            costTermNames = fieldnames(app.costTermStruct);
-            for i = 1 : length(costTermNames)
-                costTerm = RCNLCostTermClass();
-                costTerm.is_enabled = app.costTermStruct.(costTermNames{i}){1};
-                costTerm.type = costTermNames{i};
-                costTerm.error_center = app.costTermStruct.(costTermNames{i}){2};
-                costTerm.max_allowable_error = app.costTermStruct.(costTermNames{i}){3};
-                costTerm.uses_error_center = app.costTermStruct.(costTermNames{i}){4};
-                app.RCNLCostTerm{i} = costTerm;
-            end
+            app.RCNLCostTerm = makeDefaultCostTerms(app.costTermStruct);
         end
 
         function initMtli(app)
-            app.MuscleTendonLengthInitialization.makeDefaultCostTermSet();
-            app.updateMtliAdvancedSettingsTable();
+            % Reset in place so listeners on the MTLI object stay valid
+            app.MuscleTendonLengthInitialization.reset();
             app.MuscleTendonLengthInitialization.is_enabled = 'false';
+            app.updateMtliAdvancedSettingsTable();
         end
 
         function updateMtliAdvancedSettingsTable(app)
-            options = ["optimize_maximum_muscle_stress"
-                "optimize_isometric_max_force"
-                "optimize_absolute_length_changes"
-                "maximum_muscle_stress"];
-            value = [string(app.MuscleTendonLengthInitialization.optimize_maximum_muscle_stress)
-                string(app.MuscleTendonLengthInitialization.optimize_isometric_max_force)
-                string(app.MuscleTendonLengthInitialization.optimize_absolute_length_changes)
-                app.formatAdvancedValue(app.MuscleTendonLengthInitialization.maximum_muscle_stress)];
+            mtli = app.MuscleTendonLengthInitialization;
+            options = mtli.parameterNames;
+            value = strings(length(options), 1);
+            for i = 1 : length(options)
+                value(i) = string(mtli.getParameterValueByIndex(i));
+            end
             app.MtliAdvancedSettingsTable.Data = table(options, value);
             app.validateMtliAdvancedSettingsSilent();
         end
 
         function isValid = validateMtliAdvancedSettingsSilent(app)
-            isValid = true;
-            removeStyle(app.MtliAdvancedSettingsTable);
-            clearGuiError([], app.MtliAdvancedSettingsError);
-            app.MtliAdvancedSettingsTable.Tooltip = '';
             if ~strcmp(app.MuscleTendonLengthInitialization.is_enabled, 'true')
+                removeStyle(app.MtliAdvancedSettingsTable);
+                clearGuiError([], app.MtliAdvancedSettingsError);
+                app.MtliAdvancedSettingsTable.Tooltip = '';
+                isValid = true;
                 return
             end
-            data = app.MtliAdvancedSettingsTable.Data;
-            if isempty(data) || height(data) < 4
-                return
-            end
-            validBools = ["true", "false"];
-            messages = string([]);
-            boolNames = ["optimize_maximum_muscle_stress", ...
-                "optimize_isometric_max_force", ...
-                "optimize_absolute_length_changes"];
-            for row = 1:3
-                if ~ismember(data.value(row), validBools)
-                    addStyle(app.MtliAdvancedSettingsTable, ...
-                        uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', row);
-                    messages(end+1) = boolNames(row) + ": must be true or false";
-                end
-            end
-            stressVal = str2double(data.value(4));
-            if isnan(stressVal) || stressVal <= 0
-                addStyle(app.MtliAdvancedSettingsTable, ...
-                    uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', 4);
-                messages(end+1) = "maximum_muscle_stress: must be a positive number";
-            end
-            if ~isempty(messages)
-                errorMsg = strjoin(messages, newline);
-                app.MtliAdvancedSettingsTable.Tooltip = errorMsg;
-                throwGuiError(errorMsg, [], app.MtliAdvancedSettingsError);
-                isValid = false;
-            end
+            isValid = validateParameterTableGui( ...
+                app.MuscleTendonLengthInitialization, ...
+                app.MtliAdvancedSettingsTable, app.MtliAdvancedSettingsError);
         end
 
         function updateNCPCostTermsTable(app)
-            isEnabled = true(length(app.RCNLCostTerm), 1);
-            costTermTypes = strings(length(app.RCNLCostTerm), 1);
-            for i = 1 : length(app.RCNLCostTerm)
-                isEnabled(i) = strcmp(app.RCNLCostTerm{i}.is_enabled, "true");
-                costTermTypes(i) = app.RCNLCostTerm{i}.type;
-            end
-            app.NCPCostTermsTable.Data = table(isEnabled, costTermTypes);
+            updateCostTermsTableGui(app.NCPCostTermsTable, app.RCNLCostTerm);
             app.validateNCPCostTermsSilent();
             app.updateRunButton();
         end
 
         function isValid = validateNCPCostTermsSilent(app)
-            isValid = true;
-            removeStyle(app.NCPCostTermsTable);
-            clearGuiError([], app.NCPCostTermsError);
-            app.NCPMaxAllowableErrorEditField.BackgroundColor = [1 1 1];
-            hasEnabledCostTerm = false;
-            selectedCostTerm = app.NCPCostTermsTable.Selection;
-            for k = 1:length(app.RCNLCostTerm)
-                if strcmp(app.RCNLCostTerm{k}.is_enabled, 'true')
-                    hasEnabledCostTerm = true;
-                    if app.RCNLCostTerm{k}.max_allowable_error <= 0
-                        addStyle(app.NCPCostTermsTable, ...
-                            uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', k);
-                        isValid = false;
-                        if ~isempty(selectedCostTerm) && selectedCostTerm == k
-                            app.NCPMaxAllowableErrorEditField.BackgroundColor = ...
-                                [1.00 0.67 0.67];
-                        end
-                    end
-                end
-            end
-            if ~hasEnabledCostTerm
-                throwGuiError("At least one cost term must be enabled.", ...
-                    [], app.NCPCostTermsError);
-                isValid = false;
-            elseif ~isValid
-                throwGuiError("Max allowable error must be greater than " + ...
-                    "zero for each enabled cost term.", ...
-                    [], app.NCPCostTermsError);
-            end
+            isValid = validateCostTermsGui(app.RCNLCostTerm, ...
+                app.NCPCostTermsTable, app.NCPMaxAllowableErrorEditField, ...
+                app.NCPCostTermsError, "cost term");
         end
 
         function updateRCNLSynergy(app)
-            numSynergies = ones(1, length(app.RCNLSynergy));
-            for i = 1 : length(app.RCNLSynergy)
-                numSynergies(i) = app.RCNLSynergy{i}.num_synergies;
-            end
+            previousSynergies = app.RCNLSynergy;
+            synergies = cell(1, length(app.synergyGroups));
             for i = 1 : length(app.synergyGroups)
-                if i > length(app.RCNLSynergy)
-                    app.RCNLSynergy{i} = RCNLSynergyClass();
-                end
-                app.RCNLSynergy{i}.muscle_group_name = app.synergyGroups(i);
-                if i > length(numSynergies)
-                    app.RCNLSynergy{i}.num_synergies = 1;
+                if i <= length(previousSynergies)
+                    synergies{i} = previousSynergies{i};
                 else
-                    app.RCNLSynergy{i}.num_synergies = numSynergies(i);
+                    synergies{i} = RCNLSynergyClass();
                 end
+                synergies{i}.muscle_group_name = app.synergyGroups(i);
             end
-            if length(app.RCNLSynergy) > length(app.synergyGroups)
-                app.RCNLSynergy = {app.RCNLSynergy{1:length(app.synergyGroups)}};
-            end
-            app.updateSynergyGroupsTable();
+            app.RCNLSynergy = synergies;
             app.validateSynergyGroups();
             app.updateRunButton();
         end
@@ -636,72 +471,32 @@ classdef NCPBase < matlab.apps.AppBase
         end
 
         function updateMtliCostTermsFields(app)
-            numCostTerms = length(app.MuscleTendonLengthInitialization. ...
-                RCNLCostTerm);
-            isEnabled = false(numCostTerms, 1);
-            costTermNames = strings(numCostTerms, 1);
-            for i = 1 : numCostTerms
-                isEnabled(i) = strcmp(app.MuscleTendonLengthInitialization. ...
-                    RCNLCostTerm{i}.is_enabled, "true");
-                costTermNames(i) = app.MuscleTendonLengthInitialization. ...
-                    RCNLCostTerm{i}.type;
-                app.MtliCostTermsTable.Data = table(isEnabled, costTermNames);
-            end
+            updateCostTermsTableGui(app.MtliCostTermsTable, ...
+                app.MuscleTendonLengthInitialization.RCNLCostTerm);
             app.validateMtliCostTermsSilent();
             app.updateRunButton();
         end
 
         function isValid = validateMtliCostTermsSilent(app)
-            isValid = true;
-            removeStyle(app.MtliCostTermsTable);
-            clearGuiError([], app.MtliCostTermsError);
-            app.MtliMaxAllowableErrorEditField.BackgroundColor = [1 1 1];
             if ~strcmp(app.MuscleTendonLengthInitialization.is_enabled, 'true')
+                removeStyle(app.MtliCostTermsTable);
+                clearGuiError([], app.MtliCostTermsError);
+                app.MtliMaxAllowableErrorEditField.BackgroundColor = [1 1 1];
+                isValid = true;
                 return
             end
-            costTerms = app.MuscleTendonLengthInitialization.RCNLCostTerm;
-            hasEnabledCostTerm = false;
-            selectedCostTerm = app.MtliCostTermsTable.Selection;
-            for k = 1:length(costTerms)
-                if isempty(costTerms{k})
-                    continue
-                end
-                if strcmp(costTerms{k}.is_enabled, 'true')
-                    hasEnabledCostTerm = true;
-                    if costTerms{k}.max_allowable_error <= 0
-                        addStyle(app.MtliCostTermsTable, ...
-                            uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', k);
-                        isValid = false;
-                        if ~isempty(selectedCostTerm) && selectedCostTerm == k
-                            app.MtliMaxAllowableErrorEditField.BackgroundColor = ...
-                                [1.00 0.67 0.67];
-                        end
-                    end
-                end
-            end
-            if ~hasEnabledCostTerm
-                throwGuiError("At least one MTLI cost term must be enabled.", ...
-                    [], app.MtliCostTermsError);
-                isValid = false;
-            elseif ~isValid
-                throwGuiError("Max allowable error must be greater than " + ...
-                    "zero for each enabled MTLI cost term.", ...
-                    [], app.MtliCostTermsError);
-            end
+            isValid = validateCostTermsGui( ...
+                app.MuscleTendonLengthInitialization.RCNLCostTerm, ...
+                app.MtliCostTermsTable, app.MtliMaxAllowableErrorEditField, ...
+                app.MtliCostTermsError, "MTLI cost term");
         end
 
         function validateInputModelFile(app)
-            if strcmp(app.input_model_file, "")
-                clearGuiError(app.InputModelFileEditField, app.InputModelFileError);
-                throwGuiRequired("Input model file is required.", ...
-                    [], app.InputModelFileRequired);
-                app.inputModelValid = false;
-                return
-            end
-            clearGuiError([], app.InputModelFileRequired);
-            app.inputModelValid = validateOsimFileGui(app, ...
-                app.input_model_file, ...
-                app.InputModelFileEditField, app.InputModelFileError);
+            app.inputModelValid = validateRequiredFieldGui( ...
+                app.input_model_file, "Input model file is required.", ...
+                app.InputModelFileEditField, app.InputModelFileError, ...
+                app.InputModelFileRequired, ...
+                @(value, field, icon)validateOsimFileGui(app, value, field, icon));
         end
 
         function validateInputOsimxFile(app)
@@ -711,131 +506,80 @@ classdef NCPBase < matlab.apps.AppBase
         end
 
         function validateDataDirectory(app)
-            if strcmp(app.data_directory, "")
-                clearGuiError(app.InputDataEditField, app.InputDataError);
-                throwGuiRequired("Input data directory is required.", ...
-                    [], app.InputDataRequired);
-                app.dataDirectoryValid = false;
-                return
-            end
-            clearGuiError([], app.InputDataRequired);
-            app.dataDirectoryValid = validateDataDirectoryGui( ...
-                app.data_directory, ["EMGData", "IDData", "MAData"], ...
-                app.InputDataEditField, app.InputDataError);
+            app.dataDirectoryValid = validateRequiredFieldGui( ...
+                app.data_directory, "Input data directory is required.", ...
+                app.InputDataEditField, app.InputDataError, ...
+                app.InputDataRequired, ...
+                @(value, field, icon)validateDataDirectoryGui(value, ...
+                ["EMGData", "IDData", "MAData"], field, icon));
             if app.dataDirectoryValid
                 app.parseTrialPrefixes();
             end
         end
 
         function parseTrialPrefixes(app)
-            maDataPath = fullfile(app.data_directory, "MAData");
-            if ~exist(maDataPath, "dir")
-                return
-            end
-            trialNames = findPrefixesFromSubdirectories(maDataPath);
-            if ~isempty(trialNames)
-                app.trial_prefixes = trialNames;
+            prefixes = findPrefixesFromSubdirectories( ...
+                fullfile(app.data_directory, "MAData"));
+            if ~isempty(prefixes)
+                app.trial_prefixes = prefixes;
             end
         end
 
         function validateMtpResultsDirectory(app)
-            if strcmp(app.mtp_results_directory, "")
-                clearGuiError(app.MTPResultsDirEditField, app.MTPResultsDirError);
-                throwGuiRequired("MTP results directory is required.", ...
-                    [], app.MTPResultsDirRequired);
-                app.mtpResultsDirectoryValid = false;
-                return
-            end
-            clearGuiError([], app.MTPResultsDirRequired);
-            app.mtpResultsDirectoryValid = validateFileExistsGui( ...
+            app.mtpResultsDirectoryValid = validateRequiredFieldGui( ...
                 app.mtp_results_directory, ...
-                app.MTPResultsDirEditField, app.MTPResultsDirError);
+                "MTP results directory is required.", ...
+                app.MTPResultsDirEditField, app.MTPResultsDirError, ...
+                app.MTPResultsDirRequired, @validateFileExistsGui);
         end
 
         function validateNcpResultsDirectory(app)
-            if strcmp(app.results_directory, "")
-                clearGuiError(app.NCPResultsDirectoryEditField, app.ResultsDirectoryWarning);
-                throwGuiRequired("NCP results directory is required.", ...
-                    [], app.NCPResultsDirRequired);
-                app.ncpResultsDirectoryValid = false;
-                return
-            end
-            clearGuiError([], app.NCPResultsDirRequired);
-            app.ncpResultsDirectoryValid = validateResultsDirectoryGui( ...
+            app.ncpResultsDirectoryValid = validateRequiredFieldGui( ...
                 app.results_directory, ...
-                app.NCPResultsDirectoryEditField, app.ResultsDirectoryWarning);
+                "NCP results directory is required.", ...
+                app.NCPResultsDirectoryEditField, ...
+                app.ResultsDirectoryWarning, app.NCPResultsDirRequired, ...
+                @validateResultsDirectoryGui);
         end
 
         function isValid = validateCoordinateList(app)
-            if isempty(app.coordinate_list) || ...
-                    (isstring(app.coordinate_list) && all(strcmp(app.coordinate_list, "")))
+            app.coordinateListValid = ~isEmptyStringList(app.coordinate_list);
+            if app.coordinateListValid
+                clearGuiError([], app.CoordinateListWarning);
+            else
                 throwGuiRequired("At least one coordinate must be selected.", ...
                     [], app.CoordinateListWarning);
-                app.coordinateListValid = false;
-                isValid = false;
-            else
-                clearGuiError([], app.CoordinateListWarning);
-                app.coordinateListValid = true;
-                isValid = true;
             end
+            isValid = app.coordinateListValid;
         end
 
         function isValid = validateTrialPrefixes(app)
-            isValid = true;
-            clearGuiError(app.TrialPrefixesEditField, app.TaskPrefixesError);
-            if isempty(app.trial_prefixes) || all(strcmp(app.trial_prefixes, ""))
-                throwGuiWarning("No trial prefixes specified. All trials in the data directory will be used.", ...
+            if isEmptyStringList(app.trial_prefixes)
+                clearGuiError(app.TrialPrefixesEditField, app.TaskPrefixesError);
+                throwGuiWarning("No trial prefixes specified. All trials " + ...
+                    "in the data directory will be used.", ...
                     app.TrialPrefixesEditField, app.TaskPrefixesWarning);
+                isValid = true;
                 return
             end
             clearGuiError(app.TrialPrefixesEditField, app.TaskPrefixesWarning);
-            if strcmp(app.data_directory, "") || ~exist(app.data_directory, "dir")
-                return
-            end
-            maDataPath = fullfile(app.data_directory, "MAData");
-            if ~exist(maDataPath, "dir")
-                return
-            end
-            available = findPrefixesFromSubdirectories(maDataPath);
-            invalid = app.trial_prefixes(~ismember(app.trial_prefixes, available));
-            if ~isempty(invalid)
-                throwGuiError("Trial prefix(es) not found in data directory: " + ...
-                    strjoin(invalid, ", "), ...
-                    app.TrialPrefixesEditField, app.TaskPrefixesError);
-                isValid = false;
-            end
+            isValid = validateTrialPrefixesGui(app.trial_prefixes, ...
+                app.data_directory, app.TrialPrefixesEditField, ...
+                app.TaskPrefixesError);
         end
 
         function isValid = validateMtliConfig(app)
-            if ~strcmp(app.MuscleTendonLengthInitialization.is_enabled, 'true')
-                clearGuiError(app.PassiveDataDirectoryEditField, app.PassiveDataDirectoryError);
-                clearGuiError([], app.PassiveDataDirectoryRequired);
-                isValid = true;
-                return
-            end
-            passiveDir = app.MuscleTendonLengthInitialization.passive_data_input_directory;
-            if strcmp(passiveDir, "")
-                clearGuiError(app.PassiveDataDirectoryEditField, app.PassiveDataDirectoryError);
-                throwGuiRequired("Passive data directory is required when MTLI is enabled.", ...
-                    [], app.PassiveDataDirectoryRequired);
-                isValid = false;
-            elseif ~exist(passiveDir, "dir")
-                clearGuiError([], app.PassiveDataDirectoryRequired);
-                throwGuiError("The passive data directory does not exist.", ...
-                    app.PassiveDataDirectoryEditField, app.PassiveDataDirectoryError);
-                isValid = false;
-            else
-                clearGuiError(app.PassiveDataDirectoryEditField, app.PassiveDataDirectoryError);
-                clearGuiError([], app.PassiveDataDirectoryRequired);
-                isValid = true;
-            end
+            isValid = validateMtliConfigGui( ...
+                app.MuscleTendonLengthInitialization, ...
+                app.PassiveDataDirectoryEditField, ...
+                app.PassiveDataDirectoryError, ...
+                app.PassiveDataDirectoryRequired);
         end
 
         function validateSynergyGroups(app)
             removeStyle(app.SynergyGroupsTable);
             clearGuiError([], app.SynergyGroupsError);
-            if isempty(app.synergyGroups) || ...
-                    (isstring(app.synergyGroups) && all(strcmp(app.synergyGroups, "")))
+            if isEmptyStringList(app.synergyGroups)
                 throwGuiRequired("At least one synergy group is required.", ...
                     [], app.SynergyGroupsRequired);
                 app.synergyGroupsValid = false;
@@ -862,32 +606,25 @@ classdef NCPBase < matlab.apps.AppBase
         function updateRunButton(app)
             trialPrefixesValid = app.validateTrialPrefixes();
             costTermsValid = app.validateNCPCostTermsSilent();
+            mtliValid = app.validateMtliConfig();
             mtliCostTermsValid = app.validateMtliCostTermsSilent();
-            mtliAdvancedSettingsValid = app.validateMtliAdvancedSettingsSilent();
-            advancedSettingsValid = app.validateAdvancedSettingsSilent();
-            allValid = app.inputModelValid && app.dataDirectoryValid && ...
-                app.mtpResultsDirectoryValid && app.ncpResultsDirectoryValid && ...
-                app.coordinateListValid && app.synergyGroupsValid && ...
-                trialPrefixesValid && app.validateMtliConfig() && ...
-                costTermsValid && mtliCostTermsValid && ...
-                mtliAdvancedSettingsValid && advancedSettingsValid;
-            if allValid
-                app.RunButton.Enable = 'on';
-            else
-                app.RunButton.Enable = 'off';
-            end
+            mtliAdvancedValid = app.validateMtliAdvancedSettingsSilent();
+            advancedValid = validateAdvancedSettingsGui( ...
+                app.AdvancedSettingsTable, app.advancedSettingNames, ...
+                app.advancedSettingValues, app.AdvancedSettingsError);
+            app.RunButton.Enable = app.inputModelValid && ...
+                app.dataDirectoryValid && app.mtpResultsDirectoryValid && ...
+                app.ncpResultsDirectoryValid && app.coordinateListValid && ...
+                app.synergyGroupsValid && trialPrefixesValid && ...
+                mtliValid && costTermsValid && mtliCostTermsValid && ...
+                mtliAdvancedValid && advancedValid;
             app.updateTabControls();
         end
 
         function updateTabControls(app)
             inputsReady = app.inputModelValid && app.dataDirectoryValid;
-            if inputsReady
-                app.MuscleGroupsButton.Enable = 'on';
-                app.CostTermsButton.Enable = 'on';
-            else
-                app.MuscleGroupsButton.Enable = 'off';
-                app.CostTermsButton.Enable = 'off';
-            end
+            app.MuscleGroupsButton.Enable = inputsReady;
+            app.CostTermsButton.Enable = inputsReady;
         end
     end
 
@@ -905,7 +642,7 @@ classdef NCPBase < matlab.apps.AppBase
                 app.synergyGroups = objects;
         end
         end
-        
+
         function modelFile = getInputModelFile(app)
             modelFile = app.input_model_file;
         end
@@ -921,7 +658,7 @@ classdef NCPBase < matlab.apps.AppBase
         function setModelGroups(app, groups)
             app.model_groups = groups;
         end
-        
+
         function setTimePoints(app, timePoints)
             app.timePoints = timePoints;
         end
@@ -933,22 +670,19 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
-            app.MuscleTendonLengthInitialization = MuscleTendonLengthInitializationClass();
+            app.MuscleTendonLengthInitialization = ...
+                MuscleTendonLengthInitializationClass();
             app.makeListeners()
-            app.RunButton.Enable = 'off';
-            app.MuscleGroupsButton.Enable = 'off';
-            app.CostTermsButton.Enable = 'off';
             app.makeDefaultCostTermSet();
             app.initMtli()
-            Options = app.advancedSettingNames;
-            Values = arrayfun(@(v) app.formatAdvancedValue(v), ...
-                app.advancedSettingValues);
-            app.AdvancedSettingsTable.Data = table( ...
-                Options, Values);
-            app.updateMtliCostTermsFields()
+            app.advancedSettingValues = app.defaultAdvancedSettingValues;
+            app.RunButton.Enable = false;
+            app.MuscleGroupsButton.Enable = false;
+            app.CostTermsButton.Enable = false;
             app.formatTabButtons()
         end
 
+        % Button pushed function: ResetButton
         function ResetButtonPushed(app, event)
             app.resetAllFields();
         end
@@ -971,25 +705,25 @@ classdef NCPBase < matlab.apps.AppBase
                 return
             end
             app.saveSettingsFile(fullfile(path, file))
-            % app.currentSettingsFile = fullfile(path, file);
-            app.needToSave = false;
         end
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
             if strcmp(app.currentSettingsFile, "")
                 [file, path] = uiputfile('*.xml', "Save XML Settings File");
-                if isequal(file, 0); return; end
+                % User hit "Cancel"
+                if isequal(file, 0)
+                    return
+                end
                 app.currentSettingsFile = fullfile(path, file);
             end
             app.saveSettingsFile(app.currentSettingsFile);
-            app.needToSave = false;
             NCPRun(app, app.currentSettingsFile);
         end
 
         % Button pushed function: HelpButton
         function HelpButtonPushed(app, event)
-            web("https://nmsm.rice.edu/guides-and-publications/tool-overviews/model-personalization/muscle-tendon-personalization/")
+            web("https://nmsm.rice.edu/guides-and-publications/tool-overviews/model-personalization/neural-control-personalization/")
         end
 
         % Button pushed function: InputsButton
@@ -1019,12 +753,8 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Value changed function: InputModelFileEditField
         function InputModelFileEditFieldValueChanged(app, event)
-            value = app.InputModelFileEditField.Value;
-            if strcmp(value, "")
-                app.input_model_file = "";
-            else
-                app.input_model_file = GetFullPath(value);
-            end
+            app.input_model_file = ...
+                getPathFieldValue(app.InputModelFileEditField);
         end
 
         % Button pushed function: InputModelFileSearchButton
@@ -1039,12 +769,8 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Value changed function: InputOsimxFileEditField
         function InputOsimxFileEditFieldValueChanged(app, event)
-            value = app.InputOsimxFileEditField.Value;
-            if strcmp(value, "")
-                app.input_osimx_file = "";
-            else
-                app.input_osimx_file = GetFullPath(value);
-            end
+            app.input_osimx_file = ...
+                getPathFieldValue(app.InputOsimxFileEditField);
         end
 
         % Button pushed function: InputOsimxFileSearchButton
@@ -1059,12 +785,7 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Value changed function: InputDataEditField
         function InputDataEditFieldValueChanged(app, event)
-            value = app.InputDataEditField.Value;
-            if strcmp(value, "")
-                app.data_directory = "";
-            else
-                app.data_directory = GetFullPath(value);
-            end
+            app.data_directory = getPathFieldValue(app.InputDataEditField);
         end
 
         % Button pushed function: InputDataSearchButton
@@ -1079,12 +800,8 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Value changed function: MTPResultsDirEditField
         function MTPResultsDirEditFieldValueChanged(app, event)
-            value = app.MTPResultsDirEditField.Value;
-            if strcmp(value, "")
-                app.mtp_results_directory = "";
-            else
-                app.mtp_results_directory = GetFullPath(value);
-            end
+            app.mtp_results_directory = ...
+                getPathFieldValue(app.MTPResultsDirEditField);
         end
 
         % Button pushed function: MTPResultsDirSearchButton
@@ -1099,12 +816,8 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Value changed function: NCPResultsDirectoryEditField
         function NCPResultsDirectoryEditFieldValueChanged(app, event)
-            value = app.NCPResultsDirectoryEditField.Value;
-            if strcmp(value, "")
-                app.results_directory = "";
-            else
-                app.results_directory = GetFullPath(value);
-            end
+            app.results_directory = ...
+                getPathFieldValue(app.NCPResultsDirectoryEditField);
         end
 
         % Button pushed function: ResultsDirectorySearchButton
@@ -1155,46 +868,36 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Cell edit callback: NCPCostTermsTable
         function NCPCostTermsTableCellEdit(app, event)
-            indices = event.Indices;
-            isEnabled = app.NCPCostTermsTable.Data.isEnabled(indices(1));
-            if isEnabled
-                app.RCNLCostTerm{indices(1)}. ...
-                    is_enabled = 'true';
-            else
-                app.RCNLCostTerm{indices(1)}. ...
-                    is_enabled = 'false';
-            end
+            app.RCNLCostTerm{event.Indices(1)}.is_enabled = ...
+                boolToString(event.NewData);
             app.validateNCPCostTermsSilent();
             app.updateRunButton();
         end
 
         % Selection changed function: NCPCostTermsTable
         function NCPCostTermsTableSelectionChanged(app, event)
-            costTermIndex = app.NCPCostTermsTable.Selection;
-            app.NCPMaxAllowableErrorEditField.Value = ...
-                app.RCNLCostTerm{costTermIndex}. ...
-                max_allowable_error;
+            if isempty(app.NCPCostTermsTable.Selection)
+                return
+            end
+            showCostTermGui( ...
+                app.RCNLCostTerm{app.NCPCostTermsTable.Selection}, ...
+                app.NCPMaxAllowableErrorEditField, []);
             app.validateNCPCostTermsSilent();
         end
 
         % Value changed function: EnableMTLICheckBox
         function EnableMTLICheckBoxValueChanged(app, event)
-            if app.EnableMTLICheckBox.Value
-                app.MuscleTendonLengthInitialization.is_enabled = "true";
-            else
-                app.MuscleTendonLengthInitialization.is_enabled = "false";
-            end
+            app.MuscleTendonLengthInitialization.is_enabled = ...
+                boolToString(app.EnableMTLICheckBox.Value);
+            app.validateMtliConfig();
             app.updateRunButton();
         end
 
         % Value changed function: PassiveDataDirectoryEditField
         function PassiveDataDirectoryEditFieldValueChanged(app, event)
-            value = app.PassiveDataDirectoryEditField.Value;
-            if strcmp(value, "")
-                app.MuscleTendonLengthInitialization.passive_data_input_directory = "";
-            else
-                app.MuscleTendonLengthInitialization.passive_data_input_directory = GetFullPath(value);
-            end
+            app.MuscleTendonLengthInitialization. ...
+                passive_data_input_directory = ...
+                getPathFieldValue(app.PassiveDataDirectoryEditField);
         end
 
         % Button pushed function: PassiveDataDirectorySearchButton
@@ -1221,46 +924,14 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Cell edit callback: AdvancedSettingsTable
         function AdvancedSettingsTableCellEdit(app, event)
-            index = event.Indices(1);
-
-            if isnan(double(convertCharsToStrings(app.AdvancedSettingsTable.Data.Values(index))))
-                app.AdvancedSettingsTable.Data.Values(index) = "NaN";
-            else
-                app.advancedSettingValues(index) = app.AdvancedSettingsTable.Data.Values(index);
-            end
-            app.validateAdvancedSettingsSilent();
-            app.updateRunButton();
-        end
-
-        function isValid = validateAdvancedSettingsSilent(app)
-            removeStyle(app.AdvancedSettingsTable);
-            clearGuiError([], app.AdvancedSettingsError);
-            app.AdvancedSettingsTable.Tooltip = '';
-            isValid = true;
-            data = app.AdvancedSettingsTable.Data;
-            if isempty(data)
-                return
-            end
-            messages = string([]);
-            for row = 1:height(data)
-                if strcmp(data.Values(row), "NaN")
-                    addStyle(app.AdvancedSettingsTable, ...
-                        uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', row);
-                    messages(end+1) = data.Options(row) + ": must be a valid number";
-                    isValid = false;
-                end
-            end
-            if ~isValid
-                errorMsg = strjoin(messages, newline);
-                app.AdvancedSettingsTable.Tooltip = errorMsg;
-                throwGuiError(errorMsg, [], app.AdvancedSettingsError);
-            end
+            app.advancedSettingValues(event.Indices(1)) = ...
+                str2double(event.NewData);
         end
 
         % Value changed function: NCPMaxAllowableErrorEditField
         function NCPMaxAllowableErrorEditFieldValueChanged(app, event)
-            costTermIndex = app.NCPCostTermsTable.Selection;
-            app.RCNLCostTerm{costTermIndex}.max_allowable_error = ...
+            app.RCNLCostTerm{app.NCPCostTermsTable.Selection}. ...
+                max_allowable_error = ...
                 app.NCPMaxAllowableErrorEditField.Value;
             app.validateNCPCostTermsSilent();
             app.updateRunButton();
@@ -1287,15 +958,11 @@ classdef NCPBase < matlab.apps.AppBase
             if isempty(app.MtliCostTermsTable.Selection)
                 return
             end
-            costTermIndex = app.MtliCostTermsTable.Selection;
-            term = app.MuscleTendonLengthInitialization.RCNLCostTerm{costTermIndex};
-            app.MtliErrorCenterEditField.Value = term.error_center;
-            app.MtliMaxAllowableErrorEditField.Value = term.max_allowable_error;
-            if term.uses_error_center
-                app.MtliErrorCenterEditField.Enable = 'on';
-            else
-                app.MtliErrorCenterEditField.Enable = 'off';
-            end
+            showCostTermGui( ...
+                app.MuscleTendonLengthInitialization.RCNLCostTerm{ ...
+                app.MtliCostTermsTable.Selection}, ...
+                app.MtliMaxAllowableErrorEditField, ...
+                app.MtliErrorCenterEditField);
             app.validateMtliCostTermsSilent();
         end
 
@@ -1317,46 +984,28 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Cell edit callback: MtliCostTermsTable
         function MtliCostTermsTableCellEdit(app, event)
-            indices = event.Indices;
-            isEnabled = app.MtliCostTermsTable.Data.isEnabled(indices(1));
-            if isEnabled
-                app.MuscleTendonLengthInitialization.RCNLCostTerm{indices(1)}. ...
-                    is_enabled = "true";
-            else
-                app.MuscleTendonLengthInitialization.RCNLCostTerm{indices(1)}. ...
-                    is_enabled = "false";
-            end
+            app.MuscleTendonLengthInitialization.RCNLCostTerm{ ...
+                event.Indices(1)}.is_enabled = boolToString(event.NewData);
             app.validateMtliCostTermsSilent();
             app.updateRunButton();
         end
 
         % Cell edit callback: MtliAdvancedSettingsTable
         function MtliAdvancedSettingsTableCellEdit(app, event)
-            indices = event.Indices;
-            app.MuscleTendonLengthInitialization.setParameterValueByIndex(...
-                indices(1), app.MtliAdvancedSettingsTable.Data(indices(1), indices(2)).value);
+            app.MuscleTendonLengthInitialization.setParameterValueByIndex( ...
+                event.Indices(1), event.NewData);
             app.validateMtliAdvancedSettingsSilent();
             app.updateRunButton();
         end
 
         function loadSettingsFile(app, settingsFileName)
             app.resetAllFields();
-            settingsFilePath = fileparts(settingsFileName);
-            cd(settingsFilePath);
+            cd(fileparts(settingsFileName));
             app.currentSettingsFile = settingsFileName;
-            settingsTree = xml2struct(settingsFileName);
-            settingsTree = settingsTree.NMSMPipelineDocument. ...
-                NeuralControlPersonalizationTool;
-            settingsTree = formatXmlDataForGui(settingsTree);
-
-            fields = fieldnames(settingsTree);
-            for i = 1 : length(fields)
-                f = fields{i};
-                if isprop(app, f) && ~isstruct(settingsTree.(f))
-                    app.(f) = settingsTree.(f);
-                end
-            end
-            app.loadAdvancedParams(settingsTree);
+            settingsTree = loadGuiSettings(settingsFileName, ...
+                'NeuralControlPersonalizationTool');
+            applyStructToHandle(app, settingsTree);
+            app.loadOptimizationParams(settingsTree);
 
             if isfield(settingsTree, 'MuscleTendonLengthInitialization')
                 app.MuscleTendonLengthInitialization.loadFromStruct( ...
@@ -1364,48 +1013,37 @@ classdef NCPBase < matlab.apps.AppBase
                 app.updateMtliAdvancedSettingsTable();
             end
 
-            if isfield(settingsTree, 'RCNLCostTermSet') && ...
-                    isfield(settingsTree.RCNLCostTermSet, 'RCNLCostTerm')
-                terms = settingsTree.RCNLCostTermSet.RCNLCostTerm;
-                if ~iscell(terms); terms = {terms}; end
-                app.RCNLCostTerm = {};
-                for i = 1 : length(terms)
-                    app.RCNLCostTerm{i} = RCNLCostTermClass(terms{i});
-                end
+            costTerms = parseCostTermsFromStruct(settingsTree);
+            if ~isempty(costTerms)
+                app.RCNLCostTerm = costTerms;
             end
 
             if isfield(settingsTree, 'RCNLSynergySet') && ...
                     isfield(settingsTree.RCNLSynergySet, 'RCNLSynergy')
                 synergies = settingsTree.RCNLSynergySet.RCNLSynergy;
-                if ~iscell(synergies); synergies = {synergies}; end
-                app.RCNLSynergy = {};
+                if ~iscell(synergies)
+                    synergies = {synergies};
+                end
+                loadedSynergies = cell(1, length(synergies));
+                names = strings(1, length(synergies));
                 for i = 1 : length(synergies)
-                    app.RCNLSynergy{i} = RCNLSynergyClass(synergies{i});
+                    loadedSynergies{i} = RCNLSynergyClass(synergies{i});
+                    names(i) = loadedSynergies{i}.muscle_group_name;
                 end
-                names = strings(1, length(app.RCNLSynergy));
-                for i = 1 : length(app.RCNLSynergy)
-                    names(i) = app.RCNLSynergy{i}.muscle_group_name;
-                end
+                app.RCNLSynergy = loadedSynergies;
                 app.synergyGroups = names;
             end
 
-            app.validateCoordinateList();
-            app.validateTrialPrefixes();
             app.validateSynergyGroups();
             app.updateRunButton();
-            app.needToSave = false;
         end
 
         function saveSettingsFile(app, settingsFileName)
-            settingsFilePath = fileparts(settingsFileName);
-            cd(settingsFilePath);
+            cd(fileparts(settingsFileName));
             app.currentSettingsFile = settingsFileName;
-            settingsTree = makeNCPSettingsStruct(app, settingsFileName);
-            settingsFileStruct.NMSMPipelineDocument.NeuralControlPersonalizationTool = ...
-                settingsTree;
-            settingsFileStruct.NMSMPipelineDocument.Attributes.Version = ...
-                convertStringsToChars(getPipelineVersion());
-            struct2xml(settingsFileStruct, settingsFileName);
+            saveGuiSettings(settingsFileName, ...
+                'NeuralControlPersonalizationTool', ...
+                app.makeNCPSettingsStruct(settingsFileName));
         end
 
         function settingsTree = makeNCPSettingsStruct(app, settingsFileName)
@@ -1434,11 +1072,8 @@ classdef NCPBase < matlab.apps.AppBase
             settingsTree.MuscleTendonLengthInitialization.passive_data_input_directory = ...
                 getRelativePath(settingsTree.MuscleTendonLengthInitialization.passive_data_input_directory);
 
-            settingsTree.RCNLCostTermSet = struct("RCNLCostTerm", cell(1));
-            for i = 1 : length(app.RCNLCostTerm)
-                settingsTree.RCNLCostTermSet.RCNLCostTerm{i} = ...
-                    app.RCNLCostTerm{i}.toStruct();
-            end
+            settingsTree.RCNLCostTermSet = ...
+                makeCostTermSetStruct(app.RCNLCostTerm);
 
             settingsTree.RCNLSynergySet = struct("RCNLSynergy", cell(1));
             for i = 1 : length(app.RCNLSynergy)
@@ -1446,7 +1081,7 @@ classdef NCPBase < matlab.apps.AppBase
                     app.RCNLSynergy{i}.toStruct();
             end
 
-            settingsTree = setOptimizationParams(app, settingsTree);
+            settingsTree = app.setOptimizationParams(settingsTree);
             settingsTree = formatGuiDataForXml(settingsTree);
         end
 
@@ -1457,13 +1092,14 @@ classdef NCPBase < matlab.apps.AppBase
             end
         end
 
-        function loadAdvancedParams(app, settingsTree)
+        function loadOptimizationParams(app, settingsTree)
+            values = app.advancedSettingValues;
             for i = 1 : length(app.advancedSettingNames)
-                paramName = app.advancedSettingNames(i);
-                if isfield(settingsTree, paramName)
-                    app.advancedSettingValues(i) = settingsTree.(paramName);
+                if isfield(settingsTree, app.advancedSettingNames(i))
+                    values(i) = settingsTree.(app.advancedSettingNames(i));
                 end
             end
+            app.advancedSettingValues = values;
         end
 
         function resetAllFields(app)
@@ -1471,6 +1107,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.dataDirectoryValid = false;
             app.mtpResultsDirectoryValid = false;
             app.ncpResultsDirectoryValid = false;
+
             app.input_model_file = "";
             app.input_osimx_file = "";
             app.data_directory = "";
@@ -1478,21 +1115,14 @@ classdef NCPBase < matlab.apps.AppBase
             app.results_directory = "";
             app.coordinate_list = [];
             app.trial_prefixes = [];
-            app.v_max_factor = 10;
 
             app.activation_muscle_groups = [];
             app.normalized_fiber_length_muscle_groups = [];
 
-            app.MuscleTendonLengthInitialization = ...
-                MuscleTendonLengthInitializationClass();
             app.initMtli();
-            app.updateMtliCostTermsFields();
-            app.updateEnableMtliBox();
-            app.updatePassiveDataDirectory();
-            app.maxFiberLengthListenerFunction();
-            app.minFiberLengthListenerFunction();
             app.MtliErrorCenterEditField.Value = 0;
             app.MtliMaxAllowableErrorEditField.Value = 0;
+
             app.makeDefaultCostTermSet();
             app.RCNLSynergy = cell(0);
             app.synergyGroups = string([]);
@@ -1500,25 +1130,8 @@ classdef NCPBase < matlab.apps.AppBase
 
             app.objectSelectionType = "";
             app.currentSettingsFile = "";
-            app.needToSave = false;
 
-            app.advancedSettingNames = ...
-                ["v_max_factor"
-                "max_iterations"
-                "max_function_evaluations"
-                "step_tolerance"
-                "function_tolerance"
-                "optimality_tolerance"
-                "diff_min_change"];
-
-            app.advancedSettingValues = ...
-                [10
-                1000
-                100000000
-                1e-6
-                1e-6
-                1e-6
-                0.0001];
+            app.advancedSettingValues = app.defaultAdvancedSettingValues;
             app.updateRunButton();
         end
     end
@@ -2220,21 +1833,6 @@ classdef NCPBase < matlab.apps.AppBase
             app.ResetButton.FontColor = [1 1 1];
             app.ResetButton.Position = [384 23 90 30];
             app.ResetButton.Text = 'Reset';
-
-            % Create ContextMenu
-            app.ContextMenu = uicontextmenu(app.UIFigure);
-
-            % Create RenameMenu
-            app.RenameMenu = uimenu(app.ContextMenu);
-            app.RenameMenu.Text = 'Rename';
-
-            % Create CopyMenu
-            app.CopyMenu = uimenu(app.ContextMenu);
-            app.CopyMenu.Text = 'Copy';
-
-            % Create DeleteMenu
-            app.DeleteMenu = uimenu(app.ContextMenu);
-            app.DeleteMenu.Text = 'Delete';
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
