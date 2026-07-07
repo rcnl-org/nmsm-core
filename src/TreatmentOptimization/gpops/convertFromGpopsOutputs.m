@@ -32,13 +32,10 @@ if isfield(inputs, "optimizeSynergyVectors") && ...
         inputs.optimizeSynergyVectors
     solution.phase.parameter = [solution.parameter];
 else
-    if strcmp(inputs.toolName, "DesignOptimization")
-        if isfield(solution, 'parameter')
-            solution.phase.parameter = [solution.parameter];
-        end
+    if isfield(solution, 'parameter')
+        solution.phase.parameter = [solution.parameter];
     end
 end
 output = computeGpopsContinuousFunction(solution);
 output.solution = solution;
 end
-

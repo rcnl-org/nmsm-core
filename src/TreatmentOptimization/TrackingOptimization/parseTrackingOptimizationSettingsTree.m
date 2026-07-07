@@ -31,6 +31,7 @@
 function [inputs, params] = ...
     parseTrackingOptimizationSettingsTree(settingsTree)
 inputs = parseTreatmentOptimizationInputs(settingsTree);
+inputs = parseUserDefinedFunctions(settingsTree, inputs);
 params = parseTreatmentOptimizationParams(settingsTree);
 end
 

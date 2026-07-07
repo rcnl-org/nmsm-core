@@ -36,6 +36,7 @@ if isfield(inputs, "optimizeSynergyVectors") && ...
     throw(MException('VerificationOptimizationTool:parseVerificationOptimizationSettingsTree', ...
         'Verification Optimization does not support synergy vector optimization.'));
 end
+inputs = parseUserDefinedFunctions(settingsTree, inputs);
 params = parseTreatmentOptimizationParams(settingsTree);
 end
 
