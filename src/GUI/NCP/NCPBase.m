@@ -111,7 +111,7 @@ classdef NCPBase < matlab.apps.AppBase
     end
 
     properties (Access = private)  % private UI components not in appModel
-        NCPResultsDirStatus             matlab.ui.control.Image
+        NCPResultsDirectoryStatus       matlab.ui.control.Image
         SynergyGroupsStatus             matlab.ui.control.Image
         NCPCostTermsStatus              matlab.ui.control.Image
         MtliCostTermsStatus             matlab.ui.control.Image
@@ -176,7 +176,7 @@ classdef NCPBase < matlab.apps.AppBase
 
         defaultAdvancedSettingValues = ...
             [10
-            1000
+            1000 
             100000000
             1e-6
             1e-6
@@ -530,7 +530,7 @@ classdef NCPBase < matlab.apps.AppBase
                 app.results_directory, ...
                 "NCP results directory is required.", ...
                 app.NCPResultsDirectoryEditField, ...
-                app.NCPResultsDirStatus, app.NCPResultsDirStatus, ...
+                app.NCPResultsDirectoryStatus, app.NCPResultsDirectoryStatus, ...
                 @validateResultsDirectoryGui);
         end
 
@@ -1203,10 +1203,9 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create InputModelFileStatus
             app.InputModelFileStatus = uiimage(app.InputsTab);
-            app.InputModelFileStatus.Visible = 'on';
-            app.InputModelFileStatus.Tooltip = 'Input model file is required.';
+            app.InputModelFileStatus.Visible = 'off';
             app.InputModelFileStatus.Position = [718 516 28 30];
-            app.InputModelFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            app.InputModelFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create InputOsimxFileSearchButton
             app.InputOsimxFileSearchButton = uibutton(app.InputsTab, 'push');
@@ -1234,6 +1233,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.InputOsimxFileStatus = uiimage(app.InputsTab);
             app.InputOsimxFileStatus.Visible = 'off';
             app.InputOsimxFileStatus.Position = [718 461 28 30];
+            app.InputOsimxFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create InputDataSearchButton
             app.InputDataSearchButton = uibutton(app.InputsTab, 'push');
@@ -1251,10 +1251,9 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create InputDataStatus
             app.InputDataStatus = uiimage(app.InputsTab);
-            app.InputDataStatus.Visible = 'on';
-            app.InputDataStatus.Tooltip = 'Input data directory is required.';
+            app.InputDataStatus.Visible = 'off';
             app.InputDataStatus.Position = [718 409 28 30];
-            app.InputDataStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            app.InputDataStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create ResultsDirectorySearchButton
             app.ResultsDirectorySearchButton = uibutton(app.InputsTab, 'push');
@@ -1278,12 +1277,11 @@ classdef NCPBase < matlab.apps.AppBase
             app.NCPResultsDirectoryEditField.ValueChangedFcn = createCallbackFcn(app, @NCPResultsDirectoryEditFieldValueChanged, true);
             app.NCPResultsDirectoryEditField.Position = [218 308 450 30];
 
-            % Create NCPResultsDirStatus
-            app.NCPResultsDirStatus = uiimage(app.InputsTab);
-            app.NCPResultsDirStatus.Visible = 'on';
-            app.NCPResultsDirStatus.Tooltip = 'NCP results directory is required.';
-            app.NCPResultsDirStatus.Position = [718 308 28 30];
-            app.NCPResultsDirStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create NCPResultsDirectoryStatus
+            app.NCPResultsDirectoryStatus = uiimage(app.InputsTab);
+            app.NCPResultsDirectoryStatus.Visible = 'off';
+            app.NCPResultsDirectoryStatus.Position = [718 308 28 30];
+            app.NCPResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create InputDataDirectoryEditFieldLabel
             app.InputDataDirectoryEditFieldLabel = uilabel(app.InputsTab);
@@ -1309,10 +1307,9 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create CoordinateListStatus
             app.CoordinateListStatus = uiimage(app.InputsTab);
-            app.CoordinateListStatus.Visible = 'on';
-            app.CoordinateListStatus.Tooltip = 'At least one coordinate must be selected.';
+            app.CoordinateListStatus.Visible = 'off';
             app.CoordinateListStatus.Position = [718 184 28 30];
-            app.CoordinateListStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            app.CoordinateListStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create CoordinateListEditButton
             app.CoordinateListEditButton = uibutton(app.InputsTab, 'push');
@@ -1341,13 +1338,13 @@ classdef NCPBase < matlab.apps.AppBase
             app.TrialPrefixesStatus = uiimage(app.InputsTab);
             app.TrialPrefixesStatus.Visible = 'off';
             app.TrialPrefixesStatus.Position = [672 64 28 30];
+            app.TrialPrefixesStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create MTPResultsDirStatus
             app.MTPResultsDirStatus = uiimage(app.InputsTab);
-            app.MTPResultsDirStatus.Visible = 'on';
-            app.MTPResultsDirStatus.Tooltip = 'MTP results directory is required.';
+            app.MTPResultsDirStatus.Visible = 'off';
             app.MTPResultsDirStatus.Position = [718 360 28 30];
-            app.MTPResultsDirStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            app.MTPResultsDirStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create MTPResultsDirSearchButton
             app.MTPResultsDirSearchButton = uibutton(app.InputsTab, 'push');
@@ -1479,11 +1476,6 @@ classdef NCPBase < matlab.apps.AppBase
             app.EditNCPCostTermsLabel.Position = [100 524 560 23];
             app.EditNCPCostTermsLabel.Text = 'Edit Cost Terms';
 
-            % Create NCPCostTermsStatus
-            app.NCPCostTermsStatus = uiimage(app.CostTermsTab);
-            app.NCPCostTermsStatus.Visible = 'off';
-            app.NCPCostTermsStatus.Position = [451 522 28 30];
-
             % Create EditSynergySetsLabel
             app.EditSynergySetsLabel = uilabel(app.CostTermsTab);
             app.EditSynergySetsLabel.HorizontalAlignment = 'center';
@@ -1501,12 +1493,17 @@ classdef NCPBase < matlab.apps.AppBase
             app.AddSynergyGroupButton.Position = [580 97 173 30];
             app.AddSynergyGroupButton.Text = 'Add Synergy Group';
 
+            % Create NCPCostTermsStatus
+            app.NCPCostTermsStatus = uiimage(app.CostTermsTab);
+            app.NCPCostTermsStatus.Visible = 'off';
+            app.NCPCostTermsStatus.Position = [459 520 28 30];
+            app.NCPCostTermsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
             % Create SynergyGroupsStatus
             app.SynergyGroupsStatus = uiimage(app.CostTermsTab);
-            app.SynergyGroupsStatus.Visible = 'on';
-            app.SynergyGroupsStatus.Tooltip = 'At least one synergy group is required.';
-            app.SynergyGroupsStatus.Position = [460 208 28 28];
-            app.SynergyGroupsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            app.SynergyGroupsStatus.Visible = 'off';
+            app.SynergyGroupsStatus.Position = [465 207 28 30];
+            app.SynergyGroupsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create AuxiliaryTab
             app.AuxiliaryTab = uitab(app.TabGroup);
@@ -1524,6 +1521,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.PassiveDataDirectoryStatus = uiimage(app.AuxiliaryTab);
             app.PassiveDataDirectoryStatus.Visible = 'off';
             app.PassiveDataDirectoryStatus.Position = [719 468 28 30];
+            app.PassiveDataDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create PassiveDataDirectorySearchButton
             app.PassiveDataDirectorySearchButton = uibutton(app.AuxiliaryTab, 'push');
@@ -1585,11 +1583,6 @@ classdef NCPBase < matlab.apps.AppBase
             app.AdvancedSettingsLabel.FontWeight = 'bold';
             app.AdvancedSettingsLabel.Position = [502 342 167 23];
             app.AdvancedSettingsLabel.Text = 'Advanced Settings';
-
-            % Create MtliAdvancedSettingsStatus
-            app.MtliAdvancedSettingsStatus = uiimage(app.AuxiliaryTab);
-            app.MtliAdvancedSettingsStatus.Visible = 'off';
-            app.MtliAdvancedSettingsStatus.Position = [673 340 28 30];
 
             % Create AuxCostTermPanel
             app.AuxCostTermPanel = uipanel(app.AuxiliaryTab);
@@ -1660,7 +1653,14 @@ classdef NCPBase < matlab.apps.AppBase
             % Create MtliCostTermsStatus
             app.MtliCostTermsStatus = uiimage(app.AuxiliaryTab);
             app.MtliCostTermsStatus.Visible = 'off';
-            app.MtliCostTermsStatus.Position = [277 340 28 30];
+            app.MtliCostTermsStatus.Position = [274 338 28 30];
+            app.MtliCostTermsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create MtliAdvancedSettingsStatus
+            app.MtliAdvancedSettingsStatus = uiimage(app.AuxiliaryTab);
+            app.MtliAdvancedSettingsStatus.Visible = 'off';
+            app.MtliAdvancedSettingsStatus.Position = [673 338 28 30];
+            app.MtliAdvancedSettingsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create AdvancedTab
             app.AdvancedTab = uitab(app.TabGroup);
@@ -1679,7 +1679,8 @@ classdef NCPBase < matlab.apps.AppBase
             % Create AdvancedSettingsStatus
             app.AdvancedSettingsStatus = uiimage(app.AdvancedTab);
             app.AdvancedSettingsStatus.Visible = 'off';
-            app.AdvancedSettingsStatus.Position = [654 499 28 30];
+            app.AdvancedSettingsStatus.Position = [371 510 28 30];
+            app.AdvancedSettingsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);
@@ -1776,13 +1777,12 @@ classdef NCPBase < matlab.apps.AppBase
             app.RunButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.RunButton.FontSize = 18;
             app.RunButton.FontColor = [1 1 1];
-            app.RunButton.Enable = 'on';
+            app.RunButton.Enable = 'off';
             app.RunButton.Position = [742 23 90 30];
             app.RunButton.Text = 'Run';
 
             % Create ResetButton
             app.ResetButton = uibutton(app.UIFigure, 'push');
-            app.ResetButton.ButtonPushedFcn = createCallbackFcn(app, @ResetButtonPushed, true);
             app.ResetButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.ResetButton.FontSize = 18;
             app.ResetButton.FontColor = [1 1 1];
