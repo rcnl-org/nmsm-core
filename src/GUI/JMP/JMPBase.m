@@ -1368,8 +1368,6 @@ classdef JMPBase < matlab.apps.AppBase
             app.TasksTable.ColumnEditable = true;
             app.TasksTable.RowStriping = 'off';
             app.TasksTable.CellEditCallback = createCallbackFcn(app, @TasksTableCellEdit, true);
-            app.TasksTable.DoubleClickedFcn = createCallbackFcn(app, @TasksTableDoubleClicked, true);
-            app.TasksTable.DisplayDataChangedFcn = createCallbackFcn(app, @TasksTableDisplayDataChanged, true);
             app.TasksTable.SelectionChangedFcn = createCallbackFcn(app, @TasksTableSelectionChanged, true);
             app.TasksTable.Multiselect = 'off';
             app.TasksTable.FontSize = 18;

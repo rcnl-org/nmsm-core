@@ -1783,6 +1783,7 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create ResetButton
             app.ResetButton = uibutton(app.UIFigure, 'push');
+            app.ResetButton.ButtonPushedFcn = createCallbackFcn(app, @ResetButtonPushed, true);
             app.ResetButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.ResetButton.FontSize = 18;
             app.ResetButton.FontColor = [1 1 1];

@@ -2204,6 +2204,7 @@ classdef MTPBase < matlab.apps.AppBase
 
             % Create CopyMenu
             app.CopyMenu = uimenu(app.ContextMenu);
+            app.CopyMenu.MenuSelectedFcn = createCallbackFcn(app, @CopyMenuSelected, true);
             app.CopyMenu.Text = 'Copy';
 
             % Create DeleteMenu
