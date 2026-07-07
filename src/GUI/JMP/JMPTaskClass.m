@@ -52,6 +52,7 @@ classdef JMPTaskClass < handle
 
         function struct = toStruct(obj)
             struct.Attributes.name = obj.name;
+            struct.index = obj.index;
             struct.is_enabled = obj.is_enabled;
             struct.time_range = obj.time_range;
             struct.marker_file_name = obj.marker_file_name;

@@ -644,10 +644,16 @@ classdef JMPBase < matlab.apps.AppBase
                 app.output_model_file, settingsFilePath);
             settingsTree.JMPTaskList = struct("JMPTask", cell(1));
             for i = 1 : length(app.JMPTask)
-                settingsTree.JMPTaskList.JMPTask{i} = app.JMPTask{i}.toStruct();
-                settingsTree.JMPTaskList.JMPTask{i}.marker_file_name = ...
-                    getRelativePath(settingsTree.JMPTaskList.JMPTask{i}. ...
-                    marker_file_name, settingsFilePath);
+                task = app.JMPTask{i}.toStruct();
+                task.marker_file_name = getRelativePath( ...
+                    task.marker_file_name, settingsFilePath);
+                if isempty(task.JMPJointSet.JMPJoint)
+                    task = rmfield(task, 'JMPJointSet');
+                end
+                if isempty(task.JMPBodySet.JMPBody)
+                    task = rmfield(task, 'JMPBodySet');
+                end
+                settingsTree.JMPTaskList.JMPTask{i} = task;
             end
             settingsTree = app.setOptimizationParams(settingsTree);
             settingsTree = formatGuiDataForXml(settingsTree);
@@ -992,6 +998,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.JMPTask{app.taskIndex}.loadFromStruct(sourceTask);
             app.JMPTask{app.taskIndex}.name = "Copy of " + ...
                 sourceTask.Attributes.name;
+            app.JMPTask{app.taskIndex}.index = app.taskIndex;
             app.updateTasksPanel();
         end
 
