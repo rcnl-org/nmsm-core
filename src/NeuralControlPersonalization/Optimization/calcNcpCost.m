@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Xuanning Liu                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,9 +29,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcNcpCost(activations, inputs, params, values)
-
-error = [];
+function cost = calcNcpCost(values, inputs, params)
+[activations, ~, commands] = calcActivationsFromSynergyDesignVariables(values, inputs);
+cost = 0;
 % Split activations into subsets ahead of cost computation
 if isfield(inputs, 'mtpActivationsColumnNames')
     [activationsWithMtpData, activationsWithoutMtpData] = ...
@@ -45,13 +45,9 @@ for term = 1:length(params.costTerms)
     if costTerm.isEnabled
         switch costTerm.type
             case "moment_tracking"
-                [normalizedFiberLengths, normalizedFiberVelocities] = ...
-                    calcNormalizedMuscleFiberLengthsAndVelocities( ...
-                    inputs, inputs.optimalFiberLengthScaleFactors, ...
-                    inputs.tendonSlackLengthScaleFactors);
                 muscleJointMoments = calcMuscleJointMoments(inputs, ...
-                    activations, normalizedFiberLengths, ...
-                    normalizedFiberVelocities);
+                    activations, inputs.normalizedFiberLengths, ...
+                    inputs.normalizedFiberVelocities);
                 rawCost = muscleJointMoments - ...
                     inputs.inverseDynamicsMoments;
             case "activation_tracking"
@@ -80,10 +76,9 @@ for term = 1:length(params.costTerms)
                 throw(MException('', ['Cost term type ' costTerm.type ...
                     ' does not exist for this tool.']))
         end
-        error = [error; (rawCost(:) / costTerm.maxAllowableError) / ...
-            sqrt(numel(rawCost))];
+        rawCost = rawCost(:);
+        rawCost_scaled = (rawCost / costTerm.maxAllowableError) / sqrt(numel(rawCost));
+        cost = cost + rawCost_scaled.' * rawCost_scaled;
     end
 end
-
-cost = error' * error;
 end

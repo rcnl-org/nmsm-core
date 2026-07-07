@@ -1,11 +1,9 @@
-function activations = calcActivationsFromSynergyDesignVariables( ...
-    values, inputs, params)
-[weights, commands] = findSynergyWeightsAndCommands(values, inputs, params);
+function [activations, weights, commands] = calcActivationsFromSynergyDesignVariables( ...
+    values, inputs)
+[weights, commands, ~] = findSynergyWeightsAndCommands(values, inputs);
 
-activations = zeros(inputs.numTrials, inputs.numMuscles, inputs.numPoints);
-
-for i = 1:inputs.numTrials
-    activations(i, :, :) =  weights' * squeeze(commands(i, :, :))';
-end
-
+commands2d = reshape(commands, [], inputs.numSynergies);
+activations2d = commands2d * weights;
+activations = permute(reshape(activations2d, inputs.numTrials, ...
+    inputs.numPoints, inputs.numMuscles), [1 3 2]);
 end

@@ -23,7 +23,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Xuanning Liu                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -43,7 +43,7 @@ verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
 params = finalizeParams(params);
 inputs = finalizeInputs(inputs);
-initialValues = prepareInitialValues(inputs);
+initialValues = prepareNcpInitialValues(inputs, params);
 finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
     params);
 end
@@ -69,7 +69,6 @@ end
 
 
 function inputs = finalizeInputs(inputs)
-inputs.numNodes = valueOrAlternate(inputs, "numNodes", 21);
 inputs.numPoints = valueOrAlternate(inputs, "numPoints", ...
     size(inputs.muscleTendonLength, 3));
 inputs.vMaxFactor = valueOrAlternate(inputs, "vMaxFactor", 10);
@@ -81,7 +80,24 @@ for i = 1 : length(inputs.synergyGroups)
     inputs.numSynergies = inputs.numSynergies + ...
     inputs.synergyGroups{i}.numSynergies;
 end
+inputs.numWeightsPerGroup = cellfun( ...
+    @(g) g.numSynergies * length(g.muscleNames), inputs.synergyGroups);
 inputs.numTrials = size(inputs.momentArms, 1);
+
+% BJ's Runboh Bspline + precompute matrix, replace MATLAB spline because:
+% Compatible with Auto Diff; won't create negative values; faster
+degree = 3;
+percent = linspace(0, 100, inputs.numPoints).';
+interval = percent(2) - percent(1);
+[Bmatrix, ~, ~] = BSplineMatrices(degree, inputs.numNodes, ...
+    inputs.numPoints, interval);
+inputs.Bmatrix = Bmatrix;
+inputs.invBmatrix = pinv(Bmatrix);
+
+[inputs.normalizedFiberLengths, inputs.normalizedFiberVelocities] = ...
+    calcNormalizedMuscleFiberLengthsAndVelocities( ...
+    inputs, inputs.optimalFiberLengthScaleFactors, ...
+    inputs.tendonSlackLengthScaleFactors);
 end
 
 function params = finalizeParams(params)
@@ -89,17 +105,4 @@ params.activationGroups = valueOrAlternate(params, "activationGroups", ...
     {});
 params.normalizedFiberLengthGroups = valueOrAlternate(params, ...
     "normalizedFiberLengthGroups", {});
-end
-
-% (struct, struct) -> (6 x numEnabledMuscles matrix of number)
-% extract initial version of optimized values from inputs/params
-function values = prepareInitialValues(inputs)
-values = [];
-for i = 1:length(inputs.synergyGroups)
-    values = [values; 0.01 * ...
-        ones(inputs.synergyGroups{i}.numSynergies * ...
-        length(inputs.synergyGroups{i}.muscleNames), 1)];
-end
-values = [values; ones(inputs.numSynergies * ...
-    inputs.numNodes * inputs.numTrials, 1)];
 end

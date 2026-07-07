@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Xuanning Liu                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -40,7 +40,20 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
-outputLogFile = fullfile("commandWindowOutput.txt");
+if exist(resultsDirectory, "dir")
+    answer = input(sprintf( ...
+        'Results folder "%s" already exists. Continue and overwrite? [y/n]: ', ...
+        resultsDirectory), 's');
+    if ~strcmpi(strtrim(answer), 'y')
+        fprintf('NCP run cancelled.\n');
+        return
+    end
+else
+    mkdir(resultsDirectory);
+end
+[~, fname, fext] = fileparts(settingsFileName);
+copyfile(settingsFileName, fullfile(resultsDirectory, [fname fext]));
+outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
 diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
@@ -50,8 +63,8 @@ if isstruct(precalInputs)
 end
 
 [optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
-[synergyWeights, synergyCommands] = findSynergyWeightsAndCommands( ...
-    optimizedValues, inputs, params);
+[synergyWeights, synergyCommands, ~] = findSynergyWeightsAndCommands( ...
+    optimizedValues, inputs);
 [synergyWeights, synergyCommands] = normalizeSynergiesByMaximumWeight(...
     synergyWeights, synergyCommands);
 [combinedActivations, ncpActivations] = combineFinalActivations(inputs, ...
@@ -65,11 +78,6 @@ saveNeuralControlPersonalizationResults(synergyWeights, ...
     ncpMuscleJointMoments, inputs, resultsDirectory, precalInputs);
 fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
 diary off
-try
-    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
-catch
-end
 end
 
 function [combinedActivations, synergyActivations] = ...
@@ -92,11 +100,8 @@ end
 
 function muscleJointMoments = calcFinalMuscleJointMoments(inputs, ...
     activations)
-[normalizedFiberLengths, normalizedFiberVelocities] = ...
-    calcNormalizedMuscleFiberLengthsAndVelocities( ...
-    inputs, inputs.optimalFiberLengthScaleFactors, ...
-    inputs.tendonSlackLengthScaleFactors);
 muscleJointMoments = calcMuscleJointMoments(inputs, ...
-    activations, normalizedFiberLengths, ...
-    normalizedFiberVelocities);
+    activations, inputs.normalizedFiberLengths, ...
+    inputs.normalizedFiberVelocities);
+
 end
