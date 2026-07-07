@@ -48,28 +48,26 @@ classdef NCPBase < matlab.apps.AppBase
         MTPResultsDirectoryLabel        matlab.ui.control.Label
         MTPResultsDirEditField          matlab.ui.control.EditField
         MTPResultsDirSearchButton       matlab.ui.control.Button
-        MTPResultsDirError              matlab.ui.control.Image
-        TaskPrefixesError               matlab.ui.control.Image
-        TaskPrefixesWarning             matlab.ui.control.Image
+        MTPResultsDirStatus             matlab.ui.control.Image
+        TaskPrefixesStatus              matlab.ui.control.Image
         TrialPrefixesEditField          matlab.ui.control.EditField
         TrialPrefixesEditFieldLabel     matlab.ui.control.Label
         CoordinateListEditButton        matlab.ui.control.Button
-        CoordinateListWarning           matlab.ui.control.Image
+        CoordinateListStatus            matlab.ui.control.Image
         CoordinatesListTextAreaLabel    matlab.ui.control.Label
         CoordinatesListTextArea         matlab.ui.control.TextArea
         InputDataDirectoryEditFieldLabel  matlab.ui.control.Label
-        ResultsDirectoryError           matlab.ui.control.Image
         NCPResultsDirectoryEditField    matlab.ui.control.EditField
         NCPResultsDirectoryEditFieldLabel  matlab.ui.control.Label
         ResultsDirectorySearchButton    matlab.ui.control.Button
-        InputDataError                  matlab.ui.control.Image
+        InputDataStatus                 matlab.ui.control.Image
         InputDataEditField              matlab.ui.control.EditField
         InputDataSearchButton           matlab.ui.control.Button
-        InputOsimxFileWarning           matlab.ui.control.Image
+        InputOsimxFileStatus            matlab.ui.control.Image
         InputOsimxFileEditField         matlab.ui.control.EditField
         InputOsimxFileEditFieldLabel    matlab.ui.control.Label
         InputOsimxFileSearchButton      matlab.ui.control.Button
-        InputModelFileError             matlab.ui.control.Image
+        InputModelFileStatus            matlab.ui.control.Image
         InputModelFileEditField         matlab.ui.control.EditField
         InputModelFileEditFieldLabel    matlab.ui.control.Label
         InputModelFileSearchButton      matlab.ui.control.Button
@@ -105,7 +103,7 @@ classdef NCPBase < matlab.apps.AppBase
         PassiveDataDirectoryEditField   matlab.ui.control.EditField
         PassiveDataDirectoryEditFieldLabel  matlab.ui.control.Label
         PassiveDataDirectorySearchButton  matlab.ui.control.Button
-        PassiveDataDirectoryError       matlab.ui.control.Image
+        PassiveDataDirectoryStatus      matlab.ui.control.Image
         EnableMTLICheckBox              matlab.ui.control.CheckBox
         AdvancedTab                     matlab.ui.container.Tab
         AdvancedSettingsTable           matlab.ui.control.Table
@@ -113,18 +111,12 @@ classdef NCPBase < matlab.apps.AppBase
     end
 
     properties (Access = private)  % private UI components not in appModel
-        ResultsDirectoryWarning         matlab.ui.control.Image
-        InputModelFileRequired          matlab.ui.control.Image
-        InputDataRequired               matlab.ui.control.Image
-        MTPResultsDirRequired           matlab.ui.control.Image
-        NCPResultsDirRequired           matlab.ui.control.Image
-        PassiveDataDirectoryRequired    matlab.ui.control.Image
-        SynergyGroupsRequired           matlab.ui.control.Image
-        SynergyGroupsError              matlab.ui.control.Image
-        NCPCostTermsError               matlab.ui.control.Image
-        MtliCostTermsError              matlab.ui.control.Image
-        MtliAdvancedSettingsError       matlab.ui.control.Image
-        AdvancedSettingsError           matlab.ui.control.Image
+        NCPResultsDirStatus             matlab.ui.control.Image
+        SynergyGroupsStatus             matlab.ui.control.Image
+        NCPCostTermsStatus              matlab.ui.control.Image
+        MtliCostTermsStatus             matlab.ui.control.Image
+        MtliAdvancedSettingsStatus      matlab.ui.control.Image
+        AdvancedSettingsStatus          matlab.ui.control.Image
     end
 
 
@@ -422,14 +414,14 @@ classdef NCPBase < matlab.apps.AppBase
         function isValid = validateMtliAdvancedSettingsSilent(app)
             if ~strcmp(app.MuscleTendonLengthInitialization.is_enabled, 'true')
                 removeStyle(app.MtliAdvancedSettingsTable);
-                clearGuiError([], app.MtliAdvancedSettingsError);
+                setGuiFieldStatus([], app.MtliAdvancedSettingsStatus, "none");
                 app.MtliAdvancedSettingsTable.Tooltip = '';
                 isValid = true;
                 return
             end
             isValid = validateParameterTableGui( ...
                 app.MuscleTendonLengthInitialization, ...
-                app.MtliAdvancedSettingsTable, app.MtliAdvancedSettingsError);
+                app.MtliAdvancedSettingsTable, app.MtliAdvancedSettingsStatus);
         end
 
         function updateNCPCostTermsTable(app)
@@ -441,7 +433,7 @@ classdef NCPBase < matlab.apps.AppBase
         function isValid = validateNCPCostTermsSilent(app)
             isValid = validateCostTermsGui(app.RCNLCostTerm, ...
                 app.NCPCostTermsTable, app.NCPMaxAllowableErrorEditField, ...
-                app.NCPCostTermsError, "cost term");
+                app.NCPCostTermsStatus, "cost term");
         end
 
         function updateRCNLSynergy(app)
@@ -480,7 +472,7 @@ classdef NCPBase < matlab.apps.AppBase
         function isValid = validateMtliCostTermsSilent(app)
             if ~strcmp(app.MuscleTendonLengthInitialization.is_enabled, 'true')
                 removeStyle(app.MtliCostTermsTable);
-                clearGuiError([], app.MtliCostTermsError);
+                setGuiFieldStatus([], app.MtliCostTermsStatus, "none");
                 app.MtliMaxAllowableErrorEditField.BackgroundColor = [1 1 1];
                 isValid = true;
                 return
@@ -488,28 +480,28 @@ classdef NCPBase < matlab.apps.AppBase
             isValid = validateCostTermsGui( ...
                 app.MuscleTendonLengthInitialization.RCNLCostTerm, ...
                 app.MtliCostTermsTable, app.MtliMaxAllowableErrorEditField, ...
-                app.MtliCostTermsError, "MTLI cost term");
+                app.MtliCostTermsStatus, "MTLI cost term");
         end
 
         function validateInputModelFile(app)
             app.inputModelValid = validateRequiredFieldGui( ...
                 app.input_model_file, "Input model file is required.", ...
-                app.InputModelFileEditField, app.InputModelFileError, ...
-                app.InputModelFileRequired, ...
+                app.InputModelFileEditField, app.InputModelFileStatus, ...
+                app.InputModelFileStatus, ...
                 @(value, field, icon)validateOsimFileGui(app, value, field, icon));
         end
 
         function validateInputOsimxFile(app)
             validateOsimxFileGui(app, app.input_osimx_file, ...
                 app.input_model_file, ...
-                app.InputOsimxFileEditField, app.InputOsimxFileWarning);
+                app.InputOsimxFileEditField, app.InputOsimxFileStatus);
         end
 
         function validateDataDirectory(app)
             app.dataDirectoryValid = validateRequiredFieldGui( ...
                 app.data_directory, "Input data directory is required.", ...
-                app.InputDataEditField, app.InputDataError, ...
-                app.InputDataRequired, ...
+                app.InputDataEditField, app.InputDataStatus, ...
+                app.InputDataStatus, ...
                 @(value, field, icon)validateDataDirectoryGui(value, ...
                 ["EMGData", "IDData", "MAData"], field, icon));
             if app.dataDirectoryValid
@@ -529,8 +521,8 @@ classdef NCPBase < matlab.apps.AppBase
             app.mtpResultsDirectoryValid = validateRequiredFieldGui( ...
                 app.mtp_results_directory, ...
                 "MTP results directory is required.", ...
-                app.MTPResultsDirEditField, app.MTPResultsDirError, ...
-                app.MTPResultsDirRequired, @validateFileExistsGui);
+                app.MTPResultsDirEditField, app.MTPResultsDirStatus, ...
+                app.MTPResultsDirStatus, @validateFileExistsGui);
         end
 
         function validateNcpResultsDirectory(app)
@@ -538,54 +530,51 @@ classdef NCPBase < matlab.apps.AppBase
                 app.results_directory, ...
                 "NCP results directory is required.", ...
                 app.NCPResultsDirectoryEditField, ...
-                app.ResultsDirectoryWarning, app.NCPResultsDirRequired, ...
+                app.NCPResultsDirStatus, app.NCPResultsDirStatus, ...
                 @validateResultsDirectoryGui);
         end
 
         function isValid = validateCoordinateList(app)
             app.coordinateListValid = ~isEmptyStringList(app.coordinate_list);
             if app.coordinateListValid
-                clearGuiError([], app.CoordinateListWarning);
+                setGuiFieldStatus([], app.CoordinateListStatus, "none");
             else
-                throwGuiRequired("At least one coordinate must be selected.", ...
-                    [], app.CoordinateListWarning);
+                setGuiFieldStatus([], app.CoordinateListStatus, "required", ...
+                    "At least one coordinate must be selected.");
             end
             isValid = app.coordinateListValid;
         end
 
         function isValid = validateTrialPrefixes(app)
             if isEmptyStringList(app.trial_prefixes)
-                clearGuiError(app.TrialPrefixesEditField, app.TaskPrefixesError);
-                throwGuiWarning("No trial prefixes specified. All trials " + ...
-                    "in the data directory will be used.", ...
-                    app.TrialPrefixesEditField, app.TaskPrefixesWarning);
+                setGuiFieldStatus(app.TrialPrefixesEditField, ...
+                    app.TaskPrefixesStatus, "warning", ...
+                    "No trial prefixes specified. All trials " + ...
+                    "in the data directory will be used.");
                 isValid = true;
                 return
             end
-            clearGuiError(app.TrialPrefixesEditField, app.TaskPrefixesWarning);
             isValid = validateTrialPrefixesGui(app.trial_prefixes, ...
                 app.data_directory, app.TrialPrefixesEditField, ...
-                app.TaskPrefixesError);
+                app.TaskPrefixesStatus);
         end
 
         function isValid = validateMtliConfig(app)
             isValid = validateMtliConfigGui( ...
                 app.MuscleTendonLengthInitialization, ...
                 app.PassiveDataDirectoryEditField, ...
-                app.PassiveDataDirectoryError, ...
-                app.PassiveDataDirectoryRequired);
+                app.PassiveDataDirectoryStatus, ...
+                app.PassiveDataDirectoryStatus);
         end
 
         function validateSynergyGroups(app)
             removeStyle(app.SynergyGroupsTable);
-            clearGuiError([], app.SynergyGroupsError);
             if isEmptyStringList(app.synergyGroups)
-                throwGuiRequired("At least one synergy group is required.", ...
-                    [], app.SynergyGroupsRequired);
+                setGuiFieldStatus([], app.SynergyGroupsStatus, "required", ...
+                    "At least one synergy group is required.");
                 app.synergyGroupsValid = false;
                 return
             end
-            clearGuiError([], app.SynergyGroupsRequired);
             isValid = true;
             for i = 1:length(app.RCNLSynergy)
                 if isnan(app.RCNLSynergy{i}.num_synergies) || ...
@@ -596,9 +585,11 @@ classdef NCPBase < matlab.apps.AppBase
                 end
             end
             if ~isValid
-                throwGuiError("Number of synergies must be a valid number " + ...
-                    "greater than zero for each synergy set.", ...
-                    [], app.SynergyGroupsError);
+                setGuiFieldStatus([], app.SynergyGroupsStatus, "error", ...
+                    "Number of synergies must be a valid number " + ...
+                    "greater than zero for each synergy set.");
+            else
+                setGuiFieldStatus([], app.SynergyGroupsStatus, "none");
             end
             app.synergyGroupsValid = isValid;
         end
@@ -611,7 +602,7 @@ classdef NCPBase < matlab.apps.AppBase
             mtliAdvancedValid = app.validateMtliAdvancedSettingsSilent();
             advancedValid = validateAdvancedSettingsGui( ...
                 app.AdvancedSettingsTable, app.advancedSettingNames, ...
-                app.advancedSettingValues, app.AdvancedSettingsError);
+                app.advancedSettingValues, app.AdvancedSettingsStatus);
             app.RunButton.Enable = app.inputModelValid && ...
                 app.dataDirectoryValid && app.mtpResultsDirectoryValid && ...
                 app.ncpResultsDirectoryValid && app.coordinateListValid && ...
@@ -1004,7 +995,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.currentSettingsFile = settingsFileName;
             settingsTree = loadGuiSettings(settingsFileName, ...
                 'NeuralControlPersonalizationTool');
-            applyStructToHandle(app, settingsTree);
+            app.applySettingsStruct(settingsTree);
             app.loadOptimizationParams(settingsTree);
 
             if isfield(settingsTree, 'MuscleTendonLengthInitialization')
@@ -1021,8 +1012,12 @@ classdef NCPBase < matlab.apps.AppBase
             if isfield(settingsTree, 'RCNLSynergySet') && ...
                     isfield(settingsTree.RCNLSynergySet, 'RCNLSynergy')
                 synergies = settingsTree.RCNLSynergySet.RCNLSynergy;
-                if ~iscell(synergies)
+                % xml2struct yields '', "", or [] for an empty set and
+                % a bare struct for a single entry
+                if isstruct(synergies)
                     synergies = {synergies};
+                elseif ~iscell(synergies)
+                    synergies = {};
                 end
                 loadedSynergies = cell(1, length(synergies));
                 names = strings(1, length(synergies));
@@ -1100,6 +1095,22 @@ classdef NCPBase < matlab.apps.AppBase
                 end
             end
             app.advancedSettingValues = values;
+        end
+
+        function applySettingsStruct(app, settingsTree)
+            % The shared applyStructToHandle cannot assign this class's
+            % private properties, so the same loop must run as a method.
+            metaProperties = metaclass(app).PropertyList;
+            metaProperties = metaProperties(~[metaProperties.Constant] ...
+                & ~[metaProperties.Dependent]);
+            propertyNames = {metaProperties.Name};
+            fields = fieldnames(settingsTree);
+            for i = 1 : length(fields)
+                if any(strcmp(fields{i}, propertyNames)) && ...
+                        ~isstruct(settingsTree.(fields{i}))
+                    app.(fields{i}) = settingsTree.(fields{i});
+                end
+            end
         end
 
         function resetAllFields(app)
@@ -1190,18 +1201,12 @@ classdef NCPBase < matlab.apps.AppBase
             app.InputModelFileEditField.ValueChangedFcn = createCallbackFcn(app, @InputModelFileEditFieldValueChanged, true);
             app.InputModelFileEditField.Position = [218 516 450 30];
 
-            % Create InputModelFileError
-            app.InputModelFileError = uiimage(app.InputsTab);
-            app.InputModelFileError.Visible = 'off';
-            app.InputModelFileError.Position = [718 516 28 30];
-            app.InputModelFileError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create InputModelFileRequired
-            app.InputModelFileRequired = uiimage(app.InputsTab);
-            app.InputModelFileRequired.Visible = 'on';
-            app.InputModelFileRequired.Tooltip = 'Input model file is required.';
-            app.InputModelFileRequired.Position = [718 516 28 30];
-            app.InputModelFileRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create InputModelFileStatus
+            app.InputModelFileStatus = uiimage(app.InputsTab);
+            app.InputModelFileStatus.Visible = 'on';
+            app.InputModelFileStatus.Tooltip = 'Input model file is required.';
+            app.InputModelFileStatus.Position = [718 516 28 30];
+            app.InputModelFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create InputOsimxFileSearchButton
             app.InputOsimxFileSearchButton = uibutton(app.InputsTab, 'push');
@@ -1225,11 +1230,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.InputOsimxFileEditField.ValueChangedFcn = createCallbackFcn(app, @InputOsimxFileEditFieldValueChanged, true);
             app.InputOsimxFileEditField.Position = [218 461 450 30];
 
-            % Create InputOsimxFileWarning
-            app.InputOsimxFileWarning = uiimage(app.InputsTab);
-            app.InputOsimxFileWarning.Visible = 'off';
-            app.InputOsimxFileWarning.Position = [718 461 28 30];
-            app.InputOsimxFileWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
+            % Create InputOsimxFileStatus
+            app.InputOsimxFileStatus = uiimage(app.InputsTab);
+            app.InputOsimxFileStatus.Visible = 'off';
+            app.InputOsimxFileStatus.Position = [718 461 28 30];
 
             % Create InputDataSearchButton
             app.InputDataSearchButton = uibutton(app.InputsTab, 'push');
@@ -1245,18 +1249,12 @@ classdef NCPBase < matlab.apps.AppBase
             app.InputDataEditField.ValueChangedFcn = createCallbackFcn(app, @InputDataEditFieldValueChanged, true);
             app.InputDataEditField.Position = [218 409 450 30];
 
-            % Create InputDataError
-            app.InputDataError = uiimage(app.InputsTab);
-            app.InputDataError.Visible = 'off';
-            app.InputDataError.Position = [718 409 28 30];
-            app.InputDataError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create InputDataRequired
-            app.InputDataRequired = uiimage(app.InputsTab);
-            app.InputDataRequired.Visible = 'on';
-            app.InputDataRequired.Tooltip = 'Input data directory is required.';
-            app.InputDataRequired.Position = [718 409 28 30];
-            app.InputDataRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create InputDataStatus
+            app.InputDataStatus = uiimage(app.InputsTab);
+            app.InputDataStatus.Visible = 'on';
+            app.InputDataStatus.Tooltip = 'Input data directory is required.';
+            app.InputDataStatus.Position = [718 409 28 30];
+            app.InputDataStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create ResultsDirectorySearchButton
             app.ResultsDirectorySearchButton = uibutton(app.InputsTab, 'push');
@@ -1280,24 +1278,12 @@ classdef NCPBase < matlab.apps.AppBase
             app.NCPResultsDirectoryEditField.ValueChangedFcn = createCallbackFcn(app, @NCPResultsDirectoryEditFieldValueChanged, true);
             app.NCPResultsDirectoryEditField.Position = [218 308 450 30];
 
-            % Create ResultsDirectoryError
-            app.ResultsDirectoryError = uiimage(app.InputsTab);
-            app.ResultsDirectoryError.Visible = 'off';
-            app.ResultsDirectoryError.Position = [718 308 28 30];
-            app.ResultsDirectoryError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create ResultsDirectoryWarning
-            app.ResultsDirectoryWarning = uiimage(app.InputsTab);
-            app.ResultsDirectoryWarning.Visible = 'off';
-            app.ResultsDirectoryWarning.Position = [718 308 28 30];
-            app.ResultsDirectoryWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
-
-            % Create NCPResultsDirRequired
-            app.NCPResultsDirRequired = uiimage(app.InputsTab);
-            app.NCPResultsDirRequired.Visible = 'on';
-            app.NCPResultsDirRequired.Tooltip = 'NCP results directory is required.';
-            app.NCPResultsDirRequired.Position = [718 308 28 30];
-            app.NCPResultsDirRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create NCPResultsDirStatus
+            app.NCPResultsDirStatus = uiimage(app.InputsTab);
+            app.NCPResultsDirStatus.Visible = 'on';
+            app.NCPResultsDirStatus.Tooltip = 'NCP results directory is required.';
+            app.NCPResultsDirStatus.Position = [718 308 28 30];
+            app.NCPResultsDirStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create InputDataDirectoryEditFieldLabel
             app.InputDataDirectoryEditFieldLabel = uilabel(app.InputsTab);
@@ -1321,12 +1307,12 @@ classdef NCPBase < matlab.apps.AppBase
             app.CoordinatesListTextAreaLabel.Position = [61 188 147 23];
             app.CoordinatesListTextAreaLabel.Text = 'Coordinates List';
 
-            % Create CoordinateListWarning
-            app.CoordinateListWarning = uiimage(app.InputsTab);
-            app.CoordinateListWarning.Visible = 'on';
-            app.CoordinateListWarning.Tooltip = 'At least one coordinate must be selected.';
-            app.CoordinateListWarning.Position = [718 184 28 30];
-            app.CoordinateListWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create CoordinateListStatus
+            app.CoordinateListStatus = uiimage(app.InputsTab);
+            app.CoordinateListStatus.Visible = 'on';
+            app.CoordinateListStatus.Tooltip = 'At least one coordinate must be selected.';
+            app.CoordinateListStatus.Position = [718 184 28 30];
+            app.CoordinateListStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create CoordinateListEditButton
             app.CoordinateListEditButton = uibutton(app.InputsTab, 'push');
@@ -1351,30 +1337,17 @@ classdef NCPBase < matlab.apps.AppBase
             app.TrialPrefixesEditField.FontSize = 18;
             app.TrialPrefixesEditField.Position = [218 64 444 30];
 
-            % Create TaskPrefixesWarning
-            app.TaskPrefixesWarning = uiimage(app.InputsTab);
-            app.TaskPrefixesWarning.Visible = 'off';
-            app.TaskPrefixesWarning.Position = [672 65 28 30];
-            app.TaskPrefixesWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
+            % Create TaskPrefixesStatus
+            app.TaskPrefixesStatus = uiimage(app.InputsTab);
+            app.TaskPrefixesStatus.Visible = 'off';
+            app.TaskPrefixesStatus.Position = [672 64 28 30];
 
-            % Create TaskPrefixesError
-            app.TaskPrefixesError = uiimage(app.InputsTab);
-            app.TaskPrefixesError.Visible = 'off';
-            app.TaskPrefixesError.Position = [672 64 28 30];
-            app.TaskPrefixesError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create MTPResultsDirError
-            app.MTPResultsDirError = uiimage(app.InputsTab);
-            app.MTPResultsDirError.Visible = 'off';
-            app.MTPResultsDirError.Position = [718 360 28 30];
-            app.MTPResultsDirError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create MTPResultsDirRequired
-            app.MTPResultsDirRequired = uiimage(app.InputsTab);
-            app.MTPResultsDirRequired.Visible = 'on';
-            app.MTPResultsDirRequired.Tooltip = 'MTP results directory is required.';
-            app.MTPResultsDirRequired.Position = [718 360 28 30];
-            app.MTPResultsDirRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create MTPResultsDirStatus
+            app.MTPResultsDirStatus = uiimage(app.InputsTab);
+            app.MTPResultsDirStatus.Visible = 'on';
+            app.MTPResultsDirStatus.Tooltip = 'MTP results directory is required.';
+            app.MTPResultsDirStatus.Position = [718 360 28 30];
+            app.MTPResultsDirStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create MTPResultsDirSearchButton
             app.MTPResultsDirSearchButton = uibutton(app.InputsTab, 'push');
@@ -1506,11 +1479,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.EditNCPCostTermsLabel.Position = [100 524 560 23];
             app.EditNCPCostTermsLabel.Text = 'Edit Cost Terms';
 
-            % Create NCPCostTermsError
-            app.NCPCostTermsError = uiimage(app.CostTermsTab);
-            app.NCPCostTermsError.Visible = 'off';
-            app.NCPCostTermsError.Position = [451 522 28 30];
-            app.NCPCostTermsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create NCPCostTermsStatus
+            app.NCPCostTermsStatus = uiimage(app.CostTermsTab);
+            app.NCPCostTermsStatus.Visible = 'off';
+            app.NCPCostTermsStatus.Position = [451 522 28 30];
 
             % Create EditSynergySetsLabel
             app.EditSynergySetsLabel = uilabel(app.CostTermsTab);
@@ -1529,18 +1501,12 @@ classdef NCPBase < matlab.apps.AppBase
             app.AddSynergyGroupButton.Position = [580 97 173 30];
             app.AddSynergyGroupButton.Text = 'Add Synergy Group';
 
-            % Create SynergyGroupsRequired
-            app.SynergyGroupsRequired = uiimage(app.CostTermsTab);
-            app.SynergyGroupsRequired.Visible = 'on';
-            app.SynergyGroupsRequired.Tooltip = 'At least one synergy group is required.';
-            app.SynergyGroupsRequired.Position = [460 208 28 28];
-            app.SynergyGroupsRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
-
-            % Create SynergyGroupsError
-            app.SynergyGroupsError = uiimage(app.CostTermsTab);
-            app.SynergyGroupsError.Visible = 'off';
-            app.SynergyGroupsError.Position = [460 208 28 28];
-            app.SynergyGroupsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create SynergyGroupsStatus
+            app.SynergyGroupsStatus = uiimage(app.CostTermsTab);
+            app.SynergyGroupsStatus.Visible = 'on';
+            app.SynergyGroupsStatus.Tooltip = 'At least one synergy group is required.';
+            app.SynergyGroupsStatus.Position = [460 208 28 28];
+            app.SynergyGroupsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
 
             % Create AuxiliaryTab
             app.AuxiliaryTab = uitab(app.TabGroup);
@@ -1554,18 +1520,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.EnableMTLICheckBox.FontWeight = 'bold';
             app.EnableMTLICheckBox.Position = [191 521 393 22];
 
-            % Create PassiveDataDirectoryError
-            app.PassiveDataDirectoryError = uiimage(app.AuxiliaryTab);
-            app.PassiveDataDirectoryError.Visible = 'off';
-            app.PassiveDataDirectoryError.Position = [719 468 28 30];
-            app.PassiveDataDirectoryError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create PassiveDataDirectoryRequired
-            app.PassiveDataDirectoryRequired = uiimage(app.AuxiliaryTab);
-            app.PassiveDataDirectoryRequired.Visible = 'off';
-            app.PassiveDataDirectoryRequired.Tooltip = 'Passive data directory is required when MTLI is enabled.';
-            app.PassiveDataDirectoryRequired.Position = [719 468 28 30];
-            app.PassiveDataDirectoryRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create PassiveDataDirectoryStatus
+            app.PassiveDataDirectoryStatus = uiimage(app.AuxiliaryTab);
+            app.PassiveDataDirectoryStatus.Visible = 'off';
+            app.PassiveDataDirectoryStatus.Position = [719 468 28 30];
 
             % Create PassiveDataDirectorySearchButton
             app.PassiveDataDirectorySearchButton = uibutton(app.AuxiliaryTab, 'push');
@@ -1628,11 +1586,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.AdvancedSettingsLabel.Position = [502 342 167 23];
             app.AdvancedSettingsLabel.Text = 'Advanced Settings';
 
-            % Create MtliAdvancedSettingsError
-            app.MtliAdvancedSettingsError = uiimage(app.AuxiliaryTab);
-            app.MtliAdvancedSettingsError.Visible = 'off';
-            app.MtliAdvancedSettingsError.Position = [673 340 28 30];
-            app.MtliAdvancedSettingsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create MtliAdvancedSettingsStatus
+            app.MtliAdvancedSettingsStatus = uiimage(app.AuxiliaryTab);
+            app.MtliAdvancedSettingsStatus.Visible = 'off';
+            app.MtliAdvancedSettingsStatus.Position = [673 340 28 30];
 
             % Create AuxCostTermPanel
             app.AuxCostTermPanel = uipanel(app.AuxiliaryTab);
@@ -1700,11 +1657,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.EditCostTermsLabel.Position = [131 342 142 23];
             app.EditCostTermsLabel.Text = 'Edit Cost Terms';
 
-            % Create MtliCostTermsError
-            app.MtliCostTermsError = uiimage(app.AuxiliaryTab);
-            app.MtliCostTermsError.Visible = 'off';
-            app.MtliCostTermsError.Position = [277 340 28 30];
-            app.MtliCostTermsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create MtliCostTermsStatus
+            app.MtliCostTermsStatus = uiimage(app.AuxiliaryTab);
+            app.MtliCostTermsStatus.Visible = 'off';
+            app.MtliCostTermsStatus.Position = [277 340 28 30];
 
             % Create AdvancedTab
             app.AdvancedTab = uitab(app.TabGroup);
@@ -1720,11 +1676,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.AdvancedSettingsTable.FontSize = 20;
             app.AdvancedSettingsTable.Position = [121 94 528 407];
 
-            % Create AdvancedSettingsError
-            app.AdvancedSettingsError = uiimage(app.AdvancedTab);
-            app.AdvancedSettingsError.Visible = 'off';
-            app.AdvancedSettingsError.Position = [654 499 28 30];
-            app.AdvancedSettingsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create AdvancedSettingsStatus
+            app.AdvancedSettingsStatus = uiimage(app.AdvancedTab);
+            app.AdvancedSettingsStatus.Visible = 'off';
+            app.AdvancedSettingsStatus.Position = [654 499 28 30];
 
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);

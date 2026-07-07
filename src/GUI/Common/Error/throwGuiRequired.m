@@ -30,8 +30,5 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function throwGuiRequired(message, fieldObject, iconObject)
-    if ~isempty(iconObject)
-        iconObject.Visible = 'on';
-        iconObject.Tooltip = message;
-    end
+    setGuiFieldStatus(fieldObject, iconObject, "required", message);
 end

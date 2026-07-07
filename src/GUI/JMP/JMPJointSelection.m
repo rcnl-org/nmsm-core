@@ -29,12 +29,12 @@ classdef JMPJointSelection < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure                   matlab.ui.Figure
-        OKWarning                  matlab.ui.control.Image
-        ChildOrientBoundsError     matlab.ui.control.Image
-        ChildTransBoundsError      matlab.ui.control.Image
-        ParentOrientBoundsError    matlab.ui.control.Image
-        ParentTransBoundsError     matlab.ui.control.Image
-        JointNameError             matlab.ui.control.Image
+        OKStatus                  matlab.ui.control.Image
+        ChildOrientBoundsStatus     matlab.ui.control.Image
+        ChildTransBoundsStatus      matlab.ui.control.Image
+        ParentOrientBoundsStatus    matlab.ui.control.Image
+        ParentTransBoundsStatus     matlab.ui.control.Image
+        JointNameStatus             matlab.ui.control.Image
         CloseButton                matlab.ui.control.Button
         OKButton                   matlab.ui.control.Button
         ParentRotBound             matlab.ui.control.NumericEditField
@@ -88,58 +88,65 @@ classdef JMPJointSelection < matlab.apps.AppBase
 
             if ~any(contains(app.JointNameDropDown.Value, ...
                     app.JMPParent.getModelJoints))
-                throwGuiError("This joint is not found in the .osim model", ...
-                    [], app.JointNameError);
+                setGuiFieldStatus([], app.JointNameStatus, "error", ...
+                    "This joint is not found in the .osim model");
                 app.errorFlag = true;
             elseif any(contains(app.JointNameDropDown.Value, ...
                     app.JMPParent.getSelectedJoints())) && ...
                     ~(app.editingFlag && strcmp(app.JointNameDropDown.Value, ...
                     app.originalJointName))
-                throwGuiError("This joint is already in this task", ...
-                    [], app.JointNameError);
+                setGuiFieldStatus([], app.JointNameStatus, "error", ...
+                    "This joint is already in this task");
                 app.errorFlag = true;
             else
-                clearGuiError([], app.JointNameError);
+                setGuiFieldStatus([], app.JointNameStatus, "none");
             end
 
             if app.ParentRotBound.Value <= 0
-                throwGuiError("Bounds must be greater than 0", ...
-                    app.ParentRotBound, app.ParentOrientBoundsError);
+                setGuiFieldStatus(app.ParentRotBound, ...
+                    app.ParentOrientBoundsStatus, "error", ...
+                    "Bounds must be greater than 0");
                 app.errorFlag = true;
             else
-                clearGuiError(app.ParentRotBound, app.ParentOrientBoundsError);
-                
+                setGuiFieldStatus(app.ParentRotBound, ...
+                    app.ParentOrientBoundsStatus, "none");
             end
             if app.ParentTransBound.Value <= 0
-                throwGuiError("Bounds must be greater than 0", ...
-                    app.ParentTransBound, app.ParentTransBoundsError);
+                setGuiFieldStatus(app.ParentTransBound, ...
+                    app.ParentTransBoundsStatus, "error", ...
+                    "Bounds must be greater than 0");
                 app.errorFlag = true;
             else
-                clearGuiError(app.ParentTransBound, app.ParentTransBoundsError);
+                setGuiFieldStatus(app.ParentTransBound, ...
+                    app.ParentTransBoundsStatus, "none");
             end
             if app.ChildRotBound.Value <= 0
-                throwGuiError("Bounds must be greater than 0", ...
-                    app.ChildRotBound, app.ChildOrientBoundsError);
+                setGuiFieldStatus(app.ChildRotBound, ...
+                    app.ChildOrientBoundsStatus, "error", ...
+                    "Bounds must be greater than 0");
                 app.errorFlag = true;
             else
-                clearGuiError(app.ChildRotBound, app.ChildOrientBoundsError);
+                setGuiFieldStatus(app.ChildRotBound, ...
+                    app.ChildOrientBoundsStatus, "none");
             end
             if app.ChildTransBound.Value <= 0
-                throwGuiError("Bounds must be greater than 0", ...
-                    app.ChildTransBound, app.ChildTransBoundsError);
+                setGuiFieldStatus(app.ChildTransBound, ...
+                    app.ChildTransBoundsStatus, "error", ...
+                    "Bounds must be greater than 0");
                 app.errorFlag = true;
             else
-                clearGuiError(app.ChildTransBound, app.ChildTransBoundsError);
+                setGuiFieldStatus(app.ChildTransBound, ...
+                    app.ChildTransBoundsStatus, "none");
             end
 
             if all(strcmp([app.JointSet.parent_frame_transformation.translation, ...
                     app.JointSet.parent_frame_transformation.orientation, ...
                     app.JointSet.child_frame_transformation.translation, ...
                     app.JointSet.child_frame_transformation.orientation], "false"))
-                throwGuiWarning("No joint translations or orientations selected", ...
-                    [], app.OKWarning)
+                setGuiFieldStatus([], app.OKStatus, "warning", ...
+                    "No joint translations or orientations selected")
             else
-                clearGuiError([], app.OKWarning)
+                setGuiFieldStatus([], app.OKStatus, "none")
             end
 
             app.EnableActionsCallback();
@@ -323,9 +330,6 @@ classdef JMPJointSelection < matlab.apps.AppBase
 
         % Create UIFigure and components
         function createComponents(app)
-
-            % Get the file path for locating images
-            pathToMLAPP = fileparts(mfilename('fullpath'));
 
             % Create UIFigure and hide until all components are created
             app.UIFigure = uifigure('Visible', 'off');
@@ -560,41 +564,35 @@ classdef JMPJointSelection < matlab.apps.AppBase
             app.CloseButton.Position = [383 14 85 30];
             app.CloseButton.Text = 'Close';
 
-            % Create JointNameError
-            app.JointNameError = uiimage(app.UIFigure);
-            app.JointNameError.Visible = 'off';
-            app.JointNameError.Position = [396 441 37 35];
-            app.JointNameError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create JointNameStatus
+            app.JointNameStatus = uiimage(app.UIFigure);
+            app.JointNameStatus.Visible = 'off';
+            app.JointNameStatus.Position = [396 441 37 35];
 
-            % Create ParentTransBoundsError
-            app.ParentTransBoundsError = uiimage(app.UIFigure);
-            app.ParentTransBoundsError.Visible = 'off';
-            app.ParentTransBoundsError.Position = [445 317 37 35];
-            app.ParentTransBoundsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create ParentTransBoundsStatus
+            app.ParentTransBoundsStatus = uiimage(app.UIFigure);
+            app.ParentTransBoundsStatus.Visible = 'off';
+            app.ParentTransBoundsStatus.Position = [445 317 37 35];
 
-            % Create ParentOrientBoundsError
-            app.ParentOrientBoundsError = uiimage(app.UIFigure);
-            app.ParentOrientBoundsError.Visible = 'off';
-            app.ParentOrientBoundsError.Position = [445 252 37 35];
-            app.ParentOrientBoundsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create ParentOrientBoundsStatus
+            app.ParentOrientBoundsStatus = uiimage(app.UIFigure);
+            app.ParentOrientBoundsStatus.Visible = 'off';
+            app.ParentOrientBoundsStatus.Position = [445 252 37 35];
 
-            % Create ChildTransBoundsError
-            app.ChildTransBoundsError = uiimage(app.UIFigure);
-            app.ChildTransBoundsError.Visible = 'off';
-            app.ChildTransBoundsError.Position = [445 149 37 35];
-            app.ChildTransBoundsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create ChildTransBoundsStatus
+            app.ChildTransBoundsStatus = uiimage(app.UIFigure);
+            app.ChildTransBoundsStatus.Visible = 'off';
+            app.ChildTransBoundsStatus.Position = [445 149 37 35];
 
-            % Create ChildOrientBoundsError
-            app.ChildOrientBoundsError = uiimage(app.UIFigure);
-            app.ChildOrientBoundsError.Visible = 'off';
-            app.ChildOrientBoundsError.Position = [445 78 37 35];
-            app.ChildOrientBoundsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create ChildOrientBoundsStatus
+            app.ChildOrientBoundsStatus = uiimage(app.UIFigure);
+            app.ChildOrientBoundsStatus.Visible = 'off';
+            app.ChildOrientBoundsStatus.Position = [445 78 37 35];
 
-            % Create OKWarning
-            app.OKWarning = uiimage(app.UIFigure);
-            app.OKWarning.Visible = 'off';
-            app.OKWarning.Position = [211 12 35 35];
-            app.OKWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
+            % Create OKStatus
+            app.OKStatus = uiimage(app.UIFigure);
+            app.OKStatus.Visible = 'off';
+            app.OKStatus.Position = [211 12 35 35];
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';

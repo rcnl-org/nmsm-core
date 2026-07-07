@@ -36,6 +36,7 @@ classdef JMPBase < matlab.apps.AppBase
         HelpButton                     matlab.ui.control.Button
         SaveButton                     matlab.ui.control.Button
         LoadSettingsFileButton         matlab.ui.control.Button
+        ResetButton                    matlab.ui.control.Button
         RcnlLogo                       matlab.ui.control.Image
         JMPInputsButton                matlab.ui.control.Button
         AdvancedButton                 matlab.ui.control.Button
@@ -46,20 +47,19 @@ classdef JMPBase < matlab.apps.AppBase
         InputModelFileEditField        matlab.ui.control.EditField
         InputModelFileEditFieldLabel   matlab.ui.control.Label
         InputModelFileSearchButton     matlab.ui.control.Button
-        InputModelFileError            matlab.ui.control.Image
+        InputModelFileStatus           matlab.ui.control.Image
         OutputModelFileEditField       matlab.ui.control.EditField
         OutputModelFileEditFieldLabel  matlab.ui.control.Label
         OutputModelFileSearchButton    matlab.ui.control.Button
         TasksTab                       matlab.ui.container.Tab
-        TasksError                     matlab.ui.control.Image
-        TasksWarning                   matlab.ui.control.Image
+        TasksStatus                    matlab.ui.control.Image
         TasksTable                     matlab.ui.control.Table
         MoveTaskDownButton             matlab.ui.control.Button
         MoveTaskUpButton               matlab.ui.control.Button
         TasksPanel                     matlab.ui.container.Panel
-        BodiesWarning                  matlab.ui.control.Image
-        JointsWarning                  matlab.ui.control.Image
-        MarkersWarning                 matlab.ui.control.Image
+        BodiesStatus                   matlab.ui.control.Image
+        JointsStatus                   matlab.ui.control.Image
+        MarkersStatus                  matlab.ui.control.Image
         MarkersEditButton              matlab.ui.control.Button
         MarkersTextArea                matlab.ui.control.TextArea
         MarkersTextAreaLabel           matlab.ui.control.Label
@@ -73,9 +73,8 @@ classdef JMPBase < matlab.apps.AppBase
         JointsLabel                    matlab.ui.control.Label
         JointsTable                    matlab.ui.control.Table
         BodiesTable                    matlab.ui.control.Table
-        TimeRangeError                 matlab.ui.control.Image
-        MarkersFileError               matlab.ui.control.Image
-        MarkersFileWarning             matlab.ui.control.Image
+        TimeRangeStatus                matlab.ui.control.Image
+        MarkersFileStatus              matlab.ui.control.Image
         MarkerFileSearchButton         matlab.ui.control.Button
         MuscleGroupsLabel_3            matlab.ui.control.Label
         AdvancedTab                    matlab.ui.container.Tab
@@ -132,15 +131,9 @@ classdef JMPBase < matlab.apps.AppBase
     end
 
     properties (Access = private)  % private UI components not in appModel
-        OutputModelFileError           matlab.ui.control.Image
-        OutputModelFileWarning         matlab.ui.control.Image
-        InputModelFileRequired         matlab.ui.control.Image
-        OutputModelFileRequired        matlab.ui.control.Image
-        TasksRequired                  matlab.ui.control.Image
-        MarkersFileRequired            matlab.ui.control.Image
-        MarkersRequired                matlab.ui.control.Image
-        JointBodyRequired              matlab.ui.control.Image
-        AdvancedSettingsError          matlab.ui.control.Image
+        OutputModelFileStatus          matlab.ui.control.Image
+        JointBodyStatus                matlab.ui.control.Image
+        AdvancedSettingsStatus         matlab.ui.control.Image
     end
 
     properties (Access = private)  % listener handles
@@ -355,49 +348,61 @@ classdef JMPBase < matlab.apps.AppBase
             end
         end
 
+        function validateAllFields(app)
+            app.validateInputModelFile();
+            app.validateOutputModelFile();
+            app.validateMarkerFile();
+            app.validateMarkerSelection();
+            app.validateTimeRange();
+            app.validateTaskContent();
+            app.validateAllTasksSilent();
+        end
+
         function validateInputModelFile(app)
             app.inputModelValid = validateRequiredFieldGui( ...
                 app.input_model_file, "Input model file is required.", ...
-                app.InputModelFileEditField, app.InputModelFileError, ...
-                app.InputModelFileRequired, ...
+                app.InputModelFileEditField, app.InputModelFileStatus, ...
+                app.InputModelFileStatus, ...
                 @(value, field, icon)validateOsimFileGui(app, value, field, icon));
             if app.inputModelValid && ~isempty(app.JMPTask) && ...
                     ~strcmp(app.JMPTask{app.taskIndex}.marker_file_name, "")
-                app.checkMarkerModelConsistency();
+                app.validateMarkerFile();
             end
         end
 
         function validateOutputModelFile(app)
-            clearGuiError(app.OutputModelFileEditField, app.OutputModelFileError);
-            clearGuiError(app.OutputModelFileEditField, app.OutputModelFileWarning);
             if strcmp(app.output_model_file, "")
-                throwGuiRequired("Output model file is required.", ...
-                    [], app.OutputModelFileRequired);
+                setGuiFieldStatus(app.OutputModelFileEditField, ...
+                    app.OutputModelFileStatus, "required", ...
+                    "Output model file is required.");
                 app.outputModelValid = false;
                 return
             end
-            clearGuiError([], app.OutputModelFileRequired);
             [~, ~, extension] = fileparts(app.output_model_file);
             if ~strcmp(extension, '.osim')
-                throwGuiError("Output model file must have a .osim extension.", ...
-                    app.OutputModelFileEditField, app.OutputModelFileError);
+                setGuiFieldStatus(app.OutputModelFileEditField, ...
+                    app.OutputModelFileStatus, "error", ...
+                    "Output model file must have a .osim extension.");
                 app.outputModelValid = false;
                 return
             end
             app.outputModelValid = true;
             if exist(app.output_model_file, 'file')
-                throwGuiWarning("Output file already exists and will be overwritten.", ...
-                    app.OutputModelFileEditField, app.OutputModelFileWarning);
+                setGuiFieldStatus(app.OutputModelFileEditField, ...
+                    app.OutputModelFileStatus, "warning", ...
+                    "Output file already exists and will be overwritten.");
+            else
+                setGuiFieldStatus(app.OutputModelFileEditField, ...
+                    app.OutputModelFileStatus, "none");
             end
         end
 
         function validateMarkerFile(app)
             task = app.JMPTask{app.taskIndex};
-            clearGuiError(app.MarkersFileEditField, app.MarkersFileWarning);
             isValid = validateRequiredFieldGui(task.marker_file_name, ...
                 "Marker file is required for this task.", ...
-                app.MarkersFileEditField, app.MarkersFileError, ...
-                app.MarkersFileRequired, @validateTrcFileGui);
+                app.MarkersFileEditField, app.MarkersFileStatus, ...
+                app.MarkersFileStatus, @validateTrcFileGui);
             if isValid
                 app.parseMarkerFileData(task.marker_file_name);
                 app.StartTimeField.Value = task.time_range(1);
@@ -408,15 +413,14 @@ classdef JMPBase < matlab.apps.AppBase
 
         function validateMarkerSelection(app)
             if isEmptyStringList(app.JMPTask{app.taskIndex}.marker_names)
-                throwGuiRequired("At least one marker must be selected " + ...
-                    "for this task.", [], app.MarkersRequired);
+                setGuiFieldStatus([], app.MarkersStatus, "required", ...
+                    "At least one marker must be selected for this task.");
             else
-                clearGuiError([], app.MarkersRequired);
+                setGuiFieldStatus([], app.MarkersStatus, "none");
             end
         end
 
         function checkMarkerModelConsistency(app)
-            clearGuiError(app.MarkersFileEditField, app.MarkersFileWarning);
             if isempty(app.model_markers) || ...
                     isempty(app.JMPTask{app.taskIndex}.markerFileMarkers)
                 return
@@ -428,26 +432,26 @@ classdef JMPBase < matlab.apps.AppBase
                 warningMessage = "The following markers are in the .trc " + ...
                     "file but not in the .osim model: " + ...
                     strjoin(invalidMarkers, ", ") + ".";
-                throwGuiWarning(warningMessage, app.MarkersFileEditField, ...
-                    app.MarkersFileWarning);
+                setGuiFieldStatus(app.MarkersFileEditField, ...
+                    app.MarkersFileStatus, "warning", warningMessage);
             end
         end
 
         function isValid = validateTimeRange(app)
             task = app.JMPTask{app.taskIndex};
-            clearGuiError([], app.TimeRangeError);
-            if task.time_range(1) >= task.time_range(2)
-                throwGuiError("Start time must be less than end time.", ...
-                    [], app.TimeRangeError);
+            if task.time_range(1) > task.time_range(2)
+                setGuiFieldStatus([], app.TimeRangeStatus, "error", ...
+                    "Start time must be less than end time.");
                 isValid = false;
             elseif task.maxTime > 0 && ...
                     (task.time_range(1) < task.minTime || ...
                     task.time_range(2) > task.maxTime)
-                throwGuiError(sprintf( ...
+                setGuiFieldStatus([], app.TimeRangeStatus, "error", sprintf( ...
                     "Time range must be within [%.3f, %.3f] seconds.", ...
-                    task.minTime, task.maxTime), [], app.TimeRangeError);
+                    task.minTime, task.maxTime));
                 isValid = false;
             else
+                setGuiFieldStatus([], app.TimeRangeStatus, "none");
                 isValid = true;
             end
         end
@@ -458,24 +462,24 @@ classdef JMPBase < matlab.apps.AppBase
             bodies = task.JMPBodySet.JMPBody;
             if (~iscell(joints) || isempty(joints)) && ...
                     (~iscell(bodies) || isempty(bodies))
-                throwGuiRequired("At least one joint or body is required " + ...
-                    "for this task.", [], app.JointBodyRequired);
+                setGuiFieldStatus([], app.JointBodyStatus, "required", ...
+                    "At least one joint or body is required for this task.");
             else
-                clearGuiError([], app.JointBodyRequired);
+                setGuiFieldStatus([], app.JointBodyStatus, "none");
             end
             app.warnEntriesWithoutParameters(app.JointsTable, joints, ...
-                @app.jointHasParameters, app.JointsWarning, ...
+                @app.jointHasParameters, app.JointsStatus, ...
                 "One or more joints have no parameters selected and " + ...
                 "will not contribute to the optimization.");
             app.warnEntriesWithoutParameters(app.BodiesTable, bodies, ...
-                @app.bodyHasParameters, app.BodiesWarning, ...
+                @app.bodyHasParameters, app.BodiesStatus, ...
                 "One or more bodies have no parameters selected and " + ...
                 "will not contribute to the optimization.");
         end
 
         function warnEntriesWithoutParameters(~, uiTable, entries, ...
-                hasParametersFcn, warningIcon, warningMessage)
-            clearGuiError([], warningIcon);
+                hasParametersFcn, statusIcon, warningMessage)
+            setGuiFieldStatus([], statusIcon, "none");
             removeStyle(uiTable);
             if ~iscell(entries)
                 return
@@ -489,7 +493,7 @@ classdef JMPBase < matlab.apps.AppBase
                 end
             end
             if anyMissingParameters
-                throwGuiWarning(warningMessage, [], warningIcon);
+                setGuiFieldStatus([], statusIcon, "warning", warningMessage);
             end
         end
 
@@ -507,12 +511,10 @@ classdef JMPBase < matlab.apps.AppBase
         end
 
         function isValid = validateAllTasksSilent(app)
-            clearGuiError([], app.TasksRequired);
-            clearGuiError([], app.TasksError);
             removeStyle(app.TasksTable);
             if isempty(app.JMPTask)
-                throwGuiRequired("At least one task is required.", ...
-                    [], app.TasksRequired);
+                setGuiFieldStatus([], app.TasksStatus, "required", ...
+                    "At least one task is required.");
                 isValid = false;
                 return
             end
@@ -540,20 +542,24 @@ classdef JMPBase < matlab.apps.AppBase
                 end
             end
             if ~hasEnabledTask
-                throwGuiError("At least one task must be enabled to run.", ...
-                    [], app.TasksError);
+                setGuiFieldStatus([], app.TasksStatus, "error", ...
+                    "At least one task must be enabled to run.");
                 isValid = false;
                 return
             end
             if anyError
-                throwGuiError("One or more tasks have errors. Check that " + ...
+                setGuiFieldStatus([], app.TasksStatus, "error", ...
+                    "One or more tasks have errors. Check that " + ...
                     "each enabled task's marker file exists and the time " + ...
-                    "range is valid.", [], app.TasksError);
+                    "range is valid.");
             elseif anyMissingRequired
-                throwGuiRequired("One or more tasks are missing required " + ...
+                setGuiFieldStatus([], app.TasksStatus, "required", ...
+                    "One or more tasks are missing required " + ...
                     "fields. Check that each enabled task has a marker " + ...
                     "file, at least one marker selected, and at least " + ...
-                    "one design variable.", [], app.TasksRequired);
+                    "one design variable.");
+            else
+                setGuiFieldStatus([], app.TasksStatus, "none");
             end
             isValid = ~anyError && ~anyMissingRequired;
         end
@@ -610,7 +616,7 @@ classdef JMPBase < matlab.apps.AppBase
         function updateRunButton(app)
             advancedSettingsValid = validateAdvancedSettingsGui( ...
                 app.AdvancedSettingsTable, app.advancedSettingNames, ...
-                app.advancedSettingValues, app.AdvancedSettingsError);
+                app.advancedSettingValues, app.AdvancedSettingsStatus);
             tasksValid = app.validateAllTasksSilent();
             app.RunButton.Enable = app.inputModelValid && ...
                 app.outputModelValid && advancedSettingsValid && tasksValid;
@@ -665,19 +671,24 @@ classdef JMPBase < matlab.apps.AppBase
         end
 
         function loadSettingsFile(app, settingsFileName)
+            app.resetAllFields();
             cd(fileparts(settingsFileName));
             app.currentSettingsFile = settingsFileName;
             settingsTree = loadGuiSettings(settingsFileName, ...
                 'JointModelPersonalizationTool');
-            applyStructToHandle(app, settingsTree);
+            app.applySettingsStruct(settingsTree);
             app.loadOptimizationParams(settingsTree);
 
             app.JMPTask = {};
             if isfield(settingsTree, 'JMPTaskList') && ...
                     isfield(settingsTree.JMPTaskList, 'JMPTask')
                 tasks = settingsTree.JMPTaskList.JMPTask;
-                if ~iscell(tasks)
+                % xml2struct yields '', "", or [] for an empty list and
+                % a bare struct for a single entry
+                if isstruct(tasks)
                     tasks = {tasks};
+                elseif ~iscell(tasks)
+                    tasks = {};
                 end
                 for i = 1 : length(tasks)
                     app.createEmptyTask();
@@ -687,6 +698,43 @@ classdef JMPBase < matlab.apps.AppBase
             app.updateTasksPanel();
             app.updateJMPTasksListBox();
             app.validateTimeRange();
+            app.updateRunButton();
+        end
+
+        function applySettingsStruct(app, settingsTree)
+            % The shared applyStructToHandle cannot assign this class's
+            % private properties, so the same loop must run as a method.
+            metaProperties = metaclass(app).PropertyList;
+            metaProperties = metaProperties(~[metaProperties.Constant] ...
+                & ~[metaProperties.Dependent]);
+            propertyNames = {metaProperties.Name};
+            fields = fieldnames(settingsTree);
+            for i = 1 : length(fields)
+                if any(strcmp(fields{i}, propertyNames)) && ...
+                        ~isstruct(settingsTree.(fields{i}))
+                    app.(fields{i}) = settingsTree.(fields{i});
+                end
+            end
+        end
+
+        function resetAllFields(app)
+            app.inputModelValid = false;
+            app.outputModelValid = false;
+
+            app.model_markers = [];
+            app.model_bodies = [];
+            app.model_joints = [];
+
+            app.input_model_file = "";
+            app.output_model_file = "";
+
+            app.JMPTask = cell(0);
+            app.createEmptyTask();
+
+            app.currentSettingsFile = "";
+
+            app.advancedSettingValues = app.defaultAdvancedSettingValues;
+            app.validateAllFields();
             app.updateRunButton();
         end
     end
@@ -774,6 +822,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.JMPTasksButton.Enable = false;
             app.MarkersEditButton.Enable = false;
             app.makeAllListeners()
+            app.validateAllFields()
         end
 
         % Button pushed function: JMPInputsButton
@@ -1027,6 +1076,11 @@ classdef JMPBase < matlab.apps.AppBase
             app.deleteBody(app.BodiesTable.Selection);
         end
 
+        % Button pushed function: ResetButton
+        function ResetButtonPushed(app, event)
+            app.resetAllFields();
+        end
+
         % Button pushed function: LoadSettingsFileButton
         function LoadSettingsFileButtonPushed(app, event)
             [file, path] = uigetfile('*.xml', "Load XML Settings File");
@@ -1071,7 +1125,7 @@ classdef JMPBase < matlab.apps.AppBase
             % Create OutputModelFileSearchButton
             app.OutputModelFileSearchButton = uibutton(app.InputsTab, 'push');
             app.OutputModelFileSearchButton.ButtonPushedFcn = createCallbackFcn(app, @OutputModelFileSearchButtonPushed, true);
-            app.OutputModelFileSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
+            app.OutputModelFileSearchButton.Icon = 'folderIcon.svg';
             app.OutputModelFileSearchButton.VerticalAlignment = 'bottom';
             app.OutputModelFileSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.OutputModelFileSearchButton.Position = [667 323 30 30];
@@ -1090,42 +1144,16 @@ classdef JMPBase < matlab.apps.AppBase
             app.OutputModelFileEditField.ValueChangedFcn = createCallbackFcn(app, @OutputModelFileEditFieldValueChanged, true);
             app.OutputModelFileEditField.Position = [178 323 472 30];
 
-            % Create OutputModelFileError
-            app.OutputModelFileError = uiimage(app.InputsTab);
-            app.OutputModelFileError.Visible = 'off';
-            app.OutputModelFileError.Position = [717 323 28 30];
-            app.OutputModelFileError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create OutputModelFileWarning
-            app.OutputModelFileWarning = uiimage(app.InputsTab);
-            app.OutputModelFileWarning.Visible = 'off';
-            app.OutputModelFileWarning.Position = [717 323 28 30];
-            app.OutputModelFileWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
-
-            % Create OutputModelFileRequired
-            app.OutputModelFileRequired = uiimage(app.InputsTab);
-            app.OutputModelFileRequired.Visible = 'on';
-            app.OutputModelFileRequired.Tooltip = 'Output model file is required.';
-            app.OutputModelFileRequired.Position = [717 323 28 30];
-            app.OutputModelFileRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
-
-            % Create InputModelFileError
-            app.InputModelFileError = uiimage(app.InputsTab);
-            app.InputModelFileError.Visible = 'off';
-            app.InputModelFileError.Position = [717 383 28 30];
-            app.InputModelFileError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create InputModelFileRequired
-            app.InputModelFileRequired = uiimage(app.InputsTab);
-            app.InputModelFileRequired.Visible = 'on';
-            app.InputModelFileRequired.Tooltip = 'Input model file is required.';
-            app.InputModelFileRequired.Position = [717 383 28 30];
-            app.InputModelFileRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create InputModelFileStatus
+            app.InputModelFileStatus = uiimage(app.InputsTab);
+            app.InputModelFileStatus.Visible = 'off';
+            app.InputModelFileStatus.Position = [710 383 28 30];
+            app.InputModelFileStatus.ImageSource = 'error.png';
 
             % Create InputModelFileSearchButton
             app.InputModelFileSearchButton = uibutton(app.InputsTab, 'push');
             app.InputModelFileSearchButton.ButtonPushedFcn = createCallbackFcn(app, @InputModelFileSearchButtonPushed, true);
-            app.InputModelFileSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
+            app.InputModelFileSearchButton.Icon = 'folderIcon.svg';
             app.InputModelFileSearchButton.VerticalAlignment = 'bottom';
             app.InputModelFileSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.InputModelFileSearchButton.Position = [666 383 31 30];
@@ -1143,6 +1171,12 @@ classdef JMPBase < matlab.apps.AppBase
             app.InputModelFileEditField = uieditfield(app.InputsTab, 'text');
             app.InputModelFileEditField.ValueChangedFcn = createCallbackFcn(app, @InputModelFileEditFieldValueChanged, true);
             app.InputModelFileEditField.Position = [178 383 472 30];
+
+            % Create OutputModelFileStatus
+            app.OutputModelFileStatus = uiimage(app.InputsTab);
+            app.OutputModelFileStatus.Visible = 'off';
+            app.OutputModelFileStatus.Position = [710 322 28 30];
+            app.OutputModelFileStatus.ImageSource = 'error.png';
 
             % Create TasksTab
             app.TasksTab = uitab(app.TabGroup);
@@ -1171,30 +1205,17 @@ classdef JMPBase < matlab.apps.AppBase
             app.MarkerFileSearchButton.Position = [472 396 36 35];
             app.MarkerFileSearchButton.Text = '';
 
-            % Create MarkersFileWarning
-            app.MarkersFileWarning = uiimage(app.TasksPanel);
-            app.MarkersFileWarning.Visible = 'off';
-            app.MarkersFileWarning.Position = [519 397 35 35];
-            app.MarkersFileWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
+            % Create MarkersFileStatus
+            app.MarkersFileStatus = uiimage(app.TasksPanel);
+            app.MarkersFileStatus.Visible = 'off';
+            app.MarkersFileStatus.Position = [519 397 35 35];
+            app.MarkersFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
-            % Create MarkersFileError
-            app.MarkersFileError = uiimage(app.TasksPanel);
-            app.MarkersFileError.Visible = 'off';
-            app.MarkersFileError.Position = [519 397 35 35];
-            app.MarkersFileError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create MarkersFileRequired
-            app.MarkersFileRequired = uiimage(app.TasksPanel);
-            app.MarkersFileRequired.Visible = 'on';
-            app.MarkersFileRequired.Tooltip = 'Marker file is required for this task.';
-            app.MarkersFileRequired.Position = [519 397 35 35];
-            app.MarkersFileRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
-
-            % Create TimeRangeError
-            app.TimeRangeError = uiimage(app.TasksPanel);
-            app.TimeRangeError.Visible = 'off';
-            app.TimeRangeError.Position = [336 328 35 35];
-            app.TimeRangeError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create TimeRangeStatus
+            app.TimeRangeStatus = uiimage(app.TasksPanel);
+            app.TimeRangeStatus.Visible = 'off';
+            app.TimeRangeStatus.Position = [336 328 35 35];
+            app.TimeRangeStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create BodiesTable
             app.BodiesTable = uitable(app.TasksPanel);
@@ -1298,40 +1319,26 @@ classdef JMPBase < matlab.apps.AppBase
             app.MarkersEditButton.Position = [460 232 65 30];
             app.MarkersEditButton.Text = 'Edit';
 
-            % Create MarkersWarning
-            app.MarkersWarning = uiimage(app.TasksPanel);
-            app.MarkersWarning.Visible = 'off';
-            app.MarkersWarning.Tooltip = {'You must select markers for this task.'};
-            app.MarkersWarning.Position = [529 229 35 35];
-            app.MarkersWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
+            % Create MarkersStatus
+            app.MarkersStatus = uiimage(app.TasksPanel);
+            app.MarkersStatus.Visible = 'off';
+            app.MarkersStatus.Tooltip = {'You must select markers for this task.'};
+            app.MarkersStatus.Position = [529 229 35 35];
+            app.MarkersStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
 
-            % Create MarkersRequired
-            app.MarkersRequired = uiimage(app.TasksPanel);
-            app.MarkersRequired.Visible = 'on';
-            app.MarkersRequired.Tooltip = 'At least one marker must be selected for this task.';
-            app.MarkersRequired.Position = [529 229 35 35];
-            app.MarkersRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create JointsStatus
+            app.JointsStatus = uiimage(app.TasksPanel);
+            app.JointsStatus.Visible = 'off';
+            app.JointsStatus.Tooltip = {'You must select markers for this task.'};
+            app.JointsStatus.Position = [193 146 35 35];
+            app.JointsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
 
-            % Create JointsWarning
-            app.JointsWarning = uiimage(app.TasksPanel);
-            app.JointsWarning.Visible = 'off';
-            app.JointsWarning.Tooltip = {'You must select markers for this task.'};
-            app.JointsWarning.Position = [193 146 35 35];
-            app.JointsWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
-
-            % Create JointBodyRequired
-            app.JointBodyRequired = uiimage(app.TasksPanel);
-            app.JointBodyRequired.Visible = 'off';
-            app.JointBodyRequired.Tooltip = 'At least one joint or body is required for this task.';
-            app.JointBodyRequired.Position = [269 146 35 35];
-            app.JointBodyRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
-
-            % Create BodiesWarning
-            app.BodiesWarning = uiimage(app.TasksPanel);
-            app.BodiesWarning.Visible = 'off';
-            app.BodiesWarning.Tooltip = {'You must select markers for this task.'};
-            app.BodiesWarning.Position = [460 146 35 35];
-            app.BodiesWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
+            % Create BodiesStatus
+            app.BodiesStatus = uiimage(app.TasksPanel);
+            app.BodiesStatus.Visible = 'off';
+            app.BodiesStatus.Tooltip = {'You must select markers for this task.'};
+            app.BodiesStatus.Position = [460 146 35 35];
+            app.BodiesStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
 
             % Create MoveTaskUpButton
             app.MoveTaskUpButton = uibutton(app.TasksTab, 'push');
@@ -1361,29 +1368,18 @@ classdef JMPBase < matlab.apps.AppBase
             app.TasksTable.ColumnEditable = true;
             app.TasksTable.RowStriping = 'off';
             app.TasksTable.CellEditCallback = createCallbackFcn(app, @TasksTableCellEdit, true);
+            app.TasksTable.DoubleClickedFcn = createCallbackFcn(app, @TasksTableDoubleClicked, true);
+            app.TasksTable.DisplayDataChangedFcn = createCallbackFcn(app, @TasksTableDisplayDataChanged, true);
             app.TasksTable.SelectionChangedFcn = createCallbackFcn(app, @TasksTableSelectionChanged, true);
             app.TasksTable.Multiselect = 'off';
             app.TasksTable.FontSize = 18;
             app.TasksTable.Position = [5 96 181 242];
 
-            % Create TasksWarning
-            app.TasksWarning = uiimage(app.TasksTab);
-            app.TasksWarning.Visible = 'off';
-            app.TasksWarning.Position = [133 346 35 35];
-            app.TasksWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
-
-            % Create TasksError
-            app.TasksError = uiimage(app.TasksTab);
-            app.TasksError.Visible = 'off';
-            app.TasksError.Position = [133 346 35 35];
-            app.TasksError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
-
-            % Create TasksRequired
-            app.TasksRequired = uiimage(app.TasksTab);
-            app.TasksRequired.Visible = 'on';
-            app.TasksRequired.Tooltip = 'At least one task is required.';
-            app.TasksRequired.Position = [133 346 35 35];
-            app.TasksRequired.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'required.png');
+            % Create TasksStatus
+            app.TasksStatus = uiimage(app.TasksTab);
+            app.TasksStatus.Visible = 'off';
+            app.TasksStatus.Position = [133 346 35 35];
+            app.TasksStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create AdvancedTab
             app.AdvancedTab = uitab(app.TabGroup);
@@ -1397,19 +1393,19 @@ classdef JMPBase < matlab.apps.AppBase
             app.AdvancedSettingsTable.ColumnEditable = [false true];
             app.AdvancedSettingsTable.CellEditCallback = createCallbackFcn(app, @AdvancedSettingsTableCellEdit, true);
             app.AdvancedSettingsTable.FontSize = 20;
-            app.AdvancedSettingsTable.Position = [122 20 528 407];
+            app.AdvancedSettingsTable.Position = [122 11 528 393];
 
-            % Create AdvancedSettingsError
-            app.AdvancedSettingsError = uiimage(app.AdvancedTab);
-            app.AdvancedSettingsError.Visible = 'off';
-            app.AdvancedSettingsError.Position = [615 430 35 35];
-            app.AdvancedSettingsError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create AdvancedSettingsStatus
+            app.AdvancedSettingsStatus = uiimage(app.AdvancedTab);
+            app.AdvancedSettingsStatus.Visible = 'off';
+            app.AdvancedSettingsStatus.Position = [369 412 35 35];
+            app.AdvancedSettingsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);
             app.Mask1.ScaleMethod = 'fill';
             app.Mask1.Position = [211 532 790 30];
-            app.Mask1.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'greyMask.png');
+            app.Mask1.ImageSource = 'greyMask.png';
 
             % Create JMPTasksButton
             app.JMPTasksButton = uibutton(app.UIFigure, 'push');
@@ -1442,7 +1438,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.RcnlLogo = uiimage(app.UIFigure);
             app.RcnlLogo.ImageClickedFcn = createCallbackFcn(app, @RcnlLogoImageClicked, true);
             app.RcnlLogo.Position = [11 511 80 80];
-            app.RcnlLogo.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'rcnlIcon.png');
+            app.RcnlLogo.ImageSource = 'rcnlIcon.png';
 
             % Create LoadSettingsFileButton
             app.LoadSettingsFileButton = uibutton(app.UIFigure, 'push');
@@ -1491,7 +1487,16 @@ classdef JMPBase < matlab.apps.AppBase
             % Create JMPImage
             app.JMPImage = uiimage(app.UIFigure);
             app.JMPImage.Position = [21 33 178 420];
-            app.JMPImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'jmpFigure.png');
+            app.JMPImage.ImageSource = 'jmpFigure.png';
+
+            % Create ResetButton
+            app.ResetButton = uibutton(app.UIFigure, 'push');
+            app.ResetButton.ButtonPushedFcn = createCallbackFcn(app, @ResetButtonPushed, true);
+            app.ResetButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.ResetButton.FontSize = 18;
+            app.ResetButton.FontColor = [1 1 1];
+            app.ResetButton.Position = [402 19 90 30];
+            app.ResetButton.Text = 'Reset';
 
             % Create TasksContextMenu
             app.TasksContextMenu = uicontextmenu(app.UIFigure);
@@ -1510,7 +1515,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.DeleteTaskMenu = uimenu(app.TasksContextMenu);
             app.DeleteTaskMenu.MenuSelectedFcn = createCallbackFcn(app, @DeleteTaskMenuSelected, true);
             app.DeleteTaskMenu.Text = 'Delete';
-
+            
             % Assign app.TasksContextMenu
             app.TasksTable.ContextMenu = app.TasksContextMenu;
 
@@ -1526,7 +1531,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.DeleteJointMenu = uimenu(app.JointsContextMenu);
             app.DeleteJointMenu.MenuSelectedFcn = createCallbackFcn(app, @DeleteJointMenuSelected, true);
             app.DeleteJointMenu.Text = 'Delete';
-
+            
             % Assign app.JointsContextMenu
             app.JointsTable.ContextMenu = app.JointsContextMenu;
 
@@ -1542,7 +1547,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.DeleteBodyMenu = uimenu(app.BodiesContextMenu);
             app.DeleteBodyMenu.MenuSelectedFcn = createCallbackFcn(app, @DeleteBodyMenuSelected, true);
             app.DeleteBodyMenu.Text = 'Delete';
-
+            
             % Assign app.BodiesContextMenu
             app.BodiesTable.ContextMenu = app.BodiesContextMenu;
 

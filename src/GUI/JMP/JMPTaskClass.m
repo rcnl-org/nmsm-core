@@ -70,12 +70,12 @@ classdef JMPTaskClass < handle
             if isfield(s, 'JMPJointSet') && isfield(s.JMPJointSet, 'JMPJoint')
                 joints = s.JMPJointSet.JMPJoint;
             end
-            % xml2struct yields '' or [] for an empty set and a bare
-            % struct for a single entry
-            if isempty(joints) || ischar(joints)
-                joints = {};
-            elseif ~iscell(joints)
+            % xml2struct yields '', "", or [] for an empty set and a
+            % bare struct for a single entry
+            if isstruct(joints)
                 joints = {joints};
+            elseif ~iscell(joints)
+                joints = {};
             end
             obj.jointNames = strings(0);
             for i = 1 : numel(joints)
@@ -91,10 +91,10 @@ classdef JMPTaskClass < handle
             if isfield(s, 'JMPBodySet') && isfield(s.JMPBodySet, 'JMPBody')
                 bodies = s.JMPBodySet.JMPBody;
             end
-            if isempty(bodies) || ischar(bodies)
-                bodies = {};
-            elseif ~iscell(bodies)
+            if isstruct(bodies)
                 bodies = {bodies};
+            elseif ~iscell(bodies)
+                bodies = {};
             end
             obj.bodyNames = strings(0);
             for i = 1 : numel(bodies)

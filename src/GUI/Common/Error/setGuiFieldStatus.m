@@ -1,11 +1,14 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function displays a GUI error state by highlighting a field
-% component in red and showing an associated error icon with a tooltip
-% containing the error message.
+% This function sets the validation status of a GUI input field using a
+% single status icon. The icon's image, tooltip, and visibility, and the
+% field's background color, are all set from the given status so a field
+% always displays exactly one state: "error" (red highlight), "warning"
+% (yellow highlight), "required" (asterisk, no highlight), or "none"
+% (icon hidden, default background).
 %
-% (string, UIComponent, UIComponent) -> ()
-% Highlights a GUI field in red and shows an error icon with a tooltip
+% (UIComponent, UIComponent, string, string) -> ()
+% Sets a field's status icon and highlight for the given status
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -28,6 +31,39 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function throwGuiError(errorMessage, fieldObject, iconObject)
-    setGuiFieldStatus(fieldObject, iconObject, "error", errorMessage);
+function setGuiFieldStatus(fieldObject, iconObject, status, message)
+if nargin < 4
+    message = "";
+end
+imageDir = fullfile(fileparts(mfilename('fullpath')), '..', '..', 'Images');
+defaultColor = get(groot, 'defaultUicontrolBackgroundColor');
+switch string(status)
+    case "error"
+        iconFile = 'error.png';
+        fieldColor = [1.00, 0.67, 0.67];
+    case "warning"
+        iconFile = 'warning.png';
+        fieldColor = [1.00, 1.00, 0.67];
+    case "required"
+        iconFile = 'required.png';
+        fieldColor = defaultColor;
+    case "none"
+        iconFile = '';
+        fieldColor = defaultColor;
+    otherwise
+        error("setGuiFieldStatus:badStatus", ...
+            "Unknown field status ""%s""", status);
+end
+if ~isempty(fieldObject)
+    fieldObject.BackgroundColor = fieldColor;
+end
+if ~isempty(iconObject)
+    if isempty(iconFile)
+        iconObject.Visible = 'off';
+    else
+        iconObject.ImageSource = fullfile(imageDir, iconFile);
+        iconObject.Tooltip = message;
+        iconObject.Visible = 'on';
+    end
+end
 end

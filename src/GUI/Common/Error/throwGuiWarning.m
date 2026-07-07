@@ -29,11 +29,5 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function throwGuiWarning(message, fieldObject, iconObject)
-    if ~isempty(fieldObject)
-        fieldObject.BackgroundColor = [1.00,1.00,0.67];
-    end
-    if ~isempty(iconObject)
-        iconObject.Visible = 'on';
-        iconObject.Tooltip = message;
-    end
+    setGuiFieldStatus(fieldObject, iconObject, "warning", message);
 end

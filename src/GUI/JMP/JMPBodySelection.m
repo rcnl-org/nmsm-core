@@ -29,8 +29,8 @@ classdef JMPBodySelection < matlab.apps.AppBase
     % Properties that correspond to app components
     properties (Access = public)
         UIFigure               matlab.ui.Figure
-        OKWarning              matlab.ui.control.Image
-        BodyNameError          matlab.ui.control.Image
+        OKStatus              matlab.ui.control.Image
+        BodyNameStatus          matlab.ui.control.Image
         CloseButton            matlab.ui.control.Button
         OKButton               matlab.ui.control.Button
         ScaleBodyLabel         matlab.ui.control.Label
@@ -58,28 +58,28 @@ classdef JMPBodySelection < matlab.apps.AppBase
             app.errorFlag = false;
             if ~any(contains(app.BodyNameDropDown.Value, ...
                     app.JMPParent.getModelBodies))
-                throwGuiError("This body is not found in the .osim model", ...
-                    app.BodyNameDropDown, app.BodyNameError);
+                setGuiFieldStatus([], app.BodyNameStatus, "error", ...
+                    "This body is not found in the .osim model");
                 app.errorFlag = true;
             elseif any(contains(app.BodyNameDropDown.Value, ...
                     app.JMPParent.getSelectedBodies())) && ...
                     ~(app.editingFlag && strcmp(app.BodyNameDropDown.Value, ...
                     app.originalBodyName))
-                throwGuiError("This body is already in this task", ...
-                    [], app.BodyNameError);
+                setGuiFieldStatus([], app.BodyNameStatus, "error", ...
+                    "This body is already in this task");
                 app.errorFlag = true;
             else
-                clearGuiError([], app.BodyNameError);
+                setGuiFieldStatus([], app.BodyNameStatus, "none");
             end
 
             if ~any([app.ScaleBodyCheckBox.Value, ...
                     app.MoveMarkersXCheckBox.Value, ...
                     app.MoveMarkersYCheckBox.Value, ...
                     app.MoveMarkersZCheckBox.Value])
-                throwGuiWarning("This task has no parameters selected.", ...
-                    [], app.OKWarning)
+                setGuiFieldStatus([], app.OKStatus, "warning", ...
+                    "This task has no parameters selected.")
             else
-                clearGuiError([], app.OKWarning)
+                setGuiFieldStatus([], app.OKStatus, "none")
             end
             app.EnableActionsCallback()
         end
@@ -187,9 +187,6 @@ classdef JMPBodySelection < matlab.apps.AppBase
         % Create UIFigure and components
         function createComponents(app)
 
-            % Get the file path for locating images
-            pathToMLAPP = fileparts(mfilename('fullpath'));
-
             % Create UIFigure and hide until all components are created
             app.UIFigure = uifigure('Visible', 'off');
             app.UIFigure.Color = [0.851 0.851 0.851];
@@ -267,17 +264,15 @@ classdef JMPBodySelection < matlab.apps.AppBase
             app.CloseButton.Position = [291 19 85 30];
             app.CloseButton.Text = 'Close';
 
-            % Create BodyNameError
-            app.BodyNameError = uiimage(app.UIFigure);
-            app.BodyNameError.Visible = 'off';
-            app.BodyNameError.Position = [352 175 37 35];
-            app.BodyNameError.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create BodyNameStatus
+            app.BodyNameStatus = uiimage(app.UIFigure);
+            app.BodyNameStatus.Visible = 'off';
+            app.BodyNameStatus.Position = [352 175 37 35];
 
-            % Create OKWarning
-            app.OKWarning = uiimage(app.UIFigure);
-            app.OKWarning.Visible = 'off';
-            app.OKWarning.Position = [130 17 35 35];
-            app.OKWarning.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'warning.png');
+            % Create OKStatus
+            app.OKStatus = uiimage(app.UIFigure);
+            app.OKStatus.Visible = 'off';
+            app.OKStatus.Position = [130 17 35 35];
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
