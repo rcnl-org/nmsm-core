@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Claire V. Hammond, Xuanning Liu                              %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -30,6 +30,9 @@
 % ----------------------------------------------------------------------- %
 
 function cost = computeNeuralControlCostFunction(values, inputs, params)
-activations = calcActivationsFromSynergyDesignVariables(values, inputs, params);
-cost = calcNcpCost(activations, inputs, params, values);
+if inputs.enforce_bilateral_symmetry
+    weightsPart = values(1:inputs.numWeightsPerGroup(1));
+    values = [weightsPart; values];
+end
+cost = calcNcpCost(values, inputs, params);
 end
