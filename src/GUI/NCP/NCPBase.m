@@ -49,7 +49,7 @@ classdef NCPBase < matlab.apps.AppBase
         MTPResultsDirEditField          matlab.ui.control.EditField
         MTPResultsDirSearchButton       matlab.ui.control.Button
         MTPResultsDirStatus             matlab.ui.control.Image
-        TaskPrefixesStatus              matlab.ui.control.Image
+        TrialPrefixesStatus              matlab.ui.control.Image
         TrialPrefixesEditField          matlab.ui.control.EditField
         TrialPrefixesEditFieldLabel     matlab.ui.control.Label
         CoordinateListEditButton        matlab.ui.control.Button
@@ -548,7 +548,7 @@ classdef NCPBase < matlab.apps.AppBase
         function isValid = validateTrialPrefixes(app)
             if isEmptyStringList(app.trial_prefixes)
                 setGuiFieldStatus(app.TrialPrefixesEditField, ...
-                    app.TaskPrefixesStatus, "warning", ...
+                    app.TrialPrefixesStatus, "warning", ...
                     "No trial prefixes specified. All trials " + ...
                     "in the data directory will be used.");
                 isValid = true;
@@ -556,7 +556,7 @@ classdef NCPBase < matlab.apps.AppBase
             end
             isValid = validateTrialPrefixesGui(app.trial_prefixes, ...
                 app.data_directory, app.TrialPrefixesEditField, ...
-                app.TaskPrefixesStatus);
+                app.TrialPrefixesStatus);
         end
 
         function isValid = validateMtliConfig(app)
@@ -1337,10 +1337,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.TrialPrefixesEditField.FontSize = 18;
             app.TrialPrefixesEditField.Position = [218 64 444 30];
 
-            % Create TaskPrefixesStatus
-            app.TaskPrefixesStatus = uiimage(app.InputsTab);
-            app.TaskPrefixesStatus.Visible = 'off';
-            app.TaskPrefixesStatus.Position = [672 64 28 30];
+            % Create TrialPrefixesStatus
+            app.TrialPrefixesStatus = uiimage(app.InputsTab);
+            app.TrialPrefixesStatus.Visible = 'off';
+            app.TrialPrefixesStatus.Position = [672 64 28 30];
 
             % Create MTPResultsDirStatus
             app.MTPResultsDirStatus = uiimage(app.InputsTab);
