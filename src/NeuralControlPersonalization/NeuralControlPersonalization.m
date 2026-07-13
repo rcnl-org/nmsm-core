@@ -59,7 +59,7 @@ end
 function verifyParams(params)
 if(isfield(params, 'maxIterations'))
     verifyParam(params, 'maxIterations', @verifyNumeric, ...
-        'param maxFunctionEvaluations is not a number');
+        'param maxIterations is not a number');
 end
 if(isfield(params, 'maxFunctionEvaluations'))
     verifyParam(params, 'maxFunctionEvaluations', @verifyNumeric, ...

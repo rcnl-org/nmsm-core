@@ -30,11 +30,12 @@ if inputs.enforce_bilateral_symmetry
 end
 
 if isfield(inputs, 'mtpActivations') && use_nnmf_as_init
-    % nnmf options 
+    % nnmf options
     fprintf("Generating NNMF initialization from mtpActivations ...\n\n")
+    syn = RandStream('threefry', 'Seed', 42);
     options = statset('Display','off','TolX',1e-10,'TolFun',1e-10, ...
-        'UseParallel',true);
-    numReplicates = 1000;  
+        'UseParallel',true, 'UseSubstreams',true, 'Streams',syn);
+    numReplicates = 1000;
 
     mtpPerm = permute(inputs.mtpActivations, [1 3 2]);
     mtpActivationsStack = reshape(mtpPerm, inputs.numTrials * ...

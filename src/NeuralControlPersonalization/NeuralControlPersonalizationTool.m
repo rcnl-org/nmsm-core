@@ -29,9 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function NeuralControlPersonalizationTool(settingsFileName)
+function NeuralControlPersonalizationTool(settingsFileName, forceOverwrite)
+if nargin < 2
+    forceOverwrite = false;
+end
 tic
-try 
+try
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
@@ -41,18 +44,20 @@ verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
 if exist(resultsDirectory, "dir")
-    answer = input(sprintf( ...
-        'Results folder "%s" already exists. Continue and overwrite? [y/n]: ', ...
-        resultsDirectory), 's');
-    if ~strcmpi(strtrim(answer), 'y')
-        fprintf('NCP run cancelled.\n');
-        return
+    if ~forceOverwrite && usejava('desktop')
+        answer = input(sprintf( ...
+            'Results folder "%s" already exists. Continue and overwrite? [y/n]: ', ...
+            resultsDirectory), 's');
+        if ~strcmpi(strtrim(answer), 'y')
+            fprintf('NCP run cancelled.\n');
+            return
+        end
     end
 else
     mkdir(resultsDirectory);
 end
 [~, fname, fext] = fileparts(settingsFileName);
-copyfile(settingsFileName, fullfile(resultsDirectory, [fname fext]));
+copyfile(settingsFileName, fullfile(resultsDirectory, fname + fext));
 outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
 diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);

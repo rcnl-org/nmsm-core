@@ -30,7 +30,7 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcNcpCost(values, inputs, params)
-[activations, ~, commands] = calcActivationsFromSynergyDesignVariables(values, inputs);
+[activations, ~, ~] = calcActivationsFromSynergyDesignVariables(values, inputs);
 cost = 0;
 % Split activations into subsets ahead of cost computation
 if isfield(inputs, 'mtpActivationsColumnNames')
@@ -65,13 +65,6 @@ for term = 1:length(params.costTerms)
             case "grouped_fiber_lengths"
                 rawCost = calcGroupedNormalizedFiberLengthCost( ...
                     activations, inputs, params);
-            case "bilateral_symmetry"
-                if length(inputs.synergyGroups) ~= 2
-                    throw(MException('', ['Bilateral symmetry cost ' ...
-                        'requires exactly two synergy groups.']))
-                end
-                weights = findSynergyWeightsByGroup(values, inputs);
-                rawCost = weights(1, :, :) - weights(2, :, :);
             otherwise
                 throw(MException('', ['Cost term type ' costTerm.type ...
                     ' does not exist for this tool.']))
