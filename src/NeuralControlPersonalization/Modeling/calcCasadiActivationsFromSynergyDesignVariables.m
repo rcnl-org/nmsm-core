@@ -62,18 +62,15 @@ for i = 1:length(inputs.synergyGroups)
 end
 
 % commandNodes2d: [numNodes x (numTrials*numSynergies)], column order:
-% trial i, synergy j -> column (i-1)*numSynergies + j
-commandNodeCols = cell(1, inputs.numTrials * inputs.numSynergies);
-col = 1;
-for i = 1:inputs.numTrials
-    for j = 1:inputs.numSynergies
-        commandNodeCols{col} = values(valuesIndex : ...
-            valuesIndex + inputs.numNodes - 1);
-        valuesIndex = valuesIndex + inputs.numNodes;
-        col = col + 1;
-    end
-end
-commandNodes2d = [commandNodeCols{:}];
+% trial i, synergy j -> column (i-1)*numSynergies + j. The remaining
+% values are contiguous and already laid out node-fastest/synergy-next/
+% trial-slowest, matching MATLAB's column-major reshape order exactly,
+% so this is a single reshape rather than a loop over (trial, synergy).
+numCommandNodeValues = inputs.numTrials * inputs.numSynergies * ...
+    inputs.numNodes;
+commandNodes2d = reshape(values(valuesIndex : ...
+    valuesIndex + numCommandNodeValues - 1), inputs.numNodes, ...
+    inputs.numTrials * inputs.numSynergies);
 commands2d = inputs.Bmatrix * commandNodes2d; % [numPoints x numTrials*numSynergies]
 
 % activations2d: [numTrials*numPoints x numMuscles]

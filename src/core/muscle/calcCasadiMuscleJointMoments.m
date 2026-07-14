@@ -38,34 +38,48 @@
 
 function muscleJointMoments2d = calcCasadiMuscleJointMoments(inputs, ...
     activations2d)
-activeForce = activeForceLengthCurve(inputs.normalizedFiberLengths);
-muscleVelocity = forceVelocityCurve(inputs.normalizedFiberVelocities);
-passiveForce = passiveForceLengthCurve(inputs.normalizedFiberLengths);
+% All fixed (non-design-variable-dependent) numeric quantities are
+% flattened to the same [numTrials*numPoints x numMuscles] layout as
+% activations2d ONCE, up front, so the per-joint combination below is a
+% single vectorized expression across all trials simultaneously rather
+% than a trial-by-trial loop.
+activeForce2d = flattenNumericTrialFirstDim( ...
+    activeForceLengthCurve(inputs.normalizedFiberLengths));
+muscleVelocity2d = flattenNumericTrialFirstDim( ...
+    forceVelocityCurve(inputs.normalizedFiberVelocities));
+passiveForce2d = flattenNumericTrialFirstDim( ...
+    passiveForceLengthCurve(inputs.normalizedFiberLengths));
 numJoints = size(inputs.momentArms, 2);
+numRows = inputs.numTrials * inputs.numPoints;
 % CasADi MX does not implicitly broadcast row/column vectors against a
 % matrix (only true scalars broadcast), so expand explicitly.
 maxIsoForceExpanded = repmat(reshape(inputs.maxIsometricForce, 1, []), ...
-    inputs.numPoints, 1);
+    numRows, 1);
 pennationExpanded = repmat(cos(reshape(inputs.pennationAngle, 1, [])), ...
-    inputs.numPoints, 1);
+    numRows, 1);
 
-rowBlocks = cell(inputs.numTrials, 1);
-for t = 1:inputs.numTrials
-    rows = (t - 1) * inputs.numPoints + 1 : t * inputs.numPoints;
-    activationsTrial = activations2d(rows, :); % [numPoints x numMuscles]
-    activeForceTrial = squeeze(activeForce(t, :, :)).';
-    muscleVelocityTrial = squeeze(muscleVelocity(t, :, :)).';
-    passiveForceTrial = squeeze(passiveForce(t, :, :)).';
-    muscleForceTrial = maxIsoForceExpanded .* pennationExpanded .* ...
-        (activationsTrial .* activeForceTrial .* muscleVelocityTrial + ...
-        passiveForceTrial); % [numPoints x numMuscles]
+muscleForce2d = maxIsoForceExpanded .* pennationExpanded .* ...
+    (activations2d .* activeForce2d .* muscleVelocity2d + ...
+    passiveForce2d); % [numTrials*numPoints x numMuscles]
 
-    jointColumns = cell(1, numJoints);
-    for j = 1:numJoints
-        momentArmsTrialJoint = squeeze(inputs.momentArms(t, j, :, :)).';
-        jointColumns{j} = sum(momentArmsTrialJoint .* muscleForceTrial, 2);
-    end
-    rowBlocks{t} = [jointColumns{:}]; % [numPoints x numJoints]
+% CasADi MX has no N-D array support, so momentArms (4-D: trial, joint,
+% muscle, point) can only be combined with the symbolic muscleForce2d
+% one joint at a time; numJoints is typically the smallest dimension
+% here (single digits, vs. ~100 points), so this is the cheapest axis
+% to loop over.
+jointColumns = cell(1, numJoints);
+for j = 1:numJoints
+    momentArmsJoint2d = flattenNumericTrialFirstDim(reshape( ...
+        inputs.momentArms(:, j, :, :), inputs.numTrials, ...
+        size(inputs.momentArms, 3), size(inputs.momentArms, 4)));
+    jointColumns{j} = sum(momentArmsJoint2d .* muscleForce2d, 2);
 end
-muscleJointMoments2d = vertcat(rowBlocks{:});
+muscleJointMoments2d = [jointColumns{:}];
+end
+
+function flat = flattenNumericTrialFirstDim(data)
+numTrials = size(data, 1);
+numColumns = size(data, 2);
+numPoints = size(data, 3);
+flat = reshape(permute(data, [3 1 2]), numTrials * numPoints, numColumns);
 end

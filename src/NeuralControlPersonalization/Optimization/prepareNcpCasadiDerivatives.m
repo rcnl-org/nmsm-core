@@ -66,14 +66,16 @@ if useNonlinearConstraint
 
     derivatives.constraintFcn = @(values) evalConstraint( ...
         constraintFn, values);
-    derivatives.hessianFcn = @(values, lambdaStruct) full(hessianFn( ...
+    % sparse Hessian: fmincon's interior-point algorithm exploits this
+    % directly instead of factorizing a dense matrix
+    derivatives.hessianFcn = @(values, lambdaStruct) sparse(hessianFn( ...
         values, lambdaStruct.eqnonlin));
 else
     lagrangianHessian = hessian(objective, x);
     hessianFn = Function('ncpObjectiveHessian', {x}, {lagrangianHessian});
 
     derivatives.constraintFcn = [];
-    derivatives.hessianFcn = @(values, lambdaStruct) full(hessianFn(values));
+    derivatives.hessianFcn = @(values, lambdaStruct) sparse(hessianFn(values));
 end
 
 costAndGradientFn = Function('ncpCostAndGradient', {x}, ...
@@ -93,7 +95,7 @@ function [c, ceq, gc, gceq] = evalConstraint(fn, values)
 c = [];
 ceq = full(ceqOut);
 gc = [];
-gceq = full(jacOut).';
+gceq = sparse(jacOut).'; % sparse Jacobian: fmincon exploits this directly
 end
 
 function fullValues = expandBilateralSymmetryForCasadi(values, inputs)

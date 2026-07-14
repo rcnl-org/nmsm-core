@@ -148,6 +148,12 @@ optimizerOptions.Algorithm = 'interior-point';
 optimizerOptions.SpecifyObjectiveGradient = true;
 optimizerOptions.SpecifyConstraintGradient = true;
 optimizerOptions.HessianFcn = derivatives.hessianFcn;
+% UseParallel only affects finite-difference gradient/Hessian
+% estimation; with exact CasADi derivatives supplied there's none left
+% to parallelize, so this is a no-op either way (not a performance win
+% by itself, since prepareNcpInitialValues.m's NNMF step already starts
+% the parallel pool regardless)
+optimizerOptions.UseParallel = false;
 end
 
 function [c, ceq] = nonlinearConstraints(values, inputs, normalizationTarget)

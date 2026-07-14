@@ -85,9 +85,8 @@ end
 % major blocks, points fastest within a trial) used throughout this
 % branch's CasADi files.
 function flat = flattenTrialFirstDim(data)
-blocks = cell(size(data, 1), 1);
-for t = 1:size(data, 1)
-    blocks{t} = squeeze(data(t, :, :)).';
-end
-flat = vertcat(blocks{:});
+numTrials = size(data, 1);
+numColumns = size(data, 2);
+numPoints = size(data, 3);
+flat = reshape(permute(data, [3 1 2]), numTrials * numPoints, numColumns);
 end
