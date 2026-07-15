@@ -1,11 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% Computes the NCP objective value for a design vector: converts it to
+% muscle activations, evaluates each enabled RCNL cost term (moment
+% tracking, activation tracking/minimization, grouped activations,
+% grouped fiber lengths), and sums the scaled squared residuals into a
+% single scalar cost.
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
+% (Array of number, struct, struct) -> (number)
+% Computes the weighted least-squares NCP cost
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,9 +31,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcNcpCost(activations, inputs, params, values)
-
-error = [];
+function cost = calcNcpCost(values, inputs, params)
+[activations, ~, ~] = calcActivationsFromSynergyDesignVariables(values, inputs);
+cost = 0;
 % Split activations into subsets ahead of cost computation
 if isfield(inputs, 'mtpActivationsColumnNames')
     [activationsWithMtpData, activationsWithoutMtpData] = ...
@@ -45,13 +47,9 @@ for term = 1:length(params.costTerms)
     if costTerm.isEnabled
         switch costTerm.type
             case "moment_tracking"
-                [normalizedFiberLengths, normalizedFiberVelocities] = ...
-                    calcNormalizedMuscleFiberLengthsAndVelocities( ...
-                    inputs, inputs.optimalFiberLengthScaleFactors, ...
-                    inputs.tendonSlackLengthScaleFactors);
                 muscleJointMoments = calcMuscleJointMoments(inputs, ...
-                    activations, normalizedFiberLengths, ...
-                    normalizedFiberVelocities);
+                    activations, inputs.normalizedFiberLengths, ...
+                    inputs.normalizedFiberVelocities);
                 rawCost = muscleJointMoments - ...
                     inputs.inverseDynamicsMoments;
             case "activation_tracking"
@@ -69,21 +67,13 @@ for term = 1:length(params.costTerms)
             case "grouped_fiber_lengths"
                 rawCost = calcGroupedNormalizedFiberLengthCost( ...
                     activations, inputs, params);
-            case "bilateral_symmetry"
-                if length(inputs.synergyGroups) ~= 2
-                    throw(MException('', ['Bilateral symmetry cost ' ...
-                        'requires exactly two synergy groups.']))
-                end
-                weights = findSynergyWeightsByGroup(values, inputs);
-                rawCost = weights(1, :, :) - weights(2, :, :);
             otherwise
                 throw(MException('', ['Cost term type ' costTerm.type ...
                     ' does not exist for this tool.']))
         end
-        error = [error; (rawCost(:) / costTerm.maxAllowableError) / ...
-            sqrt(numel(rawCost))];
+        rawCost = rawCost(:);
+        rawCost_scaled = (rawCost / costTerm.maxAllowableError) / sqrt(numel(rawCost));
+        cost = cost + rawCost_scaled.' * rawCost_scaled;
     end
 end
-
-cost = error' * error;
 end

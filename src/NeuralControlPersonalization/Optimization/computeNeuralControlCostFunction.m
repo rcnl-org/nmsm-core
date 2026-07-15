@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% The objective function fmincon calls each iteration. Expands the
+% bilateral-symmetry-mirrored design vector (when enabled) back to its
+% full length before delegating to calcNcpCost.m.
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
+% (Array of number, struct, struct) -> (number)
+% Wraps calcNcpCost.m as fmincon's objective function
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -30,6 +30,9 @@
 % ----------------------------------------------------------------------- %
 
 function cost = computeNeuralControlCostFunction(values, inputs, params)
-activations = calcActivationsFromSynergyDesignVariables(values, inputs, params);
-cost = calcNcpCost(activations, inputs, params, values);
+if inputs.enforce_bilateral_symmetry
+    weightsPart = values(1:inputs.numWeightsPerGroup(1));
+    values = [weightsPart; values];
+end
+cost = calcNcpCost(values, inputs, params);
 end
