@@ -69,8 +69,8 @@ end
 end
 
 function inputs = parseEmgData(tree, inputs, dataDirectory)
-emgDataFileNames = findFileListFromPrefixList( ...
-    fullfile(dataDirectory, "EMGData"), inputs.prefixes);
+emgDataFileNames = unique(findFileListFromPrefixList( ...
+    fullfile(dataDirectory, "EMGData"), inputs.prefixes));
 [~, inputs.trialNames, ~] = fileparts(emgDataFileNames);
 collectedEmgGroupNames = parseSpaceSeparatedList(tree, 'collected_emg_channel_muscle_groups');
 [inputs.fullEmgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
@@ -84,8 +84,8 @@ for i = 2 : size(inputs.emgData, 1)
     inputs.emgDataExpanded(i, :, :) = ...
         expandEmgDatas(inputs.model, squeeze(inputs.emgData(i, :, :)), collectedEmgGroupNames, inputs.muscleNames);
 end
-inputs.emgTime = parseTimeColumn(findFileListFromPrefixList(...
-    fullfile(dataDirectory, "EMGData"), inputs.prefixes));
+inputs.emgTime = parseTimeColumn(unique(findFileListFromPrefixList(...
+    fullfile(dataDirectory, "EMGData"), inputs.prefixes)));
 inputs.numPaddingFrames = (size(inputs.emgData, 3) - 101) / 2;
 end
 
