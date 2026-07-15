@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% Parses an NCP settings XML tree into the inputs/params structs and
+% results directory used by the rest of the tool.
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
+% (struct) -> (struct, struct, string)
+% Parses the NCP settings tree
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,7 +31,7 @@
 function [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-params = getParams(settingsTree, inputs.model, inputs);
+params = getParams(settingsTree, inputs.model);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -60,6 +59,22 @@ else
     inputs.tendonSlackLengthScaleFactors = ...
         ones(1, length(inputs.muscleTendonColumnNames));
 end
+inputs.enforce_bilateral_symmetry = strcmpi(getTextFromField(...
+    getFieldByNameOrAlternate(tree, ...
+    'enforce_bilateral_symmetry', 'false')), 'true');
+inputs.numNodes = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "number_of_nodes", "26"));
+inputs.synergy_vector_normalization_method = string(getTextFromField(...
+    getFieldByNameOrAlternate(tree, ...
+    'synergy_vector_normalization_method', 'magnitude')));
+normValueText = getTextFromField(getFieldByNameOrAlternate(tree, ...
+    'synergy_vector_normalization_value', '10'));
+if isempty(strtrim(normValueText))
+    normValueText = '10';
+end
+inputs.synergy_vector_normalization_value = str2double(normValueText);
+% NOTE: tag absent or empty -> 10 (default)
+% <...>NaN</...> -> NaN (no normalization target)
 end
 
 function inputs = loadMtpData(tree, inputs)
@@ -100,7 +115,7 @@ for i = 1:length(muscles)
 end
 end
 
-function params = getParams(tree, model, inputs)
+function params = getParams(tree, model)
 params = struct();
 params.activationGroupNames = parseSpaceSeparatedList(tree, ...
     'activation_muscle_groups');
@@ -112,11 +127,6 @@ params.normalizedFiberLengthGroups = groupNamesToGroups( ...
     params.normalizedFiberLengthGroupNames, model);
 params.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
-if strcmpi('true', getTextFromField(getFieldByName(tree, ...
-        'enforce_bilateral_symmetry')))
-    params.costTerms{end+1} = struct('type', 'bilateral_symmetry', ...
-        'isEnabled', true, 'maxAllowableError', 1e-4, 'errorCenter', 0);
-end
 params.diffMinChange = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'diff_min_change', '1e-6')));
 params.stepTolerance = str2double(getTextFromField(...
@@ -130,6 +140,10 @@ params.maxIterations = str2double(getTextFromField(...
 params.maxFunctionEvaluations = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'max_function_evaluations', ...
     '1e6')));
+params.algorithm = string(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'algorithm', 'sqp')));
+params.finiteDifferenceType = string(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'finiteDifferenceType', 'central')));
 end
 
 function [optimalFiberLengthScaleFactors, ...
