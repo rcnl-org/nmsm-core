@@ -30,7 +30,9 @@
 % ----------------------------------------------------------------------- %
 
 function cost = computeNeuralControlCostFunction(values, inputs, params)
-if inputs.enforce_bilateral_symmetry
+if ~inputs.optimize_synergy_vectors
+    values = [inputs.fixedSynergyVectorFlat; values];
+elseif inputs.enforce_bilateral_symmetry
     weightsPart = values(1:inputs.numWeightsPerGroup(1));
     values = [weightsPart; values];
 end

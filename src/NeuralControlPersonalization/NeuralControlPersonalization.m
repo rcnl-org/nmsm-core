@@ -37,6 +37,12 @@ verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
 params = finalizeParams(params);
 inputs = finalizeInputs(inputs);
+if ~inputs.optimize_synergy_vectors
+    packed = repackDesignVariables(inputs.fixedSynergyWeights, ...
+        zeros(inputs.numTrials, inputs.numNodes, inputs.numSynergies), ...
+        inputs);
+    inputs.fixedSynergyVectorFlat = packed(1:sum(inputs.numWeightsPerGroup));
+end
 initialValues = prepareNcpInitialValues(inputs, params);
 finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
     params);

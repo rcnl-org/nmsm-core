@@ -118,6 +118,8 @@
 		<mtp_results_directory>MTPResults</mtp_results_directory>
 		<!--Indicate whether to enforce bilateral symmetry or not.-->
 		<enforce_bilateral_symmetry>false</enforce_bilateral_symmetry>
+		<!--Indicate whether to optimize synergy weight vectors. Default is true. If false, NCP reads a pre-existing synergyWeights.sto file from data_directory, holds the weights fixed, and only optimizes synergy commands.-->
+		<optimize_synergy_vectors>true</optimize_synergy_vectors>
 		<!--Cost term set for the Neural Control Optimization.-->
 		<RCNLCostTermSet>
 			<RCNLCostTerm>
