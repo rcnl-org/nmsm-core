@@ -118,7 +118,7 @@
 		<mtp_results_directory>MTPResults</mtp_results_directory>
 		<!--Indicate whether to enforce bilateral symmetry or not.-->
 		<enforce_bilateral_symmetry>false</enforce_bilateral_symmetry>
-		<!--Indicate whether to optimize synergy weight vectors. Default is true. If false, NCP reads a pre-existing synergyWeights.sto file from data_directory, holds the weights fixed, and only optimizes synergy commands.-->
+		<!--Indicate whether to optimize synergy weight vectors or only optimizes synergy commands. Default is true.-->
 		<optimize_synergy_vectors>true</optimize_synergy_vectors>
 		<!--Cost term set for the Neural Control Optimization.-->
 		<RCNLCostTermSet>
@@ -141,8 +141,24 @@
 			<RCNLCostTerm>
 				<!--Indicate whether the term is enabled or not. Default is false.-->
 				<is_enabled>false</is_enabled>
-				<!--Type of cost term.-->
+				<!--Type of cost term. Deprecated alias for muscle_activation_minimization, kept for backward compatibility.-->
 				<type>activation_minimization</type>
+				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+				<max_allowable_error>0.05</max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm>
+				<!--Indicate whether the term is enabled or not. Default is false.-->
+				<is_enabled>false</is_enabled>
+				<!--Type of cost term.-->
+				<type>muscle_activation_minimization</type>
+				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+				<max_allowable_error>0.05</max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm>
+				<!--Indicate whether the term is enabled or not. Default is false.-->
+				<is_enabled>false</is_enabled>
+				<!--Type of cost term.-->
+				<type>synergy_activation_minimization</type>
 				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 				<max_allowable_error>0.05</max_allowable_error>
 			</RCNLCostTerm>
