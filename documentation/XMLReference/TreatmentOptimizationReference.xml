@@ -35,7 +35,7 @@
 		<!--*Optional* Default is false.-->
 		<use_control_derivatives>false</use_control_derivatives>
 		<!--*Optional* Default is false.-->
-		<use_jerk>false</use_jerk>
+		<use_joint_jerk_controls>false</use_joint_jerk_controls>
 		<check_field_spelling>true</check_field_spelling>
 		<RCNLTorqueController>
 			<!--Space separated list containing the coordinates controlled by the torque controller.-->
