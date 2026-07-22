@@ -122,12 +122,18 @@ end
 % extract initial version of optimized values from inputs/params
 function values = prepareInitialValues(inputs, params)
 numMuscles = length(inputs.muscleNames);
-values{1} = repmat(0.5, 1, numMuscles); % electromechanical delay
-values{2} = repmat(1.5, 1, numMuscles); % activation time
-values{3} = repmat(0.05, 1, numMuscles); % activation nonlinearity
-values{4} = repmat(0.5, 1, numMuscles); % EMG scale factors
-values{5} = repmat(1, 1, numMuscles); % optimal fiber length scale factor
-values{6} = repmat(1, 1, numMuscles); % tendon slack length scale factor
+values{1} = repmat(inputs.electromechanicalDelayInitialGuess, ...
+    1, numMuscles); % electromechanical delay
+values{2} = repmat(inputs.activationTimeConstantInitialGuess, ...
+    1, numMuscles); % activation time
+values{3} = repmat(inputs.activationNonlinearityInitialGuess, ...
+    1, numMuscles); % activation nonlinearity
+values{4} = repmat(inputs.emgScaleFactorInitialGuess, ...
+    1, numMuscles); % EMG scale factors
+values{5} = repmat(inputs.optimalFiberLengthScaleFactorInitialGuess, ...
+    1, numMuscles); % optimal fiber length scale factor
+values{6} = repmat(inputs.tendonSlackLengthScaleFactorInitialGuess, ...
+    1, numMuscles); % tendon slack length scale factor
 if isfield(inputs, "synergyExtrapolation")
     values{7} = repmat(0, 1, inputs.numberOfExtrapolationWeights + ...
         inputs.numberOfResidualWeights); % synergy commands
