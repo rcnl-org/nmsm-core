@@ -27,6 +27,10 @@
 
 function cost = calcElectromechanicalDelayGroupedSimilarityCost( ...
     values, experimentalData, costTerm)
+if length(values.electromechanicalDelays) == 1
+    cost = 0;
+    return;
+end
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.2);
 electromechanicalDelayDeviations = calcDifferencesInEmgGroups( ...
