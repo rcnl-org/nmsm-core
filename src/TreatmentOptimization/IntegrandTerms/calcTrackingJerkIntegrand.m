@@ -1,9 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function minimizes the joint jerk for the specified coordinate.
+% This function calculates the difference between the experimental and
+% predicted joint accelerations for the specified coordinate.
 %
-% (2D matrix, struct, Array of string) -> (Array of number)
-% 
+% (struct, Array of number, 2D matrix, Array of string) -> (Array of number)
+%
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -13,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -27,17 +28,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [cost, costTerm] = calcMinimizingJointJerkIntegrand( ...
-    jerks, time, inputs, costTerm)
+function [cost, costTerm] = calcTrackingJerkIntegrand(costTerm, ...
+    inputs, time, jerks, coordinateName)
 defaultTimeNormalization = true;
 [time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
     defaultTimeNormalization);
 
-coordinateName = getTermFieldOrError(costTerm, 'coordinate');
 [jerk, costTerm] = findDataByLabels(costTerm, jerks, ...
     inputs.coordinateNames, coordinateName);
+experimentalJerk = findSplinedJointJerksByLabels( ...
+    costTerm, inputs, time);
 
-cost = jerk;
+cost = experimentalJerk - jerk;
 
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end

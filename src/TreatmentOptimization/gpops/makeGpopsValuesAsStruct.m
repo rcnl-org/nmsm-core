@@ -51,6 +51,9 @@ else
 end
 [values.positions, values.velocities] = recombineFullState(values, inputs);
 values.accelerations = recombineFullAccelerations(values, inputs);
+if inputs.useJerk
+    values.jerks = recombineFullJerks(values, inputs);
+end
 controlIndex = length(inputs.statesCoordinateNames) + 1;
 if inputs.useJerk
     stateIndex = length(inputs.statesCoordinateNames) * 3 + 1;
@@ -208,4 +211,25 @@ if isa(values.controlAccelerations, 'casadi.MX')
 end
 accelerations(:, inputs.statesCoordinateIndices) = ...
     values.controlAccelerations;
+end
+
+function jerks = recombineFullJerks(values, inputs)
+if size(values.time) == size(inputs.collocationTimeOriginal)
+    jerks = inputs.splinedJointJerks;
+elseif size(values.time) == size(inputs.collocationTimeOriginal) + [1, 0]
+    jerks = inputs.splinedJointJerks;
+    jerks(end+1, :) = inputs.experimentalJointJerks(end, :);
+elseif size(values.time) == [2, 1]
+    jerks = inputs.experimentalJointJerks([1 end], :);
+else
+    jerks = evaluateGcvSplines(inputs.splineJointAngles, ...
+        inputs.coordinateNames, values.time, 3);
+end
+if isfield(values, "controlJerks") 
+    if isa(values.controlJerks, 'casadi.MX')
+        jerks = casadi.MX(jerks);
+    end
+    jerks(:, inputs.statesCoordinateIndices) = ...
+        values.controlJerks;
+end
 end
