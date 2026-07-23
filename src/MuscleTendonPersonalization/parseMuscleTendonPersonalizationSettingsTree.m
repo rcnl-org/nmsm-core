@@ -53,6 +53,18 @@ inputs = parseMtpNcpSharedInputs(tree);
 dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
 inputs = parseEmgData(tree, inputs, dataDirectory);
 inputs = parseMtpInitialGuess(tree, inputs);
+inputs.parseInitialGuessFromOsimx = strcmpi( ...
+    parseElementTextByNameOrAlternate(tree, ...
+    "parse_initial_guess_from_osimx", "false"), "true");
+if inputs.parseInitialGuessFromOsimx
+    if strcmp(inputs.osimxFileName, "") || ~isfile(inputs.osimxFileName)
+        warning("parse_initial_guess_from_osimx is true but input_osimx_file " + ...
+            "is missing; using default initial guesses.");
+        inputs.parseInitialGuessFromOsimx = false;
+    else
+        inputs.osimx = parseOsimxFile(inputs.osimxFileName, inputs.model);
+    end
+end
 inputs.tasks = getTasks(tree);
 inputs.muscleSpecificElectromechanicalDelays = any(cellfun( ...
     @(t) t.muscleSpecificElectromechanicalDelays, inputs.tasks));
