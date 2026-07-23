@@ -172,8 +172,8 @@ else
     lowerBounds{2} = repmat(0.75, 1, numMuscles); % activation time
     lowerBounds{3} = repmat(0.0, 1, numMuscles); % activation nonlinearity
     lowerBounds{4} = repmat(0.05, 1, numMuscles); % EMG scale factors
-    lowerBounds{5} = repmat(0.6, 1, numMuscles); % optimal fiber length scale factor
-    lowerBounds{6} = repmat(0.6, 1, numMuscles); % tendon slack length scale factor
+    lowerBounds{5} = repmat(0.5, 1, numMuscles); % optimal fiber length scale factor
+    lowerBounds{6} = repmat(0.5, 1, numMuscles); % tendon slack length scale factor
     if isfield(inputs, "synergyExtrapolation")
         lowerBounds{7} = repmat(-100, 1, inputs.numberOfExtrapolationWeights + ...
             inputs.numberOfResidualWeights); % synergy commands
@@ -195,8 +195,8 @@ else
     upperBounds{2} = repmat(3.5, 1, numMuscles); % activation time
     upperBounds{3} = repmat(0.35, 1, numMuscles); % activation nonlinearity
     upperBounds{4} = repmat(1, 1, numMuscles); % EMG scale factors
-    upperBounds{5} = repmat(1.4, 1, numMuscles); % optimal fiber length scale factor
-    upperBounds{6} = repmat(1.4, 1, numMuscles); % tendon slack length scale factor
+    upperBounds{5} = repmat(2, 1, numMuscles); % optimal fiber length scale factor
+    upperBounds{6} = repmat(2, 1, numMuscles); % tendon slack length scale factor
     if isfield(inputs, "synergyExtrapolation")
         upperBounds{7} = repmat(100, 1, inputs.numberOfExtrapolationWeights + ...
             inputs.numberOfResidualWeights); % synergy commands
