@@ -48,7 +48,13 @@ precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 if isstruct(precalInputs)
-    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
+    if valueOrAlternate(inputs, "parseInitialGuessFromOsimx", false)
+        warning("MuscleTendonLengthInitialization and " + ...
+            "parse_initial_guess_from_osimx are both enabled. The " + ...
+            "MuscleTendonLengthInitialization initial guess will be " + ...
+            "overwritten for muscles found in the osimx file.");
+    end
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
 else
