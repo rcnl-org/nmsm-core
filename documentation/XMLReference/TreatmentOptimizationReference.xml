@@ -25,17 +25,17 @@
 		<!--*Optional* Default is 1.-->
 		<joint_jerk_range_scale_factor>1</joint_jerk_range_scale_factor>
 		<!--*Optional* Default is 0.-->
-		<joint_position_range_minimum_range>0</joint_position_range_minimum_range>
+		<joint_position_minimum_range>0</joint_position_minimum_range>
 		<!--*Optional* Default is 0.-->
-		<joint_velocity_range_minimum_range>0</joint_velocity_range_minimum_range>
+		<joint_velocity_minimum_range>0</joint_velocity_minimum_range>
 		<!--*Optional* Default is 0.-->
-		<joint_acceleration_range_minimum_range>0</joint_acceleration_range_minimum_range>
+		<joint_acceleration_minimum_range>0</joint_acceleration_minimum_range>
 		<!--*Optional* Default is 0.-->
-		<joint_jerk_range_minimum_range>0</joint_jerk_range_minimum_range>
-		<!--*Optional* Default is false.-->
+		<joint_jerk_minimum_range>0</joint_jerk_minimum_range>
+		<!--*Optional* Default is false. NOTE: currently inactive -- the corresponding parse line in parseTreatmentOptimizationInputs.m is commented out.-->
 		<use_control_derivatives>false</use_control_derivatives>
 		<!--*Optional* Default is false.-->
-		<use_jerk>false</use_jerk>
+		<use_jerk_controls>false</use_jerk_controls>
 		<check_field_spelling>true</check_field_spelling>
 		<RCNLTorqueController>
 			<!--Space separated list containing the coordinates controlled by the torque controller.-->
