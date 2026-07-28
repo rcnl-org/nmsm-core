@@ -35,7 +35,7 @@
 		<!--*Optional* Default is false. NOTE: currently inactive -- the corresponding parse line in parseTreatmentOptimizationInputs.m is commented out.-->
 		<use_control_derivatives>false</use_control_derivatives>
 		<!--*Optional* Default is false.-->
-		<use_jerk_controls>false</use_jerk_controls>
+		<use_jerk>false</use_jerk>
 		<check_field_spelling>true</check_field_spelling>
 		<RCNLTorqueController>
 			<!--Space separated list containing the coordinates controlled by the torque controller.-->
