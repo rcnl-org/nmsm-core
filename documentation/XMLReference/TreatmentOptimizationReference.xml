@@ -25,13 +25,13 @@
 		<!--*Optional* Default is 1.-->
 		<joint_jerk_range_scale_factor>1</joint_jerk_range_scale_factor>
 		<!--*Optional* Default is 0.-->
-		<joint_position_range_minimum_range>0</joint_position_range_minimum_range>
+		<joint_position_minimum_range>0</joint_position_minimum_range>
 		<!--*Optional* Default is 0.-->
-		<joint_velocity_range_minimum_range>0</joint_velocity_range_minimum_range>
+		<joint_velocity_minimum_range>0</joint_velocity_minimum_range>
 		<!--*Optional* Default is 0.-->
-		<joint_acceleration_range_minimum_range>0</joint_acceleration_range_minimum_range>
+		<joint_acceleration_minimum_range>0</joint_acceleration_minimum_range>
 		<!--*Optional* Default is 0.-->
-		<joint_jerk_range_minimum_range>0</joint_jerk_range_minimum_range>
+		<joint_jerk_minimum_range>0</joint_jerk_minimum_range>
 		<!--*Optional* Default is false.-->
 		<use_control_derivatives>false</use_control_derivatives>
 		<!--*Optional* Default is false.-->
