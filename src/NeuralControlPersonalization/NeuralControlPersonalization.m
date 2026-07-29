@@ -63,6 +63,13 @@ end
 
 
 function inputs = finalizeInputs(inputs)
+if inputs.allow_negative_synergy_vector_weights && ...
+        strcmpi(inputs.synergy_vector_normalization_method, 'sum')
+    fprintf(['NCP: allow_negative_synergy_vector_weights requires magnitude ' ...
+        'normalization (sum normalization is ill-posed for signed weights); ' ...
+        'overriding synergy_vector_normalization_method to "magnitude".\n']);
+    inputs.synergy_vector_normalization_method = 'magnitude';
+end
 inputs.numPoints = valueOrAlternate(inputs, "numPoints", ...
     size(inputs.muscleTendonLength, 3));
 inputs.vMaxFactor = valueOrAlternate(inputs, "vMaxFactor", 10);

@@ -67,6 +67,8 @@ for term = 1:length(params.costTerms)
             case "grouped_fiber_lengths"
                 rawCost = calcGroupedNormalizedFiberLengthCost( ...
                     activations, inputs, params);
+            case "activation_bounds"
+                rawCost = calcActivationBoundsCost(activations, costTerm);
             otherwise
                 throw(MException('', ['Cost term type ' costTerm.type ...
                     ' does not exist for this tool.']))

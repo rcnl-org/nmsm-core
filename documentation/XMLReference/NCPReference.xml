@@ -118,6 +118,8 @@
 		<mtp_results_directory>MTPResults</mtp_results_directory>
 		<!--Indicate whether to enforce bilateral symmetry or not.-->
 		<enforce_bilateral_symmetry>false</enforce_bilateral_symmetry>
+		<!--Indicate whether negative synergy vector weights are allowed or not. Default is false.-->
+		<allow_negative_synergy_vector_weights>false</allow_negative_synergy_vector_weights>
 		<!--Cost term set for the Neural Control Optimization.-->
 		<RCNLCostTermSet>
 			<RCNLCostTerm>
@@ -143,6 +145,16 @@
 				<type>activation_minimization</type>
 				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 				<max_allowable_error>0.05</max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm>
+				<!--Indicate whether the term is enabled or not. Default is false. Only meaningful when allow_negative_synergy_vector_weights is true, since activations are otherwise naturally bounded in [0,1].-->
+				<is_enabled>false</is_enabled>
+				<!--Type of cost term.-->
+				<type>activation_bounds</type>
+				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+				<max_allowable_error>0.05</max_allowable_error>
+				<!--*Optional* Sharpness of the smooth penalty for activations outside [0,1] (higher = steeper). Default is 76.-->
+				<sharpness>76</sharpness>
 			</RCNLCostTerm>
 		</RCNLCostTermSet>
 		<!--Set of separate synergy groups for the model to use.-->

@@ -86,13 +86,19 @@ end
 function [synergyWeightEquations, synergyWeightSums, lowerBounds, upperBounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights)
 
+if inputs.enforce_bilateral_symmetry
+    activeGroups = inputs.synergyGroups(1);
+else
+    activeGroups = inputs.synergyGroups;
+end
+numberOfWeights = sum(cellfun(@(g) g.numSynergies * length(g.muscleNames), ...
+    activeGroups));
+
 if strcmpi(inputs.synergy_vector_normalization_method, 'sum')
     if inputs.enforce_bilateral_symmetry
-        activeGroups = inputs.synergyGroups(1);
         activeWeights = initWeights(1:inputs.synergyGroups{1}.numSynergies, ...
                                     1:length(inputs.synergyGroups{1}.muscleNames));
     else
-        activeGroups  = inputs.synergyGroups;
         activeWeights = initWeights;
     end
 
@@ -117,6 +123,9 @@ else
     synergyWeightSums      = [];
 end
 lowerBounds = zeros(numDesignVariables, 1);
+if inputs.allow_negative_synergy_vector_weights
+    lowerBounds(1:numberOfWeights) = -inf;
+end
 upperBounds = inf(numDesignVariables, 1);
 end
 

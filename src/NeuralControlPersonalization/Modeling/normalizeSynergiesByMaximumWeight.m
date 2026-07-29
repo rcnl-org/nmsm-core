@@ -33,7 +33,12 @@
 
 function [synergyWeights, synergyCommands] = ...
     normalizeSynergiesByMaximumWeight(synergyWeights, synergyCommands)
-scaleFactors = max(synergyWeights')';
+% Scale by the largest-magnitude (not largest) weight per synergy row, so
+% this is safe when weights are signed (allow_negative_synergy_vector_weights)
+% as well as the all-nonnegative case, where it reduces to the plain max.
+[~, maxIndex] = max(abs(synergyWeights), [], 2);
+linearIndex = sub2ind(size(synergyWeights), (1:size(synergyWeights, 1))', maxIndex);
+scaleFactors = synergyWeights(linearIndex);
 synergyWeights = synergyWeights ./ scaleFactors;
 synergyCommands = synergyCommands .* permute(scaleFactors, [3 2 1]);
 end
