@@ -63,8 +63,12 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
             parseModelCoordinates(app, model);
         catch
         end
-        try 
+        try
             parseModelGroups(app, model);
+        catch
+        end
+        try
+            parseModelMuscles(app, model);
         catch
         end
     end
@@ -117,4 +121,14 @@ function [errorFlag, message] = parseModelFileGui(app, input_model_file)
             model_groups(end+1) = forceSet.getGroup(i-1).getName();
         end
         app.setModelGroups(model_groups);
+    end
+
+    function parseModelMuscles(app, model)
+        muscleSet = model.getForceSet().getMuscles();
+        numMuscles = muscleSet.getSize();
+        model_muscles = string([]);
+        for i = 1 : numMuscles
+            model_muscles(end+1) = muscleSet.get(i-1).getName();
+        end
+        app.setModelMuscles(model_muscles);
     end

@@ -1,4 +1,4 @@
-classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
+classdef TreatmentOptimizationBase < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
@@ -141,27 +141,332 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
         DeleteMenu                      matlab.ui.container.Menu
     end
 
-    
+
     properties (Access = private, SetObservable)
-        
+        input_model_file string = "";
+        input_osimx_file string = "";
+        tracked_quantities_directory string = "";
+        initial_guess_directory string = "";
+        coordinate_list string = [];
+        trial_prefix string = "";
+        selected_tool string = "Tracking Optimization";
+
+        model_coordinates string = [];
+        model_groups string = [];
+        model_muscles string = [];
+
+        TorqueController handle = RCNLTorqueControllerClass();
+        SynergyController handle = RCNLSynergyControllerClass();
+        MuscleController handle = RCNLMuscleControllerClass();
+        MuscleModel handle = RCNLMuscleModelClass();
+
+        advancedSettingValues double = [];
+
+        objectSelectionType string = "";  % Used to filter in setSelectedObjects
+        currentSettingsFile string = "";
     end
 
-    properties(Access = private)  % listner properties
+    properties (Constant, Access = private)
+        advancedSettingNames = ...
+            ["joint_position_range_scale_factor"
+            "joint_velocity_range_scale_factor"
+            "joint_acceleration_range_scale_factor"
+            "joint_jerk_range_scale_factor"
+            "joint_position_range_minimum_range"
+            "joint_velocity_range_minimum_range"
+            "joint_acceleration_range_minimum_range"
+            "joint_jerk_range_minimum_range"]
 
+        defaultAdvancedSettingValues = ...
+            [2
+            1.5
+            1
+            1
+            0
+            0
+            0
+            0]
+    end
+
+    properties (Access = private)  % listener handles
+        InputModelFileListener
+        OsimXFileListener
+        TrackedQuantitiesDirectoryListener
+        InitialGuessDirectoryListener
+        CoordinateListListener
+        trialPrefixListener
+        selectedToolListener
+        advancedSettingsListener
+        selectedTabListener
+        controllersTabListener
+
+        TorqueEnabledListener
+        TorqueCoordinateListListener
+        SynergyEnabledListener
+        OptimizeSynergyVectorsListener
+        SynergyNormalizationMethodListener
+        MuscleEnabledListener
+        MuscleListListener
+        MuscleModelCoordinateListListener
+        MuscleModelDataDirectoryListener
+        MuscleModelFileNameListener
+        MuscleModelActivationsFileListener
     end
 
     methods (Access = private) % listener methods
         function makeListeners(app)
-            
+            app.InputModelFileListener = addlistener(app, ...
+                'input_model_file', 'PostSet', ...
+                @(src,event)InputModelFileListenerFunction(app));
+
+            app.OsimXFileListener = addlistener(app, ...
+                'input_osimx_file', 'PostSet', ...
+                @(src,event)OsimXFileListenerFunction(app));
+
+            app.TrackedQuantitiesDirectoryListener = addlistener(app, ...
+                'tracked_quantities_directory', 'PostSet', ...
+                @(src,event)TrackedQuantitiesDirectoryListenerFunction(app));
+
+            app.InitialGuessDirectoryListener = addlistener(app, ...
+                'initial_guess_directory', 'PostSet', ...
+                @(src,event)InitialGuessDirectoryListenerFunction(app));
+
+            app.CoordinateListListener = addlistener(app, ...
+                'coordinate_list', 'PostSet', ...
+                @(src,event)CoordinateListListenerFunction(app));
+
+            app.trialPrefixListener = addlistener(app, ...
+                'trial_prefix', 'PostSet', ...
+                @(src,event)trialPrefixListenerFunction(app));
+
+            app.selectedToolListener = addlistener(app, ...
+                'selected_tool', 'PostSet', ...
+                @(src,event)selectedToolListenerFunction(app));
+
+            app.advancedSettingsListener = addlistener(app, ...
+                'advancedSettingValues', 'PostSet', ...
+                @(src, event)refreshAdvancedSettingsTable(app));
+
+            app.selectedTabListener = addlistener(app.TabGroup, ...
+                'SelectedTab', 'PostSet', ...
+                @(src, event)formatTabButtons(app));
+
+            app.controllersTabListener = addlistener(app.ControllersTabGroup, ...
+                'SelectedTab', 'PostSet', ...
+                @(src, event)formatControllersTabButtons(app));
+
+            app.TorqueEnabledListener = addlistener(app.TorqueController, ...
+                'is_enabled', 'PostSet', ...
+                @(src,event)TorqueEnabledListenerFunction(app));
+
+            app.TorqueCoordinateListListener = addlistener(app.TorqueController, ...
+                'coordinate_list', 'PostSet', ...
+                @(src,event)TorqueCoordinateListListenerFunction(app));
+
+            app.SynergyEnabledListener = addlistener(app.SynergyController, ...
+                'is_enabled', 'PostSet', ...
+                @(src,event)SynergyEnabledListenerFunction(app));
+
+            app.OptimizeSynergyVectorsListener = addlistener(app.SynergyController, ...
+                'optimize_synergy_vectors', 'PostSet', ...
+                @(src,event)OptimizeSynergyVectorsListenerFunction(app));
+
+            app.SynergyNormalizationMethodListener = addlistener(app.SynergyController, ...
+                'synergy_vector_normalization_method', 'PostSet', ...
+                @(src,event)SynergyNormalizationMethodListenerFunction(app));
+
+            app.MuscleEnabledListener = addlistener(app.MuscleController, ...
+                'is_enabled', 'PostSet', ...
+                @(src,event)MuscleEnabledListenerFunction(app));
+
+            app.MuscleListListener = addlistener(app.MuscleController, ...
+                'muscle_list', 'PostSet', ...
+                @(src,event)MuscleListListenerFunction(app));
+
+            app.MuscleModelCoordinateListListener = addlistener(app.MuscleModel, ...
+                'coordinate_list', 'PostSet', ...
+                @(src,event)MuscleModelCoordinateListListenerFunction(app));
+
+            app.MuscleModelDataDirectoryListener = addlistener(app.MuscleModel, ...
+                'data_directory', 'PostSet', ...
+                @(src,event)MuscleModelDataDirectoryListenerFunction(app));
+
+            app.MuscleModelFileNameListener = addlistener(app.MuscleModel, ...
+                'file_name', 'PostSet', ...
+                @(src,event)MuscleModelFileNameListenerFunction(app));
+
+            app.MuscleModelActivationsFileListener = addlistener(app.MuscleModel, ...
+                'muscle_activations_file', 'PostSet', ...
+                @(src,event)MuscleModelActivationsFileListenerFunction(app));
         end
 
-        function formatTabButtons(app) % good
-            
+        function InputModelFileListenerFunction(app)
+            app.InputModelFileEditField.Value = getRelativePath( ...
+                app.input_model_file);
+            parseModelFileGui(app, app.input_model_file);
+        end
+
+        function OsimXFileListenerFunction(app)
+            app.InputOsimxFileEditField.Value = getRelativePath( ...
+                app.input_osimx_file);
+            parseOsimxFileGui(app, app.input_osimx_file, ...
+                app.input_model_file);
+        end
+
+        function TrackedQuantitiesDirectoryListenerFunction(app)
+            app.InputDataEditField.Value = getRelativePath( ...
+                app.tracked_quantities_directory);
+        end
+
+        function InitialGuessDirectoryListenerFunction(app)
+            app.MTPResultsDirEditField.Value = getRelativePath( ...
+                app.initial_guess_directory);
+        end
+
+        function CoordinateListListenerFunction(app)
+            app.StatesCoordinatesListTextArea.Value = ...
+                strjoin(app.coordinate_list, ", ");
+        end
+
+        function trialPrefixListenerFunction(app)
+            app.TrialPrefixEditField.Value = app.trial_prefix;
+        end
+
+        function selectedToolListenerFunction(app)
+            app.ToolSelectionDropDown.Value = app.selected_tool;
+        end
+
+        function refreshAdvancedSettingsTable(app)
+            Options = app.advancedSettingNames;
+            Values = arrayfun(@formatGuiNumber, app.advancedSettingValues);
+            app.AdvancedParamsTable.Data = table(Options, Values);
+        end
+
+        function formatTabButtons(app)
+            if ~isvalid(app) || ~isvalid(app.TabGroup)
+                return
+            end
+            updateTabButtonStyles(app.TabGroup.SelectedTab, ...
+                [app.InputsTab, app.ControllersTab, app.CostTermsTab, ...
+                app.ConstraintTermsTab, app.SolverSettingsTab, ...
+                app.AdvancedTab], ...
+                [app.InputsButton, app.ControllersButton, ...
+                app.CostTermsButton, app.ConstraintTermsButton, ...
+                app.SolverSettingsButton, app.AdvancedButton]);
+        end
+
+        function formatControllersTabButtons(app)
+            if ~isvalid(app) || ~isvalid(app.ControllersTabGroup)
+                return
+            end
+            updateTabButtonStyles(app.ControllersTabGroup.SelectedTab, ...
+                [app.TorqueTab, app.SynergyTab, app.UserDefinedTab], ...
+                [app.TorqueControlsButton, app.SynergyControlsButton, ...
+                app.UserDefinedControlsButton]);
+        end
+
+        function TorqueEnabledListenerFunction(app)
+            app.UseRCNLTorqueControllerCheckBox.Value = strcmp( ...
+                app.TorqueController.is_enabled, 'true');
+        end
+
+        function TorqueCoordinateListListenerFunction(app)
+            app.TorqueControllerCoordinateList.Value = ...
+                strjoin(app.TorqueController.coordinate_list, ", ");
+        end
+
+        function SynergyEnabledListenerFunction(app)
+            app.UseRCNLSynergyControllerCheckBox.Value = strcmp( ...
+                app.SynergyController.is_enabled, 'true');
+        end
+
+        function OptimizeSynergyVectorsListenerFunction(app)
+            app.OptimizeSynergyVectorsCheckBox.Value = strcmp( ...
+                app.SynergyController.optimize_synergy_vectors, 'true');
+        end
+
+        function SynergyNormalizationMethodListenerFunction(app)
+            app.SynergyVectorNormalizationMethodDropDown.Value = ...
+                char(app.SynergyController.synergy_vector_normalization_method);
+        end
+
+        function MuscleEnabledListenerFunction(app)
+            app.UseRCNLMuscleControllerCheckBox.Value = strcmp( ...
+                app.MuscleController.is_enabled, 'true');
+        end
+
+        function MuscleListListenerFunction(app)
+            app.MuscleControllerMuscleList.Value = ...
+                strjoin(app.MuscleController.muscle_list, ", ");
+        end
+
+        function MuscleModelCoordinateListListenerFunction(app)
+            app.SurrogateModelCoordinatesList.Value = ...
+                strjoin(app.MuscleModel.coordinate_list, ", ");
+        end
+
+        function MuscleModelDataDirectoryListenerFunction(app)
+            app.SurrogateModelDataDirectoryEditField.Value = ...
+                getRelativePath(app.MuscleModel.data_directory);
+        end
+
+        function MuscleModelFileNameListenerFunction(app)
+            app.SurrogateModelFileNameEditField.Value = ...
+                getRelativePath(app.MuscleModel.file_name);
+        end
+
+        function MuscleModelActivationsFileListenerFunction(app)
+            app.MuscleActivationsFileEditField.Value = ...
+                getRelativePath(app.MuscleModel.muscle_activations_file);
+        end
+
+        function updateTorqueAdvancedSettingsTable(app)
+            updateParameterTableGui(app.TorqueController, ...
+                app.TorqueAdvancedSettingsTable);
+        end
+
+        function updateSynergyAdvancedSettingsTable(app)
+            updateParameterTableGui(app.SynergyController, ...
+                app.SynergyControllerAdvancedSettingsTable);
+        end
+
+        function updateMuscleAdvancedSettingsTable(app)
+            updateParameterTableGui(app.MuscleController, ...
+                app.MuscleControllerAdvancedSettingsTable);
+        end
+
+        function updateSurrogateModelAdvancedSettingsTable(app)
+            updateParameterTableGui(app.MuscleModel, ...
+                app.SurrogateModelAdvancedSettingsTable);
         end
     end
 
-    methods(Access=public)
-        
+    methods (Access = public)
+        function setSelectedObjects(app, objects)
+            % Function to assign objects selected by ObjectSelectionWindow
+            switch app.objectSelectionType
+                case 'coordinate'
+                    app.coordinate_list = objects;
+                case 'torqueCoordinate'
+                    app.TorqueController.coordinate_list = objects;
+                case 'surrogateCoordinate'
+                    app.MuscleModel.coordinate_list = objects;
+                case 'muscle'
+                    app.MuscleController.muscle_list = objects;
+            end
+        end
+
+        function setModelCoordinates(app, coordinates)
+            app.model_coordinates = coordinates;
+        end
+
+        function setModelGroups(app, groups)
+            app.model_groups = groups;
+        end
+
+        function setModelMuscles(app, muscles)
+            app.model_muscles = muscles;
+        end
     end
 
 
@@ -170,7 +475,21 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+            % Reconstruct fresh instances so this app doesn't share
+            % handle objects with the default property-value cache
+            app.TorqueController = RCNLTorqueControllerClass();
+            app.SynergyController = RCNLSynergyControllerClass();
+            app.MuscleController = RCNLMuscleControllerClass();
+            app.MuscleModel = RCNLMuscleModelClass();
 
+            app.makeListeners()
+            app.advancedSettingValues = app.defaultAdvancedSettingValues;
+            app.updateTorqueAdvancedSettingsTable();
+            app.updateSynergyAdvancedSettingsTable();
+            app.updateMuscleAdvancedSettingsTable();
+            app.updateSurrogateModelAdvancedSettingsTable();
+            app.formatTabButtons()
+            app.formatControllersTabButtons()
         end
 
         % Button pushed function: LoadSettingsFileButton
@@ -180,7 +499,8 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
             if isequal(file, 0)
                 return
             end
-            app.loadSettingsFile(fullfile(path, file));
+            % XML settings loading is not yet implemented for this tool
+            app.currentSettingsFile = fullfile(path, file);
         end
 
         % Button pushed function: SaveButton
@@ -190,19 +510,311 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
             if isequal(file, 0)
                 return
             end
-            app.saveSettingsFile(fullfile(path, file))
-            % app.currentSettingsFile = fullfile(path, file);
-            app.needToSave = false;
+            % XML settings saving is not yet implemented for this tool
+            app.currentSettingsFile = fullfile(path, file);
         end
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
-            
+
         end
 
         % Button pushed function: HelpButton
         function HelpButtonPushed(app, event)
-            web("https://nmsm.rice.edu/guides-and-publications/tool-overviews/model-personalization/muscle-tendon-personalization/")
+            web("https://nmsm.rice.edu/")
+        end
+
+        % Button pushed function: ResetButton
+        function ResetButtonPushed(app, event)
+            app.resetAllFields();
+        end
+
+        % Image clicked function: RcnlLogo
+        function RcnlLogoImageClicked(app, event)
+            web("https://nmsm.rice.edu/")
+        end
+
+        % Button pushed function: InputsButton
+        function InputsButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.InputsTab;
+        end
+
+        % Button pushed function: SolverSettingsButton
+        function SolverSettingsButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.SolverSettingsTab;
+        end
+
+        % Button pushed function: ControllersButton
+        function ControllersButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.ControllersTab;
+        end
+
+        % Button pushed function: CostTermsButton
+        function CostTermsButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.CostTermsTab;
+        end
+
+        % Button pushed function: ConstraintTermsButton
+        function ConstraintTermsButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.ConstraintTermsTab;
+        end
+
+        % Button pushed function: AdvancedButton
+        function AdvancedButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.AdvancedTab;
+        end
+
+        % Button pushed function: TorqueControlsButton
+        function TorqueControlsButtonPushed(app, event)
+            app.ControllersTabGroup.SelectedTab = app.TorqueTab;
+        end
+
+        % Button pushed function: SynergyControlsButton
+        function SynergyControlsButtonPushed(app, event)
+            app.ControllersTabGroup.SelectedTab = app.SynergyTab;
+        end
+
+        % Button pushed function: UserDefinedControlsButton
+        function UserDefinedControlsButtonPushed(app, event)
+            app.ControllersTabGroup.SelectedTab = app.UserDefinedTab;
+        end
+
+        % Value changed function: InputModelFileEditField
+        function InputModelFileEditFieldValueChanged(app, event)
+            app.input_model_file = ...
+                getPathFieldValue(app.InputModelFileEditField);
+        end
+
+        % Button pushed function: InputModelFileSearchButton
+        function InputModelFileSearchButtonPushed(app, event)
+            [file, path] = uigetfile('*.osim', "Select an OpenSim Model File");
+            % User hit "Cancel"
+            if isequal(file, 0)
+                return
+            end
+            app.input_model_file = fullfile(path, file);
+        end
+
+        % Value changed function: InputOsimxFileEditField
+        function InputOsimxFileEditFieldValueChanged(app, event)
+            app.input_osimx_file = ...
+                getPathFieldValue(app.InputOsimxFileEditField);
+        end
+
+        % Button pushed function: InputOsimxFileSearchButton
+        function InputOsimxFileSearchButtonPushed(app, event)
+            [file, path] = uigetfile('*.osimx', "Select an Osimx Model File");
+            % User hit "Cancel"
+            if isequal(file, 0)
+                return
+            end
+            app.input_osimx_file = fullfile(path, file);
+        end
+
+        % Value changed function: InputDataEditField
+        function InputDataEditFieldValueChanged(app, event)
+            app.tracked_quantities_directory = ...
+                getPathFieldValue(app.InputDataEditField);
+        end
+
+        % Button pushed function: TrackedQuantitiesSearchButton
+        function TrackedQuantitiesSearchButtonPushed(app, event)
+            folder = uigetdir("Select your tracked quantities data folder");
+            % User hit "Cancel"
+            if isequal(folder, 0)
+                return
+            end
+            app.tracked_quantities_directory = folder;
+        end
+
+        % Value changed function: MTPResultsDirEditField
+        function MTPResultsDirEditFieldValueChanged(app, event)
+            app.initial_guess_directory = ...
+                getPathFieldValue(app.MTPResultsDirEditField);
+        end
+
+        % Button pushed function: InitialGuessSearchButton
+        function InitialGuessSearchButtonPushed(app, event)
+            folder = uigetdir("Select your initial guess folder");
+            % User hit "Cancel"
+            if isequal(folder, 0)
+                return
+            end
+            app.initial_guess_directory = folder;
+        end
+
+        % Button pushed function: CoordinateListEditButton
+        function CoordinateListEditButtonPushed(app, event)
+            ObjectSelectionWindow(app, app.model_coordinates, ...
+                app.coordinate_list)
+            app.objectSelectionType = 'coordinate';
+        end
+
+        % Value changed function: TrialPrefixEditField
+        function TrialPrefixEditFieldValueChanged(app, event)
+            app.trial_prefix = app.TrialPrefixEditField.Value;
+        end
+
+        % Value changed function: ToolSelectionDropDown
+        function ToolSelectionDropDownValueChanged(app, event)
+            app.selected_tool = app.ToolSelectionDropDown.Value;
+        end
+
+        % Value changed function: UseRCNLTorqueControllerCheckBox
+        function UseRCNLTorqueControllerCheckBoxValueChanged(app, event)
+            app.TorqueController.is_enabled = ...
+                boolToString(app.UseRCNLTorqueControllerCheckBox.Value);
+        end
+
+        % Button pushed function: TorqueControllerCoordinateEditButton
+        function TorqueControllerCoordinateEditButtonPushed(app, event)
+            ObjectSelectionWindow(app, app.model_coordinates, ...
+                app.TorqueController.coordinate_list)
+            app.objectSelectionType = 'torqueCoordinate';
+        end
+
+        % Cell edit callback: TorqueAdvancedSettingsTable
+        function TorqueAdvancedSettingsTableCellEdit(app, event)
+            app.TorqueController.setParameterValueByIndex( ...
+                event.Indices(1), str2double(event.NewData));
+        end
+
+        % Value changed function: UseRCNLSynergyControllerCheckBox
+        function UseRCNLSynergyControllerCheckBoxValueChanged(app, event)
+            app.SynergyController.is_enabled = ...
+                boolToString(app.UseRCNLSynergyControllerCheckBox.Value);
+        end
+
+        % Value changed function: OptimizeSynergyVectorsCheckBox
+        function OptimizeSynergyVectorsCheckBoxValueChanged(app, event)
+            app.SynergyController.optimize_synergy_vectors = ...
+                boolToString(app.OptimizeSynergyVectorsCheckBox.Value);
+        end
+
+        % Value changed function: SynergyVectorNormalizationMethodDropDown
+        function SynergyVectorNormalizationMethodDropDownValueChanged(app, event)
+            app.SynergyController.synergy_vector_normalization_method = ...
+                app.SynergyVectorNormalizationMethodDropDown.Value;
+        end
+
+        % Button pushed function: SurrogateModelCoordinatesListEditButton
+        function SurrogateModelCoordinatesListEditButtonPushed(app, event)
+            ObjectSelectionWindow(app, app.model_coordinates, ...
+                app.MuscleModel.coordinate_list)
+            app.objectSelectionType = 'surrogateCoordinate';
+        end
+
+        % Cell edit callback: SynergyControllerAdvancedSettingsTable
+        function SynergyControllerAdvancedSettingsTableCellEdit(app, event)
+            app.SynergyController.setParameterValueByIndex( ...
+                event.Indices(1), str2double(event.NewData));
+        end
+
+        % Button pushed function: MuscleControllerMuscleListEditButton
+        function MuscleControllerMuscleListEditButtonPushed(app, event)
+            ObjectSelectionWindow(app, app.model_muscles, ...
+                app.MuscleController.muscle_list)
+            app.objectSelectionType = 'muscle';
+        end
+
+        % Cell edit callback: MuscleControllerAdvancedSettingsTable
+        function MuscleControllerAdvancedSettingsTableCellEdit(app, event)
+            app.MuscleController.setParameterValueByIndex( ...
+                event.Indices(1), str2double(event.NewData));
+        end
+
+        % Value changed function: UseRCNLMuscleControllerCheckBox
+        function UseRCNLMuscleControllerCheckBoxValueChanged(app, event)
+            app.MuscleController.is_enabled = ...
+                boolToString(app.UseRCNLMuscleControllerCheckBox.Value);
+        end
+
+        % Value changed function: SurrogateModelDataDirectoryEditField
+        function SurrogateModelDataDirectoryEditFieldValueChanged(app, event)
+            app.MuscleModel.data_directory = ...
+                getPathFieldValue(app.SurrogateModelDataDirectoryEditField);
+        end
+
+        % Button pushed function: SurrogateModelDataDirectorySearchButton
+        function SurrogateModelDataDirectorySearchButtonPushed(app, event)
+            folder = uigetdir("Select your surrogate model data folder");
+            % User hit "Cancel"
+            if isequal(folder, 0)
+                return
+            end
+            app.MuscleModel.data_directory = folder;
+        end
+
+        % Value changed function: SurrogateModelFileNameEditField
+        function SurrogateModelFileNameEditFieldValueChanged(app, event)
+            app.MuscleModel.file_name = ...
+                getPathFieldValue(app.SurrogateModelFileNameEditField);
+        end
+
+        % Button pushed function: SurrogateModelFileNameSearchButton
+        function SurrogateModelFileNameSearchButtonPushed(app, event)
+            [file, path] = uigetfile('*.mat', "Select a Surrogate Model File");
+            % User hit "Cancel"
+            if isequal(file, 0)
+                return
+            end
+            app.MuscleModel.file_name = fullfile(path, file);
+        end
+
+        % Value changed function: MuscleActivationsFileEditField
+        function MuscleActivationsFileEditFieldValueChanged(app, event)
+            app.MuscleModel.muscle_activations_file = ...
+                getPathFieldValue(app.MuscleActivationsFileEditField);
+        end
+
+        % Button pushed function: MuscleActivationsFileSearchButton
+        function MuscleActivationsFileSearchButtonPushed(app, event)
+            [file, path] = uigetfile('*.sto', "Select a Muscle Activations File");
+            % User hit "Cancel"
+            if isequal(file, 0)
+                return
+            end
+            app.MuscleModel.muscle_activations_file = fullfile(path, file);
+        end
+
+        % Cell edit callback: SurrogateModelAdvancedSettingsTable
+        function SurrogateModelAdvancedSettingsTableCellEdit(app, event)
+            app.MuscleModel.setParameterValueByIndex( ...
+                event.Indices(1), str2double(event.NewData));
+        end
+
+        % Cell edit callback: AdvancedParamsTable
+        function AdvancedParamsTableCellEdit(app, event)
+            app.advancedSettingValues(event.Indices(1)) = ...
+                str2double(event.NewData);
+        end
+
+        function resetAllFields(app)
+            app.input_model_file = "";
+            app.input_osimx_file = "";
+            app.tracked_quantities_directory = "";
+            app.initial_guess_directory = "";
+            app.coordinate_list = string([]);
+            app.trial_prefix = "";
+            app.selected_tool = "Tracking Optimization";
+
+            app.model_coordinates = string([]);
+            app.model_groups = string([]);
+            app.model_muscles = string([]);
+
+            app.TorqueController.reset();
+            app.SynergyController.reset();
+            app.MuscleController.reset();
+            app.MuscleModel.reset();
+            app.updateTorqueAdvancedSettingsTable();
+            app.updateSynergyAdvancedSettingsTable();
+            app.updateMuscleAdvancedSettingsTable();
+            app.updateSurrogateModelAdvancedSettingsTable();
+
+            app.objectSelectionType = "";
+            app.currentSettingsFile = "";
+
+            app.advancedSettingValues = app.defaultAdvancedSettingValues;
         end
     end
 
@@ -240,6 +852,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create InputModelFileSearchButton
             app.InputModelFileSearchButton = uibutton(app.InputsTab, 'push');
+            app.InputModelFileSearchButton.ButtonPushedFcn = createCallbackFcn(app, @InputModelFileSearchButtonPushed, true);
             app.InputModelFileSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
             app.InputModelFileSearchButton.VerticalAlignment = 'bottom';
             app.InputModelFileSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
@@ -256,6 +869,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create InputModelFileEditField
             app.InputModelFileEditField = uieditfield(app.InputsTab, 'text');
+            app.InputModelFileEditField.ValueChangedFcn = createCallbackFcn(app, @InputModelFileEditFieldValueChanged, true);
             app.InputModelFileEditField.Position = [218 651 450 30];
 
             % Create InputModelFileStatus
@@ -266,6 +880,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create InputOsimxFileSearchButton
             app.InputOsimxFileSearchButton = uibutton(app.InputsTab, 'push');
+            app.InputOsimxFileSearchButton.ButtonPushedFcn = createCallbackFcn(app, @InputOsimxFileSearchButtonPushed, true);
             app.InputOsimxFileSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
             app.InputOsimxFileSearchButton.VerticalAlignment = 'bottom';
             app.InputOsimxFileSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
@@ -282,6 +897,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create InputOsimxFileEditField
             app.InputOsimxFileEditField = uieditfield(app.InputsTab, 'text');
+            app.InputOsimxFileEditField.ValueChangedFcn = createCallbackFcn(app, @InputOsimxFileEditFieldValueChanged, true);
             app.InputOsimxFileEditField.Position = [218 602 450 30];
 
             % Create InputOsimxFileStatus
@@ -292,6 +908,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create TrackedQuantitiesSearchButton
             app.TrackedQuantitiesSearchButton = uibutton(app.InputsTab, 'push');
+            app.TrackedQuantitiesSearchButton.ButtonPushedFcn = createCallbackFcn(app, @TrackedQuantitiesSearchButtonPushed, true);
             app.TrackedQuantitiesSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
             app.TrackedQuantitiesSearchButton.VerticalAlignment = 'bottom';
             app.TrackedQuantitiesSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
@@ -300,6 +917,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create InputDataEditField
             app.InputDataEditField = uieditfield(app.InputsTab, 'text');
+            app.InputDataEditField.ValueChangedFcn = createCallbackFcn(app, @InputDataEditFieldValueChanged, true);
             app.InputDataEditField.Position = [218 552 450 30];
 
             % Create InputDataStatus
@@ -338,6 +956,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create CoordinateListEditButton
             app.CoordinateListEditButton = uibutton(app.InputsTab, 'push');
+            app.CoordinateListEditButton.ButtonPushedFcn = createCallbackFcn(app, @CoordinateListEditButtonPushed, true);
             app.CoordinateListEditButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.CoordinateListEditButton.FontSize = 18;
             app.CoordinateListEditButton.FontColor = [1 1 1];
@@ -354,6 +973,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create TrialPrefixEditField
             app.TrialPrefixEditField = uieditfield(app.InputsTab, 'text');
+            app.TrialPrefixEditField.ValueChangedFcn = createCallbackFcn(app, @TrialPrefixEditFieldValueChanged, true);
             app.TrialPrefixEditField.FontSize = 18;
             app.TrialPrefixEditField.Position = [219 454 450 30];
 
@@ -371,6 +991,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create InitialGuessSearchButton
             app.InitialGuessSearchButton = uibutton(app.InputsTab, 'push');
+            app.InitialGuessSearchButton.ButtonPushedFcn = createCallbackFcn(app, @InitialGuessSearchButtonPushed, true);
             app.InitialGuessSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
             app.InitialGuessSearchButton.VerticalAlignment = 'bottom';
             app.InitialGuessSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
@@ -379,6 +1000,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create MTPResultsDirEditField
             app.MTPResultsDirEditField = uieditfield(app.InputsTab, 'text');
+            app.MTPResultsDirEditField.ValueChangedFcn = createCallbackFcn(app, @MTPResultsDirEditFieldValueChanged, true);
             app.MTPResultsDirEditField.Position = [219 503 450 30];
 
             % Create MTPResultsDirectoryLabel
@@ -399,6 +1021,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create ToolSelectionDropDown
             app.ToolSelectionDropDown = uidropdown(app.InputsTab);
+            app.ToolSelectionDropDown.ValueChangedFcn = createCallbackFcn(app, @ToolSelectionDropDownValueChanged, true);
             app.ToolSelectionDropDown.Items = {'Tracking Optimization', 'Verification Optimization', 'Design Optimization'};
             app.ToolSelectionDropDown.FontSize = 20;
             app.ToolSelectionDropDown.FontWeight = 'bold';
@@ -420,6 +1043,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create UseRCNLTorqueControllerCheckBox
             app.UseRCNLTorqueControllerCheckBox = uicheckbox(app.TorqueTab);
+            app.UseRCNLTorqueControllerCheckBox.ValueChangedFcn = createCallbackFcn(app, @UseRCNLTorqueControllerCheckBoxValueChanged, true);
             app.UseRCNLTorqueControllerCheckBox.Text = 'Use RCNL Torque Controller';
             app.UseRCNLTorqueControllerCheckBox.FontSize = 18;
             app.UseRCNLTorqueControllerCheckBox.FontWeight = 'bold';
@@ -427,6 +1051,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create TorqueControllerCoordinateEditButton
             app.TorqueControllerCoordinateEditButton = uibutton(app.TorqueTab, 'push');
+            app.TorqueControllerCoordinateEditButton.ButtonPushedFcn = createCallbackFcn(app, @TorqueControllerCoordinateEditButtonPushed, true);
             app.TorqueControllerCoordinateEditButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.TorqueControllerCoordinateEditButton.FontSize = 18;
             app.TorqueControllerCoordinateEditButton.FontColor = [1 1 1];
@@ -459,6 +1084,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
             app.TorqueAdvancedSettingsTable.RowName = {};
             app.TorqueAdvancedSettingsTable.SelectionType = 'row';
             app.TorqueAdvancedSettingsTable.ColumnEditable = [false true];
+            app.TorqueAdvancedSettingsTable.CellEditCallback = createCallbackFcn(app, @TorqueAdvancedSettingsTableCellEdit, true);
             app.TorqueAdvancedSettingsTable.FontSize = 15;
             app.TorqueAdvancedSettingsTable.Position = [160 278 385 208];
 
@@ -483,6 +1109,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create UseRCNLSynergyControllerCheckBox
             app.UseRCNLSynergyControllerCheckBox = uicheckbox(app.SynergyTab);
+            app.UseRCNLSynergyControllerCheckBox.ValueChangedFcn = createCallbackFcn(app, @UseRCNLSynergyControllerCheckBoxValueChanged, true);
             app.UseRCNLSynergyControllerCheckBox.Text = 'Use RCNL Synergy Controller';
             app.UseRCNLSynergyControllerCheckBox.FontSize = 18;
             app.UseRCNLSynergyControllerCheckBox.FontWeight = 'bold';
@@ -490,6 +1117,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create SurrogateModelCoordinatesListEditButton
             app.SurrogateModelCoordinatesListEditButton = uibutton(app.SynergyTab, 'push');
+            app.SurrogateModelCoordinatesListEditButton.ButtonPushedFcn = createCallbackFcn(app, @SurrogateModelCoordinatesListEditButtonPushed, true);
             app.SurrogateModelCoordinatesListEditButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.SurrogateModelCoordinatesListEditButton.FontSize = 18;
             app.SurrogateModelCoordinatesListEditButton.FontColor = [1 1 1];
@@ -518,6 +1146,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create UseRCNLMuscleControllerCheckBox
             app.UseRCNLMuscleControllerCheckBox = uicheckbox(app.SynergyTab);
+            app.UseRCNLMuscleControllerCheckBox.ValueChangedFcn = createCallbackFcn(app, @UseRCNLMuscleControllerCheckBoxValueChanged, true);
             app.UseRCNLMuscleControllerCheckBox.Text = 'Use RCNL Muscle Controller';
             app.UseRCNLMuscleControllerCheckBox.FontSize = 18;
             app.UseRCNLMuscleControllerCheckBox.FontWeight = 'bold';
@@ -533,6 +1162,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create SynergyVectorNormalizationMethodDropDown
             app.SynergyVectorNormalizationMethodDropDown = uidropdown(app.SynergyTab);
+            app.SynergyVectorNormalizationMethodDropDown.ValueChangedFcn = createCallbackFcn(app, @SynergyVectorNormalizationMethodDropDownValueChanged, true);
             app.SynergyVectorNormalizationMethodDropDown.Items = {'Sum', 'Magnitude'};
             app.SynergyVectorNormalizationMethodDropDown.FontSize = 18;
             app.SynergyVectorNormalizationMethodDropDown.FontWeight = 'bold';
@@ -541,6 +1171,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create OptimizeSynergyVectorsCheckBox
             app.OptimizeSynergyVectorsCheckBox = uicheckbox(app.SynergyTab);
+            app.OptimizeSynergyVectorsCheckBox.ValueChangedFcn = createCallbackFcn(app, @OptimizeSynergyVectorsCheckBoxValueChanged, true);
             app.OptimizeSynergyVectorsCheckBox.Text = 'Optimize Synergy Vectors';
             app.OptimizeSynergyVectorsCheckBox.FontSize = 18;
             app.OptimizeSynergyVectorsCheckBox.FontWeight = 'bold';
@@ -552,6 +1183,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
             app.SynergyControllerAdvancedSettingsTable.RowName = {};
             app.SynergyControllerAdvancedSettingsTable.SelectionType = 'row';
             app.SynergyControllerAdvancedSettingsTable.ColumnEditable = [false true];
+            app.SynergyControllerAdvancedSettingsTable.CellEditCallback = createCallbackFcn(app, @SynergyControllerAdvancedSettingsTableCellEdit, true);
             app.SynergyControllerAdvancedSettingsTable.FontSize = 15;
             app.SynergyControllerAdvancedSettingsTable.Position = [11 470 346 146];
 
@@ -565,6 +1197,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create MuscleControllerMuscleListEditButton
             app.MuscleControllerMuscleListEditButton = uibutton(app.SynergyTab, 'push');
+            app.MuscleControllerMuscleListEditButton.ButtonPushedFcn = createCallbackFcn(app, @MuscleControllerMuscleListEditButtonPushed, true);
             app.MuscleControllerMuscleListEditButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.MuscleControllerMuscleListEditButton.FontSize = 18;
             app.MuscleControllerMuscleListEditButton.FontColor = [1 1 1];
@@ -591,6 +1224,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
             app.MuscleControllerAdvancedSettingsTable.RowName = {};
             app.MuscleControllerAdvancedSettingsTable.SelectionType = 'row';
             app.MuscleControllerAdvancedSettingsTable.ColumnEditable = [false true];
+            app.MuscleControllerAdvancedSettingsTable.CellEditCallback = createCallbackFcn(app, @MuscleControllerAdvancedSettingsTableCellEdit, true);
             app.MuscleControllerAdvancedSettingsTable.FontSize = 15;
             app.MuscleControllerAdvancedSettingsTable.Position = [394 470 365 146];
 
@@ -630,6 +1264,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create SurrogateModelDataDirectoryEditField
             app.SurrogateModelDataDirectoryEditField = uieditfield(app.SynergyTab, 'text');
+            app.SurrogateModelDataDirectoryEditField.ValueChangedFcn = createCallbackFcn(app, @SurrogateModelDataDirectoryEditFieldValueChanged, true);
             app.SurrogateModelDataDirectoryEditField.HorizontalAlignment = 'center';
             app.SurrogateModelDataDirectoryEditField.Position = [192 314 450 30];
 
@@ -649,10 +1284,12 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create SurrogateModelFileNameEditField
             app.SurrogateModelFileNameEditField = uieditfield(app.SynergyTab, 'text');
+            app.SurrogateModelFileNameEditField.ValueChangedFcn = createCallbackFcn(app, @SurrogateModelFileNameEditFieldValueChanged, true);
             app.SurrogateModelFileNameEditField.Position = [193 261 450 30];
 
             % Create SurrogateModelDataDirectorySearchButton
             app.SurrogateModelDataDirectorySearchButton = uibutton(app.SynergyTab, 'push');
+            app.SurrogateModelDataDirectorySearchButton.ButtonPushedFcn = createCallbackFcn(app, @SurrogateModelDataDirectorySearchButtonPushed, true);
             app.SurrogateModelDataDirectorySearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
             app.SurrogateModelDataDirectorySearchButton.VerticalAlignment = 'bottom';
             app.SurrogateModelDataDirectorySearchButton.BackgroundColor = [0.1294 0.1804 0.4];
@@ -661,6 +1298,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create SurrogateModelFileNameSearchButton
             app.SurrogateModelFileNameSearchButton = uibutton(app.SynergyTab, 'push');
+            app.SurrogateModelFileNameSearchButton.ButtonPushedFcn = createCallbackFcn(app, @SurrogateModelFileNameSearchButtonPushed, true);
             app.SurrogateModelFileNameSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
             app.SurrogateModelFileNameSearchButton.VerticalAlignment = 'bottom';
             app.SurrogateModelFileNameSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
@@ -677,10 +1315,12 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create MuscleActivationsFileEditField
             app.MuscleActivationsFileEditField = uieditfield(app.SynergyTab, 'text');
+            app.MuscleActivationsFileEditField.ValueChangedFcn = createCallbackFcn(app, @MuscleActivationsFileEditFieldValueChanged, true);
             app.MuscleActivationsFileEditField.Position = [194 211 450 30];
 
             % Create MuscleActivationsFileSearchButton
             app.MuscleActivationsFileSearchButton = uibutton(app.SynergyTab, 'push');
+            app.MuscleActivationsFileSearchButton.ButtonPushedFcn = createCallbackFcn(app, @MuscleActivationsFileSearchButtonPushed, true);
             app.MuscleActivationsFileSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
             app.MuscleActivationsFileSearchButton.VerticalAlignment = 'bottom';
             app.MuscleActivationsFileSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
@@ -699,6 +1339,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
             app.SurrogateModelAdvancedSettingsTable.RowName = {};
             app.SurrogateModelAdvancedSettingsTable.SelectionType = 'row';
             app.SurrogateModelAdvancedSettingsTable.ColumnEditable = [false true];
+            app.SurrogateModelAdvancedSettingsTable.CellEditCallback = createCallbackFcn(app, @SurrogateModelAdvancedSettingsTableCellEdit, true);
             app.SurrogateModelAdvancedSettingsTable.FontSize = 15;
             app.SurrogateModelAdvancedSettingsTable.Position = [215 23 365 146];
 
@@ -729,6 +1370,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create UserDefinedControlsButton
             app.UserDefinedControlsButton = uibutton(app.ControllersTab, 'push');
+            app.UserDefinedControlsButton.ButtonPushedFcn = createCallbackFcn(app, @UserDefinedControlsButtonPushed, true);
             app.UserDefinedControlsButton.WordWrap = 'on';
             app.UserDefinedControlsButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.UserDefinedControlsButton.FontSize = 18;
@@ -738,6 +1380,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create SynergyControlsButton
             app.SynergyControlsButton = uibutton(app.ControllersTab, 'push');
+            app.SynergyControlsButton.ButtonPushedFcn = createCallbackFcn(app, @SynergyControlsButtonPushed, true);
             app.SynergyControlsButton.WordWrap = 'on';
             app.SynergyControlsButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.SynergyControlsButton.FontSize = 18;
@@ -747,6 +1390,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create TorqueControlsButton
             app.TorqueControlsButton = uibutton(app.ControllersTab, 'push');
+            app.TorqueControlsButton.ButtonPushedFcn = createCallbackFcn(app, @TorqueControlsButtonPushed, true);
             app.TorqueControlsButton.WordWrap = 'on';
             app.TorqueControlsButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.TorqueControlsButton.FontSize = 18;
@@ -1029,6 +1673,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
             app.AdvancedParamsTable.RowName = {};
             app.AdvancedParamsTable.SelectionType = 'row';
             app.AdvancedParamsTable.ColumnEditable = [false true];
+            app.AdvancedParamsTable.CellEditCallback = createCallbackFcn(app, @AdvancedParamsTableCellEdit, true);
             app.AdvancedParamsTable.FontSize = 15;
             app.AdvancedParamsTable.Position = [205 177 377 476];
 
@@ -1050,6 +1695,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create AdvancedButton
             app.AdvancedButton = uibutton(app.UIFigure, 'push');
+            app.AdvancedButton.ButtonPushedFcn = createCallbackFcn(app, @AdvancedButtonPushed, true);
             app.AdvancedButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.AdvancedButton.FontSize = 18;
             app.AdvancedButton.FontColor = [1 1 1];
@@ -1058,6 +1704,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create ConstraintTermsButton
             app.ConstraintTermsButton = uibutton(app.UIFigure, 'push');
+            app.ConstraintTermsButton.ButtonPushedFcn = createCallbackFcn(app, @ConstraintTermsButtonPushed, true);
             app.ConstraintTermsButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.ConstraintTermsButton.FontSize = 18;
             app.ConstraintTermsButton.FontColor = [1 1 1];
@@ -1066,6 +1713,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create CostTermsButton
             app.CostTermsButton = uibutton(app.UIFigure, 'push');
+            app.CostTermsButton.ButtonPushedFcn = createCallbackFcn(app, @CostTermsButtonPushed, true);
             app.CostTermsButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.CostTermsButton.FontSize = 18;
             app.CostTermsButton.FontColor = [1 1 1];
@@ -1074,6 +1722,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create ControllersButton
             app.ControllersButton = uibutton(app.UIFigure, 'push');
+            app.ControllersButton.ButtonPushedFcn = createCallbackFcn(app, @ControllersButtonPushed, true);
             app.ControllersButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.ControllersButton.FontSize = 18;
             app.ControllersButton.FontColor = [1 1 1];
@@ -1082,6 +1731,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create SolverSettingsButton
             app.SolverSettingsButton = uibutton(app.UIFigure, 'push');
+            app.SolverSettingsButton.ButtonPushedFcn = createCallbackFcn(app, @SolverSettingsButtonPushed, true);
             app.SolverSettingsButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.SolverSettingsButton.FontSize = 18;
             app.SolverSettingsButton.FontColor = [1 1 1];
@@ -1090,6 +1740,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create InputsButton
             app.InputsButton = uibutton(app.UIFigure, 'push');
+            app.InputsButton.ButtonPushedFcn = createCallbackFcn(app, @InputsButtonPushed, true);
             app.InputsButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.InputsButton.FontSize = 18;
             app.InputsButton.FontColor = [1 1 1];
@@ -1098,6 +1749,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create RcnlLogo
             app.RcnlLogo = uiimage(app.UIFigure);
+            app.RcnlLogo.ImageClickedFcn = createCallbackFcn(app, @RcnlLogoImageClicked, true);
             app.RcnlLogo.Position = [11 872 80 80];
 
             % Create LoadSettingsFileButton
@@ -1139,6 +1791,7 @@ classdef TreatmentOptimizationBase_exported < matlab.apps.AppBase
 
             % Create ResetButton
             app.ResetButton = uibutton(app.UIFigure, 'push');
+            app.ResetButton.ButtonPushedFcn = createCallbackFcn(app, @ResetButtonPushed, true);
             app.ResetButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.ResetButton.FontSize = 18;
             app.ResetButton.FontColor = [1 1 1];
