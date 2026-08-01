@@ -39,6 +39,7 @@ end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "TrackingOptimizationTool");
 [inputs, params] = parseTrackingOptimizationSettingsTree(settingsTree);
+verifyTreatmentOptimizationCostAndConstraintTerms(inputs);
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 inputs = normalizeSynergyData(inputs);
