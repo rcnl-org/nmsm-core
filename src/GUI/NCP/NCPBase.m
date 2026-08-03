@@ -1792,6 +1792,11 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
+
+            % The window is tall enough that a fixed corner runs off the
+            % top of a 1080p display, so center it on whichever screen it
+            % lands on before showing it
+            movegui(app.UIFigure, 'center');
         end
     end
 
