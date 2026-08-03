@@ -32,7 +32,7 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcCasadiNcpCost(values, inputs, params)
-[activations2d, ~] = calcCasadiActivationsFromSynergyDesignVariables( ...
+[activations2d, ~, commands2d] = calcCasadiActivationsFromSynergyDesignVariables( ...
     values, inputs);
 cost = 0;
 if isfield(inputs, 'mtpActivationsColumnNames')
@@ -58,10 +58,13 @@ for term = 1:length(params.costTerms)
                 else
                     rawCost = 0;
                 end
-            case "activation_minimization"
+            case {"activation_minimization", "muscle_activation_minimization"}
                 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
                 rawCost = reshape(activationsWithoutMtpData, ...
                     numel(activationsWithoutMtpData), 1) - errorCenter;
+            case "synergy_activation_minimization"
+                errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+                rawCost = reshape(commands2d, numel(commands2d), 1) - errorCenter;
             case "grouped_activations"
                 rawCost = calcCasadiGroupedActivationCost( ...
                     activations2d, params);

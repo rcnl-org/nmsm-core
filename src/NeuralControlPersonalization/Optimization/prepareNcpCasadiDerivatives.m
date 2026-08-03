@@ -44,7 +44,9 @@ import casadi.*
 
 x = MX.sym('x', numDesignVariables);
 
-if inputs.enforce_bilateral_symmetry
+if ~inputs.optimize_synergy_vectors
+    fullValues = [inputs.fixedSynergyVectorFlat; x];
+elseif inputs.enforce_bilateral_symmetry
     weightsPart = x(1:inputs.numWeightsPerGroup(1));
     fullValues = [weightsPart; x];
 else

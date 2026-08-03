@@ -33,7 +33,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [activations2d, weights] = ...
+function [activations2d, weights, commands2d] = ...
     calcCasadiActivationsFromSynergyDesignVariables(values, inputs)
 valuesIndex = 1;
 

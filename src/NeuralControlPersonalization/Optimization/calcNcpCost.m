@@ -2,9 +2,9 @@
 %
 % Computes the NCP objective value for a design vector: converts it to
 % muscle activations, evaluates each enabled RCNL cost term (moment
-% tracking, activation tracking/minimization, grouped activations,
-% grouped fiber lengths), and sums the scaled squared residuals into a
-% single scalar cost.
+% tracking, activation tracking, muscle/synergy activation minimization,
+% grouped activations, grouped fiber lengths), and sums the scaled
+% squared residuals into a single scalar cost.
 %
 % (Array of number, struct, struct) -> (number)
 % Computes the weighted least-squares NCP cost
@@ -32,7 +32,7 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcNcpCost(values, inputs, params)
-[activations, ~, ~] = calcActivationsFromSynergyDesignVariables(values, inputs);
+[activations, ~, commands] = calcActivationsFromSynergyDesignVariables(values, inputs);
 cost = 0;
 % Split activations into subsets ahead of cost computation
 if isfield(inputs, 'mtpActivationsColumnNames')
@@ -58,9 +58,12 @@ for term = 1:length(params.costTerms)
                 else
                     rawCost = 0;
                 end
-            case "activation_minimization"
+            case {"activation_minimization", "muscle_activation_minimization"}
                 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
                 rawCost = reshape(activationsWithoutMtpData, [], 1) - errorCenter;
+            case "synergy_activation_minimization"
+                errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+                rawCost = reshape(commands, [], 1) - errorCenter;
             case "grouped_activations"
                 rawCost = calcGroupedActivationCost(activations, ...
                     inputs, params);

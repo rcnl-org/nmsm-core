@@ -32,7 +32,7 @@
 		<joint_acceleration_minimum_range>0</joint_acceleration_minimum_range>
 		<!--*Optional* Default is 0.-->
 		<joint_jerk_minimum_range>0</joint_jerk_minimum_range>
-		<!--*Optional* Default is false.-->
+		<!--*Optional* Default is false. NOTE: currently inactive -- the corresponding parse line in parseTreatmentOptimizationInputs.m is commented out.-->
 		<use_control_derivatives>false</use_control_derivatives>
 		<!--*Optional* Default is false.-->
 		<use_jerk>false</use_jerk>
