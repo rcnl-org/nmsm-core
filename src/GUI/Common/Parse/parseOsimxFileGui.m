@@ -43,7 +43,7 @@ if ~exist(input_osimx_file)
 end
 
 try 
-    osimx = parseOsimxFile(input_osimx_file, input_model_file);
+    osimx = parseOsimxFile(input_osimx_file, Model(input_model_file));
 catch
     errorFlag = true;
     message = parseOsimxFileForErrors(input_osimx_file, input_model_file);
@@ -66,4 +66,11 @@ end
 
 function errorMessage = parseOsimxFileForErrors(input_osimx_file, input_model_file);
     errorMessage = "Osimx file could not parse.";
+end
+
+function parseOsimxFileSynergies(app, osimx)
+    if ~isfield(osimx, "synergyGroups")
+        return
+    end
+    app.setOsimxSynergyGroups(osimx.synergyGroups);
 end

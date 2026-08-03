@@ -79,5 +79,35 @@ classdef RCNLMuscleModelClass < handle
         function value = getParameterValueByIndex(obj, index)
             value = obj.(obj.parameterNames(index));
         end
+
+        % The surrogate model settings are named differently in the GUI
+        % than in the settings file, so the mapping lives here
+        function settings = toStruct(obj)
+            settings.surrogate_model_coordinate_list = obj.coordinate_list;
+            settings.surrogate_model_data_directory = obj.data_directory;
+            settings.surrogate_model_file_name = obj.file_name;
+            settings.muscle_activations_file = obj.muscle_activations_file;
+            settings = addRcnlParametersToStruct(settings, obj);
+        end
+
+        function loadFromStruct(obj, settings)
+            if isfield(settings, 'surrogate_model_coordinate_list')
+                obj.coordinate_list = toGuiStringList( ...
+                    settings.surrogate_model_coordinate_list);
+            end
+            if isfield(settings, 'surrogate_model_data_directory')
+                obj.data_directory = ...
+                    toGuiText(settings.surrogate_model_data_directory);
+            end
+            if isfield(settings, 'surrogate_model_file_name')
+                obj.file_name = ...
+                    toGuiText(settings.surrogate_model_file_name);
+            end
+            if isfield(settings, 'muscle_activations_file')
+                obj.muscle_activations_file = ...
+                    toGuiText(settings.muscle_activations_file);
+            end
+            loadRcnlParametersFromStruct(obj, settings);
+        end
     end
 end

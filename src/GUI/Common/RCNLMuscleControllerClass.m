@@ -65,5 +65,20 @@ classdef RCNLMuscleControllerClass < handle
         function value = getParameterValueByIndex(obj, index)
             value = obj.(obj.parameterNames(index));
         end
+
+        % is_enabled is not written; parseController treats the presence of
+        % the <RCNLMuscleController> element as the controller being on
+        function settings = toStruct(obj)
+            settings.muscle_list = obj.muscle_list;
+            settings = addRcnlParametersToStruct(settings, obj);
+        end
+
+        function loadFromStruct(obj, settings)
+            obj.is_enabled = 'true';
+            if isfield(settings, 'muscle_list')
+                obj.muscle_list = toGuiStringList(settings.muscle_list);
+            end
+            loadRcnlParametersFromStruct(obj, settings);
+        end
     end
 end

@@ -1,12 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function fills a task list GUI table with each task's enabled
-% state and name, followed by a row inviting the user to add a new entry.
-% The column names isEnabled and taskNames are relied on by the tables'
-% cell edit callbacks.
+% Writes the numeric settings named by a class's parameterNames constant
+% into a settings struct. The mirror of loadRcnlParametersFromStruct.
 %
-% (Table, Cell Array of task objects, string) -> ()
-% Fills a task list GUI table from a list of tasks
+% (struct, handle) -> (struct)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,17 +26,10 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function updateTaskListTableGui(taskTable, tasks, addRowText)
-if nargin < 3
-    addRowText = "Add a new task";
+
+function settings = addRcnlParametersToStruct(settings, object)
+for i = 1 : length(object.parameterNames)
+    settings.(object.parameterNames(i)) = ...
+        object.(object.parameterNames(i));
 end
-isEnabled = true(length(tasks) + 1, 1);
-taskNames = strings(length(tasks) + 1, 1);
-for i = 1:length(tasks)
-    isEnabled(i) = strcmp(tasks{i}.is_enabled, 'true');
-    taskNames(i) = tasks{i}.name;
-end
-isEnabled(end) = false;
-taskNames(end) = addRowText;
-taskTable.Data = table(isEnabled, taskNames);
 end

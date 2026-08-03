@@ -1,12 +1,16 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function fills a task list GUI table with each task's enabled
-% state and name, followed by a row inviting the user to add a new entry.
-% The column names isEnabled and taskNames are relied on by the tables'
-% cell edit callbacks.
+% This function fills a parameter GUI table from a struct of parameter
+% names and values. Unlike updateParameterTableGui, which is driven by a
+% fixed parameterNames constant on a settings object, this one is driven
+% by the fields of the struct it is given, so the set of rows can differ
+% from one selection to the next.
 %
-% (Table, Cell Array of task objects, string) -> ()
-% Fills a task list GUI table from a list of tasks
+% Values are shown as text so that lists such as "x y z" survive being
+% displayed and edited.
+%
+% (struct, Table) -> ()
+% Fills a parameter GUI table from a struct of parameters
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,17 +33,27 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function updateTaskListTableGui(taskTable, tasks, addRowText)
-if nargin < 3
-    addRowText = "Add a new task";
+function updateMiscParameterTableGui(parameters, uiTable)
+if isempty(parameters) || ~isstruct(parameters)
+    parameters = struct();
 end
-isEnabled = true(length(tasks) + 1, 1);
-taskNames = strings(length(tasks) + 1, 1);
-for i = 1:length(tasks)
-    isEnabled(i) = strcmp(tasks{i}.is_enabled, 'true');
-    taskNames(i) = tasks{i}.name;
+options = string(fieldnames(parameters));
+values = strings(length(options), 1);
+for i = 1 : length(options)
+    values(i) = formatParameterValue(parameters.(options(i)));
 end
-isEnabled(end) = false;
-taskNames(end) = addRowText;
-taskTable.Data = table(isEnabled, taskNames);
+uiTable.Data = table(options, values);
+end
+
+function text = formatParameterValue(value)
+if isnumeric(value) || islogical(value)
+    text = strjoin(arrayfun(@formatGuiNumber, value(:)'), " ");
+elseif ischar(value)
+    text = string(value);
+else
+    text = strjoin(string(value(:)'), " ");
+end
+if isempty(text)
+    text = "";
+end
 end

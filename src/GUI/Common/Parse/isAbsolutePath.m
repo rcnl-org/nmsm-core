@@ -1,12 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function fills a task list GUI table with each task's enabled
-% state and name, followed by a row inviting the user to add a new entry.
-% The column names isEnabled and taskNames are relied on by the tables'
-% cell edit callbacks.
+% Reports whether a path is already absolute, so a path read from a
+% settings file is only resolved against that file's directory when it is
+% actually relative. Handles Windows drive letters and UNC shares as well
+% as POSIX roots, since settings files travel between platforms.
 %
-% (Table, Cell Array of task objects, string) -> ()
-% Fills a task list GUI table from a list of tasks
+% (string) -> (logical)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,17 +28,22 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function updateTaskListTableGui(taskTable, tasks, addRowText)
-if nargin < 3
-    addRowText = "Add a new task";
+
+function isAbsolute = isAbsolutePath(path)
+path = string(path);
+isAbsolute = false;
+if strlength(path) == 0
+    return
 end
-isEnabled = true(length(tasks) + 1, 1);
-taskNames = strings(length(tasks) + 1, 1);
-for i = 1:length(tasks)
-    isEnabled(i) = strcmp(tasks{i}.is_enabled, 'true');
-    taskNames(i) = tasks{i}.name;
+% \\server\share or //server/share
+if startsWith(path, "\\") || startsWith(path, "//")
+    isAbsolute = true;
+    return
 end
-isEnabled(end) = false;
-taskNames(end) = addRowText;
-taskTable.Data = table(isEnabled, taskNames);
+% C:\ or C:/
+if ~isempty(regexp(path, '^[A-Za-z]:[\\/]', 'once'))
+    isAbsolute = true;
+    return
+end
+isAbsolute = startsWith(path, "/") || startsWith(path, "\");
 end

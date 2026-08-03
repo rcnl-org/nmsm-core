@@ -73,5 +73,44 @@ classdef RCNLSynergyControllerClass < handle
         function value = getParameterValueByIndex(obj, index)
             value = obj.(obj.parameterNames(index));
         end
+
+        % is_enabled is not written; parseController treats the presence of
+        % the <RCNLSynergyController> element as the controller being on.
+        % normalizeSynergyData switches on a lower case method name, while
+        % the GUI dropdown offers Sum and Magnitude.
+        function settings = toStruct(obj)
+            settings.optimize_synergy_vectors = ...
+                obj.optimize_synergy_vectors;
+            settings.synergy_vector_normalization_method = ...
+                lower(string(obj.synergy_vector_normalization_method));
+            settings = addRcnlParametersToStruct(settings, obj);
+        end
+
+        function loadFromStruct(obj, settings)
+            obj.is_enabled = 'true';
+            if isfield(settings, 'optimize_synergy_vectors')
+                obj.optimize_synergy_vectors = boolToString( ...
+                    getBooleanLogic(settings.optimize_synergy_vectors));
+            end
+            if isfield(settings, 'synergy_vector_normalization_method')
+                obj.synergy_vector_normalization_method = ...
+                    capitalizeNormalizationMethod( ...
+                    settings.synergy_vector_normalization_method);
+            end
+            loadRcnlParametersFromStruct(obj, settings);
+        end
     end
+end
+
+function method = capitalizeNormalizationMethod(value)
+value = lower(string(value));
+switch value
+    case "sum"
+        method = 'Sum';
+    case "magnitude"
+        method = 'Magnitude';
+    otherwise
+        % Leave anything unrecognised alone so the dropdown can reject it
+        method = convertStringsToChars(value);
+end
 end

@@ -1,12 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function fills a task list GUI table with each task's enabled
-% state and name, followed by a row inviting the user to add a new entry.
-% The column names isEnabled and taskNames are relied on by the tables'
-% cell edit callbacks.
+% Normalizes a value read from an XML settings file into the string array
+% the GUI holds lists in. formatXmlDataForGui already splits most elements,
+% but it converts numeric looking text to doubles and returns early on any
+% struct carrying an Attributes field, so a list can arrive as a string
+% array, a char row, or a number.
 %
-% (Table, Cell Array of task objects, string) -> ()
-% Fills a task list GUI table from a list of tasks
+% (any) -> (Array of string)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,17 +29,22 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function updateTaskListTableGui(taskTable, tasks, addRowText)
-if nargin < 3
-    addRowText = "Add a new task";
+
+function values = toGuiStringList(value)
+if isstruct(value)
+    if isfield(value, 'Text')
+        value = value.Text;
+    else
+        values = string([]);
+        return
+    end
 end
-isEnabled = true(length(tasks) + 1, 1);
-taskNames = strings(length(tasks) + 1, 1);
-for i = 1:length(tasks)
-    isEnabled(i) = strcmp(tasks{i}.is_enabled, 'true');
-    taskNames(i) = tasks{i}.name;
+if ischar(value)
+    values = string(strsplit(value, " "));
+elseif isstring(value)
+    values = value(:)';
+else
+    values = string(value(:)');
 end
-isEnabled(end) = false;
-taskNames(end) = addRowText;
-taskTable.Data = table(isEnabled, taskNames);
+values = values(~strcmp(values, ""));
 end

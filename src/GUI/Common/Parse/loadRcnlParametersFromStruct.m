@@ -1,12 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function fills a task list GUI table with each task's enabled
-% state and name, followed by a row inviting the user to add a new entry.
-% The column names isEnabled and taskNames are relied on by the tables'
-% cell edit callbacks.
+% Copies the numeric settings named by a class's parameterNames constant
+% out of a settings struct and onto the object. Shared by the Treatment
+% Optimization controller and muscle model classes, which all expose the
+% same parameterNames contract that updateParameterTableGui relies on.
+% Values that do not parse as numbers are left at whatever the object
+% already holds, so a malformed file cannot blank a setting.
 %
-% (Table, Cell Array of task objects, string) -> ()
-% Fills a task list GUI table from a list of tasks
+% (handle, struct) -> (None)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -29,17 +30,16 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function updateTaskListTableGui(taskTable, tasks, addRowText)
-if nargin < 3
-    addRowText = "Add a new task";
+
+function loadRcnlParametersFromStruct(object, settings)
+for i = 1 : length(object.parameterNames)
+    name = object.parameterNames(i);
+    if ~isfield(settings, name)
+        continue
+    end
+    number = toGuiNumber(settings.(name));
+    if ~isnan(number)
+        object.(name) = number;
+    end
 end
-isEnabled = true(length(tasks) + 1, 1);
-taskNames = strings(length(tasks) + 1, 1);
-for i = 1:length(tasks)
-    isEnabled(i) = strcmp(tasks{i}.is_enabled, 'true');
-    taskNames(i) = tasks{i}.name;
-end
-isEnabled(end) = false;
-taskNames(end) = addRowText;
-taskTable.Data = table(isEnabled, taskNames);
 end

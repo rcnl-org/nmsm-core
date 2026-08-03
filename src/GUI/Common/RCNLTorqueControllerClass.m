@@ -71,5 +71,21 @@ classdef RCNLTorqueControllerClass < handle
         function value = getParameterValueByIndex(obj, index)
             value = obj.(obj.parameterNames(index));
         end
+
+        % is_enabled is not written; parseController treats the presence of
+        % the <RCNLTorqueController> element as the controller being on
+        function settings = toStruct(obj)
+            settings.coordinate_list = obj.coordinate_list;
+            settings = addRcnlParametersToStruct(settings, obj);
+        end
+
+        function loadFromStruct(obj, settings)
+            obj.is_enabled = 'true';
+            if isfield(settings, 'coordinate_list')
+                obj.coordinate_list = ...
+                    toGuiStringList(settings.coordinate_list);
+            end
+            loadRcnlParametersFromStruct(obj, settings);
+        end
     end
 end
