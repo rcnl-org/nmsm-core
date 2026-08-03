@@ -124,6 +124,7 @@ classdef ObjectSelectionWindow < matlab.apps.AppBase
             app.UIFigure.Color = [0.851 0.851 0.851];
             app.UIFigure.Position = [500 500 479 480];
             app.UIFigure.Name = 'MATLAB App';
+            app.UIFigure.WindowStyle = 'modal';
 
             % Create OKButton
             app.OKButton = uibutton(app.UIFigure, 'push');

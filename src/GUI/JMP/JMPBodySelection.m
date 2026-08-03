@@ -192,6 +192,7 @@ classdef JMPBodySelection < matlab.apps.AppBase
             app.UIFigure.Color = [0.851 0.851 0.851];
             app.UIFigure.Position = [100 100 397 228];
             app.UIFigure.Name = 'MATLAB App';
+            app.UIFigure.WindowStyle = 'modal';
 
             % Create BodyNameDropDownLabel
             app.BodyNameDropDownLabel = uilabel(app.UIFigure);

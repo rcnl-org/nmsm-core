@@ -336,6 +336,7 @@ classdef JMPJointSelection < matlab.apps.AppBase
             app.UIFigure.Color = [0.851 0.851 0.851];
             app.UIFigure.Position = [100 100 491 515];
             app.UIFigure.Name = 'MATLAB App';
+            app.UIFigure.WindowStyle = 'modal';
 
             % Create JointNameDropDownLabel
             app.JointNameDropDownLabel = uilabel(app.UIFigure);
