@@ -30,6 +30,7 @@
 function saveVerificationOptimizationResults(solution, inputs)
 values = makeGpopsValuesAsStruct( ...
     solution.solution.phase, inputs);
+[inputs, values] = updateSystemFromUserDefinedFunctions(inputs, values);
 if inputs.controllerTypes(2)
     values = normalizeSynergySolution(values, inputs);
 end

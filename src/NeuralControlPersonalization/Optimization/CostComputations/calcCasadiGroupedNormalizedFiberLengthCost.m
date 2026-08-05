@@ -1,11 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Converts a flat NCP design vector into muscle activations, by
-% unpacking synergy weights and B-spline-interpolated commands
-% (via findSynergyWeightsAndCommands.m) and combining them
-% (activations = commands * weights).
+% CasADi-safe equivalent of calcGroupedNormalizedFiberLengthCost.m,
+% adapted for the 2-D activations2d layout
+% [numTrials*numPoints x numMuscles] (muscle is a column here rather
+% than the middle dimension of a 3-D array).
 %
-% (Array of number, struct) -> (Array of number, Array of number, Array of number)
+% (Array of number, struct) -> (Array of number)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +15,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Xuanning Liu                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,12 +29,18 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [activations, weights, commands] = calcActivationsFromSynergyDesignVariables( ...
-    values, inputs)
-[weights, commands, ~] = findSynergyWeightsAndCommands(values, inputs);
-
-commands2d = reshape(commands, [], inputs.numSynergies);
-activations2d = commands2d * weights;
-activations = permute(reshape(activations2d, inputs.numTrials, ...
-    inputs.numPoints, inputs.numMuscles), [1 3 2]);
+function cost = calcCasadiGroupedNormalizedFiberLengthCost(activations2d, ...
+    params)
+cost = [];
+for i = 1:length(params.normalizedFiberLengthGroups)
+    groupIndex = params.normalizedFiberLengthGroups{i};
+    if isempty(groupIndex)
+        continue
+    end
+    groupActivations = activations2d(:, groupIndex);
+    groupMean = sum(groupActivations, 2) / numel(groupIndex);
+    groupMeanExpanded = repmat(groupMean, 1, numel(groupIndex));
+    diffTerm = groupActivations - groupMeanExpanded;
+    cost = [cost, reshape(diffTerm, 1, numel(diffTerm))];
+end
 end

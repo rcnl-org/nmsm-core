@@ -1,13 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Computes the NCP objective value for a design vector: converts it to
-% muscle activations, evaluates each enabled RCNL cost term (moment
-% tracking, activation tracking/minimization, grouped activations,
-% grouped fiber lengths), and sums the scaled squared residuals into a
-% single scalar cost.
+% CasADi-safe equivalent of calcNcpCost.m, mirroring its cost-term
+% switch and scaling exactly. Built on the 2-D-only helpers in this
+% branch's CasADi files, since CasADi MX/SX do not support N-D arrays.
+% inputs.inverseDynamicsMoments/inputs.mtpActivations are flattened here
+% (they are constant numeric data, not design-variable-dependent, so
+% ordinary 3-D reshapes on them are safe).
 %
 % (Array of number, struct, struct) -> (number)
-% Computes the weighted least-squares NCP cost
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -17,7 +17,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Xuanning Liu                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -31,49 +31,60 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcNcpCost(values, inputs, params)
-[activations, ~, ~] = calcActivationsFromSynergyDesignVariables(values, inputs);
+function cost = calcCasadiNcpCost(values, inputs, params)
+[activations2d, ~] = calcCasadiActivationsFromSynergyDesignVariables( ...
+    values, inputs);
 cost = 0;
-% Split activations into subsets ahead of cost computation
 if isfield(inputs, 'mtpActivationsColumnNames')
     [activationsWithMtpData, activationsWithoutMtpData] = ...
-        makeMtpActivatonSubset(activations, ...
+        makeCasadiMtpActivatonSubset(activations2d, ...
         inputs.mtpActivationsColumnNames, inputs.muscleTendonColumnNames);
 else
-    activationsWithoutMtpData = activations;
+    activationsWithoutMtpData = activations2d;
 end
 for term = 1:length(params.costTerms)
     costTerm = params.costTerms{term};
     if costTerm.isEnabled
         switch costTerm.type
             case "moment_tracking"
-                muscleJointMoments = calcMuscleJointMoments(inputs, ...
-                    activations, inputs.normalizedFiberLengths, ...
-                    inputs.normalizedFiberVelocities);
-                rawCost = muscleJointMoments - ...
-                    inputs.inverseDynamicsMoments;
+                muscleJointMoments2d = calcCasadiMuscleJointMoments( ...
+                    inputs, activations2d);
+                rawCost = muscleJointMoments2d - ...
+                    flattenTrialFirstDim(inputs.inverseDynamicsMoments);
             case "activation_tracking"
                 if isfield(inputs, 'mtpActivations')
-                    rawCost = activationsWithMtpData - inputs.mtpActivations;
+                    rawCost = activationsWithMtpData - ...
+                        flattenTrialFirstDim(inputs.mtpActivations);
                 else
                     rawCost = 0;
                 end
             case "activation_minimization"
                 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
-                rawCost = reshape(activationsWithoutMtpData, [], 1) - errorCenter;
+                rawCost = reshape(activationsWithoutMtpData, ...
+                    numel(activationsWithoutMtpData), 1) - errorCenter;
             case "grouped_activations"
-                rawCost = calcGroupedActivationCost(activations, ...
-                    inputs, params);
+                rawCost = calcCasadiGroupedActivationCost( ...
+                    activations2d, params);
             case "grouped_fiber_lengths"
-                rawCost = calcGroupedNormalizedFiberLengthCost( ...
-                    activations, inputs, params);
+                rawCost = calcCasadiGroupedNormalizedFiberLengthCost( ...
+                    activations2d, params);
             otherwise
-                throw(MException('', ['Cost term type ' costTerm.type ...
-                    ' does not exist for this tool.']))
+                throw(MException('', ['Cost term type ' ...
+                    char(costTerm.type) ' does not exist for this tool.']))
         end
-        rawCost = rawCost(:);
-        rawCost_scaled = (rawCost / costTerm.maxAllowableError) / sqrt(numel(rawCost));
-        cost = cost + rawCost_scaled.' * rawCost_scaled;
+        rawCost = reshape(rawCost, numel(rawCost), 1);
+        rawCostScaled = (rawCost / costTerm.maxAllowableError) / ...
+            sqrt(numel(rawCost));
+        cost = cost + rawCostScaled.' * rawCostScaled;
     end
 end
+end
+
+% Flattens a [numTrials x numColumns x numPoints] numeric array into
+% [numTrials*numPoints x numColumns]
+function flat = flattenTrialFirstDim(data)
+numTrials = size(data, 1);
+numColumns = size(data, 2);
+numPoints = size(data, 3);
+flat = reshape(permute(data, [3 1 2]), numTrials * numPoints, numColumns);
 end

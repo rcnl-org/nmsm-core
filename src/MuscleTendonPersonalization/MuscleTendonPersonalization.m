@@ -40,6 +40,10 @@
 % ----------------------------------------------------------------------- %
 
 function results = MuscleTendonPersonalization(inputs, ...
+    params)
+if valueOrAlternate(inputs, "parseInitialGuessFromOsimx", false)
+    inputs = applyMtpOsimxMaxIsometricForce(inputs);
+end
     params, app)
 inputs.primaryValues = prepareInitialValues(inputs, params);
 inputs.primaryValueNames = ["electromechanical_delay", ...
@@ -61,9 +65,11 @@ for i=1:length(inputs.tasks)
             inputs.tasks{i}.maxNormalizedMuscleFiberLength;
         taskParams.minNormalizedMuscleFiberLength = ...
             inputs.tasks{i}.minNormalizedMuscleFiberLength;
+        numOtherDesignVariables = sum(cellfun(@(k) ...
+            length(inputs.primaryValues{k}), ...
+            num2cell(find(inputs.tasks{i}.isIncluded(1:6)))));
         [A, b] = getLinearInequalityConstraints(inputs.synergyExtrapolation, ...
-            sum(inputs.tasks{i}.isIncluded(1:6)) * ...
-            length(inputs.muscleNames), inputs.extrapolationCommands, ...
+            numOtherDesignVariables, inputs.extrapolationCommands, ...
             permute(inputs.emgData, [3 1 2]));
         optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
             inputs.primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
@@ -122,12 +128,25 @@ end
 % extract initial version of optimized values from inputs/params
 function values = prepareInitialValues(inputs, params)
 numMuscles = length(inputs.muscleNames);
-values{1} = repmat(0.5, 1, numMuscles); % electromechanical delay
-values{2} = repmat(1.5, 1, numMuscles); % activation time
-values{3} = repmat(0.05, 1, numMuscles); % activation nonlinearity
-values{4} = repmat(0.5, 1, numMuscles); % EMG scale factors
-values{5} = repmat(1, 1, numMuscles); % optimal fiber length scale factor
-values{6} = repmat(1, 1, numMuscles); % tendon slack length scale factor
+if inputs.muscleSpecificElectromechanicalDelays
+    values{1} = repmat(inputs.electromechanicalDelayInitialGuess, ...
+        1, numMuscles); % electromechanical delay
+else
+    values{1} = inputs.electromechanicalDelayInitialGuess; % shared electromechanical delay
+end
+values{2} = repmat(inputs.activationTimeConstantInitialGuess, ...
+    1, numMuscles); % activation time
+values{3} = repmat(inputs.activationNonlinearityInitialGuess, ...
+    1, numMuscles); % activation nonlinearity
+values{4} = repmat(inputs.emgScaleFactorInitialGuess, ...
+    1, numMuscles); % EMG scale factors
+values{5} = repmat(inputs.optimalFiberLengthScaleFactorInitialGuess, ...
+    1, numMuscles); % optimal fiber length scale factor
+values{6} = repmat(inputs.tendonSlackLengthScaleFactorInitialGuess, ...
+    1, numMuscles); % tendon slack length scale factor
+if valueOrAlternate(inputs, "parseInitialGuessFromOsimx", false)
+    values = applyMtpOsimxInitialGuess(values, inputs);
+end
 if isfield(inputs, "synergyExtrapolation")
     values{7} = repmat(0, 1, inputs.numberOfExtrapolationWeights + ...
         inputs.numberOfResidualWeights); % synergy commands
@@ -152,12 +171,16 @@ if isfield(params, 'lowerBounds')
     lowerBounds = params.lowerBounds;
 else
     numMuscles = length(inputs.muscleNames);
-    lowerBounds{1} = repmat(0.0, 1, numMuscles); % electromechanical delay
+    if inputs.muscleSpecificElectromechanicalDelays
+        lowerBounds{1} = repmat(0.0, 1, numMuscles); % electromechanical delay
+    else
+        lowerBounds{1} = 0.0; % shared electromechanical delay
+    end
     lowerBounds{2} = repmat(0.75, 1, numMuscles); % activation time
     lowerBounds{3} = repmat(0.0, 1, numMuscles); % activation nonlinearity
     lowerBounds{4} = repmat(0.05, 1, numMuscles); % EMG scale factors
-    lowerBounds{5} = repmat(0.6, 1, numMuscles); % optimal fiber length scale factor
-    lowerBounds{6} = repmat(0.6, 1, numMuscles); % tendon slack length scale factor
+    lowerBounds{5} = repmat(0.5, 1, numMuscles); % optimal fiber length scale factor
+    lowerBounds{6} = repmat(0.5, 1, numMuscles); % tendon slack length scale factor
     if isfield(inputs, "synergyExtrapolation")
         lowerBounds{7} = repmat(-100, 1, inputs.numberOfExtrapolationWeights + ...
             inputs.numberOfResidualWeights); % synergy commands
@@ -171,12 +194,16 @@ if isfield(params, 'upperBounds')
     upperBounds = params.upperBounds;
 else
     numMuscles = length(inputs.muscleNames);
-    upperBounds{1} = repmat(1.25, 1, numMuscles); % electromechanical delay
+    if inputs.muscleSpecificElectromechanicalDelays
+        upperBounds{1} = repmat(1.25, 1, numMuscles); % electromechanical delay
+    else
+        upperBounds{1} = 1.25; % shared electromechanical delay
+    end
     upperBounds{2} = repmat(3.5, 1, numMuscles); % activation time
     upperBounds{3} = repmat(0.35, 1, numMuscles); % activation nonlinearity
     upperBounds{4} = repmat(1, 1, numMuscles); % EMG scale factors
-    upperBounds{5} = repmat(1.4, 1, numMuscles); % optimal fiber length scale factor
-    upperBounds{6} = repmat(1.4, 1, numMuscles); % tendon slack length scale factor
+    upperBounds{5} = repmat(2, 1, numMuscles); % optimal fiber length scale factor
+    upperBounds{6} = repmat(2, 1, numMuscles); % tendon slack length scale factor
     if isfield(inputs, "synergyExtrapolation")
         upperBounds{7} = repmat(100, 1, inputs.numberOfExtrapolationWeights + ...
             inputs.numberOfResidualWeights); % synergy commands

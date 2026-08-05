@@ -14,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond, Spencer Williams                          %
+% Author(s): Claire V. Hammond, Spencer Williams, Xuanning liu            %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,58 +28,143 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function finalValues = computeNeuralControlOptimization(initialValues, ...
-    inputs, params, app)
+function finalValues = computeNeuralControlOptimization(initialValuesLong, ...
+    inputs, params)
+[initWeights, ~, ~] = findSynergyWeightsAndCommands(initialValuesLong, inputs);
+initialValues = initialValuesLong;
+if inputs.enforce_bilateral_symmetry
+    initialValues(1:inputs.numWeightsPerGroup(1)) = [];
+end
 numDesignVariables = length(initialValues);
-[synergyWeightEquations, synergyWeightSums, lowerBounds] = ...
-    makeConstraints(inputs, numDesignVariables);
-optimizerOptions = prepareOptimizerOptions(params, app);
-finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
-    inputs, params), initialValues, [], [], synergyWeightEquations, ...
-    synergyWeightSums, lowerBounds, [], [], optimizerOptions);
+[synergyWeightEquations, synergyWeightSums, lowerBounds, upperbounds] = ...
+    makeConstraints(inputs, numDesignVariables, initWeights);
+optimizerOptions = prepareOptimizerOptions(params);
+if strcmpi(inputs.synergy_vector_normalization_method,'sum')
+    % linear constraints
+    if params.useCasadi
+        derivatives = prepareNcpCasadiDerivatives(inputs, params, ...
+            numDesignVariables, []);
+        optimizerOptions = applyCasadiOptimizerOptions(optimizerOptions, ...
+            derivatives);
+        finalValues = fmincon(derivatives.costFcn, initialValues, [], [], ...
+            synergyWeightEquations, synergyWeightSums, lowerBounds, ...
+            upperbounds, [], optimizerOptions);
+    else
+        finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
+            inputs, params), initialValues, [], [], synergyWeightEquations, ...
+            synergyWeightSums, lowerBounds, upperbounds, [], optimizerOptions);
+    end
+elseif strcmpi(inputs.synergy_vector_normalization_method,'magnitude')
+    % nonlinear constraints
+    normalizationTarget = sum(initWeights.^2, 2);   % (numSynergies x 1)
+    if params.useCasadi
+        derivatives = prepareNcpCasadiDerivatives(inputs, params, ...
+            numDesignVariables, normalizationTarget);
+        optimizerOptions = applyCasadiOptimizerOptions(optimizerOptions, ...
+            derivatives);
+        finalValues = fmincon(derivatives.costFcn, initialValues, [], [], ...
+            [], [], lowerBounds, upperbounds, derivatives.constraintFcn, ...
+            optimizerOptions);
+    else
+        finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
+            inputs, params), initialValues, [], [], ...
+            [], [], lowerBounds, upperbounds, ...
+            @(values)nonlinearConstraints(values, inputs, normalizationTarget),optimizerOptions);
+    end
+else
+    error('Unknown normalization method: %s', ...
+        inputs.synergy_vector_normalization_method);
+end
+if inputs.enforce_bilateral_symmetry
+    weightsVariables = finalValues(1:inputs.numWeightsPerGroup(1));
+    finalValues = [weightsVariables; finalValues];
+end
 end
 
 % Generate constraints for synergy weight vectors and design variable lower
 % bounds
-function [synergyWeightEquations, synergyWeightSums, lowerBounds] = ...
-    makeConstraints(inputs, numDesignVariables)
-synergyWeightEquations = zeros(inputs.numSynergies, numDesignVariables);
-synergyWeightSums = 1*ones(inputs.numSynergies, 1);
-row = 1; 
-column = 1;
-for i = 1:length(inputs.synergyGroups)
-    for j = 1: inputs.synergyGroups{i}.numSynergies
-        synergyWeightEquations(row, column:column + ...
-            length(inputs.synergyGroups{i}.muscleNames) - 1) = 1;
-        synergyWeightSums(row) = ...
-            length(inputs.synergyGroups{i}.muscleNames) / 100;
-        row = row + 1;
-        column = column + length(inputs.synergyGroups{i}.muscleNames);
+function [synergyWeightEquations, synergyWeightSums, lowerBounds, upperBounds] = ...
+    makeConstraints(inputs, numDesignVariables, initWeights)
+
+if strcmpi(inputs.synergy_vector_normalization_method, 'sum')
+    if inputs.enforce_bilateral_symmetry
+        activeGroups = inputs.synergyGroups(1);
+        activeWeights = initWeights(1:inputs.synergyGroups{1}.numSynergies, ...
+                                    1:length(inputs.synergyGroups{1}.muscleNames));
+    else
+        activeGroups  = inputs.synergyGroups;
+        activeWeights = initWeights;
     end
+
+    numActiveRows = sum(cellfun(@(g) g.numSynergies, activeGroups));
+    synergyWeightEquations = zeros(numActiveRows, numDesignVariables);
+    synergyWeightSums = sum(activeWeights, 2);
+    row = 1; 
+    column = 1;
+    for i = 1:length(activeGroups)
+        nSyn = activeGroups{i}.numSynergies;
+        nMus = length(activeGroups{i}.muscleNames);
+        for j = 1:nSyn
+            synergyWeightEquations(row, column:column + nMus - 1) = 1;
+            row = row + 1;
+            column = column + nMus;
+        end
+    end
+else
+    % magnitude: nonlinear constraints handle normalization, 
+    % no linear constraints needed
+    synergyWeightEquations = [];
+    synergyWeightSums      = [];
 end
 lowerBounds = zeros(numDesignVariables, 1);
+upperBounds = inf(numDesignVariables, 1);
 end
 
 % Set optimizer options from params struct
-function optimizerOptions = prepareOptimizerOptions(params, app)
-optimizerOptions = optimoptions('fmincon', 'UseParallel', 'always');
-optimizerOptions.DiffMinChange = valueOrAlternate(params, ...
-    'diffMinChange', 1e-6);
-optimizerOptions.OptimalityTolerance = valueOrAlternate(params, ...
-    'optimalityTolerance', 1e-3);
-optimizerOptions.FunctionTolerance = valueOrAlternate(params, ...
-    'functionTolerance', 1e-6);
-optimizerOptions.StepTolerance = valueOrAlternate(params, ...
-    'stepTolerance', 1e-16);
-optimizerOptions.MaxFunctionEvaluations = valueOrAlternate(params, ...
-    'maxFunctionEvaluations', 1e6);
-optimizerOptions.MaxIterations = valueOrAlternate(params, ...
-    'maxIterations', 1e3);
+function optimizerOptions = prepareOptimizerOptions(params)
+optimizerOptions = optimoptions('fmincon', 'UseParallel',true);
+optimizerOptions.DiffMinChange = params.diffMinChange;
+optimizerOptions.OptimalityTolerance = params.optimalityTolerance;
+optimizerOptions.FunctionTolerance = params.functionTolerance;
+optimizerOptions.StepTolerance = params.stepTolerance;
+optimizerOptions.MaxFunctionEvaluations = params.maxFunctionEvaluations;
+optimizerOptions.MaxIterations = params.maxIterations;
+optimizerOptions.Algorithm = params.algorithm;
+optimizerOptions.FiniteDifferenceType = params.finiteDifferenceType;
 optimizerOptions.Display = valueOrAlternate(params, ...
     'display','iter');
-optimizerOptions.Algorithm = valueOrAlternate(params, 'algorithm', 'sqp');
-if ismethod(app, 'CancelOptimizationGui')
-    optimizerOptions.OutputFcn = @(x, optimValues, state, varargin) ...
-        app.CancelOptimizationGui(x, optimValues, state);
+end
+
+
+function optimizerOptions = applyCasadiOptimizerOptions(optimizerOptions, ...
+    derivatives)
+% interior-point is required to accept a user-supplied HessianFcn
+if ~strcmpi(optimizerOptions.Algorithm, 'interior-point')
+    fprintf(['NCP: use_casadi requires the interior-point algorithm ' ...
+        '(for exact Hessian support); overriding configured algorithm ' ...
+        '"%s".\n'], optimizerOptions.Algorithm);
+end
+optimizerOptions.Algorithm = 'interior-point';
+optimizerOptions.SpecifyObjectiveGradient = true;
+optimizerOptions.SpecifyConstraintGradient = true;
+optimizerOptions.HessianFcn = derivatives.hessianFcn;
+% UseParallel only affects finite-difference gradient
+optimizerOptions.UseParallel = false;
+end
+
+function [c, ceq] = nonlinearConstraints(values, inputs, normalizationTarget)
+if inputs.enforce_bilateral_symmetry
+    weightsPart = values(1:inputs.numWeightsPerGroup(1));
+    values = [weightsPart; values];
+end
+
+[weights, ~, ~] = findSynergyWeightsAndCommands(values, inputs);
+c = [];
+% Equality constraints: magnitude normalization per synergy
+if inputs.enforce_bilateral_symmetry
+    nSyn1 = inputs.synergyGroups{1}.numSynergies;
+    ceq = sum(weights(1:nSyn1,:).^2, 2) - normalizationTarget(1:nSyn1);
+else
+    ceq = sum(weights.^2, 2) - normalizationTarget;
 end
 end

@@ -84,11 +84,14 @@ for i=1:length(markerNamesFields)
     markerPositions.(markerNamesFields{i}) = zeros(3, length(time));
 end
 
-for i=1:length(time)
+coords = cell(1, length(coordinatesOfInterest));
+for j = 1:length(coordinatesOfInterest)
+    coords{j} = model.getCoordinateSet().get(coordinatesOfInterest(j));
+end
+for i = 1:length(time)
     state.setTime(time(i));
-    for j=1:length(coordinatesOfInterest)
-        model.getCoordinateSet().get(coordinatesOfInterest(j)). ...
-            setValue(state, experimentalJointKinematics(j, i));
+    for j = 1:length(coordinatesOfInterest)
+        coords{j}.setValue(state, experimentalJointKinematics(j, i));
     end
     for j=1:length(functions)
         footPosition(j, i) = functions{j}(model, state);

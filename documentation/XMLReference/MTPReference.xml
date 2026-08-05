@@ -20,6 +20,15 @@
 		<missing_emg_channel_muscle_groups>missing_emg_group_1 missing_emg_group_2 missing_emg_group_3</missing_emg_channel_muscle_groups>
 		<!--A space-separated list of collected EMG channel names.-->
 		<collected_emg_channel_muscle_groups>emg_channel_1 emg_channel_2 emg_channel_3</collected_emg_channel_muscle_groups>
+		<!--*Optional* Flag indicating whether the initial guess should be seeded from the given osimx file for muscles that are in both the osimx file and the MTP run-->
+		<parse_initial_guess_from_osimx>false</parse_initial_guess_from_osimx>
+		<!--*Optional* Specify the initial guess for MTP design variables-->
+		<electromechanical_delay_initial_guess>0.5</electromechanical_delay_initial_guess>
+		<activation_time_constant_initial_guess>1.5</activation_time_constant_initial_guess>
+		<activation_nonlinearity_initial_guess>0.05</activation_nonlinearity_initial_guess>
+		<emg_scale_factor_initial_guess>0.5</emg_scale_factor_initial_guess>
+		<optimal_fiber_length_scale_factor_initial_guess>1</optimal_fiber_length_scale_factor_initial_guess>
+		<tendon_slack_length_scale_factor_initial_guess>1</tendon_slack_length_scale_factor_initial_guess>
 		<!--Properties that describe MuscleTendonLengthInitialization settings.-->
 		<MuscleTendonLengthInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization.-->

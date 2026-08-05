@@ -1,11 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% Top-level entry point for Neural Control Personalization. Parses the
+% settings XML, optionally runs Muscle Tendon Length Initialization for
+% a warm-started initial guess, runs the NCP optimization, and saves
+% synergy weights/commands, combined activations, and modeled joint
+% moments to the results directory.
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
+% (string) -> (None)
+% Runs Neural Control Personalization from a settings file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -43,6 +45,12 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
+if ~exist(resultsDirectory, "dir")
+    mkdir(resultsDirectory);
+end
+[~, fname, fext] = fileparts(settingsFileName);
+copyfile(settingsFileName, fullfile(resultsDirectory, fname + fext));
+outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
 if ~isempty(app)
     app.ParsingLabel.Enable = 'off';
 end
@@ -60,6 +68,10 @@ if isstruct(precalInputs)
         app.RunningMTLILabel.Enable = 'off';
     end
 end
+
+[optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
+[synergyWeights, synergyCommands, ~] = findSynergyWeightsAndCommands( ...
+    optimizedValues, inputs);
 if ~isempty(app)
     app.RunningNCPLabel.Enable = 'on';
 end
@@ -87,11 +99,6 @@ if ~isempty(app)
 end
 fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
 diary off
-try
-    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
-catch
-end
 end
 
 function [combinedActivations, synergyActivations] = ...
@@ -114,11 +121,8 @@ end
 
 function muscleJointMoments = calcFinalMuscleJointMoments(inputs, ...
     activations)
-[normalizedFiberLengths, normalizedFiberVelocities] = ...
-    calcNormalizedMuscleFiberLengthsAndVelocities( ...
-    inputs, inputs.optimalFiberLengthScaleFactors, ...
-    inputs.tendonSlackLengthScaleFactors);
 muscleJointMoments = calcMuscleJointMoments(inputs, ...
-    activations, normalizedFiberLengths, ...
-    normalizedFiberVelocities);
+    activations, inputs.normalizedFiberLengths, ...
+    inputs.normalizedFiberVelocities);
+
 end

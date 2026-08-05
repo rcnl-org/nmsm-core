@@ -43,7 +43,7 @@ function error = calculateFrameSquaredError(ikSolver)
 % previous version. 
 persistent arrayDouble
 numMarkers = ikSolver.getNumMarkersInUse();
-if isempty(arrayDouble)
+if isempty(arrayDouble) || arrayDouble.size() ~= numMarkers
     arrayDouble = org.opensim.modeling.SimTKArrayDouble(numMarkers, 0.0);
 end
 ikSolver.computeCurrentMarkerErrors(arrayDouble);
@@ -53,4 +53,5 @@ for i = 1 : numMarkers
 end
 error = error / sqrt(length(error));
 end
+
 
