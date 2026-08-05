@@ -34,8 +34,18 @@
 		<joint_jerk_minimum_range>0</joint_jerk_minimum_range>
 		<!--*Optional* Default is false.-->
 		<use_control_derivatives>false</use_control_derivatives>
-		<!--*Optional* Default is false.-->
-		<use_jerk>false</use_jerk>
+		<!--*Optional* Default is false. Treats jerk as a control, making accelerations states.-->
+		<use_jerk_controls>false</use_jerk_controls>
+		<!--*Optional* Default is false. Divides each objective contribution by the number of terms of its type.-->
+		<normalize_cost_by_term_type>false</normalize_cost_by_term_type>
+		<!--*Optional* Default is false. Adds first order control dynamics filter states. Required for the control derivative range settings below to have any effect.-->
+		<use_first_order_control_dynamics_filter>false</use_first_order_control_dynamics_filter>
+		<!--*Optional* Default is 1. The time constant of the first order control dynamics filter.-->
+		<first_order_control_dynamics_filter_time_constant>1</first_order_control_dynamics_filter_time_constant>
+		<!--*Optional* Default is 6. B-spline cutoff frequency used when smoothing experimental data.-->
+		<experimental_bspline_cutoff_frequency>6</experimental_bspline_cutoff_frequency>
+		<!--*Optional* Design Optimization only. Two increasing numbers giving the allowable final time window. Omit the element to leave the final time unconstrained.-->
+		<final_time_range>0.5 1.5</final_time_range>
 		<check_field_spelling>true</check_field_spelling>
 		<RCNLTorqueController>
 			<!--Space separated list containing the coordinates controlled by the torque controller.-->

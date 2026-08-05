@@ -9,7 +9,11 @@
 % Values are shown as text so that lists such as "x y z" survive being
 % displayed and edited.
 %
-% (struct, Table) -> ()
+% A non empty addRowText appends a trailing invitation row, the way
+% updateTaskListTableGui does, so a caller that allows new parameters has
+% somewhere for the user to type a name.
+%
+% (struct, Table, string) -> ()
 % Fills a parameter GUI table from a struct of parameters
 
 % ----------------------------------------------------------------------- %
@@ -33,7 +37,10 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function updateMiscParameterTableGui(parameters, uiTable)
+function updateMiscParameterTableGui(parameters, uiTable, addRowText)
+if nargin < 3
+    addRowText = "";
+end
 if isempty(parameters) || ~isstruct(parameters)
     parameters = struct();
 end
@@ -41,6 +48,10 @@ options = string(fieldnames(parameters));
 values = strings(length(options), 1);
 for i = 1 : length(options)
     values(i) = formatParameterValue(parameters.(options(i)));
+end
+if ~strcmp(addRowText, "")
+    options(end + 1) = addRowText;
+    values(end + 1) = "";
 end
 uiTable.Data = table(options, values);
 end

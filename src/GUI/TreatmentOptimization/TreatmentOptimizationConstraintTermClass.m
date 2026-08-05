@@ -52,8 +52,10 @@ classdef TreatmentOptimizationConstraintTermClass < handle
         miscParams = struct();
     end
 
-    properties (Constant, Access = private)
-        % Elements handled explicitly; everything else is a misc parameter
+    properties (Constant, Access = public)
+        % Elements handled explicitly; everything else is a misc parameter.
+        % Public so the GUI can refuse a user defined term a parameter name
+        % that would collide with one of them.
         knownElements = ["Attributes" "is_enabled" "type" "max_error" ...
             "min_error" "max_value" "min_value"]
     end

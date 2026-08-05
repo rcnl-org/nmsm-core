@@ -1,13 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Copies the numeric settings named by a class's parameterNames constant
-% out of a settings struct and onto the object. Shared by the Treatment
-% Optimization controller and muscle model classes, which all expose the
-% same parameterNames contract that updateParameterTableGui relies on.
-% Values that do not parse as numbers are left at whatever the object
-% already holds, so a malformed file cannot blank a setting.
+% Reports whether the parameter at an index is stored as the text 'true' or
+% 'false' rather than as a number. A class opts a parameter in by listing it
+% in a booleanParameterNames constant; a class without that property is all
+% numeric, so nothing else has to change.
 %
-% (handle, struct) -> (None)
+% The backend compares these settings as text -- getBooleanLogicFromField is
+% strcmp(field.Text, 'true') and parseMuscleSettings uses strcmpi(text,
+% "true") -- so a numeric 1 would be read as false.
+%
+% (handle, integer) -> (boolean)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -31,25 +33,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function loadRcnlParametersFromStruct(object, settings)
-for i = 1 : length(object.parameterNames)
-    name = object.parameterNames(i);
-    if ~isfield(settings, name)
-        continue
-    end
-    % A boolean is stored as the text the backend compares against, so
-    % anything that is not true or false leaves the default in place --
-    % the same rule the NaN guard below applies to the numeric settings
-    if isRcnlParameterBoolean(object, i)
-        text = lower(strtrim(toGuiText(settings.(name))));
-        if any(strcmp(["true" "false"], text))
-            object.(name) = convertStringsToChars(text);
-        end
-        continue
-    end
-    number = toGuiNumber(settings.(name));
-    if ~isnan(number)
-        object.(name) = number;
-    end
+function isBoolean = isRcnlParameterBoolean(object, index)
+isBoolean = false;
+if ~isprop(object, 'booleanParameterNames')
+    return
 end
+isBoolean = any(strcmp(object.booleanParameterNames, ...
+    object.parameterNames(index)));
 end

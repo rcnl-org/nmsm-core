@@ -149,7 +149,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         SolverSettingsFileSearchButton  matlab.ui.control.Button
         SolverSettingsFileStatus        matlab.ui.control.Image
         AdvancedTab                     matlab.ui.container.Tab
-        MiscellaneousCostTermParametersStatus_2  matlab.ui.control.Image
+        AdvancedParamsStatus  matlab.ui.control.Image
         AdvancedParamsTable             matlab.ui.control.Table
         TreatmentOptimizationLabel      matlab.ui.control.Label
         ContextMenu                     matlab.ui.container.ContextMenu
@@ -160,6 +160,12 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         ConstraintTermRenameMenu        matlab.ui.container.Menu
         ConstraintTermCopyMenu          matlab.ui.container.Menu
         ConstraintTermDeleteMenu        matlab.ui.container.Menu
+        MiscCostParameterContextMenu    matlab.ui.container.ContextMenu
+        MiscCostParameterRenameMenu     matlab.ui.container.Menu
+        MiscCostParameterDeleteMenu     matlab.ui.container.Menu
+        MiscConstraintParameterContextMenu  matlab.ui.container.ContextMenu
+        MiscConstraintParameterRenameMenu   matlab.ui.container.Menu
+        MiscConstraintParameterDeleteMenu   matlab.ui.container.Menu
     end
 
 
@@ -203,7 +209,10 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         MuscleController handle = RCNLMuscleControllerClass();
         MuscleModel handle = RCNLMuscleModelClass();
 
-        advancedSettingValues double = [];
+        % Text, not numbers, because these mix true/false with scalars,
+        % with an optional blank, and with a pair of numbers -- the same
+        % reason gpopsSettingValues is text
+        advancedSettingValues string = [];
 
         % The optimal control solver settings live in their own XML file,
         % referenced from the tool settings file. Values are held as text
@@ -231,9 +240,17 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         costTermsValid logical = false;
         constraintTermsValid logical = true;  % An empty set is allowed
         solverSettingsValid logical = false;
+        advancedSettingsValid logical = true;
     end
 
     properties (Constant, Access = private)
+        % Trailing invitation row on the misc parameter tables, shown only
+        % for user defined terms
+        miscParameterAddRowText = "Add a new parameter"
+
+        % Written as direct children of the tool element. The defaults are
+        % the alternates the parsers fall back to, so a generated file
+        % behaves exactly like omitting every element.
         advancedSettingNames = ...
             ["joint_position_range_scale_factor"
             "joint_velocity_range_scale_factor"
@@ -242,17 +259,68 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             "joint_position_minimum_range"
             "joint_velocity_minimum_range"
             "joint_acceleration_minimum_range"
-            "joint_jerk_minimum_range"]
+            "joint_jerk_minimum_range"
+            "experimental_bspline_cutoff_frequency"
+            "first_order_control_dynamics_filter_time_constant"
+            "use_first_order_control_dynamics_filter"
+            "use_jerk_controls"
+            "normalize_cost_by_term_type"
+            "final_time_range"]
 
+        % Text so that true/false reach getBooleanLogicFromField as the
+        % literal it compares against; a numeric 1 would read as false
         defaultAdvancedSettingValues = ...
-            [2
-            1.5
-            1
-            1
-            0
-            0
-            0
-            0]
+            ["2"
+            "1.5"
+            "1"
+            "1"
+            "0"
+            "0"
+            "0"
+            "0"
+            "6"
+            "1"
+            "false"
+            "false"
+            "false"
+            ""]
+
+        % How each value is validated. The minimum_range settings default
+        % to 0, so they are nonnegative rather than positive. "range" is
+        % optional and blank means the element is not written at all.
+        advancedSettingKinds = ...
+            ["positive"
+            "positive"
+            "positive"
+            "positive"
+            "nonnegative"
+            "nonnegative"
+            "nonnegative"
+            "nonnegative"
+            "positive"
+            "positive"
+            "boolean"
+            "boolean"
+            "boolean"
+            "range"]
+
+        % "" means every tool reads the setting. Only parseDesignSettings,
+        % in parseDesignOptimizationSettingsTree, reads final_time_range.
+        advancedSettingTools = ...
+            [""
+            ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            ""
+            "Design Optimization"]
 
         % The GPOPS solver settings, in the order GpopsReference.xml uses.
         % The defaults are the alternates parseGpopsSolverSettings falls
@@ -368,6 +436,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         gpopsSettingsListener
     end
 
+    
     methods (Access = private) % listener methods
         function makeListeners(app)
             app.InputModelFileListener = addlistener(app, ...
@@ -549,13 +618,32 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.validateCostTerms();
             app.refreshConstraintTermTypeItems();
             app.validateConstraintTerms();
+            % final_time_range is only read by Design Optimization, so the
+            % advanced table gains and loses that row with the tool
+            app.refreshAdvancedSettingsTable();
             app.updateTabControls();
         end
 
+        % Row order follows advancedSettingNames, minus any setting the
+        % selected tool does not read, so the table never offers a setting
+        % that would do nothing
+        function rows = advancedSettingRows(app)
+            keep = arrayfun(@(i)app.isAdvancedSettingUsed(i), ...
+                (1 : numel(app.advancedSettingNames))');
+            rows = find(keep);
+        end
+
+        function used = isAdvancedSettingUsed(app, index)
+            tool = app.advancedSettingTools(index);
+            used = strcmp(tool, "") || strcmp(tool, app.selected_tool);
+        end
+
         function refreshAdvancedSettingsTable(app)
-            Options = app.advancedSettingNames;
-            Values = arrayfun(@formatGuiNumber, app.advancedSettingValues);
+            rows = app.advancedSettingRows();
+            Options = app.advancedSettingNames(rows);
+            Values = app.advancedSettingValues(rows);
             app.AdvancedParamsTable.Data = table(Options, Values);
+            app.validateAdvancedSettings();
         end
 
         function solverSettingsFileListenerFunction(app)
@@ -728,6 +816,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.validateCostTerms();
             app.validateConstraintTerms();
             app.validateSolverSettings();
+            app.validateAdvancedSettings();
             app.updateTabControls();
         end
 
@@ -1107,9 +1196,11 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             termsReady = inputsAreReady && app.controllersReady();
             app.CostTermsButton.Enable = termsReady;
             app.ConstraintTermsButton.Enable = termsReady;
+            % The Advanced tab is always open, so nothing else stops a bad
+            % advanced value from reaching the solver
             app.RunButton.Enable = termsReady && app.costTermsValid && ...
                 app.constraintTermsValid && app.solverSettingsValid && ...
-                app.muscleActivationsValid;
+                app.muscleActivationsValid && app.advancedSettingsValid;
         end
 
         function list = filteredSelectionList(~, modelList, trackedList)
@@ -1247,6 +1338,189 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             end
         end
 
+        % Fills a misc parameter table and puts it in the right editing
+        % mode. A user defined term is described entirely by these
+        % parameters, so it gets an invitation row and an editable name
+        % column; every other type shows exactly what its metadata
+        % declares. ColumnEditable is per column rather than per row, so
+        % the rows that must not change are grayed here and refused in
+        % applyMiscParameterEdit.
+        function refreshMiscParameterTable(app, uiTable, term, ...
+                typeParams, statusIcon)
+            if isempty(term)
+                uiTable.Data = table();
+                uiTable.ColumnEditable = [false true];
+                removeStyle(uiTable);
+                setGuiFieldStatus([], statusIcon, "none");
+                return
+            end
+            isUserDefined = strcmp(term.type, "user_defined");
+            addRowText = "";
+            if isUserDefined
+                addRowText = app.miscParameterAddRowText;
+            end
+            updateMiscParameterTableGui(term.miscParams, uiTable, ...
+                addRowText);
+            uiTable.ColumnEditable = [isUserDefined true];
+            % Styles are index based and outlive a Data assignment, so the
+            % old ones have to go before a shorter list is styled
+            removeStyle(uiTable);
+            if ~isUserDefined
+                setGuiFieldStatus([], statusIcon, "none");
+                return
+            end
+            params = string(fieldnames(term.miscParams));
+            for i = 1 : numel(params)
+                if any(strcmp(typeParams, params(i)))
+                    addStyle(uiTable, uistyle('FontColor', ...
+                        [0.4 0.4 0.4]), 'cell', [i 1]);
+                end
+            end
+            addStyle(uiTable, uistyle('FontColor', [0.4 0.4 0.4], ...
+                'FontAngle', 'italic'), 'row', numel(params) + 1);
+            app.showMiscParameterStatus(statusIcon, term.miscParams);
+        end
+
+        % toStruct drops a parameter with no value, so a blank one would
+        % vanish on save. Say so rather than lose it quietly. This is
+        % display only; a half typed parameter must not lock the Run
+        % button the way a validation failure would.
+        function showMiscParameterStatus(~, icon, miscParams)
+            names = string(fieldnames(miscParams));
+            blank = string([]);
+            for i = 1 : numel(names)
+                if isEmptyStringList(miscParams.(names(i)))
+                    blank(end + 1) = "  - " + names(i); %#ok<AGROW>
+                end
+            end
+            if isempty(blank)
+                setGuiFieldStatus([], icon, "none");
+            else
+                setGuiFieldStatus([], icon, "required", ...
+                    ["These parameters have no value and will not be " + ...
+                    "saved:", blank]);
+            end
+        end
+
+        % isvarname covers both the dynamic field name requirement and
+        % what makes a legal XML element name, so one test does for both
+        function problem = miscParameterNameProblem(~, name, existing, ...
+                reserved)
+            problem = "";
+            if isEmptyStringList(name)
+                problem = "A parameter name cannot be blank. Use " + ...
+                    "Delete from the right click menu to remove a " + ...
+                    "parameter.";
+            elseif ~isvarname(char(name))
+                problem = """" + name + """ is not a valid parameter " + ...
+                    "name. Use a letter followed by letters, digits, " + ...
+                    "or underscores.";
+            elseif any(strcmp(existing, name))
+                problem = "A parameter named """ + name + """ " + ...
+                    "already exists.";
+            elseif any(strcmp(reserved, name))
+                problem = """" + name + """ is reserved by the " + ...
+                    "settings file format and cannot be used as a " + ...
+                    "parameter name.";
+            end
+        end
+
+        % Drops named parameters, used to stop the parameters a type
+        % declared from following the term to a type that does not
+        function s = withoutParams(~, s, names)
+            for i = 1 : numel(names)
+                if isfield(s, names(i))
+                    s = rmfield(s, names(i));
+                end
+            end
+        end
+
+        % A struct field cannot be renamed in place, and rebuilding in
+        % field order is what keeps the table from reshuffling
+        function s = renamedStructField(~, s, oldName, newName)
+            names = string(fieldnames(s));
+            rebuilt = struct();
+            for i = 1 : numel(names)
+                if strcmp(names(i), oldName)
+                    rebuilt.(newName) = s.(names(i));
+                else
+                    rebuilt.(names(i)) = s.(names(i));
+                end
+            end
+            s = rebuilt;
+        end
+
+        % Applies one misc table edit and returns the message to show when
+        % it is refused. The caller always re-renders, which is what
+        % restores the add row and undoes a rejected edit.
+        function problem = applyMiscParameterEdit(app, term, event, ...
+                typeParams, reserved)
+            problem = "";
+            params = string(fieldnames(term.miscParams));
+            row = event.Indices(1);
+            column = event.Indices(2);
+            newData = strtrim(string(event.NewData));
+            isAddRow = row > numel(params);
+            if column == 2
+                % The add row has no parameter to hold a value yet
+                if ~isAddRow
+                    term.miscParams.(params(row)) = newData;
+                end
+                return
+            end
+            if isAddRow
+                % Clearing the invitation text is not an attempt to add
+                if isEmptyStringList(newData)
+                    return
+                end
+                problem = app.miscParameterNameProblem(newData, params, ...
+                    reserved);
+                if strcmp(problem, "")
+                    term.miscParams.(newData) = "";
+                end
+                return
+            end
+            if strcmp(newData, params(row))
+                return
+            end
+            if any(strcmp(typeParams, params(row)))
+                problem = """" + params(row) + """ is part of the " + ...
+                    term.type + " term type and cannot be renamed.";
+                return
+            end
+            problem = app.miscParameterNameProblem(newData, params, ...
+                reserved);
+            if strcmp(problem, "")
+                term.miscParams = app.renamedStructField( ...
+                    term.miscParams, params(row), newData);
+            end
+        end
+
+        function reportMiscParameterProblem(app, message)
+            uialert(app.UIFigure, string(message), ...
+                "Invalid parameter name");
+        end
+
+        function row = selectedMiscRow(~, uiTable)
+            row = 0;
+            if ~isempty(uiTable.Selection)
+                row = uiTable.Selection(1);
+            end
+        end
+
+        % Only a parameter the user added can be renamed or deleted: not
+        % the add row, not the ones the type declares, and nothing at all
+        % on a built in type
+        function editable = isEditableMiscRow(~, term, typeParams, row)
+            editable = false;
+            if isempty(term) || ~strcmp(term.type, "user_defined")
+                return
+            end
+            params = string(fieldnames(term.miscParams));
+            editable = row >= 1 && row <= numel(params) && ...
+                ~any(strcmp(typeParams, params(row)));
+        end
+
         % Incomplete terms are blue, terms that cannot work at all are red
         function highlightTermRows(~, listTable, incomplete, broken)
             for i = incomplete
@@ -1350,6 +1624,9 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         % Applies a type's metadata to a term, reseeding the component
         % list and the parameters the new type accepts
         function applyCostTermType(app, costTerm, type)
+            % Read before the type changes: these belong to the type being
+            % left, not to the user
+            previousParams = app.costTermTypeParams(costTerm);
             costTerm.type = type;
             metadata = app.costTermMetadataForType(type);
             if isempty(metadata)
@@ -1363,6 +1640,16 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             costTerm.uses_error_center = metadata.usesErrorCenter;
             costTerm.componentList = string([]);
             existing = costTerm.miscParams;
+            % A user defined term's extra parameters are the user's, so
+            % they survive a round trip through another type. A built in
+            % type takes only what its metadata declares, because the name
+            % column is locked there and an extra could never be removed.
+            if strcmp(type, "user_defined")
+                costTerm.miscParams = app.mergeMiscParams( ...
+                    metadata.miscParams, app.withoutParams(existing, ...
+                    setdiff(previousParams, metadata.miscParams)));
+                return
+            end
             costTerm.miscParams = struct();
             for i = 1 : numel(metadata.miscParams)
                 param = metadata.miscParams(i);
@@ -1404,7 +1691,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 % Value on its own is rejected once Items is populated
                 app.CostTermTypeDropDown.Items = {};
                 app.CostTermComponentListTextArea.Value = '';
-                app.MiscellaneousCostTermParametersTable.Data = table();
+                app.refreshMiscCostParameterTable();
                 app.setCostTermDetailsEnabled(false, false, false);
                 setGuiFieldStatus([], app.CostTermComponentListStatus, ...
                     "none");
@@ -1419,8 +1706,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.MaxAllowableErrorEditField.Value = ...
                 costTerm.max_allowable_error;
             app.ErrorCenterEditField.Value = costTerm.error_center;
-            updateMiscParameterTableGui(costTerm.miscParams, ...
-                app.MiscellaneousCostTermParametersTable);
+            app.refreshMiscCostParameterTable();
             % User defined terms are configured entirely through the
             % miscellaneous parameters table
             isUserDefined = strcmp(costTerm.type, "user_defined");
@@ -1438,6 +1724,39 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.CostTermComponentListEditButton.Enable = componentsOn;
             app.MaxAllowableErrorEditField.Enable = errorOn;
             app.ErrorCenterEditField.Enable = errorCenterOn;
+        end
+
+        % The parameters a type declares are exactly the ones the user may
+        % not rename or delete. Reading them from the metadata keeps this
+        % right if generateCostTermStruct ever changes the set.
+        function names = costTermTypeParams(app, costTerm)
+            names = string([]);
+            if isempty(costTerm)
+                return
+            end
+            metadata = app.costTermMetadataForType(costTerm.type);
+            if ~isempty(metadata)
+                names = string(metadata.miscParams);
+            end
+        end
+
+        % Names a misc parameter cannot take, because the term class
+        % handles them itself and loadFromStruct would never give them back
+        function reserved = costTermReservedNames(~, costTerm)
+            reserved = [TreatmentOptimizationCostTermClass.knownElements, ...
+                "name"];
+            if ~isempty(costTerm)
+                reserved = [reserved, string(costTerm.componentElement)];
+            end
+            reserved = reserved(~strcmp(reserved, ""));
+        end
+
+        function refreshMiscCostParameterTable(app)
+            costTerm = app.selectedCostTerm();
+            app.refreshMiscParameterTable( ...
+                app.MiscellaneousCostTermParametersTable, costTerm, ...
+                app.costTermTypeParams(costTerm), ...
+                app.MiscellaneousCostTermParametersStatus);
         end
 
         function refreshCostTermTypeItems(app)
@@ -1631,6 +1950,9 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         % Applies a type's metadata to a term, reseeding the component
         % list and the parameters the new type accepts
         function applyConstraintTermType(app, constraintTerm, type)
+            % Read before the type changes: these belong to the type being
+            % left, not to the user
+            previousParams = app.constraintTermTypeParams(constraintTerm);
             constraintTerm.type = type;
             metadata = app.constraintTermMetadataForType(type);
             constraintTerm.componentList = string([]);
@@ -1641,6 +1963,16 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             end
             constraintTerm.componentElement = metadata.componentElement;
             existing = constraintTerm.miscParams;
+            % A user defined term's extra parameters are the user's, so
+            % they survive a round trip through another type. A built in
+            % type takes only what its metadata declares, because the name
+            % column is locked there and an extra could never be removed.
+            if strcmp(type, "user_defined")
+                constraintTerm.miscParams = app.mergeMiscParams( ...
+                    metadata.miscParams, app.withoutParams(existing, ...
+                    setdiff(previousParams, metadata.miscParams)));
+                return
+            end
             constraintTerm.miscParams = struct();
             for i = 1 : numel(metadata.miscParams)
                 param = metadata.miscParams(i);
@@ -1684,8 +2016,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 % Value on its own is rejected once Items is populated
                 app.ConstraintTermTypeDropDown.Items = {};
                 app.ConstraintTermComponentListTextArea.Value = '';
-                app.MiscellaneousConstraintTermParametersTable.Data = ...
-                    table();
+                app.refreshMiscConstraintParameterTable();
                 app.setConstraintTermDetailsEnabled(false, false);
                 setGuiFieldStatus([], ...
                     app.ConstraintTermComponentListStatus, "none");
@@ -1701,8 +2032,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 strjoin(constraintTerm.componentList, ", ");
             app.MaxErrorField.Value = constraintTerm.max_error;
             app.MinErrorEditField.Value = constraintTerm.min_error;
-            updateMiscParameterTableGui(constraintTerm.miscParams, ...
-                app.MiscellaneousConstraintTermParametersTable);
+            app.refreshMiscConstraintParameterTable();
 
             % A user defined term is described entirely by its parameters
             isUserDefined = strcmp(constraintTerm.type, "user_defined");
@@ -1721,6 +2051,40 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.ConstraintTermComponentListEditButton.Enable = componentsOn;
             app.MaxErrorField.Enable = errorsOn;
             app.MinErrorEditField.Enable = errorsOn;
+        end
+
+        % The parameters a type declares are exactly the ones the user may
+        % not rename or delete
+        function names = constraintTermTypeParams(app, constraintTerm)
+            names = string([]);
+            if isempty(constraintTerm)
+                return
+            end
+            metadata = app.constraintTermMetadataForType( ...
+                constraintTerm.type);
+            if ~isempty(metadata)
+                names = string(metadata.miscParams);
+            end
+        end
+
+        function reserved = constraintTermReservedNames(~, constraintTerm)
+            reserved = [ ...
+                TreatmentOptimizationConstraintTermClass.knownElements, ...
+                "name"];
+            if ~isempty(constraintTerm)
+                reserved = [reserved, ...
+                    string(constraintTerm.componentElement)];
+            end
+            reserved = reserved(~strcmp(reserved, ""));
+        end
+
+        function refreshMiscConstraintParameterTable(app)
+            constraintTerm = app.selectedConstraintTerm();
+            app.refreshMiscParameterTable( ...
+                app.MiscellaneousConstraintTermParametersTable, ...
+                constraintTerm, ...
+                app.constraintTermTypeParams(constraintTerm), ...
+                app.MiscellaneousConstraintTermParametersStatus);
         end
 
         function refreshConstraintTermTypeItems(app)
@@ -1880,6 +2244,67 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             end
         end
 
+        % validateAdvancedSettingsGui is not reused here: it rejects
+        % anything <= 0, but the minimum_range settings legitimately
+        % default to 0, and JMP/MTP/NCP depend on that rule unchanged.
+        function validateAdvancedSettings(app)
+            removeStyle(app.AdvancedParamsTable);
+            app.AdvancedParamsTable.Tooltip = '';
+            rows = app.advancedSettingRows();
+            messages = strings(0, 1);
+            for row = 1 : numel(rows)
+                [isValid, reason] = app.advancedSettingProblem(rows(row));
+                if isValid
+                    continue
+                end
+                % addStyle indexes the view, so the loop counter is used
+                % here rather than the index into advancedSettingNames
+                addStyle(app.AdvancedParamsTable, ...
+                    uistyle('BackgroundColor', [1.00 0.67 0.67]), ...
+                    'row', row);
+                messages(end + 1) = app.advancedSettingNames(rows(row)) + ...
+                    ": " + reason; %#ok<AGROW>
+            end
+            app.advancedSettingsValid = isempty(messages);
+            if app.advancedSettingsValid
+                setGuiFieldStatus([], app.AdvancedParamsStatus, "none");
+                return
+            end
+            message = strjoin(messages, newline);
+            app.AdvancedParamsTable.Tooltip = message;
+            setGuiFieldStatus([], app.AdvancedParamsStatus, "error", ...
+                message);
+        end
+
+        function [isValid, reason] = advancedSettingProblem(app, index)
+            isValid = true;
+            reason = "";
+            value = strtrim(app.advancedSettingValues(index));
+            switch app.advancedSettingKinds(index)
+                case "boolean"
+                    % getBooleanLogicFromField compares the text to 'true'
+                    isValid = any(strcmp(["true" "false"], value));
+                    reason = "must be true or false";
+                case "range"
+                    if strlength(value) == 0
+                        return  % optional; blank is not written at all
+                    end
+                    numbers = str2double(split(value))';
+                    % (1) is the lower final time bound, (2) becomes maxTime
+                    isValid = numel(numbers) == 2 && ...
+                        all(isfinite(numbers)) && numbers(2) > numbers(1);
+                    reason = "must be two increasing numbers, or blank";
+                case "positive"
+                    number = str2double(value);
+                    isValid = ~isnan(number) && number > 0;
+                    reason = "must be a positive number";
+                case "nonnegative"
+                    number = str2double(value);
+                    isValid = ~isnan(number) && number >= 0;
+                    reason = "must be zero or a positive number";
+            end
+        end
+
         function validateSolverSettings(app)
             removeStyle(app.SolverSettingsTable);
             if ~strcmp(app.solver_type, "GPOPS-II")
@@ -1977,9 +2402,21 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             settingsTree.trial_name = app.trial_prefix;
             settingsTree.states_coordinate_list = app.coordinate_list;
 
+            % Written as text so a boolean reaches getBooleanLogicFromField
+            % as the literal 'true'/'false' it compares against. A blank
+            % optional setting is omitted entirely: an empty or NaN
+            % final_time_range would make isfield(inputs,"finalTimeRange")
+            % true and corrupt the time bounds in
+            % setupTreatmentOptimizationBounds.
             for i = 1 : length(app.advancedSettingNames)
-                settingsTree.(app.advancedSettingNames(i)) = ...
-                    app.advancedSettingValues(i);
+                if ~app.isAdvancedSettingUsed(i)
+                    continue
+                end
+                value = strtrim(app.advancedSettingValues(i));
+                if strlength(value) == 0
+                    continue
+                end
+                settingsTree.(app.advancedSettingNames(i)) = value;
             end
 
             % A controller is on exactly when its element is present
@@ -2113,14 +2550,38 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             for i = 1 : length(app.advancedSettingNames)
                 name = app.advancedSettingNames(i);
                 if ~isfield(settingsTree, name)
+                    continue  % an older file simply keeps the default
+                end
+                text = app.advancedSettingText(settingsTree.(name));
+                if strlength(text) == 0
                     continue
                 end
-                number = toGuiNumber(settingsTree.(name));
-                if ~isnan(number)
-                    values(i) = number;
+                % getBooleanLogicFromField is case sensitive, so a file
+                % holding True was being read as false by the backend.
+                % Normalizing here makes it mean what the user wrote.
+                if strcmp(app.advancedSettingKinds(i), "boolean") && ...
+                        any(strcmpi(["true" "false"], text))
+                    text = lower(text);
                 end
+                values(i) = text;
             end
             app.advancedSettingValues = values;
+        end
+
+        % formatXmlDataForGui has already turned "0.5 1.5" into a double
+        % array and "false" into a string, so both shapes arrive here and
+        % both have to come back out as one piece of text
+        function text = advancedSettingText(~, value)
+            if isstruct(value) && isfield(value, 'Text')
+                value = value.Text;
+            end
+            if isnumeric(value) || islogical(value)
+                parts = arrayfun(@(v)string(num2str(v, '%.10g')), ...
+                    double(value(:))');
+            else
+                parts = string(value(:))';
+            end
+            text = strtrim(strjoin(parts, " "));
         end
 
         function applyControllerSettings(app, settingsTree)
@@ -2290,14 +2751,16 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             end
             app.resetAllFields();
             app.currentSettingsFile = settingsFileName;
+            % Stored paths are relative to the settings file's own
+            % directory, so work from there, as MTP/NCP/JMP do. Going
+            % through GetFullPath first keeps fileparts from returning ""
+            % when the caller passes a bare file name, which cd rejects.
+            app.settingsDirectory = string(fileparts( ...
+                GetFullPath(settingsFileName)));
+            cd(app.settingsDirectory);
             settingsTree = loadGuiSettings(settingsFileName, toolElement);
 
             app.selected_tool = app.toolDisplayName(toolElement);
-            % Stored paths are relative to the settings file. Resolving
-            % them here rather than changing directory keeps the fields
-            % displaying against the same base they were saved from.
-            app.settingsDirectory = string(fileparts( ...
-                GetFullPath(settingsFileName)));
             app.applyInputSettings(settingsTree);
             app.applyAdvancedSettings(settingsTree);
             app.applyControllerSettings(settingsTree);
@@ -2734,14 +3197,38 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
 
         % Cell edit callback: SurrogateModelAdvancedSettingsTable
         function SurrogateModelAdvancedSettingsTableCellEdit(app, event)
-            app.MuscleModel.setParameterValueByIndex( ...
-                event.Indices(1), str2double(event.NewData));
+            index = event.Indices(1);
+            if isRcnlParameterBoolean(app.MuscleModel, index)
+                text = lower(strtrim(string(event.NewData)));
+                if any(strcmp(["true" "false"], text))
+                    app.MuscleModel.setParameterValueByIndex(index, ...
+                        convertStringsToChars(text));
+                end
+            else
+                app.MuscleModel.setParameterValueByIndex(index, ...
+                    str2double(event.NewData));
+            end
+            % This table has no PostSet listener, so the redraw that snaps
+            % a rejected edit back has to be explicit
+            app.updateSurrogateModelAdvancedSettingsTable();
         end
 
         % Cell edit callback: AdvancedParamsTable
         function AdvancedParamsTableCellEdit(app, event)
-            app.advancedSettingValues(event.Indices(1)) = ...
-                str2double(event.NewData);
+            rows = app.advancedSettingRows();
+            % The table can hide a row, so the view index has to be mapped
+            % back onto advancedSettingNames
+            index = rows(event.Indices(1));
+            text = strtrim(string(event.NewData));
+            % Stored lower case whatever the user typed, because
+            % getBooleanLogicFromField compares against 'true' exactly
+            if strcmp(app.advancedSettingKinds(index), "boolean") && ...
+                    any(strcmpi(["true" "false"], text))
+                text = lower(text);
+            end
+            % Assigning the property fires PostSet, which redraws and
+            % revalidates, so a bad value is shown back and flagged
+            app.advancedSettingValues(index) = text;
         end
 
         % Selection changed function: CostTermsListTable
@@ -2827,12 +3314,15 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             if isempty(costTerm)
                 return
             end
-            params = fieldnames(costTerm.miscParams);
-            rowIndex = event.Indices(1);
-            if rowIndex > numel(params)
-                return
+            problem = app.applyMiscParameterEdit(costTerm, event, ...
+                app.costTermTypeParams(costTerm), ...
+                app.costTermReservedNames(costTerm));
+            % Re-rendering is what draws the add row below a new parameter
+            % and snaps a refused edit back to the stored name
+            app.refreshMiscCostParameterTable();
+            if ~strcmp(problem, "")
+                app.reportMiscParameterProblem(problem);
             end
-            costTerm.miscParams.(params{rowIndex}) = string(event.NewData);
             app.validateCostTerms();
             app.updateTabControls();
         end
@@ -2863,10 +3353,75 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.createCostTerm();
             copied = app.costTerms{app.costTermIndex};
             copied.loadFromStruct(source, componentElement);
+            % toStruct omits a parameter with no value, so refill the
+            % type's own parameters the way a loaded term is refilled
+            copied.miscParams = app.mergeMiscParams( ...
+                app.costTermTypeParams(copied), copied.miscParams);
             copied.name = "Copy of " + costTerm.name;
             copied.index = app.costTermIndex;
             app.updateCostTermsTable();
             app.showSelectedCostTerm();
+        end
+
+        % Context menu opening function: MiscCostParameterContextMenu
+        function MiscCostParameterContextMenuOpening(app, event)
+            costTerm = app.selectedCostTerm();
+            on = app.isEditableMiscRow(costTerm, ...
+                app.costTermTypeParams(costTerm), app.selectedMiscRow( ...
+                app.MiscellaneousCostTermParametersTable));
+            app.MiscCostParameterRenameMenu.Enable = on;
+            app.MiscCostParameterDeleteMenu.Enable = on;
+        end
+
+        % Menu selected function: MiscCostParameterRenameMenu
+        function MiscCostParameterRenameMenuSelected(app, event)
+            costTerm = app.selectedCostTerm();
+            row = app.selectedMiscRow( ...
+                app.MiscellaneousCostTermParametersTable);
+            % The selection can change between the menu opening and this,
+            % so the guard is repeated rather than trusted from Enable
+            if ~app.isEditableMiscRow(costTerm, ...
+                    app.costTermTypeParams(costTerm), row)
+                return
+            end
+            params = string(fieldnames(costTerm.miscParams));
+            answer = inputdlg("Rename parameter:", "Rename", [1 40], ...
+                {char(params(row))});
+            if isempty(answer)
+                return
+            end
+            newName = strtrim(string(answer{1}));
+            if strcmp(newName, params(row))
+                return
+            end
+            problem = app.miscParameterNameProblem(newName, params, ...
+                app.costTermReservedNames(costTerm));
+            if ~strcmp(problem, "")
+                app.reportMiscParameterProblem(problem);
+                return
+            end
+            costTerm.miscParams = app.renamedStructField( ...
+                costTerm.miscParams, params(row), newName);
+            app.refreshMiscCostParameterTable();
+            app.validateCostTerms();
+            app.updateTabControls();
+        end
+
+        % Menu selected function: MiscCostParameterDeleteMenu
+        function MiscCostParameterDeleteMenuSelected(app, event)
+            costTerm = app.selectedCostTerm();
+            row = app.selectedMiscRow( ...
+                app.MiscellaneousCostTermParametersTable);
+            if ~app.isEditableMiscRow(costTerm, ...
+                    app.costTermTypeParams(costTerm), row)
+                return
+            end
+            params = string(fieldnames(costTerm.miscParams));
+            costTerm.miscParams = rmfield(costTerm.miscParams, ...
+                params(row));
+            app.refreshMiscCostParameterTable();
+            app.validateCostTerms();
+            app.updateTabControls();
         end
 
         % Menu selected function: DeleteMenu
@@ -2960,13 +3515,15 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             if isempty(constraintTerm)
                 return
             end
-            params = fieldnames(constraintTerm.miscParams);
-            rowIndex = event.Indices(1);
-            if rowIndex > numel(params)
-                return
+            problem = app.applyMiscParameterEdit(constraintTerm, event, ...
+                app.constraintTermTypeParams(constraintTerm), ...
+                app.constraintTermReservedNames(constraintTerm));
+            % Re-rendering is what draws the add row below a new parameter
+            % and snaps a refused edit back to the stored name
+            app.refreshMiscConstraintParameterTable();
+            if ~strcmp(problem, "")
+                app.reportMiscParameterProblem(problem);
             end
-            constraintTerm.miscParams.(params{rowIndex}) = ...
-                string(event.NewData);
             app.validateConstraintTerms();
             app.updateTabControls();
         end
@@ -2997,10 +3554,76 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.createConstraintTerm();
             copied = app.constraintTerms{app.constraintTermIndex};
             copied.loadFromStruct(source, componentElement);
+            % toStruct omits a parameter with no value, so refill the
+            % type's own parameters the way a loaded term is refilled
+            copied.miscParams = app.mergeMiscParams( ...
+                app.constraintTermTypeParams(copied), copied.miscParams);
             copied.name = "Copy of " + constraintTerm.name;
             copied.index = app.constraintTermIndex;
             app.updateConstraintTermsTable();
             app.showSelectedConstraintTerm();
+        end
+
+        % Context menu opening function: MiscConstraintParameterContextMenu
+        function MiscConstraintParameterContextMenuOpening(app, event)
+            constraintTerm = app.selectedConstraintTerm();
+            on = app.isEditableMiscRow(constraintTerm, ...
+                app.constraintTermTypeParams(constraintTerm), ...
+                app.selectedMiscRow( ...
+                app.MiscellaneousConstraintTermParametersTable));
+            app.MiscConstraintParameterRenameMenu.Enable = on;
+            app.MiscConstraintParameterDeleteMenu.Enable = on;
+        end
+
+        % Menu selected function: MiscConstraintParameterRenameMenu
+        function MiscConstraintParameterRenameMenuSelected(app, event)
+            constraintTerm = app.selectedConstraintTerm();
+            row = app.selectedMiscRow( ...
+                app.MiscellaneousConstraintTermParametersTable);
+            % The selection can change between the menu opening and this,
+            % so the guard is repeated rather than trusted from Enable
+            if ~app.isEditableMiscRow(constraintTerm, ...
+                    app.constraintTermTypeParams(constraintTerm), row)
+                return
+            end
+            params = string(fieldnames(constraintTerm.miscParams));
+            answer = inputdlg("Rename parameter:", "Rename", [1 40], ...
+                {char(params(row))});
+            if isempty(answer)
+                return
+            end
+            newName = strtrim(string(answer{1}));
+            if strcmp(newName, params(row))
+                return
+            end
+            problem = app.miscParameterNameProblem(newName, params, ...
+                app.constraintTermReservedNames(constraintTerm));
+            if ~strcmp(problem, "")
+                app.reportMiscParameterProblem(problem);
+                return
+            end
+            constraintTerm.miscParams = app.renamedStructField( ...
+                constraintTerm.miscParams, params(row), newName);
+            app.refreshMiscConstraintParameterTable();
+            app.validateConstraintTerms();
+            app.updateTabControls();
+        end
+
+        % Menu selected function: MiscConstraintParameterDeleteMenu
+        function MiscConstraintParameterDeleteMenuSelected(app, event)
+            constraintTerm = app.selectedConstraintTerm();
+            row = app.selectedMiscRow( ...
+                app.MiscellaneousConstraintTermParametersTable);
+            if ~app.isEditableMiscRow(constraintTerm, ...
+                    app.constraintTermTypeParams(constraintTerm), row)
+                return
+            end
+            params = string(fieldnames(constraintTerm.miscParams));
+            constraintTerm.miscParams = rmfield( ...
+                constraintTerm.miscParams, params(row));
+            app.refreshMiscConstraintParameterTable();
+            app.validateConstraintTerms();
+            app.updateTabControls();
         end
 
         % Menu selected function: ConstraintTermDeleteMenu
@@ -3881,6 +4504,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.MiscellaneousCostTermParametersTable.ColumnName = {'Parameter'; 'Value'};
             app.MiscellaneousCostTermParametersTable.RowName = {};
             app.MiscellaneousCostTermParametersTable.SelectionType = 'row';
+            app.MiscellaneousCostTermParametersTable.Multiselect = 'off';
             app.MiscellaneousCostTermParametersTable.ColumnEditable = [false true];
             app.MiscellaneousCostTermParametersTable.CellEditCallback = createCallbackFcn(app, @MiscellaneousCostTermParametersTableCellEdit, true);
             app.MiscellaneousCostTermParametersTable.FontSize = 15;
@@ -3949,6 +4573,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.MiscellaneousConstraintTermParametersTable.ColumnName = {'Parameter'; 'Value'};
             app.MiscellaneousConstraintTermParametersTable.RowName = {};
             app.MiscellaneousConstraintTermParametersTable.SelectionType = 'row';
+            app.MiscellaneousConstraintTermParametersTable.Multiselect = 'off';
             app.MiscellaneousConstraintTermParametersTable.ColumnEditable = [false true];
             app.MiscellaneousConstraintTermParametersTable.CellEditCallback = createCallbackFcn(app, @MiscellaneousConstraintTermParametersTableCellEdit, true);
             app.MiscellaneousConstraintTermParametersTable.FontSize = 15;
@@ -4135,16 +4760,17 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.AdvancedParamsTable.RowName = {};
             app.AdvancedParamsTable.SelectionType = 'row';
             app.AdvancedParamsTable.ColumnEditable = [false true];
-            app.AdvancedParamsTable.ColumnWidth = {'auto', 100};
+            app.AdvancedParamsTable.ColumnWidth = {'auto', 120};
             app.AdvancedParamsTable.CellEditCallback = createCallbackFcn(app, @AdvancedParamsTableCellEdit, true);
             app.AdvancedParamsTable.FontSize = 15;
-            app.AdvancedParamsTable.Position = [205 177 377 476];
+            % Wide enough for first_order_control_dynamics_filter_time_constant
+            app.AdvancedParamsTable.Position = [70 177 800 476];
 
-            % Create MiscellaneousCostTermParametersStatus_2
-            app.MiscellaneousCostTermParametersStatus_2 = uiimage(app.AdvancedTab);
-            app.MiscellaneousCostTermParametersStatus_2.Visible = 'off';
-            app.MiscellaneousCostTermParametersStatus_2.Position = [380 661 28 30];
-            app.MiscellaneousCostTermParametersStatus_2.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            % Create AdvancedParamsStatus
+            app.AdvancedParamsStatus = uiimage(app.AdvancedTab);
+            app.AdvancedParamsStatus.Visible = 'off';
+            app.AdvancedParamsStatus.Position = [380 661 28 30];
+            app.AdvancedParamsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);
@@ -4303,6 +4929,40 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
 
             % Assign app.ConstraintTermContextMenu
             app.ConstraintTermsListTable.ContextMenu = app.ConstraintTermContextMenu;
+
+            % Create MiscCostParameterContextMenu
+            app.MiscCostParameterContextMenu = uicontextmenu(app.UIFigure);
+            app.MiscCostParameterContextMenu.ContextMenuOpeningFcn = createCallbackFcn(app, @MiscCostParameterContextMenuOpening, true);
+
+            % Create MiscCostParameterRenameMenu
+            app.MiscCostParameterRenameMenu = uimenu(app.MiscCostParameterContextMenu);
+            app.MiscCostParameterRenameMenu.MenuSelectedFcn = createCallbackFcn(app, @MiscCostParameterRenameMenuSelected, true);
+            app.MiscCostParameterRenameMenu.Text = 'Rename';
+
+            % Create MiscCostParameterDeleteMenu
+            app.MiscCostParameterDeleteMenu = uimenu(app.MiscCostParameterContextMenu);
+            app.MiscCostParameterDeleteMenu.MenuSelectedFcn = createCallbackFcn(app, @MiscCostParameterDeleteMenuSelected, true);
+            app.MiscCostParameterDeleteMenu.Text = 'Delete';
+
+            % Assign app.MiscCostParameterContextMenu
+            app.MiscellaneousCostTermParametersTable.ContextMenu = app.MiscCostParameterContextMenu;
+
+            % Create MiscConstraintParameterContextMenu
+            app.MiscConstraintParameterContextMenu = uicontextmenu(app.UIFigure);
+            app.MiscConstraintParameterContextMenu.ContextMenuOpeningFcn = createCallbackFcn(app, @MiscConstraintParameterContextMenuOpening, true);
+
+            % Create MiscConstraintParameterRenameMenu
+            app.MiscConstraintParameterRenameMenu = uimenu(app.MiscConstraintParameterContextMenu);
+            app.MiscConstraintParameterRenameMenu.MenuSelectedFcn = createCallbackFcn(app, @MiscConstraintParameterRenameMenuSelected, true);
+            app.MiscConstraintParameterRenameMenu.Text = 'Rename';
+
+            % Create MiscConstraintParameterDeleteMenu
+            app.MiscConstraintParameterDeleteMenu = uimenu(app.MiscConstraintParameterContextMenu);
+            app.MiscConstraintParameterDeleteMenu.MenuSelectedFcn = createCallbackFcn(app, @MiscConstraintParameterDeleteMenuSelected, true);
+            app.MiscConstraintParameterDeleteMenu.Text = 'Delete';
+
+            % Assign app.MiscConstraintParameterContextMenu
+            app.MiscellaneousConstraintTermParametersTable.ContextMenu = app.MiscConstraintParameterContextMenu;
 
             % The window is tall enough that a fixed corner runs off the
             % top of a 1080p display, so center it on whichever screen it

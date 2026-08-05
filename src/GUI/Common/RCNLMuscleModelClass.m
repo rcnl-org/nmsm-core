@@ -37,24 +37,34 @@ classdef RCNLMuscleModelClass < handle
         surrogate_model_coordinate_value_threshold
         surrogate_model_polynomial_degree
         maximum_shortening_velocity_multiplier
+        use_activation_saturation
         activation_saturation_sharpness
         initial_activation_value
     end
 
     properties (Constant)
+        % use_activation_saturation sits immediately before the sharpness
+        % it gates, because the sharpness does nothing without it
         parameterNames = ...
             ["surrogate_model_coordinate_value_threshold"
             "surrogate_model_polynomial_degree"
             "maximum_shortening_velocity_multiplier"
+            "use_activation_saturation"
             "activation_saturation_sharpness"
             "initial_activation_value"]
 
+        % A cell because the values are mixed: parseMuscleSettings reads
+        % use_activation_saturation with strcmpi(text, "true"), so a
+        % numeric 1 would be read as false
         defaultParameterValues = ...
-            [1e-4
+            {1e-4
             5
             10
+            'false'
             600
-            0.1]
+            0.1}
+
+        booleanParameterNames = "use_activation_saturation"
     end
 
     methods
@@ -68,7 +78,7 @@ classdef RCNLMuscleModelClass < handle
             obj.file_name = "";
             obj.muscle_activations_file = "";
             for i = 1 : length(obj.parameterNames)
-                obj.(obj.parameterNames(i)) = obj.defaultParameterValues(i);
+                obj.(obj.parameterNames(i)) = obj.defaultParameterValues{i};
             end
         end
 

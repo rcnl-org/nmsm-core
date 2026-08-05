@@ -32,7 +32,14 @@ function updateParameterTableGui(paramObject, uiTable)
 options = paramObject.parameterNames;
 values = strings(length(options), 1);
 for i = 1 : length(options)
-    values(i) = formatGuiNumber(paramObject.getParameterValueByIndex(i));
+    value = paramObject.getParameterValueByIndex(i);
+    if isRcnlParameterBoolean(paramObject, i)
+        % Already the text 'true' or 'false'. formatGuiNumber would run
+        % sprintf('%.3g', ...) over it and print the character codes.
+        values(i) = string(value);
+    else
+        values(i) = formatGuiNumber(value);
+    end
 end
 uiTable.Data = table(options, values);
 end
