@@ -28,7 +28,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function outputModel = JointModelPersonalization(inputs, params)
+function outputModel = JointModelPersonalization(inputs, params, app)
 verifyInputs(inputs);
 verifyParams(params);
 outputModel = Model(inputs.model);
@@ -43,7 +43,7 @@ for i=1:length(inputs.tasks)
         outputModel);
     optimizedValues = computeKinematicCalibration(outputModelFileName, ...
         inputs.tasks{i}.markerFile, functions, inputs.desiredError, ...
-        taskParams);
+        taskParams, app);
     outputModel = adjustModelFromOptimizerOutput( ...
         Model(outputModelFileName), functions, optimizedValues);
 end

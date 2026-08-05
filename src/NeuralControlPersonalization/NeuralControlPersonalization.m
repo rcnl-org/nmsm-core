@@ -32,14 +32,14 @@
 % ----------------------------------------------------------------------- %
 
 function [finalValues, inputs] = NeuralControlPersonalization(inputs, ...
-    params)
+    params, app)
 verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
 params = finalizeParams(params);
 inputs = finalizeInputs(inputs);
 initialValues = prepareNcpInitialValues(inputs, params);
 finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
-    params);
+    params, app);
 end
 
 % (struct) -> (None)

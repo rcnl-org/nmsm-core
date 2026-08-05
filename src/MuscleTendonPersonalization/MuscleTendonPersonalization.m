@@ -44,6 +44,7 @@ function results = MuscleTendonPersonalization(inputs, ...
 if valueOrAlternate(inputs, "parseInitialGuessFromOsimx", false)
     inputs = applyMtpOsimxMaxIsometricForce(inputs);
 end
+    params, app)
 inputs.primaryValues = prepareInitialValues(inputs, params);
 inputs.primaryValueNames = ["electromechanical_delay", ...
     "activation_time_constant", "activation_nonlinearity", ...
@@ -51,7 +52,7 @@ inputs.primaryValueNames = ["electromechanical_delay", ...
 inputs = finalizeInputs(inputs, inputs.primaryValues, params);
 lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
-optimizerOptions = makeOptimizerOptions(params);
+optimizerOptions = makeOptimizerOptions(params, app);
 for i=1:length(inputs.tasks)
     inputs.electromechanicalDelays = inputs.primaryValues{1};
     [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
@@ -212,7 +213,7 @@ end
 
 % (struct) -> (struct)
 % setup optimizer options struct to pass to fmincon
-function output = makeOptimizerOptions(params)
+function output = makeOptimizerOptions(params, app)
 output = optimset('UseParallel', true);
 output.MaxIter = valueOrAlternate(params, 'maxIterations', 10000);
 output.MaxFunEvals = valueOrAlternate(params, ...
@@ -227,6 +228,10 @@ output.Hessian = 'lbfgs';
 output.GradObj = 'off';
 output.DiffMaxChange = 10;
 output.DiffMinChange = 1e-5;
+if ismethod(app, "CancelOptimizationGui")
+    output.OutputFcn = @(x, optimValues, state, varargin)  ...
+        app.CancelOptimizationGui(x, optimValues, state);
+end
 end
 
 % (struct, struct) -> (Array of number)
