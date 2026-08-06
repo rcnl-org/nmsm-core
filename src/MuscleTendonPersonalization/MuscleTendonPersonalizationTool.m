@@ -56,7 +56,6 @@ if isstruct(precalInputs)
             "MuscleTendonLengthInitialization initial guess will be " + ...
             "overwritten for muscles found in the osimx file.");
     end
-    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
     if ~isempty(app)
         app.RunningMTLILabel.Enable = 'on';
     end

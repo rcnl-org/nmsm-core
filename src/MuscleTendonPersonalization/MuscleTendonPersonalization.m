@@ -40,11 +40,10 @@
 % ----------------------------------------------------------------------- %
 
 function results = MuscleTendonPersonalization(inputs, ...
-    params)
+    params, app)
 if valueOrAlternate(inputs, "parseInitialGuessFromOsimx", false)
     inputs = applyMtpOsimxMaxIsometricForce(inputs);
 end
-    params, app)
 inputs.primaryValues = prepareInitialValues(inputs, params);
 inputs.primaryValueNames = ["electromechanical_delay", ...
     "activation_time_constant", "activation_nonlinearity", ...
