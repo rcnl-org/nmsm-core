@@ -199,7 +199,13 @@ classdef MTPBase < matlab.apps.AppBase
             "step_tolerance"
             "function_tolerance"
             "optimality_tolerance"
-            "diff_min_change"]
+            "diff_min_change"
+            "electromechanical_delay_initial_guess"
+            "activation_time_constant_initial_guess"
+            "activation_nonlinearity_initial_guess"
+            "emg_scale_factor_initial_guess"
+            "optimal_fiber_length_scale_factor_initial_guess"
+            "tendon_slack_length_scale_factor_initial_guess"]
 
         defaultAdvancedSettingValues = ...
             [10
@@ -208,7 +214,13 @@ classdef MTPBase < matlab.apps.AppBase
             1e-6
             1e-6
             1e-6
-            0.0001]
+            0.0001
+            0.5
+            1.5
+            0.05
+            0.5
+            1
+            1]
     end
 
     properties (Access = private)  % listener handles
