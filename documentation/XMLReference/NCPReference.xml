@@ -118,6 +118,14 @@
 		<mtp_results_directory>MTPResults</mtp_results_directory>
 		<!--Indicate whether to enforce bilateral symmetry or not.-->
 		<enforce_bilateral_symmetry>false</enforce_bilateral_symmetry>
+		<!--Indicate whether to optimize synergy weight vectors or only optimizes synergy commands. Default is true.-->
+		<optimize_synergy_vectors>true</optimize_synergy_vectors>
+		<!--*Optional* The number of node points used to represent synergy commands. Default is 26.-->
+		<number_of_nodes>26</number_of_nodes>
+		<!--*Optional* Method used to normalize synergy weight vectors ('sum' or 'magnitude'). Default is 'magnitude'.-->
+		<synergy_vector_normalization_method>magnitude</synergy_vector_normalization_method>
+		<!--*Optional* Target sum/magnitude value used by synergy_vector_normalization_method. Set to NaN for no normalization target. Default is 10.-->
+		<synergy_vector_normalization_value>10</synergy_vector_normalization_value>
 		<!--Cost term set for the Neural Control Optimization.-->
 		<RCNLCostTermSet>
 			<RCNLCostTerm>
@@ -139,8 +147,24 @@
 			<RCNLCostTerm>
 				<!--Indicate whether the term is enabled or not. Default is false.-->
 				<is_enabled>false</is_enabled>
-				<!--Type of cost term.-->
+				<!--Type of cost term. Deprecated alias for muscle_activation_minimization, kept for backward compatibility.-->
 				<type>activation_minimization</type>
+				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+				<max_allowable_error>0.05</max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm>
+				<!--Indicate whether the term is enabled or not. Default is false.-->
+				<is_enabled>false</is_enabled>
+				<!--Type of cost term.-->
+				<type>muscle_activation_minimization</type>
+				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+				<max_allowable_error>0.05</max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm>
+				<!--Indicate whether the term is enabled or not. Default is false.-->
+				<is_enabled>false</is_enabled>
+				<!--Type of cost term.-->
+				<type>synergy_activation_minimization</type>
 				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 				<max_allowable_error>0.05</max_allowable_error>
 			</RCNLCostTerm>
@@ -172,5 +196,7 @@
 		<max_iterations>1000</max_iterations>
 		<!--*Optional* The number of allowed cost function calls for the fmincon optimization,  setting this lower can help cancel an optimization that won't converge.-->
 		<max_function_evaluations>100000000</max_function_evaluations>
+		<!--*Optional* Flag (true, false) indicating whether to use CasADi for gradient/Hessian computation. Default is false.-->
+		<use_casadi>false</use_casadi>
 	</NeuralControlPersonalizationTool>
 </NMSMPipelineDocument>

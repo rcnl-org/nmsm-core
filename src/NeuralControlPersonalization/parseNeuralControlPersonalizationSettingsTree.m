@@ -62,8 +62,9 @@ end
 inputs.enforce_bilateral_symmetry = strcmpi(getTextFromField(...
     getFieldByNameOrAlternate(tree, ...
     'enforce_bilateral_symmetry', 'false')), 'true');
-inputs.numNodes = str2double(parseElementTextByNameOrAlternate(tree, ...
-    "number_of_nodes", "26"));
+inputs.optimize_synergy_vectors = strcmpi(getTextFromField(...
+    getFieldByNameOrAlternate(tree, ...
+    'optimize_synergy_vectors', 'true')), 'true');
 inputs.synergy_vector_normalization_method = string(getTextFromField(...
     getFieldByNameOrAlternate(tree, ...
     'synergy_vector_normalization_method', 'magnitude')));
@@ -75,6 +76,13 @@ end
 inputs.synergy_vector_normalization_value = str2double(normValueText);
 % NOTE: tag absent or empty -> 10 (default)
 % <...>NaN</...> -> NaN (no normalization target)
+if ~inputs.optimize_synergy_vectors
+    inputs.fixedSynergyWeights = loadFixedSynergyWeights(tree, inputs, ...
+        inputs.synergy_vector_normalization_method, ...
+        inputs.synergy_vector_normalization_value);
+end
+inputs.numNodes = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "number_of_nodes", "26"));
 end
 
 function inputs = loadMtpData(tree, inputs)
@@ -94,6 +102,63 @@ includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
 inputs.mtpActivationsColumnNames = ...
     inputs.mtpActivationsColumnNames(includedSubset);
 inputs.mtpActivations = inputs.mtpActivations(:, includedSubset, :);
+end
+
+function weights = loadFixedSynergyWeights(tree, inputs, ...
+    normalizationMethod, normalizationValue)
+import org.opensim.modeling.Storage
+dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
+weightsFile = fullfile(dataDirectory, "synergyWeights.sto");
+if ~isfile(weightsFile)
+    throw(MException('', '%s', "synergyWeights.sto was not found in " + ...
+        dataDirectory + ". A pre-existing synergy weights file is " + ...
+        "required when optimize_synergy_vectors is false."))
+end
+storage = Storage(weightsFile);
+data = storageToDoubleMatrix(storage);
+columnNames = getStorageColumnNames(storage);
+
+missingMuscles = setdiff(inputs.muscleTendonColumnNames, columnNames);
+if ~isempty(missingMuscles)
+    throw(MException('', '%s', "synergyWeights.sto in " + dataDirectory + ...
+        " is missing weights for muscle(s): " + ...
+        strjoin(missingMuscles, ", ")))
+end
+extraMuscles = setdiff(columnNames, inputs.muscleTendonColumnNames);
+if ~isempty(extraMuscles)
+    throw(MException('', '%s', "synergyWeights.sto in " + dataDirectory + ...
+        " contains unexpected muscle(s) not in this study's model: " + ...
+        strjoin(extraMuscles, ", ")))
+end
+[~, reorderIndex] = ismember(inputs.muscleTendonColumnNames, columnNames);
+weights = data(reorderIndex, :)';
+
+expectedNumSynergies = sum(cellfun(@(g) g.numSynergies, ...
+    inputs.synergyGroups));
+if size(weights, 1) ~= expectedNumSynergies
+    throw(MException('', '%s', sprintf(...
+        "synergyWeights.sto has %d synergies but %d are configured " + ...
+        "in this settings file", size(weights, 1), expectedNumSynergies)))
+end
+% Rescales each loaded synergy weight row
+% skipped when synergy_vector_normalization_value is NaN
+weights = normalizeFixedSynergyWeights(weights, normalizationMethod, ...
+    normalizationValue);
+end
+
+function weights = normalizeFixedSynergyWeights(weights, method, value)
+if isnan(value)
+    return
+end
+switch lower(method)
+    case 'sum'
+        ratios = value ./ sum(weights, 2);
+    case 'magnitude'
+        ratios = value ./ vecnorm(weights, 2, 2);
+    otherwise
+        error('Unknown synergy_vector_normalization_method: "%s"', method);
+end
+weights = weights .* ratios;
 end
 
 function [maxIsometricForce, optimalFiberLength, tendonSlackLength, ...

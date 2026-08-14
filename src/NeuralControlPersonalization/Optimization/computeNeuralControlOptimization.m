@@ -32,14 +32,33 @@ function finalValues = computeNeuralControlOptimization(initialValuesLong, ...
     inputs, params)
 [initWeights, ~, ~] = findSynergyWeightsAndCommands(initialValuesLong, inputs);
 initialValues = initialValuesLong;
-if inputs.enforce_bilateral_symmetry
+if ~inputs.optimize_synergy_vectors
+    initialValues(1:length(inputs.fixedSynergyVectorFlat)) = [];
+elseif inputs.enforce_bilateral_symmetry
     initialValues(1:inputs.numWeightsPerGroup(1)) = [];
 end
 numDesignVariables = length(initialValues);
 [synergyWeightEquations, synergyWeightSums, lowerBounds, upperbounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights);
 optimizerOptions = prepareOptimizerOptions(params);
-if strcmpi(inputs.synergy_vector_normalization_method,'sum')
+% uncomment for a Cancel button that stops fmincon early and still saves the current result
+% optimizerOptions = addCancelButton(optimizerOptions, params);   
+if ~inputs.optimize_synergy_vectors
+    % weights are fixed, not part of the design vector
+    % no weight normalization constraints to build
+    if params.useCasadi
+        derivatives = prepareNcpCasadiDerivatives(inputs, params, ...
+            numDesignVariables, []);
+        optimizerOptions = applyCasadiOptimizerOptions(optimizerOptions, ...
+            derivatives);
+        finalValues = fmincon(derivatives.costFcn, initialValues, [], [], ...
+            [], [], lowerBounds, upperbounds, [], optimizerOptions);
+    else
+        finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
+            inputs, params), initialValues, [], [], [], [], lowerBounds, ...
+            upperbounds, [], optimizerOptions);
+    end
+elseif strcmpi(inputs.synergy_vector_normalization_method,'sum')
     % linear constraints
     if params.useCasadi
         derivatives = prepareNcpCasadiDerivatives(inputs, params, ...
@@ -75,18 +94,22 @@ else
     error('Unknown normalization method: %s', ...
         inputs.synergy_vector_normalization_method);
 end
-if inputs.enforce_bilateral_symmetry
+if ~inputs.optimize_synergy_vectors
+    finalValues = [inputs.fixedSynergyVectorFlat; finalValues];
+elseif inputs.enforce_bilateral_symmetry
     weightsVariables = finalValues(1:inputs.numWeightsPerGroup(1));
     finalValues = [weightsVariables; finalValues];
 end
 end
 
-% Generate constraints for synergy weight vectors and design variable lower
-% bounds
+% ----------------------------------------------------------------------- 
 function [synergyWeightEquations, synergyWeightSums, lowerBounds, upperBounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights)
 
-if strcmpi(inputs.synergy_vector_normalization_method, 'sum')
+if ~inputs.optimize_synergy_vectors
+    synergyWeightEquations = [];
+    synergyWeightSums      = [];
+elseif strcmpi(inputs.synergy_vector_normalization_method, 'sum')
     if inputs.enforce_bilateral_symmetry
         activeGroups = inputs.synergyGroups(1);
         activeWeights = initWeights(1:inputs.synergyGroups{1}.numSynergies, ...
@@ -95,7 +118,6 @@ if strcmpi(inputs.synergy_vector_normalization_method, 'sum')
         activeGroups  = inputs.synergyGroups;
         activeWeights = initWeights;
     end
-
     numActiveRows = sum(cellfun(@(g) g.numSynergies, activeGroups));
     synergyWeightEquations = zeros(numActiveRows, numDesignVariables);
     synergyWeightSums = sum(activeWeights, 2);
@@ -111,8 +133,6 @@ if strcmpi(inputs.synergy_vector_normalization_method, 'sum')
         end
     end
 else
-    % magnitude: nonlinear constraints handle normalization, 
-    % no linear constraints needed
     synergyWeightEquations = [];
     synergyWeightSums      = [];
 end
@@ -120,7 +140,7 @@ lowerBounds = zeros(numDesignVariables, 1);
 upperBounds = inf(numDesignVariables, 1);
 end
 
-% Set optimizer options from params struct
+% ----------------------------------------------------------------------- 
 function optimizerOptions = prepareOptimizerOptions(params)
 optimizerOptions = optimoptions('fmincon', 'UseParallel',true);
 optimizerOptions.DiffMinChange = params.diffMinChange;
@@ -135,7 +155,7 @@ optimizerOptions.Display = valueOrAlternate(params, ...
     'display','iter');
 end
 
-
+% ----------------------------------------------------------------------- 
 function optimizerOptions = applyCasadiOptimizerOptions(optimizerOptions, ...
     derivatives)
 % interior-point is required to accept a user-supplied HessianFcn
@@ -152,6 +172,7 @@ optimizerOptions.HessianFcn = derivatives.hessianFcn;
 optimizerOptions.UseParallel = false;
 end
 
+% ----------------------------------------------------------------------- 
 function [c, ceq] = nonlinearConstraints(values, inputs, normalizationTarget)
 if inputs.enforce_bilateral_symmetry
     weightsPart = values(1:inputs.numWeightsPerGroup(1));
@@ -160,11 +181,39 @@ end
 
 [weights, ~, ~] = findSynergyWeightsAndCommands(values, inputs);
 c = [];
-% Equality constraints: magnitude normalization per synergy
 if inputs.enforce_bilateral_symmetry
     nSyn1 = inputs.synergyGroups{1}.numSynergies;
     ceq = sum(weights(1:nSyn1,:).^2, 2) - normalizationTarget(1:nSyn1);
 else
     ceq = sum(weights.^2, 2) - normalizationTarget;
+end
+end
+
+% -----------------------------------------------------------------------
+% Adds a waitbar with a Cancel button
+function optimizerOptions = addCancelButton(optimizerOptions, params)
+waitbarHandle = waitbar(0, 'Optimizing NCP... click Cancel or closing the window to stop early', ...
+    'CreateCancelBtn', 'setappdata(gcbf, ''canceling'', 1)');
+optimizerOptions.OutputFcn = @(x, optimValues, state) ncpCancelButtonOutputFcn( ...
+    optimValues, state, waitbarHandle, params.maxIterations);
+end
+
+function stop = ncpCancelButtonOutputFcn(optimValues, state, waitbarHandle, ...
+    maxIterations)
+stop = false;
+if ~ishghandle(waitbarHandle)
+    stop = true;
+    return
+end
+if getappdata(waitbarHandle, 'canceling')
+    stop = true;
+end
+if stop || strcmp(state, 'done')
+    delete(waitbarHandle);
+else
+    fraction = min(optimValues.iteration / max(maxIterations, 1), 1);
+    waitbar(fraction, waitbarHandle, sprintf( ...
+        'Optimizing NCP (iteration %d, cost %.4g)... click Cancel or closing the window to stop early', ...
+        optimValues.iteration, optimValues.fval));
 end
 end
