@@ -73,11 +73,6 @@ inputs.allow_negative_synergy_vector_weights = strcmpi(getTextFromField(...
 inputs.optimize_synergy_vectors = strcmpi(getTextFromField(...
     getFieldByNameOrAlternate(tree, ...
     'optimize_synergy_vectors', 'true')), 'true');
-if ~inputs.optimize_synergy_vectors
-    inputs.fixedSynergyWeights = loadFixedSynergyWeights(tree, inputs);
-end
-inputs.numNodes = str2double(parseElementTextByNameOrAlternate(tree, ...
-    "number_of_nodes", "26"));
 inputs.synergy_vector_normalization_method = string(getTextFromField(...
     getFieldByNameOrAlternate(tree, ...
     'synergy_vector_normalization_method', 'magnitude')));
@@ -89,6 +84,13 @@ end
 inputs.synergy_vector_normalization_value = str2double(normValueText);
 % NOTE: tag absent or empty -> 10 (default)
 % <...>NaN</...> -> NaN (no normalization target)
+if ~inputs.optimize_synergy_vectors
+    inputs.fixedSynergyWeights = loadFixedSynergyWeights(tree, inputs, ...
+        inputs.synergy_vector_normalization_method, ...
+        inputs.synergy_vector_normalization_value);
+end
+inputs.numNodes = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "number_of_nodes", "26"));
 end
 
 function inputs = loadMtpData(tree, inputs)
@@ -110,7 +112,8 @@ inputs.mtpActivationsColumnNames = ...
 inputs.mtpActivations = inputs.mtpActivations(:, includedSubset, :);
 end
 
-function weights = loadFixedSynergyWeights(tree, inputs)
+function weights = loadFixedSynergyWeights(tree, inputs, ...
+    normalizationMethod, normalizationValue)
 import org.opensim.modeling.Storage
 dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
 weightsFile = fullfile(dataDirectory, "synergyWeights.sto");
@@ -145,6 +148,25 @@ if size(weights, 1) ~= expectedNumSynergies
         "synergyWeights.sto has %d synergies but %d are configured " + ...
         "in this settings file", size(weights, 1), expectedNumSynergies)))
 end
+% Rescales each loaded synergy weight row
+% skipped when synergy_vector_normalization_value is NaN
+weights = normalizeFixedSynergyWeights(weights, normalizationMethod, ...
+    normalizationValue);
+end
+
+function weights = normalizeFixedSynergyWeights(weights, method, value)
+if isnan(value)
+    return
+end
+switch lower(method)
+    case 'sum'
+        ratios = value ./ sum(weights, 2);
+    case 'magnitude'
+        ratios = value ./ vecnorm(weights, 2, 2);
+    otherwise
+        error('Unknown synergy_vector_normalization_method: "%s"', method);
+end
+weights = weights .* ratios;
 end
 
 function [maxIsometricForce, optimalFiberLength, tendonSlackLength, ...
