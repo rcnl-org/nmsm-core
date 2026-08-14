@@ -41,7 +41,7 @@ numDesignVariables = length(initialValues);
 [synergyWeightEquations, synergyWeightSums, lowerBounds, upperbounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights);
 optimizerOptions = prepareOptimizerOptions(params);
-% % uncomment for a Cancel button that stops fmincon early and still saves the current result
+% uncomment for a Cancel button that stops fmincon early and still saves the current result
 % optimizerOptions = addCancelButton(optimizerOptions, params);   
 if ~inputs.optimize_synergy_vectors
     % weights are fixed, not part of the design vector

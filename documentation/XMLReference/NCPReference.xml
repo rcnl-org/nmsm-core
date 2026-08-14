@@ -155,6 +155,7 @@
 				<max_allowable_error>0.05</max_allowable_error>
 			</RCNLCostTerm>
 			<RCNLCostTerm>
+				<!--Indicate whether the term is enabled or not. Default is false.-->
 				<is_enabled>false</is_enabled>
 				<!--Type of cost term.-->
 				<type>muscle_activation_minimization</type>
