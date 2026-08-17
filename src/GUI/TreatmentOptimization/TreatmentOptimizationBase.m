@@ -2910,6 +2910,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 app.currentSettingsFile = fullfile(path, file);
             end
             app.saveSettingsFile(app.currentSettingsFile);
+            close all
             TreatmentOptimizationRun(app, app.currentSettingsFile);
         end
 
