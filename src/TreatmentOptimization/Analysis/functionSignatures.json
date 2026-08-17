@@ -268,5 +268,15 @@
          "type":["integer", "numel=2"], 
          "purpose":"(List of int) List with [FigureWidth, FigureHeight]"}
      ]
-  }
+  },
+    "plotNmsmGeneric":
+  {
+     "inputs":
+     [
+        {"name":"dataFiles", 
+         "kind":"required", 
+         "type":["file=*.sto", "file=*.mot"], 
+         "purpose":"(String) Data files to plot."}
+     ]
+  } 
 }
