@@ -93,7 +93,8 @@ printMtpJointMomentMatchingError(resultsDirectory);
 fprintf("Muscle-Tendon Personalization Runtime: %f Hours\n", toc/3600);
 diary off
 try
-    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
+    [~, settingsFile] = fileparts(settingsFileName);
+    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFile));
     movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
 catch
 end

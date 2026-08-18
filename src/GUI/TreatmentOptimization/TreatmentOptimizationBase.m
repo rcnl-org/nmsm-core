@@ -2307,46 +2307,58 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
 
         function validateSolverSettings(app)
             removeStyle(app.SolverSettingsTable);
+            app.SolverSettingsTable.Tooltip = '';
             if ~strcmp(app.solver_type, "GPOPS-II")
                 app.solverSettingsValid = false;
                 setGuiFieldStatus([], app.SolverSettingsStatus, "error", ...
                     "Only the GPOPS-II solver is supported so far.");
                 return
             end
-            invalid = [];
+            messages = strings(0, 1);
             for i = 1 : numel(app.gpopsSettingNames)
-                if ~app.isGpopsSettingValid(i)
-                    invalid(end + 1) = i;
+                [isValid, reason] = app.gpopsSettingProblem(i);
+                if isValid
+                    continue
                 end
-            end
-            for i = invalid
                 addStyle(app.SolverSettingsTable, ...
                     uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', i);
+                messages(end + 1) = app.gpopsSettingNames(i) + ": " + ...
+                    reason + " (default " + ...
+                    app.defaultGpopsSettingValues(i) + ")"; %#ok<AGROW>
             end
-            app.solverSettingsValid = isempty(invalid);
-            if isempty(invalid)
+            app.solverSettingsValid = isempty(messages);
+            if app.solverSettingsValid
                 setGuiFieldStatus([], app.SolverSettingsStatus, "none");
-            else
-                setGuiFieldStatus([], app.SolverSettingsStatus, "error", ...
-                    "Highlighted settings are not valid values.");
+                return
             end
+            % The table tooltip puts the same text where the user is
+            % typing, so the reason is reachable without finding the icon
+            message = strjoin(messages, newline);
+            app.SolverSettingsTable.Tooltip = message;
+            setGuiFieldStatus([], app.SolverSettingsStatus, "error", ...
+                message);
         end
 
         % Enumerated settings must name one of their options; the rest must
-        % be numbers, held to the ranges GpopsReference.xml states outright
-        function isValid = isGpopsSettingValid(app, index)
-            value = app.gpopsSettingValues(index);
+        % be numbers, held to the ranges GpopsReference.xml states outright.
+        % The reason states the rule rather than naming the setting, so
+        % validateSolverSettings can prefix it with the setting's own name.
+        function [isValid, reason] = gpopsSettingProblem(app, index)
+            isValid = true;
+            reason = "";
+            value = strtrim(app.gpopsSettingValues(index));
             options = app.gpopsSettingOptions{index};
             if ~isEmptyStringList(options)
                 isValid = any(strcmp(options, value));
+                reason = "must be one of " + strjoin(options, ", ");
                 return
             end
             number = str2double(value);
             if isnan(number)
                 isValid = false;
+                reason = "must be a number";
                 return
             end
-            isValid = true;
             % setupGpopsSettings skips the mesh refinement settings when no
             % mesh method is chosen, so their ranges do not apply either
             if app.isUnusedMeshSetting(index)
@@ -2355,26 +2367,41 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             switch app.gpopsSettingNames(index)
                 case "setup_derivatives_step_size"
                     isValid = number > 0;
+                    reason = "must be a positive number";
                 case "setup_mesh_tolerance"
                     isValid = number > 0 && number < 1;
+                    reason = "must be a number between 0 and 1";
                 case "setup_mesh_max_iterations"
                     isValid = number >= 0 && mod(number, 1) == 0;
+                    reason = "must be a non-negative integer";
                 case "setup_mesh_colpoints_min"
                     isValid = number > 2 && mod(number, 1) == 0;
+                    reason = "must be an integer greater than 2";
                 case "setup_mesh_colpoints_max"
-                    isValid = mod(number, 1) == 0 && number >= str2double( ...
+                    % A bad minimum already flags its own row; comparing
+                    % against it here would report a second, confusing
+                    % error on this one
+                    minimum = str2double( ...
                         app.gpopsSettingValue("setup_mesh_colpoints_min"));
+                    isValid = mod(number, 1) == 0 && ...
+                        (isnan(minimum) || number >= minimum);
+                    reason = "must be an integer no smaller than " + ...
+                        "setup_mesh_colpoints_min";
                 case {"setup_mesh_splitmult", "setup_mesh_curveratio", ...
                         "setup_mesh_R"}
                     isValid = number > 1;
+                    reason = "must be a number greater than 1";
                 case "setup_mesh_sigma"
                     isValid = number > 0;
+                    reason = "must be a positive number";
                 case {"setup_mesh_phase_intervals", ...
                         "setup_mesh_phase_colpoints_per_Interval", ...
                         "setup_nlp_max_iterations", "integral_bound"}
                     isValid = number > 0 && mod(number, 1) == 0;
+                    reason = "must be a positive integer";
                 case "setup_nlp_tolerance"
                     isValid = number > 0;
+                    reason = "must be a positive number";
             end
         end
 

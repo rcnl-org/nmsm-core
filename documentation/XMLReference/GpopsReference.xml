@@ -8,13 +8,13 @@
 			<setup_derivatives_level>first</setup_derivatives_level>
 			<!--Determines how the dependencies are found. Possible values 'full' 'sparse' 'sparseNaN'. Default 'sparse'-->
 			<setup_derivatives_dependencies>sparse</setup_derivatives_dependencies>
-			<!--Step size for finite difference. Default 1e-6-->
+			<!--Step size for finite difference. Default 1e-8-->
 			<setup_derivatives_step_size>1e-08</setup_derivatives_step_size>
 			<!--Specifies how the problem is scaled. Possible values 'none', 'automatic-bounds' 'automatic-guess' 'automatic-guessUpdate' 'automatic-hybrid' 'automatic-hybridUpdate' 'defined'. Default 'none'-->
 			<setup_scales_method>none</setup_scales_method>
 			<!--Version of the collocation to be used. Possible values 'RPM-Differentiation' 'RPM-Integration'. Default 'RPM-Differentiation'-->
 			<setup_method>RPM-Integration</setup_method>
-			<!--Mesh refinement method. Possible values 'none' 'hp-PattersonRao' 'hp-DarbyRao' 'hp-LiuRao' 'hp-LiuRao-Legendre'. Default 'hp-Patterson-Rao'-->
+			<!--Mesh refinement method. Possible values 'none' 'hp-PattersonRao' 'hp-DarbyRao' 'hp-LiuRao' 'hp-LiuRao-Legendre'. Default 'hp-PattersonRao'-->
 			<setup_mesh_method>none</setup_mesh_method>
 			<!--Mesh tolerance. Positive number between 0 and 1. Default 10e-3-->
 			<setup_mesh_tolerance>1</setup_mesh_tolerance>
