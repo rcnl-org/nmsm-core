@@ -3,6 +3,11 @@
 % This class is the App Designer run dialog for the Joint Model
 % Personalization (JMP) tool, displaying progress labels and providing
 % cancel functionality during an active JMP optimization run.
+%
+% A tool that throws leaves the dialog stalled on whichever stage it was
+% in, so the run and the plotting that follows it are each wrapped: a
+% failed run is reported and rethrown, while a failed plot is only warned
+% about, the results being on disk by then either way.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -39,12 +44,6 @@ classdef JMPRun < matlab.apps.AppBase
         CancelButton          matlab.ui.control.Button
     end
 
-    
-    properties (Access = public)
-
-        CancelOptimization = true; % Description
-    end
-    
     properties (Access = private)
         JMPBase; % Description
         SettingsFileName string;
@@ -67,7 +66,24 @@ classdef JMPRun < matlab.apps.AppBase
             drawnow; % lets GUI process button presses
         end
     end
-    
+
+    methods (Access = private)
+
+        % Reports how the run ended. The stage labels are cleared first so
+        % a failed or cancelled run does not leave its stage lit.
+        function finish(app, text)
+            app.ParsingLabel.Enable = 'off';
+            app.RunningJMPLabel.Enable = 'off';
+            app.SavingResultsLabel.Enable = 'off';
+            app.PlottingResultsLabel.Enable = 'off';
+            app.JMPCompletedLabel.Text = text;
+            app.JMPCompletedLabel.Enable = 'on';
+            app.CloseButton.Enable = 'on';
+            app.CancelButton.Enable = 'off';
+            drawnow
+        end
+    end
+
 
     % Callbacks that handle component events
     methods (Access = private)
@@ -78,15 +94,31 @@ classdef JMPRun < matlab.apps.AppBase
             app.SettingsFileName = SettingsFileName;
             drawnow
             pause(0.01)
-            JointModelPersonalizationTool(SettingsFileName, app)
+            try
+                JointModelPersonalizationTool(SettingsFileName, app)
+            catch runException
+                app.finish('JMP Failed');
+                rethrow(runException)
+            end
+            if app.cancelOptimizationFlag
+                % The calibration stops on the iterate it reached and the
+                % tool prints that model, so the personalized model on disk
+                % holds the work done before the cancel.
+                app.finish('JMP Cancelled');
+            end
             app.PlottingResultsLabel.Enable = 'on';
             drawnow
-            plotJmpResultsFromSettingsFile(SettingsFileName);
-            drawnow
-            app.PlottingResultsLabel.Enable = 'off';
-            app.JMPCompletedLabel.Enable = 'on';
-            app.CloseButton.Enable = 'on';
-            app.CancelButton.Enable = 'off';
+            try
+                plotJmpResultsFromSettingsFile(SettingsFileName);
+            catch plotException
+                % Plotting is not part of the result, so a failure here is
+                % reported rather than thrown - the run's output is already
+                % on disk either way.
+                warning('JMPRun:plottingFailed', '%s', ...
+                    "Joint model results could not be plotted: " + ...
+                    plotException.message);
+            end
+            app.finish('JMP Completed.');
         end
 
         % Button pushed function: CloseButton
@@ -111,7 +143,7 @@ classdef JMPRun < matlab.apps.AppBase
             app.UIFigure = uifigure('Visible', 'off');
             app.UIFigure.Color = [0.851 0.851 0.851];
             app.UIFigure.Position = [100 100 640 480];
-            app.UIFigure.Name = 'MATLAB App';
+            app.UIFigure.Name = 'Joint Model Personalization';
             app.UIFigure.WindowStyle = 'docked';
 
             % Create CancelButton

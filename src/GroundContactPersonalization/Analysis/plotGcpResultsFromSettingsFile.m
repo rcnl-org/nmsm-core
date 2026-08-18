@@ -51,7 +51,8 @@ else
 end
 contactSurfaceSet = getFieldByName(settingsTree, 'GCPContactSurfaceSet');
 for foot = 1 : numel(contactSurfaceSet.GCPContactSurface)
-    if any(strcmp(contactSurfaceSet.GCPContactSurface{foot}.is_enabled.Text, ...
+    if numel(contactSurfaceSet.GCPContactSurface) > 1 && ...
+        any(strcmp(contactSurfaceSet.GCPContactSurface{foot}.is_enabled.Text, ...
             ["false", "False"]))
         continue
     end

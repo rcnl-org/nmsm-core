@@ -147,7 +147,7 @@ classdef TreatmentOptimizationRun < matlab.apps.AppBase
             app.UIFigure = uifigure('Visible', 'off');
             app.UIFigure.Color = [0.851 0.851 0.851];
             app.UIFigure.Position = [100 100 640 480];
-            app.UIFigure.Name = 'MATLAB App';
+            app.UIFigure.Name = 'Treatment Optimization';
 
             % Create ParsingLabel
             app.ParsingLabel = uilabel(app.UIFigure);

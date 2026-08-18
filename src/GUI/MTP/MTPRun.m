@@ -3,6 +3,11 @@
 % This class is the App Designer run dialog for the Muscle-Tendon
 % Personalization (MTP) tool, displaying progress labels and providing
 % cancel functionality during an active MTP optimization run.
+%
+% A tool that throws leaves the dialog stalled on whichever stage it was
+% in, so the run and the plotting that follows it are each wrapped: a
+% failed run is reported and rethrown, while a failed plot is only warned
+% about, the results being on disk by then either way.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -40,12 +45,6 @@ classdef MTPRun < matlab.apps.AppBase
         ParsingLabel          matlab.ui.control.Label
     end
 
-    
-    properties (Access = public)
-
-        CancelOptimization = true; % Description
-    end
-    
     properties (Access = private)
         MTPBase; % Description
         SettingsFileName string;
@@ -71,7 +70,25 @@ classdef MTPRun < matlab.apps.AppBase
             drawnow; % lets GUI process button presses
         end
     end
-    
+
+    methods (Access = private)
+
+        % Reports how the run ended. The stage labels are cleared first so
+        % a failed or cancelled run does not leave its stage lit.
+        function finish(app, text)
+            app.ParsingLabel.Enable = 'off';
+            app.RunningMTLILabel.Enable = 'off';
+            app.RunningMTPLabel.Enable = 'off';
+            app.SavingResultsLabel.Enable = 'off';
+            app.PlottingResultsLabel.Enable = 'off';
+            app.MTPCompletedLabel.Text = text;
+            app.MTPCompletedLabel.Enable = 'on';
+            app.CloseButton.Enable = 'on';
+            app.CancelButton.Enable = 'off';
+            drawnow
+        end
+    end
+
 
     % Callbacks that handle component events
     methods (Access = private)
@@ -82,15 +99,32 @@ classdef MTPRun < matlab.apps.AppBase
             app.SettingsFileName = SettingsFileName;
             drawnow
             pause(0.01)
-            MuscleTendonPersonalizationTool(SettingsFileName, app)
+            try
+                MuscleTendonPersonalizationTool(SettingsFileName, app)
+            catch runException
+                app.finish('MTP Failed');
+                rethrow(runException)
+            end
+            if app.cancelOptimizationFlag
+                % fmincon returns the iterate it stopped on and the tool
+                % saves it, so the results directory holds the work done
+                % before the cancel.
+                app.finish('MTP Cancelled');
+                % return
+            end
             app.PlottingResultsLabel.Enable = 'on';
             drawnow
-            plotMtpResultsFromSettingsFile(SettingsFileName);
-            drawnow
-            app.PlottingResultsLabel.Enable = 'off';
-            app.MTPCompletedLabel.Enable = 'on';
-            app.CloseButton.Enable = 'on';
-            app.CancelButton.Enable = 'off';
+            try
+                plotMtpResultsFromSettingsFile(SettingsFileName);
+            catch plotException
+                % Plotting is not part of the result, so a failure here is
+                % reported rather than thrown - the run's output is already
+                % on disk either way.
+                warning('MTPRun:plottingFailed', '%s', ...
+                    "Muscle-tendon results could not be plotted: " + ...
+                    plotException.message);
+            end
+            app.finish('MTP Completed.');
         end
 
         % Button pushed function: CancelButton
@@ -115,7 +149,7 @@ classdef MTPRun < matlab.apps.AppBase
             app.UIFigure = uifigure('Visible', 'off');
             app.UIFigure.Color = [0.851 0.851 0.851];
             app.UIFigure.Position = [100 100 640 480];
-            app.UIFigure.Name = 'MATLAB App';
+            app.UIFigure.Name = 'Muscle-tendon Personalization';
             app.UIFigure.WindowStyle = 'docked';
 
             % Create ParsingLabel

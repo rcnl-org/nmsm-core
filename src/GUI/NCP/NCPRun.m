@@ -74,7 +74,14 @@ classdef NCPRun < matlab.apps.AppBase
 
     methods (Access = private)
 
+        % Reports how the run ended. The stage labels are cleared first so
+        % a failed or cancelled run does not leave its stage lit.
         function finish(app, text)
+            app.ParsingLabel.Enable = 'off';
+            app.RunningMTLILabel.Enable = 'off';
+            app.RunningNCPLabel.Enable = 'off';
+            app.SavingResultsLabel.Enable = 'off';
+            app.PlottingResultsLabel.Enable = 'off';
             app.NCPCompletedLabel.Text = text;
             app.NCPCompletedLabel.Enable = 'on';
             app.CloseButton.Enable = 'on';
