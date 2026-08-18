@@ -1778,9 +1778,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 case "coordinate_list"
                     list = app.coordinate_list;
                 case "load_list"
-                    list = app.filteredSelectionList(app.model_coordinates, ...
-                        erase(erase(app.tracked_load_labels, '_moment'), ...
-                        '_force'));
+                    list = app.tracked_load_labels;
                 case "marker_list"
                     list = app.model_markers;
                 case {"body_list", "hindfoot_body_list"}
@@ -2939,6 +2937,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 app.currentSettingsFile = fullfile(path, file);
             end
             app.saveSettingsFile(app.currentSettingsFile);
+            close all
             TreatmentOptimizationRun(app, app.currentSettingsFile);
         end
 
