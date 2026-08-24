@@ -9,12 +9,12 @@
 % for gets a tight error and the rest stay loose, so the optimizer spends
 % that round on it.
 %
-%   1  Vertical Force    springs, damping, and resting length, with the
-%                        vertical force held to 5 N while the horizontal
-%                        force and moment sit at 20.
-%   2  Horizontal Force  swaps damping and resting length for the dynamic
-%                        friction coefficient and tightens the horizontal
-%                        force to 5 N.
+%   1  Vertical Force    springs, damping, dynamic friction, and resting
+%                        length, with the vertical force held to 5 N
+%                        while the horizontal force and moment sit at 20.
+%   2  Horizontal Force  drops damping and resting length, keeps the
+%                        dynamic friction coefficient, and tightens the
+%                        horizontal force to 5 N.
 %   3  Moments           frees the fore-aft and medial-lateral electrical
 %                        center shifts and tightens the moment to 0.5 Nm.
 %

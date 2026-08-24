@@ -165,6 +165,16 @@ classdef GCPBase < matlab.apps.AppBase
     end
 
     properties (Constant, Access = private)
+        % The model properties holding a file or directory path. They
+        % load through loadPaths rather than applySettingsStruct, which
+        % would assign them before their spaces are rejoined.
+        settingsPathFields = ...
+            ["results_directory"
+            "input_model_file"
+            "input_osimx_file"
+            "input_motion_file"
+            "input_grf_file"]
+
         % Contact surface name fields, in the order their dropdowns and
         % status icons are listed by markerDropDowns and
         % markerStatusIcons. The first is checked against the model's
@@ -1219,11 +1229,10 @@ classdef GCPBase < matlab.apps.AppBase
         end
 
         function updateRunButton(app)
-            % Run is deferred: GroundContactPersonalizationTool takes no
-            % app handle, so there is no progress window to open yet. The
-            % button stays disabled and its tooltip names the command-line
-            % entry point instead.
-            app.RunButton.Enable = 'off';
+            app.RunButton.Enable = app.inputModelValid && ...
+                app.inputMotionFileValid && app.inputGrfFileValid && ...
+                app.resultsDirectoryValid && app.contactSurfacesValid && ...
+                app.tasksValid && app.advancedSettingsValid;
             app.updateTabControls();
         end
 
@@ -1354,6 +1363,14 @@ classdef GCPBase < matlab.apps.AppBase
             propertyNames = {metaProperties.Name};
             fields = fieldnames(settingsTree);
             for i = 1 : length(fields)
+                % Paths are left to loadPaths. formatXmlDataForGui
+                % splits char on spaces, so a path through a folder like
+                % "Tutorial 1" arrives here as a two element string
+                % array; assigning it would fire the listener on a value
+                % getRelativePath cannot take.
+                if any(strcmp(fields{i}, app.settingsPathFields))
+                    continue
+                end
                 if any(strcmp(fields{i}, propertyNames)) && ...
                         ~isstruct(settingsTree.(fields{i}))
                     app.(fields{i}) = settingsTree.(fields{i});
@@ -1362,8 +1379,7 @@ classdef GCPBase < matlab.apps.AppBase
         end
 
         function loadPaths(app, settingsTree)
-            fields = ["results_directory" "input_model_file" ...
-                "input_osimx_file" "input_motion_file" "input_grf_file"];
+            fields = app.settingsPathFields;
             for i = 1 : length(fields)
                 if ~isfield(settingsTree, fields(i))
                     continue
@@ -1533,9 +1549,8 @@ classdef GCPBase < matlab.apps.AppBase
             % is what first draws the table.
             app.advancedSettingValues = app.defaultAdvancedSettingValues;
             app.formatTabButtons();
-            app.RunButton.Tooltip = "Run is not available yet. Save " + ...
-                "the settings file and call " + ...
-                "GroundContactPersonalizationTool(settingsFile).";
+            app.RunButton.Tooltip = "Saves the settings file and runs " + ...
+                "Ground Contact Personalization.";
             app.validateAllFields();
             app.updateRunButton();
         end
@@ -1989,7 +2004,20 @@ classdef GCPBase < matlab.apps.AppBase
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
-            % Phase 6, deferred. The button is disabled by updateRunButton.
+            if strcmp(app.currentSettingsFile, "")
+                [file, path] = uiputfile('*.xml', ...
+                    "Save XML Settings File");
+                % User hit "Cancel"
+                if isequal(file, 0)
+                    return
+                end
+                app.currentSettingsFile = fullfile(path, file);
+            end
+            app.saveSettingsFile(app.currentSettingsFile);
+            % Clears figures left over from a previous run so the result
+            % plots are the only ones on screen.
+            close all
+            GCPRun(app, app.currentSettingsFile);
         end
 
         % Button pushed function: ResetButton

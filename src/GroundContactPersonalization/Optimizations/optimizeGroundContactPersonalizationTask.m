@@ -28,11 +28,14 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = optimizeGroundContactPersonalizationTask(inputs, ...
-    params, task)
+    params, task, app)
+if nargin < 4
+    app = [];
+end
 [initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
     params, task);
 [lowerBounds, upperBounds] = makeBounds(inputs, params, task);
-optimizerOptions = prepareOptimizerOptions(params);
+optimizerOptions = prepareOptimizerOptions(params, app);
 clear calcGroundContactPersonalizationTaskCost
 results = lsqnonlin(@(values) calcGroundContactPersonalizationTaskCost( ...
     values, fieldNameOrder, inputs, params, task), initialValues, ...
@@ -167,7 +170,7 @@ end
 
 % (struct) -> (struct)
 % Prepare optimizer options for lsqnonlin. 
-function output = prepareOptimizerOptions(params)
+function output = prepareOptimizerOptions(params, app)
 output = optimoptions('lsqnonlin', 'UseParallel', true);
 output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
 output.OptimalityTolerance = valueOrAlternate(params, ...
@@ -181,4 +184,13 @@ output.MaxFunctionEvaluations = valueOrAlternate(params, ...
 output.MaxIterations = valueOrAlternate(params, 'maxIterations', 400);
 output.Display = valueOrAlternate(params, ...
     'display','iter');
+% Lets the GUI's Cancel button stop the solver, the same way
+% MuscleTendonPersonalization and computeKinematicCalibration hook their
+% run windows in. Absent an app, lsqnonlin gets no OutputFcn at all.
+% The OutputFcn runs on the client, so unlike the cost function this
+% closure is not shipped to the parallel workers.
+if ~isempty(app) && ismethod(app, "CancelOptimizationGui")
+    output.OutputFcn = @(x, optimValues, state) ...
+        app.CancelOptimizationGui(x, optimValues, state);
+end
 end
