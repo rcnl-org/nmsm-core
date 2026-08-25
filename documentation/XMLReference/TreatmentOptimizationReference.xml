@@ -124,13 +124,16 @@
 			<RCNLCostTerm name="external_force_tracking">
 				<is_enabled>true</is_enabled>
 				<type>external_force_tracking</type>
-				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<!--Contact surfaces are named by the name attribute of RCNLContactSurface in the osimx file, or by their hindfoot_body when that attribute is absent. The axes element selects which components the term applies to. The older force_list and moment_list elements, which name force plate columns, are still accepted.-->
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
 			<RCNLCostTerm name="external_moment_tracking">
 				<is_enabled>true</is_enabled>
 				<type>external_moment_tracking</type>
-				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
 			<RCNLCostTerm name="center_of_pressure_tracking">
@@ -361,28 +364,32 @@
 			<RCNLConstraintTerm name="external_force_deviation">
 				<is_enabled>true</is_enabled>
 				<type>external_force_deviation</type>
-				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_force_value">
 				<is_enabled>true</is_enabled>
 				<type>external_force_value</type>
-				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_moment_deviation">
 				<is_enabled>true</is_enabled>
 				<type>external_moment_deviation</type>
-				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_moment_value">
 				<is_enabled>true</is_enabled>
 				<type>external_moment_value</type>
-				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -605,70 +612,80 @@
 			<RCNLConstraintTerm name="external_force_periodicity">
 				<is_enabled>true</is_enabled>
 				<type>external_force_periodicity</type>
-				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_external_force_deviation">
 				<is_enabled>true</is_enabled>
 				<type>initial_external_force_deviation</type>
-				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_external_force_value">
 				<is_enabled>true</is_enabled>
 				<type>initial_external_force_value</type>
-				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_external_force_deviation">
 				<is_enabled>true</is_enabled>
 				<type>final_external_force_deviation</type>
-				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_external_force_value">
 				<is_enabled>true</is_enabled>
 				<type>final_external_force_value</type>
-				<force_list>external_force_1 external_force_2 external_force_3</force_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_moment_periodicity">
 				<is_enabled>true</is_enabled>
 				<type>external_moment_periodicity</type>
-				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_external_moment_deviation">
 				<is_enabled>true</is_enabled>
 				<type>initial_external_moment_deviation</type>
-				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_external_moment_value">
 				<is_enabled>true</is_enabled>
 				<type>initial_external_moment_value</type>
-				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_external_moment_deviation">
 				<is_enabled>true</is_enabled>
 				<type>final_external_moment_deviation</type>
-				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_external_moment_value">
 				<is_enabled>true</is_enabled>
 				<type>final_external_moment_value</type>
-				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
+				<contact_surface_list>contact_surface_1 contact_surface_2</contact_surface_list>
+				<axes>x y z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>

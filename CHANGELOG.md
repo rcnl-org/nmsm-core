@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- A Treatment Optimization contact surface can be given force, moment and electrical center columns for any number of force plates, listed as three columns (X, Y, Z) per plate. The plates are combined into one wrench referenced to the first listed plate's electrical center, so a foot that strikes several plates over a trial no longer has to be merged into a single virtual plate beforehand.
+- `<RCNLContactSurface>` accepts an optional `name` attribute. Surfaces without one are named by their `<hindfoot_body>`.
+- Ground reaction cost and constraint terms select a contact surface with `<contact_surface_list>` and components with `<axes>`. The older `<force_list>` and `<moment_list>` elements, which name force plate columns, are still accepted; on a surface combining several plates, any plate's label for an axis resolves to that surface's merged column.
+- Treatment Optimization ground reaction results are written back out under the columns of whichever force plate carried the surface at that time, so results keep the column layout of the input GRF file.
+
+### Changed
+- Moments in `<trial>_replacedExperimentalGroundReactions.sto` are now written about the electrical center named by the file's own column labels, rather than about the midfoot superior point. Optimization results are unaffected; only this diagnostic file changes.
+
+### Fixed
+- `external_force_tracking`, `external_moment_tracking` and the external force and moment path and terminal constraint terms no longer collapse their column indices to a single scalar, which gave the wrong column for terms naming more than one entry.
+
 ## v.1.5.3 - 2026-02-27
 
 ### Fixed
