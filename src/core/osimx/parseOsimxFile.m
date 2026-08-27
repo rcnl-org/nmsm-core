@@ -110,6 +110,16 @@ else
 contactSurface.hindfootBodyName = hindfootBodyName.Text;
 end
 
+% Treatment Optimization terms address contact surfaces by name. The name
+% attribute is optional; surfaces written without one fall back to the
+% hindfoot body, which is already unique per surface.
+if isfield(tree, 'Attributes') && isfield(tree.Attributes, 'name') && ...
+        ~isempty(tree.Attributes.name)
+    contactSurface.name = string(tree.Attributes.name);
+else
+    contactSurface.name = string(contactSurface.hindfootBodyName);
+end
+
 contactSurface.toeMarker = getFieldByNameOrError(tree, 'toe_marker').Text;
 contactSurface.medialMarker = getFieldByNameOrError(tree, 'medial_marker').Text;
 contactSurface.lateralMarker = getFieldByNameOrError(tree, 'lateral_marker').Text;

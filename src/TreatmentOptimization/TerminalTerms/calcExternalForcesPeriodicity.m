@@ -31,12 +31,9 @@
 
 function [externalForcesPeriodicity, constraintTerm] = ...
     calcExternalForcesPeriodicity( ...
-    groundReactionForces, contactSurfaces, forceName, constraintTerm)
-for i = 1:length(contactSurfaces)
-    indx = find(strcmp(convertCharsToStrings( ...
-        contactSurfaces{i}.forceColumns), forceName));
-    if ~isempty(indx)
-        externalForcesPeriodicity = diff(groundReactionForces{i}(:, indx));
-    end
-end
+    groundReactionForces, inputs, forceName, constraintTerm)
+[contactSurfaceIndex, axisIndex] = findGroundReactionTermIndices( ...
+    constraintTerm, inputs, 'forceColumns', forceName);
+externalForcesPeriodicity = ...
+    diff(groundReactionForces{contactSurfaceIndex}(:, axisIndex));
 end

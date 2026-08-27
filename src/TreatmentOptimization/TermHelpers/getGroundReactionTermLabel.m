@@ -1,11 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function first calculates the midfoot superior location and then 
-% transfers the ground reaction moments from the electrical center to the 
-% midfoot superior location.
-%
-% (struct) -> (struct)
-% Transfers the ground reaction moments to the midfoot superior location
+% (struct, string) -> (string)
+% Returns a ground reaction term's column label, or an empty string when the
+% term selects its contact surface with <contact_surface_list> instead.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +12,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,22 +26,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = setupGroundContact(inputs)
-for i = 1:length(inputs.contactSurfaces)
-    midfootSuperiorLocation = pointKinematics(inputs.experimentalTime, ...
-        inputs.experimentalJointAngles, inputs.experimentalJointVelocities, ...
-        inputs.contactSurfaces{i}.midfootSuperiorPointOnBody, ...
-        inputs.contactSurfaces{i}.midfootSuperiorBody, ...
-        inputs.modelFileName, inputs.coordinateNames, inputs.osimVersion);
-    midfootSuperiorLocation(:, 2) = inputs.contactSurfaces{i}.restingSpringLength;
-    % Kept so saved experimental moments can be referenced back to the
-    % electrical center of each force plate applied to this surface.
-    inputs.contactSurfaces{i}.midfootSuperiorLocation = ...
-        midfootSuperiorLocation;
-    inputs.contactSurfaces{i}.experimentalGroundReactionMoments = ...
-        transferMoments(inputs.contactSurfaces{i}.electricalCenter, ...
-        midfootSuperiorLocation, ...
-        inputs.contactSurfaces{i}.experimentalGroundReactionMoments, ...
-        inputs.contactSurfaces{i}.experimentalGroundReactionForces);
+function label = getGroundReactionTermLabel(term, fieldName)
+if isfield(term, fieldName)
+    label = convertCharsToStrings(term.(fieldName));
+else
+    label = "";
 end
 end
