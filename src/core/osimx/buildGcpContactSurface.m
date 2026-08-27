@@ -44,6 +44,10 @@ else
 end
 
 contact = groundContact.RCNLContactSurface;
+if isfield(contactSurface, 'name') && ~isempty(contactSurface.name)
+    contact{i}.Attributes.name = ...
+        convertStringsToChars(string(contactSurface.name));
+end
 contact{i}.is_left_foot.Comment = ...
     'Flag indicating whether foot model should be mirrored';
 isLeftFoot = "false"; if contactSurface.isLeftFoot; isLeftFoot = "true"; end
