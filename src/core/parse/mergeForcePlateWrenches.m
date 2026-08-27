@@ -1,11 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function first calculates the midfoot superior location and then 
-% transfers the ground reaction moments from the electrical center to the 
-% midfoot superior location.
+% (3D matrix, 3D matrix, 3D matrix) -> (2D matrix, 2D matrix, 2D matrix)
+% Combines the force plates applied to one contact surface into the single
+% wrench the rest of the pipeline expects.
 %
-% (struct) -> (struct)
-% Transfers the ground reaction moments to the midfoot superior location
+% Each force plate reports its moment about its own electrical center, so
+% raw moments cannot simply be summed. Every plate is transferred onto the
+% first listed plate's electrical center, which leaves the result exact and
+% continuous, and reduces to the untouched inputs for a single plate.
+%
+% Inputs are numTime x 3 x numForcePlates.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +19,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,22 +33,14 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = setupGroundContact(inputs)
-for i = 1:length(inputs.contactSurfaces)
-    midfootSuperiorLocation = pointKinematics(inputs.experimentalTime, ...
-        inputs.experimentalJointAngles, inputs.experimentalJointVelocities, ...
-        inputs.contactSurfaces{i}.midfootSuperiorPointOnBody, ...
-        inputs.contactSurfaces{i}.midfootSuperiorBody, ...
-        inputs.modelFileName, inputs.coordinateNames, inputs.osimVersion);
-    midfootSuperiorLocation(:, 2) = inputs.contactSurfaces{i}.restingSpringLength;
-    % Kept so saved experimental moments can be referenced back to the
-    % electrical center of each force plate applied to this surface.
-    inputs.contactSurfaces{i}.midfootSuperiorLocation = ...
-        midfootSuperiorLocation;
-    inputs.contactSurfaces{i}.experimentalGroundReactionMoments = ...
-        transferMoments(inputs.contactSurfaces{i}.electricalCenter, ...
-        midfootSuperiorLocation, ...
-        inputs.contactSurfaces{i}.experimentalGroundReactionMoments, ...
-        inputs.contactSurfaces{i}.experimentalGroundReactionForces);
+function [forces, moments, electricalCenter] = mergeForcePlateWrenches( ...
+    plateForces, plateMoments, plateElectricalCenters)
+electricalCenter = plateElectricalCenters(:, :, 1);
+forces = sum(plateForces, 3);
+moments = zeros(size(electricalCenter));
+for plate = 1:size(plateForces, 3)
+    moments = moments + transferMoments( ...
+        plateElectricalCenters(:, :, plate), electricalCenter, ...
+        plateMoments(:, :, plate), plateForces(:, :, plate));
 end
 end

@@ -78,7 +78,9 @@ if isfield(inputs.osimx, 'groundContact') && ...
             inputs.contactSurfaces{surfaceIndex} ...
             .experimentalGroundReactionMoments, ...
             inputs.contactSurfaces{surfaceIndex} ...
-            .electricalCenter] = parseGroundReactionDataWithoutTime( ...
+            .electricalCenter, ...
+            inputs.contactSurfaces{surfaceIndex} ...
+            .forcePlates] = parseGroundReactionDataWithoutTime( ...
             inputs, dataDirectory, surfaceIndex);
     end
 else
@@ -412,35 +414,110 @@ else
 end
 end
 
-function [forces, moments, ec] = parseGroundReactionDataWithoutTime( ...
-    inputs, dataDirectory, surfaceIndex)
+function [forces, moments, ec, plates] = ...
+    parseGroundReactionDataWithoutTime(inputs, dataDirectory, surfaceIndex)
 import org.opensim.modeling.Storage
 [grfData, grfColumnNames, grfTime] = parseTrialDataTryDirectories( ...
     fullfile(inputs.initialGuessDirectory, "GRFData"), ...
     fullfile(dataDirectory, "GRFData"), inputs.trialName, inputs.model, true);
-forces = NaN(length(grfTime), 3);
-moments = NaN(length(grfTime), 3);
-ec = NaN(length(grfTime), 3);
-for i=1:size(grfColumnNames', 1)
-    label = grfColumnNames(i);
+contactSurface = inputs.osimx.groundContact.contactSurface{surfaceIndex};
+numForcePlates = verifyForcePlateColumns(contactSurface);
+
+plateForces = NaN(length(grfTime), 3, numForcePlates);
+plateMoments = NaN(length(grfTime), 3, numForcePlates);
+plateElectricalCenters = NaN(length(grfTime), 3, numForcePlates);
+for plate = 1:numForcePlates
     for j = 1:3
-        if strcmpi(label, inputs.osimx.groundContact ...
-                .contactSurface{surfaceIndex}.forceColumns(j))
-            forces(:, j) = grfData(:, i);
-        end
-        if strcmpi(label, inputs.osimx.groundContact ...
-                .contactSurface{surfaceIndex}.momentColumns(j))
-            moments(:, j) = grfData(:, i);
-        end
-        if strcmpi(label, inputs.osimx.groundContact ...
-                .contactSurface{surfaceIndex}.electricalCenterColumns(j))
-            ec(:, j) = grfData(:, i);
-        end
+        column = 3 * (plate - 1) + j;
+        plateForces(:, j, plate) = findGroundReactionColumn(grfData, ...
+            grfColumnNames, contactSurface.forceColumns(column), ...
+            contactSurface.name);
+        plateMoments(:, j, plate) = findGroundReactionColumn(grfData, ...
+            grfColumnNames, contactSurface.momentColumns(column), ...
+            contactSurface.name);
+        plateElectricalCenters(:, j, plate) = findGroundReactionColumn( ...
+            grfData, grfColumnNames, ...
+            contactSurface.electricalCenterColumns(column), ...
+            contactSurface.name);
     end
 end
-if any([isnan(forces) isnan(moments) isnan(ec)])
-    throw(MException('', ['Unable to parse GRF file, check that ' ...
-        'all necessary column labels are present']))
+
+[forces, moments, ec] = mergeForcePlateWrenches(plateForces, ...
+    plateMoments, plateElectricalCenters);
+
+plates.electricalCenter = plateElectricalCenters;
+[plates.windowStartTimes, plates.windowPlates] = ...
+    findForcePlateContactWindows(plateForces, grfTime);
+end
+
+% Each of the three column lists must name three columns per force plate,
+% and all three must agree on how many plates the surface uses.
+function numForcePlates = verifyForcePlateColumns(contactSurface)
+columnCounts = [numel(contactSurface.forceColumns), ...
+    numel(contactSurface.momentColumns), ...
+    numel(contactSurface.electricalCenterColumns)];
+elementNames = ["force_columns", "moment_columns", ...
+    "electrical_center_columns"];
+for i = 1:3
+    if columnCounts(i) == 0 || mod(columnCounts(i), 3) ~= 0
+        throw(MException('', "<" + elementNames(i) + "> for contact " + ...
+            "surface " + contactSurface.name + " names " + ...
+            columnCounts(i) + " columns. It must name three columns " + ...
+            "(X, Y, Z) for each force plate applied to the surface."))
+    end
+end
+if numel(unique(columnCounts)) ~= 1
+    throw(MException('', "Contact surface " + contactSurface.name + ...
+        " names " + columnCounts(1) + " force, " + columnCounts(2) + ...
+        " moment and " + columnCounts(3) + " electrical center " + ...
+        "columns. All three must cover the same force plates."))
+end
+numForcePlates = columnCounts(1) / 3;
+end
+
+function column = findGroundReactionColumn(grfData, grfColumnNames, ...
+    label, surfaceName)
+index = find(strcmpi(grfColumnNames, label), 1);
+if isempty(index)
+    throw(MException('', "Unable to parse GRF file, column " + label + ...
+        " of contact surface " + surfaceName + " is not present."))
+end
+column = grfData(:, index);
+end
+
+% Records which force plate carries the surface at each instant, as the
+% normalized time each window starts and the plate active in it. Used only
+% to label per-plate result columns, never in the merged wrench.
+function [windowStartTimes, windowPlates] = ...
+    findForcePlateContactWindows(plateForces, grfTime)
+if size(plateForces, 3) == 1
+    windowStartTimes = 0;
+    windowPlates = 1;
+    return
+end
+[~, activePlate] = max(abs(plateForces(:, 2, :)), [], 3);
+activePlate = absorbShortContactRuns(activePlate, 3);
+normalizedTime = (grfTime(:) - grfTime(1)) / (grfTime(end) - grfTime(1));
+windowIndices = [1; find(diff(activePlate) ~= 0) + 1];
+windowStartTimes = normalizedTime(windowIndices)';
+windowStartTimes(1) = 0;
+windowPlates = activePlate(windowIndices)';
+end
+
+% While every plate is unloaded the largest vertical force is baseline
+% noise, so the active plate can flap back and forth. Absorbing short runs
+% into the preceding one keeps the contact windows contiguous; the boundary
+% placed inside an unloaded stretch does not matter because the forces there
+% are zero.
+function activePlate = absorbShortContactRuns(activePlate, minimumRunLength)
+runStartIndices = [1; find(diff(activePlate) ~= 0) + 1; ...
+    length(activePlate) + 1];
+for i = 1 : length(runStartIndices) - 1
+    runStart = runStartIndices(i);
+    runEnd = runStartIndices(i + 1) - 1;
+    if runStart > 1 && runEnd - runStart + 1 < minimumRunLength
+        activePlate(runStart:runEnd) = activePlate(runStart - 1);
+    end
 end
 end
 
