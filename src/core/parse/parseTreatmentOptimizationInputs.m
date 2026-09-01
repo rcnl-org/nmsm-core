@@ -92,6 +92,7 @@ inputs.toolName = findToolName(tree);
 inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
     'results_directory'));
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
+inputs.resultsDirectory = getUniqueResultsDirectory(inputs.resultsDirectory);
 inputs.controllerTypes = parseControllerTypes(tree);
 inputs = parseModel(tree, inputs);
 [~, state] = Model(inputs.model);

@@ -42,6 +42,7 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
+resultsDirectory = getUniqueResultsDirectory(resultsDirectory);
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end

@@ -28,21 +28,22 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [outputFile, inputs, params] = ...
+function [outputFile, inputs, params, resultsDirectory] = ...
     parseJointModelPersonalizationSettingsTree(settingsTree)
 % check arguments in advance to quit before computation if incorrect
-outputFile = getOutputFile(settingsTree);
+[outputFile, resultsDirectory] = getOutputFile(settingsTree);
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
 end
 
-function outputFile = getOutputFile(tree)
+function [outputFile, resultsDir] = getOutputFile(tree)
 outputFile = getFieldByNameOrError(tree, 'output_model_file').Text;
 resultsDir = getFieldByName(tree, 'results_directory');
 if isstruct(resultsDir)
     resultsDir = resultsDir.Text;
 end
 if(resultsDir)
+    resultsDir = getUniqueResultsDirectory(resultsDir);
     if ~exist(resultsDir, 'dir')
         try
             mkdir(resultsDir)

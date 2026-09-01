@@ -40,6 +40,7 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "GroundContactPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(settingsTree);
+resultsDirectory = getUniqueResultsDirectory(resultsDirectory);
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 results = GroundContactPersonalization(inputs, params);

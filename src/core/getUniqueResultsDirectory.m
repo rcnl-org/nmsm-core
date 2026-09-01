@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function is a wrapper for the JointModelPersonalization function
-% such that an xml or osimx filename can be passed and the resulting
-% computation can be completed according to the instructions of that file.
+% Appends a numeric suffix (_1, _2, ...) to resultsDirectory if it already
+% exists, so a tool never silently overwrites a previous run's results.
+% Returns resultsDirectory unchanged if it does not yet exist.
 %
-% (string) -> (None)
-% Runs JointModelPersonalization after parsing inputs from settings file
+% (string) -> (string)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +14,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Xuanning Liu                                                 %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,27 +28,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function JointModelPersonalizationTool(settingsFileName)
-tic
-try 
-    verifyProjectOpened()
-catch
-    error("NMSM Pipeline Project is not opened.")
-end
-settingsTree = xml2struct(settingsFileName);
-verifyVersion(settingsTree, "JointModelPersonalizationTool");
-[outputFile, inputs, params, resultsDirectory] = ...
-    parseJointModelPersonalizationSettingsTree(settingsTree);
-outputLogFile = fullfile("commandWindowOutput.txt");
-diary(outputLogFile)
-newModel = JointModelPersonalization(inputs, params);
-newModel.print(outputFile);
-fprintf("Joint Model Personalization Runtime: %f Hours\n", toc/3600);
-diary off
-try
-    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
-catch
+function resultsDirectory = getUniqueResultsDirectory(resultsDirectory)
+baseResultsDirectory = resultsDirectory;
+suffix = 1;
+while exist(resultsDirectory, "dir")
+    resultsDirectory = sprintf("%s_%d", baseResultsDirectory, suffix);
+    suffix = suffix + 1;
 end
 end
-
