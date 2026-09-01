@@ -33,12 +33,16 @@ function writeNeuralControlPersonalizationOsimxFile(inputs, ...
 model = Model(inputs.modelFileName);
 
 buildFromExisting = false;
-if isfield(inputs, 'osimxFileName')
+if isfield(inputs, 'osimxFileName') && strlength(inputs.osimxFileName) > 0
     if isfile(inputs.osimxFileName)
         osimx = parseOsimxFile(inputs.osimxFileName, model);
         [~, name, ~] = fileparts(inputs.osimxFileName);
         outfile = fullfile(resultsDirectory, strcat(name, "_ncp.xml"));
         buildFromExisting = true;
+    else
+        fprintf(['[writeNeuralControlPersonalizationOsimxFile] ' ...
+            'input_osimx_file "%s" was specified but not found; writing ' ...
+            'a new osimx file instead of merging.\n'], inputs.osimxFileName);
     end
 end
 if ~buildFromExisting

@@ -31,10 +31,14 @@
 function values = prepareNcpInitialValues(inputs, params)
 use_nnmf_as_init = true;                                                   % !!!
 
-hasInitialGuess = isfield(inputs, 'initialGuessDirectory') && ...
-    strlength(inputs.initialGuessDirectory) > 0 && ...
-    isfolder(inputs.initialGuessDirectory);
-if hasInitialGuess
+hasInitialGuessDirectory = isfield(inputs, 'initialGuessDirectory') && ...
+    strlength(inputs.initialGuessDirectory) > 0;
+if hasInitialGuessDirectory && ~isfolder(inputs.initialGuessDirectory)
+    fprintf(['[prepareNcpInitialValues] initial_guess_directory "%s" was ' ...
+        'specified but does not exist; falling back to normal ' ...
+        'initialization.\n'], inputs.initialGuessDirectory);
+end
+if hasInitialGuessDirectory && isfolder(inputs.initialGuessDirectory)
     values = prepareNcpInitialValuesFromDirectory(inputs, params);
     return
 end

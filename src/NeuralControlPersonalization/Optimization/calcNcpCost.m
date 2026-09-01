@@ -56,7 +56,10 @@ for term = 1:length(params.costTerms)
                 if isfield(inputs, 'mtpActivations')
                     rawCost = activationsWithMtpData - inputs.mtpActivations;
                 else
-                    rawCost = 0;
+                    error(['activation_tracking cost term is enabled but ' ...
+                        'no mtpActivations are available (mtp_results_directory ' ...
+                        'was not configured); this term would silently ' ...
+                        'contribute zero cost otherwise.'])
                 end
             case {"activation_minimization", "muscle_activation_minimization"}
                 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);

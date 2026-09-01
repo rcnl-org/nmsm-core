@@ -94,9 +94,9 @@ mtpResultsDirectory = getFieldByNameOrError( ...
     parseMtpStandard(unique(findFileListFromPrefixList( ...
     fullfile(mtpResultsDirectory, "muscleActivations"), inputs.prefixes)));
 osimxFileName = getFieldByName(tree, "input_osimx_file");
-% if ~isstruct(osimxFileName) || isempty(osimxFileName.Text)
-%     throw(MException('', 'An input .osimx file is required if using data from MTP.'))
-% end
+if ~isstruct(osimxFileName) || isempty(osimxFileName.Text)
+    throw(MException('', 'An input .osimx file is required if using data from MTP.'))
+end
 inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text, inputs.model);
 % Remove activations of muscles from coordinates not included
 includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
@@ -207,6 +207,7 @@ else
     throw(MException('',  ...
         "input osimx file contains no RCNLMuscle elements"))
 end
+fallbackMuscles = strings(1, 0);
 for i = 1 : length(muscleNames)
     if ismember(muscleNames(i), mtpDataMuscleNames)
         currentMuscle = mtpData.muscles.(muscleNames(i));
@@ -214,11 +215,13 @@ for i = 1 : length(muscleNames)
             optimalFiberLengthScaleFactors(i) = currentMuscle.optimalFiberLength / inputs.optimalFiberLength(i);
         else
             optimalFiberLengthScaleFactors(i) = 1;
+            fallbackMuscles(end + 1) = muscleNames(i); %#ok<AGROW>
         end
         if isfield(currentMuscle, 'tendonSlackLength')
             tendonSlackLengthScaleFactors(i) = currentMuscle.tendonSlackLength / inputs.tendonSlackLength(i);
         else
             tendonSlackLengthScaleFactors(i) = 1;
+            fallbackMuscles(end + 1) = muscleNames(i); %#ok<AGROW>
         end
         if isfield(currentMuscle, 'maxIsometricForce')
             maxIsometricForce(i) = currentMuscle.maxIsometricForce;
@@ -226,6 +229,13 @@ for i = 1 : length(muscleNames)
     else
         optimalFiberLengthScaleFactors(i) = 1;
         tendonSlackLengthScaleFactors(i) = 1;
+        fallbackMuscles(end + 1) = muscleNames(i); %#ok<AGROW>
     end
+end
+fallbackMuscles = unique(fallbackMuscles, 'stable');
+if ~isempty(fallbackMuscles)
+    fprintf(['[getMtpDataInputs] The following muscle(s) had no MTP data ' ...
+        '(or were missing optimalFiberLength/tendonSlackLength) and used ' ...
+        'scale factor 1: %s\n'], strjoin(fallbackMuscles, ", "));
 end
 end

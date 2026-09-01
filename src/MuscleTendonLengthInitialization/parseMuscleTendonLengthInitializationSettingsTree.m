@@ -94,6 +94,11 @@ if (~isempty(passiveInputDirectory))
         
         inputs.passiveMuscleTendonLength = inputs.passiveMuscleTendonLength(:, includedIndices, :);
         inputs.passiveMomentDataExists = 1;
+    else
+        fprintf(['[MuscleTendonLengthInitialization] ' ...
+            'passive_data_input_directory "%s" was specified but is not ' ...
+            'a valid folder; passive moment data will not be used.\n'], ...
+            passiveInputDirectory);
     end
 end
 end
