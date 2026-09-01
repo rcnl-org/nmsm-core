@@ -41,8 +41,12 @@ numDesignVariables = length(initialValues);
 [synergyWeightEquations, synergyWeightSums, lowerBounds, upperbounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights);
 optimizerOptions = prepareOptimizerOptions(params);
-% uncomment for a Cancel button that stops fmincon early and still saves the current result
-% optimizerOptions = addCancelButton(optimizerOptions, params);   
+% Cancel button that stops fmincon early and saves the current result.
+% cancelCleanup guarantees the window is closed on any exit from this
+% function (normal return, error, or Ctrl+C).
+[optimizerOptions, cancelCleanup] = addOptimizationCancelButton( ...
+    optimizerOptions, params.maxIterations, "Optimizing NCP");
+
 if ~inputs.optimize_synergy_vectors
     % weights are fixed, not part of the design vector
     % no weight normalization constraints to build
@@ -186,34 +190,5 @@ if inputs.enforce_bilateral_symmetry
     ceq = sum(weights(1:nSyn1,:).^2, 2) - normalizationTarget(1:nSyn1);
 else
     ceq = sum(weights.^2, 2) - normalizationTarget;
-end
-end
-
-% -----------------------------------------------------------------------
-% Adds a waitbar with a Cancel button
-function optimizerOptions = addCancelButton(optimizerOptions, params)
-waitbarHandle = waitbar(0, 'Optimizing NCP... click Cancel or closing the window to stop early', ...
-    'CreateCancelBtn', 'setappdata(gcbf, ''canceling'', 1)');
-optimizerOptions.OutputFcn = @(x, optimValues, state) ncpCancelButtonOutputFcn( ...
-    optimValues, state, waitbarHandle, params.maxIterations);
-end
-
-function stop = ncpCancelButtonOutputFcn(optimValues, state, waitbarHandle, ...
-    maxIterations)
-stop = false;
-if ~ishghandle(waitbarHandle)
-    stop = true;
-    return
-end
-if getappdata(waitbarHandle, 'canceling')
-    stop = true;
-end
-if stop || strcmp(state, 'done')
-    delete(waitbarHandle);
-else
-    fraction = min(optimValues.iteration / max(maxIterations, 1), 1);
-    waitbar(fraction, waitbarHandle, sprintf( ...
-        'Optimizing NCP (iteration %d, cost %.4g)... click Cancel or closing the window to stop early', ...
-        optimValues.iteration, optimValues.fval));
 end
 end
