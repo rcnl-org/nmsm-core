@@ -50,6 +50,8 @@ else
         evaluateGcvSplines(inputs.splineMarkerPositions{indx}, ...
         0:2, time);
 end
+experimentalMarkerPositions = applyTermOffset(costTerm, ...
+    experimentalMarkerPositions);
 experimentalIndex = (indx - 1) * 3 + 1;
 if costTerm.axes == 'y'
     experimentalIndex = experimentalIndex + 1;

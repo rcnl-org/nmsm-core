@@ -36,5 +36,6 @@ experimentalAngles = findSplinedBodyAxesByLabels(constraintTerm, inputs, time);
 
 angles = findAngleInSequence(angles, constraintTerm);
 experimentalAngles = findAngleInSequence(experimentalAngles, constraintTerm);
+experimentalAngles = applyTermOffset(constraintTerm, experimentalAngles);
 pathTerm = angles - experimentalAngles;
 end

@@ -39,6 +39,7 @@ experimentalAngles = findSplinedBodyAxesByLabels(costTerm, inputs, time);
 
 angles = findAngleInSequence(angles, costTerm);
 experimentalAngles = findAngleInSequence(experimentalAngles, costTerm);
+experimentalAngles = applyTermOffset(costTerm, experimentalAngles);
 cost = angles - experimentalAngles;
 
 cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);

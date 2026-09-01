@@ -53,6 +53,7 @@
 				<is_enabled>true</is_enabled>
 				<type>generalized_coordinate_tracking</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<offset>0</offset>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
 			<RCNLCostTerm name="generalized_speed_tracking">
@@ -78,6 +79,7 @@
 				<type>marker_position_tracking</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
 				<axes>x y z</axes>
+				<offset>0</offset>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
 			<RCNLCostTerm name="marker_velocity_tracking">
@@ -93,6 +95,7 @@
 				<body_list>body_1 body_2 body_3</body_list>
 				<axes>x y z</axes>
 				<sequence>xyz</sequence>
+				<offset>0</offset>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
 			<RCNLCostTerm name="body_orientation_minimization">
@@ -137,6 +140,8 @@
 				<is_enabled>true</is_enabled>
 				<type>center_of_pressure_tracking</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<axes>x z</axes>
+				<offset>0</offset>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
 			<RCNLCostTerm name="muscle_activation_tracking">
@@ -256,6 +261,7 @@
 				<is_enabled>true</is_enabled>
 				<type>generalized_coordinate_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -299,6 +305,7 @@
 				<type>marker_position_deviation</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
 				<axes>x y z</axes>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -332,6 +339,7 @@
 				<body_list>body_1 body_2 body_3</body_list>
 				<axes>x y z</axes>
 				<sequence>xyz</sequence>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -390,6 +398,8 @@
 				<is_enabled>true</is_enabled>
 				<type>center_of_pressure_deviation</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<axes>x z</axes>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -397,6 +407,7 @@
 				<is_enabled>true</is_enabled>
 				<type>center_of_pressure_value</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<axes>x z</axes>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -411,6 +422,7 @@
 				<is_enabled>true</is_enabled>
 				<type>initial_generalized_coordinate_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -425,6 +437,7 @@
 				<is_enabled>true</is_enabled>
 				<type>final_generalized_coordinate_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -483,6 +496,7 @@
 				<type>initial_marker_position_deviation</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
 				<axes>x y z</axes>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -499,6 +513,7 @@
 				<type>final_marker_position_deviation</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
 				<axes>x y z</axes>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -565,6 +580,7 @@
 				<body_list>body_1 body_2 body_3</body_list>
 				<axes>x y z</axes>
 				<sequence>xyz</sequence>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -583,6 +599,7 @@
 				<body_list>body_1 body_2 body_3</body_list>
 				<axes>x y z</axes>
 				<sequence>xyz</sequence>
+				<offset>0</offset>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>

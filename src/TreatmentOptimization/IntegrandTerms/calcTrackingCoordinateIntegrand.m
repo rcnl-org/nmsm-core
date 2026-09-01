@@ -38,6 +38,7 @@ defaultTimeNormalization = true;
     inputs.coordinateNames, coordinateName);
 experimentalPosition = findSplinedJointAnglesByLabels( ...
     costTerm, inputs, time);
+experimentalPosition = applyTermOffset(costTerm, experimentalPosition);
 
 cost = experimentalPosition - position;
 
