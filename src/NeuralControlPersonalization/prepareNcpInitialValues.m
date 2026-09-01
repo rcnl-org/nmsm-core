@@ -95,6 +95,9 @@ weightsInit = inputs.fixedSynergyWeights;
 if isfield(inputs, 'mtpActivations')
     fprintf(['Fixed synergy weights: fitting commands via NNLS ' ...
         'against mtpActivations ...\n\n'])
+    fprintf(['[prepareNcpInitialValues] Commands are fit directly to ' ...
+        'mtpActivations via NNLS; normalization value is not applied ' ...
+        'to commands here.\n']);
     mtpActivationsStack = stackMtpActivations(inputs);
 
     commandsInitStack = zeros(inputs.numTrials * inputs.numPoints, ...
@@ -125,13 +128,28 @@ else
     fprintf("Fixed synergy weights: constant command initialization ...\n\n")
     noTarget = isempty(inputs.synergy_vector_normalization_value) || ...
                isnan(inputs.synergy_vector_normalization_value);
-    if noTarget
-        const = 0.15;
-    else
-        const = inputs.synergy_vector_normalization_value;
-    end
-    commandsInitNodes = const * ones(inputs.numTrials, inputs.numNodes, ...
+    commandsInitNodes = zeros(inputs.numTrials, inputs.numNodes, ...
         inputs.numSynergies);
+    if noTarget
+        const = defaultNcpConstant();
+        fprintf(['[prepareNcpInitialValues] Fixed weights, constant ' ...
+            'commands: no normalization target. Using constant %.4g ' ...
+            'for all groups.\n'], const);
+        commandsInitNodes(:) = const;
+    else
+        value = inputs.synergy_vector_normalization_value;
+        method = inputs.synergy_vector_normalization_method;
+        for group = 1:numGroups
+            nMusc = numMusclesPerGroup(group);
+            const = computeNcpGroupConstant(value, method, nMusc);
+            fprintf(['[prepareNcpInitialValues] Fixed weights, constant ' ...
+                'commands - Group %d: nMusc=%d, method="%s", target=%g ' ...
+                '-> const=%.4g\n'], group, nMusc, method, value, const);
+            sStart = synergyGroupStart(group);
+            sEnd = sStart + numSynergiesPerGroup(group) - 1;
+            commandsInitNodes(:, :, sStart:sEnd) = const;
+        end
+    end
 end
 
 values = repackDesignVariables(weightsInit, commandsInitNodes, inputs);
@@ -236,7 +254,8 @@ fprintf("Generating constant initialization ...\n\n")
 noTarget = isempty(inputs.synergy_vector_normalization_value) || ...
            isnan(inputs.synergy_vector_normalization_value);
 if noTarget
-    fprintf('[prepareNcpInitialValues] No normalization target. Using constant 0.15.\n\n');
+    const = defaultNcpConstant();
+    fprintf('[prepareNcpInitialValues] No normalization target. Using constant %.4g.\n\n', const);
 end
 
 weightValues  = [];
@@ -244,17 +263,10 @@ constCommands = zeros(inputs.numSynergies, 1);
 for i = 1:numGroups
     nMusc = numMusclesPerGroup(i);
     if noTarget
-        const = 0.15;
+        const = defaultNcpConstant();
     else
-        switch lower(inputs.synergy_vector_normalization_method)
-            case 'sum'
-                const = inputs.synergy_vector_normalization_value / nMusc;
-            case 'magnitude'
-                const = inputs.synergy_vector_normalization_value / sqrt(nMusc);
-            otherwise
-                error('[prepareNcpInitialValues] Unknown normalization_method: "%s"', ...
-                    inputs.synergy_vector_normalization_method);
-        end
+        const = computeNcpGroupConstant(inputs.synergy_vector_normalization_value, ...
+            inputs.synergy_vector_normalization_method, nMusc);
         fprintf('[prepareNcpInitialValues] Group %d: nMusc=%d, method="%s", target=%g -> const=%.4g\n', ...
             i, nMusc, inputs.synergy_vector_normalization_method, ...
             inputs.synergy_vector_normalization_value, const);
@@ -301,6 +313,9 @@ function [weightsNormalized,commandsNormalized] = prenormalizeVariables(...
 if isempty(normalization_value) || isnan(normalization_value)
     numSynergies = size(weights, 1);
     ratios = sqrt(mean(commands(:)) / mean(weights(:)))* ones(numSynergies, 1);
+    fprintf(['[PrenormalizeVariables] No normalization target given. Using ' ...
+        'data-driven ratio to match weight/command scale: ratio=%.4g ' ...
+        '(sqrt(mean(commands)/mean(weights))).\n'], ratios(1));
     % ratios = ones(numSynergies, 1);
 else
     % Back-calculate constW so a constant weight vector satisfies
@@ -339,4 +354,29 @@ fprintf('  Command (min/max/mean): %.3g/%.3g/%.3g → %.3g/%.3g/%.3g\n', ...
     min(commands(:)),           max(commands(:)),           mean(commands(:)), ...
     min(commandsNormalized(:)), max(commandsNormalized(:)), mean(commandsNormalized(:)));
 % fprintf('  Ratio to equalize mean(w)==mean(c) after norm: %.4g\n\n', ratioEqualize);
+end
+
+% -------------------------------------------------------------------------
+% Constant weight/command value implied by a normalization target for a
+% group of nMusc muscles: value/nMusc (sum) or value/sqrt(nMusc) (magnitude),
+% so a constant vector of length nMusc satisfies the same row-sum/row-norm
+% target that computeNeuralControlOptimization.m enforces during
+% optimization.
+function const = computeNcpGroupConstant(value, method, nMusc)
+switch lower(method)
+    case 'sum'
+        const = value / nMusc;
+    case 'magnitude'
+        const = value / sqrt(nMusc);
+    otherwise
+        error('[prepareNcpInitialValues] Unknown normalization_method: "%s"', ...
+            method);
+end
+end
+
+% -------------------------------------------------------------------------
+% Fallback constant used when no normalization target is given and there is
+% no mtp data to derive a data-driven scale from.
+function const = defaultNcpConstant()
+const = 0.15;
 end

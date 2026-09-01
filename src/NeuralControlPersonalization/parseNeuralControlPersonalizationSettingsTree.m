@@ -148,8 +148,12 @@ end
 
 function weights = normalizeFixedSynergyWeights(weights, method, value)
 if isnan(value)
+    fprintf(['[NCP] No synergy_vector_normalization_value given; fixed ' ...
+        'synergy weights loaded from file are left unnormalized.\n']);
     return
 end
+fprintf(['[NCP] Normalizing loaded fixed synergy weights: method="%s", ' ...
+    'target=%g per synergy row.\n'], method, value);
 switch lower(method)
     case 'sum'
         ratios = value ./ sum(weights, 2);
