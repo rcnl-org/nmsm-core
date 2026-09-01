@@ -8,6 +8,8 @@
 		<input_osimx_file>model.osimx</input_osimx_file>
 		<!--Directory for data files.-->
 		<data_directory>NCPInputsDir</data_directory>
+		<!--*Optional* Directory containing a previous NCP run's results (synergyWeights.sto and *_synergyCommands.sto), used as the optimizer's initial guess.-->
+		<initial_guess_directory></initial_guess_directory>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
 		<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
 		<!--*Optional* The vMaxFactor to use. Default is 10.-->

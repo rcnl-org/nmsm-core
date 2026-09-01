@@ -31,6 +31,14 @@
 function values = prepareNcpInitialValues(inputs, params)
 use_nnmf_as_init = true;                                                   % !!!
 
+hasInitialGuess = isfield(inputs, 'initialGuessDirectory') && ...
+    strlength(inputs.initialGuessDirectory) > 0 && ...
+    isfolder(inputs.initialGuessDirectory);
+if hasInitialGuess
+    values = prepareNcpInitialValuesFromDirectory(inputs, params);
+    return
+end
+
 [numGroups, numMusclesPerGroup, numSynergiesPerGroup, muscleGroupStart, ...
     synergyGroupStart] = getSynergyGroupIndices(inputs);
 
@@ -81,6 +89,91 @@ if inputs.enforce_bilateral_symmetry
         'Left and right groups must have the same number of synergies.');
     assert(sum(numSynergiesPerGroup) == inputs.numSynergies, ...
         'inputs.numSynergies must equal sum of numSynergies per leg.');
+end
+end
+
+% -------------------------------------------------------------------------
+function values = prepareNcpInitialValuesFromDirectory(inputs, params)
+fprintf("Loading initial guess from %s ...\n\n", inputs.initialGuessDirectory);
+
+weightsInit = readSynergyWeightsFromDirectory(inputs.initialGuessDirectory, ...
+    inputs);
+commandsInitStack = loadInitialGuessCommands(inputs);
+
+if ~inputs.optimize_synergy_vectors
+    if ~isequal(size(weightsInit), size(inputs.fixedSynergyWeights)) || ...
+            max(abs(weightsInit(:) - inputs.fixedSynergyWeights(:))) > 1e-9
+        throw(MException('', '%s', ...
+            "initial_guess_directory's synergyWeights.sto (" + ...
+            inputs.initialGuessDirectory + ") does not match " + ...
+            "data_directory's synergyWeights.sto. When " + ...
+            "optimize_synergy_vectors is false, weights are fixed from " + ...
+            "data_directory; initial_guess_directory may only be used " + ...
+            "to seed commands, and its weights (if present) must match " + ...
+            "exactly."))
+    end
+    weightsInit = inputs.fixedSynergyWeights;
+else
+    if any(cellfun(@(t) t.isEnabled && strcmpi( ...
+            t.type, 'grouped_activations'), params.costTerms))
+        weightsInitGrouped = weightsInit;
+        for i = 1:length(params.activationGroups)
+            groupWeights = weightsInit(:, params.activationGroups{i});
+            groupWeightsAve = mean(groupWeights, 2);
+            weightsInitGrouped(:, params.activationGroups{i}) = repmat( ...
+                groupWeightsAve, 1, length(params.activationGroups{i}));
+        end
+        weightsInit = weightsInitGrouped;
+    end
+    [weightsInit, commandsInitStack] = prenormalizeVariables( ...
+        weightsInit, commandsInitStack, ...
+        inputs.synergy_vector_normalization_method, ...
+        inputs.synergy_vector_normalization_value);
+end
+
+commandsInitNodes = commandsPointsToNodes(commandsInitStack, inputs);
+values = repackDesignVariables(weightsInit, commandsInitNodes, inputs);
+end
+
+% -------------------------------------------------------------------------
+function commandsInitStack = loadInitialGuessCommands(inputs)
+model = Model(inputs.modelFileName);
+expectedColumns = buildSynergyCommandColumnNames(inputs);
+commandsInitStack = zeros(inputs.numTrials * inputs.numPoints, ...
+    inputs.numSynergies);
+for i = 1:inputs.numTrials
+    trialName = inputs.trialNames(i);
+    [data, columnNames, time] = parseTrialData(inputs.initialGuessDirectory, ...
+        trialName + "_synergyCommands", model);
+    columnNames = string(columnNames);
+
+    missingColumns = setdiff(expectedColumns, columnNames);
+    if ~isempty(missingColumns)
+        throw(MException('', '%s', trialName + ...
+            "_synergyCommands.sto in " + inputs.initialGuessDirectory + ...
+            " is missing synergy command column(s): " + ...
+            strjoin(missingColumns, ", ")))
+    end
+    extraColumns = setdiff(columnNames, expectedColumns);
+    if ~isempty(extraColumns)
+        throw(MException('', '%s', trialName + ...
+            "_synergyCommands.sto in " + inputs.initialGuessDirectory + ...
+            " contains unexpected column(s): " + ...
+            strjoin(extraColumns, ", ")))
+    end
+    if numel(time) ~= inputs.numPoints
+        throw(MException('', '%s', sprintf( ...
+            "%s_synergyCommands.sto in %s has %d timepoints but %d " + ...
+            "are expected (numPoints) for the current settings", ...
+            trialName, inputs.initialGuessDirectory, numel(time), ...
+            inputs.numPoints)))
+    end
+
+    [~, reorderIndex] = ismember(expectedColumns, columnNames);
+    trialCommands = data(:, reorderIndex);
+    rowStart = (i - 1) * inputs.numPoints + 1;
+    rowEnd = i * inputs.numPoints;
+    commandsInitStack(rowStart:rowEnd, :) = trialCommands;
 end
 end
 

@@ -83,6 +83,8 @@ if ~inputs.optimize_synergy_vectors
 end
 inputs.numNodes = str2double(parseElementTextByNameOrAlternate(tree, ...
     "number_of_nodes", "26"));
+inputs.initialGuessDirectory = string(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'initial_guess_directory', '')));
 end
 
 function inputs = loadMtpData(tree, inputs)
@@ -106,40 +108,13 @@ end
 
 function weights = loadFixedSynergyWeights(tree, inputs, ...
     normalizationMethod, normalizationValue)
-import org.opensim.modeling.Storage
 dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
-weightsFile = fullfile(dataDirectory, "synergyWeights.sto");
-if ~isfile(weightsFile)
+if ~isfile(fullfile(dataDirectory, "synergyWeights.sto"))
     throw(MException('', '%s', "synergyWeights.sto was not found in " + ...
         dataDirectory + ". A pre-existing synergy weights file is " + ...
         "required when optimize_synergy_vectors is false."))
 end
-storage = Storage(weightsFile);
-data = storageToDoubleMatrix(storage);
-columnNames = getStorageColumnNames(storage);
-
-missingMuscles = setdiff(inputs.muscleTendonColumnNames, columnNames);
-if ~isempty(missingMuscles)
-    throw(MException('', '%s', "synergyWeights.sto in " + dataDirectory + ...
-        " is missing weights for muscle(s): " + ...
-        strjoin(missingMuscles, ", ")))
-end
-extraMuscles = setdiff(columnNames, inputs.muscleTendonColumnNames);
-if ~isempty(extraMuscles)
-    throw(MException('', '%s', "synergyWeights.sto in " + dataDirectory + ...
-        " contains unexpected muscle(s) not in this study's model: " + ...
-        strjoin(extraMuscles, ", ")))
-end
-[~, reorderIndex] = ismember(inputs.muscleTendonColumnNames, columnNames);
-weights = data(reorderIndex, :)';
-
-expectedNumSynergies = sum(cellfun(@(g) g.numSynergies, ...
-    inputs.synergyGroups));
-if size(weights, 1) ~= expectedNumSynergies
-    throw(MException('', '%s', sprintf(...
-        "synergyWeights.sto has %d synergies but %d are configured " + ...
-        "in this settings file", size(weights, 1), expectedNumSynergies)))
-end
+weights = readSynergyWeightsFromDirectory(dataDirectory, inputs);
 % Rescales each loaded synergy weight row
 % skipped when synergy_vector_normalization_value is NaN
 weights = normalizeFixedSynergyWeights(weights, normalizationMethod, ...
