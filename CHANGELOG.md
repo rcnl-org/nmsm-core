@@ -1,5 +1,11 @@
 # Changelog
 
+## v.1.5.3 - 2026-02-27
+
+### Fixed
+- Fixed bug causing old Treatment Optimization Results to not plot with new versions.
+- Correctly display pipeline version in osimx files.
+
 ## v.1.5.2 - 2026-01-26
 
 ### Added
