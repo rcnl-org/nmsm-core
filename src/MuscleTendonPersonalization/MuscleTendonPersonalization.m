@@ -40,7 +40,10 @@
 % ----------------------------------------------------------------------- %
 
 function results = MuscleTendonPersonalization(inputs, ...
-    params)
+    params, app)
+if nargin < 3
+    app = [];
+end
 inputs.primaryValues = prepareInitialValues(inputs, params);
 inputs.primaryValueNames = ["electromechanical_delay", ...
     "activation_time_constant", "activation_nonlinearity", ...
@@ -67,12 +70,12 @@ for i=1:length(inputs.tasks)
             permute(inputs.emgData, [3 1 2]));
         optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
             inputs.primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
-            taskUpperBounds, inputs, taskParams, optimizerOptions, A, b);
+            taskUpperBounds, inputs, taskParams, optimizerOptions, A, b, app);
     else
         taskParams.costTerms = inputs.tasks{i}.costTerms;
         optimizedValues = computeMuscleTendonRoundOptimization(taskValues, ...
             inputs.primaryValues, inputs.tasks{i}.isIncluded, taskLowerBounds, ...
-            taskUpperBounds, inputs, taskParams, optimizerOptions, [], []);
+            taskUpperBounds, inputs, taskParams, optimizerOptions, [], [], app);
     end
     inputs.primaryValues = updateDesignVariables(inputs.primaryValues, ...
         optimizedValues, inputs.tasks{i}.isIncluded);

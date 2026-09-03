@@ -28,14 +28,17 @@
 % ----------------------------------------------------------------------- %
 
 function inputs = optimizeGroundContactPersonalizationTask(inputs, ...
-    params, task)
+    params, task, app)
+if nargin < 4
+    app = [];
+end
 [initialValues, fieldNameOrder] = makeInitialValues(inputs, ...
     params, task);
 [lowerBounds, upperBounds] = makeBounds(inputs, params, task);
 optimizerOptions = prepareOptimizerOptions(params);
 [optimizerOptions, cancelCleanup] = addOptimizationCancelButton( ...
     optimizerOptions, optimizerOptions.MaxIterations, ...
-    "Optimizing Ground Contact Personalization");
+    "Optimizing Ground Contact Personalization", app);
 clear calcGroundContactPersonalizationTaskCost
 results = lsqnonlin(@(values) calcGroundContactPersonalizationTaskCost( ...
     values, fieldNameOrder, inputs, params, task), initialValues, ...

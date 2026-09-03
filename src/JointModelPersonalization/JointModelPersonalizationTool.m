@@ -29,9 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function JointModelPersonalizationTool(settingsFileName)
+function JointModelPersonalizationTool(settingsFileName, app)
 tic
-try 
+if nargin < 2
+    app = [];
+end
+try
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
@@ -42,7 +45,7 @@ verifyVersion(settingsTree, "JointModelPersonalizationTool");
     parseJointModelPersonalizationSettingsTree(settingsTree);
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
-newModel = JointModelPersonalization(inputs, params);
+newModel = JointModelPersonalization(inputs, params, app);
 newModel.print(outputFile);
 fprintf("Joint Model Personalization Runtime: %f Hours\n", toc/3600);
 diary off

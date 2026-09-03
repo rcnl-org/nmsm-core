@@ -31,8 +31,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function NeuralControlPersonalizationTool(settingsFileName)
+function NeuralControlPersonalizationTool(settingsFileName, app)
 tic
+if nargin < 2
+    app = [];
+end
 try
     verifyProjectOpened()
 catch
@@ -52,12 +55,12 @@ outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
 diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
-    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
     inputs = updateNcpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
 end
 
-[optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
+[optimizedValues, inputs] = NeuralControlPersonalization(inputs, params, app);
 [synergyWeights, synergyCommands, ~] = findSynergyWeightsAndCommands( ...
     optimizedValues, inputs);
 [synergyWeights, synergyCommands] = normalizeSynergiesByMaximumWeight(...

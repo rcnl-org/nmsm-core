@@ -28,7 +28,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function optimizedValues = MuscleTendonLengthInitialization(inputs)
+function optimizedValues = MuscleTendonLengthInitialization(inputs, app)
+if nargin < 2
+    app = [];
+end
 primaryValues = prepareInitialValues(inputs);
 lowerBounds = makeLowerBounds(inputs);
 upperBounds = makeUpperBounds(inputs);
@@ -36,7 +39,7 @@ optimizerOptions = makeOptimizerOptions(struct());
 [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
     primaryValues, inputs, lowerBounds, upperBounds);
 optimizedValues = computeMuscleTendonLengthInitializationOptimization(taskValues, ...
-    taskLowerBounds, taskUpperBounds, inputs, optimizerOptions);
+    taskLowerBounds, taskUpperBounds, inputs, optimizerOptions, app);
 end
 
 % extract initial version of optimized values from inputs/params

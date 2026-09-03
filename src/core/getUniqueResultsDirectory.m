@@ -35,4 +35,8 @@ while exist(resultsDirectory, "dir")
     resultsDirectory = sprintf("%s_%d", baseResultsDirectory, suffix);
     suffix = suffix + 1;
 end
+if suffix > 1
+    warning('"%s" already exists; writing results to "%s" instead.', ...
+        baseResultsDirectory, resultsDirectory);
+end
 end

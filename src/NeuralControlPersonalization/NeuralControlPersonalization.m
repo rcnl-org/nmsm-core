@@ -32,7 +32,10 @@
 % ----------------------------------------------------------------------- %
 
 function [finalValues, inputs] = NeuralControlPersonalization(inputs, ...
-    params)
+    params, app)
+if nargin < 3
+    app = [];
+end
 verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
 params = finalizeParams(params);
@@ -45,7 +48,7 @@ if ~inputs.optimize_synergy_vectors
 end
 initialValues = prepareNcpInitialValues(inputs, params);
 finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
-    params);
+    params, app);
 end
 
 % (struct) -> (None)

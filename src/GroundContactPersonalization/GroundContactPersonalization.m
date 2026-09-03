@@ -27,7 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function results = GroundContactPersonalization(inputs, params)
+function results = GroundContactPersonalization(inputs, params, app)
+if nargin < 3
+    app = [];
+end
 inputs = prepareGroundContactPersonalizationInputs(inputs);
 % Optionally initializes the resting spring length.
 if params.restingSpringLengthInitialization
@@ -46,7 +49,7 @@ end
 % Run each task as outlined in XML settings file. 
 for task = 1:length(params.tasks)
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, ...
-        task);
+        task, app);
 end
 
 results = inputs;

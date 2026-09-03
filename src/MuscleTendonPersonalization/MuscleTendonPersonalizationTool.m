@@ -29,9 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
+function MuscleTendonPersonalizationTool(settingsFileName, app)
 tic
-try 
+if nargin < 2
+    app = [];
+end
+try
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
@@ -45,13 +48,13 @@ precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 if isstruct(precalInputs)
-    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
 else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
-results = MuscleTendonPersonalization(inputs, params);
+results = MuscleTendonPersonalization(inputs, params, app);
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
         getMtpResultsToSave(inputs, params, results, precalInputs);

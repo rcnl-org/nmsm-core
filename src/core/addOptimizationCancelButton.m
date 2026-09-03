@@ -1,19 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Adds a waitbar with a Cancel button to an fmincon/lsqnonlin options
-% struct (works with both optimoptions- and legacy optimset-built structs).
-% Waitbar redraws are throttled to ~4/sec so displaying progress does not
-% slow down optimizations with many cheap iterations. Returns cancelCleanup,
-% an onCleanup object the caller must hold for the duration of the solver
-% call - it guarantees the window is closed on any exit (normal return,
-% error, or interrupt) instead of being left stranded on screen.
+% struct. Waitbar redraws are throttled to ~4/sec so displaying progress 
+% does not slow down optimizations.  Clicking Cancel or closing the window 
+% makes the solver stop early and return its current best point.
 %
-% Clicking Cancel (or closing the window) makes the solver stop early and
-% return its current best point, exactly as fmincon/lsqnonlin already do
-% when MaxIterations is reached - no extra plumbing is needed to keep the
-% in-progress result.
+% If this tool is running through the GUI, this waitbar is skipped 
 %
-% (struct, double, string) -> (struct, onCleanup)
+% (struct, double, string, matlab.apps.AppBase) -> (struct, onCleanup)
 % Adds a Cancel button waitbar to an optimizer options struct
 
 % ----------------------------------------------------------------------- %
@@ -39,9 +33,23 @@
 % ----------------------------------------------------------------------- %
 
 function [optimizerOptions, cancelCleanup] = addOptimizationCancelButton(...
-    optimizerOptions, maxIterations, waitbarMessage)
-waitbarHandle = waitbar(0, waitbarMessage, ...
+    optimizerOptions, maxIterations, waitbarMessage, app)
+if nargin < 4
+    app = [];
+end
+if ~isempty(app) && ismethod(app, "CancelOptimizationGui")
+    optimizerOptions.OutputFcn = @(x, optimValues, state, varargin) ...
+        app.CancelOptimizationGui(x, optimValues, state);
+    cancelCleanup = onCleanup(@() []);
+    return
+end
+
+sizingText = sprintf('%s\ncost: %s\nclick Cancel or close the window to stop early', ...
+    waitbarMessage, sprintf('%.4g', -123456.789));
+waitbarHandle = waitbar(0, sizingText, ...
     'CreateCancelBtn', 'setappdata(gcbf, ''canceling'', 1)');
+waitbar(0, waitbarHandle, sprintf('%s\ncost: ...\nclick Cancel or close the window to stop early', ...
+    waitbarMessage));
 setappdata(waitbarHandle, 'lastUpdateTic', tic);
 optimizerOptions.OutputFcn = @(x, optimValues, state) cancelButtonOutputFcn( ...
     optimValues, state, waitbarHandle, maxIterations, waitbarMessage);
@@ -60,8 +68,6 @@ if getappdata(waitbarHandle, 'canceling')
     stop = true;
 end
 if stop || strcmp(state, 'done')
-    % onCleanup (held by the caller) deletes the window; nothing to do
-    % here but report stop.
     return
 end
 % throttle to ~4 updates/sec so displaying progress won't slow down
@@ -69,7 +75,6 @@ if toc(getappdata(waitbarHandle, 'lastUpdateTic')) < 0.25
     return
 end
 setappdata(waitbarHandle, 'lastUpdateTic', tic);
-fraction = min(optimValues.iteration / max(maxIterations, 1), 1);
 % fmincon's optimValues has .fval; lsqnonlin's has .resnorm instead
 if isfield(optimValues, 'fval')
     cost = optimValues.fval;
@@ -78,14 +83,39 @@ elseif isfield(optimValues, 'resnorm')
 else
     cost = NaN;
 end
+fraction = estimateProgressFraction(waitbarHandle, optimValues.iteration, ...
+    maxIterations, cost);
 waitbar(fraction, waitbarHandle, sprintf( ...
-    '%s (iteration %d, cost %.4g)... click Cancel or closing the window to stop early', ...
-    waitbarMessage, optimValues.iteration, cost));
+    '%s\ncost: %.4g\nclick Cancel or close the window to stop early', ...
+    waitbarMessage, cost));
 end
 
 % -----------------------------------------------------------------------
-% Deletes the waitbar if it still exists; safe to call more than once and
-% safe to call after the user has already closed the window.
+% track how much the cost has already dropped relative to its first 
+% observed value, only falling back to iteration count when cost is 
+% unavailable or hasn't improved yet
+function fraction = estimateProgressFraction(waitbarHandle, iteration, ...
+    maxIterations, cost)
+iterationFraction = min(iteration / max(maxIterations, 1), 1);
+fraction = iterationFraction;
+if isfinite(cost)
+    initialCost = getappdata(waitbarHandle, 'initialCost');
+    if isempty(initialCost)
+        setappdata(waitbarHandle, 'initialCost', cost);
+    elseif initialCost ~= 0
+        costFraction = (initialCost - cost) / abs(initialCost);
+        fraction = max(fraction, min(max(costFraction, 0), 1));
+    end
+end
+bestFraction = getappdata(waitbarHandle, 'bestFraction');
+if ~isempty(bestFraction)
+    fraction = max(fraction, bestFraction);
+end
+setappdata(waitbarHandle, 'bestFraction', fraction);
+end
+
+% -----------------------------------------------------------------------
+% Deletes the waitbar if it still exists
 function safeDeleteWaitbar(waitbarHandle)
 if ishghandle(waitbarHandle)
     delete(waitbarHandle);

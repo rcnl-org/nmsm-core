@@ -29,7 +29,10 @@
 % ----------------------------------------------------------------------- %
 
 function finalValues = computeNeuralControlOptimization(initialValuesLong, ...
-    inputs, params)
+    inputs, params, app)
+if nargin < 4
+    app = [];
+end
 [initWeights, ~, ~] = findSynergyWeightsAndCommands(initialValuesLong, inputs);
 initialValues = initialValuesLong;
 if ~inputs.optimize_synergy_vectors
@@ -45,7 +48,7 @@ optimizerOptions = prepareOptimizerOptions(params);
 % cancelCleanup guarantees the window is closed on any exit from this
 % function (normal return, error, or Ctrl+C).
 [optimizerOptions, cancelCleanup] = addOptimizationCancelButton( ...
-    optimizerOptions, params.maxIterations, "Optimizing NCP");
+    optimizerOptions, params.maxIterations, "Optimizing NCP", app);
 
 if ~inputs.optimize_synergy_vectors
     % weights are fixed, not part of the design vector

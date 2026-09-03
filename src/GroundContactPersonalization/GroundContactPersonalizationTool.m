@@ -29,9 +29,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function GroundContactPersonalizationTool(settingsFileName)
+function GroundContactPersonalizationTool(settingsFileName, app)
 tic
-try 
+if nargin < 2
+    app = [];
+end
+try
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
@@ -43,7 +46,7 @@ verifyVersion(settingsTree, "GroundContactPersonalizationTool");
 resultsDirectory = getUniqueResultsDirectory(resultsDirectory);
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
-results = GroundContactPersonalization(inputs, params);
+results = GroundContactPersonalization(inputs, params, app);
 saveGroundContactPersonalizationResults(results, params, ...
     resultsDirectory, inputs.inputOsimxFile);
 

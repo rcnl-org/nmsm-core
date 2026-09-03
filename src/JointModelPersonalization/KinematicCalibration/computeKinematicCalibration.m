@@ -28,12 +28,15 @@
 % ----------------------------------------------------------------------- %
 
 function optimizedValues = computeKinematicCalibration(model, ...
-    markerFileName, functions, desiredError, params)
+    markerFileName, functions, desiredError, params, app)
+if nargin < 6
+    app = [];
+end
 params.desiredError = desiredError; %required arg, but passed in params
 optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
 [optimizerOptions, cancelCleanup] = addOptimizationCancelButton( ...
     optimizerOptions, optimizerOptions.MaxIterations, ...
-    "Optimizing Kinematic Calibration");
+    "Optimizing Kinematic Calibration", app);
 initialValues = prepareKinematicCalibrationInitialValues(functions, ...
     params);
 [lowerBounds, upperBounds] = prepareKinematicCalibrationBounds( ...
