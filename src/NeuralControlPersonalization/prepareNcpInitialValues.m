@@ -31,31 +31,52 @@
 function values = prepareNcpInitialValues(inputs, params)
 use_nnmf_as_init = true;                                                   % !!!
 
-hasInitialGuessDirectory = isfield(inputs, 'initialGuessDirectory') && ...
-    strlength(inputs.initialGuessDirectory) > 0;
-if hasInitialGuessDirectory && ~isfolder(inputs.initialGuessDirectory)
-    fprintf(['[prepareNcpInitialValues] initial_guess_directory "%s" was ' ...
-        'specified but does not exist; falling back to normal ' ...
-        'initialization.\n'], inputs.initialGuessDirectory);
-end
-if hasInitialGuessDirectory && isfolder(inputs.initialGuessDirectory)
-    values = prepareNcpInitialValuesFromDirectory(inputs, params);
-    return
-end
-
 [numGroups, numMusclesPerGroup, numSynergiesPerGroup, muscleGroupStart, ...
     synergyGroupStart] = getSynergyGroupIndices(inputs);
 
-if ~inputs.optimize_synergy_vectors
-    values = prepareNcpInitialValuesFixedWeights(inputs, numGroups, ...
-        numMusclesPerGroup, numSynergiesPerGroup, muscleGroupStart, ...
-        synergyGroupStart);
-    return
-end
-
+% Runs regardless of optimize_synergy_vectors/initial_guess_directory
 verifyBilateralSymmetryGroups(inputs, numGroups, numMusclesPerGroup, ...
     numSynergiesPerGroup);
 
+if ~inputs.optimize_synergy_vectors
+    weightsInit = inputs.fixedSynergyWeights;
+    if inputs.initialGuessHasCommands
+        commandsInitStack = loadInitialGuessCommands(inputs) ./ ...
+            inputs.fixedSynergyWeightsRatios';
+    else
+        commandsInitStack = generateNcpCommandsGivenWeights(inputs, ...
+            weightsInit, numGroups, numMusclesPerGroup, ...
+            numSynergiesPerGroup, muscleGroupStart, synergyGroupStart);
+    end
+    commandsInitNodes = commandsPointsToNodes(commandsInitStack, inputs);
+    values = repackDesignVariables(weightsInit, commandsInitNodes, inputs);
+    return
+end
+
+% optimize_synergy_vectors = true
+if inputs.initialGuessHasWeights
+    fprintf("Loading initial synergy weights from %s ...\n\n", ...
+        inputs.initialGuessDirectory);
+    rawWeights = inputs.initialGuessWeights;
+    if inputs.initialGuessHasCommands
+        rawCommandsStack = loadInitialGuessCommands(inputs);
+    else
+        rawCommandsStack = generateNcpCommandsGivenWeights(inputs, ...
+            rawWeights, numGroups, numMusclesPerGroup, ...
+            numSynergiesPerGroup, muscleGroupStart, synergyGroupStart);
+    end
+    rawWeights = applyGroupedActivations(rawWeights, params);
+    ratios = computeNcpNormalizationRatios(rawWeights, ...
+        inputs.synergy_vector_normalization_method, ...
+        inputs.synergy_vector_normalization_value);
+    weightsInit = rawWeights .* ratios;
+    commandsInitStack = rawCommandsStack ./ ratios';
+    commandsInitNodes = commandsPointsToNodes(commandsInitStack, inputs);
+    values = repackDesignVariables(weightsInit, commandsInitNodes, inputs);
+    return
+end
+
+% No loaded weights
 if isfield(inputs, 'mtpActivations') && use_nnmf_as_init
     values = prepareNcpInitialValuesNnmf(inputs, params, numGroups, ...
         numMusclesPerGroup, numSynergiesPerGroup, muscleGroupStart, ...
@@ -63,6 +84,14 @@ if isfield(inputs, 'mtpActivations') && use_nnmf_as_init
 else
     values = prepareNcpInitialValuesConstant(inputs, numGroups, ...
         numMusclesPerGroup, numSynergiesPerGroup, synergyGroupStart);
+end
+if inputs.initialGuessHasCommands
+    fprintf(['Overriding generated commands with saved commands from ' ...
+        'initial_guess_directory ...\n\n']);
+    [weightsInit, ~, ~] = findSynergyWeightsAndCommands(values, inputs);
+    commandsInitNodes = commandsPointsToNodes( ...
+        loadInitialGuessCommands(inputs), inputs);
+    values = repackDesignVariables(weightsInit, commandsInitNodes, inputs);
 end
 end
 
@@ -94,49 +123,6 @@ if inputs.enforce_bilateral_symmetry
     assert(sum(numSynergiesPerGroup) == inputs.numSynergies, ...
         'inputs.numSynergies must equal sum of numSynergies per leg.');
 end
-end
-
-% -------------------------------------------------------------------------
-function values = prepareNcpInitialValuesFromDirectory(inputs, params)
-fprintf("Loading initial guess from %s ...\n\n", inputs.initialGuessDirectory);
-
-weightsInit = readSynergyWeightsFromDirectory(inputs.initialGuessDirectory, ...
-    inputs);
-commandsInitStack = loadInitialGuessCommands(inputs);
-
-if ~inputs.optimize_synergy_vectors
-    if ~isequal(size(weightsInit), size(inputs.fixedSynergyWeights)) || ...
-            max(abs(weightsInit(:) - inputs.fixedSynergyWeights(:))) > 1e-9
-        throw(MException('', '%s', ...
-            "initial_guess_directory's synergyWeights.sto (" + ...
-            inputs.initialGuessDirectory + ") does not match " + ...
-            "data_directory's synergyWeights.sto. When " + ...
-            "optimize_synergy_vectors is false, weights are fixed from " + ...
-            "data_directory; initial_guess_directory may only be used " + ...
-            "to seed commands, and its weights (if present) must match " + ...
-            "exactly."))
-    end
-    weightsInit = inputs.fixedSynergyWeights;
-else
-    if any(cellfun(@(t) t.isEnabled && strcmpi( ...
-            t.type, 'grouped_activations'), params.costTerms))
-        weightsInitGrouped = weightsInit;
-        for i = 1:length(params.activationGroups)
-            groupWeights = weightsInit(:, params.activationGroups{i});
-            groupWeightsAve = mean(groupWeights, 2);
-            weightsInitGrouped(:, params.activationGroups{i}) = repmat( ...
-                groupWeightsAve, 1, length(params.activationGroups{i}));
-        end
-        weightsInit = weightsInitGrouped;
-    end
-    [weightsInit, commandsInitStack] = prenormalizeVariables( ...
-        weightsInit, commandsInitStack, ...
-        inputs.synergy_vector_normalization_method, ...
-        inputs.synergy_vector_normalization_value);
-end
-
-commandsInitNodes = commandsPointsToNodes(commandsInitStack, inputs);
-values = repackDesignVariables(weightsInit, commandsInitNodes, inputs);
 end
 
 % -------------------------------------------------------------------------
@@ -182,13 +168,12 @@ end
 end
 
 % -------------------------------------------------------------------------
-% Builds the initial design vector when synergy weights are fixed
-% commands are initialized via a per-group, per-timepoint least-squares
-function values = prepareNcpInitialValuesFixedWeights(inputs, numGroups, ...
-    numMusclesPerGroup, numSynergiesPerGroup, muscleGroupStart, ...
-    synergyGroupStart)
-weightsInit = inputs.fixedSynergyWeights;
-
+% Generates initial commands for an already-fixed set of synergy weights
+% NNLS-fit against mtpActivations if available
+% otherwise constant matching the normalization target
+function commandsInitStack = generateNcpCommandsGivenWeights(inputs, ...
+    weightsInit, numGroups, numMusclesPerGroup, numSynergiesPerGroup, ...
+    muscleGroupStart, synergyGroupStart)
 if isfield(inputs, 'mtpActivations')
     fprintf(['Fixed synergy weights: fitting commands via NNLS ' ...
         'against mtpActivations ...\n\n'])
@@ -219,20 +204,18 @@ if isfield(inputs, 'mtpActivations')
         commandsInitStack(:, synergyIdx_start:synergyIdx_end) = ...
             groupCommands;
     end
-
-    commandsInitNodes = commandsPointsToNodes(commandsInitStack, inputs);
 else
     fprintf("Fixed synergy weights: constant command initialization ...\n\n")
     noTarget = isempty(inputs.synergy_vector_normalization_value) || ...
                isnan(inputs.synergy_vector_normalization_value);
-    commandsInitNodes = zeros(inputs.numTrials, inputs.numNodes, ...
+    commandsInitStack = zeros(inputs.numTrials * inputs.numPoints, ...
         inputs.numSynergies);
     if noTarget
         const = defaultNcpConstant();
         fprintf(['[prepareNcpInitialValues] Fixed weights, constant ' ...
             'commands: no normalization target. Using constant %.4g ' ...
             'for all groups.\n'], const);
-        commandsInitNodes(:) = const;
+        commandsInitStack(:) = const;
     else
         value = inputs.synergy_vector_normalization_value;
         method = inputs.synergy_vector_normalization_method;
@@ -244,12 +227,26 @@ else
                 '-> const=%.4g\n'], group, nMusc, method, value, const);
             sStart = synergyGroupStart(group);
             sEnd = sStart + numSynergiesPerGroup(group) - 1;
-            commandsInitNodes(:, :, sStart:sEnd) = const;
+            commandsInitStack(:, sStart:sEnd) = const;
         end
     end
 end
+end
 
-values = repackDesignVariables(weightsInit, commandsInitNodes, inputs);
+% -------------------------------------------------------------------------
+% Averages synergy weights within each grouped_activations group
+function weights = applyGroupedActivations(weights, params)
+if any(cellfun(@(t) t.isEnabled && strcmpi( ...
+        t.type, 'grouped_activations'), params.costTerms))
+    weightsGrouped = weights;
+    for i = 1:length(params.activationGroups)
+        groupWeights = weights(:, params.activationGroups{i});
+        groupWeightsAve = mean(groupWeights, 2);
+        weightsGrouped(:, params.activationGroups{i}) = repmat( ...
+            groupWeightsAve, 1, length(params.activationGroups{i}));
+    end
+    weights = weightsGrouped;
+end
 end
 
 % -------------------------------------------------------------------------
@@ -317,17 +314,7 @@ end
 
 
 % Group weights based on activationGroups, take average for each group
-if any(cellfun(@(t) t.isEnabled && strcmpi( ...
-        t.type,'grouped_activations'), params.costTerms))
-    weightsInitGrouped = weightsInit;
-    for i = 1:length(params.activationGroups)
-        groupWeights = weightsInit(:, params.activationGroups{i});
-        groupWeightsAve = mean(groupWeights, 2);
-        weightsInitGrouped(:, params.activationGroups{i}) = repmat( ...
-            groupWeightsAve, 1, length(params.activationGroups{i}));
-    end
-    weightsInit = weightsInitGrouped;
-end
+weightsInit = applyGroupedActivations(weightsInit, params);
 
 % Normalize weights and commands to match the optimizer's constraint
 [weightsInit, commandsInitStack] = prenormalizeVariables( ...
@@ -454,11 +441,6 @@ fprintf('  Command (min/max/mean): %.3g/%.3g/%.3g → %.3g/%.3g/%.3g\n', ...
 end
 
 % -------------------------------------------------------------------------
-% Constant weight/command value implied by a normalization target for a
-% group of nMusc muscles: value/nMusc (sum) or value/sqrt(nMusc) (magnitude),
-% so a constant vector of length nMusc satisfies the same row-sum/row-norm
-% target that computeNeuralControlOptimization.m enforces during
-% optimization.
 function const = computeNcpGroupConstant(value, method, nMusc)
 switch lower(method)
     case 'sum'

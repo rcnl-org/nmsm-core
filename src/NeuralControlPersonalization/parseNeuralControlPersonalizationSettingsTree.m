@@ -76,15 +76,72 @@ end
 inputs.synergy_vector_normalization_value = str2double(normValueText);
 % NOTE: tag absent or empty -> 10 (default)
 % <...>NaN</...> -> NaN (no normalization target)
-if ~inputs.optimize_synergy_vectors
-    inputs.fixedSynergyWeights = loadFixedSynergyWeights(tree, inputs, ...
-        inputs.synergy_vector_normalization_method, ...
-        inputs.synergy_vector_normalization_value);
-end
 inputs.numNodes = str2double(parseElementTextByNameOrAlternate(tree, ...
     "number_of_nodes", "26"));
+inputs = parseNcpInitialGuessDirectory(tree, inputs);
+end
+
+% -------------------------------------------------------------------------
+function inputs = parseNcpInitialGuessDirectory(tree, inputs)
 inputs.initialGuessDirectory = string(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'initial_guess_directory', '')));
+
+directoryGiven = strlength(inputs.initialGuessDirectory) > 0;
+hasInitialGuessDirectory = directoryGiven && isfolder(inputs.initialGuessDirectory);
+if directoryGiven && ~hasInitialGuessDirectory && inputs.optimize_synergy_vectors
+    fprintf(['[NCP] initial_guess_directory "%s" was specified but does ' ...
+        'not exist; falling back to normal initialization.\n'], ...
+        inputs.initialGuessDirectory);
+end
+
+if ~inputs.optimize_synergy_vectors && ~hasInitialGuessDirectory
+    throw(MException('', sprintf(['optimize_synergy_vectors is false, ' ...
+        'which requires fixed synergy weights from an existing folder. ' ...
+        'Set <initial_guess_directory> to a folder containing ' ...
+        'synergyWeights.sto from a previous NCP or TO run (currently: "%s").'], ...
+        inputs.initialGuessDirectory)))
+end
+
+inputs.initialGuessHasWeights = false;
+inputs.initialGuessHasCommands = false;
+if hasInitialGuessDirectory
+    inputs.initialGuessHasWeights = isfile(fullfile( ...
+        inputs.initialGuessDirectory, "synergyWeights.sto"));
+    trialHasCommands = arrayfun(@(t) isfile(fullfile( ...
+        inputs.initialGuessDirectory, t + "_synergyCommands.sto")), ...
+        inputs.trialNames);
+    if any(trialHasCommands) && ~all(trialHasCommands)
+        throw(MException('', '%s', "initial_guess_directory has synergy " + ...
+            "commands for some trials but not all; missing: " + ...
+            strjoin(inputs.trialNames(~trialHasCommands), ", ")))
+    end
+    inputs.initialGuessHasCommands = all(trialHasCommands);
+
+    if ~inputs.initialGuessHasWeights && ~inputs.initialGuessHasCommands
+        throw(MException('', '%s', "initial_guess_directory """ + ...
+            inputs.initialGuessDirectory + """ exists but contains " + ...
+            "neither synergyWeights.sto nor any *_synergyCommands.sto " + ...
+            "files; nothing to load."))
+    end
+    if ~inputs.optimize_synergy_vectors && ~inputs.initialGuessHasWeights
+        throw(MException('', '%s', "initial_guess_directory """ + ...
+            inputs.initialGuessDirectory + """ does not contain " + ...
+            "synergyWeights.sto. optimize_synergy_vectors is false, " + ...
+            "which requires fixed synergy weights."))
+    end
+end
+
+if ~inputs.optimize_synergy_vectors
+    [inputs.fixedSynergyWeights, inputs.fixedSynergyWeightsRatios] = ...
+        loadFixedSynergyWeights(inputs.initialGuessDirectory, inputs, ...
+        inputs.synergy_vector_normalization_method, ...
+        inputs.synergy_vector_normalization_value);
+elseif inputs.initialGuessHasWeights
+    inputs.initialGuessWeights = readSynergyWeightsFromDirectory( ...
+        inputs.initialGuessDirectory, inputs);   
+    % raw, will be rescaled together with commands paired with it
+    % in prepareNcpInitialValues.m
+end
 end
 
 function inputs = loadMtpData(tree, inputs)
@@ -106,38 +163,27 @@ inputs.mtpActivationsColumnNames = ...
 inputs.mtpActivations = inputs.mtpActivations(:, includedSubset, :);
 end
 
-function weights = loadFixedSynergyWeights(tree, inputs, ...
+function [weights, ratios] = loadFixedSynergyWeights(directory, inputs, ...
     normalizationMethod, normalizationValue)
-dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
-if ~isfile(fullfile(dataDirectory, "synergyWeights.sto"))
+if ~isfile(fullfile(directory, "synergyWeights.sto"))
     throw(MException('', '%s', "synergyWeights.sto was not found in " + ...
-        dataDirectory + ". A pre-existing synergy weights file is " + ...
+        directory + ". A pre-existing synergy weights file is " + ...
         "required when optimize_synergy_vectors is false."))
 end
-weights = readSynergyWeightsFromDirectory(dataDirectory, inputs);
+weights = readSynergyWeightsFromDirectory(directory, inputs);
 % Rescales each loaded synergy weight row
 % skipped when synergy_vector_normalization_value is NaN
-weights = normalizeFixedSynergyWeights(weights, normalizationMethod, ...
-    normalizationValue);
+[weights, ratios] = normalizeFixedSynergyWeights(weights, ...
+    normalizationMethod, normalizationValue);
 end
 
-function weights = normalizeFixedSynergyWeights(weights, method, value)
-if isnan(value)
-    fprintf(['[NCP] No synergy_vector_normalization_value given; fixed ' ...
-        'synergy weights loaded from file are left unnormalized.\n']);
-    return
-end
-fprintf(['[NCP] Normalizing loaded fixed synergy weights: method="%s", ' ...
-    'target=%g per synergy row.\n'], method, value);
-switch lower(method)
-    case 'sum'
-        ratios = value ./ sum(weights, 2);
-    case 'magnitude'
-        ratios = value ./ vecnorm(weights, 2, 2);
-    otherwise
-        error('Unknown synergy_vector_normalization_method: "%s"', method);
-end
+function [weights, ratios] = normalizeFixedSynergyWeights(weights, method, value)
+ratios = computeNcpNormalizationRatios(weights, method, value);
 weights = weights .* ratios;
+if ~(isempty(value) || isnan(value))
+    fprintf(['[NCP] Normalizing loaded fixed synergy weights: method="%s", ' ...
+        'target=%g per synergy row.\n'], method, value);
+end
 end
 
 function [maxIsometricForce, optimalFiberLength, tendonSlackLength, ...
