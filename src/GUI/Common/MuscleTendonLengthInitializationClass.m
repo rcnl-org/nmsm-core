@@ -74,7 +74,7 @@ classdef MuscleTendonLengthInitializationClass < handle
             obj.min_normalized_muscle_fiber_length = 0.7;
             obj.optimize_maximum_muscle_stress = 'true';
             obj.optimize_isometric_max_force = 'true';
-            obj.optimize_absolute_length_changes = 'true';
+            obj.optimize_absolute_length_changes = 'false';
             obj.maximum_muscle_stress = 610000;
             obj.RCNLCostTerm = makeDefaultCostTerms(obj.costTermStruct);
         end
