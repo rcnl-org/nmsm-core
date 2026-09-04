@@ -16,12 +16,22 @@
 		<trial_name>gait_1</trial_name>
 		<!--Space separated list of coordinates to be considered GPOPS2 states. Not including a coordinate prescribes it.-->
 		<states_coordinate_list>coordinate_1 coordinate_2 coordinate_3</states_coordinate_list>
+		<!--*Optional* Default is false. Normalizes each cost term by the number of enabled terms within its own type rather than by the total number of enabled cost terms.-->
+		<normalize_cost_by_term_type>false</normalize_cost_by_term_type>
 		<!--*Optional* Default is 2.-->
 		<joint_position_range_scale_factor>2</joint_position_range_scale_factor>
+		<!--*Optional* Default is 0. Minimum allowed bound range for joint positions.-->
+		<joint_position_minimum_range>0</joint_position_minimum_range>
 		<!--*Optional* Default is 1.5.-->
 		<joint_velocity_range_scale_factor>1.5</joint_velocity_range_scale_factor>
+		<!--*Optional* Default is 0. Minimum allowed bound range for joint velocities.-->
+		<joint_velocity_minimum_range>0</joint_velocity_minimum_range>
 		<!--*Optional* Default is 1.-->
 		<joint_acceleration_range_scale_factor>1</joint_acceleration_range_scale_factor>
+		<!--*Optional* Default is 0. Minimum allowed bound range for joint accelerations.-->
+		<joint_acceleration_minimum_range>0</joint_acceleration_minimum_range>
+		<!--*Optional* Design Optimization only. Space separated [min max] bounds on the final time design variable.-->
+		<final_time_range></final_time_range>
 		<!--Set of synergy controls for GPOPS2.-->
 		<RCNLSynergyController>
 			<!--Space separated list containing the coordinates controlled by the synergy controller.-->
@@ -46,6 +56,10 @@
 		<RCNLTorqueController>
 			<!--Space separated list containing the coordinates controlled by the torque controller.-->
 			<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+			<!--*Optional* Default is 1.-->
+			<torque_controls_range_scale_factor>1</torque_controls_range_scale_factor>
+			<!--*Optional* Default is 0.-->
+			<torque_controls_minimum_range>0</torque_controls_minimum_range>
 		</RCNLTorqueController>
 		<!--Set of cost terms used for this optimization. For a full list of cost terms, see documentation at nmsm.rice.edu.-->
 		<RCNLCostTermSet>
@@ -249,6 +263,15 @@
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
 				<max_allowable_error></max_allowable_error>
 				<error_center></error_center>
+			</RCNLCostTerm>
+			<!--Design Optimization only.-->
+			<RCNLCostTerm name="user_defined">
+				<is_enabled>true</is_enabled>
+				<type>user_defined</type>
+				<function_name>myCustomCostFunction</function_name>
+				<!--cost_term_type must be continuous or discrete.-->
+				<cost_term_type>continuous</cost_term_type>
+				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
 		</RCNLCostTermSet>
 		<RCNLConstraintTermSet>
@@ -683,6 +706,16 @@
 				<is_enabled>true</is_enabled>
 				<type>synergy_vector_magnitude</type>
 				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<!--Design Optimization only.-->
+			<RCNLConstraintTerm name="user_defined">
+				<is_enabled>true</is_enabled>
+				<type>user_defined</type>
+				<function_name>myCustomConstraintFunction</function_name>
+				<!--constraint_term_type must be path or terminal.-->
+				<constraint_term_type>path</constraint_term_type>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
