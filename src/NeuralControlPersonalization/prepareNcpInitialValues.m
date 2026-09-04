@@ -381,11 +381,14 @@ mtpActivationsStack = reshape(mtpPerm, inputs.numTrials * ...
 end
 
 % -------------------------------------------------------------------------
+% Fits nodes to the given point-level commands
 function commandsInitNodes = commandsPointsToNodes(commandsInitStack, inputs)
 commandsInit = reshape(commandsInitStack, inputs.numTrials, ...
     inputs.numPoints, inputs.numSynergies);
 commands2d = reshape(permute(commandsInit, [2 1 3]), inputs.numPoints, []);
 nodes2d = inputs.invBmatrix * commands2d;
+minPositiveNode = 1e-6;
+nodes2d = max(nodes2d, minPositiveNode);
 commandsInitNodes = permute(reshape(nodes2d, inputs.numNodes, ...
     inputs.numTrials, inputs.numSynergies), [2 1 3]);
 end
