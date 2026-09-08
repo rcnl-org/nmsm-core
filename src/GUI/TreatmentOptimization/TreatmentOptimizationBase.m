@@ -2622,6 +2622,15 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 app.MuscleController.loadFromStruct( ...
                     settingsTree.RCNLMuscleController);
             end
+            app.MuscleModel.loadFromStruct(settingsTree);
+            if isfield(settingsTree, 'RCNLSynergyController')
+                app.MuscleModel.loadFromStruct( ...
+                    settingsTree.RCNLSynergyController);
+            end
+            if isfield(settingsTree, 'RCNLMuscleController')
+                app.MuscleModel.loadFromStruct( ...
+                    settingsTree.RCNLMuscleController);
+            end
             if isfield(settingsTree, 'RCNLMuscleModel')
                 app.MuscleModel.loadFromStruct( ...
                     settingsTree.RCNLMuscleModel);
