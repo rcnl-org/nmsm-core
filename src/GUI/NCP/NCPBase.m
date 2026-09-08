@@ -709,6 +709,9 @@ classdef NCPBase < matlab.apps.AppBase
                 app.currentSettingsFile = fullfile(path, file);
             end
             app.saveSettingsFile(app.currentSettingsFile);
+            % Clears figures left over from a previous run so the result
+            % plots are the only ones on screen.
+            close all
             NCPRun(app, app.currentSettingsFile);
         end
 

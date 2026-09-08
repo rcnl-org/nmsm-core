@@ -6,7 +6,10 @@
 % to a per-synergy normalization constraint (and, optionally, a hard
 % bilateral-symmetry constraint between two synergy groups).
 %
-% (struct, struct) -> (Array of number, struct)
+% The optional app is the GUI's run window, passed through to the optimizer
+% so its Cancel button can stop fmincon. A scripted run omits it.
+%
+% (struct, struct, App) -> (Array of number, struct)
 % Runs the Neural Control Personalization algorithm
 
 % ----------------------------------------------------------------------- %
@@ -33,6 +36,9 @@
 
 function [finalValues, inputs] = NeuralControlPersonalization(inputs, ...
     params, app)
+if nargin < 3
+    app = [];
+end
 verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
 params = finalizeParams(params);

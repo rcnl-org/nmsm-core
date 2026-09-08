@@ -6,7 +6,15 @@
 % synergy weights/commands, combined activations, and modeled joint
 % moments to the results directory.
 %
-% (string) -> (None)
+% The optional app is the GUI's run window. It is used three ways:
+% updateRunStageGui toggles the stage labels, CancelOptimizationGui is
+% installed as fmincon's OutputFcn so the Cancel button can stop the solver,
+% and isRunCancelled is read between stages so a cancel during Muscle Tendon
+% Length Initialization does not fall through into the NCP optimization. All
+% three are found by name, so a scripted run that passes no app is
+% unaffected.
+%
+% (string, App) -> (None)
 % Runs Neural Control Personalization from a settings file
 
 % ----------------------------------------------------------------------- %
@@ -50,39 +58,32 @@ if ~exist(resultsDirectory, "dir")
 end
 [~, fname, fext] = fileparts(settingsFileName);
 copyfile(settingsFileName, fullfile(resultsDirectory, fname + fext));
-outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
-if ~isempty(app)
-    app.ParsingLabel.Enable = 'off';
-end
+updateRunStageGui(app, 'ParsingLabel', 'off');
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
 if isstruct(precalInputs)
-    if ~isempty(app)
-        app.RunningMTLILabel.Enable = 'on';
-    end
+    updateRunStageGui(app, 'RunningMTLILabel', 'on');
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
     inputs = updateNcpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
-    if ~isempty(app)
-        app.RunningMTLILabel.Enable = 'off';
-    end
+    updateRunStageGui(app, 'RunningMTLILabel', 'off');
+end
+% Cancelling during initialization only produced an initial guess, so there
+% is nothing worth optimizing or saving. Cancelling during NCP itself is
+% different: fmincon returns the iterate it stopped on, and that is saved
+% below the same way a converged run is.
+if runCancelled(app)
+    diary off
+    return
 end
 
-[optimizedValues, inputs] = NeuralControlPersonalization(inputs, params);
-[synergyWeights, synergyCommands, ~] = findSynergyWeightsAndCommands( ...
-    optimizedValues, inputs);
-if ~isempty(app)
-    app.RunningNCPLabel.Enable = 'on';
-end
+updateRunStageGui(app, 'RunningNCPLabel', 'on');
 [optimizedValues, inputs] = NeuralControlPersonalization(inputs, params, app);
-if ~isempty(app)
-    app.RunningNCPLabel.Enable = 'off';
-    app.SavingResultsLabel.Enable = 'on';
-end
-drawnow
+updateRunStageGui(app, 'RunningNCPLabel', 'off');
+updateRunStageGui(app, 'SavingResultsLabel', 'on');
 [synergyWeights, synergyCommands] = findSynergyWeightsAndCommands( ...
-    optimizedValues, inputs, params);
+    optimizedValues, inputs);
 [synergyWeights, synergyCommands] = normalizeSynergiesByMaximumWeight(...
     synergyWeights, synergyCommands);
 [combinedActivations, ncpActivations] = combineFinalActivations(inputs, ...
@@ -94,11 +95,17 @@ ncpMuscleJointMoments = calcFinalMuscleJointMoments(inputs, ...
 saveNeuralControlPersonalizationResults(synergyWeights, ...
     synergyCommands, combinedActivations, combinedMuscleJointMoments, ...
     ncpMuscleJointMoments, inputs, resultsDirectory, precalInputs);
-if ~isempty(app)
-    app.SavingResultsLabel.Enable = 'off';
-end
+updateRunStageGui(app, 'SavingResultsLabel', 'off');
 fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
 diary off
+end
+
+% (App) -> (logical)
+% True when the GUI's Cancel button has been pressed. A scripted run has no
+% app and is never cancelled.
+function cancelled = runCancelled(app)
+cancelled = ~isempty(app) && ismethod(app, "isRunCancelled") && ...
+    app.isRunCancelled();
 end
 
 function [combinedActivations, synergyActivations] = ...

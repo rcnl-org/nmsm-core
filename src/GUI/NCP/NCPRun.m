@@ -1,8 +1,17 @@
 % This class is part of the NMSM Pipeline, see file for full license.
 %
-% This class is the App Designer run dialog for the Neural Control
-% Personalization (NCP) tool, displaying progress labels and providing
-% cancel functionality during an active NCP optimization run.
+% This class is the progress window for a Neural Control Personalization
+% run. NCPBase saves its settings file and hands both itself and that file
+% name to this window, which drives the run and reports where it has got
+% to.
+%
+% NeuralControlPersonalizationTool takes this app as an optional second
+% argument and calls back into it three ways: updateRunStageGui toggles the
+% stage labels, CancelOptimizationGui is installed as fmincon's OutputFcn so
+% the Cancel button can stop the solver, and isRunCancelled is read between
+% stages so a cancel during Muscle Tendon Length Initialization does not
+% fall through into the NCP optimization. All three are found by name, so a
+% scripted run that passes no app is unaffected.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -46,14 +55,31 @@ classdef NCPRun < matlab.apps.AppBase
         cancelOptimizationFlag logical = false;
     end
 
-    properties (SetObservable)
-        parsing logical = true;
+    methods (Access = public)
+
+        % fmincon OutputFcn. computeNeuralControlOptimization and
+        % MuscleTendonLengthInitialization both look this up by name, the
+        % same way MTP, JMP and GCP do.
+        function stop = CancelOptimizationGui(app, x, optimValues, state)
+            drawnow; % lets GUI process button presses
+            stop = app.cancelOptimizationFlag;
+        end
+
+        % Read between stages, so Cancel during MTLI stops the run rather
+        % than letting it fall through into the NCP optimization.
+        function cancelled = isRunCancelled(app)
+            cancelled = app.cancelOptimizationFlag;
+        end
     end
 
-    methods (Access = public)
-        function stop = CancelOptimizationGui(app, x, optimValues, state)
-            drawnow;
-            stop = app.cancelOptimizationFlag;
+    methods (Access = private)
+
+        function finish(app, text)
+            app.NCPCompletedLabel.Text = text;
+            app.NCPCompletedLabel.Enable = 'on';
+            app.CloseButton.Enable = 'on';
+            app.CancelButton.Enable = 'off';
+            drawnow
         end
     end
 
@@ -61,26 +87,43 @@ classdef NCPRun < matlab.apps.AppBase
     methods (Access = private)
 
         % Code that executes after component creation
-        function startupFcn(app, NCPBase, SettingsFileName)
-            app.NCPBase = NCPBase;
-            app.SettingsFileName = SettingsFileName;
+        function startupFcn(app, base, settingsFileName)
+            app.NCPBase = base;
+            app.SettingsFileName = settingsFileName;
+            % Paints the window before the blocking call starts.
             drawnow
             pause(0.01)
-            NeuralControlPersonalizationTool(SettingsFileName, app)
-            app.PlottingResultsLabel.Enable = 'on';
-            drawnow
-            plotNcpResultsFromSettingsFile(SettingsFileName);
-            drawnow
-            app.PlottingResultsLabel.Enable = 'off';
-            app.NCPCompletedLabel.Enable = 'on';
-            app.CloseButton.Enable = 'on';
-            app.CancelButton.Enable = 'off';
+            try
+                NeuralControlPersonalizationTool(settingsFileName, app);
+            catch runException
+                app.finish('NCP Failed');
+                rethrow(runException)
+            end
+            if app.cancelOptimizationFlag
+                % A cancel during MTLI leaves nothing on disk to plot; a
+                % cancel during NCP saved the iterate fmincon stopped on.
+                app.finish('NCP Cancelled');
+            end
+            updateRunStageGui(app, 'PlottingResultsLabel', 'on');
+            try
+                plotNcpResultsFromSettingsFile(settingsFileName);
+            catch plotException
+                % Plotting is not part of the result, so a failure here is
+                % reported rather than thrown - the run's output is already
+                % on disk either way.
+                warning('NCPRun:plottingFailed', '%s', ...
+                    "Neural control results could not be plotted: " + ...
+                    plotException.message);
+            end
+            updateRunStageGui(app, 'PlottingResultsLabel', 'off');
+            app.finish('NCP Completed');
         end
 
         % Button pushed function: CancelButton
         function CancelButtonPushed(app, event)
             app.cancelOptimizationFlag = true;
             app.CancelButton.Enable = 'off';
+            app.CancelButton.Text = 'Cancelling';
         end
 
         % Button pushed function: CloseButton
@@ -99,7 +142,7 @@ classdef NCPRun < matlab.apps.AppBase
             app.UIFigure = uifigure('Visible', 'off');
             app.UIFigure.Color = [0.851 0.851 0.851];
             app.UIFigure.Position = [100 100 640 480];
-            app.UIFigure.Name = 'MATLAB App';
+            app.UIFigure.Name = 'Neural Control Personalization';
             app.UIFigure.WindowStyle = 'docked';
 
             % Create ParsingLabel
@@ -166,7 +209,7 @@ classdef NCPRun < matlab.apps.AppBase
             app.NCPCompletedLabel.FontWeight = 'bold';
             app.NCPCompletedLabel.Enable = 'off';
             app.NCPCompletedLabel.Position = [39 132 432 39];
-            app.NCPCompletedLabel.Text = 'NCP Completed.';
+            app.NCPCompletedLabel.Text = 'NCP Completed';
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
