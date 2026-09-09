@@ -75,6 +75,12 @@
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
+			<RCNLCostTerm name="generalized_speed_minimization">
+				<is_enabled>true</is_enabled>
+				<type>generalized_speed_minimization</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
 			<RCNLCostTerm name="generalized_acceleration_tracking">
 				<is_enabled>true</is_enabled>
 				<type>generalized_acceleration_tracking</type>
@@ -197,13 +203,13 @@
 			</RCNLCostTerm>
 			<RCNLCostTerm name="joint_energy_generation_goal">
 				<is_enabled>true</is_enabled>
-				<type>inverse_dynamics_shape_tracking</type>
+				<type>joint_energy_generation_goal</type>
 				<load_list>load_1 load_2 load_3</load_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
 			<RCNLCostTerm name="inverse_dynamics_shape_tracking">
 				<is_enabled>true</is_enabled>
-				<type>joint_energy_generation_goal</type>
+				<type>inverse_dynamics_shape_tracking</type>
 				<load_list>load_1 load_2 load_3</load_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
@@ -420,6 +426,34 @@
 				<is_enabled>true</is_enabled>
 				<type>center_of_pressure_value</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="muscle_activation_deviation">
+				<is_enabled>true</is_enabled>
+				<type>muscle_activation_deviation</type>
+				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="muscle_activation_value">
+				<is_enabled>true</is_enabled>
+				<type>muscle_activation_value</type>
+				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="controller_deviation">
+				<is_enabled>true</is_enabled>
+				<type>controller_deviation</type>
+				<controller_list>controller_1 controller_2 controller_3</controller_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<RCNLConstraintTerm name="controller_value">
+				<is_enabled>true</is_enabled>
+				<type>controller_value</type>
+				<controller_list>controller_1 controller_2 controller_3</controller_list>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
@@ -706,6 +740,14 @@
 				<is_enabled>true</is_enabled>
 				<type>synergy_vector_magnitude</type>
 				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<!--Design Optimization only.-->
+			<RCNLConstraintTerm name="limit_normalized_fiber_length">
+				<is_enabled>true</is_enabled>
+				<type>limit_normalized_fiber_length</type>
+				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
