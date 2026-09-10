@@ -31,9 +31,12 @@
 
 function [externalMomentsPeriodicity, constraintTerm] = ...
     calcExternalMomentsPeriodicity( ...
-    groundReactionMoments, inputs, momentName, constraintTerm)
-[contactSurfaceIndex, axisIndex] = findGroundReactionTermIndices( ...
-    constraintTerm, inputs, 'momentColumns', momentName);
-externalMomentsPeriodicity = ...
-    diff(groundReactionMoments{contactSurfaceIndex}(:, axisIndex));
+    groundReactionMoments, contactSurfaces, momentName, constraintTerm)
+for i = 1:length(contactSurfaces)
+    indx = find(strcmp(convertCharsToStrings( ...
+        contactSurfaces{i}.momentColumns), momentName));
+    if ~isempty(indx)
+        externalMomentsPeriodicity = diff(groundReactionMoments{i}(:, indx));
+    end
+end
 end

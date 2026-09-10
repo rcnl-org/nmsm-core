@@ -39,12 +39,6 @@ end
 inputs = prepareGroundContactPersonalizationInputs(inputs);
 % Optionally initializes the resting spring length.
 if params.restingSpringLengthInitialization
-    if valueOrAlternate(inputs, "parseInitialGuessFromOsimx", false)
-        warning("initialize_resting_spring_length and " + ...
-            "parse_initial_guess_from_osimx are both enabled. The resting " + ...
-            "spring length initial guess from the osimx file will be " + ...
-            "overwritten.");
-    end
     updateRunStageGui(app, 'InitializingLabel', 'on');
     inputs = initializeRestingSpringLength(inputs);
     updateRunStageGui(app, 'InitializingLabel', 'off');

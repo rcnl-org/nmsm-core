@@ -50,12 +50,6 @@ end
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 if isstruct(precalInputs)
-    if valueOrAlternate(inputs, "parseInitialGuessFromOsimx", false)
-        warning("MuscleTendonLengthInitialization and " + ...
-            "parse_initial_guess_from_osimx are both enabled. The " + ...
-            "MuscleTendonLengthInitialization initial guess will be " + ...
-            "overwritten for muscles found in the osimx file.");
-    end
     if ~isempty(app)
         app.RunningMTLILabel.Enable = 'on';
     end

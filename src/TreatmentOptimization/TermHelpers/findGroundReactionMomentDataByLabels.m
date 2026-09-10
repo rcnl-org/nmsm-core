@@ -34,13 +34,22 @@ if isfield(term, 'internalGroundReactionIndices')
     contactSurfaceIndices = term.internalContactSurfaceIndices;
 else
     targetLabels = string(targetLabels);
-    numberOfTerms = max(length(targetLabels), 1);
+    numberOfTerms = length(targetLabels);
     groundReactionIndices = zeros(1, numberOfTerms);
     contactSurfaceIndices = groundReactionIndices;
     for i = 1 : numberOfTerms
-        [contactSurfaceIndices(i), groundReactionIndices(i)] = ...
-            findGroundReactionTermIndices(term, inputs, 'momentColumns', ...
-            targetLabels(i));
+        for j = 1 : length(inputs.contactSurfaces)
+            index = find(strcmp(convertCharsToStrings( ...
+                inputs.contactSurfaces{j}.momentColumns), ...
+                targetLabels(i)), 1);
+            if ~isempty(index)
+                groundReactionIndices = index;
+                contactSurfaceIndices(i) = j;
+            end
+        end
+
+        assert(groundReactionIndices(i) ~= 0, targetLabels(i) + ...
+            " is not a ground reaction moment column name");
     end
     term.internalGroundReactionIndices = groundReactionIndices;
     term.internalContactSurfaceIndices = contactSurfaceIndices;

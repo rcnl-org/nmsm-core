@@ -36,9 +36,6 @@
 
 function finalValues = computeNeuralControlOptimization(initialValuesLong, ...
     inputs, params, app)
-if nargin < 4
-    app = [];
-end
 [initWeights, ~, ~] = findSynergyWeightsAndCommands(initialValuesLong, inputs);
 initialValues = initialValuesLong;
 if inputs.enforce_bilateral_symmetry
@@ -48,6 +45,12 @@ numDesignVariables = length(initialValues);
 [synergyWeightEquations, synergyWeightSums, lowerBounds, upperbounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights);
 optimizerOptions = prepareOptimizerOptions(params, app);
+% Cancel button that stops fmincon early and saves the current result.
+% cancelCleanup guarantees the window is closed on any exit from this
+% function (normal return, error, or Ctrl+C).
+[optimizerOptions, cancelCleanup] = addOptimizationCancelButton( ...
+    optimizerOptions, params.maxIterations, "Optimizing NCP", app);
+
 if strcmpi(inputs.synergy_vector_normalization_method,'sum')
     % linear constraints
     if params.useCasadi

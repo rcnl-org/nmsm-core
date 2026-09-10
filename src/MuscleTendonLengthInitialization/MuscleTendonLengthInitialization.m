@@ -36,7 +36,7 @@ optimizerOptions = makeOptimizerOptions(struct(), app);
 [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
     primaryValues, inputs, lowerBounds, upperBounds);
 optimizedValues = computeMuscleTendonLengthInitializationOptimization(taskValues, ...
-    taskLowerBounds, taskUpperBounds, inputs, optimizerOptions);
+    taskLowerBounds, taskUpperBounds, inputs, optimizerOptions, app);
 end
 
 % extract initial version of optimized values from inputs/params
