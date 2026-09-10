@@ -80,7 +80,7 @@ for foot = 1:length(inputs.surfaces)
     for i = 1:length(inputs.springConstants)
         newSurface.springs{i} = addGcpSpring(inputs, foot, i);
     end
-
+    
     index = 1 + length(osimx.groundContact.contactSurface);
     osimx.groundContact.contactSurface{index} = newSurface;
 end

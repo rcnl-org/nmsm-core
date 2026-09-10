@@ -34,9 +34,6 @@
 
 function [optimizerOptions, cancelCleanup] = addOptimizationCancelButton(...
     optimizerOptions, maxIterations, waitbarMessage, app)
-if nargin < 4
-    app = [];
-end
 if ~isempty(app) && ismethod(app, "CancelOptimizationGui")
     optimizerOptions.OutputFcn = @(x, optimValues, state, varargin) ...
         app.CancelOptimizationGui(x, optimValues, state);

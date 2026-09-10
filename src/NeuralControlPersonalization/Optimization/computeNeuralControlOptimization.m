@@ -3,7 +3,13 @@
 % This function runs fmincon for Neural Control Personalization, preparing
 % any necessary options and constraints for the optimizer. 
 %
-% (Array of double, struct, struct) -> (Array of double)
+% The optional app is the GUI's run window. When one is given, its
+% CancelOptimizationGui method is installed as fmincon's OutputFcn so the
+% Cancel button can stop the solver, the same way MuscleTendonPersonalization
+% and GroundContactPersonalization hook their run windows in. A scripted run
+% passes no app and gets no OutputFcn at all.
+%
+% (Array of double, struct, struct, App) -> (Array of double)
 % Runs fmincon optimization for Neural Control Personalization. 
 
 % ----------------------------------------------------------------------- %
@@ -30,42 +36,22 @@
 
 function finalValues = computeNeuralControlOptimization(initialValuesLong, ...
     inputs, params, app)
-if nargin < 4
-    app = [];
-end
 [initWeights, ~, ~] = findSynergyWeightsAndCommands(initialValuesLong, inputs);
 initialValues = initialValuesLong;
-if ~inputs.optimize_synergy_vectors
-    initialValues(1:length(inputs.fixedSynergyVectorFlat)) = [];
-elseif inputs.enforce_bilateral_symmetry
+if inputs.enforce_bilateral_symmetry
     initialValues(1:inputs.numWeightsPerGroup(1)) = [];
 end
 numDesignVariables = length(initialValues);
 [synergyWeightEquations, synergyWeightSums, lowerBounds, upperbounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights);
-optimizerOptions = prepareOptimizerOptions(params);
+optimizerOptions = prepareOptimizerOptions(params, app);
 % Cancel button that stops fmincon early and saves the current result.
 % cancelCleanup guarantees the window is closed on any exit from this
 % function (normal return, error, or Ctrl+C).
 [optimizerOptions, cancelCleanup] = addOptimizationCancelButton( ...
     optimizerOptions, params.maxIterations, "Optimizing NCP", app);
 
-if ~inputs.optimize_synergy_vectors
-    % weights are fixed, not part of the design vector
-    % no weight normalization constraints to build
-    if params.useCasadi
-        derivatives = prepareNcpCasadiDerivatives(inputs, params, ...
-            numDesignVariables, []);
-        optimizerOptions = applyCasadiOptimizerOptions(optimizerOptions, ...
-            derivatives);
-        finalValues = fmincon(derivatives.costFcn, initialValues, [], [], ...
-            [], [], lowerBounds, upperbounds, [], optimizerOptions);
-    else
-        finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
-            inputs, params), initialValues, [], [], [], [], lowerBounds, ...
-            upperbounds, [], optimizerOptions);
-    end
-elseif strcmpi(inputs.synergy_vector_normalization_method,'sum')
+if strcmpi(inputs.synergy_vector_normalization_method,'sum')
     % linear constraints
     if params.useCasadi
         derivatives = prepareNcpCasadiDerivatives(inputs, params, ...
@@ -101,22 +87,18 @@ else
     error('Unknown normalization method: %s', ...
         inputs.synergy_vector_normalization_method);
 end
-if ~inputs.optimize_synergy_vectors
-    finalValues = [inputs.fixedSynergyVectorFlat; finalValues];
-elseif inputs.enforce_bilateral_symmetry
+if inputs.enforce_bilateral_symmetry
     weightsVariables = finalValues(1:inputs.numWeightsPerGroup(1));
     finalValues = [weightsVariables; finalValues];
 end
 end
 
-% ----------------------------------------------------------------------- 
+% Generate constraints for synergy weight vectors and design variable lower
+% bounds
 function [synergyWeightEquations, synergyWeightSums, lowerBounds, upperBounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights)
 
-if ~inputs.optimize_synergy_vectors
-    synergyWeightEquations = [];
-    synergyWeightSums      = [];
-elseif strcmpi(inputs.synergy_vector_normalization_method, 'sum')
+if strcmpi(inputs.synergy_vector_normalization_method, 'sum')
     if inputs.enforce_bilateral_symmetry
         activeGroups = inputs.synergyGroups(1);
         activeWeights = initWeights(1:inputs.synergyGroups{1}.numSynergies, ...
@@ -125,6 +107,7 @@ elseif strcmpi(inputs.synergy_vector_normalization_method, 'sum')
         activeGroups  = inputs.synergyGroups;
         activeWeights = initWeights;
     end
+
     numActiveRows = sum(cellfun(@(g) g.numSynergies, activeGroups));
     synergyWeightEquations = zeros(numActiveRows, numDesignVariables);
     synergyWeightSums = sum(activeWeights, 2);
@@ -140,6 +123,8 @@ elseif strcmpi(inputs.synergy_vector_normalization_method, 'sum')
         end
     end
 else
+    % magnitude: nonlinear constraints handle normalization, 
+    % no linear constraints needed
     synergyWeightEquations = [];
     synergyWeightSums      = [];
 end
@@ -147,8 +132,8 @@ lowerBounds = zeros(numDesignVariables, 1);
 upperBounds = inf(numDesignVariables, 1);
 end
 
-% ----------------------------------------------------------------------- 
-function optimizerOptions = prepareOptimizerOptions(params)
+% Set optimizer options from params struct
+function optimizerOptions = prepareOptimizerOptions(params, app)
 optimizerOptions = optimoptions('fmincon', 'UseParallel',true);
 optimizerOptions.DiffMinChange = params.diffMinChange;
 optimizerOptions.OptimalityTolerance = params.optimalityTolerance;
@@ -160,9 +145,16 @@ optimizerOptions.Algorithm = params.algorithm;
 optimizerOptions.FiniteDifferenceType = params.finiteDifferenceType;
 optimizerOptions.Display = valueOrAlternate(params, ...
     'display','iter');
+% Lets the GUI's Cancel button stop the solver. The OutputFcn runs on the
+% client, so unlike the cost function this closure is not shipped to the
+% parallel workers.
+if ~isempty(app) && ismethod(app, "CancelOptimizationGui")
+    optimizerOptions.OutputFcn = @(x, optimValues, state) ...
+        app.CancelOptimizationGui(x, optimValues, state);
+end
 end
 
-% ----------------------------------------------------------------------- 
+
 function optimizerOptions = applyCasadiOptimizerOptions(optimizerOptions, ...
     derivatives)
 % interior-point is required to accept a user-supplied HessianFcn
@@ -179,7 +171,6 @@ optimizerOptions.HessianFcn = derivatives.hessianFcn;
 optimizerOptions.UseParallel = false;
 end
 
-% ----------------------------------------------------------------------- 
 function [c, ceq] = nonlinearConstraints(values, inputs, normalizationTarget)
 if inputs.enforce_bilateral_symmetry
     weightsPart = values(1:inputs.numWeightsPerGroup(1));
@@ -188,6 +179,7 @@ end
 
 [weights, ~, ~] = findSynergyWeightsAndCommands(values, inputs);
 c = [];
+% Equality constraints: magnitude normalization per synergy
 if inputs.enforce_bilateral_symmetry
     nSyn1 = inputs.synergyGroups{1}.numSynergies;
     ceq = sum(weights(1:nSyn1,:).^2, 2) - normalizationTarget(1:nSyn1);
