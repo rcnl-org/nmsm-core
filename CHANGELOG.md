@@ -4,11 +4,16 @@
 
 ### Added
 - Added an electromechanical delay deviations term to MTP called "electromechanical_delay"
-- Changed MTP saving function to save activation time constants and electromechanical delays in units of seconds instead of the units that the optimizer used. 
+- Changed MTP saving function to save activation time constants and electromechanical delays in units of seconds instead of the units that the optimizer used.
+- Added new NCP cost terms muscle_activation_minimization and synergy_activation_minimization
+- Added a progress bar to NCP, and now allow graceful premature canceling of NCP optimizations
 
 ### Fixed
-- Fixed bug causing incorrect files to be parsed based on their prefix.
-- Fixed bug causing muscle-tendon lengths and velocities to not be parsed correctly.
+- Fixed bug causing incorrect files to be parsed based on their prefix
+- Fixed bug causing muscle-tendon lengths and velocities to not be parsed correctly
+
+## Changed
+- Made significant speed ups to NCP
 
 
 ## v.1.5.3 - 2026-02-27
