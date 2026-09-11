@@ -1,5 +1,16 @@
 # Changelog
 
+## v.1.5.4 2026-09-12
+
+### Added
+- Added an electromechanical delay deviations term to MTP called "electromechanical_delay"
+- Changed MTP saving function to save activation time constants and electromechanical delays in units of seconds instead of the units that the optimizer used. 
+
+### Fixed
+- Fixed bug causing incorrect files to be parsed based on their prefix.
+- Fixed bug causing muscle-tendon lengths and velocities to not be parsed correctly.
+
+
 ## v.1.5.3 - 2026-02-27
 
 ### Fixed
@@ -34,26 +45,26 @@
 - All tools now check whether the project file is opened and throw a useful error message if it is not opened.
 - The project file now has a startup script that checks the installation status of GPOPS-II and OpenSim.
 - Created `plotJmpResultsFromSettingsFile()` to be in line with plotting functions for other tools.
-- Muscle-Tendon Personalization now saves total, passive, and active muscle forces, along with tendon forces. 
+- Muscle-Tendon Personalization now saves total, passive, and active muscle forces, along with tendon forces.
 - `plotMtpResultsFromSettingsFile()` now plots total, passive, and active muscle forces.
 - Treatment Optimization plotting functions have optional arguments `columnsToUse`, `columnNames`, `legend`, `displayRmse`, and `figureGridSize`.
-- `plotTreatmentOptimizationJointAngles()` and `plotTreatmentOptimizationJointVelocities()` have optional argument `useRadians`. 
+- `plotTreatmentOptimizationJointAngles()` and `plotTreatmentOptimizationJointVelocities()` have optional argument `useRadians`.
 - Treatment Optimization has new cost and constraint terms for `synergy_vector_symmetry`.
 - Treatment Optimization has an additional new cost term: `generalized_speed_minimization`.
-- Function arguments have autocomplete for main tool functions and plotting functions. 
-- Main body MTP added cost terms for minimum and maximum normalized fiber length values. 
-- plotNcpResultsFromSettingsFile() allows an optional argument for a different results directory than the one in the settings file.  
+- Function arguments have autocomplete for main tool functions and plotting functions.
+- Main body MTP added cost terms for minimum and maximum normalized fiber length values.
+- plotNcpResultsFromSettingsFile() allows an optional argument for a different results directory than the one in the settings file.
 
 ### Fixed
-- `plotJmpResultsFromSettingsFile()` now checks for markers in the settings file that are not in the marker file. 
+- `plotJmpResultsFromSettingsFile()` now checks for markers in the settings file that are not in the marker file.
 - Joint Model Personalization GUI now correctly has orientation bounds in radians instead of degrees.
 - Fixed a bug that could prevent Ground Contact Personalization from starting on Windows
-- MTP plotting now displays electromechanical delay in units of seconds. 
+- MTP plotting now displays electromechanical delay in units of seconds.
 
 ### Changed
-- `getPlottingParams()` sets the default plot color to `"default"` for compatibility with Matlab 2025a dark mode. 
-- The `muscle_activation_minimization` cost term in Treatment Optimization allows users to specify the exponent to raise activations to minimize to using `<exponent>`. Default is 2. 
-- GCP output file names now specify gcp_modeled for quantities as modeled by GCP, and gcp_adjusted for experimental forceplate quantities adjusted by GCP. 
+- `getPlottingParams()` sets the default plot color to `"default"` for compatibility with Matlab 2025a dark mode.
+- The `muscle_activation_minimization` cost term in Treatment Optimization allows users to specify the exponent to raise activations to minimize to using `<exponent>`. Default is 2.
+- GCP output file names now specify gcp_modeled for quantities as modeled by GCP, and gcp_adjusted for experimental forceplate quantities adjusted by GCP.
 - Changed active force length and force velocity curve parameters to be consistent with OpenSim.
 
 
@@ -62,18 +73,18 @@
 ### Added
 - The Joint Model Personalization GUI tool now allows for selection of markers to be used in a task.
 - The Treatment Optimization GUIs now allow for the trial prefix to be specified in the tool.
-- The `muscle_activation_tracking` cost term supports a `<scale_factor>` to track scaled versions of previous muscle activations. 
-- New Treatment Optimization cost term `synergy_vector_symmetry` keeps two synergy vectors weights' similar. 
+- The `muscle_activation_tracking` cost term supports a `<scale_factor>` to track scaled versions of previous muscle activations.
+- New Treatment Optimization cost term `synergy_vector_symmetry` keeps two synergy vectors weights' similar.
 - New Treatment Optimization constraint terms: `muscle_activation_deviation`, `muscle_activation_value`, `controller_deviation`, `controller_value`
-- The Treatment Optimization `<synergy_normalization_method>` can be set to `none` to retain input synergy magnitudes. 
+- The Treatment Optimization `<synergy_normalization_method>` can be set to `none` to retain input synergy magnitudes.
 
 
 ### Fixed
-- Bugs related to parsing EMG column names from files with inconsistent ordering have been fixed for Muscle Tendon Personalization. 
+- Bugs related to parsing EMG column names from files with inconsistent ordering have been fixed for Muscle Tendon Personalization.
 
 
 ### Changed
-- Metabolic cost calculation has been revised for consistency with previously published research. 
+- Metabolic cost calculation has been revised for consistency with previously published research.
 
 
 ## v1.4.2 - 2025-06-06
@@ -92,7 +103,7 @@
 
 ### Added
 - Treatment Optimization joint positions and velocities may be plotted in degrees or radians (`useRadians=0` for degrees, `1` for radians).
-- `IntegratedQuantitiesPreviewTool()` can read a Design Optimization settings file and display initial values for integrated quantities (metabolic cost, propulsive/braking impulse) that are otherwise difficult to estimate. 
+- `IntegratedQuantitiesPreviewTool()` can read a Design Optimization settings file and display initial values for integrated quantities (metabolic cost, propulsive/braking impulse) that are otherwise difficult to estimate.
 
 
 ### Fixed
@@ -196,8 +207,8 @@
 	- Missing intial guess values will be copied from tracked quantities, and missing quantities to track will be copied from initial guess data if available
 - TO states and controls can optionally have minimum search bounds set in addition to search scale factors
 	- Fields ending in `scale_factor` have an equivalent `minimum_range`
-- TO cost calculations can be normalized within individual cost term types instead of by the total number of cost terms by setting the optional `<normalize_cost_by_term_type>` to true 
-- New TO cost terms: 
+- TO cost calculations can be normalized within individual cost term types instead of by the total number of cost terms by setting the optional `<normalize_cost_by_term_type>` to true
+- New TO cost terms:
 	- Controller shape tracking
 	- Controller minimization
 	- Scaled controller tracking
@@ -262,7 +273,7 @@
 - Synergy-driven Treatment Optimization can optionally adjust synergy vectors
 - Synergy-driven Treatment Optimization tools automatically create surrogate polynomial muscle models instead of requiring a separate tool
 - Design Optimization can solve open/free final time problems
-- New Treatment Optimization cost terms: 
+- New Treatment Optimization cost terms:
 	- Marker position tracking
 	- Joint power minimization
 	- Joint energy generation goal
@@ -275,7 +286,7 @@
 	- Relative walking speed goal
 	- Relative metabolic cost per time
 	- Relative metabolic cost per distance traveled
-- New Treatment Optimization constraint terms: 
+- New Treatment Optimization constraint terms:
 	- Initial state position
 	- Limit muscle activation
 	- Limit normalized fiber Length
