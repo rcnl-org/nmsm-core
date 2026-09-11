@@ -1,11 +1,10 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function takes the necessary inputs and produces the results of IK,
-% ID, and MuscleAnalysis so the values can be used as inputs for
-% MuscleTendonPersonalization.
+% Parses an NCP settings XML tree into the inputs/params structs and
+% results directory used by the rest of the tool.
 %
-% (struct, struct) -> (None)
-% Prepares raw data for MuscleTendonPersonalization
+% (struct) -> (struct, struct, string)
+% Parses the NCP settings tree
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,7 +31,7 @@
 function [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-params = getParams(settingsTree, inputs.model, inputs);
+params = getParams(settingsTree, inputs.model);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -60,14 +59,36 @@ else
     inputs.tendonSlackLengthScaleFactors = ...
         ones(1, length(inputs.muscleTendonColumnNames));
 end
+inputs.enforce_bilateral_symmetry = strcmpi(getTextFromField(...
+    getFieldByNameOrAlternate(tree, ...
+    'enforce_bilateral_symmetry', 'false')), 'true');
+inputs.optimize_synergy_vectors = strcmpi(getTextFromField(...
+    getFieldByNameOrAlternate(tree, ...
+    'optimize_synergy_vectors', 'true')), 'true');
+if ~inputs.optimize_synergy_vectors
+    inputs.fixedSynergyWeights = loadFixedSynergyWeights(tree, inputs);
+end
+inputs.numNodes = str2double(parseElementTextByNameOrAlternate(tree, ...
+    "number_of_nodes", "26"));
+inputs.synergy_vector_normalization_method = string(getTextFromField(...
+    getFieldByNameOrAlternate(tree, ...
+    'synergy_vector_normalization_method', 'magnitude')));
+normValueText = getTextFromField(getFieldByNameOrAlternate(tree, ...
+    'synergy_vector_normalization_value', '10'));
+if isempty(strtrim(normValueText))
+    normValueText = '10';
+end
+inputs.synergy_vector_normalization_value = str2double(normValueText);
+% NOTE: tag absent or empty -> 10 (default)
+% <...>NaN</...> -> NaN (no normalization target)
 end
 
 function inputs = loadMtpData(tree, inputs)
 mtpResultsDirectory = getFieldByNameOrError( ...
     tree, "mtp_results_directory").Text;
 [inputs.mtpActivations, inputs.mtpActivationsColumnNames] = ...
-    parseMtpStandard(findFileListFromPrefixList( ...
-    fullfile(mtpResultsDirectory, "muscleActivations"), inputs.prefixes));
+    parseMtpStandard(unique(findFileListFromPrefixList( ...
+    fullfile(mtpResultsDirectory, "muscleActivations"), inputs.prefixes)));
 osimxFileName = getFieldByName(tree, "input_osimx_file");
 % if ~isstruct(osimxFileName) || isempty(osimxFileName.Text)
 %     throw(MException('', 'An input .osimx file is required if using data from MTP.'))
@@ -79,6 +100,43 @@ includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
 inputs.mtpActivationsColumnNames = ...
     inputs.mtpActivationsColumnNames(includedSubset);
 inputs.mtpActivations = inputs.mtpActivations(:, includedSubset, :);
+end
+
+function weights = loadFixedSynergyWeights(tree, inputs)
+import org.opensim.modeling.Storage
+dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
+weightsFile = fullfile(dataDirectory, "synergyWeights.sto");
+if ~isfile(weightsFile)
+    throw(MException('', '%s', "synergyWeights.sto was not found in " + ...
+        dataDirectory + ". A pre-existing synergy weights file is " + ...
+        "required when optimize_synergy_vectors is false."))
+end
+storage = Storage(weightsFile);
+data = storageToDoubleMatrix(storage);
+columnNames = getStorageColumnNames(storage);
+
+missingMuscles = setdiff(inputs.muscleTendonColumnNames, columnNames);
+if ~isempty(missingMuscles)
+    throw(MException('', '%s', "synergyWeights.sto in " + dataDirectory + ...
+        " is missing weights for muscle(s): " + ...
+        strjoin(missingMuscles, ", ")))
+end
+extraMuscles = setdiff(columnNames, inputs.muscleTendonColumnNames);
+if ~isempty(extraMuscles)
+    throw(MException('', '%s', "synergyWeights.sto in " + dataDirectory + ...
+        " contains unexpected muscle(s) not in this study's model: " + ...
+        strjoin(extraMuscles, ", ")))
+end
+[~, reorderIndex] = ismember(inputs.muscleTendonColumnNames, columnNames);
+weights = data(reorderIndex, :)';
+
+expectedNumSynergies = sum(cellfun(@(g) g.numSynergies, ...
+    inputs.synergyGroups));
+if size(weights, 1) ~= expectedNumSynergies
+    throw(MException('', '%s', sprintf(...
+        "synergyWeights.sto has %d synergies but %d are configured " + ...
+        "in this settings file", size(weights, 1), expectedNumSynergies)))
+end
 end
 
 function [maxIsometricForce, optimalFiberLength, tendonSlackLength, ...
@@ -100,7 +158,7 @@ for i = 1:length(muscles)
 end
 end
 
-function params = getParams(tree, model, inputs)
+function params = getParams(tree, model)
 params = struct();
 params.activationGroupNames = parseSpaceSeparatedList(tree, ...
     'activation_muscle_groups');
@@ -112,11 +170,6 @@ params.normalizedFiberLengthGroups = groupNamesToGroups( ...
     params.normalizedFiberLengthGroupNames, model);
 params.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
-if strcmpi('true', getTextFromField(getFieldByName(tree, ...
-        'enforce_bilateral_symmetry')))
-    params.costTerms{end+1} = struct('type', 'bilateral_symmetry', ...
-        'isEnabled', true, 'maxAllowableError', 1e-4, 'errorCenter', 0);
-end
 params.diffMinChange = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'diff_min_change', '1e-6')));
 params.stepTolerance = str2double(getTextFromField(...
@@ -130,6 +183,10 @@ params.maxIterations = str2double(getTextFromField(...
 params.maxFunctionEvaluations = str2double(getTextFromField(...
     getFieldByNameOrAlternate(tree, 'max_function_evaluations', ...
     '1e6')));
+params.algorithm = string(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'algorithm', 'sqp')));
+params.finiteDifferenceType = string(getTextFromField( ...
+    getFieldByNameOrAlternate(tree, 'finiteDifferenceType', 'central')));
 end
 
 function [optimalFiberLengthScaleFactors, ...

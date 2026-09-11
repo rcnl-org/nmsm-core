@@ -1,11 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Converts a flat NCP design vector into muscle activations, by
-% unpacking synergy weights and B-spline-interpolated commands
-% (via findSynergyWeightsAndCommands.m) and combining them
-% (activations = commands * weights).
-%
-% (Array of number, struct) -> (Array of number, Array of number, Array of number)
+% (struct, struct, struct) -> (Array of number)
+% returns the deviation cost for electromechanical delay from initial
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -15,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Claire V. Hammond                                            %
+% Author(s): Max Ahlquist, Spencer Williams                               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -29,12 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function [activations, weights, commands] = calcActivationsFromSynergyDesignVariables( ...
-    values, inputs)
-[weights, commands, ~] = findSynergyWeightsAndCommands(values, inputs);
-
-commands2d = reshape(commands, [], inputs.numSynergies);
-activations2d = commands2d * weights;
-activations = permute(reshape(activations2d, inputs.numTrials, ...
-    inputs.numPoints, inputs.numMuscles), [1 3 2]);
+function cost = calcElectromechanicalDelayDeviationCost(values, ...
+    experimentalData, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
+cost = calcDeviationCostTerm( ...
+    values.electromechanicalDelays - ...
+    experimentalData.electromechanicalDelays, errorCenter, ...
+    maximumAllowableError);
 end
