@@ -1,113 +1,226 @@
 <NMSMPipelineDocument Version="1.5.0">
+	<!--File header can be either TrackingOptimizationTool, VerificationOptimizationTool, or DesignOptimizationTool-->
 	<DesignOptimizationTool>
-		<!--Directory used for writing results.-->
+		<!--*Required* Directory name
+		Description: Directory that results are written to. All result files are written here; leave it empty to use the directory the tool is run from.
+		Default: N/A-->
 		<results_directory>ResultsDir</results_directory>
-		<!--Directory for optimizer initial guess.-->
+		<!--*Required* Directory name
+		Description: Directory holding the optimizer's initial guess. For synergy-driven Tracking Optimization, this directory should be your NCP results directory. For Verification and Design Optimization, this directory should be Tracking Optimization or Verification Optimization results respectively.
+		Default: N/A-->
 		<initial_guess_directory>InitialGuessDir</initial_guess_directory>
-		<!--Directory for files for the optimizer to track.-->
+		<!--*Required* Directory name
+		Description: Directory holding the data the optimizer tracks. Must hold IDData and IKData subdirectories with one file per trial, plus GRFData when the model has ground contact surfaces.
+		Default: N/A-->
 		<tracked_quantities_directory>TrackedQuantitiesDir</tracked_quantities_directory>
-		<!--Name of the input model file (.osim) to use.-->
+		<!--*Required* .osim model
+		Description: OpenSim model to optimize. Every coordinate, marker, body, and muscle named in this file must exist in it.
+		Default: N/A-->
 		<input_model_file>model.osim</input_model_file>
-		<!--Name of the osimx model file.-->
+		<!--*Optional* .osimx file
+		Description: Osimx file with the personalization results. Supplies the NCP synergy groups, the MTP muscle parameters and the GCP contact surfaces; it must be given with <RCNLSynergyController>, which is rejected when the file has no synergy set.
+		Default: none, only the .osim model is used.-->
 		<input_osimx_file>model.osimx</input_osimx_file>
-		<!--Name of the optimal control solver settings file.-->
+		<!--*Required* .xml file
+		Description: Settings file for the optimal control solver. A separate NMSMPipelineDocument holding an <OptimalControlSolverSettings> element with either <GpopsSettings> or <MocoSettings> inside it.
+		Default: N/A-->
 		<optimal_control_solver_settings_file>gpopsSettings.xml</optimal_control_solver_settings_file>
-		<!--Name, excluding file type (.sto, .mot, etc), of the trial-->
+		<!--*Required* String
+		Description: Name of the trial, without the file extension. Every tracked and initial guess file is looked up by this name, so it must match across all of the input directories.
+		Default: N/A-->
 		<trial_name>gait_1</trial_name>
-		<!--Space separated list of coordinates to be considered GPOPS2 states. Not including a coordinate prescribes it.-->
+		<!--*Required* List of strings
+		Description: Coordinates treated as optimal control states. Coordinates left out are prescribed from the tracked kinematics; each name must be a column of the IKData file, and the initial guess states file must contain exactly these coordinates.
+		Default: N/A-->
 		<states_coordinate_list>coordinate_1 coordinate_2 coordinate_3</states_coordinate_list>
-		<!--*Optional* Default is false. Normalizes each cost term by the number of enabled terms within its own type rather than by the total number of enabled cost terms.-->
+		<!--*Optional* Boolean
+		Description: Whether continuous cost terms are averaged within each type before the types are averaged. Without it all continuous terms, after list expansion, are averaged together, so a type with many entries carries more weight; discrete terms are always averaged on their own.
+		Default: false-->
 		<normalize_cost_by_term_type>false</normalize_cost_by_term_type>
-		<!--*Optional* Default is 2.-->
+		<!--*Optional* Double
+		Description: Multiplier on the range of each state coordinate's tracked position. That amount is added above the maximum and below the minimum of the tracked data to bound the position states.
+		Default: 2-->
 		<joint_position_range_scale_factor>2</joint_position_range_scale_factor>
-		<!--*Optional* Default is 0. Minimum allowed bound range for joint positions.-->
+		<!--*Optional* Double
+		Description: Smallest amount added above and below each tracked joint position when bounding the position states. For each coordinate, the largest of joint_position_range_scale_factor or joint_position_minimum_range is used.
+		Default: 0-->
 		<joint_position_minimum_range>0</joint_position_minimum_range>
-		<!--*Optional* Default is 1.5.-->
+		<!--*Optional* Double
+		Description: Multiplier on the range of each state coordinate's tracked velocity. That amount is added above the maximum and below the minimum of the tracked data to bound the velocity states.
+		Default: 1.5-->
 		<joint_velocity_range_scale_factor>1.5</joint_velocity_range_scale_factor>
-		<!--*Optional* Default is 0. Minimum allowed bound range for joint velocities.-->
+		<!--*Optional* Double
+		Description: Smallest amount added above and below each tracked joint velocity when bounding the velocity states. For each coordinate, the largest of joint_velocity_range_scale_factor or joint_velocity_minimum_range is used.
+		Default: 0-->
 		<joint_velocity_minimum_range>0</joint_velocity_minimum_range>
-		<!--*Optional* Default is 1.-->
+		<!--*Optional* Double
+		Description: Multiplier on the range of each state coordinate's tracked acceleration. That amount is added above the maximum and below the minimum of the tracked data to bound the acceleration controls.
+		Default: 1-->
 		<joint_acceleration_range_scale_factor>1</joint_acceleration_range_scale_factor>
-		<!--*Optional* Default is 0. Minimum allowed bound range for joint accelerations.-->
+		<!--*Optional* Double
+		Description: Smallest amount added above and below each tracked joint acceleration when bounding the acceleration controls. For each coordinate, the largest of joint_acceleration_range_scale_factor or joint_acceleration_minimum_range is used.
+		Default: 0-->
 		<joint_acceleration_minimum_range>0</joint_acceleration_minimum_range>
-		<!--*Optional* Design Optimization only. Space separated [min max] bounds on the final time design variable.-->
-		<final_time_range></final_time_range>
-		<!--Set of synergy controls for GPOPS2.-->
+		<!--*Optional* List of 2 doubles
+		Description: Minimum and maximum final time, in seconds. Only valid for Design Optimization
+		Default: empty, the final time is held at the tracked trial duration.-->
+		<final_time_range>0 1</final_time_range>
+		<!--*Optional* Element
+		Description: Settings for the synergy controller. Its presence selects the synergy controller, in which muscle excitations are synergy commands times the weights in synergyWeights.sto from <initial_guess_directory>, grouped as in <input_osimx_file>; at least one of the two controllers must be present.
+		Default: none, no synergy controller.-->
 		<RCNLSynergyController>
-			<!--Space separated list containing the coordinates controlled by the synergy controller.-->
+			<!--*Required* List of strings
+			Description: Coordinates the surrogate muscle model is built over. The muscles spanning these coordinates that also belong to a synergy group are the modeled muscles, and their lengths and moment arms are fit with polynomials of these coordinates.
+			Default: N/A-->
 			<surrogate_model_coordinate_list>coordinate_1 coordinate_2 coordinate_3</surrogate_model_coordinate_list>
-			<!--Directory to read the surrogate model from.-->
+			<!--*Required* Directory name
+			Description: Directory holding the data used to fit the surrogate model. Must hold an IKData subdirectory and an MAData/<trial_name> subdirectory with the _Length.sto and moment arm files.
+			Default: N/A-->
 			<surrogate_model_data_directory>SurrogateDataDir</surrogate_model_data_directory>
-			<!--Flag (true, false) indicating whether to load a previously saved surrogate model (named surrogateMuscles.mat)-->
+			<!--*Optional* Boolean
+			Description: Whether a previously saved surrogate model (surrogateMuscles.mat) is loaded. The file is read from the directory the tool is run from, and fitting is skipped only when it is found.
+			Default: false-->
 			<load_surrogate_model>false</load_surrogate_model>
-			<!--Flag (true, false) indicating whether to save the surrogate model used in this run (named surrogateMuscles.mat)-->
+			<!--*Optional* Boolean
+			Description: Whether the surrogate model fit in this run is saved (surrogateMuscles.mat). It is written to the directory the tool is run from so a later run can set <load_surrogate_model>.
+			Default: false-->
 			<save_surrogate_model>false</save_surrogate_model>
+			<!--*Optional* Double
+			Description: Moment arm magnitude below which a coordinate is left out of a muscle's surrogate model. Keeps unrelated coordinates from adding polynomial terms.
+			Default: 1e-4-->
 			<epsilon>1e-4</epsilon>
-			<surrogate_model_polynomial_degree></surrogate_model_polynomial_degree>
+			<!--*Optional* Integer
+			Description: Degree of the polynomials fit to muscle tendon lengths and moment arms. Higher degrees fit better but cost more to evaluate.
+			Default: 5-->
+			<surrogate_model_polynomial_degree>5</surrogate_model_polynomial_degree>
+			<!--*Optional* Boolean
+			Description: Whether Latin hypercube sampling is requested for the surrogate model fit. When true, <latin_hypercube_range_multiplier> and <latin_hypercube_number_of_points> must be present, but the parsed settings are not currently used, so it has no effect.
+			Default: false-->
 			<perform_latin_hypercube_sampling>true</perform_latin_hypercube_sampling>
+			<!--*Optional* Double
+			Description: Multiplier on the sampled coordinate ranges for Latin hypercube sampling. Only read, and then required, when <perform_latin_hypercube_sampling> is true; the value is not currently used.
+			Default: none-->
 			<latin_hypercube_range_multiplier>1</latin_hypercube_range_multiplier>
+			<!--*Optional* Integer
+			Description: Number of Latin hypercube sample points. Only read, and then required, when <perform_latin_hypercube_sampling> is true; the value is not currently used.
+			Default: none-->
 			<latin_hypercube_number_of_points>10</latin_hypercube_number_of_points>
-			<maximum_shortening_velocity_multiplier></maximum_shortening_velocity_multiplier>
+			<!--*Optional* Double
+			Description: Multiplier on each muscle's optimal fiber length giving its maximum shortening velocity. The same quantity as v_max_factor in the personalization tools; an empty element, as written here, parses as NaN, so give a value or omit the element.
+			Default: 10-->
+			<maximum_shortening_velocity_multiplier>10</maximum_shortening_velocity_multiplier>
+			<!--*Optional* Boolean
+			Description: Whether the synergy weight vectors are design variables. Weights are then bounded between 0 and <synergy_vector_normalization_value>; Verification Optimization rejects this setting.
+			Default: false-->
 			<optimize_synergy_vectors>false</optimize_synergy_vectors>
+			<!--*Optional* Double
+			Description: Upper bound of every synergy command control. The lower bound is always 0.
+			Default: 10-->
 			<maximum_allowable_synergy_activation>5</maximum_allowable_synergy_activation>
+			<!--*Optional* String
+			Description: How the initial synergy weights are rescaled: sum, magnitude or none.
+			Default: sum-->
 			<synergy_vector_normalization_method>sum</synergy_vector_normalization_method>
+			<!--*Optional* Double
+			Description: Target sum or magnitude of each synergy weight vector. With none no rescaling happens, but the value still bounds the weights when <optimize_synergy_vectors> is true.
+			Default: 1-->
 			<synergy_vector_normalization_value>1</synergy_vector_normalization_value>
 		</RCNLSynergyController>
+		<!--*Optional* Element
+		Description: Settings for the torque controller. Each listed coordinate gets its own ideal torque control; with both controllers present, a coordinate's torque control adds to the muscle moment on it.
+		Default: omit element for no torque controls.-->
 		<RCNLTorqueController>
-			<!--Space separated list containing the coordinates controlled by the torque controller.-->
+			<!--*Required* List of strings
+			Description: Coordinates driven by torque controls. Each name needs a matching column, with its _moment or _force suffix, in the IDData file, since the control bounds come from that measured load.
+			Default: N/A-->
 			<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
-			<!--*Optional* Default is 1.-->
+			<!--*Optional* Double
+			Description: Multiplier on the range of each coordinate's measured inverse dynamics load. That amount is added above the maximum and below the minimum of the load to bound its torque control.
+			Default: 1-->
 			<torque_controls_range_scale_factor>1</torque_controls_range_scale_factor>
-			<!--*Optional* Default is 0.-->
+			<!--*Optional* Double
+			Description: Smallest amount added above and below each measured load when bounding its torque control. Used when the range scaled by <torque_controls_range_scale_factor> is smaller.
+			Default: 0-->
 			<torque_controls_minimum_range>0</torque_controls_minimum_range>
 		</RCNLTorqueController>
-		<!--Set of cost terms used for this optimization. For a full list of cost terms, see documentation at nmsm.rice.edu.-->
+		<!--*Required* Set of RCNLCostTerm elements
+		Description: Cost terms for this optimization. Only enabled terms contribute, and an enabled type the selected tool does not offer raises an error; the name attribute on each term is only a label.
+		Default: N/A-->
 		<RCNLCostTermSet>
-			<RCNLCostTerm name="generalized_coordinate_tracking">
+			<!--Cost terms can have the elements below; each term in this file includes only the ones its type uses.
+			<is_enabled> is required for all cost terms and specifies whether or not to use the cost term.
+			<type> is required for all cost terms and specifies which cost term is used.
+			A list element names what the term applies to. Entries are space separated, and each one becomes its own term.
+			<coordinate_list> takes coordinates from the tracked IKData file, and <marker_list> and <body_list> take markers and bodies in the model.
+			<load_list> takes IDData column names, including their _moment or _force suffix.
+			<force_list> and <moment_list> take the ground reaction labels of the contact surfaces in <input_osimx_file>, and <hindfoot_body_list> takes their hindfoot bodies.
+			<muscle_list> takes muscles in the osim model, and <synergy_list> takes synergy names such as right_leg_2 (muscle group name, underscore, index).
+			<controller_list> takes synergy names for synergy commands, or coordinate names for torque controls.
+			<axes> lists any of x, y and z, making one term per axis; center of pressure terms accept only x and z.
+			<sequence> is optional and sets the Euler rotation sequence, such as xyz, used by body orientation terms.
+			<time_ranges> gives pairs of start and end times, normalized from 0 to 1 (0%-100%), when the term applies; center of pressure terms require it, so use 0 1 when the foot stays in contact.
+			<max_allowable_error> is required for all cost terms and specifies the value that the error is divided by before being squared; smaller values give the term more weight.
+			Its units follow the quantity: radians for rotational coordinates and body angles; meters for translational coordinates, markers and the center of pressure;
+			newtons for forces; newton meters for moments and torque controls; 0 to 1 for activations; speeds and slopes are per second.
+			Goal terms use meters per second for walking speed, watts or joules per meter for absolute metabolic cost, a ratio for relative metabolic cost, and newton seconds for impulses.
+			<error_center> is required by the goal terms, where it sets the target; other terms accept it optionally as the value errors are measured from (default 0).
+			The <max_allowable_error> and <error_center> values in this file are left empty, so fill them in: an empty element parses as NaN.
+			<function_name> and <cost_term_type> are used only by user_defined terms.
+			Some types also accept <scale_factor> or <exponent>, or <use_relative_error>, which divides the error by the measured value, floored at <min_reference_value> (default 1); their entries say so.
+			The note after each <RCNLCostTerm> start tag lists the tools that accept the term: TO is Tracking Optimization, VO is Verification Optimization and DO is Design Optimization.-->
+			<RCNLCostTerm name="generalized_coordinate_tracking"> <!--TO VO DO-->
+				<!--Description: generalized_coordinate_tracking tracks each listed coordinate's value against the tracked IKData. Keeps the motion close to the measured kinematics; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_coordinate_tracking</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="generalized_speed_tracking">
+			<RCNLCostTerm name="generalized_speed_tracking"> <!--TO VO DO-->
+				<!--Description: generalized_speed_tracking tracks each listed coordinate's velocity against the derivative of the tracked IKData. Keeps joint velocities close to the measured ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_speed_tracking</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="generalized_speed_minimization">
+			<RCNLCostTerm name="generalized_speed_minimization"> <!--TO VO DO-->
+				<!--Description: generalized_speed_minimization penalizes each listed coordinate's velocity. Discourages fast joint motion, measured from an optional <error_center> (default 0); available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_speed_minimization</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="generalized_acceleration_tracking">
+			<RCNLCostTerm name="generalized_acceleration_tracking"> <!--TO VO DO-->
+				<!--Description: generalized_acceleration_tracking tracks each listed coordinate's acceleration against the second derivative of the tracked IKData. Keeps joint accelerations close to the measured ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_acceleration_tracking</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="generalized_acceleration_minimization">
+			<RCNLCostTerm name="generalized_acceleration_minimization"> <!--TO VO DO-->
+				<!--Description: generalized_acceleration_minimization penalizes the acceleration control of each listed coordinate. Smooths the motion; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_acceleration_minimization</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="marker_position_tracking">
+			<RCNLCostTerm name="marker_position_tracking"> <!--TO VO DO-->
+				<!--Description: marker_position_tracking tracks each listed marker's position along each listed axis against the position given by the tracked kinematics. A marker may appear in only one marker_position_tracking term; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>marker_position_tracking</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
 				<axes>x y z</axes>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="marker_velocity_tracking">
+			<RCNLCostTerm name="marker_velocity_tracking"> <!--TO VO DO-->
+				<!--Description: marker_velocity_tracking tracks each listed marker's velocity along each listed axis. A marker may appear in only one marker_velocity_tracking term; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>marker_velocity_tracking</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
 				<axes>x y z</axes>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="body_orientation_tracking">
+			<RCNLCostTerm name="body_orientation_tracking"> <!--TO VO DO-->
+				<!--Description: body_orientation_tracking tracks each listed body's orientation angle about each listed axis. Angles can be compared in the Euler <sequence>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>body_orientation_tracking</type>
 				<body_list>body_1 body_2 body_3</body_list>
@@ -115,7 +228,8 @@
 				<sequence>xyz</sequence>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="body_orientation_minimization">
+			<RCNLCostTerm name="body_orientation_minimization"> <!--TO DO-->
+				<!--Description: body_orientation_minimization penalizes each listed body's orientation angle about each listed axis. Measured from an optional <error_center> (default 0), for example to keep the trunk upright; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>body_orientation_minimization</type>
 				<body_list>body_1 body_2 body_3</body_list>
@@ -123,165 +237,201 @@
 				<sequence>xyz</sequence>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="inverse_dynamics_load_tracking">
+			<RCNLCostTerm name="inverse_dynamics_load_tracking"> <!--TO DO-->
+				<!--Description: inverse_dynamics_load_tracking tracks each listed inverse dynamics load against the tracked IDData. Accepts an optional <scale_factor> (default 1) on the tracked load and optional <time_ranges>; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>inverse_dynamics_load_tracking</type>
 				<load_list>load_1 load_2 load_3</load_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="inverse_dynamics_load_minimization">
+			<RCNLCostTerm name="inverse_dynamics_load_minimization"> <!--TO DO-->
+				<!--Description: inverse_dynamics_load_minimization penalizes the magnitude of each listed inverse dynamics load. The usual way to keep residual loads small; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>inverse_dynamics_load_minimization</type>
 				<load_list>load_1 load_2 load_3</load_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="inverse_dynamics_slope_tracking">
+			<RCNLCostTerm name="inverse_dynamics_slope_tracking"> <!--TO DO-->
+				<!--Description: inverse_dynamics_slope_tracking tracks the time derivative of each listed inverse dynamics load. Matches the timing of loading and unloading rather than its level; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>inverse_dynamics_slope_tracking</type>
 				<load_list>load_1 load_2 load_3</load_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="external_force_tracking">
+			<RCNLCostTerm name="external_force_tracking"> <!--TO DO-->
+				<!--Description: external_force_tracking tracks each listed modeled ground reaction force against the measured GRFData. Accepts optional <time_ranges>, <use_relative_error> and <min_reference_value>; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>external_force_tracking</type>
 				<force_list>external_force_1 external_force_2 external_force_3</force_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="external_moment_tracking">
+			<RCNLCostTerm name="external_moment_tracking"> <!--TO DO-->
+				<!--Description: external_moment_tracking tracks each listed modeled ground reaction moment against the measured GRFData. Accepts optional <time_ranges>, <use_relative_error> and <min_reference_value>; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>external_moment_tracking</type>
 				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="center_of_pressure_tracking">
+			<RCNLCostTerm name="center_of_pressure_tracking"> <!--TO DO-->
+				<!--Description: center_of_pressure_tracking tracks the modeled center of pressure under each listed hindfoot body against the measured one. Also accepts optional <use_relative_error> and <min_reference_value>; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>center_of_pressure_tracking</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<axes>x z</axes>
+				<time_ranges>0 1</time_ranges>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="muscle_activation_tracking">
+			<RCNLCostTerm name="muscle_activation_tracking"> <!--TO DO-->
+				<!--Description: muscle_activation_tracking tracks each listed muscle's activation against the activations in <initial_guess_directory>. Accepts an optional <scale_factor> (default 1) on those activations; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>muscle_activation_tracking</type>
 				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="muscle_activation_minimization">
+			<RCNLCostTerm name="muscle_activation_minimization"> <!--TO DO-->
+				<!--Description: muscle_activation_minimization penalizes each listed muscle's activation. An optional <exponent> (default 2) raises the penalty power, so high activations are punished more sharply; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>muscle_activation_minimization</type>
 				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="controller_tracking">
+			<RCNLCostTerm name="controller_tracking"> <!--TO VO DO-->
+				<!--Description: controller_tracking tracks each listed control against the matching control in <initial_guess_directory>. Accepts an optional <scale_factor> (default 1) on that control; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>controller_tracking</type>
 				<controller_list>controller_1 controller_2 controller_3</controller_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="controller_minimization">
+			<RCNLCostTerm name="controller_minimization"> <!--TO DO-->
+				<!--Description: controller_minimization penalizes the magnitude of each listed control. The usual effort term; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>controller_minimization</type>
 				<controller_list>controller_1 controller_2 controller_3</controller_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="controller_slope_minimization">
+			<RCNLCostTerm name="controller_slope_minimization"> <!--TO DO-->
+				<!--Description: controller_slope_minimization penalizes the time derivative of each listed control. Smooths the control trajectories; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>controller_slope_minimization</type>
 				<controller_list>controller_1 controller_2 controller_3</controller_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="controller_shape_tracking">
+			<RCNLCostTerm name="controller_shape_tracking"> <!--DO-->
+				<!--Description: controller_shape_tracking tracks the shape of each listed control after scaling it to best match the initial guess control. Penalizes the waveform but not the amplitude; available in Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>controller_shape_tracking</type>
 				<controller_list>controller_1 controller_2 controller_3</controller_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="joint_energy_absorption_goal">
+			<RCNLCostTerm name="joint_energy_absorption_goal"> <!--DO-->
+				<!--Description: joint_energy_absorption_goal penalizes absorbed (negative) joint power at each listed load beyond an optional <error_center> (default 0). Meant to reduce energy absorption, but the current implementation references an undefined variable (inputs) and errors at run time; Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>joint_energy_absorption_goal</type>
-				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<load_list>load_1 load_2 load_3</load_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="joint_energy_generation_goal">
+			<RCNLCostTerm name="joint_energy_generation_goal"> <!--DO-->
+				<!--Description: joint_energy_generation_goal penalizes generated (positive) joint power at each listed load beyond an optional <error_center> (default 0). Meant to reduce energy generation, but the current implementation references an undefined variable (inputs) and errors at run time; Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>joint_energy_generation_goal</type>
 				<load_list>load_1 load_2 load_3</load_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="inverse_dynamics_shape_tracking">
+			<RCNLCostTerm name="inverse_dynamics_shape_tracking"> <!--DO-->
+				<!--Description: inverse_dynamics_shape_tracking is meant to track the shape of each listed inverse dynamics load with its amplitude scaled out. The current implementation references undefined variables and errors at run time, so use inverse_dynamics_load_tracking or inverse_dynamics_slope_tracking instead; Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>inverse_dynamics_shape_tracking</type>
 				<load_list>load_1 load_2 load_3</load_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="angular_momentum_minimization">
+			<RCNLCostTerm name="angular_momentum_minimization"> <!--DO-->
+				<!--Description: angular_momentum_minimization penalizes the whole body angular momentum about each listed axis. The current implementation references an undefined variable (inputs) and errors at run time, and once fixed it needs Windows for the MEX angular momentum calculation; Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>angular_momentum_minimization</type>
-				<load_list>load_1 load_2 load_3</load_list>
+				<axes>x y z</axes>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="synergy_vector_tracking">
+			<RCNLCostTerm name="synergy_vector_tracking"> <!--TO DO-->
+				<!--Description: synergy_vector_tracking penalizes how far each listed synergy weight vector moves from its initial value. Only matters when <optimize_synergy_vectors> is true; evaluated once per solution in Tracking and Design Optimization, and <max_allowable_error> currently has no effect on it.-->
 				<is_enabled>true</is_enabled>
 				<type>synergy_vector_tracking</type>
-				<!--The name of the synergy group is synergy_group, and the numbers denote individual synergies in the group-->
 				<synergy_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="relative_walking_speed_goal">
+			<RCNLCostTerm name="relative_walking_speed_goal"> <!--DO-->
+				<!--Description: relative_walking_speed_goal drives the average center of mass velocity, its displacement over the motion divided by the duration, toward <error_center>. On a treadmill the walking speed is this value plus the belt speed, so 0 keeps the belt speed; evaluated once per solution, Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>relative_walking_speed_goal</type>
 				<max_allowable_error></max_allowable_error>
 				<error_center></error_center>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="absolute_metabolic_cost_per_time">
+			<RCNLCostTerm name="absolute_metabolic_cost_per_time"> <!--DO-->
+				<!--Description: absolute_metabolic_cost_per_time drives the modeled metabolic energy divided by the movement duration toward <error_center>. Uses the Bhargava muscle metabolics model and needs Windows, and the metabolic cost is currently only calculated when a relative_metabolic_cost term is also enabled; evaluated once per solution, Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>absolute_metabolic_cost_per_time</type>
 				<max_allowable_error></max_allowable_error>
 				<error_center></error_center>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="absolute_metabolic_cost_per_distance">
+			<RCNLCostTerm name="absolute_metabolic_cost_per_distance"> <!--DO-->
+				<!--Description: absolute_metabolic_cost_per_distance drives the modeled metabolic energy divided by the duration and by the center of mass speed plus the mean belt speed toward <error_center>. Same requirements as absolute_metabolic_cost_per_time, and for treadmill data the contact surfaces must carry a belt speed; evaluated once per solution, Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>absolute_metabolic_cost_per_distance</type>
 				<max_allowable_error></max_allowable_error>
 				<error_center></error_center>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="relative_metabolic_cost_per_time">
+			<RCNLCostTerm name="relative_metabolic_cost_per_time"> <!--DO-->
+				<!--Description: relative_metabolic_cost_per_time drives the ratio of the modeled metabolic cost per time to the initial guess value toward <error_center>. Needs a muscle driven model and Windows; evaluated once per solution, Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>relative_metabolic_cost_per_time</type>
 				<max_allowable_error></max_allowable_error>
 				<error_center></error_center>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="relative_metabolic_cost_per_distance">
+			<RCNLCostTerm name="relative_metabolic_cost_per_distance"> <!--DO-->
+				<!--Description: relative_metabolic_cost_per_distance drives the ratio of the modeled metabolic cost per distance to the initial guess value toward <error_center>. Needs a muscle driven model and Windows; evaluated once per solution, Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>relative_metabolic_cost_per_distance</type>
 				<max_allowable_error></max_allowable_error>
 				<error_center></error_center>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="propulsive_impulse_goal">
+			<RCNLCostTerm name="propulsive_impulse_goal"> <!--DO-->
+				<!--Description: propulsive_impulse_goal drives the propulsive impulse under each listed hindfoot body toward <error_center>. Only works on Windows; evaluated once per solution, Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>propulsive_impulse_goal</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
 				<max_allowable_error></max_allowable_error>
 				<error_center></error_center>
 			</RCNLCostTerm>
-			<RCNLCostTerm name="braking_impulse_goal">
+			<RCNLCostTerm name="braking_impulse_goal"> <!--DO-->
+				<!--Description: braking_impulse_goal drives the braking impulse under each listed hindfoot body toward <error_center>. Only works on Windows; evaluated once per solution, Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>braking_impulse_goal</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
 				<max_allowable_error></max_allowable_error>
 				<error_center></error_center>
 			</RCNLCostTerm>
-			<!--Design Optimization only.-->
-			<RCNLCostTerm name="user_defined">
+			<RCNLCostTerm name="user_defined"> <!--DO-->
+				<!--Description: user_defined calls the MATLAB function named in <function_name> to compute a custom cost. <cost_term_type> selects whether the output is divided by <max_allowable_error>, squared and integrated over time, or used once per solution as returned; Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>user_defined</type>
 				<function_name>myCustomCostFunction</function_name>
-				<!--cost_term_type must be continuous or discrete.-->
 				<cost_term_type>continuous</cost_term_type>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>
 		</RCNLCostTermSet>
+		<!--*Required* Set of RCNLConstraintTerm elements
+		Description: Path and terminal constraints for this optimization. Every term's type must be available for the selected tool and controller, even when the term is disabled, so remove terms the tool cannot use; an empty set is legal.
+		Default: N/A-->
 		<RCNLConstraintTermSet>
+			<!--Constraint terms can have the elements below; each term in this file includes only the ones its type uses.
+			<is_enabled> is required for all constraint terms and specifies whether or not to apply the constraint.
+			<type> is required for all constraint terms and specifies which constraint is used.
+			List elements, <axes>, <sequence> and <time_ranges> work as described for the cost terms, making one constraint per entry and axis.
+			<max_error> and <min_error> are required for all constraint terms and set the upper and lower bounds of the constrained value, in the same units as the cost terms.
+			The <max_error> and <min_error> values in this file are left empty, so fill them in: an empty element parses as NaN.
+			Some types can give the bounds as <max_value> and <min_value> instead; their entries say so.
+			<function_name> and <constraint_term_type> are used only by user_defined terms.-->
 			<RCNLConstraintTerm name="generalized_coordinate_deviation">
+				<!--Description: generalized_coordinate_deviation is a path constraint on the difference between each listed coordinate's modeled and tracked value. Holds the motion within a band around the tracked kinematics at every collocation point; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_coordinate_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -289,6 +439,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="generalized_coordinate_value">
+				<!--Description: generalized_coordinate_value is a path constraint on each listed coordinate's value itself. Sets absolute joint limits; the bounds may also be written as <max_value> and <min_value>, which take precedence. Available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_coordinate_value</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -296,6 +447,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="generalized_speed_deviation">
+				<!--Description: generalized_speed_deviation is a path constraint on the difference between each listed coordinate's modeled and tracked velocity. Holds joint velocities within a band around the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_speed_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -303,6 +455,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="generalized_speed_value">
+				<!--Description: generalized_speed_value is a path constraint on each listed coordinate's velocity itself. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_speed_value</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -310,6 +463,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="generalized_acceleration_deviation">
+				<!--Description: generalized_acceleration_deviation is a path constraint on the difference between each listed coordinate's modeled and tracked acceleration. Holds joint accelerations within a band around the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_acceleration_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -317,6 +471,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="generalized_acceleration_value">
+				<!--Description: generalized_acceleration_value is a path constraint on each listed coordinate's acceleration control itself. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_acceleration_value</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -324,6 +479,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="marker_position_deviation">
+				<!--Description: marker_position_deviation is a path constraint on the difference between each listed marker's modeled and tracked position, one constraint per marker and axis. Holds markers within a band around their tracked trajectories; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>marker_position_deviation</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -332,6 +488,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="marker_position_value">
+				<!--Description: marker_position_value is a path constraint on each listed marker's position itself, one constraint per marker and axis. Keeps markers inside a region, for example above the floor; the bounds may also be written as <max_value> and <min_value>. Available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>marker_position_value</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -340,6 +497,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="marker_velocity_deviation">
+				<!--Description: marker_velocity_deviation is a path constraint on the difference between each listed marker's modeled and tracked velocity, one constraint per marker and axis. Holds marker velocities within a band around the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>marker_velocity_deviation</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -348,6 +506,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="marker_velocity_value">
+				<!--Description: marker_velocity_value is a path constraint on each listed marker's velocity itself, one constraint per marker and axis. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>marker_velocity_value</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -356,6 +515,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="body_orientation_deviation">
+				<!--Description: body_orientation_deviation is a path constraint on the difference between each listed body's modeled and tracked orientation angle, one constraint per body and axis. Angles can be compared in the Euler <sequence>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>body_orientation_deviation</type>
 				<body_list>body_1 body_2 body_3</body_list>
@@ -365,6 +525,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="body_orientation_value">
+				<!--Description: body_orientation_value is a path constraint on each listed body's orientation angle itself, one constraint per body and axis. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>body_orientation_value</type>
 				<body_list>body_1 body_2 body_3</body_list>
@@ -374,6 +535,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="kinetic_consistency">
+				<!--Description: kinetic_consistency is a path constraint on the difference between each listed inverse dynamics load and the load produced by the controllers. Makes the motion dynamically consistent with the muscle or torque controls, so set tight bounds on every controlled coordinate; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>kinetic_consistency</type>
 				<load_list>load_1 load_2 load_3</load_list>
@@ -381,6 +543,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="root_segment_residual_load">
+				<!--Description: root_segment_residual_load is a path constraint on each listed residual load acting on the root segment. Limits how much unmodeled external load the solution may invent; accepts optional <time_ranges> and is available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>root_segment_residual_load</type>
 				<load_list>load_1 load_2 load_3</load_list>
@@ -388,6 +551,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_force_deviation">
+				<!--Description: external_force_deviation is a path constraint on the difference between each listed modeled ground reaction force and the measured GRFData. Accepts optional <time_ranges>, <use_relative_error> and <min_reference_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>external_force_deviation</type>
 				<force_list>external_force_1 external_force_2 external_force_3</force_list>
@@ -395,6 +559,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_force_value">
+				<!--Description: external_force_value is a path constraint on each listed modeled ground reaction force itself. Accepts optional <time_ranges>, and the bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>external_force_value</type>
 				<force_list>external_force_1 external_force_2 external_force_3</force_list>
@@ -402,6 +567,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_moment_deviation">
+				<!--Description: external_moment_deviation is a path constraint on the difference between each listed modeled ground reaction moment and the measured GRFData. Accepts optional <time_ranges>, <use_relative_error> and <min_reference_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>external_moment_deviation</type>
 				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
@@ -409,6 +575,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_moment_value">
+				<!--Description: external_moment_value is a path constraint on each listed modeled ground reaction moment itself. Accepts optional <time_ranges>, and the bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>external_moment_value</type>
 				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
@@ -416,20 +583,27 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="center_of_pressure_deviation">
+				<!--Description: center_of_pressure_deviation is a path constraint on the difference between the modeled and measured center of pressure under each listed hindfoot body. Also accepts optional <use_relative_error> and <min_reference_value>; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>center_of_pressure_deviation</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<axes>x z</axes>
+				<time_ranges>0 1</time_ranges>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="center_of_pressure_value">
+				<!--Description: center_of_pressure_value is a path constraint on the modeled center of pressure under each listed hindfoot body. The bounds may also be written as <max_value> and <min_value>; available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>center_of_pressure_value</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<axes>x z</axes>
+				<time_ranges>0 1</time_ranges>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="muscle_activation_deviation">
+				<!--Description: muscle_activation_deviation is a path constraint on the difference between each listed muscle's activation and the activations in <initial_guess_directory>. Accepts an optional <scale_factor> (default 1) on those activations; needs <RCNLSynergyController> and is available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>muscle_activation_deviation</type>
 				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
@@ -437,6 +611,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="muscle_activation_value">
+				<!--Description: muscle_activation_value is a path constraint on each listed muscle's activation itself. The bounds may also be written as <max_value> and <min_value>; needs <RCNLSynergyController> and is available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>muscle_activation_value</type>
 				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
@@ -444,6 +619,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="controller_deviation">
+				<!--Description: controller_deviation is a path constraint on the difference between each listed control and the matching control in <initial_guess_directory>. Accepts an optional <scale_factor> (default 1) on that control; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>controller_deviation</type>
 				<controller_list>controller_1 controller_2 controller_3</controller_list>
@@ -451,6 +627,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="controller_value">
+				<!--Description: controller_value is a path constraint on each listed control itself. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>controller_value</type>
 				<controller_list>controller_1 controller_2 controller_3</controller_list>
@@ -458,6 +635,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="generalized_coordinate_periodicity">
+				<!--Description: generalized_coordinate_periodicity is a terminal constraint on the difference between the first and last value of each listed coordinate. With tight bounds around 0 it makes the motion cyclic; the coordinate must be in <states_coordinate_list>. Available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_coordinate_periodicity</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -465,6 +643,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_generalized_coordinate_deviation">
+				<!--Description: initial_generalized_coordinate_deviation is a terminal constraint on the difference between each listed coordinate's modeled and tracked value at the first time point. Pins the start of the motion to the tracked kinematics; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_generalized_coordinate_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -472,6 +651,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_generalized_coordinate_value">
+				<!--Description: initial_generalized_coordinate_value is a terminal constraint on each listed coordinate's value at the first time point. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_generalized_coordinate_value</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -479,6 +659,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_generalized_coordinate_deviation">
+				<!--Description: final_generalized_coordinate_deviation is a terminal constraint on the difference between each listed coordinate's modeled and tracked value at the last time point. Pins the end of the motion to the tracked kinematics; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_generalized_coordinate_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -486,6 +667,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_generalized_coordinate_value">
+				<!--Description: final_generalized_coordinate_value is a terminal constraint on each listed coordinate's value at the last time point. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_generalized_coordinate_value</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -493,6 +675,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="generalized_speed_periodicity">
+				<!--Description: generalized_speed_periodicity is a terminal constraint on the difference between the first and last velocity of each listed coordinate. Makes joint velocities cyclic; the coordinate must be in <states_coordinate_list>. Available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>generalized_speed_periodicity</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -500,6 +683,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_generalized_speed_deviation">
+				<!--Description: initial_generalized_speed_deviation is a terminal constraint on the difference between each listed coordinate's modeled and tracked velocity at the first time point. Pins the starting joint velocities to the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_generalized_speed_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -507,6 +691,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_generalized_speed_value">
+				<!--Description: initial_generalized_speed_value is a terminal constraint on each listed coordinate's velocity at the first time point. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_generalized_speed_value</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -514,6 +699,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_generalized_speed_deviation">
+				<!--Description: final_generalized_speed_deviation is a terminal constraint on the difference between each listed coordinate's modeled and tracked velocity at the last time point. Pins the final joint velocities to the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_generalized_speed_deviation</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -521,6 +707,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_generalized_speed_value">
+				<!--Description: final_generalized_speed_value is a terminal constraint on each listed coordinate's velocity at the last time point. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_generalized_speed_value</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
@@ -528,6 +715,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="marker_position_periodicity">
+				<!--Description: marker_position_periodicity is a terminal constraint on the difference between the first and last position of each listed marker, one constraint per marker and axis. Makes marker trajectories cyclic along the chosen axes; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>marker_position_periodicity</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -536,6 +724,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_marker_position_deviation">
+				<!--Description: initial_marker_position_deviation is a terminal constraint on the difference between each listed marker's modeled and tracked position at the first time point, one constraint per marker and axis. Pins the starting marker positions to the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_marker_position_deviation</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -544,6 +733,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_marker_position_value">
+				<!--Description: initial_marker_position_value is a terminal constraint on each listed marker's position at the first time point, one constraint per marker and axis. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_marker_position_value</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -552,6 +742,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_marker_position_deviation">
+				<!--Description: final_marker_position_deviation is a terminal constraint on the difference between each listed marker's modeled and tracked position at the last time point, one constraint per marker and axis. Pins the final marker positions to the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_marker_position_deviation</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -560,6 +751,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_marker_position_value">
+				<!--Description: final_marker_position_value is a terminal constraint on each listed marker's position at the last time point, one constraint per marker and axis. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_marker_position_value</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -568,6 +760,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="marker_velocity_periodicity">
+				<!--Description: marker_velocity_periodicity is a terminal constraint on the difference between the first and last velocity of each listed marker, one constraint per marker and axis. Makes marker velocities cyclic along the chosen axes; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>marker_velocity_periodicity</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -576,6 +769,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_marker_velocity_deviation">
+				<!--Description: initial_marker_velocity_deviation is a terminal constraint on the difference between each listed marker's modeled and tracked velocity at the first time point, one constraint per marker and axis. Pins the starting marker velocities to the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_marker_velocity_deviation</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -584,6 +778,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_marker_velocity_value">
+				<!--Description: initial_marker_velocity_value is a terminal constraint on each listed marker's velocity at the first time point, one constraint per marker and axis. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_marker_velocity_value</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -592,6 +787,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_marker_velocity_deviation">
+				<!--Description: final_marker_velocity_deviation is a terminal constraint on the difference between each listed marker's modeled and tracked velocity at the last time point, one constraint per marker and axis. Pins the final marker velocities to the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_marker_velocity_deviation</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -600,6 +796,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_marker_velocity_value">
+				<!--Description: final_marker_velocity_value is a terminal constraint on each listed marker's velocity at the last time point, one constraint per marker and axis. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_marker_velocity_value</type>
 				<marker_list>marker_1 marker_2 marker_3</marker_list>
@@ -608,6 +805,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="body_orientation_periodicity">
+				<!--Description: body_orientation_periodicity is a terminal constraint on the difference between the first and last orientation angle of each listed body, one constraint per body and axis. Makes body orientations cyclic; angles can be compared in the Euler <sequence>. Available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>body_orientation_periodicity</type>
 				<body_list>body_1 body_2 body_3</body_list>
@@ -617,6 +815,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_body_orientation_deviation">
+				<!--Description: initial_body_orientation_deviation is a terminal constraint on the difference between each listed body's modeled and tracked orientation at the first time point, one constraint per body and axis. Pins the starting body orientations to the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_body_orientation_deviation</type>
 				<body_list>body_1 body_2 body_3</body_list>
@@ -626,6 +825,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_body_orientation_value">
+				<!--Description: initial_body_orientation_value is a terminal constraint on each listed body's orientation angle at the first time point, one constraint per body and axis. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_body_orientation_value</type>
 				<body_list>body_1 body_2 body_3</body_list>
@@ -635,6 +835,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_body_orientation_deviation">
+				<!--Description: final_body_orientation_deviation is a terminal constraint on the difference between each listed body's modeled and tracked orientation at the last time point, one constraint per body and axis. Pins the final body orientations to the tracked ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_body_orientation_deviation</type>
 				<body_list>body_1 body_2 body_3</body_list>
@@ -644,6 +845,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_body_orientation_value">
+				<!--Description: final_body_orientation_value is a terminal constraint on each listed body's orientation angle at the last time point, one constraint per body and axis. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_body_orientation_value</type>
 				<body_list>body_1 body_2 body_3</body_list>
@@ -653,6 +855,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="root_segment_residual_load_periodicity">
+				<!--Description: root_segment_residual_load_periodicity is a terminal constraint on the difference between the first and last value of each listed residual load on the root segment. Makes the residual loads cyclic; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>root_segment_residual_load_periodicity</type>
 				<load_list>load_1 load_2 load_3</load_list>
@@ -660,6 +863,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_force_periodicity">
+				<!--Description: external_force_periodicity is a terminal constraint on the difference between the first and last value of each listed modeled ground reaction force. Makes the ground reaction forces cyclic; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>external_force_periodicity</type>
 				<force_list>external_force_1 external_force_2 external_force_3</force_list>
@@ -667,6 +871,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_external_force_deviation">
+				<!--Description: initial_external_force_deviation is a terminal constraint on the difference between each listed modeled ground reaction force and the measured value at the first time point. Pins the starting forces to the measured ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_external_force_deviation</type>
 				<force_list>external_force_1 external_force_2 external_force_3</force_list>
@@ -674,6 +879,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_external_force_value">
+				<!--Description: initial_external_force_value is a terminal constraint on each listed modeled ground reaction force at the first time point. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_external_force_value</type>
 				<force_list>external_force_1 external_force_2 external_force_3</force_list>
@@ -681,6 +887,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_external_force_deviation">
+				<!--Description: final_external_force_deviation is a terminal constraint on the difference between each listed modeled ground reaction force and the measured value at the last time point. Pins the final forces to the measured ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_external_force_deviation</type>
 				<force_list>external_force_1 external_force_2 external_force_3</force_list>
@@ -688,6 +895,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_external_force_value">
+				<!--Description: final_external_force_value is a terminal constraint on each listed modeled ground reaction force at the last time point. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_external_force_value</type>
 				<force_list>external_force_1 external_force_2 external_force_3</force_list>
@@ -695,6 +903,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="external_moment_periodicity">
+				<!--Description: external_moment_periodicity is a terminal constraint on the difference between the first and last value of each listed modeled ground reaction moment. Makes the ground reaction moments cyclic; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>external_moment_periodicity</type>
 				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
@@ -702,6 +911,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_external_moment_deviation">
+				<!--Description: initial_external_moment_deviation is a terminal constraint on the difference between each listed modeled ground reaction moment and the measured value at the first time point. Pins the starting moments to the measured ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_external_moment_deviation</type>
 				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
@@ -709,6 +919,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="initial_external_moment_value">
+				<!--Description: initial_external_moment_value is a terminal constraint on each listed modeled ground reaction moment at the first time point. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>initial_external_moment_value</type>
 				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
@@ -716,6 +927,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_external_moment_deviation">
+				<!--Description: final_external_moment_deviation is a terminal constraint on the difference between each listed modeled ground reaction moment and the measured value at the last time point. Pins the final moments to the measured ones; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_external_moment_deviation</type>
 				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
@@ -723,6 +935,7 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="final_external_moment_value">
+				<!--Description: final_external_moment_value is a terminal constraint on each listed modeled ground reaction moment at the last time point. The bounds may also be written as <max_value> and <min_value>; available in all three tools.-->
 				<is_enabled>true</is_enabled>
 				<type>final_external_moment_value</type>
 				<moment_list>external_moment_1 external_moment_2 external_moment_3</moment_list>
@@ -730,33 +943,34 @@
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="synergy_vector_sum">
+				<!--Description: synergy_vector_sum is a terminal constraint on the sum of the weights in each listed synergy vector. Holds a sum style normalization while <optimize_synergy_vectors> is true; needs <RCNLSynergyController> and is available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>synergy_vector_sum</type>
-				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
+				<synergy_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_list>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="synergy_vector_magnitude">
+				<!--Description: synergy_vector_magnitude is a terminal constraint on the Euclidean magnitude of each listed synergy vector. Holds a magnitude style normalization while <optimize_synergy_vectors> is true; needs <RCNLSynergyController> and is available in Tracking and Design Optimization.-->
 				<is_enabled>true</is_enabled>
 				<type>synergy_vector_magnitude</type>
-				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
+				<synergy_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_list>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
-			<!--Design Optimization only.-->
 			<RCNLConstraintTerm name="limit_normalized_fiber_length">
+				<!--Description: limit_normalized_fiber_length is a path constraint on each listed muscle's normalized fiber length. Keeps fibers in a physiological operating range; Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>limit_normalized_fiber_length</type>
 				<muscle_list>muscle_1 muscle_2 muscle_3</muscle_list>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
-			<!--Design Optimization only.-->
 			<RCNLConstraintTerm name="user_defined">
+				<!--Description: user_defined calls the MATLAB function named in <function_name> to compute a custom constraint. <constraint_term_type> selects whether it is a path or a terminal constraint; Design Optimization only.-->
 				<is_enabled>true</is_enabled>
 				<type>user_defined</type>
 				<function_name>myCustomConstraintFunction</function_name>
-				<!--constraint_term_type must be path or terminal.-->
 				<constraint_term_type>path</constraint_term_type>
 				<max_error></max_error>
 				<min_error></min_error>

@@ -1,77 +1,126 @@
 <NMSMPipelineDocument Version="1.5.0">
 <JointModelPersonalizationTool>
-    <!--Name of the directory where results are written. Be default this is the directory in which the setup file is be  executed.-->
+    <!--*Optional* Directory name 
+	Description: Directory that results are written to. When it is given, results will be written to the specified directory.
+	Default: empty, writes <output_model_file> in the settings file directory.-->
     <results_directory>JMPResults</results_directory>
-    <!--Directory for input files.-->
-    <input_directory>JMPInputsDir</input_directory>
-    <!--Name of file containing input model, if using the application this has no effect as current model is used.-->
+    <!--*Required* .osim model
+	Description: Scaled generic OpenSim model (.osim) that JMP will personalize. This model is the starting point for a JMP optimization. If running previous JMP optimizations, their output model should be the input to subsequent optimizations.
+	Default: N/A-->
     <input_model_file>model.osim</input_model_file>
-    <!--Name of file containing output model after tool executaion.-->
+    <!--*Required* .osim model
+	Description: File the personalized model is written to after the tool executes. If <results_directory> is set, only the file name portion is kept; otherwise the containing directory must already exist.
+	Default: N/A-->
     <output_model_file>model_jmp.osim</output_model_file>
-    <!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+    <!--*Required* Double
+	Description: Marker distance error that the inverse kinematics error of every task is divided by. Sets the error scale of the optimization, cost = (IK_error/allowable_error)^2, so smaller values make the same marker error look larger. Units follow the model and marker data (0.01 == 1 cm for data in meters).
+	Default: N/A-->
     <allowable_error>0.005</allowable_error>
-    <!--List of tasks to be completed by the tool, each Task is a separate optimization.-->
+    <!--*Required* List of JMPTask elements
+	Description: List of tasks to be completed by the tool. Each enabled JMPTask is a separate optimization solved in <index> order, and every task starts from the model produced by the previous task.
+	Default: N/A-->
     <JMPTaskList>
+        <!--*Required* Element
+		Description: One optimization stage. Copy this element to personalize different joints or bodies in stages.
+		Default: N/A-->
         <JMPTask>
-            <!--Indicate whether the task is enabled or not.-->
+            <!--*Required* Boolean
+			Description: Indicate whether the task is enabled or not. Must be 'true' or 'false'; a disabled task is skipped entirely.
+			Default: N/A-->
             <is_enabled>true</is_enabled>
-			<!--Integer to indicate the order that this task should be completed-->
+			<!--*Required* Integer
+			Description: Order in which this task is completed, smallest first. It is not read when a single task is present, but omitting it with several tasks is an error.
+			Default: N/A-->
 			<index>1</index>
-            <!--Name of marker file with required data for this JMP task.-->
+            <!--*Required* .trc file
+			Description: Marker file with the experimental marker data for this task. Inverse kinematics tracks these markers while the joint, body and marker parameters are adjusted; the path is resolved relative to the directory the tool is run from.
+			Default: N/A-->
             <marker_file_name>marker_file.trc</marker_file_name>
-			<!--Space separated list of marker names to be included in this task-->
+			<!--*Optional* List of strings
+			Description: Space separated list of marker names to include in this task. Limits which markers are tracked.
+			Default: every marker attached to the bodies of the joints in <JMPJointSet>, plus the markers of the joints touching any body in <JMPBodySet>.-->
 			<marker_names>marker_1 marker_2 marker_3</marker_names>
-            <!--Time range from marker file to be used to optimize joint personalization.-->
+            <!--*Optional* List of 2 doubles
+			Description: Start and end time, in seconds, taken from the marker file. Limits the frames used to optimize joint personalization.
+			Default: the full valid time range of the marker file.-->
             <time_range>0 1</time_range>
-            <!--Joints that will be optimized in this task.-->
+            <!--*Optional* Set of JMPJoint elements
+			Description: Joints that will be optimized in this task. Omit it for a task that only scales bodies or moves markers.
+			Default: empty, no joint frames are optimized.-->
             <JMPJointSet>
-				<!--A joint that will be personalized in this task. Add a joint by changing the name of the <JMPJoint> element-->
+                <!--*Required* Element with a name attribute
+				Description: A joint that will be personalized in this task. The name attribute must match a joint in the model; add a joint by copying this element and changing the name.
+				Default: N/A-->
                 <JMPJoint name="JointName">
-                    <!--Joint Parent Frame.-->
+                    <!--*Required* Element
+					Description: Placement of this joint in its parent body. Holds the flags and bounds that decide which parent frame parameters are optimized.
+					Default: N/A-->
                     <parent_frame_transformation>
-                        <!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized.-->
-                        <translation>true true false</translation>
-                        <!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized.-->
-                        <orientation>true true false</orientation>
-                        <!--Translation bounds set the upper and lower limits of the search range around the initial value.-->
+                        <!--*Required* List of 3 booleans
+						Description: Whether the x, y and z translations and orientations of the parent frame are optimized. Each true value adds one design variable, searched within <translation_bounds> or <orientation_bounds> of its initial value.
+						Default: N/A-->
+                        <translation>true true true</translation>
+                        <orientation>true true true</orientation>
+                        <!--*Optional* Double
+						Description: Half width of the search range around the initial translations and orientations, in model length units. Keeps optimized translations and orientations inside an anatomical range.
+						Default: plus or minus 10 if no frame in the task sets a bound, otherwise 0, which holds the frame fixed.-->
                         <translation_bounds>0.05</translation_bounds>
-                        <!--Orientation bounds set the upper and lower limits of the search range around the initial value.-->
                         <orientation_bounds>0.5</orientation_bounds>
                     </parent_frame_transformation>
-                    <!--Joint Child Frame.-->
+                    <!--*Required* Element
+					Description: Placement of this joint in its child body. Holds the flags and bounds that decide which child frame parameters are optimized.
+					Default: N/A-->
                     <child_frame_transformation>
-                        <!--Three boolean values (separated by spaces) for if the joint translation parameter is to be optimized.-->
                         <translation>false false false</translation>
-                        <!--Three boolean values (separated by spaces) for if the joint orientation parameter is to be optimized.-->
                         <orientation>false false false</orientation>
-                        <!--Translation bounds set the upper and lower limits of the search range around the initial value.-->
                         <translation_bounds>0.05</translation_bounds>
-                        <!--Orientation bounds set the upper and lower limits of the search range around the initial value.-->
                         <orientation_bounds>0.5</orientation_bounds>
                     </child_frame_transformation>
                 </JMPJoint>
             </JMPJointSet>
+			<!--*Optional* Set of JMPBody elements
+			Description: Bodies whose scale factor or marker positions may be optimized in this task. Omit it for a task that only personalizes joint frames.
+			Default: empty, no bodies are scaled.-->
 			<JMPBodySet>
+				<!--*Required* Element with a name attribute
+				Description: A body considered in this task. The name attribute must match a body in the model; add a body by copying this element and changing the name.
+				Default: N/A-->
 				<JMPBody name="BodyName">
-					<!--Boolean value for whether the body, with task name, is to be scaled.-->
+					<!--*Required* Boolean
+					Description: Whether the body's uniform scale factor is optimized. The scale factor has no bounds of its own, so pair it with markers that constrain the segment length.
+					Default: N/A-->
 					<scale_body>true</scale_body>
-					<!--Three boolean values (separated by spaces) for which axes the markers should be free to move in (x, y, z) order.-->
+					<!--*Required* List of 3 booleans
+					Description: Axes, in x y z order, along which the markers on this body may move. Every marker attached to this body gets one design variable per selected axis, with no bounds of its own.
+					Default: N/A-->
 					<move_markers>false true true</move_markers>
 				</JMPBody>
 			</JMPBodySet>
         </JMPTask>
     </JMPTaskList>
-    <!--*Optional* The accuracy of the IKSolver solution in absolute terms. Default is 1e-5. It determines the number of significant digits to which the solution can be trusted.-->
+    <!--*Optional* Double
+	Description: Accuracy of the inverse kinematics solver, in absolute terms. Sets how many significant digits of the inverse kinematics solution can be trusted.
+	Default: the OpenSim InverseKinematicsSolver default.-->
     <accuracy>1e-06</accuracy>
-	<!--*Optional* The minimum step of the least squares algorithm. Default is 1e-4 which means the solution will be optimized to 0.1 mm resolution-->
+	<!--*Optional* Double
+	Description: Minimum finite difference step of lsqnonlin (DiffMinChange). The default resolves translations to about 0.1 mm for data in meters.
+	Default: 1e-4-->
 	<diff_min_change>1e-04</diff_min_change>
-	<!--*Optional* The step tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy-->
+	<!--*Optional* Double
+	Description: Step tolerance of lsqnonlin. Larger values stop the optimizer sooner, with lower accuracy.
+	Default: 1e-6-->
 	<step_tolerance>1e-06</step_tolerance>
-	<!--*Optional* The optimality tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy-->
+	<!--*Optional* Double
+	Description: Optimality tolerance of lsqnonlin. Larger values stop the optimizer sooner, with lower accuracy.
+	Default: 1e-6-->
 	<optimality_tolerance>1e-6</optimality_tolerance>
-	<!--*Optional* The function tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy-->
+	<!--*Optional* Double
+	Description: Function tolerance of lsqnonlin. Larger values stop the optimizer sooner, with lower accuracy.
+	Default: 1e-6-->
 	<function_tolerance>1e-6</function_tolerance>
-	<!--*Optional* The number of allowed iterations for the lsqnonlin, setting this lower can help cancel an optimization that won't converge-->
-	<max_function_evaluations>5000</max_function_evaluations>
+	<!--*Optional* Integer
+	Description: Maximum number of cost function evaluations for lsqnonlin in each task. Lowering it can help cancel an optimization that will not converge.
+	Default: 3000-->
+	<max_function_evaluations>3000</max_function_evaluations>
 </JointModelPersonalizationTool>
 </NMSMPipelineDocument>

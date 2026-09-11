@@ -1,235 +1,320 @@
 <NMSMPipelineDocument Version="1.5.0">
 	<GroundContactPersonalizationTool name="default">
-		<!--Name of the directory where results are written. Be default this is the directory in which the setup file is be  executed.-->
+		<!--*Required* Directory name
+		Description: Directory that results are written to. Receives the .osimx results file, the result .sto files, a copy of this settings file and commandWindowOutput.txt. Leave it empty to use the directory the tool is run from.
+		Default: N/A-->
 		<results_directory>GCPResults</results_directory>
-		<!--Directory for input files.-->
+		<!--*Optional* Directory name
+		Description: Directory prefixed to <input_motion_file> and <input_grf_file>. Lets the data file names stay short. It is not applied to <input_model_file> or <input_osimx_file>.
+		Default: the directory the tool is run from.-->
 		<input_directory>GCPInputsDir</input_directory>
-		<!--Name of file containing input model, if using the application this has no effect as current model is used.-->
+		<!--*Required* .osim model
+		Description: OpenSim model that the contact surfaces are added to. Every body and marker named below must exist in this model.
+		Default: N/A-->
 		<input_model_file>model.osim</input_model_file>
-		<!--Name of input .osimx file to append results. Leave empty if an .osimx file has not been written for this model yet.-->
+		<!--*Optional* .osimx file
+		Description: An osimx file created by previous MTP or GCP runs. New results are added to its contents and written to <name>_gcp.xml in <results_directory>.
+		Default: empty, a new osimx file named after <input_model_file> is built.-->
 		<input_osimx_file>model.osimx</input_osimx_file>
-		<!--Name of the input motion file (.mot or .sto) to use.-->
+		<!--*Required* .mot or .sto file
+		Description: Full body inverse kinematics for the trial, relative to <input_directory> or the settings file directory. Supplies the foot kinematics. its time points must match <input_grf_file> to within 0.005 s. 
+		Default: N/A-->
 		<input_motion_file>GCPInputsDir\IKData\trial.sto</input_motion_file>
-		<!--Name of the input ground reaction forces file (.mot or .sto) to use.-->
+		<!--*Required* .mot or .sto file
+		Description: Measured ground reactions for the trial, relative to <input_directory> or the settings file directory. Must contain every column named in <force_columns>, <moment_columns> and <electrical_center_columns> of every enabled surface.
+		Default: N/A-->
 		<input_grf_file>GCPInputsDir\GRFData\trial.sto</input_grf_file>
-		<!--Lowpass filter cutoff frequency for kinematic B-splines. A lower frequency may be less precise but converge more quickly.-->
+		<!--*Optional* Double
+		Description: Lowpass cutoff frequency, in Hz, of the kinematic B-splines. A lower frequency may be less precise but converges more quickly.
+		Default: 6-->
 		<kinematics_filter_cutoff>10</kinematics_filter_cutoff>
-		<!--Flag (true, false) indicating whether the initial resting spring length will be calibrated before optimization rounds. Recommended true unless the chosen initial value is desired.-->
+		<!--*Optional* Boolean
+		Description: Whether the resting spring length is calibrated before the optimization rounds. Recommended unless the value in <initial_resting_spring_length> is wanted, since it overrides that value.
+		Default: true-->
 		<initialize_resting_spring_length>true</initialize_resting_spring_length>
-		<!--Number of spring markers in width of spring marker grid. Default is 5.-->
+		<!--*Optional* Integer
+		Description: Number of spring markers across the width of the spring marker grid. Each foot gets grid_width times grid_height springs, so larger grids cost more run time.
+		Default: 5-->
 		<grid_width>5</grid_width>
-		<!--Number of spring markers in height of spring marker grid. Default is 15.-->
+		<!--*Optional* Integer
+		Description: Number of spring markers along the length of the spring marker grid. Each foot gets grid_width times grid_height springs.
+		Default: 15-->
 		<grid_height>15</grid_height>
-		<!--List of Contact Surfaces, each specified as GCPContactSurface.-->
+		<!--*Required* Set of GCPContactSurface elements
+		Description: Contact surfaces to personalize. At least one surface must be enabled. All surfaces share one set of spring, damping and friction parameters.
+		Default: N/A-->
 		<GCPContactSurfaceSet>
+			<!--*Required* Element with a name attribute
+			Description: One contact surface, normally one foot. Copy the element to personalize both feet in one run. The name is only a label and does not change any functionality.
+			Default: N/A-->
 			<GCPContactSurface name="Right foot">
-				<!--Indicate whether the the foot will be personalized or not.-->
+				<!--*Required* Boolean
+				Description: Indicate whether this surface is personalized. Must be 'true' or 'false'. A disabled surface is ignored entirely.
+				Default: N/A-->
 				<is_enabled>true</is_enabled>
-				<!--Flag indicating whether foot model should be mirrored.-->
+				<!--*Required* Boolean
+				Description: Whether this surface is a left foot. Set true for a left foot so the spring grid is mirrored.
+				Default: N/A-->
 				<is_left_foot>false</is_left_foot>
-				<!--Start time for right side gait cycles in motion and ground reaction force files.-->
+				<!--*Required* Double
+				Description: Start time, in seconds, of this side's gait cycle. The first frame at or after this time in the motion and ground reaction files is used.
+				Default: N/A-->
 				<start_time>0</start_time>
-				<!--End time for motion and ground reaction force files.-->
+				<!--*Required* Double
+				Description: End time, in seconds, of this side's gait cycle. The motion and ground reaction files must yield the same frames over this range.
+				Default: N/A-->
 				<end_time>1</end_time>
-				<!--Speed of treadmill belt for recorded motion. Set to 0 if not applicable.-->
+				<!--*Required* Double
+				Description: Treadmill belt speed for the recorded motion, in model length units per second. Used in the slip velocity of the friction model. Set it to 0 for overground data.
+				Default: N/A-->
 				<belt_speed>1</belt_speed>
-				<!--Names of the force columns in the grf file, ordered X, Y, Z.-->
+				<!--*Required* List of 3 strings
+				Description: Force column names in the grf file, ordered X, Y, Z. Identify this surface's measured forces.
+				Default: N/A-->
 				<force_columns>ground_force_1_vx ground_force_1_vy ground_force_1_vz</force_columns>
-				<!--Names of the moment columns in the grf file, ordered X, Y, Z.-->
+				<!--*Required* List of 3 strings
+				Description: Moment column names in the grf file, ordered X, Y, Z. Identify this surface's measured moments.
+				Default: N/A-->
 				<moment_columns>ground_moment_1_mx ground_moment_1_my ground_moment_1_mz</moment_columns>
-				<!--Names of the electrical center columns in the grf file, ordered X, Y, Z.-->
+				<!--*Required* List of 3 strings
+				Description: Electrical center column names in the grf file, ordered X, Y, Z. Identify the force plate application points that the electricalCenterX, Y and Z design variables shift.
+				Default: N/A-->
 				<electrical_center_columns>ground_force_1_px ground_force_1_py ground_force_1_pz</electrical_center_columns>
-				<!--Name of the hindfoot body in the model file.-->
+				<!--*Required* String
+				Description: Name of the hindfoot body in the model. The spring marker grid is built on this body.
+				Default: N/A-->
 				<hindfoot_body>calcn_r</hindfoot_body>
-				<!--Name of the marker used to define toe.-->
+				<!--*Required* String
+				Description: Name of the toe marker. Bounds the front of the spring marker grid and is tracked by the marker_position and marker_slope cost terms.
+				Default: N/A-->
 				<toe_marker>R_Toe</toe_marker>
-				<!--Name of the marker used to define medial side.-->
+				<!--*Required* String
+				Description: Name of the medial marker. Bounds one side of the spring marker grid and is tracked by the marker_position and marker_slope cost terms.
+				Default: N/A-->
 				<medial_marker>R_Toe_Medial</medial_marker>
-				<!--Name of the marker used to define lateral side.-->
+				<!--*Required* String
+				Description: Name of the lateral marker. Bounds the other side of the spring marker grid and is tracked by the marker_position and marker_slope cost terms.
+				Default: N/A-->
 				<lateral_marker>R_Toe_Lateral</lateral_marker>
-				<!--Name of the marker used to define heel.-->
+				<!--*Required* String
+				Description: Name of the heel marker. Bounds the back of the spring marker grid and is tracked by the marker_position and marker_slope cost terms.
+				Default: N/A-->
 				<heel_marker>R_Heel</heel_marker>
-				<!--Name of midfoot superior marker used to define ground reaction moments.-->
+				<!--*Required* String
+				Description: Name of the midfoot superior marker. Measured moments are transferred to the point beneath it before they are tracked, and it is tracked by the marker_position and marker_slope cost terms.
+				Default: N/A-->
 				<midfoot_superior_marker>R_Midfoot_Superior</midfoot_superior_marker>
 			</GCPContactSurface>
 		</GCPContactSurfaceSet>
-		<!--Task list defining rounds of GCP optimization.-->
+		<!--*Required* List of GCPTask elements
+		Description: Rounds of GCP optimization. Each enabled task is a separate optimization, run in <index> order from the values left by the previous task.
+		Default: N/A-->
 		<GCPTaskList>
+			<!--*Required* Element
+			Description: One optimization round. Copy this element to release design variables gradually.
+			Default: N/A-->
 			<GCPTask>
-				<!--Indicate whether the task is enabled or not.-->
+				<!--*Required* Boolean
+				Description: Indicate whether the task is enabled or not. Must be 'true' or 'false'. A disabled task is skipped entirely.
+				Default: N/A-->
 				<is_enabled>true</is_enabled>
-				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+				<!--*Required* Integer
+				Description: Order in which this task is completed, smallest first. It is not read when a single task is present, but omitting it with several tasks is an error.
+				Default: N/A-->
 				<index>1</index>
-				<!--Stiffness values specific to each point of contact.-->
+				<!--*Optional* Boolean
+				Description: Whether each spring marker's stiffness is optimized in this round. The stiffness values are shared by every contact surface.
+				Default: false-->
 				<springConstants>true</springConstants>
-				<!--Damping factor for linear damping of vertical force.-->
+				<!--*Optional* Boolean
+				Description: Whether the damping factor of the vertical force is optimized in this round. The value is shared by every contact surface.
+				Default: false-->
 				<dampingFactor>true</dampingFactor>
-				<!--Dynamic friction coefficient used in calculating horizontal ground reaction forces.-->
+				<!--*Optional* Boolean
+				Description: Whether the dynamic friction coefficient is optimized in this round. This value is shared by every contact surface.
+				Default: false-->
 				<dynamicFrictionCoefficient>true</dynamicFrictionCoefficient>
-				<!--Viscous friction coefficient used in calculating horizontal ground reaction forces.-->
+				<!--*Optional* Boolean
+				Description: Whether the viscous friction coefficient is optimized in this round. This value is shared by every contact surface.
+				Default: false-->
 				<viscousFrictionCoefficient>true</viscousFrictionCoefficient>
-				<!--Height value at which linear springs exert force. Only recommended when primarily calibrating vertical force.-->
+				<!--*Optional* Boolean
+				Description: Whether the height at which the springs start to exert force is optimized in this round. Only recommended when mainly calibrating vertical force. This value is shared by every contact surface.
+				Default: false-->
 				<restingSpringLength>true</restingSpringLength>
-				<!--Coefficients allowing for adjustments to kinematics during optimization.-->
+				<!--*Optional* Boolean
+				Description: Whether the foot kinematics may be adjusted in this round. Each contact surface gets its own set of B-spline coefficients.
+				Default: false-->
 				<kinematicsBSplineCoefficients>true</kinematicsBSplineCoefficients>
-				<!--Adjust the forceplate electrical centers in the x direction-->
+				<!--*Optional* Boolean
+				Description: Whether the force plate electrical center is shifted along x, changing ground reaction moments.
+				Default: false-->
 				<electricalCenterX>true</electricalCenterX>
-				<!--Adjust the forceplate electrical centers in the y direction-->
+				<!--*Optional* Boolean
+				Description: Whether the force plate electrical center is shifted along y, changing ground reaction moments.
+				Default: false-->
 				<electricalCenterY>true</electricalCenterY>
-				<!--Adjust the forceplate electrical centers in the z direction-->
+				<!--*Optional* Boolean
+				Description: Whether the force plate electrical center is shifted along z, changing ground reaction moments.
+				Default: false-->
 				<electricalCenterZ>true</electricalCenterZ>
-				<!--Rotate the forceplate in the y direction-->
+				<!--*Optional* Boolean
+				Description: Whether the force plate is rotated about the y axis. One rotation per surface, bounded to plus or minus 15 degrees, is applied to the measured forces and moments.
+				Default: false-->
 				<forcePlateRotation>true</forcePlateRotation>
-				<!--Standard deviation of the gaussian distribution used to generate the neighbor spring constant term.-->
+				<!--*Optional* Double
+				Description: Standard deviation of the gaussian weighting in the neighbor_spring_constant cost term. Larger values smooth stiffness over a wider neighborhood.
+				Default: 0.05-->
 				<neighborStandardDeviation>0.2</neighborStandardDeviation>
-				<!--Cost term set for the GCPTask.-->
+				<!--*Required* Set of RCNLCostTerm elements
+				Description: Cost terms for this round. Only enabled terms contribute, so each round can track a different set of quantities.
+				Default: N/A-->
 				<RCNLCostTermSet>
+					<!--Cost terms in GCP have 3 elements:
+					<is_enabled> is required for all cost terms and specifies whether or not to use the cost term.
+					<type> is required for all cost terms and specifies which cost term is used.
+					<max_allowable_error> is required for all cost terms and specifies the value that the error is divided by before being squared, in the units of the tracked quantity. smaller values give the term more weight.
+					The <max_allowable_error> values in this file are left empty, so fill them in: an empty element parses as NaN.-->
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: marker_position tracks the five foot marker positions against the experimental foot kinematics. Keeps the adjusted foot kinematics close to the measured motion.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>marker_position</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: marker_slope tracks the velocities of the same five foot markers. Keeps modeled and measured foot motion in phase.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>marker_slope</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: rotation penalizes changes to the four rotational foot coordinates. Limits how far kinematicsBSplineCoefficients move the foot rotations from the experimental kinematics. no effect unless those coefficients are optimized.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>rotation</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: translation penalizes changes to the three translational foot coordinates. Limits how far kinematicsBSplineCoefficients move the foot translations from the experimental kinematics. no effect unless those coefficients are optimized.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>translation</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: kinematic_periodicity drives the first and last frames of the adjusted foot kinematics together. Keeps the foot motion cyclic. the error is normalized by the measured first to last difference.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>kinematic_periodicity</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: vertical_grf tracks the measured vertical ground reaction force. Calibrates the spring stiffness, resting length and damping, which mainly control vertical force.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>vertical_grf</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: vertical_grf_slope tracks the time derivative of the measured vertical ground reaction force. Sharpens the timing of loading and unloading.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>vertical_grf_slope</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: horizontal_grf tracks the measured anterior and lateral ground reaction forces. Calibrates the friction coefficients, which mainly control horizontal force.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>horizontal_grf</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: horizontal_grf_slope tracks the time derivatives of the measured anterior and lateral ground reaction forces. Matches the shape of the horizontal forces over the gait cycle.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>horizontal_grf_slope</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: ground_reaction_moment tracks the three measured ground reaction moment components. Moments are compared about the point below <midfoot_superior_marker>.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>ground_reaction_moment</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: ground_reaction_moment_slope tracks the time derivatives of the measured ground reaction moments. Matches the shape of the moments over the gait cycle.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>ground_reaction_moment_slope</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: spring_constant_mean pulls every spring stiffness toward the mean stiffness. Regularizes the stiffness distribution. it only matters when springConstants is true.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>spring_constant_mean</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: neighbor_spring_constant pulls each spring stiffness toward the gaussian weighted average of its neighbors. Smooths the stiffness distribution using <neighborStandardDeviation>. its residual is raised to the fourth power, so isolated outliers are penalized strongly.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>neighbor_spring_constant</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: electrical_center_regularization keeps the electrical center shifts small. An optional <axes> element (any of x, y, z) limits which shifts are penalized. it only matters when electricalCenterX, Y or Z is true.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>electrical_center_regularization</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: force_plate_rotation_regularization keeps each surface's force plate rotation small. It only matters when forcePlateRotation is true.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>force_plate_rotation_regularization</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error></max_allowable_error>
 					</RCNLCostTerm>
 				</RCNLCostTermSet>
 			</GCPTask>
 		</GCPTaskList>
-		<!--Initial value for resting spring length.-->
+		<!--*Optional* Double
+		Description: Initial resting spring length, in model length units. Starting value for restingSpringLength. it is overwritten before the first task when <initialize_resting_spring_length> is true.
+		Default: 0.05-->
 		<initial_resting_spring_length>0.05</initial_resting_spring_length>
-		<!--Initial value for spring constant.-->
+		<!--*Optional* Double
+		Description: Initial stiffness of every spring marker. Starting value for the springConstants design variables.
+		Default: 2500-->
 		<initial_spring_constant>2500</initial_spring_constant>
-		<!--Initial value for damping factor.-->
+		<!--*Optional* Double
+		Description: Initial damping factor. Starting value for the dampingFactor design variable.
+		Default: 1e-4-->
 		<initial_damping_factor>1</initial_damping_factor>
-		<!--Initial value for dynamic friction coefficient.-->
+		<!--*Optional* Double
+		Description: Initial dynamic friction coefficient. Starting value for the dynamicFrictionCoefficient design variable.
+		Default: 0-->
 		<initial_dynamic_friction_coefficient>0.5</initial_dynamic_friction_coefficient>
-		<!--Initial value for viscous friction coefficient.-->
+		<!--*Optional* Double
+		Description: Initial viscous friction coefficient. Starting value for the viscousFrictionCoefficient design variable.
+		Default: 5-->
 		<initial_viscous_friction_coefficient>0</initial_viscous_friction_coefficient>
-		<!--Latching velocity used to calculate dynamic friction.-->
+		<!--*Optional* Double
+		Description: Latching velocity of the friction model, in model length units per second. Sets how quickly friction force saturates as slip velocity grows. It is not optimized.
+		Default: 0.05-->
 		<latching_velocity>0.1</latching_velocity>
-		<!--*Optional* The minimum step of the least squares algorithm. Default is 1e-6 -->
+		<!--*Optional* Double
+		Description: Minimum finite difference step of lsqnonlin (DiffMinChange). Sets the smallest step used to estimate gradients.
+		Default: 1e-6-->
 		<diff_min_change>0.01</diff_min_change>
-		<!--*Optional* The step tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-16-->
+		<!--*Optional* Double
+		Description: Step tolerance of lsqnonlin. Larger values stop the optimizer sooner, with lower accuracy.
+		Default: 1e-6-->
 		<step_tolerance>0.0001</step_tolerance>
-		<!--*Optional* The optimality tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-3-->
+		<!--*Optional* Double
+		Description: Optimality tolerance of lsqnonlin. Larger values stop the optimizer sooner, with lower accuracy.
+		Default: 1e-6-->
 		<optimality_tolerance>0.0001</optimality_tolerance>
-		<!--*Optional* The function tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-6-->
+		<!--*Optional* Double
+		Description: Function tolerance of lsqnonlin. Larger values stop the optimizer sooner, with lower accuracy.
+		Default: 1e-6-->
 		<function_tolerance>0.0001</function_tolerance>
-		<!--*Optional* The number of allowed iterations of the fmincon optimization,  setting this lower can help cancel an optimization that won't converge. Default is 1e3-->
+		<!--*Optional* Integer
+		Description: Maximum number of lsqnonlin iterations in each task. Lowering it can help cancel an optimization that will not converge.
+		Default: 400-->
 		<max_iterations>100</max_iterations>
-		<!--*Optional* The number of allowed cost function calls for the fmincon optimization,  setting this lower can help cancel an optimization that won't converge.-->
+		<!--*Optional* Integer
+		Description: Maximum number of cost function calls in each task. Lowering it can help cancel an optimization that will not converge.
+		Default: 300000-->
 		<max_function_evaluations>300000</max_function_evaluations>
 	</GroundContactPersonalizationTool>
 </NMSMPipelineDocument>
