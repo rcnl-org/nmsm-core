@@ -1,303 +1,347 @@
 <NMSMPipelineDocument Version="1.5.0">
 	<MuscleTendonPersonalizationTool>
-		<!--Name of the directory where results are written. Be default this is the directory in which the setup file is be  executed.-->
+		<!--*Required* Directory name
+		Description: Directory that results are written to. Receives the result .sto files, the Analysis directory, the .osimx results file, a copy of this settings file and commandWindowOutput.txt; leave it empty to use the directory the tool is run from.
+		Default: N/A-->
 		<results_directory>MTPResults</results_directory>
-		<!--Name of file containing input model, if using the application this has no effect as current model is used.-->
+		<!--*Required* .osim model
+		Description: OpenSim model whose muscles are personalized. The muscle groups named below must exist in this model.
+		Default: N/A-->
 		<input_model_file>model.osim</input_model_file>
-		<!--The name of the osimx file that results from MuscleTendon personalization to be used by downstream steps.-->
+		<!--*Optional* .osimx file
+		Description: An osimx file created by previous MTP or GCP runs. New results are added to its contents and written to <name>_mtp.xml in <results_directory>.
+		Default: empty, a new osimx file named after <input_model_file> is built.-->
 		<input_osimx_file>model.osimx</input_osimx_file>
-		<!--The name of the folder containing preprocessed data to run the MuscleTendonPersonalizationTool.-->
+		<!--*Required* Directory name
+		Description: Folder with the preprocessed data for this run. Must hold IDData, MAData and EMGData subdirectories, with one file or folder per trial.
+		Default: N/A-->
 		<data_directory>MTPInputsDir</data_directory>
-		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
+		<!--*Required* List of strings
+		Description: Coordinates whose joint moments MTP tracks. Muscles spanning these coordinates are found automatically, and that muscle set fixes the size of every design variable.
+		Default: N/A-->
 		<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
-		<!--*Optional* The vMaxFactor to use. Default is 10.-->
+		<!--*Optional* Double
+		Description: Multiplier on optimal fiber length giving each muscle's maximum shortening velocity. Used by the force velocity curve.
+		Default: 10-->
 		<v_max_factor>10</v_max_factor>
-		<!--A space-separated list of the activation muscle groups.-->
+		<!--*Optional* List of strings
+		Description: Trial names to use in this MTP run. Only files in <data_directory> whose names contain one of these prefixes are used.
+		Default: every trial in <data_directory>.-->
+		<trial_prefixes>gait_1 gait_2 gait_3</trial_prefixes>
+		<!--*Required* List of strings
+		Description: Model muscle groups for the grouped EMG cost terms. grouped_electromechanical_delay and grouped_emg_scale_factor act on the muscles within each group.
+		Default: N/A-->
 		<activation_muscle_groups>activation_group_1 activation_group_2 activation_group_3</activation_muscle_groups>
-		<!--A space-separated list of the normalized fiber length muscle groups.-->
+		<!--*Required* List of strings
+		Description: Model muscle groups for the grouped fiber length cost terms. grouped_normalized_muscle_fiber_length drives the muscles within each group toward a common normalized fiber length.
+		Default: N/A-->
 		<normalized_fiber_length_muscle_groups>fiber_length_group_1 fiber_length_group_2 fiber_length_group_3</normalized_fiber_length_muscle_groups>
-		<!--A space-separated list of missing EMG channel names.-->
+		<!--*Optional* List of strings
+		Description: Model muscle groups with no measured EMG. MTPSynergyExtrapolation builds one shared excitation for each group; required when that stage is enabled.
+		Default: empty-->
 		<missing_emg_channel_muscle_groups>missing_emg_group_1 missing_emg_group_2 missing_emg_group_3</missing_emg_channel_muscle_groups>
-		<!--A space-separated list of collected EMG channel names.-->
+		<!--*Required* List of strings
+		Description: Names of the collected EMG channels. Each name must match an EMGData column and a model muscle group, and the channel's excitation is used for every muscle in that group.
+		Default: N/A-->
 		<collected_emg_channel_muscle_groups>emg_channel_1 emg_channel_2 emg_channel_3</collected_emg_channel_muscle_groups>
-		<!--Properties that describe MuscleTendonLengthInitialization settings.-->
+		<!--*Required* Element
+		Description: Settings for the MuscleTendonLengthInitialization stage. When enabled it runs before the MTPTaskList and seeds optimal fiber lengths, tendon slack lengths and maximum muscle stress; the element must be present even when the stage is disabled.
+		Default: N/A-->
 		<MuscleTendonLengthInitialization>
-			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization.-->
+			<!--*Required* Boolean
+			Description: Whether muscle tendon length initialization runs before MTP. When false the rest of this element is ignored.
+			Default: N/A-->
 			<is_enabled>true</is_enabled>
-			<!--Directory containing kinematics and moments for passive trials. Leave blank if passive data will not be used.-->
+			<!--*Required* Directory name
+			Description: Directory with kinematics and moments from passive trials. Must hold IDData and MAData subdirectories to use the passive_joint_moment cost term; leave it empty to run without passive data.
+			Default: N/A-->
 			<passive_data_input_directory>PassiveDataDir</passive_data_input_directory>
-			<!--Maximum normalized fiber length. If a muscle has a normalized fiber length above this value, it will be penalized with a cost term.-->
+			<!--*Required* Double
+			Description: Target maximum normalized fiber length. The grouped maximum normalized fiber length design variables are pulled toward it; only the grouped_maximum_normalized_muscle_fiber_length term reads it.
+			Default: N/A-->
 			<max_normalized_muscle_fiber_length>1</max_normalized_muscle_fiber_length>
-			<!--Minimum normalized fiber length. If a muscle has a normalized fiber length below this value, it will be penalized with a cost term.-->
+			<!--*Required* Double
+			Description: Minimum allowed normalized fiber length. Muscles falling below it are penalized; only the minimum_normalized_muscle_fiber_length term reads it.
+			Default: N/A-->
 			<min_normalized_muscle_fiber_length>0.6</min_normalized_muscle_fiber_length>
-			<!--Flag indicating whether the maximum muscle stress value, provided below and shared by all muscles, should be adjusted.-->
+			<!--*Required* Boolean
+			Description: Whether the shared maximum muscle stress is adjusted. When true one extra design variable, bounded between 0.6 and 2.3, scales <maximum_muscle_stress>.
+			Default: N/A-->
 			<optimize_maximum_muscle_stress>true</optimize_maximum_muscle_stress>
+			<!--*Optional* Boolean
+			Description: Whether absolute optimal fiber and tendon slack lengths are optimized instead of scale factors. Absolute lengths are bounded below at 0.001 and scale factors between 0.5 and 2; switching also changes the <error_center> the length cost terms need (1 for scale factors, 0 for absolute lengths).
+			Default: false-->
 			<optimize_absolute_length_changes>false</optimize_absolute_length_changes>
-			<!--Flag indicating whether muscle-specific maximum isometric force values will be adjusted in response to changes in muscle properties.-->
+			<!--*Optional* Boolean
+			Description: Whether maximum isometric forces follow changes in muscle properties. Holds muscle volume constant while fiber lengths change.
+			Default: true-->
 			<optimize_isometric_max_force>true</optimize_isometric_max_force>
-			<!--Initial maximum muscle stress value used if optimizing muscle stress.-->
+			<!--*Optional* Double
+			Description: Initial maximum muscle stress, in Pa. Shared by all muscles; it also sets the muscle volume used by <optimize_isometric_max_force>.
+			Default: 610000-->
 			<maximum_muscle_stress>610000</maximum_muscle_stress>
-			<!--Cost term set for the MuscleTendonLengthInitialization.-->
+			<!--*Required* Set of RCNLCostTerm elements
+			Description: Cost terms for the MuscleTendonLengthInitialization stage. The stage runs lsqnonlin with fixed settings (at most 100 iterations); the optimizer settings at the end of this file do not apply to it.
+			Default: N/A-->
 			<RCNLCostTermSet>
+				<!--Cost terms in MTLI can have up to 4 elements:
+				<is_enabled> is required for all cost terms and specifies whether or not to use the cost term.
+				<type> is required for all cost terms and specifies what cost term is being Used
+				<max_allowable_error> is required for all cost terms that specifies the value that error is divided by before being squared.
+				<error_center> is used for certain cost terms and specifies the point that errors are calculated about. If a cost does not have an error center, its entry in this document does not include an error center.-->
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: passive_joint_moment tracks passive trial inverse dynamics moments with the model's passive muscle moments. Needs <passive_data_input_directory> to name an existing folder, and raises an error otherwise.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>passive_joint_moment</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>2</max_allowable_error>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: optimal_muscle_fiber_length pulls the optimal fiber length design variables toward <error_center>. Keeps optimal fiber lengths near their model values.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>optimal_muscle_fiber_length</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.3</max_allowable_error>
-					<!--Optional for specific terms.-->
 					<error_center>1</error_center>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: tendon_slack_length pulls the tendon slack length design variables toward <error_center>. Keeps tendon slack lengths near their model values.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>tendon_slack_length</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>1</max_allowable_error>
-					<!--Optional for specific terms.-->
 					<error_center>1</error_center>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: minimum_normalized_muscle_fiber_length penalizes muscles whose smallest normalized fiber length falls below <min_normalized_muscle_fiber_length>. Keeps fibers off the ascending limb of the force length curve.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>minimum_normalized_muscle_fiber_length</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.3</max_allowable_error>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: maximum_normalized_muscle_fiber_length drives each muscle's largest normalized fiber length toward its grouped maximum design variable. Keeps fibers near the plateau of the force length curve.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>maximum_normalized_muscle_fiber_length</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.03</max_allowable_error>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: maximum_muscle_stress pulls the shared maximum muscle stress scale factor toward <error_center>. Only has an effect when <optimize_maximum_muscle_stress> is true; an <error_center> of 1 leaves <maximum_muscle_stress> unchanged.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>maximum_muscle_stress</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
-					<!--Optional for specific terms.-->
 					<error_center>1.2</error_center>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: passive_muscle_force penalizes the passive fiber force of every muscle. Discourages solutions that hold the model up with passive tissue.-->
 					<is_enabled>false</is_enabled>
-					<!--Type of cost term.-->
 					<type>passive_muscle_force</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>10</max_allowable_error>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: grouped_normalized_muscle_fiber_length drives the muscles in each <normalized_fiber_length_muscle_groups> entry toward a common normalized fiber length. Keeps fiber operating ranges consistent within each group.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>grouped_normalized_muscle_fiber_length</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: grouped_maximum_normalized_muscle_fiber_length pulls the grouped maximum normalized fiber length design variables toward <max_normalized_muscle_fiber_length>. That element is required whenever this term is enabled.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>grouped_maximum_normalized_muscle_fiber_length</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 				</RCNLCostTerm>
 			</RCNLCostTermSet>
 		</MuscleTendonLengthInitialization>
-		<!--Properties that describe MTPSynergyExtrapolation settings.-->
+		<!--*Required* Element
+		Description: Settings for synergy extrapolation. Estimates excitations for the muscle groups in <missing_emg_channel_muscle_groups> from the measured EMG; the element must be present even when the stage is disabled.
+		Default: N/A-->
 		<MTPSynergyExtrapolation>
-			<!--Flag indicating if synergery extrapolation should be performed as part of this task.-->
+			<!--*Required* Boolean
+			Description: Whether synergy extrapolation is performed. When false the rest of this element is ignored and the extrapolation cost terms have no effect.
+			Default: N/A-->
 			<is_enabled>true</is_enabled>
-			<!--Specify the matrix factorization approach for MSA; PCA or NMF, default to PCA.-->
+			<!--*Required* String
+			Description: Factorization used to extract synergies from the measured EMG, PCA or NMF. Use PCA; the NMF path currently errors at run time.
+			Default: N/A-->
 			<matrix_factorization_method>PCA</matrix_factorization_method>
-			<!--Number of synergies, default to 5.-->
+			<!--*Required* Integer
+			Description: Number of synergies extracted from the measured EMG. Must not exceed the number of collected EMG channels.
+			Default: N/A-->
 			<number_of_synergies>5</number_of_synergies>
-			<!--Indicate categorization of variability for synergy extrapolation: task, trial, or subject, default to trial.-->
+			<!--*Required* String
+			Description: How extrapolation weights vary across trials: task, trial or subject. Sets whether one weight set is fit per task prefix, per trial or for the whole subject.
+			Default: N/A-->
 			<synergy_extrapolation_categorization>trial</synergy_extrapolation_categorization>
-			<!--Indicate categorization of variability for muscle activation residuals: task, trial, or subject, default to task.-->
+			<!--*Required* String
+			Description: How residual weights vary across trials: task, trial or subject. Sets how many residual weight sets are fit.
+			Default: N/A-->
 			<residual_categorization>task</residual_categorization>
-			<!--Cost term set for the MuscleTendonLengthInitialization.-->
+			<!--*Required* Set of RCNLCostTerm elements
+			Description: Cost terms for synergy extrapolation. They are appended to every MTPTask's cost terms, so they act in every round.
+			Default: N/A-->
 			<RCNLCostTermSet>
+				<!--Cost terms in SynX can have up to 3 elements:
+				<is_enabled> is required for all cost terms and specifies whether or not to use the cost term.
+				<type> is required for all cost terms and specifies what cost term is being Used
+				<max_allowable_error> is required for all cost terms that specifies the value that error is divided by before being squared.-->
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: measured_inverse_dynamics_joint_moment tracks the inverse dynamics moments with moments that include the extrapolated excitations. Ignored unless MTPSynergyExtrapolation is enabled.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>measured_inverse_dynamics_joint_moment</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>2</max_allowable_error>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: extrapolated_muscle_activation penalizes the activations predicted for the muscles in <missing_emg_channel_muscle_groups>. Keeps unmeasured muscles from absorbing the whole moment.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>extrapolated_muscle_activation</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.5</max_allowable_error>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
-					<!--Indicate whether the term is enabled or not. Default is false.-->
+					<!--Description: residual_muscle_activation penalizes the change the synergy residual makes to the measured muscles' activations. Keeps the residual small for muscles that do have EMG.-->
 					<is_enabled>true</is_enabled>
-					<!--Type of cost term.-->
 					<type>residual_muscle_activation</type>
-					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.01</max_allowable_error>
 				</RCNLCostTerm>
 			</RCNLCostTermSet>
 		</MTPSynergyExtrapolation>
-		<!--List of tasks to be completed by the tool, each Task is a separate optimization.-->
+		<!--*Required* List of MTPTask elements
+		Description: Rounds of MTP optimization. Each enabled task is a separate optimization, run in <index> order from the values left by the previous task.
+		Default: N/A-->
 		<MTPTaskList>
+			<!--*Required* Element
+			Description: One optimization round. Copy this element to release groups of design variables gradually.
+			Default: N/A-->
 			<MTPTask>
-				<!--Indicate whether the task is enabled or not.-->
+				<!--*Required* Boolean
+				Description: Indicate whether the task is enabled or not. Must be 'true' or 'false'; a disabled task is skipped entirely.
+				Default: N/A-->
 				<is_enabled>true</is_enabled>
-				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
+				<!--*Required* Integer
+				Description: Order in which this task is completed, smallest first. It is not read when a single task is present, but omitting it with several tasks is an error.
+				Default: N/A-->
 				<index>1</index>
-				<!--Use muscle specific electromechanical delays.-->
+				<!--*Required* Boolean
+				Description: Whether each muscle gets its own electromechanical delay. The parser requires this element, but its value is not currently used; every muscle always gets its own delay.
+				Default: N/A-->
 				<muscle_specific_electromechanical_delays>true</muscle_specific_electromechanical_delays>
-				<!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task.-->
+				<!--*Optional* Boolean
+				Description: Whether electromechanical delays are optimized in this round. The delays are stored in units of 0.1 s; values not optimized keep what the previous round produced.
+				Default: true-->
 				<optimize_electromechanical_delays>true</optimize_electromechanical_delays>
-				<!--Boolean (true, false) indicating if activation time constants should be optimized for this task.-->
+				<!--*Optional* Boolean
+				Description: Whether activation time constants are optimized in this round. The time constants are stored in units of 0.01 s, and deactivation is four times activation.
+				Default: true-->
 				<optimize_activation_time_constants>true</optimize_activation_time_constants>
-				<!--Boolean (true, false) indicating if activation nonlinearity constants should be optimized for this task.-->
+				<!--*Optional* Boolean
+				Description: Whether activation nonlinearity constants are optimized in this round. The dimensionless constant runs from 0 (linear) to 0.35 (highly nonlinear).
+				Default: true-->
 				<optimize_activation_nonlinearity_constants>true</optimize_activation_nonlinearity_constants>
-				<!--Boolean (true, false) indicating if EMG scale factors should be optimized for this task.-->
+				<!--*Optional* Boolean
+				Description: Whether EMG scale factors are optimized in this round. Each muscle's scale factor is bounded between 0.05 and 1.
+				Default: true-->
 				<optimize_emg_scale_factors>true</optimize_emg_scale_factors>
-				<!--Boolean (true, false) indicating if optimal fiber lengths should be optimized for this task.-->
+				<!--*Optional* Boolean
+				Description: Whether optimal fiber lengths are optimized in this round. The scale factors are folded into the muscle properties after every round, so each round restarts them at 1.
+				Default: true-->
 				<optimize_optimal_fiber_lengths>true</optimize_optimal_fiber_lengths>
-				<!--Boolean (true, false) indicating if tendon slack lengths should be optimized for this task.-->
+				<!--*Optional* Boolean
+				Description: Whether tendon slack lengths are optimized in this round. The scale factors are folded into the muscle properties after every round, so each round restarts them at 1.
+				Default: true-->
 				<optimize_tendon_slack_lengths>true</optimize_tendon_slack_lengths>
-				<!--Cost term set for the MTPTask.-->
+				<!--*Required* Set of RCNLCostTerm elements
+				Description: Cost terms for this round. Only enabled terms contribute, and the MTPSynergyExtrapolation terms are appended when that stage is enabled.
+				Default: N/A-->
 				<RCNLCostTermSet>
+					<!--Cost terms in MTP can have up to 4 elements:
+					<is_enabled> is required for all cost terms and specifies whether or not to use the cost term.
+					<type> is required for all cost terms and specifies what cost term is being Used
+					<max_allowable_error> is required for all cost terms that specifies the value that error is divided by before being squared.
+					<error_center> is used for certain cost terms and specifies the point that errors are calculated about. If a cost does not have an error center, its entry in this document does not include an error center.-->
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: inverse_dynamics_joint_moment tracks the inverse dynamics moments of <coordinate_list> with the EMG driven muscle moments. The primary tracking term of the tool.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>inverse_dynamics_joint_moment</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>2.5</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: activation_time_constant pulls the activation time constants toward <error_center>. Only use when <optimize_activation_time_constants> is true. <error_center> and <max_allowable_error> are in seconds, so 0.015 is 15 ms.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>activation_time_constant</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.02</max_allowable_error>
-						<!--Optional for specific terms.-->
 						<error_center>0.015</error_center>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: activation_nonlinearity_constant pulls the activation nonlinearity constants toward <error_center>. Only use when <optimize_activation_nonlinearity_constants> is true.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>activation_nonlinearity_constant</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.1</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: optimal_muscle_fiber_length penalizes the change in each muscle's optimal fiber length made in this round. Keeps optimal fiber lengths from drifting; <max_allowable_error> is a length in model units.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>optimal_muscle_fiber_length</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.1</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: tendon_slack_length penalizes the change in each muscle's tendon slack length made in this round. Keeps tendon slack lengths from drifting; <max_allowable_error> is a length in model units.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>tendon_slack_length</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.1</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: emg_scale_factor pulls the EMG scale factors toward <error_center>. Only use when <optimize_emg_scale_factors> is true.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>emg_scale_factor</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.2</max_allowable_error>
-						<!--Optional for specific terms.-->
 						<error_center>0.3</error_center>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: normalized_muscle_fiber_length penalizes magnitude and shape deviations of the modeled normalized fiber lengths from those computed at the start of MTP. Keeps fiber operating ranges close to those of the starting muscle properties.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>normalized_muscle_fiber_length</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.01</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: passive_muscle_force penalizes the passive fiber force at every time point. Discourages solutions that carry the joint moment with passive passive.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>passive_muscle_force</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>50</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: grouped_normalized_muscle_fiber_length drives the muscles in each <normalized_fiber_length_muscle_groups> entry toward a common normalized fiber length. Keeps fiber operating ranges consistent within each normalized fiber length group.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>grouped_normalized_muscle_fiber_length</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.05</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: grouped_emg_scale_factor drives the EMG scale factors within each <activation_muscle_groups> entry toward a common value. Keeps EMG signals for muscles that share an activation group scaled consistently.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>grouped_emg_scale_factor</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.1</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: grouped_electromechanical_delay drives the electromechanical delays within each <activation_muscle_groups> entry toward a common value. Keeps muscles that share an activation group timed consistently; <max_allowable_error> is in units of 0.1 s, so 0.2 means 20 ms.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>grouped_electromechanical_delay</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.2</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<!--Description: muscle_excitation_penalty is a steep eighth power barrier around <error_center> on the measured muscles' excitations. Prevent excitations from going too high. Ignored if MTPSynergyExtrapolation is disabled.-->
 						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
 						<type>muscle_excitation_penalty</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.25</max_allowable_error>
-						<!--Optional for specific terms.-->
 						<error_center>0.5</error_center>
 					</RCNLCostTerm>
 				</RCNLCostTermSet>
 			</MTPTask>
 		</MTPTaskList>
-		<!--*Optional* The minimum step of the least squares algorithm. Default is 1e-6 -->
-		<diff_min_change>0.0001</diff_min_change>
-		<!--*Optional* The step tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-16-->
+		<!--*Optional* Double
+		Description: Step tolerance of fmincon (TolX). Larger values stop the optimizer sooner, with lower accuracy.
+		Default: 1e-6-->
 		<step_tolerance>1e-6</step_tolerance>
-		<!--*Optional* The optimality tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-3-->
-		<optimality_tolerance>1e-6</optimality_tolerance>
-		<!--*Optional* The function tolerance determines when the lsqnonlin algorithm stops. The larger it is, the earlier the algorithm stops, but with lower accuracy. Default is 1e-6-->
-		<function_tolerance>1e-6</function_tolerance>
-		<!--*Optional* The number of allowed iterations of the fmincon optimization,  setting this lower can help cancel an optimization that won't converge. Default is 1e3-->
+		<!--*Optional* Integer
+		Description: Maximum number of fmincon iterations in each task. Lowering it can help cancel an optimization that will not converge.
+		Default: 10000-->
 		<max_iterations>1000</max_iterations>
-		<!--*Optional* The number of allowed cost function calls for the fmincon optimization,  setting this lower can help cancel an optimization that won't converge.-->
+		<!--*Optional* Integer
+		Description: Maximum number of cost function calls in each task. Lowering it can help cancel an optimization that will not converge.
+		Default: 100000000-->
 		<max_function_evaluations>100000000</max_function_evaluations>
 	</MuscleTendonPersonalizationTool>
 </NMSMPipelineDocument>
