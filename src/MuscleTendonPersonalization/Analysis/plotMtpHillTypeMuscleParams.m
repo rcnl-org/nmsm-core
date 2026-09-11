@@ -55,7 +55,6 @@ else
 end
 t = tiledlayout(1, 6, ...
     TileSpacing='Compact', Padding='Compact');
-hillTypeParams(3, :) = hillTypeParams(3, :) ./ 10;
 set(gcf, color=params.plotBackgroundColor)
 for i = 1 : numel(paramLabels)
     nexttile(i)

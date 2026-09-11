@@ -48,9 +48,9 @@ if isfield(precalInputs, "useAbsoluteLengths") && precalInputs.useAbsoluteLength
         precalInputs.optimalFiberLength - mtpInputs.optimalFiberLength;
         precalInputs.tendonSlackLength - mtpInputs.tendonSlackLength];
 else
-    dataPoints = [finalValues.activationTimeConstants;
+    dataPoints = [finalValues.activationTimeConstants / 100; % Convert to units of s.
         finalValues.activationNonlinearityConstants;
-        finalValues.electromechanicalDelays;
+        finalValues.electromechanicalDelays / 10; % Convert to units of s.
         finalValues.emgScaleFactors;
         finalValues.optimalFiberLengthScaleFactors;
         finalValues.tendonSlackLengthScaleFactors];
