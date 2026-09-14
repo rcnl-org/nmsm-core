@@ -150,7 +150,9 @@ classdef NCPBase < matlab.apps.AppBase
         RCNLCostTerm cell = cell(0)
         RCNLSynergy cell = cell(0)
 
-        advancedSettingValues double = [];
+        % Held as text: the table mixes numbers with booleans, a method
+        % name and NaN, which a double array cannot hold
+        advancedSettingValues string = [];
 
         objectSelectionType string = "";  % Used to filter in setSelectedObjects
         currentSettingsFile string = "";
@@ -180,16 +182,43 @@ classdef NCPBase < matlab.apps.AppBase
             "step_tolerance"
             "function_tolerance"
             "optimality_tolerance"
-            "diff_min_change"]
+            "diff_min_change"
+            "optimize_synergy_vectors"
+            "number_of_nodes"
+            "synergy_vector_normalization_method"
+            "synergy_vector_normalization_value"
+            "use_casadi"]
 
+        % The last five default to the fallbacks
+        % parseNeuralControlPersonalizationSettingsTree uses
         defaultAdvancedSettingValues = ...
-            [10
-            1000 
-            100000000
-            1e-6
-            1e-6
-            1e-6
-            0.0001]
+            ["10"
+            "1000"
+            "100000000"
+            "1e-06"
+            "1e-06"
+            "1e-06"
+            "0.0001"
+            "true"
+            "26"
+            "magnitude"
+            "10"
+            "false"]
+
+        % The rule each row is checked against; see advancedSettingProblem
+        advancedSettingKinds = ...
+            ["positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "boolean"
+            "nodes"
+            "normalizationMethod"
+            "normalizationValue"
+            "boolean"]
     end
 
     properties (Access = private)  % listener handles
