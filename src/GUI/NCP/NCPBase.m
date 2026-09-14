@@ -79,6 +79,7 @@ classdef NCPBase < matlab.apps.AppBase
         NormalizedFiberLengthMuscleGroupsTextArea  matlab.ui.control.TextArea
         NormalizedFiberLengthMuscleGroupsTextAreaLabel  matlab.ui.control.Label
         CostTermsTab                    matlab.ui.container.Tab
+        EnforceBilateralSynergyVectorSymmetryCheckBox  matlab.ui.control.CheckBox
         AddSynergyGroupButton           matlab.ui.control.Button
         EditSynergySetsLabel            matlab.ui.control.Label
         EditNCPCostTermsLabel           matlab.ui.control.Label
@@ -135,6 +136,8 @@ classdef NCPBase < matlab.apps.AppBase
         activation_muscle_groups string = [];
         normalized_fiber_length_muscle_groups string = [];
         synergyGroups string = [];
+        % Held as the text true or false, as the element is written.
+        enforce_bilateral_symmetry string = "false"
 
         MuscleTendonLengthInitialization handle = ...
             MuscleTendonLengthInitializationClass();
@@ -204,6 +207,7 @@ classdef NCPBase < matlab.apps.AppBase
         RCNLSynergyListener
         synergyGroupsListener
         enableMtliListener
+        enforceBilateralSymmetryListener
         mtliCostTermListener
 
     end
@@ -272,6 +276,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.enableMtliListener = addlistener(app.MuscleTendonLengthInitialization, ...
                 'is_enabled', 'PostSet', ...
                 @(src, event)updateEnableMtliBox(app));
+
+            app.enforceBilateralSymmetryListener = addlistener(app, ...
+                'enforce_bilateral_symmetry', 'PostSet', ...
+                @(src, event)updateEnforceBilateralSymmetryBox(app));
 
             app.ncpCostTermListener = addlistener(app, ...
                 'RCNLCostTerm', 'PostSet', ...
@@ -350,6 +358,13 @@ classdef NCPBase < matlab.apps.AppBase
         function updateEnableMtliBox(app)
             app.EnableMTLICheckBox.Value = strcmp( ...
                 app.MuscleTendonLengthInitialization.is_enabled, 'true');
+        end
+
+        function updateEnforceBilateralSymmetryBox(app)
+            app.EnforceBilateralSynergyVectorSymmetryCheckBox.Value = ...
+                strcmpi(app.enforce_bilateral_symmetry, "true");
+            app.validateSynergyGroups();
+            app.updateRunButton();
         end
 
         function updatePassiveDataDirectory(app)
@@ -584,12 +599,41 @@ classdef NCPBase < matlab.apps.AppBase
                     isValid = false;
                 end
             end
+            messages = strings(0, 1);
             if ~isValid
-                setGuiFieldStatus([], app.SynergyGroupsStatus, "error", ...
-                    "Number of synergies must be a valid number " + ...
-                    "greater than zero for each synergy set.");
-            else
+                messages(end + 1) = "Number of synergies must be a " + ...
+                    "valid number greater than zero for each synergy set.";
+            end
+            % prepareNcpInitialValues shares one set of weights between the
+            % two legs, so it throws for any other number of groups and
+            % asserts that both groups use the same number of synergies
+            if strcmpi(app.enforce_bilateral_symmetry, "true")
+                % A count already reported as invalid is not compared,
+                % so one bad cell does not raise two messages
+                countsValid = isValid;
+                if length(app.RCNLSynergy) ~= 2
+                    messages(end + 1) = "Enforcing bilateral synergy " + ...
+                        "vector symmetry requires exactly two synergy " + ...
+                        "groups (" + length(app.RCNLSynergy) + " defined).";
+                    isValid = false;
+                elseif countsValid && app.RCNLSynergy{1}.num_synergies ~= ...
+                        app.RCNLSynergy{2}.num_synergies
+                    addStyle(app.SynergyGroupsTable, ...
+                        uistyle('BackgroundColor', [1.00 0.67 0.67]), ...
+                        'row', [1 2]);
+                    messages(end + 1) = "Enforcing bilateral synergy " + ...
+                        "vector symmetry requires both synergy groups " + ...
+                        "to have the same number of synergies (" + ...
+                        app.RCNLSynergy{1}.num_synergies + " and " + ...
+                        app.RCNLSynergy{2}.num_synergies + ").";
+                    isValid = false;
+                end
+            end
+            if isValid
                 setGuiFieldStatus([], app.SynergyGroupsStatus, "none");
+            else
+                setGuiFieldStatus([], app.SynergyGroupsStatus, "error", ...
+                    strjoin(messages, newline));
             end
             app.synergyGroupsValid = isValid;
         end
@@ -887,6 +931,12 @@ classdef NCPBase < matlab.apps.AppBase
             app.updateRunButton();
         end
 
+        % Value changed function: EnforceBilateralSynergyVectorSymmetryCheckBox
+        function EnforceBilateralSynergyVectorSymmetryCheckBoxValueChanged(app, event)
+            app.enforce_bilateral_symmetry = boolToString( ...
+                app.EnforceBilateralSynergyVectorSymmetryCheckBox.Value);
+        end
+
         % Value changed function: PassiveDataDirectoryEditField
         function PassiveDataDirectoryEditFieldValueChanged(app, event)
             app.MuscleTendonLengthInitialization. ...
@@ -999,6 +1049,8 @@ classdef NCPBase < matlab.apps.AppBase
             settingsTree = loadGuiSettings(settingsFileName, ...
                 'NeuralControlPersonalizationTool');
             app.applySettingsStruct(settingsTree);
+            app.enforce_bilateral_symmetry = boolToString( ...
+                strcmpi(app.enforce_bilateral_symmetry, "true"));
             app.loadOptimizationParams(settingsTree);
 
             if isfield(settingsTree, 'MuscleTendonLengthInitialization')
@@ -1078,6 +1130,8 @@ classdef NCPBase < matlab.apps.AppBase
                 settingsTree.RCNLSynergySet.RCNLSynergy{i} = ...
                     app.RCNLSynergy{i}.toStruct();
             end
+            settingsTree.enforce_bilateral_symmetry = ...
+                app.enforce_bilateral_symmetry;
 
             settingsTree = app.setOptimizationParams(settingsTree);
             settingsTree = formatGuiDataForXml(settingsTree);
@@ -1140,6 +1194,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.makeDefaultCostTermSet();
             app.RCNLSynergy = cell(0);
             app.synergyGroups = string([]);
+            app.enforce_bilateral_symmetry = "false";
             app.NCPMaxAllowableErrorEditField.Value = [];
 
             app.objectSelectionType = "";
@@ -1469,7 +1524,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.SynergyGroupsTable.CellEditCallback = createCallbackFcn(app, @SynergyGroupsTableCellEdit, true);
             app.SynergyGroupsTable.Multiselect = 'off';
             app.SynergyGroupsTable.FontSize = 18;
-            app.SynergyGroupsTable.Position = [89 28 481 168];
+            app.SynergyGroupsTable.Position = [89 64 481 168];
 
             % Create EditNCPCostTermsLabel
             app.EditNCPCostTermsLabel = uilabel(app.CostTermsTab);
@@ -1484,7 +1539,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.EditSynergySetsLabel.HorizontalAlignment = 'center';
             app.EditSynergySetsLabel.FontSize = 18;
             app.EditSynergySetsLabel.FontWeight = 'bold';
-            app.EditSynergySetsLabel.Position = [89 211 583 23];
+            app.EditSynergySetsLabel.Position = [89 247 583 23];
             app.EditSynergySetsLabel.Text = 'Edit Synergy Sets';
 
             % Create AddSynergyGroupButton
@@ -1493,7 +1548,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.AddSynergyGroupButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.AddSynergyGroupButton.FontSize = 18;
             app.AddSynergyGroupButton.FontColor = [1 1 1];
-            app.AddSynergyGroupButton.Position = [580 97 173 30];
+            app.AddSynergyGroupButton.Position = [580 133 173 30];
             app.AddSynergyGroupButton.Text = 'Add Synergy Group';
 
             % Create NCPCostTermsStatus
@@ -1505,8 +1560,16 @@ classdef NCPBase < matlab.apps.AppBase
             % Create SynergyGroupsStatus
             app.SynergyGroupsStatus = uiimage(app.CostTermsTab);
             app.SynergyGroupsStatus.Visible = 'off';
-            app.SynergyGroupsStatus.Position = [465 207 28 30];
+            app.SynergyGroupsStatus.Position = [465 243 28 30];
             app.SynergyGroupsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create EnforceBilateralSynergyVectorSymmetryCheckBox
+            app.EnforceBilateralSynergyVectorSymmetryCheckBox = uicheckbox(app.CostTermsTab);
+            app.EnforceBilateralSynergyVectorSymmetryCheckBox.ValueChangedFcn = createCallbackFcn(app, @EnforceBilateralSynergyVectorSymmetryCheckBoxValueChanged, true);
+            app.EnforceBilateralSynergyVectorSymmetryCheckBox.Text = 'Enforce Bilateral Synergy Vector Symmetry';
+            app.EnforceBilateralSynergyVectorSymmetryCheckBox.FontSize = 18;
+            app.EnforceBilateralSynergyVectorSymmetryCheckBox.FontWeight = 'bold';
+            app.EnforceBilateralSynergyVectorSymmetryCheckBox.Position = [89 22 400 22];
 
             % Create AuxiliaryTab
             app.AuxiliaryTab = uitab(app.TabGroup);
