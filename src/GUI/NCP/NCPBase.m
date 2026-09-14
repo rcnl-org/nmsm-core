@@ -454,6 +454,40 @@ classdef NCPBase < matlab.apps.AppBase
             app.RCNLCostTerm = makeDefaultCostTerms(app.costTermStruct);
         end
 
+        % Lays a file's cost terms over the default set, so the table
+        % keeps every term NCP supports even when a file lists only some
+        % of them. activation_minimization is the old name for
+        % muscle_activation_minimization - calcNcpCost treats the two as
+        % one term - so it loads, and is saved, under the new name. A
+        % term of a type NCP does not define is kept rather than dropped.
+        function costTerms = mergeLoadedCostTerms(app, loaded)
+            costTerms = makeDefaultCostTerms(app.costTermStruct);
+            types = string(cellfun(@(term) char(term.type), costTerms, ...
+                'UniformOutput', false));
+            filled = false(size(costTerms));
+            for i = 1 : numel(loaded)
+                term = loaded{i};
+                if isempty(term)
+                    continue
+                end
+                if strcmp(term.type, "activation_minimization")
+                    term.type = "muscle_activation_minimization";
+                end
+                index = find(types == string(term.type), 1);
+                if isempty(index)
+                    costTerms{end + 1} = term; %#ok<AGROW>
+                    continue
+                end
+                % A file may list the old and new name side by side; the
+                % enabled one is kept
+                if filled(index) && ~strcmp(term.is_enabled, 'true')
+                    continue
+                end
+                costTerms{index} = term;
+                filled(index) = true;
+            end
+        end
+
         function initMtli(app)
             % Reset in place so listeners on the MTLI object stay valid
             app.MuscleTendonLengthInitialization.reset();
@@ -1368,7 +1402,7 @@ classdef NCPBase < matlab.apps.AppBase
 
             costTerms = parseCostTermsFromStruct(settingsTree);
             if ~isempty(costTerms)
-                app.RCNLCostTerm = costTerms;
+                app.RCNLCostTerm = app.mergeLoadedCostTerms(costTerms);
             end
 
             if isfield(settingsTree, 'RCNLSynergySet') && ...
