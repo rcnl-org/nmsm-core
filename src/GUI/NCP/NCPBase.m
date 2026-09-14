@@ -45,6 +45,10 @@ classdef NCPBase < matlab.apps.AppBase
         Mask1                           matlab.ui.control.Image
         TabGroup                        matlab.ui.container.TabGroup
         InputsTab                       matlab.ui.container.Tab
+        InitialGuessDirectoryLabel      matlab.ui.control.Label
+        InitialGuessDirEditField        matlab.ui.control.EditField
+        InitialGuessDirSearchButton     matlab.ui.control.Button
+        InitialGuessDirStatus           matlab.ui.control.Image
         MTPResultsDirectoryLabel        matlab.ui.control.Label
         MTPResultsDirEditField          matlab.ui.control.EditField
         MTPResultsDirSearchButton       matlab.ui.control.Button
@@ -129,6 +133,7 @@ classdef NCPBase < matlab.apps.AppBase
         input_osimx_file string = "";
         data_directory string = "";
         mtp_results_directory string = "";
+        initial_guess_directory string = "";
         results_directory string = "";
         coordinate_list string = [];
         trial_prefixes string = [];
@@ -192,6 +197,7 @@ classdef NCPBase < matlab.apps.AppBase
         OsimXFileListener
         DataDirectoryListener
         MtpResultsDirectoryListener
+        InitialGuessDirectoryListener
         NcpResultsDirectoryListener
         CoordinateListListener
         trialPrefixesListener
@@ -229,6 +235,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.MtpResultsDirectoryListener = addlistener(app, ...
                 'mtp_results_directory', 'PostSet', ...
                 @(src,event)MtpResultsDirectoryListenerFunction(app));
+
+            app.InitialGuessDirectoryListener = addlistener(app, ...
+                'initial_guess_directory', 'PostSet', ...
+                @(src,event)InitialGuessDirectoryListenerFunction(app));
 
             app.NcpResultsDirectoryListener = addlistener(app, ...
                 'results_directory', 'PostSet', ...
@@ -326,6 +336,12 @@ classdef NCPBase < matlab.apps.AppBase
             app.updateRunButton();
         end
 
+        function InitialGuessDirectoryListenerFunction(app)
+            app.InitialGuessDirEditField.Value = getRelativePath( ...
+                app.initialGuessDirectory());
+            app.updateRunButton();
+        end
+
         function NcpResultsDirectoryListenerFunction(app)
             app.NCPResultsDirectoryEditField.Value = getRelativePath( ...
                 app.results_directory);
@@ -387,7 +403,7 @@ classdef NCPBase < matlab.apps.AppBase
 
         function refreshAdvancedSettingsTable(app)
             Options = app.advancedSettingNames;
-            Values = arrayfun(@formatGuiNumber, app.advancedSettingValues);
+            Values = app.advancedSettingValues;
             app.AdvancedSettingsTable.Data = table(Options, Values);
             app.updateRunButton();
         end
@@ -518,7 +534,9 @@ classdef NCPBase < matlab.apps.AppBase
                 app.InputDataEditField, app.InputDataStatus, ...
                 app.InputDataStatus, ...
                 @(value, field, icon)validateDataDirectoryGui(value, ...
-                ["EMGData", "IDData", "MAData"], field, icon));
+                ["IDData", "MAData"], field, icon));
+            % parseMtpNcpSharedInputs reads trials from IDData and
+            % muscle data from MAData; NCP never reads EMGData
             if app.dataDirectoryValid
                 app.parseTrialPrefixes();
             end
@@ -532,12 +550,238 @@ classdef NCPBase < matlab.apps.AppBase
             end
         end
 
+        % Optional unless activation_tracking is enabled: calcNcpCost
+        % tracks the activations MTP wrote there, and throws without them
         function validateMtpResultsDirectory(app)
-            app.mtpResultsDirectoryValid = validateRequiredFieldGui( ...
-                app.mtp_results_directory, ...
-                "MTP results directory is required.", ...
-                app.MTPResultsDirEditField, app.MTPResultsDirStatus, ...
-                app.MTPResultsDirStatus, @validateFileExistsGui);
+            directory = strjoin(string(app.mtp_results_directory), " ");
+            field = app.MTPResultsDirEditField;
+            icon = app.MTPResultsDirStatus;
+            if app.isNcpCostTermEnabled("activation_tracking")
+                app.mtpResultsDirectoryValid = validateRequiredFieldGui( ...
+                    directory, "MTP results directory is required " + ...
+                    "while the activation_tracking cost term is " + ...
+                    "enabled.", field, icon, icon, @validateFileExistsGui);
+            elseif strcmp(directory, "")
+                clearGuiError(field, icon);
+                app.mtpResultsDirectoryValid = true;
+            else
+                app.mtpResultsDirectoryValid = validateFileExistsGui( ...
+                    directory, field, icon);
+            end
+        end
+
+        % Optional unless an MTP results directory is given: loadMtpData
+        % reads MTP's muscle properties from the .osimx file and throws
+        % without one. A file that is given keeps the status
+        % validateInputOsimxFile set, so it is not parsed again every
+        % time the Run button is updated.
+        function isValid = validateOsimxRequirement(app)
+            isValid = true;
+            if ~strcmp(strjoin(string(app.input_osimx_file), " "), "")
+                return
+            end
+            clearGuiError(app.InputOsimxFileEditField, ...
+                app.InputOsimxFileStatus);
+            if strcmp(strjoin(string(app.mtp_results_directory), " "), "")
+                return
+            end
+            throwGuiRequired("An input .osimx file is required when an " + ...
+                "MTP results directory is given.", [], ...
+                app.InputOsimxFileStatus);
+            isValid = false;
+        end
+
+        function isEnabled = isNcpCostTermEnabled(app, type)
+            isEnabled = false;
+            for i = 1 : length(app.RCNLCostTerm)
+                term = app.RCNLCostTerm{i};
+                if ~isempty(term) && strcmp(term.type, type) && ...
+                        strcmp(term.is_enabled, 'true')
+                    isEnabled = true;
+                    return
+                end
+            end
+        end
+
+        % Follows parseNcpInitialGuessDirectory. While
+        % optimize_synergy_vectors is true the directory is optional, and
+        % a folder that does not exist only falls back to normal
+        % initialization. While it is false the synergy weights are
+        % fixed, so the directory is required and must hold
+        % synergyWeights.sto. Either way, a folder holding neither
+        % synergyWeights.sto nor synergy commands, or commands for only
+        % some of the trials, stops the run.
+        function isValid = validateInitialGuessDirectory(app)
+            isValid = true;
+            directory = app.initialGuessDirectory();
+            field = app.InitialGuessDirEditField;
+            icon = app.InitialGuessDirStatus;
+            % The parser treats anything but true as false
+            fixedWeights = ~strcmpi(strtrim(app.advancedSettingValue( ...
+                "optimize_synergy_vectors")), "true");
+            if strcmp(directory, "")
+                clearGuiError(field, icon);
+                if fixedWeights
+                    throwGuiRequired("An initial guess directory holding " + ...
+                        "synergyWeights.sto is required while " + ...
+                        "optimize_synergy_vectors is false.", [], icon);
+                    isValid = false;
+                end
+                return
+            end
+            if ~isfolder(directory)
+                if fixedWeights
+                    throwGuiError("The initial guess directory does not " + ...
+                        "exist. It must hold synergyWeights.sto while " + ...
+                        "optimize_synergy_vectors is false.", field, icon);
+                    isValid = false;
+                else
+                    throwGuiWarning("The initial guess directory does " + ...
+                        "not exist, so NCP will use its normal " + ...
+                        "initialization.", field, icon);
+                end
+                return
+            end
+            hasWeights = isfile(fullfile(directory, "synergyWeights.sto"));
+            trials = app.ncpTrialNames();
+            if isempty(trials)
+                % Without a valid data directory the trials are not
+                % known yet, so any commands file counts for now
+                hasCommands = ~isempty(dir(fullfile(directory, ...
+                    "*_synergyCommands.sto")));
+            else
+                trialHasCommands = arrayfun(@(trial) isfile(fullfile( ...
+                    directory, trial + "_synergyCommands.sto")), trials);
+                if any(trialHasCommands) && ~all(trialHasCommands)
+                    throwGuiError("The initial guess directory has " + ...
+                        "synergy commands for some trials but not all. " + ...
+                        "Missing: " + strjoin(trials(~trialHasCommands), ...
+                        ", "), field, icon);
+                    isValid = false;
+                    return
+                end
+                hasCommands = all(trialHasCommands);
+            end
+            if ~hasWeights && ~hasCommands
+                throwGuiError("The initial guess directory contains " + ...
+                    "neither synergyWeights.sto nor synergy commands " + ...
+                    "(<trial>_synergyCommands.sto) to load.", field, icon);
+                isValid = false;
+                return
+            end
+            if fixedWeights && ~hasWeights
+                throwGuiError("The initial guess directory does not " + ...
+                    "contain synergyWeights.sto, which is required " + ...
+                    "while optimize_synergy_vectors is false.", field, icon);
+                isValid = false;
+                return
+            end
+            clearGuiError(field, icon);
+        end
+
+        % The trials NCP will run, found as parseMtpNcpSharedInputs
+        % finds them: the IDData files, narrowed to the trial prefixes
+        function trials = ncpTrialNames(app)
+            trials = strings(1, 0);
+            if ~app.dataDirectoryValid
+                return
+            end
+            files = dir(fullfile(app.data_directory, "IDData", "*.sto"));
+            if isempty(files)
+                return
+            end
+            [~, names] = fileparts(string({files.name}));
+            if ~isEmptyStringList(app.trial_prefixes)
+                names = names(startsWith(names, app.trial_prefixes));
+            end
+            trials = unique(names);
+        end
+
+        % formatXmlDataForGui splits loaded text on spaces, so a folder
+        % with a space in its name arrives in pieces. Every use of the
+        % property goes through here to put it back together.
+        function directory = initialGuessDirectory(app)
+            directory = strjoin(string(app.initial_guess_directory), " ");
+        end
+
+        % Reports every invalid row on the status icon and on the table's
+        % own tooltip, as Treatment Optimization's advanced table does.
+        % The shared validateAdvancedSettingsGui only accepts positive
+        % numbers, and JMP and MTP rely on that rule, so it is not used.
+        function isValid = validateAdvancedSettings(app)
+            settingsTable = app.AdvancedSettingsTable;
+            if numel(app.advancedSettingValues) ~= ...
+                    numel(app.advancedSettingNames)
+                % startupFcn has not assigned the defaults yet
+                isValid = false;
+                return
+            end
+            removeStyle(settingsTable);
+            settingsTable.Tooltip = '';
+            messages = strings(0, 1);
+            for i = 1 : numel(app.advancedSettingNames)
+                [rowValid, reason] = app.advancedSettingProblem(i);
+                if rowValid
+                    continue
+                end
+                addStyle(settingsTable, uistyle('BackgroundColor', ...
+                    [1.00 0.67 0.67]), 'row', i);
+                messages(end + 1) = app.advancedSettingNames(i) + ": " + ...
+                    reason + " (default " + ...
+                    app.defaultAdvancedSettingValues(i) + ")"; %#ok<AGROW>
+            end
+            isValid = isempty(messages);
+            if isValid
+                setGuiFieldStatus([], app.AdvancedSettingsStatus, "none");
+                return
+            end
+            message = strjoin(messages, newline);
+            settingsTable.Tooltip = message;
+            setGuiFieldStatus([], app.AdvancedSettingsStatus, "error", ...
+                message);
+        end
+
+        % States the rule a row breaks, if any, following how the NCP
+        % parser reads each value. The reason states only the rule;
+        % validateAdvancedSettings adds the setting name and default.
+        function [isValid, reason] = advancedSettingProblem(app, index)
+            isValid = true;
+            reason = "";
+            value = strtrim(app.advancedSettingValues(index));
+            number = str2double(value);
+            switch app.advancedSettingKinds(index)
+                case "positive"
+                    isValid = ~isnan(number) && number > 0;
+                    reason = "must be a positive number";
+                case "boolean"
+                    % Written lowercase on save, so any casing is accepted
+                    isValid = any(strcmpi(value, ["true", "false"]));
+                    reason = "must be true or false";
+                case "nodes"
+                    % Synergy commands are fitted with a cubic B-spline,
+                    % and BSplineMatrices throws for fewer than four nodes
+                    isValid = ~isnan(number) && number >= 4 && ...
+                        mod(number, 1) == 0;
+                    reason = "must be a whole number of at least 4";
+                case "normalizationMethod"
+                    isValid = any(strcmpi(value, ["sum", "magnitude"]));
+                    reason = "must be sum or magnitude";
+                case "normalizationValue"
+                    % NaN leaves loaded weights at their existing scale
+                    isValid = strcmpi(value, "NaN") || ...
+                        (~isnan(number) && number > 0);
+                    reason = "must be a positive number, or NaN for no " + ...
+                        "normalization target";
+            end
+        end
+
+        function value = advancedSettingValue(app, name)
+            index = find(app.advancedSettingNames == name, 1);
+            if numel(app.advancedSettingValues) < index
+                value = app.defaultAdvancedSettingValues(index);
+            else
+                value = app.advancedSettingValues(index);
+            end
         end
 
         function validateNcpResultsDirectory(app)
@@ -638,21 +882,37 @@ classdef NCPBase < matlab.apps.AppBase
             app.synergyGroupsValid = isValid;
         end
 
+        % Sets every status icon from the current settings, so a new or
+        % reset window shows which fields are required before anything
+        % has been edited. updateRunButton covers the conditional and
+        % table-backed checks.
+        function validateAllFields(app)
+            app.validateInputModelFile();
+            app.validateInputOsimxFile();
+            app.validateDataDirectory();
+            app.validateNcpResultsDirectory();
+            app.validateCoordinateList();
+            app.validateSynergyGroups();
+            app.updateRunButton();
+        end
+
         function updateRunButton(app)
             trialPrefixesValid = app.validateTrialPrefixes();
             costTermsValid = app.validateNCPCostTermsSilent();
             mtliValid = app.validateMtliConfig();
             mtliCostTermsValid = app.validateMtliCostTermsSilent();
             mtliAdvancedValid = app.validateMtliAdvancedSettingsSilent();
-            advancedValid = validateAdvancedSettingsGui( ...
-                app.AdvancedSettingsTable, app.advancedSettingNames, ...
-                app.advancedSettingValues, app.AdvancedSettingsStatus);
+            initialGuessValid = app.validateInitialGuessDirectory();
+            app.validateMtpResultsDirectory();
+            osimxValid = app.validateOsimxRequirement();
+            advancedValid = app.validateAdvancedSettings();
             app.RunButton.Enable = app.inputModelValid && ...
                 app.dataDirectoryValid && app.mtpResultsDirectoryValid && ...
                 app.ncpResultsDirectoryValid && app.coordinateListValid && ...
                 app.synergyGroupsValid && trialPrefixesValid && ...
                 mtliValid && costTermsValid && mtliCostTermsValid && ...
-                mtliAdvancedValid && advancedValid;
+                mtliAdvancedValid && advancedValid && initialGuessValid && ...
+                osimxValid;
             app.updateTabControls();
         end
 
@@ -715,6 +975,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.MuscleGroupsButton.Enable = false;
             app.CostTermsButton.Enable = false;
             app.formatTabButtons()
+            app.validateAllFields()
         end
 
         % Button pushed function: ResetButton
@@ -852,6 +1113,22 @@ classdef NCPBase < matlab.apps.AppBase
             app.mtp_results_directory = folder;
         end
 
+        % Value changed function: InitialGuessDirEditField
+        function InitialGuessDirEditFieldValueChanged(app, event)
+            app.initial_guess_directory = ...
+                getPathFieldValue(app.InitialGuessDirEditField);
+        end
+
+        % Button pushed function: InitialGuessDirSearchButton
+        function InitialGuessDirSearchButtonPushed(app, event)
+            folder = uigetdir("Select a previous NCP or TO results folder");
+            % User hit "Cancel"
+            if isequal(folder, 0)
+                return
+            end
+            app.initial_guess_directory = folder;
+        end
+
         % Value changed function: NCPResultsDirectoryEditField
         function NCPResultsDirectoryEditFieldValueChanged(app, event)
             app.results_directory = ...
@@ -969,7 +1246,7 @@ classdef NCPBase < matlab.apps.AppBase
         % Cell edit callback: AdvancedSettingsTable
         function AdvancedSettingsTableCellEdit(app, event)
             app.advancedSettingValues(event.Indices(1)) = ...
-                str2double(event.NewData);
+                strtrim(string(event.NewData));
         end
 
         % Value changed function: NCPMaxAllowableErrorEditField
@@ -1107,6 +1384,8 @@ classdef NCPBase < matlab.apps.AppBase
                 app.data_directory, settingsFilePath);
             settingsTree.mtp_results_directory = getRelativePath( ...
                 app.mtp_results_directory, settingsFilePath);
+            settingsTree.initial_guess_directory = getRelativePath( ...
+                app.initialGuessDirectory(), settingsFilePath);
             settingsTree.results_directory = getRelativePath( ...
                 app.results_directory, settingsFilePath);
             settingsTree.trial_prefixes = app.trial_prefixes;
@@ -1139,8 +1418,19 @@ classdef NCPBase < matlab.apps.AppBase
 
         function settingsTree = setOptimizationParams(app, settingsTree)
             for i = 1 : length(app.advancedSettingNames)
-                settingsTree.(app.advancedSettingNames(i)) = ...
-                    app.advancedSettingValues(i);
+                value = strtrim(app.advancedSettingValues(i));
+                % An empty element parses as NaN rather than the
+                % default, so a blank row is left out instead
+                if strlength(value) == 0
+                    continue
+                end
+                % getBooleanLogicFromField reads use_casadi with a
+                % case-sensitive strcmp, so these are written lowercase
+                if any(app.advancedSettingKinds(i) == ...
+                        ["boolean", "normalizationMethod"])
+                    value = lower(value);
+                end
+                settingsTree.(app.advancedSettingNames(i)) = value;
             end
         end
 
@@ -1148,7 +1438,14 @@ classdef NCPBase < matlab.apps.AppBase
             values = app.advancedSettingValues;
             for i = 1 : length(app.advancedSettingNames)
                 if isfield(settingsTree, app.advancedSettingNames(i))
-                    values(i) = settingsTree.(app.advancedSettingNames(i));
+                    % formatXmlDataForGui turns numeric text into a
+                    % double and leaves other text as strings
+                    loaded = settingsTree.(app.advancedSettingNames(i));
+                    if isnumeric(loaded)
+                        values(i) = string(loaded);
+                    else
+                        values(i) = strjoin(string(loaded), " ");
+                    end
                 end
             end
             app.advancedSettingValues = values;
@@ -1180,6 +1477,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.input_osimx_file = "";
             app.data_directory = "";
             app.mtp_results_directory = "";
+            app.initial_guess_directory = "";
             app.results_directory = "";
             app.coordinate_list = [];
             app.trial_prefixes = [];
@@ -1201,7 +1499,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.currentSettingsFile = "";
 
             app.advancedSettingValues = app.defaultAdvancedSettingValues;
-            app.updateRunButton();
+            app.validateAllFields();
         end
     end
 
@@ -1261,7 +1559,7 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create InputModelFileStatus
             app.InputModelFileStatus = uiimage(app.InputsTab);
-            app.InputModelFileStatus.Visible = 'off';
+            app.InputModelFileStatus.Visible = 'on';
             app.InputModelFileStatus.Position = [718 516 28 30];
             app.InputModelFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
@@ -1289,7 +1587,7 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create InputOsimxFileStatus
             app.InputOsimxFileStatus = uiimage(app.InputsTab);
-            app.InputOsimxFileStatus.Visible = 'off';
+            app.InputOsimxFileStatus.Visible = 'on';
             app.InputOsimxFileStatus.Position = [718 461 28 30];
             app.InputOsimxFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
@@ -1309,7 +1607,7 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create InputDataStatus
             app.InputDataStatus = uiimage(app.InputsTab);
-            app.InputDataStatus.Visible = 'off';
+            app.InputDataStatus.Visible = 'on';
             app.InputDataStatus.Position = [718 409 28 30];
             app.InputDataStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
@@ -1319,7 +1617,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.ResultsDirectorySearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
             app.ResultsDirectorySearchButton.VerticalAlignment = 'bottom';
             app.ResultsDirectorySearchButton.BackgroundColor = [0.1294 0.1804 0.4];
-            app.ResultsDirectorySearchButton.Position = [678 308 31 30];
+            app.ResultsDirectorySearchButton.Position = [678 253 31 30];
             app.ResultsDirectorySearchButton.Text = '';
 
             % Create NCPResultsDirectoryEditFieldLabel
@@ -1327,18 +1625,18 @@ classdef NCPBase < matlab.apps.AppBase
             app.NCPResultsDirectoryEditFieldLabel.HorizontalAlignment = 'right';
             app.NCPResultsDirectoryEditFieldLabel.FontSize = 18;
             app.NCPResultsDirectoryEditFieldLabel.FontWeight = 'bold';
-            app.NCPResultsDirectoryEditFieldLabel.Position = [10 308 198 30];
+            app.NCPResultsDirectoryEditFieldLabel.Position = [10 253 198 30];
             app.NCPResultsDirectoryEditFieldLabel.Text = 'NCP Results Directory';
 
             % Create NCPResultsDirectoryEditField
             app.NCPResultsDirectoryEditField = uieditfield(app.InputsTab, 'text');
             app.NCPResultsDirectoryEditField.ValueChangedFcn = createCallbackFcn(app, @NCPResultsDirectoryEditFieldValueChanged, true);
-            app.NCPResultsDirectoryEditField.Position = [218 308 450 30];
+            app.NCPResultsDirectoryEditField.Position = [218 253 450 30];
 
             % Create NCPResultsDirectoryStatus
             app.NCPResultsDirectoryStatus = uiimage(app.InputsTab);
-            app.NCPResultsDirectoryStatus.Visible = 'off';
-            app.NCPResultsDirectoryStatus.Position = [718 308 28 30];
+            app.NCPResultsDirectoryStatus.Visible = 'on';
+            app.NCPResultsDirectoryStatus.Position = [718 253 28 30];
             app.NCPResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create InputDataDirectoryEditFieldLabel
@@ -1353,20 +1651,20 @@ classdef NCPBase < matlab.apps.AppBase
             app.CoordinatesListTextArea = uitextarea(app.InputsTab);
             app.CoordinatesListTextArea.Editable = 'off';
             app.CoordinatesListTextArea.FontSize = 18;
-            app.CoordinatesListTextArea.Position = [218 119 385 160];
+            app.CoordinatesListTextArea.Position = [218 64 385 160];
 
             % Create CoordinatesListTextAreaLabel
             app.CoordinatesListTextAreaLabel = uilabel(app.InputsTab);
             app.CoordinatesListTextAreaLabel.HorizontalAlignment = 'right';
             app.CoordinatesListTextAreaLabel.FontSize = 18;
             app.CoordinatesListTextAreaLabel.FontWeight = 'bold';
-            app.CoordinatesListTextAreaLabel.Position = [61 188 147 23];
+            app.CoordinatesListTextAreaLabel.Position = [61 133 147 23];
             app.CoordinatesListTextAreaLabel.Text = 'Coordinates List';
 
             % Create CoordinateListStatus
             app.CoordinateListStatus = uiimage(app.InputsTab);
-            app.CoordinateListStatus.Visible = 'off';
-            app.CoordinateListStatus.Position = [718 184 28 30];
+            app.CoordinateListStatus.Visible = 'on';
+            app.CoordinateListStatus.Position = [718 129 28 30];
             app.CoordinateListStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create CoordinateListEditButton
@@ -1375,7 +1673,7 @@ classdef NCPBase < matlab.apps.AppBase
             app.CoordinateListEditButton.BackgroundColor = [0.1294 0.1804 0.4];
             app.CoordinateListEditButton.FontSize = 18;
             app.CoordinateListEditButton.FontColor = [1 1 1];
-            app.CoordinateListEditButton.Position = [611 184 91 30];
+            app.CoordinateListEditButton.Position = [611 129 91 30];
             app.CoordinateListEditButton.Text = 'Edit';
 
             % Create TrialPrefixesEditFieldLabel
@@ -1383,25 +1681,25 @@ classdef NCPBase < matlab.apps.AppBase
             app.TrialPrefixesEditFieldLabel.HorizontalAlignment = 'right';
             app.TrialPrefixesEditFieldLabel.FontSize = 18;
             app.TrialPrefixesEditFieldLabel.FontWeight = 'bold';
-            app.TrialPrefixesEditFieldLabel.Position = [89 68 117 23];
+            app.TrialPrefixesEditFieldLabel.Position = [89 13 117 23];
             app.TrialPrefixesEditFieldLabel.Text = 'Trial Prefixes';
 
             % Create TrialPrefixesEditField
             app.TrialPrefixesEditField = uieditfield(app.InputsTab, 'text');
             app.TrialPrefixesEditField.ValueChangedFcn = createCallbackFcn(app, @TrialPrefixesEditFieldValueChanged, true);
             app.TrialPrefixesEditField.FontSize = 18;
-            app.TrialPrefixesEditField.Position = [218 64 444 30];
+            app.TrialPrefixesEditField.Position = [218 9 444 30];
 
             % Create TrialPrefixesStatus
             app.TrialPrefixesStatus = uiimage(app.InputsTab);
-            app.TrialPrefixesStatus.Visible = 'off';
-            app.TrialPrefixesStatus.Position = [672 64 28 30];
+            app.TrialPrefixesStatus.Visible = 'on';
+            app.TrialPrefixesStatus.Position = [672 9 28 30];
             app.TrialPrefixesStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create MTPResultsDirStatus
             app.MTPResultsDirStatus = uiimage(app.InputsTab);
-            app.MTPResultsDirStatus.Visible = 'off';
-            app.MTPResultsDirStatus.Position = [718 360 28 30];
+            app.MTPResultsDirStatus.Visible = 'on';
+            app.MTPResultsDirStatus.Position = [718 305 28 30];
             app.MTPResultsDirStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create MTPResultsDirSearchButton
@@ -1410,21 +1708,49 @@ classdef NCPBase < matlab.apps.AppBase
             app.MTPResultsDirSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
             app.MTPResultsDirSearchButton.VerticalAlignment = 'bottom';
             app.MTPResultsDirSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
-            app.MTPResultsDirSearchButton.Position = [678 360 31 30];
+            app.MTPResultsDirSearchButton.Position = [678 305 31 30];
             app.MTPResultsDirSearchButton.Text = '';
 
             % Create MTPResultsDirEditField
             app.MTPResultsDirEditField = uieditfield(app.InputsTab, 'text');
             app.MTPResultsDirEditField.ValueChangedFcn = createCallbackFcn(app, @MTPResultsDirEditFieldValueChanged, true);
-            app.MTPResultsDirEditField.Position = [218 360 450 30];
+            app.MTPResultsDirEditField.Position = [218 305 450 30];
 
             % Create MTPResultsDirectoryLabel
             app.MTPResultsDirectoryLabel = uilabel(app.InputsTab);
             app.MTPResultsDirectoryLabel.HorizontalAlignment = 'right';
             app.MTPResultsDirectoryLabel.FontSize = 18;
             app.MTPResultsDirectoryLabel.FontWeight = 'bold';
-            app.MTPResultsDirectoryLabel.Position = [10 360 198 30];
+            app.MTPResultsDirectoryLabel.Position = [10 305 198 30];
             app.MTPResultsDirectoryLabel.Text = 'MTP Results Directory';
+
+            % Create InitialGuessDirStatus
+            app.InitialGuessDirStatus = uiimage(app.InputsTab);
+            app.InitialGuessDirStatus.Visible = 'on';
+            app.InitialGuessDirStatus.Position = [718 357 28 30];
+            app.InitialGuessDirStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create InitialGuessDirSearchButton
+            app.InitialGuessDirSearchButton = uibutton(app.InputsTab, 'push');
+            app.InitialGuessDirSearchButton.ButtonPushedFcn = createCallbackFcn(app, @InitialGuessDirSearchButtonPushed, true);
+            app.InitialGuessDirSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
+            app.InitialGuessDirSearchButton.VerticalAlignment = 'bottom';
+            app.InitialGuessDirSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.InitialGuessDirSearchButton.Position = [678 357 31 30];
+            app.InitialGuessDirSearchButton.Text = '';
+
+            % Create InitialGuessDirEditField
+            app.InitialGuessDirEditField = uieditfield(app.InputsTab, 'text');
+            app.InitialGuessDirEditField.ValueChangedFcn = createCallbackFcn(app, @InitialGuessDirEditFieldValueChanged, true);
+            app.InitialGuessDirEditField.Position = [218 357 450 30];
+
+            % Create InitialGuessDirectoryLabel
+            app.InitialGuessDirectoryLabel = uilabel(app.InputsTab);
+            app.InitialGuessDirectoryLabel.HorizontalAlignment = 'right';
+            app.InitialGuessDirectoryLabel.FontSize = 18;
+            app.InitialGuessDirectoryLabel.FontWeight = 'bold';
+            app.InitialGuessDirectoryLabel.Position = [11 357 197 30];
+            app.InitialGuessDirectoryLabel.Text = 'Initial Guess Directory';
 
             % Create MuscleGroupsTab
             app.MuscleGroupsTab = uitab(app.TabGroup);
@@ -1553,13 +1879,13 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create NCPCostTermsStatus
             app.NCPCostTermsStatus = uiimage(app.CostTermsTab);
-            app.NCPCostTermsStatus.Visible = 'off';
+            app.NCPCostTermsStatus.Visible = 'on';
             app.NCPCostTermsStatus.Position = [459 520 28 30];
             app.NCPCostTermsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create SynergyGroupsStatus
             app.SynergyGroupsStatus = uiimage(app.CostTermsTab);
-            app.SynergyGroupsStatus.Visible = 'off';
+            app.SynergyGroupsStatus.Visible = 'on';
             app.SynergyGroupsStatus.Position = [465 243 28 30];
             app.SynergyGroupsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
@@ -1585,7 +1911,7 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create PassiveDataDirectoryStatus
             app.PassiveDataDirectoryStatus = uiimage(app.AuxiliaryTab);
-            app.PassiveDataDirectoryStatus.Visible = 'off';
+            app.PassiveDataDirectoryStatus.Visible = 'on';
             app.PassiveDataDirectoryStatus.Position = [719 468 28 30];
             app.PassiveDataDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
@@ -1718,13 +2044,13 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create MtliCostTermsStatus
             app.MtliCostTermsStatus = uiimage(app.AuxiliaryTab);
-            app.MtliCostTermsStatus.Visible = 'off';
+            app.MtliCostTermsStatus.Visible = 'on';
             app.MtliCostTermsStatus.Position = [274 338 28 30];
             app.MtliCostTermsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create MtliAdvancedSettingsStatus
             app.MtliAdvancedSettingsStatus = uiimage(app.AuxiliaryTab);
-            app.MtliAdvancedSettingsStatus.Visible = 'off';
+            app.MtliAdvancedSettingsStatus.Visible = 'on';
             app.MtliAdvancedSettingsStatus.Position = [673 338 28 30];
             app.MtliAdvancedSettingsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
@@ -1744,7 +2070,7 @@ classdef NCPBase < matlab.apps.AppBase
 
             % Create AdvancedSettingsStatus
             app.AdvancedSettingsStatus = uiimage(app.AdvancedTab);
-            app.AdvancedSettingsStatus.Visible = 'off';
+            app.AdvancedSettingsStatus.Visible = 'on';
             app.AdvancedSettingsStatus.Position = [371 510 28 30];
             app.AdvancedSettingsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
