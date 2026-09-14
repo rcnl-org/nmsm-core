@@ -51,7 +51,23 @@ optimizerOptions = prepareOptimizerOptions(params, app);
 [optimizerOptions, cancelCleanup] = addOptimizationCancelButton( ...
     optimizerOptions, params.maxIterations, "Optimizing NCP", app);
 
-if strcmpi(inputs.synergy_vector_normalization_method,'sum')
+
+if ~inputs.optimize_synergy_vectors
+    % weights are fixed, not part of the design vector
+    % no weight normalization constraints to build
+    if params.useCasadi
+        derivatives = prepareNcpCasadiDerivatives(inputs, params, ...
+            numDesignVariables, []);
+        optimizerOptions = applyCasadiOptimizerOptions(optimizerOptions, ...
+            derivatives);
+        finalValues = fmincon(derivatives.costFcn, initialValues, [], [], ...
+            [], [], lowerBounds, upperbounds, [], optimizerOptions);
+    else
+        finalValues = fmincon(@(values)computeNeuralControlCostFunction(values, ...
+            inputs, params), initialValues, [], [], [], [], lowerBounds, ...
+            upperbounds, [], optimizerOptions);
+    end
+elseif strcmpi(inputs.synergy_vector_normalization_method,'sum')
     % linear constraints
     if params.useCasadi
         derivatives = prepareNcpCasadiDerivatives(inputs, params, ...
