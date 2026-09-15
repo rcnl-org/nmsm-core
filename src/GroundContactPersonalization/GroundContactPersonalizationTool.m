@@ -4,7 +4,13 @@
 % such that an xml file can be passed and the resulting computation can be
 % completed according to the instructions of that file.
 %
-% (string) -> (None)
+% The optional second argument is the GUI's run window. When one is
+% given the stage labels are driven as the run moves through parsing,
+% optimizing, and saving, and the window's Cancel button can stop the
+% solver. Omitting it leaves every one of those calls a no-op, so a
+% scripted run behaves exactly as before.
+%
+% (string, App) -> (None)
 % Run GroundContactPersonalization from settings file.
 
 % ----------------------------------------------------------------------- %
@@ -30,10 +36,10 @@
 % ----------------------------------------------------------------------- %
 
 function GroundContactPersonalizationTool(settingsFileName, app)
-tic
 if nargin < 2
     app = [];
 end
+tic
 try
     verifyProjectOpened()
 catch
@@ -43,12 +49,20 @@ settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "GroundContactPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(settingsTree);
-resultsDirectory = getUniqueResultsDirectory(resultsDirectory);
+updateRunStageGui(app, 'ParsingLabel', 'off');
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
+updateRunStageGui(app, 'RunningLabel', 'on');
+% Passed alongside params rather than on it. lsqnonlin's parallel finite
+% differencing serializes the cost function's closure to the workers,
+% and that closure captures params - an app handle in there makes every
+% round warn that an App Designer object cannot be saved.
 results = GroundContactPersonalization(inputs, params, app);
+updateRunStageGui(app, 'RunningLabel', 'off');
+updateRunStageGui(app, 'SavingLabel', 'on');
 saveGroundContactPersonalizationResults(results, params, ...
     resultsDirectory, inputs.inputOsimxFile);
+updateRunStageGui(app, 'SavingLabel', 'off');
 
 adjustedGroundReactions = [false, false];
 for task = 1 : length(params.tasks)

@@ -32,6 +32,10 @@
 function [finalValues, resultsStruct, precalModeledValues] = ...
     getMtpResultsToSave(mtpInputs, params, mtpResults, precalInputs)
 finalValues = makeMtpValuesAsStruct([], mtpResults.primaryValues, zeros(1, 7), mtpResults);
+if length(finalValues.electromechanicalDelays) == 1
+    finalValues.electromechanicalDelays = repmat( ...
+        finalValues.electromechanicalDelays, 1, length(mtpResults.muscleNames));
+end
 if nargin < 4
     precalModeledValues = [];
     precalInputs = [];

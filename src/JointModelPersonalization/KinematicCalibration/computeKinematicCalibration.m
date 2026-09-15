@@ -29,11 +29,8 @@
 
 function optimizedValues = computeKinematicCalibration(model, ...
     markerFileName, functions, desiredError, params, app)
-if nargin < 6
-    app = [];
-end
 params.desiredError = desiredError; %required arg, but passed in params
-optimizerOptions = prepareOptimizerOptions(params); % Prepare optimizer
+optimizerOptions = prepareOptimizerOptions(params, app); % Prepare optimizer
 [optimizerOptions, cancelCleanup] = addOptimizationCancelButton( ...
     optimizerOptions, optimizerOptions.MaxIterations, ...
     "Optimizing Kinematic Calibration", app);
@@ -69,7 +66,7 @@ end
 
 % (struct) -> (struct)
 % Prepare params for outer optimizer for Kinematic Calibration
-function output = prepareOptimizerOptions(params)
+function output = prepareOptimizerOptions(params, app)
 output = optimoptions('lsqnonlin', 'UseParallel', true);
 output.DiffMinChange = valueOrAlternate(params, 'diffMinChange', 1e-4);
 output.OptimalityTolerance = valueOrAlternate(params, ...
@@ -85,5 +82,9 @@ output.MaxIterations = valueOrAlternate(params, ...
 output.Display = valueOrAlternate(params, ...
     'display','iter');
 output.FiniteDifferenceType = 'central';
+if ismethod(app, "CancelOptimizationGui")
+    output.OutputFcn = @(x, optimValues, state, varargin)  ...
+        app.CancelOptimizationGui(x, optimValues, state);
+end
 end
 
