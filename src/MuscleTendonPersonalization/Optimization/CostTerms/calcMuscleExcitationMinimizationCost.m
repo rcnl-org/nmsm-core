@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct, struct) -> (Array of number)
-% returns the deviation cost for electromechanical delay from initial
+% (Array of number, struct) -> (Array of number)
+% returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Max Ahlquist, Spencer Williams, Robert Salati                %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,11 +25,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcElectromechanicalDelayRegularizationCost(values, ...
-    experimentalData, costTerm)
+function cost = calcMuscleExcitationMinimizationCost(modeledValues, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
-maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
-cost = calcDeviationCostTerm( ...
-    values.electromechanicalDelays, errorCenter, ...
-    maximumAllowableError);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.25);
+cost = calcDeviationCostTerm(modeledValues.muscleExcitations, ...
+    errorCenter, maximumAllowableError);
 end

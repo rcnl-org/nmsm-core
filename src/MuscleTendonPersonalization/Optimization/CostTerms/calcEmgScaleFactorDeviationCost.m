@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,12 +25,9 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcElectromechanicalDelayGroupedSimilarityCost( ...
-    values, inputs, costTerm)
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+function cost = calcEmgScaleFactorDeviationCost(values, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0.3);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.2);
-electromechanicalDelayDeviations = calcDifferencesInEmgGroups( ...
-    values.electromechanicalDelays, inputs.emgParameterGroups);
-cost = calcDeviationCostTerm( ...
-    electromechanicalDelayDeviations, errorCenter, maximumAllowableError);
+cost = calcDeviationCostTerm(values.emgScaleFactors, ...
+    errorCenter, maximumAllowableError);
 end

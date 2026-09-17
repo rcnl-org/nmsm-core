@@ -42,6 +42,12 @@ if isfield(inputs, "synergyExtrapolation")
         inputs.muscleNames), ...
         inputs);
 end
+if isfield(inputs, "synergyExtrapolation")
+    inputs.emgParameterGroups = [inputs.collectedEmgChannelGroups, ...
+        inputs.synergyExtrapolation.missingEmgChannelGroups];
+else
+    inputs.emgParameterGroups = inputs.collectedEmgChannelGroups;
+end
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -73,6 +79,8 @@ emgDataFileNames = unique(findFileListFromPrefixList( ...
     fullfile(dataDirectory, "EMGData"), inputs.prefixes));
 [~, inputs.trialNames, ~] = fileparts(emgDataFileNames);
 collectedEmgGroupNames = parseSpaceSeparatedList(tree, 'collected_emg_channel_muscle_groups');
+inputs.collectedEmgChannelGroupNames = collectedEmgGroupNames;
+inputs.collectedEmgChannelGroups = groupNamesToGroups(collectedEmgGroupNames, inputs.model);
 [inputs.fullEmgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
 [~, ~, collectedEmgGroupNamesMembers] = intersect(collectedEmgGroupNames, inputs.emgDataColumnNames, 'stable');
 inputs.emgData = inputs.fullEmgData(:, collectedEmgGroupNamesMembers, :);

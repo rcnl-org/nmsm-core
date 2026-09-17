@@ -33,37 +33,34 @@ for i = 1 : length(params.costTerms)
     if costTerm.isEnabled
         cost = 0;
         switch costTerm.type
-            case "measured_inverse_dynamics_joint_moment"
+            case "inverse_dynamics_load_tracking_SynX"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcSynergyExtrapolationMomentTrackingCost( ...
                         synxModeledValues, ...
                         inputs, ...
                         costTerm);
                 end
-            case "inverse_dynamics_joint_moment"
+            case "inverse_dynamics_load_tracking"
                 cost = calcMomentTrackingCost(modeledValues, ...
                     inputs, costTerm);
-            case "activation_time_constant"
+            case "activation_time_constant_deviation"
                 cost = calcActivationTimeConstantDeviationCost(values, ...
                     costTerm);
-            case "activation_nonlinearity_constant"
+            case "activation_nonlinearity_deviation"
                 cost = calcActivationNonlinearityDeviationCost(values, ...
                     costTerm);
-            case "optimal_muscle_fiber_length"
+            case "optimal_fiber_length_deviation"
                 cost = calcOptimalFiberLengthDeviationCost(values, ...
                     inputs, costTerm);
-            case "tendon_slack_length"
+            case "tendon_slack_length_deviation"
                 cost = calcTendonSlackLengthDeviationCost(values, ...
                     inputs, costTerm);
-            case "emg_scale_factor"
-                cost = calcEmgScaleFactorDevationCost(values, costTerm);
-            case "electromechanical_delay"
-                cost = calcElectromechanicalDelayRegularizationCost( ...
-                    values, inputs, costTerm);
+            case "emg_scale_factor_deviation"
+                cost = calcEmgScaleFactorDeviationCost(values, costTerm);
             case "electromechanical_delay_deviation"
                 cost = calcElectromechanicalDelayDeviationCost(values, ...
                     inputs, costTerm);
-            case "normalized_muscle_fiber_length"
+            case "normalized_fiber_length_deviation"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcNormalizedFiberLengthDeviationCost( ...
                         synxModeledValues, inputs, costTerm);
@@ -71,7 +68,7 @@ for i = 1 : length(params.costTerms)
                     cost = calcNormalizedFiberLengthDeviationCost( ...
                         modeledValues, inputs, costTerm);
                 end
-            case "minimum_normalized_muscle_fiber_length"
+            case "minimum_normalized_fiber_length_deviation"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcMinimumNormalizedFiberLengthMtpDeviationCost( ...
                         synxModeledValues, params, costTerm);
@@ -79,7 +76,7 @@ for i = 1 : length(params.costTerms)
                     cost = calcMinimumNormalizedFiberLengthMtpDeviationCost( ...
                         modeledValues, params, costTerm);
                 end
-            case "maximum_normalized_muscle_fiber_length"
+            case "maximum_normalized_fiber_length_deviation"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcMaximumNormalizedFiberLengthMtpDeviationCost( ...
                         synxModeledValues, params, costTerm);
@@ -87,13 +84,21 @@ for i = 1 : length(params.costTerms)
                     cost = calcMaximumNormalizedFiberLengthMtpDeviationCost( ...
                         modeledValues, params, costTerm);
                 end
-            case "passive_muscle_force"
+            case "passive_force_minimization"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcPassiveForceCost(synxModeledValues, costTerm);
                 else
                     cost = calcPassiveForceCost(modeledValues, costTerm);
                 end
-            case "grouped_normalized_muscle_fiber_length"
+            case "muscle_excitation_minimization"
+                if isfield(inputs, "synergyExtrapolation")
+                    cost = calcMuscleExcitationMinimizationCost( ...
+                        synxModeledValues, costTerm);
+                else
+                    cost = calcMuscleExcitationMinimizationCost( ...
+                        modeledValues, costTerm);
+                end
+            case "grouped_normalized_fiber_length_similarity"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcNormalizedFiberLengthGroupedSimilarityCost( ...
                         synxModeledValues, inputs, costTerm);
@@ -101,26 +106,35 @@ for i = 1 : length(params.costTerms)
                     cost = calcNormalizedFiberLengthGroupedSimilarityCost( ...
                         modeledValues, inputs, costTerm);
                 end
-            case "grouped_emg_scale_factor"
+            case "grouped_emg_scale_factor_similarity"
                 cost = calcEmgScaleFactorGroupedSimilarityCost(values, ...
                     inputs, costTerm);
-            case "grouped_electromechanical_delay"
+            case "grouped_electromechanical_delay_similarity"
                 cost = calcElectromechanicalDelayGroupedSimilarityCost( ...
                     values, inputs, costTerm);
-            case "extrapolated_muscle_activation"
+            case "grouped_activation_time_constant_similarity"
+                cost = calcActivationTimeConstantGroupedSimilarityCost( ...
+                    values, inputs, costTerm);
+            case "grouped_activation_nonlinearity_similarity"
+                cost = calcActivationNonlinearityGroupedSimilarityCost( ...
+                    values, inputs, costTerm);
+            case "activation_similarity"
+                if isfield(inputs, "synergyExtrapolation")
+                    cost = calcActivationSimilarityCost( ...
+                        synxModeledValues, inputs, costTerm);
+                else
+                    cost = calcActivationSimilarityCost( ...
+                        modeledValues, inputs, costTerm);
+                end
+            case "extrapolated_muscle_activation_minimization"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcSynergyExtrapolationMuscleActivationCost( ...
                         synxModeledValues, inputs, costTerm);
                 end
-            case "residual_muscle_activation"
+            case "residual_muscle_activation_minimization"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcResidualMuscleActivationCost( ...
                         synxModeledValues, modeledValues, inputs, costTerm);
-                end
-            case "muscle_excitation_penalty"
-                if isfield(inputs, "synergyExtrapolation")
-                    cost = calcMuscleExcitationPenaltyCost( ...
-                        synxModeledValues, inputs, costTerm);
                 end
             otherwise
                 throw(MException('', 'Cost term %s is not valid for MTP', ...

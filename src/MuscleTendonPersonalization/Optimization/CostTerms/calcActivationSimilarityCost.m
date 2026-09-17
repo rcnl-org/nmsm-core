@@ -1,10 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Penalize differences in EMGScales and electromechanical time delay 
-% differences between grouped muscles
-%
-% (struct, cell array, array of number, array of number, struct) -> (struct)
-% calculates the cost of differences between grouped muscles
+% (Array of number, struct, struct) -> (Array of number)
+% returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -14,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega, Claire V. Hammond                              %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -28,21 +25,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcGroupedMusclePenalties(valuesStruct, ...
-    activationGroups, errorCenters, maxAllowableErrors, cost)
-
-% Penalize violation of EMGScales similarity between grouped muscles
-deviationsEMGScale = calcDifferencesInEmgGroups(findCorrectMtpValues(4, ...
-    valuesStruct) , activationGroups);
-cost.emgScaleGroupedSimilarity = calcDeviationCostTerm( ...
-    deviationsEMGScale, errorCenters(9), maxAllowableErrors(9));
-% Penalize violation of tdelay similarity between grouped muscles
-if size(findCorrectMtpValues(1, valuesStruct), 2) > 2
-    deviationsTdelay = calcDifferencesInEmgGroups(findCorrectMtpValues(1, ...
-        valuesStruct) / 10, activationGroups);
-    cost.tdelayGroupedSimilarity = calcDeviationCostTerm( ...
-        deviationsTdelay, errorCenters(10), maxAllowableErrors(10));
-else
-    cost.tdelayGroupedSimilarity = 0;
+function cost = calcActivationSimilarityCost(modeledValues, inputs, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
+lowestIndex = min(cell2mat(inputs.activationGroups)) - 1;
+index = 1;
+for i = 1:length(inputs.activationGroups)
+    muscleGroup = inputs.activationGroups{i} - lowestIndex;
+    groupActivations = modeledValues.muscleActivations(:, muscleGroup, :);
+    activationMagnitudeDeviation(:, index : index + size(muscleGroup, 2) - 1) = ...
+        calcMeanDifference2D(mean(mean(groupActivations, 1), 3));
+    activationShapeDeviation(:, index : index + size(muscleGroup, 2) - 1, :) = ...
+        calcMeanShapeDeviations(groupActivations);
+    index = index + size(muscleGroup, 2);
 end
+activationMagnitudeDeviationCost = calcDeviationCostTerm( ...
+    activationMagnitudeDeviation, errorCenter, maximumAllowableError);
+activationShapeDeviationCost = calcDeviationCostTerm( ...
+    activationShapeDeviation, errorCenter, maximumAllowableError);
+cost = activationMagnitudeDeviationCost + activationShapeDeviationCost;
 end
