@@ -29,9 +29,6 @@
 % ----------------------------------------------------------------------- %
 
 function outputModel = JointModelPersonalization(inputs, params, app)
-if nargin < 3
-    app = [];
-end
 verifyInputs(inputs);
 verifyParams(params);
 outputModel = Model(inputs.model);
