@@ -51,7 +51,7 @@ inputs.dynamicFrictionCoefficient = ...
 inputs.viscousFrictionCoefficient = ...
     inputs.initialViscousFrictionCoefficient;
 inputs.restingSpringLength = inputs.initialRestingSpringLength;
-if valueOrAlternate(inputs, "parseInitialGuessFromOsimx", false)
+if inputs.parseInitialGuessFromOsimx
     inputs = applyGcpOsimxInitialGuess(inputs);
 end
 inputs.osimVersion = getOpenSimVersion();
