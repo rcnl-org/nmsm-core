@@ -38,7 +38,9 @@ emg = zeros(size(emgSplines, 1), size(emgSplines, 2), size(time, 2));
 for trial = 1:size(emgSplines, 1)
     interpTime = ((time(trial, end) - time(trial, 1)) * ...
         timeIntervalInterp + time(trial, 1));
-    emg(trial, :, :) = ppval(interpTime - timeDelay, ...
-        emgSplines{trial})';
+    for muscle = 1:size(emgSplines, 2)
+        emg(trial, muscle, :) = ppval(interpTime - timeDelay, ...
+            emgSplines{trial, muscle})';
+    end
 end
 end
