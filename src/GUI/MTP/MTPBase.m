@@ -92,6 +92,8 @@ classdef MTPBase < matlab.apps.AppBase
         MTPCostTermsTable          matlab.ui.control.Table
         MTPCostTermsStatus         matlab.ui.control.Image
         MTPDesignVariablesStatus        matlab.ui.control.Image
+        CollectedEmgGroupsStatus        matlab.ui.control.Image
+        MissingEmgGroupsStatus          matlab.ui.control.Image
         MTPErrorCenterEditField    matlab.ui.control.NumericEditField
         ErrorCenterEditField_2Label     matlab.ui.control.Label
         MTPMaxAllowableErrorEditField  matlab.ui.control.NumericEditField
@@ -167,7 +169,9 @@ classdef MTPBase < matlab.apps.AppBase
         MTPSynergyExtrapolation handle = ...
             SynergyExtrapolationClass();
 
-        advancedSettingValues double = [];
+        % Held as text: the table mixes numbers with a boolean, which a
+        % double array cannot hold
+        advancedSettingValues string = [];
 
         objectSelectionType string = "";  % Used to filter in setSelectedObjects
         currentSettingsFile string = "";
@@ -184,8 +188,7 @@ classdef MTPBase < matlab.apps.AppBase
 
     properties (Constant, Access = private)
         designVariables = ...
-            ["Muscle Specific Electromechanical Delays"
-            "Electromechanical Delays"
+            ["Electromechanical Delays"
             "Activation Time Constants"
             "Activation Non-linearity Constants"
             "EMG Scale Factors"
@@ -200,6 +203,7 @@ classdef MTPBase < matlab.apps.AppBase
             "function_tolerance"
             "optimality_tolerance"
             "diff_min_change"
+            "muscle_specific_electromechanical_delays"
             "electromechanical_delay_initial_guess"
             "activation_time_constant_initial_guess"
             "activation_nonlinearity_initial_guess"
@@ -208,19 +212,37 @@ classdef MTPBase < matlab.apps.AppBase
             "tendon_slack_length_scale_factor_initial_guess"]
 
         defaultAdvancedSettingValues = ...
-            [10
-            1000
-            100000000
-            1e-6
-            1e-6
-            1e-6
-            0.0001
-            0.5
-            1.5
-            0.05
-            0.5
-            1
-            1]
+            ["10"
+            "1000"
+            "100000000"
+            "1e-06"
+            "1e-06"
+            "1e-06"
+            "0.0001"
+            "true"
+            "0.5"
+            "1.5"
+            "0.05"
+            "0.5"
+            "1"
+            "1"]
+
+        % The rule each row is checked against; see advancedSettingProblem
+        advancedSettingKinds = ...
+            ["positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "boolean"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"]
     end
 
     properties (Access = private)  % listener handles
@@ -356,24 +378,30 @@ classdef MTPBase < matlab.apps.AppBase
             app.updateRunButton();
         end
 
+        % Cost terms and the required-group checks depend on the group
+        % lists, so each listener also revalidates
         function ActivationGroupsListenerFunction(app)
             app.ActivationMuscleGroupsTextArea.Value = ...
                 strjoin(app.activation_muscle_groups, ", ");
+            app.updateRunButton();
         end
 
         function FiberLengthGroupsListenerFunction(app)
             app.NormalizedFiberLengthMuscleGroupsTextArea.Value = ...
                 strjoin(app.normalized_fiber_length_muscle_groups, ", ");
+            app.updateRunButton();
         end
 
         function MissingEmgGroupsListenerFunction(app)
             app.MissingEMGMuscleGroupsTextArea.Value = ...
                 strjoin(app.missing_emg_channel_muscle_groups, ", ");
+            app.updateRunButton();
         end
 
         function CollectedEmgGroupsListenerFunction(app)
             app.CollectedEMGMuscleGroupsTextArea.Value = ...
                 strjoin(app.collected_emg_channel_muscle_groups, ", ");
+            app.updateRunButton();
         end
 
         function updatePassiveDataDirectory(app)
@@ -396,7 +424,7 @@ classdef MTPBase < matlab.apps.AppBase
 
         function refreshAdvancedSettingsTable(app)
             Options = app.advancedSettingNames;
-            Values = arrayfun(@formatGuiNumber, app.advancedSettingValues);
+            Values = app.advancedSettingValues(:);
             app.AdvancedSettingsTable.Data = table(Options, Values);
             app.updateRunButton();
         end
@@ -539,6 +567,11 @@ classdef MTPBase < matlab.apps.AppBase
 
         function updateTaskIndex(app)
             app.MTPTasksTable.Selection = app.taskIndex;
+            % A selected row of the previous task's cost terms could be
+            % past the end of this task's list
+            app.MTPCostTermsTable.Selection = [];
+            app.MTPMaxAllowableErrorEditField.Value = [];
+            app.MTPErrorCenterEditField.Value = [];
             app.updateMTPTasksListBox()
             app.updateDesignVariablesTable()
             app.updateMTPCostTermsTable()
@@ -629,7 +662,9 @@ classdef MTPBase < matlab.apps.AppBase
             % MTP task list
             settingsTree.MTPTaskList = struct("MTPTask", cell(1));
             for i = 1 : length(app.MTPTask)
-                settingsTree.MTPTaskList.MTPTask{i} = app.MTPTask{i}.toStruct();
+                settingsTree.MTPTaskList.MTPTask{i} = ...
+                    app.MTPTask{i}.toStruct(boolToString( ...
+                    app.muscleSpecificElectromechanicalDelays()));
             end
 
             % Optimization parameters
@@ -639,8 +674,18 @@ classdef MTPBase < matlab.apps.AppBase
 
         function settingsTree = setOptimizationParams(app, settingsTree)
             for i = 1 : length(app.advancedSettingNames)
-                settingsTree.(app.advancedSettingNames(i)) = ...
-                    app.advancedSettingValues(i);
+                % Written into each task instead; see makeMTPSettingsStruct
+                if app.advancedSettingNames(i) == ...
+                        "muscle_specific_electromechanical_delays"
+                    continue
+                end
+                value = strtrim(app.advancedSettingValues(i));
+                % An empty element parses as NaN rather than the
+                % default, so a blank row is left out instead
+                if strlength(value) == 0
+                    continue
+                end
+                settingsTree.(app.advancedSettingNames(i)) = value;
             end
         end
 
@@ -648,8 +693,13 @@ classdef MTPBase < matlab.apps.AppBase
             app.resetAllFields();
             cd(fileparts(settingsFileName));
             app.currentSettingsFile = settingsFileName;
-            settingsTree = loadGuiSettings(settingsFileName, ...
-                'MuscleTendonPersonalizationTool');
+            % Renames legacy cost terms while the raw tree still has the
+            % file version, then formats it as loadGuiSettings does
+            settingsTree = xml2struct(settingsFileName);
+            settingsTree = mtpBackwardsCompatibility(settingsTree);
+            settingsTree = formatXmlDataForGui( ...
+                settingsTree.NMSMPipelineDocument. ...
+                MuscleTendonPersonalizationTool);
             app.applySettingsStruct(settingsTree);
             app.loadOptimizationParams(settingsTree);
 
@@ -680,6 +730,7 @@ classdef MTPBase < matlab.apps.AppBase
                     app.createDefaultTask();
                     app.MTPTask{i}.loadFromStruct(tasks{i});
                 end
+                app.loadMuscleSpecificElectromechanicalDelays(tasks);
                 app.updateMTPCostTermsTable();
             end
             app.updateMTPTasksListBox();
@@ -689,11 +740,53 @@ classdef MTPBase < matlab.apps.AppBase
         function loadOptimizationParams(app, settingsTree)
             values = app.advancedSettingValues;
             for i = 1 : length(app.advancedSettingNames)
+                % Read from the tasks instead; see loadSettingsFile
+                if app.advancedSettingNames(i) == ...
+                        "muscle_specific_electromechanical_delays"
+                    continue
+                end
                 if isfield(settingsTree, app.advancedSettingNames(i))
-                    values(i) = settingsTree.(app.advancedSettingNames(i));
+                    % formatXmlDataForGui turns numeric text into a
+                    % double and leaves other text as strings
+                    loaded = settingsTree.(app.advancedSettingNames(i));
+                    if isnumeric(loaded)
+                        values(i) = string(loaded);
+                    else
+                        values(i) = strjoin(string(loaded), " ");
+                    end
                 end
             end
             app.advancedSettingValues = values;
+        end
+
+        % The core reads the setting from each task but applies it to all
+        % of them if any task has it on, so the GUI holds a single value.
+        function loadMuscleSpecificElectromechanicalDelays(app, tasks)
+            values = strings(1, 0);
+            for i = 1 : numel(tasks)
+                if isfield(tasks{i}, 'muscle_specific_electromechanical_delays')
+                    values(end + 1) = string( ...
+                        tasks{i}.muscle_specific_electromechanical_delays); %#ok<AGROW>
+                end
+            end
+            if isempty(values)
+                return
+            end
+            index = find(app.advancedSettingNames == ...
+                "muscle_specific_electromechanical_delays", 1);
+            app.advancedSettingValues(index) = ...
+                boolToString(any(strcmpi(values, "true")));
+        end
+
+        function isEnabled = muscleSpecificElectromechanicalDelays(app)
+            index = find(app.advancedSettingNames == ...
+                "muscle_specific_electromechanical_delays", 1);
+            if numel(app.advancedSettingValues) < index
+                isEnabled = true;
+                return
+            end
+            isEnabled = strcmpi(strtrim(app.advancedSettingValues(index)), ...
+                "true");
         end
 
         function applySettingsStruct(app, settingsTree)
@@ -840,38 +933,61 @@ classdef MTPBase < matlab.apps.AppBase
                 app.PassiveDataDirectoryStatus);
         end
 
+        % Errors (red) stop a task from running; warnings (yellow) mark
+        % cost terms that are legal but have no effect. See
+        % mtpCostTermProblem for the rules.
         function isValid = validateAllTasksSilent(app)
             isValid = true;
             setGuiFieldStatus([], app.MTPTasksStatus, "none");
+            setGuiFieldStatus([], app.MTPCostTermsStatus, "none");
             removeStyle(app.MTPTasksTable);
+            removeStyle(app.MTPCostTermsTable);
+            app.MTPMaxAllowableErrorEditField.BackgroundColor = [1 1 1];
             if isempty(app.MTPTask)
                 setGuiFieldStatus([], app.MTPTasksStatus, "error", ...
                     "At least one task must be enabled to run.");
                 isValid = false;
                 return
             end
-            currentTaskValid = validateCostTermsGui( ...
-                app.MTPTask{app.taskIndex}.RCNLCostTerm, ...
-                app.MTPCostTermsTable, ...
-                app.MTPMaxAllowableErrorEditField, [], "cost term");
             hasEnabledTask = false;
+            hasWarning = false;
+            taskMessages = strings(0, 1);
             for i = 1:length(app.MTPTask)
-                if ~strcmp(app.MTPTask{i}.is_enabled, 'true')
+                task = app.MTPTask{i};
+                if ~strcmp(task.is_enabled, 'true')
                     continue
                 end
                 hasEnabledTask = true;
-                if i == app.taskIndex
-                    taskValid = currentTaskValid;
-                else
-                    [hasEnabledCostTerm, invalidCostTerms] = ...
-                        checkCostTermsValid(app.MTPTask{i}.RCNLCostTerm);
-                    taskValid = hasEnabledCostTerm && isempty(invalidCostTerms);
+                problems = app.taskCostTermProblems(task);
+                errorCount = sum(strcmp([problems.severity], "error"));
+                warningCount = sum(strcmp([problems.severity], "warning"));
+                hasEnabledTerm = app.hasEnabledCostTerm(task);
+                reasons = strings(1, 0);
+                if ~hasEnabledTerm
+                    reasons(end + 1) = "no cost term is enabled"; %#ok<AGROW>
                 end
-                taskValid = taskValid && app.MTPTask{i}.anyParameterEnabled();
-                if ~taskValid
+                if errorCount > 0
+                    reasons(end + 1) = errorCount + ...
+                        " cost term(s) cannot be used"; %#ok<AGROW>
+                end
+                if ~task.anyParameterEnabled()
+                    reasons(end + 1) = "no design variable is selected"; %#ok<AGROW>
+                end
+                if ~isempty(reasons)
                     isValid = false;
                     addStyle(app.MTPTasksTable, ...
-                        uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', i);
+                        uistyle('BackgroundColor', [1.00 0.67 0.67]), ...
+                        'row', i);
+                    taskMessages(end + 1, 1) = "  - " + string(task.name) + ...
+                        ": " + strjoin(reasons, "; "); %#ok<AGROW>
+                elseif warningCount > 0
+                    hasWarning = true;
+                    addStyle(app.MTPTasksTable, ...
+                        uistyle('BackgroundColor', [1.00 1.00 0.67]), ...
+                        'row', i);
+                end
+                if i == app.taskIndex
+                    app.showCostTermProblems(task, problems, hasEnabledTerm);
                 end
             end
             if ~hasEnabledTask
@@ -882,10 +998,187 @@ classdef MTPBase < matlab.apps.AppBase
             end
             if ~isValid
                 setGuiFieldStatus([], app.MTPTasksStatus, "error", ...
-                    "One or more tasks have errors. Check that " + ...
-                    "each enabled task has at least one design variable, " + ...
-                    "one enabled cost term, and a max allowable error " + ...
-                    "greater than zero for each enabled cost term.");
+                    ["One or more tasks have errors:"; taskMessages]);
+            elseif hasWarning
+                setGuiFieldStatus([], app.MTPTasksStatus, "warning", ...
+                    "Some tasks have cost term warnings. Select a " + ...
+                    "highlighted task to see them.");
+            end
+        end
+
+        function hasEnabledTerm = hasEnabledCostTerm(~, task)
+            hasEnabledTerm = false;
+            for i = 1 : numel(task.RCNLCostTerm)
+                term = task.RCNLCostTerm{i};
+                if ~isempty(term) && strcmp(term.is_enabled, 'true')
+                    hasEnabledTerm = true;
+                    return
+                end
+            end
+        end
+
+        % The settings a task's cost terms depend on, for mtpCostTermProblem
+        function context = costTermContext(app, task)
+            context.activationGroups = app.activation_muscle_groups;
+            context.fiberLengthGroups = app.normalized_fiber_length_muscle_groups;
+            context.collectedEmgGroups = app.collected_emg_channel_muscle_groups;
+            context.missingEmgGroups = app.missing_emg_channel_muscle_groups;
+            context.synxEnabled = strcmp( ...
+                app.MTPSynergyExtrapolation.is_enabled, 'true');
+            context.muscleSpecificDelays = ...
+                app.muscleSpecificElectromechanicalDelays();
+            context.isOptimized.electromechanicalDelays = strcmp( ...
+                task.optimize_electromechanical_delays, 'true');
+            context.isOptimized.activationTimeConstants = strcmp( ...
+                task.optimize_activation_time_constants, 'true');
+            context.isOptimized.activationNonlinearityConstants = strcmp( ...
+                task.optimize_activation_nonlinearity_constants, 'true');
+            context.isOptimized.emgScaleFactors = strcmp( ...
+                task.optimize_emg_scale_factors, 'true');
+            context.isOptimized.optimalFiberLengths = strcmp( ...
+                task.optimize_optimal_fiber_lengths, 'true');
+            context.isOptimized.tendonSlackLengths = strcmp( ...
+                task.optimize_tendon_slack_lengths, 'true');
+        end
+
+        function problems = taskCostTermProblems(app, task)
+            problems = struct('index', {}, 'type', {}, 'severity', {}, ...
+                'reason', {});
+            context = app.costTermContext(task);
+            for i = 1 : numel(task.RCNLCostTerm)
+                term = task.RCNLCostTerm{i};
+                if isempty(term)
+                    continue
+                end
+                [severity, reason] = mtpCostTermProblem(term, context);
+                if strlength(severity) > 0
+                    problems(end + 1) = struct('index', i, ...
+                        'type', string(term.type), 'severity', severity, ...
+                        'reason', reason); %#ok<AGROW>
+                end
+            end
+        end
+
+        % Highlights the selected task's problem rows and explains them on
+        % the icon beside the cost terms table
+        function showCostTermProblems(app, task, problems, hasEnabledTerm)
+            errorColor = [1.00 0.67 0.67];
+            warningColor = [1.00 1.00 0.67];
+            errorLines = strings(0, 1);
+            warningLines = strings(0, 1);
+            selection = app.MTPCostTermsTable.Selection;
+            for i = 1 : numel(problems)
+                problem = problems(i);
+                line = "  - " + problem.type + ": " + problem.reason;
+                if problem.severity == "error"
+                    color = errorColor;
+                    errorLines(end + 1, 1) = line; %#ok<AGROW>
+                else
+                    color = warningColor;
+                    warningLines(end + 1, 1) = line; %#ok<AGROW>
+                end
+                addStyle(app.MTPCostTermsTable, ...
+                    uistyle('BackgroundColor', color), 'row', problem.index);
+                maxError = task.RCNLCostTerm{problem.index}.max_allowable_error;
+                if isscalar(selection) && selection == problem.index && ...
+                        ~(isnumeric(maxError) && isscalar(maxError) && ...
+                        maxError > 0)
+                    app.MTPMaxAllowableErrorEditField.BackgroundColor = ...
+                        errorColor;
+                end
+            end
+            if ~hasEnabledTerm
+                setGuiFieldStatus([], app.MTPCostTermsStatus, "error", ...
+                    "At least one cost term must be enabled.");
+            elseif ~isempty(errorLines)
+                message = ["Highlighted cost terms cannot be used:"; ...
+                    errorLines];
+                if ~isempty(warningLines)
+                    message = [message; "Warnings:"; warningLines];
+                end
+                setGuiFieldStatus([], app.MTPCostTermsStatus, "error", ...
+                    message);
+            elseif ~isempty(warningLines)
+                setGuiFieldStatus([], app.MTPCostTermsStatus, "warning", ...
+                    ["Highlighted cost terms may have no effect:"; ...
+                    warningLines]);
+            end
+        end
+
+        % MTP cannot run without EMG channels
+        function isValid = validateCollectedEmgGroups(app)
+            isValid = ~isEmptyStringList(app.collected_emg_channel_muscle_groups);
+            if isValid
+                setGuiFieldStatus([], app.CollectedEmgGroupsStatus, "none");
+            else
+                setGuiFieldStatus([], app.CollectedEmgGroupsStatus, ...
+                    "required", "At least one collected EMG muscle " + ...
+                    "group is required.");
+            end
+        end
+
+        % Synergy extrapolation reconstructs the muscles in these groups
+        function isValid = validateMissingEmgGroups(app)
+            isValid = ~strcmp(app.MTPSynergyExtrapolation.is_enabled, 'true') ...
+                || ~isEmptyStringList(app.missing_emg_channel_muscle_groups);
+            if isValid
+                setGuiFieldStatus([], app.MissingEmgGroupsStatus, "none");
+            else
+                setGuiFieldStatus([], app.MissingEmgGroupsStatus, ...
+                    "required", "At least one missing EMG muscle group " + ...
+                    "is required while synergy extrapolation is enabled.");
+            end
+        end
+
+        % Reports every invalid row on the status icon and on the table's
+        % own tooltip. The shared validateAdvancedSettingsGui only accepts
+        % positive numbers, and JMP relies on that rule, so it is not used.
+        function isValid = validateAdvancedSettings(app)
+            settingsTable = app.AdvancedSettingsTable;
+            if numel(app.advancedSettingValues) ~= ...
+                    numel(app.advancedSettingNames)
+                % startupFcn has not assigned the defaults yet
+                isValid = false;
+                return
+            end
+            removeStyle(settingsTable);
+            settingsTable.Tooltip = '';
+            messages = strings(0, 1);
+            for i = 1 : numel(app.advancedSettingNames)
+                [rowValid, reason] = app.advancedSettingProblem(i);
+                if rowValid
+                    continue
+                end
+                addStyle(settingsTable, uistyle('BackgroundColor', ...
+                    [1.00 0.67 0.67]), 'row', i);
+                messages(end + 1, 1) = app.advancedSettingNames(i) + ...
+                    ": " + reason + " (default " + ...
+                    app.defaultAdvancedSettingValues(i) + ")"; %#ok<AGROW>
+            end
+            isValid = isempty(messages);
+            if isValid
+                setGuiFieldStatus([], app.AdvancedSettingsStatus, "none");
+                return
+            end
+            message = strjoin(messages, newline);
+            settingsTable.Tooltip = message;
+            setGuiFieldStatus([], app.AdvancedSettingsStatus, "error", ...
+                message);
+        end
+
+        % States the rule a row breaks, if any. The reason states only the
+        % rule; validateAdvancedSettings adds the setting name and default.
+        function [isValid, reason] = advancedSettingProblem(app, index)
+            value = strtrim(app.advancedSettingValues(index));
+            switch app.advancedSettingKinds(index)
+                case "boolean"
+                    % Written lowercase on save, so any casing is accepted
+                    isValid = any(strcmpi(value, ["true", "false"]));
+                    reason = "must be true or false";
+                otherwise
+                    number = str2double(value);
+                    isValid = ~isnan(number) && number > 0;
+                    reason = "must be a positive number";
             end
         end
 
@@ -894,14 +1187,15 @@ classdef MTPBase < matlab.apps.AppBase
             mtliValid = app.validateMtliConfig();
             auxValid = app.validateAuxToolsSilent();
             trialPrefixesValid = app.validateTrialPrefixes();
-            advancedValid = validateAdvancedSettingsGui( ...
-                app.AdvancedSettingsTable, app.advancedSettingNames, ...
-                app.advancedSettingValues, app.AdvancedSettingsStatus);
+            advancedValid = app.validateAdvancedSettings();
             coordinatesValid = app.validateCoordinateList();
+            collectedEmgValid = app.validateCollectedEmgGroups();
+            missingEmgValid = app.validateMissingEmgGroups();
             app.RunButton.Enable = app.inputModelValid && ...
                 app.dataDirectoryValid && app.resultsDirectoryValid && ...
                 tasksValid && mtliValid && auxValid && ...
-                trialPrefixesValid && advancedValid && coordinatesValid;
+                trialPrefixesValid && advancedValid && coordinatesValid && ...
+                collectedEmgValid && missingEmgValid;
             app.updateTabControls();
         end
 
@@ -1408,8 +1702,13 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Cell edit callback: AdvancedSettingsTable
         function AdvancedSettingsTableCellEdit(app, event)
-            app.advancedSettingValues(event.Indices(1)) = ...
-                str2double(event.NewData);
+            index = event.Indices(1);
+            value = strtrim(string(event.NewData));
+            % Written lowercase on save, so any casing is accepted
+            if app.advancedSettingKinds(index) == "boolean"
+                value = lower(value);
+            end
+            app.advancedSettingValues(index) = value;
         end
     end
 
@@ -1705,6 +2004,18 @@ classdef MTPBase < matlab.apps.AppBase
             app.EditCollectedEmgGroupsButton.FontColor = [1 1 1];
             app.EditCollectedEmgGroupsButton.Position = [665 172 91 30];
             app.EditCollectedEmgGroupsButton.Text = 'Edit';
+
+            % Create CollectedEmgGroupsStatus
+            app.CollectedEmgGroupsStatus = uiimage(app.MuscleGroupsTab);
+            app.CollectedEmgGroupsStatus.Visible = 'off';
+            app.CollectedEmgGroupsStatus.Position = [696 206 28 30];
+            app.CollectedEmgGroupsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create MissingEmgGroupsStatus
+            app.MissingEmgGroupsStatus = uiimage(app.MuscleGroupsTab);
+            app.MissingEmgGroupsStatus.Visible = 'off';
+            app.MissingEmgGroupsStatus.Position = [696 311 28 30];
+            app.MissingEmgGroupsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
             % Create MTPTasksTab
             app.MTPTasksTab = uitab(app.TabGroup);

@@ -118,7 +118,7 @@ for i = 1 : length(params.costTerms)
             case "grouped_activation_nonlinearity_similarity"
                 cost = calcActivationNonlinearityGroupedSimilarityCost( ...
                     values, inputs, costTerm);
-            case "activation_similarity"
+            case "grouped_activation_similarity"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcActivationSimilarityCost( ...
                         synxModeledValues, inputs, costTerm);
