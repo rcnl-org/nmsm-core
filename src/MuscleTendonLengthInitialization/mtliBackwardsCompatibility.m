@@ -36,9 +36,6 @@ if ~isstruct(settingsTree) || ~isfield(settingsTree, "NMSMPipelineDocument")
     return
 end
 document = settingsTree.NMSMPipelineDocument;
-if ~isLegacySettingsFileVersion(document)
-    return
-end
 renames = mtliCostTermRenames();
 for toolName = ["MuscleTendonPersonalizationTool", ...
         "NeuralControlPersonalizationTool"]

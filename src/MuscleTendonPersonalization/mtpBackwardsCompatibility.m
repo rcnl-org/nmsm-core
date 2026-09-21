@@ -33,6 +33,7 @@
 % ----------------------------------------------------------------------- %
 
 function settingsTree = mtpBackwardsCompatibility(settingsTree)
+settingsTree = mtliBackwardsCompatibility(settingsTree);
 if ~isstruct(settingsTree) || ~isfield(settingsTree, "NMSMPipelineDocument")
     return
 end
@@ -61,7 +62,6 @@ if isfield(tool, "MTPSynergyExtrapolation")
 end
 document.MuscleTendonPersonalizationTool = tool;
 settingsTree.NMSMPipelineDocument = document;
-settingsTree = mtliBackwardsCompatibility(settingsTree);
 end
 
 function renames = taskCostTermRenames()
