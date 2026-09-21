@@ -68,6 +68,26 @@ function errorMessage = parseOsimxFileForErrors(input_osimx_file, input_model_fi
     errorMessage = "Osimx file could not parse.";
 end
 
+% Passes [] when the file has no RCNLMuscleSet, so an app does not keep the
+% muscles of a previous file
+function parseOsimxFileMuscles(app, osimx)
+    muscles = [];
+    if isfield(osimx, "muscles")
+        muscles = osimx.muscles;
+    end
+    app.setOsimxMuscles(muscles);
+end
+
+% Passes an empty cell when the file has no RCNLContactSurfaceSet
+function parseOsimxFileContactSurfaces(app, osimx)
+    contactSurfaces = {};
+    if isfield(osimx, "groundContact") && ...
+            isfield(osimx.groundContact, "contactSurface")
+        contactSurfaces = osimx.groundContact.contactSurface;
+    end
+    app.setOsimxContactSurfaces(contactSurfaces);
+end
+
 function parseOsimxFileSynergies(app, osimx)
     if ~isfield(osimx, "synergyGroups")
         return

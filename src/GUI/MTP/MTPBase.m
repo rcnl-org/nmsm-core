@@ -167,7 +167,7 @@ classdef MTPBase < matlab.apps.AppBase
         MTPSynergyExtrapolation handle = ...
             SynergyExtrapolationClass();
 
-        advancedSettingValues double = [];
+        advancedSettingValues string = [];
 
         objectSelectionType string = "";  % Used to filter in setSelectedObjects
         currentSettingsFile string = "";
@@ -180,12 +180,26 @@ classdef MTPBase < matlab.apps.AppBase
         timePoints double = [];
         idLabels string = [];
         emgLabels string = [];
+
+        % What the input osimx file holds, kept from its last parse so
+        % the initial guess checks can rerun without parsing it again.
+        % osimxMuscles is parseOsimxFile's muscles struct, or [] when
+        % the file has no RCNLMuscleSet or did not parse.
+        osimxParseFailed logical = false
+        osimxParseMessage string = "";
+        osimxMuscles = [];
+
+        % The coordinates each muscle of the model crosses, index parallel
+        % to modelMuscleNames, and the model they were read from; see
+        % findRunMuscleNames
+        modelMuscleNames string = [];
+        modelMuscleCoordinates cell = cell(0)
+        modelMusclesSource string = "";
     end
 
     properties (Constant, Access = private)
         designVariables = ...
-            ["Muscle Specific Electromechanical Delays"
-            "Electromechanical Delays"
+            ["Electromechanical Delays"
             "Activation Time Constants"
             "Activation Non-linearity Constants"
             "EMG Scale Factors"
@@ -200,6 +214,8 @@ classdef MTPBase < matlab.apps.AppBase
             "function_tolerance"
             "optimality_tolerance"
             "diff_min_change"
+            "muscle_specific_electromechanical_delays"
+            "parse_initial_guess_from_osimx"
             "electromechanical_delay_initial_guess"
             "activation_time_constant_initial_guess"
             "activation_nonlinearity_initial_guess"
@@ -207,20 +223,42 @@ classdef MTPBase < matlab.apps.AppBase
             "optimal_fiber_length_scale_factor_initial_guess"
             "tendon_slack_length_scale_factor_initial_guess"]
 
+        % Held as text, since two rows are booleans. The two booleans
+        % default to parseMtpInitialGuess's own fallbacks.
         defaultAdvancedSettingValues = ...
-            [10
-            1000
-            100000000
-            1e-6
-            1e-6
-            1e-6
-            0.0001
-            0.5
-            1.5
-            0.05
-            0.5
-            1
-            1]
+            ["10"
+            "1000"
+            "100000000"
+            "1e-06"
+            "1e-06"
+            "1e-06"
+            "0.0001"
+            "true"
+            "false"
+            "0.5"
+            "1.5"
+            "0.05"
+            "0.5"
+            "1"
+            "1"]
+
+        % The rule each row is checked against; see advancedSettingProblem
+        advancedSettingKinds = ...
+            ["positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "boolean"
+            "boolean"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"]
     end
 
     properties (Access = private)  % listener handles
@@ -321,6 +359,9 @@ classdef MTPBase < matlab.apps.AppBase
             app.InputModelFileEditField.Value = getRelativePath( ...
                 app.input_model_file);
             app.validateInputModelFile();
+            % The .osimx is parsed against the model, so it has to be
+            % rechecked whenever the model changes
+            app.validateInputOsimxFile();
             app.updateRunButton();
         end
 
@@ -396,7 +437,7 @@ classdef MTPBase < matlab.apps.AppBase
 
         function refreshAdvancedSettingsTable(app)
             Options = app.advancedSettingNames;
-            Values = arrayfun(@formatGuiNumber, app.advancedSettingValues);
+            Values = app.advancedSettingValues;
             app.AdvancedSettingsTable.Data = table(Options, Values);
             app.updateRunButton();
         end
@@ -639,8 +680,19 @@ classdef MTPBase < matlab.apps.AppBase
 
         function settingsTree = setOptimizationParams(app, settingsTree)
             for i = 1 : length(app.advancedSettingNames)
-                settingsTree.(app.advancedSettingNames(i)) = ...
-                    app.advancedSettingValues(i);
+                value = strtrim(app.advancedSettingValues(i));
+                % An empty element parses as NaN rather than the
+                % default, so a blank row is left out instead
+                if strlength(value) == 0
+                    continue
+                end
+                % parseMtpInitialGuess reads
+                % muscle_specific_electromechanical_delays with a
+                % case-sensitive strcmp, so booleans are written lowercase
+                if app.advancedSettingKinds(i) == "boolean"
+                    value = lower(value);
+                end
+                settingsTree.(app.advancedSettingNames(i)) = value;
             end
         end
 
@@ -690,10 +742,59 @@ classdef MTPBase < matlab.apps.AppBase
             values = app.advancedSettingValues;
             for i = 1 : length(app.advancedSettingNames)
                 if isfield(settingsTree, app.advancedSettingNames(i))
-                    values(i) = settingsTree.(app.advancedSettingNames(i));
+                    % formatXmlDataForGui turns numeric text into a
+                    % double and leaves other text as strings
+                    loaded = settingsTree.(app.advancedSettingNames(i));
+                    if isnumeric(loaded)
+                        values(i) = string(loaded);
+                    else
+                        values(i) = strjoin(string(loaded), " ");
+                    end
+                end
+            end
+            if ~isfield(settingsTree, ...
+                    "muscle_specific_electromechanical_delays")
+                legacy = app.legacyMuscleSpecificDelays(settingsTree);
+                if strlength(legacy) > 0
+                    values(app.advancedSettingNames == ...
+                        "muscle_specific_electromechanical_delays") = legacy;
                 end
             end
             app.advancedSettingValues = values;
+        end
+
+        % muscle_specific_electromechanical_delays used to be set per
+        % task, and MTP used muscle specific delays if any enabled task
+        % asked for them. It is now read only from the base of the file,
+        % so an older file's per task values are carried over by the same
+        % rule. Returns "" when no enabled task sets it.
+        function value = legacyMuscleSpecificDelays(~, settingsTree)
+            value = "";
+            if ~isfield(settingsTree, 'MTPTaskList') || ...
+                    ~isfield(settingsTree.MTPTaskList, 'MTPTask')
+                return
+            end
+            tasks = settingsTree.MTPTaskList.MTPTask;
+            if isstruct(tasks)
+                tasks = {tasks};
+            elseif ~iscell(tasks)
+                return
+            end
+            for i = 1 : length(tasks)
+                task = tasks{i};
+                if ~isstruct(task) || ~isfield(task, ...
+                        'muscle_specific_electromechanical_delays') || ...
+                        (isfield(task, 'is_enabled') && ...
+                        ~strcmpi(string(task.is_enabled), "true"))
+                    continue
+                end
+                if strcmpi(string(task. ...
+                        muscle_specific_electromechanical_delays), "true")
+                    value = "true";
+                    return
+                end
+                value = "false";
+            end
         end
 
         function applySettingsStruct(app, settingsTree)
@@ -763,20 +864,269 @@ classdef MTPBase < matlab.apps.AppBase
                 @(value, field, icon)validateOsimFileGui(app, value, field, icon));
         end
 
+        % Parses the osimx file and keeps what the initial guess checks
+        % need from it; showInputOsimxFileStatus draws the result
         function validateInputOsimxFile(app)
-            if strcmp(app.input_osimx_file, "")
-                setGuiFieldStatus(app.InputOsimxFileEditField, ...
-                    app.InputOsimxFileStatus, "none");
+            app.osimxMuscles = [];
+            app.osimxParseFailed = false;
+            app.osimxParseMessage = "";
+            if ~strcmp(app.input_osimx_file, "")
+                % Fills osimxMuscles through setOsimxMuscles
+                [app.osimxParseFailed, message] = parseOsimxFileGui( ...
+                    app, app.input_osimx_file, app.input_model_file);
+                app.osimxParseMessage = string(message);
+            end
+            app.showInputOsimxFileStatus();
+        end
+
+        % The file's own problem comes first, and the initial guess
+        % problems about the file are added to it. A file that exists but
+        % cannot be parsed is invalid whether or not the initial guess is
+        % read from it, because writeMuscleTendonPersonalizationOsimxFile
+        % parses it too and would stop the run after optimizing. A file
+        % that does not exist keeps its error icon without blocking Run,
+        % since MTP then writes a new osimx instead.
+        function isValid = showInputOsimxFileStatus(app)
+            [messages, isError, onFile] = app.osimxInitialGuessProblems();
+            messages = messages(onFile);
+            isError = isError(onFile);
+            isValid = ~(app.osimxParseFailed && ...
+                isfile(app.input_osimx_file));
+            if ~isValid && ~any(isError)
+                % When the initial guess is read from the file, its own
+                % message already says the run stops on it
+                messages = ["MTP also parses the input osimx file " + ...
+                    "when writing its results, so the run would stop " + ...
+                    "after optimizing."; messages(:)];
+            end
+            status = "none";
+            if app.osimxParseFailed
+                status = "error";
+                messages = [app.osimxParseMessage; messages(:)];
+            end
+            if status == "none" && ~isempty(messages)
+                status = "warning";
+                if any(isError)
+                    status = "error";
+                end
+            end
+            setGuiFieldStatus(app.InputOsimxFileEditField, ...
+                app.InputOsimxFileStatus, status, strjoin(messages, newline));
+        end
+
+        % Problems with reading the initial guess from the osimx file,
+        % each following what MTP does at run time. isError marks the one
+        % that stops the run, a file that exists but cannot be parsed;
+        % the rest are the cases where MTP falls back to, or overwrites,
+        % part of the initial guess. onFile marks the ones about the file
+        % itself, which are also shown beside it.
+        function [messages, isError, onFile] = osimxInitialGuessProblems(app)
+            messages = strings(0, 1);
+            isError = false(0, 1);
+            onFile = false(0, 1);
+            if ~strcmpi(strtrim(app.advancedSettingValue( ...
+                    "parse_initial_guess_from_osimx")), "true")
                 return
             end
-            [errorFlag, message] = parseOsimxFileGui(app, app.input_osimx_file, ...
-                app.input_model_file);
-            if errorFlag
-                setGuiFieldStatus(app.InputOsimxFileEditField, ...
-                    app.InputOsimxFileStatus, "error", message);
+            if strcmp(app.input_osimx_file, "") || ...
+                    ~isfile(app.input_osimx_file)
+                messages(end + 1) = "parse_initial_guess_from_osimx " + ...
+                    "is true but input_osimx_file is missing, so the " + ...
+                    "default initial guesses will be used.";
+                isError(end + 1) = false;
+                onFile(end + 1) = true;
+                return
+            end
+            if app.osimxParseFailed
+                messages(end + 1) = "parse_initial_guess_from_osimx " + ...
+                    "is true, so MTP parses the input osimx file " + ...
+                    "before running and will stop on this file.";
+                isError(end + 1) = true;
+                onFile(end + 1) = true;
+                return
+            end
+            if isempty(app.osimxMuscles)
+                messages(end + 1) = "The input osimx file contains no " + ...
+                    "RCNLMuscle elements, so the default initial " + ...
+                    "guesses will be used.";
+                isError(end + 1) = false;
+                onFile(end + 1) = true;
+                return
+            end
+            osimxNames = string(fieldnames(app.osimxMuscles));
+            runMuscles = app.findRunMuscleNames();
+            if isempty(runMuscles)
+                % No coordinates yet, so every muscle is assumed to be
+                % in the run
+                usedNames = osimxNames;
             else
-                setGuiFieldStatus(app.InputOsimxFileEditField, ...
-                    app.InputOsimxFileStatus, "none");
+                usedNames = intersect(osimxNames, runMuscles, 'stable');
+                if isempty(usedNames)
+                    messages(end + 1) = "None of the " + ...
+                        numel(osimxNames) + " muscles in the input " + ...
+                        "osimx file cross the selected coordinates, " + ...
+                        "so the default initial guesses will be used.";
+                    isError(end + 1) = false;
+                    onFile(end + 1) = true;
+                    return
+                end
+            end
+            if strcmp(app.MuscleTendonLengthInitialization.is_enabled, ...
+                    'true')
+                messages(end + 1) = "MuscleTendonLengthInitialization " + ...
+                    "and parse_initial_guess_from_osimx are both " + ...
+                    "enabled. The MuscleTendonLengthInitialization " + ...
+                    "initial guess will be overwritten for muscles " + ...
+                    "found in the osimx file.";
+                isError(end + 1) = false;
+                onFile(end + 1) = false;
+            end
+            if ~strcmpi(strtrim(app.advancedSettingValue( ...
+                    "muscle_specific_electromechanical_delays")), ...
+                    "true") && any(arrayfun(@(name) isfield( ...
+                    app.osimxMuscles.(name), "electromechanicalDelay"), ...
+                    usedNames))
+                messages(end + 1) = "muscle_specific_electromechanical" + ...
+                    "_delays is false but the osimx file has " + ...
+                    "per-muscle electromechanical delays, so their " + ...
+                    "mean will be the shared initial guess.";
+                isError(end + 1) = false;
+                onFile(end + 1) = false;
+            end
+        end
+
+        % The muscles MTP personalizes are the ones getMusclesFromCoordinates
+        % finds: muscles that apply force and have a path point on a body
+        % moved by a selected coordinate. That function looks the
+        % coordinates up again for every path point, which takes seconds
+        % on a full model, so here each body is looked up once and the
+        % result is kept until the model changes. Returns [] when the
+        % model or coordinates are missing.
+        function names = findRunMuscleNames(app)
+            names = string([]);
+            if ~app.inputModelValid || isEmptyStringList(app.coordinate_list)
+                return
+            end
+            if app.modelMusclesSource ~= app.input_model_file
+                app.readModelMuscleCoordinates();
+            end
+            crosses = cellfun(@(coordinates) any(ismember(coordinates, ...
+                app.coordinate_list)), app.modelMuscleCoordinates);
+            names = app.modelMuscleNames(crosses);
+        end
+
+        function readModelMuscleCoordinates(app)
+            app.modelMuscleNames = string([]);
+            app.modelMuscleCoordinates = cell(0);
+            app.modelMusclesSource = app.input_model_file;
+            try
+                model = Model(app.input_model_file);
+            catch
+                return
+            end
+            muscles = model.getForceSet().getMuscles();
+            names = strings(1, muscles.getSize());
+            muscleCoordinates = cell(1, muscles.getSize());
+            bodyCoordinates = containers.Map('KeyType', 'char', ...
+                'ValueType', 'any');
+            for i = 1 : muscles.getSize()
+                muscle = muscles.get(i - 1);
+                names(i) = string(muscle.getName().toCharArray()');
+                coordinates = string([]);
+                if muscle.get_appliesForce()
+                    path = muscle.getGeometryPath().getPathPointSet();
+                    for j = 0 : path.getSize() - 1
+                        body = path.get(j).getBodyName().toCharArray()';
+                        if ~isKey(bodyCoordinates, body)
+                            bodyCoordinates(body) = string( ...
+                                getCoordinatesFromBodies(model, body));
+                        end
+                        coordinates = [coordinates, ...
+                            bodyCoordinates(body)]; %#ok<AGROW>
+                    end
+                end
+                muscleCoordinates{i} = unique(coordinates);
+            end
+            app.modelMuscleNames = names;
+            app.modelMuscleCoordinates = muscleCoordinates;
+        end
+
+        % Reports every invalid row, and the initial guess problems, on
+        % the status icon and the table's tooltip. The shared
+        % validateAdvancedSettingsGui only accepts positive numbers, and
+        % JMP relies on that rule, so it is not used.
+        function isValid = validateAdvancedSettings(app)
+            settingsTable = app.AdvancedSettingsTable;
+            if numel(app.advancedSettingValues) ~= ...
+                    numel(app.advancedSettingNames)
+                % startupFcn has not assigned the defaults yet
+                isValid = false;
+                return
+            end
+            removeStyle(settingsTable);
+            settingsTable.Tooltip = '';
+            messages = strings(0, 1);
+            for i = 1 : numel(app.advancedSettingNames)
+                [rowValid, reason] = app.advancedSettingProblem(i);
+                if rowValid
+                    continue
+                end
+                addStyle(settingsTable, uistyle('BackgroundColor', ...
+                    [1.00 0.67 0.67]), 'row', i);
+                messages(end + 1) = app.advancedSettingNames(i) + ": " + ...
+                    reason + " (default " + ...
+                    app.defaultAdvancedSettingValues(i) + ")"; %#ok<AGROW>
+            end
+            isValid = isempty(messages);
+            [osimxMessages, osimxIsError] = app.osimxInitialGuessProblems();
+            if ~isempty(osimxMessages)
+                color = [1.00 1.00 0.67];
+                if any(osimxIsError)
+                    color = [1.00 0.67 0.67];
+                end
+                addStyle(settingsTable, uistyle('BackgroundColor', ...
+                    color), 'row', find(app.advancedSettingNames == ...
+                    "parse_initial_guess_from_osimx"));
+                messages = [messages(:); osimxMessages(:)];
+                isValid = isValid && ~any(osimxIsError);
+            end
+            if isempty(messages)
+                setGuiFieldStatus([], app.AdvancedSettingsStatus, "none");
+                return
+            end
+            message = strjoin(messages, newline);
+            settingsTable.Tooltip = message;
+            status = "warning";
+            if ~isValid
+                status = "error";
+            end
+            setGuiFieldStatus([], app.AdvancedSettingsStatus, status, ...
+                message);
+        end
+
+        % States the rule a row breaks, if any. The reason states only
+        % the rule; validateAdvancedSettings adds the setting name and
+        % default.
+        function [isValid, reason] = advancedSettingProblem(app, index)
+            value = strtrim(app.advancedSettingValues(index));
+            number = str2double(value);
+            switch app.advancedSettingKinds(index)
+                case "boolean"
+                    % Written lowercase on save, so any casing is accepted
+                    isValid = any(strcmpi(value, ["true", "false"]));
+                    reason = "must be true or false";
+                otherwise
+                    isValid = ~isnan(number) && number > 0;
+                    reason = "must be a positive number";
+            end
+        end
+
+        function value = advancedSettingValue(app, name)
+            index = find(app.advancedSettingNames == name, 1);
+            if numel(app.advancedSettingValues) < index
+                value = app.defaultAdvancedSettingValues(index);
+            else
+                value = app.advancedSettingValues(index);
             end
         end
 
@@ -894,14 +1244,17 @@ classdef MTPBase < matlab.apps.AppBase
             mtliValid = app.validateMtliConfig();
             auxValid = app.validateAuxToolsSilent();
             trialPrefixesValid = app.validateTrialPrefixes();
-            advancedValid = validateAdvancedSettingsGui( ...
-                app.AdvancedSettingsTable, app.advancedSettingNames, ...
-                app.advancedSettingValues, app.AdvancedSettingsStatus);
+            % The initial guess checks depend on the advanced settings,
+            % MTLI, the model and the coordinates, so the osimx icon is
+            % redrawn along with the advanced one
+            osimxValid = app.showInputOsimxFileStatus();
+            advancedValid = app.validateAdvancedSettings();
             coordinatesValid = app.validateCoordinateList();
             app.RunButton.Enable = app.inputModelValid && ...
                 app.dataDirectoryValid && app.resultsDirectoryValid && ...
                 tasksValid && mtliValid && auxValid && ...
-                trialPrefixesValid && advancedValid && coordinatesValid;
+                trialPrefixesValid && advancedValid && ...
+                coordinatesValid && osimxValid;
             app.updateTabControls();
         end
 
@@ -974,6 +1327,12 @@ classdef MTPBase < matlab.apps.AppBase
 
         function setEmgLabels(app, emgLabels)
             app.emgLabels = emgLabels;
+        end
+
+        % Called by parseOsimxFileGui with parseOsimxFile's muscles
+        % struct, or [] when the file has no RCNLMuscleSet
+        function setOsimxMuscles(app, muscles)
+            app.osimxMuscles = muscles;
         end
     end
 
@@ -1409,7 +1768,7 @@ classdef MTPBase < matlab.apps.AppBase
         % Cell edit callback: AdvancedSettingsTable
         function AdvancedSettingsTableCellEdit(app, event)
             app.advancedSettingValues(event.Indices(1)) = ...
-                str2double(event.NewData);
+                strtrim(string(event.NewData));
         end
     end
 
