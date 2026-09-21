@@ -2,9 +2,10 @@
 %
 % This function renames the cost terms of Muscle Tendon Personalization
 % settings files written for version 1.5 or earlier to the names used by
-% the current version. Files for later versions, and the cost terms of
-% Muscle Tendon Length Initialization, are left unchanged. Renaming is
-% safe to repeat because no current name is a legacy name.
+% the current version, including the cost terms of the Muscle Tendon
+% Length Initialization section (see mtliBackwardsCompatibility). Files
+% for later versions are left unchanged. Renaming is safe to repeat
+% because no current name is a legacy name.
 %
 % (struct) -> (struct)
 % returns the xml2struct settings tree with current cost term names
@@ -36,7 +37,7 @@ if ~isstruct(settingsTree) || ~isfield(settingsTree, "NMSMPipelineDocument")
     return
 end
 document = settingsTree.NMSMPipelineDocument;
-if ~isFileVersionLegacy(document) || ...
+if ~isLegacySettingsFileVersion(document) || ...
         ~isfield(document, "MuscleTendonPersonalizationTool") || ...
         ~isstruct(document.MuscleTendonPersonalizationTool)
     return
@@ -60,93 +61,7 @@ if isfield(tool, "MTPSynergyExtrapolation")
 end
 document.MuscleTendonPersonalizationTool = tool;
 settingsTree.NMSMPipelineDocument = document;
-end
-
-% A file with no readable version is treated as legacy
-function isLegacy = isFileVersionLegacy(document)
-isLegacy = true;
-if ~isstruct(document) || ~isfield(document, "Attributes") || ...
-        ~isstruct(document.Attributes) || ...
-        ~isfield(document.Attributes, "Version")
-    return
-end
-numbers = str2double(split(string(document.Attributes.Version), "."));
-if numel(numbers) < 2
-    numbers(2) = 0;
-end
-if any(isnan(numbers(1:2)))
-    return
-end
-isLegacy = numbers(1) < 1 || (numbers(1) == 1 && numbers(2) <= 5);
-end
-
-function parent = renameCostTermSet(parent, renames)
-if ~isstruct(parent) || ~isfield(parent, "RCNLCostTermSet") || ...
-        ~isstruct(parent.RCNLCostTermSet) || ...
-        ~isfield(parent.RCNLCostTermSet, "RCNLCostTerm")
-    return
-end
-terms = parent.RCNLCostTermSet.RCNLCostTerm;
-if isstruct(terms)
-    terms = {terms};
-end
-if ~iscell(terms)
-    return
-end
-wasRenamed = false(1, numel(terms));
-for i = 1 : numel(terms)
-    type = getTermType(terms{i});
-    if strlength(type) > 0 && isKey(renames, char(type))
-        terms{i}.type.Text = renames(char(type));
-        wasRenamed(i) = true;
-    end
-end
-terms = removeCollisions(terms, wasRenamed);
-% xml2struct keeps a single term as a bare struct, which the parsers expect
-if isscalar(terms)
-    terms = terms{1};
-end
-parent.RCNLCostTermSet.RCNLCostTerm = terms;
-end
-
-% When a file lists a legacy term and its successor side by side, the
-% enabled entry is kept. If both or neither are enabled, the entry that
-% already used the current name is kept.
-function terms = removeCollisions(terms, wasRenamed)
-types = strings(1, numel(terms));
-for i = 1 : numel(terms)
-    types(i) = getTermType(terms{i});
-end
-remove = false(1, numel(terms));
-for type = unique(types(wasRenamed))
-    candidates = find(types == type);
-    if numel(candidates) < 2
-        continue
-    end
-    scores = zeros(1, numel(candidates));
-    for j = 1 : numel(candidates)
-        scores(j) = 2 * isTermEnabled(terms{candidates(j)}) + ...
-            ~wasRenamed(candidates(j));
-    end
-    [~, keeper] = max(scores);
-    remove(candidates) = true;
-    remove(candidates(keeper)) = false;
-end
-terms = terms(~remove);
-end
-
-function type = getTermType(term)
-type = "";
-if isstruct(term) && isfield(term, "type") && isstruct(term.type) && ...
-        isfield(term.type, "Text")
-    type = string(term.type.Text);
-end
-end
-
-function isEnabled = isTermEnabled(term)
-isEnabled = isstruct(term) && isfield(term, "is_enabled") && ...
-    isstruct(term.is_enabled) && isfield(term.is_enabled, "Text") && ...
-    strcmpi(string(term.is_enabled.Text), "true");
+settingsTree = mtliBackwardsCompatibility(settingsTree);
 end
 
 function renames = taskCostTermRenames()

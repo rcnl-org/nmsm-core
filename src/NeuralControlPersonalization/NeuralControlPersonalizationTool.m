@@ -51,6 +51,7 @@ if nargin < 2
 end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
+settingsTree = mtliBackwardsCompatibility(settingsTree);
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
 if ~exist(resultsDirectory, "dir")
