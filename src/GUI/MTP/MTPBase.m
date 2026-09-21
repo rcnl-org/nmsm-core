@@ -389,6 +389,7 @@ classdef MTPBase < matlab.apps.AppBase
         function FiberLengthGroupsListenerFunction(app)
             app.NormalizedFiberLengthMuscleGroupsTextArea.Value = ...
                 strjoin(app.normalized_fiber_length_muscle_groups, ", ");
+            app.validateAuxCostTermsSilent();
             app.updateRunButton();
         end
 
@@ -494,6 +495,32 @@ classdef MTPBase < matlab.apps.AppBase
                 app.getSelectedAuxTool().RCNLCostTerm, ...
                 app.AuxCostTermsTable, app.AuxMaxAllowableErrorEditField, ...
                 app.AuxCostTermsStatus, "cost term");
+            if app.getSelectedAuxTool() ~= app.MuscleTendonLengthInitialization
+                return
+            end
+            for i = app.mtliCostTermGroupProblems()
+                addStyle(app.AuxCostTermsTable, ...
+                    uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', i);
+                if isValid
+                    setGuiFieldStatus([], app.AuxCostTermsStatus, "error", ...
+                        "grouped_normalized_fiber_length_similarity " + ...
+                        "requires at least one normalized fiber length " + ...
+                        "muscle group (Muscle Groups tab).");
+                end
+                isValid = false;
+            end
+        end
+
+        % Rows of enabled MTLI cost terms that need normalized fiber
+        % length groups when the group list is empty. MTLI being disabled
+        % clears the problem because its cost terms are not used.
+        function invalidIndices = mtliCostTermGroupProblems(app)
+            invalidIndices = [];
+            mtli = app.MuscleTendonLengthInitialization;
+            if strcmp(mtli.is_enabled, 'true')
+                invalidIndices = checkMtliCostTermGroups(mtli.RCNLCostTerm, ...
+                    app.normalized_fiber_length_muscle_groups);
+            end
         end
 
         function updateAuxAdvancedOptionsTable(app)
@@ -1214,7 +1241,8 @@ classdef MTPBase < matlab.apps.AppBase
                 [hasEnabledTerm, invalidTerms] = ...
                     checkCostTermsValid(mtli.RCNLCostTerm);
                 isValid = isempty(mtli.validateParameters()) && ...
-                    hasEnabledTerm && isempty(invalidTerms);
+                    hasEnabledTerm && isempty(invalidTerms) && ...
+                    isempty(app.mtliCostTermGroupProblems());
             end
         end
 
@@ -1609,6 +1637,7 @@ classdef MTPBase < matlab.apps.AppBase
             app.MuscleTendonLengthInitialization.is_enabled = ...
                 boolToString(app.EnableMTLICheckBox.Value);
             app.validateMtliConfig();
+            app.validateAuxCostTermsSilent();
             app.updateRunButton();
         end
 

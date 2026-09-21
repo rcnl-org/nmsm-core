@@ -399,6 +399,7 @@ classdef NCPBase < matlab.apps.AppBase
         function FiberLengthGroupsListenerFunction(app)
             app.NormalizedFiberLengthMuscleGroupsTextArea.Value = ...
                 strjoin(app.normalized_fiber_length_muscle_groups, ", ");
+            app.updateRunButton();
         end
 
         function updateEnableMtliBox(app)
@@ -576,6 +577,19 @@ classdef NCPBase < matlab.apps.AppBase
                 app.MuscleTendonLengthInitialization.RCNLCostTerm, ...
                 app.MtliCostTermsTable, app.MtliMaxAllowableErrorEditField, ...
                 app.MtliCostTermsStatus, "MTLI cost term");
+            for i = checkMtliCostTermGroups( ...
+                    app.MuscleTendonLengthInitialization.RCNLCostTerm, ...
+                    app.normalized_fiber_length_muscle_groups)
+                addStyle(app.MtliCostTermsTable, ...
+                    uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', i);
+                if isValid
+                    setGuiFieldStatus([], app.MtliCostTermsStatus, "error", ...
+                        "grouped_normalized_fiber_length_similarity " + ...
+                        "requires at least one normalized fiber length " + ...
+                        "muscle group (Muscle Groups tab).");
+                end
+                isValid = false;
+            end
         end
 
         function validateInputModelFile(app)
@@ -1387,8 +1401,13 @@ classdef NCPBase < matlab.apps.AppBase
             app.resetAllFields();
             cd(fileparts(settingsFileName));
             app.currentSettingsFile = settingsFileName;
-            settingsTree = loadGuiSettings(settingsFileName, ...
-                'NeuralControlPersonalizationTool');
+            % Renames legacy MTLI cost terms while the raw tree still has
+            % the file version, then formats it as loadGuiSettings does
+            settingsTree = xml2struct(settingsFileName);
+            settingsTree = mtliBackwardsCompatibility(settingsTree);
+            settingsTree = formatXmlDataForGui( ...
+                settingsTree.NMSMPipelineDocument. ...
+                NeuralControlPersonalizationTool);
             app.applySettingsStruct(settingsTree);
             app.enforce_bilateral_symmetry = boolToString( ...
                 strcmpi(app.enforce_bilateral_symmetry, "true"));
