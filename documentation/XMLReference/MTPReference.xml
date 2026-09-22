@@ -165,11 +165,11 @@
 			Default: N/A-->
 			<number_of_synergies>5</number_of_synergies>
 			<!--*Required* String
-			Description: How extrapolation weights vary across trials: task, trial or subject. Sets whether one weight set is fit per task prefix, per trial or for the whole subject.
+			Description: How extrapolation weights vary across trials: trial, task, or subject. Sets whether one weight set is fit per task prefix, per trial or for the whole subject.
 			Default: N/A-->
 			<synergy_extrapolation_categorization>trial</synergy_extrapolation_categorization>
 			<!--*Required* String
-			Description: How residual weights vary across trials: task, trial or subject. Sets how many residual weight sets are fit.
+			Description: How residual weights vary across trials: trial, task, or subject. Sets how many residual weight sets are fit.
 			Default: N/A-->
 			<residual_categorization>task</residual_categorization>
 			<!--*Required* Set of RCNLCostTerm elements
