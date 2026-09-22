@@ -93,10 +93,7 @@ for i = 1 : length(params.costTerms)
             case "muscle_excitation_minimization"
                 if isfield(inputs, "synergyExtrapolation")
                     cost = calcMuscleExcitationMinimizationCost( ...
-                        synxModeledValues, costTerm);
-                else
-                    cost = calcMuscleExcitationMinimizationCost( ...
-                        modeledValues, costTerm);
+                        synxModeledValues, inputs, costTerm);
                 end
             case "grouped_normalized_fiber_length_similarity"
                 if isfield(inputs, "synergyExtrapolation")

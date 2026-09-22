@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
+% (Array of number, struct, struct) -> (Array of number)
 % returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
@@ -25,9 +25,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMuscleExcitationMinimizationCost(modeledValues, costTerm)
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+function cost = calcMuscleExcitationMinimizationCost(modeledValues, ...
+    experimentalData, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0.5);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.25);
-cost = calcDeviationCostTerm(modeledValues.muscleExcitations, ...
-    errorCenter, maximumAllowableError);
+muscleExcitationsConstraint = modeledValues.muscleExcitationsNoTDelay(: , ...
+    setdiff(1 : size(modeledValues.muscleExcitationsNoTDelay, 2), ...
+    [experimentalData.synergyExtrapolation.missingEmgChannelGroups{:}]), ...
+    experimentalData.numPaddingFrames + 1 : ...
+    size(modeledValues.muscleExcitationsNoTDelay, 3) - ...
+    experimentalData.numPaddingFrames);
+cost = 30 / maximumAllowableError * (muscleExcitationsConstraint - errorCenter) .^ 8;
+cost(isnan(cost)) = 0;
+cost = sum((sqrt(0.1) .* cost) .^ 2, 'all');
 end

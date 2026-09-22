@@ -67,6 +67,12 @@ if type == "grouped_electromechanical_delay_similarity" && ...
         "is false (Advanced tab)";
     return
 end
+if type == "muscle_excitation_minimization" && ~context.synxEnabled
+    severity = "warning";
+    reason = "has no effect unless synergy extrapolation is enabled " + ...
+        "(Synergy Extrapolation tab)";
+    return
+end
 [field, label] = optimizedParameter(type);
 if strlength(field) > 0 && ~context.isOptimized.(field)
     severity = "warning";

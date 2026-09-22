@@ -293,7 +293,7 @@
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.25</max_allowable_error>
 						<!--Optional for specific terms.-->
-						<error_center>0</error_center>
+						<error_center>0.5</error_center>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
 						<!--Indicate whether the term is enabled or not. Default is false.-->
