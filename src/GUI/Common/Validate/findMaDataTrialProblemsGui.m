@@ -43,14 +43,14 @@ for i = 1 : numel(trialNames)
     trialName = string(trialNames(i));
     trialDirectory = fullfile(maDataDirectory, trialName);
     if ~isfolder(trialDirectory)
-        problems(end + 1) = "MAData has no folder named '" + trialName + ...
+        problems(end + 1, 1) = "MAData has no folder named '" + trialName + ...
             "'. Each trial's muscle analysis files must be in a " + ...
             "folder named after the trial."; %#ok<AGROW>
         continue
     end
     for j = 1 : numel(requiredFilePatterns)
         if isempty(dir(fullfile(trialDirectory, requiredFilePatterns(j))))
-            problems(end + 1) = "MAData/" + trialName + " has no " + ...
+            problems(end + 1, 1) = "MAData/" + trialName + " has no " + ...
                 requiredFilePatterns(j) + " file."; %#ok<AGROW>
         end
     end
