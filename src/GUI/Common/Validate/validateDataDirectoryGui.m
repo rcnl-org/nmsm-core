@@ -52,6 +52,14 @@ for i = 1:length(requiredSubfolders)
     end
     files = dir(fullfile(subpath, "*.sto"));
     stoPath = subpath;
+    if subfolder == "MAData" && ~isempty(files)
+        throwGuiError("The 'MAData' folder has data files directly " + ...
+            "inside it. Each trial's files must be in a folder inside " + ...
+            "MAData named after the trial, such as MAData/<trial name>/.", ...
+            fieldObj, iconObj);
+        isValid = false;
+        return
+    end
     if isempty(files)
         % Some subfolders (e.g. MAData) store .sto files one level deeper
         % in per-trial subfolders rather than directly.
@@ -66,6 +74,13 @@ for i = 1:length(requiredSubfolders)
                 break
             end
         end
+    end
+    if isempty(files) && subfolder == "MAData"
+        throwGuiError("The 'MAData' folder has no trial folders with " + ...
+            ".sto data files. Each trial's files must be in a folder " + ...
+            "inside MAData named after the trial.", fieldObj, iconObj);
+        isValid = false;
+        return
     end
     if isempty(files)
         throwGuiError("The '" + subfolder + "' folder contains no .sto data files.", fieldObj, iconObj);

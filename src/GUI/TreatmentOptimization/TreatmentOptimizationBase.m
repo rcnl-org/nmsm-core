@@ -603,6 +603,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.tracked_trial_names = app.refreshTrackedQuantitiesData();
             app.validateTrackedQuantitiesDirectory();
             app.validateTrialPrefix();
+            app.validateSurrogateDataDirectory();
             app.updateTabControls();
         end
 
@@ -1043,6 +1044,19 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 app.SurrogateModelDataDirectoryStatus, ...
                 @(value, field, icon)validateDataDirectoryGui(value, ...
                 ["MAData", "IKData"], field, icon));
+            if ~app.surrogateDataDirectoryValid || ...
+                    strcmp(app.trial_prefix, "")
+                return
+            end
+            problems = findMaDataTrialProblemsGui( ...
+                app.MuscleModel.data_directory, app.trial_prefix, ...
+                ["*_Length.sto", "*MomentArm_*.sto"]);
+            if ~isempty(problems)
+                throwGuiError(strjoin(problems, newline), ...
+                    app.SurrogateModelDataDirectoryEditField, ...
+                    app.SurrogateModelDataDirectoryStatus);
+                app.surrogateDataDirectoryValid = false;
+            end
         end
 
         % Initial muscle activations are optional. parseMuscleExperimentalData

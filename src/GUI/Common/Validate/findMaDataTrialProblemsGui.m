@@ -1,8 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% This function checks that each trial has its own folder in the data
+% directory's MAData subdirectory, named exactly after the trial, and that
+% the muscle analysis files the tool reads are inside that folder. Each
+% required file is given as a dir() pattern, such as "*_Length.sto", and
+% at least one file in the trial's folder must match it. Nothing is
+% reported when the data directory or its MAData folder is missing, since
+% the data directory check reports those.
 %
-% (Array of string, string, UIComponent, UIComponent) -> (logical)
-% Validates trial prefixes against the data directory contents
+% (string, Array of string, Array of string) -> (Array of string)
+% Returns one message per problem with the trials' MAData folders
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -25,44 +32,27 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function isValid = validateTrialPrefixesGui(trialPrefixes, ...
-    dataDirectory, fieldObject, errorIcon)
-requiredFilePatterns = ["*_Length.sto", "*_Velocity.sto", ...
-    "*MomentArm_*.sto"];
-if isEmptyStringList(trialPrefixes)
-    message = "No trial prefixes specified. All trials in the data " + ...
-        "directory will be used.";
-    problems = findMaDataTrialProblemsGui(dataDirectory, ...
-        idDataTrialNames(dataDirectory), requiredFilePatterns);
-    isValid = isempty(problems);
-    if isValid
-        throwGuiWarning(message, fieldObject, errorIcon);
-    else
-        throwGuiError(strjoin([message; problems], newline), ...
-            fieldObject, errorIcon);
+function problems = findMaDataTrialProblemsGui(dataDirectory, ...
+    trialNames, requiredFilePatterns)
+problems = strings(0, 1);
+maDataDirectory = fullfile(dataDirectory, "MAData");
+if strcmp(dataDirectory, "") || ~isfolder(maDataDirectory)
+    return
+end
+for i = 1 : numel(trialNames)
+    trialName = string(trialNames(i));
+    trialDirectory = fullfile(maDataDirectory, trialName);
+    if ~isfolder(trialDirectory)
+        problems(end + 1) = "MAData has no folder named '" + trialName + ...
+            "'. Each trial's muscle analysis files must be in a " + ...
+            "folder named after the trial."; %#ok<AGROW>
+        continue
     end
-    return
-end
-problems = findMaDataTrialProblemsGui(dataDirectory, trialPrefixes, ...
-    requiredFilePatterns);
-isValid = isempty(problems);
-if isValid
-    clearGuiError(fieldObject, errorIcon);
-else
-    throwGuiError(strjoin(problems, newline), fieldObject, errorIcon);
-end
-end
-
-% The trials findPrefixes uses when no prefixes are given: the name of
-% each file in IDData without its extension
-function names = idDataTrialNames(dataDirectory)
-names = strings(0, 1);
-if strcmp(dataDirectory, "")
-    return
-end
-files = dir(fullfile(dataDirectory, "IDData"));
-files = files(~[files.isdir] & ~startsWith({files.name}, "."));
-for i = 1 : numel(files)
-    [~, names(end + 1)] = fileparts(files(i).name); %#ok<AGROW>
+    for j = 1 : numel(requiredFilePatterns)
+        if isempty(dir(fullfile(trialDirectory, requiredFilePatterns(j))))
+            problems(end + 1) = "MAData/" + trialName + " has no " + ...
+                requiredFilePatterns(j) + " file."; %#ok<AGROW>
+        end
+    end
 end
 end
