@@ -1,13 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function turns one stage label of a run dialog on or off. The tools
-% are normally called from a script with no GUI, so an empty or deleted app
-% and a label the dialog does not define are all ignored rather than
-% treated as errors. This keeps the progress reporting in the tools to a
-% single line per stage.
+% This function turns one stage of a GUI run on or off. From the GUI the
+% app is a RunProgressGui, which shows the stage's message; an app with a
+% label of that name has the label enabled instead. The tools are normally
+% called from a script with no GUI, so an empty or deleted app and a stage
+% the app does not define are all ignored rather than treated as errors.
+% This keeps the progress reporting in the tools to a single line per
+% stage.
 %
 % (App, string, char) -> ()
-% Enables or disables a run dialog's stage label
+% Shows or clears a stage of a GUI run
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -31,9 +33,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function updateRunStageGui(app, labelName, state)
-if isempty(app) || ~isvalid(app) || ~isprop(app, labelName)
+if isempty(app) || ~isobject(app) || ~isvalid(app)
     return
 end
-app.(labelName).Enable = state;
+if ismethod(app, "setStage")
+    app.setStage(labelName, state);
+elseif isprop(app, labelName)
+    app.(labelName).Enable = state;
+end
 drawnow
 end

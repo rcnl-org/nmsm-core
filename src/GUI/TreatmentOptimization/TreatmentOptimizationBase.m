@@ -2780,8 +2780,8 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
     methods (Access = public)
         % The settings file entry points are public so the Run button and
         % scripted callers can drive them without a file dialog
-        % TreatmentOptimizationRun dispatches on this rather than mapping
-        % the tool dropdown's display name a second time
+        % The Run button dispatches on this rather than mapping the tool
+        % dropdown's display name a second time
         function name = selectedToolElement(app)
             name = app.toolElementName();
         end
@@ -2961,7 +2961,27 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             end
             app.saveSettingsFile(app.currentSettingsFile);
             close all
-            TreatmentOptimizationRun(app, app.currentSettingsFile);
+            settingsFile = app.currentSettingsFile;
+            toolName = string(app.ToolSelectionDropDown.Value);
+            switch app.selectedToolElement()
+                case "VerificationOptimizationTool"
+                    tool = @VerificationOptimizationTool;
+                case "DesignOptimizationTool"
+                    tool = @DesignOptimizationTool;
+                otherwise
+                    tool = @TrackingOptimizationTool;
+            end
+            stages = struct( ...
+                'ParsingLabel', "Parsing Settings File...", ...
+                'SurrogateModelLabel', "Creating Surrogate Model...", ...
+                'RunningLabel', "Running " + toolName + "...", ...
+                'PlottingResultsLabel', "Plotting Results...");
+            % GPOPS-II and Casadi drive their own solver loops, with no
+            % OutputFcn to stop them from, so the run cannot be cancelled
+            RunProgressGui.run(app.UIFigure, toolName, toolName, stages, ...
+                @(progress) tool(settingsFile, progress), ...
+                @() plotTreatmentOptimizationResultsFromSettingsFile(settingsFile), ...
+                false);
         end
 
         % Button pushed function: HelpButton

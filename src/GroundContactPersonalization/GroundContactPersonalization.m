@@ -55,7 +55,7 @@ for surface = 1:length(inputs.surfaces)
 end
 % Run each task as outlined in XML settings file.
 for task = 1:length(params.tasks)
-    reportTaskProgress(app, task, length(params.tasks));
+    updateRunTaskGui(app, task, length(params.tasks));
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, ...
         task, app);
     % Cancelling stops the whole sequence rather than just the round
@@ -67,15 +67,6 @@ for task = 1:length(params.tasks)
 end
 
 results = inputs;
-end
-
-% (App, double, double) -> (None)
-% Names the round under way in the GUI's run window, if there is one. A
-% round can run for a long time with nothing else to show for it.
-function reportTaskProgress(app, task, taskCount)
-if ~isempty(app) && ismethod(app, "updateTaskProgress")
-    app.updateTaskProgress(task, taskCount);
-end
 end
 
 % (App) -> (logical)

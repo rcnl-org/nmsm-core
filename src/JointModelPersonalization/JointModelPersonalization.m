@@ -29,10 +29,14 @@
 % ----------------------------------------------------------------------- %
 
 function outputModel = JointModelPersonalization(inputs, params, app)
+if nargin < 3
+    app = [];
+end
 verifyInputs(inputs);
 verifyParams(params);
 outputModel = Model(inputs.model);
 for i=1:length(inputs.tasks)
+    updateRunTaskGui(app, i, length(inputs.tasks));
     functions = makeFunctions(inputs.tasks{i}.parameters, ...
         inputs.tasks{i}.scaling, inputs.tasks{i}.markers, ...
         inputs.tasks{i}.anatomicalMarkers);

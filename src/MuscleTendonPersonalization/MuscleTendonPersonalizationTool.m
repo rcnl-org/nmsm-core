@@ -44,33 +44,22 @@ verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
-if ~isempty(app)
-    app.ParsingLabel.Enable = 'off';
-end
+updateRunStageGui(app, 'ParsingLabel', 'off');
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 if isstruct(precalInputs)
-    if ~isempty(app)
-        app.RunningMTLILabel.Enable = 'on';
-    end
+    updateRunStageGui(app, 'RunningMTLILabel', 'on');
     optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
-    if ~isempty(app)
-        app.RunningMTLILabel.Enable = 'off';
-    end
+    updateRunStageGui(app, 'RunningMTLILabel', 'off');
 else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
-if ~isempty(app)
-    app.RunningMTPLabel.Enable = 'on';
-end
+updateRunStageGui(app, 'RunningMTPLabel', 'on');
 results = MuscleTendonPersonalization(inputs, params, app);
-if ~isempty(app)
-    app.RunningMTPLabel.Enable = 'off';
-    app.SavingResultsLabel.Enable = 'on';
-end
-drawnow
+updateRunStageGui(app, 'RunningMTPLabel', 'off');
+updateRunStageGui(app, 'SavingResultsLabel', 'on');
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
         getMtpResultsToSave(inputs, params, results, precalInputs);
@@ -82,7 +71,7 @@ else
     saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory);
 end
-app.SavingResultsLabel.Enable = 'off';
+updateRunStageGui(app, 'SavingResultsLabel', 'off');
 printMtpJointMomentMatchingError(resultsDirectory);
 fprintf("Muscle-Tendon Personalization Runtime: %f Hours\n", toc/3600);
 diary off
