@@ -113,13 +113,17 @@ classdef NMSMPipelineGUI < matlab.apps.AppBase
         % Code that executes after component creation
         function startupFcn(app)
             % These tools are not linked yet
-            for button = [app.DataPreprocessingButton, ...
-                    app.SurrogateMuscleModelButton, ...
+            for button = [app.SurrogateMuscleModelButton, ...
                     app.MuscleGroupsCreatorButton, ...
                     app.DataCollectionGuideButton]
                 button.Enable = 'off';
                 button.Tooltip = 'Coming soon';
             end
+        end
+
+        % Button pushed function: DataPreprocessingButton
+        function DataPreprocessingButtonPushed(app, event)
+            app.openTool("DataPreprocessingGui");
         end
 
         % Button pushed function: JmpButton, image clicked function:
@@ -367,6 +371,7 @@ classdef NMSMPipelineGUI < matlab.apps.AppBase
 
             % Create DataPreprocessingButton
             app.DataPreprocessingButton = uibutton(app.UIFigure, 'push');
+            app.DataPreprocessingButton.ButtonPushedFcn = createCallbackFcn(app, @DataPreprocessingButtonPushed, true);
             app.DataPreprocessingButton.BackgroundColor = [0.851 0.851 0.851];
             app.DataPreprocessingButton.FontSize = 25;
             app.DataPreprocessingButton.FontWeight = 'bold';
