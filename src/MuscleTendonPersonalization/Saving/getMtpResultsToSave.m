@@ -36,6 +36,9 @@ if length(finalValues.electromechanicalDelays) == 1
     finalValues.electromechanicalDelays = repmat( ...
         finalValues.electromechanicalDelays, 1, length(mtpResults.muscleNames));
 end
+if osimxHasMaxIsometricForce(mtpResults)
+    finalValues.maxIsometricForce = mtpResults.maxIsometricForce;
+end
 if nargin < 4
     precalModeledValues = [];
     precalInputs = [];
@@ -88,5 +91,25 @@ else
         finalValues.tendonSlackLengthScaleFactors .* mtpResults.tendonSlackLength;
     finalValues.tendonSlackLengthScaleFactors = ...
         finalTendonSlackLength ./ mtpInputs.tendonSlackLength;
+end
+end
+
+% Returns true if an osimx file was parsed as an initial guess and any muscle
+% in it specifies a maximum isometric force. In that case the maximum
+% isometric force is included in the saved results so it is written to the
+% output osimx file.
+function hasForce = osimxHasMaxIsometricForce(mtpResults)
+hasForce = false;
+if ~valueOrAlternate(mtpResults, "parseInitialGuessFromOsimx", false) || ...
+        ~isfield(mtpResults, "osimx") || ~isfield(mtpResults.osimx, "muscles")
+    return
+end
+osimxMuscleNames = fieldnames(mtpResults.osimx.muscles);
+for i = 1 : length(osimxMuscleNames)
+    if isfield(mtpResults.osimx.muscles.(osimxMuscleNames{i}), ...
+            "maxIsometricForce")
+        hasForce = true;
+        return
+    end
 end
 end

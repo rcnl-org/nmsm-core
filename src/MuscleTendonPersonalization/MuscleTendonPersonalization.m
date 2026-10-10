@@ -44,6 +44,9 @@ function results = MuscleTendonPersonalization(inputs, ...
 if nargin < 3
     app = [];
 end
+if inputs.parseInitialGuessFromOsimx
+    inputs = applyMtpOsimxMaxIsometricForce(inputs);
+end
 inputs.primaryValues = prepareInitialValues(inputs, params);
 inputs.primaryValueNames = ["electromechanical_delay", ...
     "activation_time_constant", "activation_nonlinearity", ...
@@ -145,6 +148,13 @@ values{5} = repmat(inputs.optimalFiberLengthScaleFactorInitialGuess, ...
     1, numMuscles); % optimal fiber length scale factor
 values{6} = repmat(inputs.tendonSlackLengthScaleFactorInitialGuess, ...
     1, numMuscles); % tendon slack length scale factor
+
+% This code is after the previous block to allow for cases where the osimx
+% doesn't have every design variable in it (ie osimx only has length
+% parameters)
+if inputs.parseInitialGuessFromOsimx
+    values = applyMtpOsimxInitialGuess(values, inputs);
+end
 if isfield(inputs, "synergyExtrapolation")
     values{7} = repmat(0, 1, inputs.numberOfExtrapolationWeights + ...
         inputs.numberOfResidualWeights); % synergy commands

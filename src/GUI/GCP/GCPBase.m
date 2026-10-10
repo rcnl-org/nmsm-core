@@ -154,6 +154,14 @@ classdef GCPBase < matlab.apps.AppBase
 
         currentSettingsFile string = "";
 
+        % What the input osimx file holds, kept from its last parse so
+        % the initial guess checks can rerun without parsing it again.
+        % osimxContactSurfaces is parseOsimxFile's contactSurface cell,
+        % empty when the file has none or did not parse.
+        osimxParseFailed logical = false
+        osimxParseMessage string = "";
+        osimxContactSurfaces cell = cell(0)
+
         % Error checking and flow control
         inputModelValid logical = false
         inputMotionFileValid logical = false
@@ -447,7 +455,7 @@ classdef GCPBase < matlab.apps.AppBase
             % character codes for 'true'.
             Values = app.advancedSettingValues;
             app.AdvancedSettingsTable.Data = table(Options, Values);
-            app.validateAdvancedSettings();
+            % updateRunButton validates the table
             app.updateRunButton();
         end
 
@@ -485,12 +493,141 @@ classdef GCPBase < matlab.apps.AppBase
             end
         end
 
+        % Parses the osimx file and keeps what the initial guess checks
+        % need from it; showInputOsimxFileStatus draws the result
         function validateInputOsimxFile(app)
-            % The .osimx is optional and only ever raises a warning, so
-            % its result is deliberately not stored or gated on.
-            validateOsimxFileGui(app, app.input_osimx_file, ...
-                app.input_model_file, app.InputOsimxFileEditField, ...
-                app.InputOsimxFileStatus);
+            app.osimxContactSurfaces = cell(0);
+            app.osimxParseFailed = false;
+            app.osimxParseMessage = "";
+            if ~strcmp(app.input_osimx_file, "")
+                % Fills osimxContactSurfaces through
+                % setOsimxContactSurfaces
+                [app.osimxParseFailed, message] = parseOsimxFileGui( ...
+                    app, app.input_osimx_file, app.input_model_file);
+                app.osimxParseMessage = string(message);
+            end
+            app.showInputOsimxFileStatus();
+        end
+
+        % The .osimx is optional, so a file that does not exist is only a
+        % warning: writeGroundContactPersonalizationOsimxFile then writes a
+        % new osimx. A file that exists but cannot be parsed is an error
+        % whether or not the initial guess is read from it, because that
+        % writer parses it too and would stop the run after optimizing.
+        % The initial guess problems about the file are added to its own.
+        function isValid = showInputOsimxFileStatus(app)
+            [messages, isError, onFile] = app.osimxInitialGuessProblems();
+            messages = messages(onFile);
+            isError = isError(onFile);
+            isValid = ~(app.osimxParseFailed && ...
+                isfile(app.input_osimx_file));
+            if ~isValid && ~any(isError)
+                % When the initial guess is read from the file, its own
+                % message already says the run stops on it
+                messages = ["GCP also parses the input osimx file " + ...
+                    "when writing its results, so the run would stop " + ...
+                    "after optimizing."; messages(:)];
+            end
+            if app.osimxParseFailed
+                messages = [app.osimxParseMessage; messages(:)];
+            end
+            status = "none";
+            if ~isValid || any(isError)
+                status = "error";
+            elseif ~isempty(messages)
+                status = "warning";
+            end
+            setGuiFieldStatus(app.InputOsimxFileEditField, ...
+                app.InputOsimxFileStatus, status, strjoin(messages, newline));
+        end
+
+        % Problems with reading the initial guess from the osimx file,
+        % each following what GCP does at run time. isError marks the one
+        % that stops the run, a file that exists but cannot be parsed;
+        % the rest are the cases where GCP falls back to, or overwrites,
+        % part of the initial guess. onFile marks the ones about the file
+        % itself, which are also shown beside it. GCP also falls back to
+        % the default spring constant when the osimx surface has a
+        % different number of springs than the run, but that count
+        % comes from the foot models built at run time, so it is left to
+        % GCP's own warning.
+        function [messages, isError, onFile] = osimxInitialGuessProblems(app)
+            messages = strings(0, 1);
+            isError = false(0, 1);
+            onFile = false(0, 1);
+            if ~app.isAdvancedSettingTrue("parse_initial_guess_from_osimx")
+                return
+            end
+            if strcmp(app.input_osimx_file, "") || ...
+                    ~isfile(app.input_osimx_file)
+                messages(end + 1) = "parse_initial_guess_from_osimx " + ...
+                    "is true but input_osimx_file is missing, so the " + ...
+                    "default initial guesses will be used.";
+                isError(end + 1) = false;
+                onFile(end + 1) = true;
+                return
+            end
+            if app.osimxParseFailed
+                messages(end + 1) = "parse_initial_guess_from_osimx " + ...
+                    "is true, so GCP parses the input osimx file " + ...
+                    "before running and will stop on this file.";
+                isError(end + 1) = true;
+                onFile(end + 1) = true;
+                return
+            end
+            if isempty(app.osimxContactSurfaces)
+                messages(end + 1) = "The input osimx file contains no " + ...
+                    "RCNLContactSurface elements, so the default " + ...
+                    "initial guesses will be used.";
+                isError(end + 1) = false;
+                onFile(end + 1) = true;
+                return
+            end
+            % GCP takes the initial guess from the osimx surface whose
+            % hindfoot body matches an enabled surface in the run
+            runBodies = string([]);
+            for i = 1 : length(app.GCPContactSurface)
+                surface = app.GCPContactSurface{i};
+                if strcmp(surface.is_enabled, 'true') && ...
+                        strlength(surface.hindfoot_body) > 0
+                    runBodies(end + 1) = surface.hindfoot_body; %#ok<AGROW>
+                end
+            end
+            osimxBodies = string(cellfun(@(surface) ...
+                surface.hindfootBodyName, app.osimxContactSurfaces, ...
+                'UniformOutput', false));
+            if isempty(runBodies)
+                % Nothing to match yet; the contact surfaces are flagged
+                % as incomplete on their own tab
+                return
+            end
+            if ~any(ismember(runBodies, osimxBodies))
+                messages(end + 1) = "No contact surface in the osimx " + ...
+                    "file matches a surface in the run (the osimx " + ...
+                    "file has hindfoot bodies " + ...
+                    strjoin(osimxBodies, ", ") + "), so the default " + ...
+                    "initial guesses will be used.";
+                isError(end + 1) = false;
+                onFile(end + 1) = true;
+                return
+            end
+            if app.isAdvancedSettingTrue("initialize_resting_spring_length")
+                messages(end + 1) = "initialize_resting_spring_length " + ...
+                    "and parse_initial_guess_from_osimx are both " + ...
+                    "enabled. The resting spring length initial guess " + ...
+                    "from the osimx file will be overwritten.";
+                isError(end + 1) = false;
+                onFile(end + 1) = false;
+            end
+        end
+
+        function isTrue = isAdvancedSettingTrue(app, name)
+            index = find(app.advancedSettingNames == name, 1);
+            value = app.defaultAdvancedSettingValues(index);
+            if numel(app.advancedSettingValues) >= index
+                value = app.advancedSettingValues(index);
+            end
+            isTrue = strcmpi(strtrim(value), "true");
         end
 
         function validateInputMotionFile(app)
@@ -1209,13 +1346,34 @@ classdef GCPBase < matlab.apps.AppBase
                     app.defaultAdvancedSettingValues(i) + ")"; %#ok<AGROW>
             end
             app.advancedSettingsValid = isempty(messages);
-            if app.advancedSettingsValid
-                clearGuiError([], app.AdvancedSettingsStatus);
-            else
-                message = strjoin(messages, newline);
-                throwGuiError(message, [], app.AdvancedSettingsStatus);
-                app.AdvancedSettingsTable.Tooltip = message;
+            % The initial guess problems are listed with the rows, and
+            % the parse_initial_guess_from_osimx row is painted yellow for
+            % a warning or red for an error
+            [osimxMessages, osimxIsError] = app.osimxInitialGuessProblems();
+            if ~isempty(osimxMessages)
+                color = [1.00 1.00 0.67];
+                if any(osimxIsError)
+                    color = [1.00 0.67 0.67];
+                end
+                addStyle(app.AdvancedSettingsTable, ...
+                    uistyle('BackgroundColor', color), 'row', ...
+                    find(app.advancedSettingNames == ...
+                    "parse_initial_guess_from_osimx"));
+                messages = [messages(:); osimxMessages(:)];
+                app.advancedSettingsValid = app.advancedSettingsValid && ...
+                    ~any(osimxIsError);
             end
+            if isempty(messages)
+                clearGuiError([], app.AdvancedSettingsStatus);
+                return
+            end
+            message = strjoin(messages, newline);
+            if app.advancedSettingsValid
+                throwGuiWarning(message, [], app.AdvancedSettingsStatus);
+            else
+                throwGuiError(message, [], app.AdvancedSettingsStatus);
+            end
+            app.AdvancedSettingsTable.Tooltip = message;
         end
 
         function validateAllFields(app)
@@ -1229,10 +1387,15 @@ classdef GCPBase < matlab.apps.AppBase
         end
 
         function updateRunButton(app)
+            % The initial guess checks depend on the osimx file, the
+            % model, the contact surfaces and the advanced settings, so
+            % both of their icons are redrawn on every change
+            osimxValid = app.showInputOsimxFileStatus();
+            app.validateAdvancedSettings();
             app.RunButton.Enable = app.inputModelValid && ...
                 app.inputMotionFileValid && app.inputGrfFileValid && ...
                 app.resultsDirectoryValid && app.contactSurfacesValid && ...
-                app.tasksValid && app.advancedSettingsValid;
+                app.tasksValid && app.advancedSettingsValid && osimxValid;
             app.updateTabControls();
         end
 
@@ -1532,6 +1695,12 @@ classdef GCPBase < matlab.apps.AppBase
 
         function setGrfTimeRange(app, range)
             app.grf_time_range = range;
+        end
+
+        % Called by parseOsimxFileGui with parseOsimxFile's contactSurface
+        % cell, or an empty cell when the file has none
+        function setOsimxContactSurfaces(app, contactSurfaces)
+            app.osimxContactSurfaces = contactSurfaces;
         end
     end
 

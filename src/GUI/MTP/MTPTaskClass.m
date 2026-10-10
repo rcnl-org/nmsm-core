@@ -34,7 +34,6 @@ classdef MTPTaskClass < handle
         name = "";
         index = 0;
         is_enabled = 'true';
-        muscle_specific_electromechanical_delays = 'true';
         optimize_electromechanical_delays = 'true';
         optimize_activation_time_constants = 'true';
         optimize_activation_nonlinearity_constants = 'true';
@@ -45,9 +44,11 @@ classdef MTPTaskClass < handle
     end
 
     properties (Constant)
+        % muscle_specific_electromechanical_delays is not here: MTP reads
+        % it once for the whole run, so MTPBase holds it as an advanced
+        % setting
         parameterNames = ...
-            ["muscle_specific_electromechanical_delays"
-            "optimize_electromechanical_delays"
+            ["optimize_electromechanical_delays"
             "optimize_activation_time_constants"
             "optimize_activation_nonlinearity_constants"
             "optimize_emg_scale_factors"
