@@ -215,6 +215,7 @@ classdef JMPJointSelection < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app, JMPParent, Joint)
+            enableButtonHoverPointerGui(app.UIFigure);
             app.JMPParent = JMPParent;
             % modelJoints = JMPTaskCreation.JMPBase.getModelJoints();
             modelJoints = JMPParent.getModelJoints();

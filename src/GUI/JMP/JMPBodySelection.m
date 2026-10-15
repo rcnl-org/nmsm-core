@@ -120,6 +120,7 @@ classdef JMPBodySelection < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app, JMPParent, JMPBody)
+            enableButtonHoverPointerGui(app.UIFigure);
             app.JMPParent = JMPParent;
             modelBodies = JMPParent.getModelBodies();
             app.BodyNameDropDown.Items = modelBodies;
