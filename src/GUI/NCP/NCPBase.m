@@ -1021,6 +1021,7 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+            enableButtonHoverPointerGui(app.UIFigure);
             app.MuscleTendonLengthInitialization = ...
                 MuscleTendonLengthInitializationClass();
             app.makeListeners()

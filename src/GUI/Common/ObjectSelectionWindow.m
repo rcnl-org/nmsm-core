@@ -36,6 +36,7 @@ classdef ObjectSelectionWindow < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app, ParentApp, ObjectList, EditedProperty)
+            enableButtonHoverPointerGui(app.UIFigure);
             app.ParentApp = ParentApp;
 
             objectNames = ObjectList(:);

@@ -410,6 +410,7 @@ classdef SurrogateModelGui < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
+            enableButtonHoverPointerGui(app.UIFigure);
             app.UIFigure.Name = 'Surrogate Muscle Model';
             app.fileInfoCache = containers.Map('KeyType', 'char', 'ValueType', 'any');
             app.output_directory = string(fullfile(pwd, 'SurrogateData'));
