@@ -5,6 +5,17 @@
 % contact surfaces are present. This function also calculates inverse
 % dynamic moments.
 %
+% CALLING THIS OUTSIDE THE TO SOLVER - two things:
+%
+% 1. values.positions/velocities/accelerations must contain every model
+%    coordinate, in inputs.coordinateNames order 
+% 2. The returned modeledValues.inverseDynamicsMoments is in multibody (Q) 
+%    order, not CoordinateSet order. Match columns to coordinates by label.
+%
+% before reusing this function with a different model or different
+% contact surfaces in the same MATLAB session, call
+%   clear calcTorqueBasedModeledValues
+%
 % (struct, struct) -> (struct)
 % returns body locations, ground reactions, and inverse dynamic moments
 
@@ -117,7 +128,7 @@ end
 function [springPositions, springVelocities, bodyLocations, ...
     markerPositions, markerVelocities] = ...
     calculateModeledValuesPointKinematics(values, inputs)
-persistent pointLocations; 
+persistent pointLocations;
 persistent bodyIndices;
 persistent outputIndices;
 springPositions = [];

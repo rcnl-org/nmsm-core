@@ -1,7 +1,21 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% () -> ()
-% 
+% Reads the contactSurface entries out of inputs.osimx and fills in the
+% springs, body indices and the experimental GRF columns.
+%
+% NAME COLLISION - the local prepareGroundContactSurfaces below takes 3
+% arguments (osimModel, contactSurfaces, grfFileName) and is NOT the same
+% function as the 2-argument file
+% src/TreatmentOptimization/prepareGroundContactSurfaces.m. Only this
+% local one attaches experimentalGroundReactionForces/Moments and
+% electricalCenter.
+%
+% Requires inputs.model (a model FILE NAME, not a Model object),
+% inputs.osimx and inputs.grfFileName; returns {} if any are missing,
+% silently leaving the problem with no contact surfaces.
+%
+% (struct) -> (Cell array of struct)
+% Parses ground contact surfaces from the osimx file
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %

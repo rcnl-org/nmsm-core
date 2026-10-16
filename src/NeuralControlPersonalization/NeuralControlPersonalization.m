@@ -92,6 +92,12 @@ inputs.numTrials = size(inputs.momentArms, 1);
 
 % BJ's Runboh Bspline + precompute matrix, replace MATLAB spline because:
 % Compatible with Auto Diff; won't create negative values; faster
+%
+% UNIFORM TIME SPACING IS ASSUMED HERE. Data taken from a TO result is 
+% on the collocation grid, which is NOT uniform 
+% Resample every input (IK, ID, MAData and the initial-guess commands) 
+% onto a common uniform grid before running NCP
+
 degree = 3;
 percent = linspace(0, 100, inputs.numPoints).';
 interval = percent(2) - percent(1);

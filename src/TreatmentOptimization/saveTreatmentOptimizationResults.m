@@ -168,6 +168,9 @@ end
 delete(inputs.mexModel);
 end
 
+% IKData is in inputs.coordinateNames (CoordinateSet) order
+% IDData is in inputs.inverseDynamicsMomentLabels order, which follows the 
+% multibody (Q) ordering the ID solver returns - see inverseDynamics.m.
 function saveInverseKinematicsResults(inputs, values, outputDirectory)
 if ~exist(fullfile(outputDirectory, "IKData"), "dir")
     mkdir(fullfile(outputDirectory, "IKData"))

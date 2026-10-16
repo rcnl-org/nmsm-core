@@ -382,6 +382,19 @@ end
 
 % -------------------------------------------------------------------------
 % Fits nodes to the given point-level commands
+%
+% KNOWN LIMITATION: the reason "more nodes" can make a warm start worse
+% Solve the unconstrained least-squares fit with pinv and then clamp the
+% result to be non-negative, which is not the same as solving the bounded 
+% problem. With a larger numNodes pinv becomes more ill-conditioned, the 
+% node values oscillate more, more of them hit the clamp
+%
+% Two ways to fix:
+%   - solve the bounded problem instead, e.g. lsqlin(Bmatrix, c, [], [],
+%     [], [], lb, []) per column. 
+%   - pre-project the guess into this basis before NCP: 
+%     nodes = bounded fit, then save Bmatrix * nodes as the initial-guess 
+%     commands.
 function commandsInitNodes = commandsPointsToNodes(commandsInitStack, inputs)
 commandsInit = reshape(commandsInitStack, inputs.numTrials, ...
     inputs.numPoints, inputs.numSynergies);

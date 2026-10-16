@@ -4,6 +4,8 @@
 % moments and the torque based control for the specified coordinate.
 % Applicable only if the model is torque driven.
 %
+% NOT CALLED ANYWHERE.
+%
 % (struct, struct, 2D matrix, Array of string) -> (Array of number)
 %
 
