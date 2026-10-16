@@ -57,7 +57,7 @@ if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
 [~, fname, fext] = fileparts(settingsFileName);
-copyfile(settingsFileName, fullfile(resultsDirectory, fname + fext));
+copyfile(settingsFileName, fullfile(resultsDirectory, [fname fext]));
 updateRunStageGui(app, 'ParsingLabel', 'off');
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
@@ -75,6 +75,10 @@ end
 % below the same way a converged run is.
 if runCancelled(app)
     diary off
+    try
+        movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+    catch
+    end
     return
 end
 
@@ -98,6 +102,10 @@ saveNeuralControlPersonalizationResults(synergyWeights, ...
 updateRunStageGui(app, 'SavingResultsLabel', 'off');
 fprintf("Neural Control Personalization Runtime: %f Hours\n", toc/3600);
 diary off
+try
+    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+catch
+end
 end
 
 % (App) -> (logical)
