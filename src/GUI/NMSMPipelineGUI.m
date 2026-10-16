@@ -552,6 +552,8 @@ classdef NMSMPipelineGUI < matlab.apps.AppBase
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
+
+            movegui(app.UIFigure, 'center');
         end
     end
 
