@@ -15,7 +15,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         CostTermsButton                 matlab.ui.control.Button
         ConstraintTermsButton           matlab.ui.control.Button
         AdvancedButton                  matlab.ui.control.Button
-        MTPImage                        matlab.ui.control.Image
+        TreOptImage                        matlab.ui.control.Image
         Mask1                           matlab.ui.control.Image
         TabGroup                        matlab.ui.container.TabGroup
         InputsTab                       matlab.ui.container.Tab
@@ -4849,8 +4849,9 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.Mask1.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'greyMask.png');
 
             % Create MTPImage
-            app.MTPImage = uiimage(app.UIFigure);
-            app.MTPImage.Position = [1 442 178 420];
+            app.TreOptImage = uiimage(app.UIFigure);
+            app.TreOptImage.Position = [1 442 178 420];
+            app.TreOptImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'TO Skeleton.png');
 
             % Create AdvancedButton
             app.AdvancedButton = uibutton(app.UIFigure, 'push');

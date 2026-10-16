@@ -1912,7 +1912,7 @@ classdef JMPBase < matlab.apps.AppBase
             % Create JMPImage
             app.JMPImage = uiimage(app.UIFigure);
             app.JMPImage.Position = [21 33 178 420];
-            app.JMPImage.ImageSource = 'jmpFigure.png';
+            app.JMPImage.ImageSource = 'JMP Skeleton.png';
 
             % Create ResetButton
             app.ResetButton = uibutton(app.UIFigure, 'push');

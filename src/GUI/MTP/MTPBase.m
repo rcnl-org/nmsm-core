@@ -2473,7 +2473,7 @@ classdef MTPBase < matlab.apps.AppBase
             % Create MTPImage
             app.MTPImage = uiimage(app.UIFigure);
             app.MTPImage.Position = [1 193 178 420];
-            app.MTPImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'mtpFigure.png');
+            app.MTPImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'MTP Skeleton.png');
 
             % Create MuscleGroupsButton
             app.MuscleGroupsButton = uibutton(app.UIFigure, 'push');

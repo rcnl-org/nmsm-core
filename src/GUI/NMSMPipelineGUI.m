@@ -256,7 +256,7 @@ classdef NMSMPipelineGUI < matlab.apps.AppBase
             % Create TreOptButton
             app.TreOptButton = uibutton(app.UIFigure, 'push');
             app.TreOptButton.ButtonPushedFcn = createCallbackFcn(app, @TreOptButtonPushed, true);
-            app.TreOptButton.Icon = fullfile(pathToMLAPP, 'Images', 'treoptFigure.png');
+            app.TreOptButton.Icon = fullfile(pathToMLAPP, 'Images', 'TO Skeleton.png');
             app.TreOptButton.BackgroundColor = [0.851 0.851 0.851];
             app.TreOptButton.FontColor = [0.0706 0.4392 0.749];
             app.TreOptButton.Position = [1426 371 277 459];
@@ -265,7 +265,7 @@ classdef NMSMPipelineGUI < matlab.apps.AppBase
             % Create NcpButton
             app.NcpButton = uibutton(app.UIFigure, 'push');
             app.NcpButton.ButtonPushedFcn = createCallbackFcn(app, @NcpButtonPushed, true);
-            app.NcpButton.Icon = fullfile(pathToMLAPP, 'Images', 'ncpFigure.png');
+            app.NcpButton.Icon = fullfile(pathToMLAPP, 'Images', 'NCP Skeleton.png');
             app.NcpButton.BackgroundColor = [0.851 0.851 0.851];
             app.NcpButton.FontColor = [0.0706 0.4392 0.749];
             app.NcpButton.Position = [1091 370 277 460];
@@ -274,7 +274,7 @@ classdef NMSMPipelineGUI < matlab.apps.AppBase
             % Create MtpButton
             app.MtpButton = uibutton(app.UIFigure, 'push');
             app.MtpButton.ButtonPushedFcn = createCallbackFcn(app, @MtpButtonPushed, true);
-            app.MtpButton.Icon = fullfile(pathToMLAPP, 'Images', 'mtpFigure.png');
+            app.MtpButton.Icon = fullfile(pathToMLAPP, 'Images', 'MTP Skeleton.png');
             app.MtpButton.IconAlignment = 'center';
             app.MtpButton.BackgroundColor = [0.851 0.851 0.851];
             app.MtpButton.FontColor = [0.0706 0.4392 0.749];
@@ -284,7 +284,7 @@ classdef NMSMPipelineGUI < matlab.apps.AppBase
             % Create JmpButton
             app.JmpButton = uibutton(app.UIFigure, 'push');
             app.JmpButton.ButtonPushedFcn = createCallbackFcn(app, @JmpButtonPushed, true);
-            app.JmpButton.Icon = fullfile(pathToMLAPP, 'Images', 'jmpFigure.png');
+            app.JmpButton.Icon = fullfile(pathToMLAPP, 'Images', 'JMP Skeleton.png');
             app.JmpButton.BackgroundColor = [0.851 0.851 0.851];
             app.JmpButton.FontColor = [0.0706 0.4392 0.749];
             app.JmpButton.Position = [85 371 277 459];
@@ -293,7 +293,7 @@ classdef NMSMPipelineGUI < matlab.apps.AppBase
             % Create GcpButton
             app.GcpButton = uibutton(app.UIFigure, 'push');
             app.GcpButton.ButtonPushedFcn = createCallbackFcn(app, @GcpButtonPushed, true);
-            app.GcpButton.Icon = fullfile(pathToMLAPP, 'Images', 'gcpFigure.png');
+            app.GcpButton.Icon = fullfile(pathToMLAPP, 'Images', 'GCP Skeleton.png');
             app.GcpButton.BackgroundColor = [0.851 0.851 0.851];
             app.GcpButton.FontColor = [0.0706 0.4392 0.749];
             app.GcpButton.Position = [420 371 277 459];
@@ -507,7 +507,7 @@ classdef NMSMPipelineGUI < matlab.apps.AppBase
             app.RCNL2026ModelButton.FontWeight = 'bold';
             app.RCNL2026ModelButton.FontColor = [0.0667 0.4431 0.7451];
             app.RCNL2026ModelButton.Position = [1087 60 288 64];
-            app.RCNL2026ModelButton.Text = 'RCNL 2026 Model';
+            app.RCNL2026ModelButton.Text = 'RCNL 2025 Model';
 
             % Create NmsmWebsiteButton
             app.NmsmWebsiteButton = uibutton(app.UIFigure, 'push');
