@@ -7,7 +7,10 @@
 % (they are constant numeric data, not design-variable-dependent, so
 % ordinary 3-D reshapes on them are safe).
 %
-% (Array of number, struct, struct) -> (number)
+% Also returns the stacked scaled residual, for which
+% cost == residual' * residual.
+%
+% (Array of number, struct, struct) -> (number, Array of number)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -31,10 +34,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcCasadiNcpCost(values, inputs, params)
+function [cost, residual] = calcCasadiNcpCost(values, inputs, params)
 [activations2d, ~, commands2d] = calcCasadiActivationsFromSynergyDesignVariables( ...
     values, inputs);
 cost = 0;
+residualParts = {};
 if isfield(inputs, 'mtpActivationsColumnNames')
     [activationsWithMtpData, activationsWithoutMtpData] = ...
         makeCasadiMtpActivatonSubset(activations2d, ...
@@ -82,8 +86,12 @@ for term = 1:length(params.costTerms)
         rawCostScaled = (rawCost / costTerm.maxAllowableError) / ...
             sqrt(numel(rawCost));
         cost = cost + rawCostScaled.' * rawCostScaled;
+        residualParts{end + 1} = rawCostScaled; %#ok<AGROW>
     end
 end
+% cost == residual' * residual, which prepareNcpCasadiDerivatives.m uses to
+% assemble the Hessian from first-order derivatives of the residual
+residual = vertcat(residualParts{:});
 end
 
 % Flattens a [numTrials x numColumns x numPoints] numeric array into
