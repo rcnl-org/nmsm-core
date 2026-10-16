@@ -127,6 +127,23 @@ classdef MTPBase < matlab.apps.AppBase
         PassiveDataInputDirectoryEditFieldLabel  matlab.ui.control.Label
         AdvancedTab                     matlab.ui.container.Tab
         AdvancedSettingsTable           matlab.ui.control.Table
+        PlottingButton                  matlab.ui.control.Button
+        PlottingTab                     matlab.ui.container.Tab
+        PlottingNoteLabel               matlab.ui.control.Label
+        PlotSettingsFileEditField       matlab.ui.control.EditField
+        PlotSettingsFileEditFieldLabel  matlab.ui.control.Label
+        PlotResultsDirectoryEditField   matlab.ui.control.EditField
+        PlotResultsDirectoryEditFieldLabel  matlab.ui.control.Label
+        PlotResultsDirectoryStatus      matlab.ui.control.Image
+        CompareSettingsFileEditField    matlab.ui.control.EditField
+        CompareSettingsFileEditFieldLabel  matlab.ui.control.Label
+        CompareSettingsFileSearchButton  matlab.ui.control.Button
+        CompareSettingsFileStatus       matlab.ui.control.Image
+        CompareNoteLabel                matlab.ui.control.Label
+        CompareResultsDirectoryEditField  matlab.ui.control.EditField
+        CompareResultsDirectoryEditFieldLabel  matlab.ui.control.Label
+        CompareResultsDirectoryStatus   matlab.ui.control.Image
+        PlotButton                      matlab.ui.control.Button
         MuscletendonModelPersonalizationToolLabel  matlab.ui.control.Label
         ContextMenu                     matlab.ui.container.ContextMenu
         RenameMenu                      matlab.ui.container.Menu
@@ -180,6 +197,10 @@ classdef MTPBase < matlab.apps.AppBase
         timePoints double = [];
         idLabels string = [];
         emgLabels string = [];
+
+        % A second MTP settings file whose run is plotted and compared
+        % with this one in the Plotting tab
+        compare_settings_file string = "";
     end
 
     properties (Constant, Access = private)
@@ -241,6 +262,13 @@ classdef MTPBase < matlab.apps.AppBase
         advancedSettingsListener
         selectedTabListener
         auxTabListener
+        compareSettingsFileListener
+    end
+
+    properties (Access = private)
+        % The results directory each comparison settings file names, by
+        % path and modification time
+        compareFileCache
     end
 
     methods (Access = private) % listener methods
@@ -315,6 +343,10 @@ classdef MTPBase < matlab.apps.AppBase
             app.auxTabListener = addlistener(app.AuxiliaryToolsTabGroup, ...
                 'SelectedTab', 'PostSet', ...
                 @(src, event)formatTabButtons(app));
+
+            app.compareSettingsFileListener = addlistener(app, ...
+                'compare_settings_file', 'PostSet', ...
+                @(src, event)refreshPlottingTab(app));
         end
 
         function InputModelFileListenerFunction(app)
@@ -571,15 +603,157 @@ classdef MTPBase < matlab.apps.AppBase
             end
             updateTabButtonStyles(app.TabGroup.SelectedTab, ...
                 [app.InputsTab, app.MuscleGroupsTab, app.MTPTasksTab, ...
-                app.AuxiliaryTab, app.AdvancedTab], ...
+                app.AuxiliaryTab, app.AdvancedTab, app.PlottingTab], ...
                 [app.InputsButton, app.MuscleGroupsButton, ...
                 app.MTPTasksButton, app.AuxiliaryToolsButton, ...
-                app.AdvancedButton]);
+                app.AdvancedButton, app.PlottingButton]);
             if app.TabGroup.SelectedTab == app.AuxiliaryTab
                 updateTabButtonStyles(app.AuxiliaryToolsTabGroup.SelectedTab, ...
                     [app.MuscleTendonLengthInitializationTab, ...
                     app.SynergyExtrapolationTab], ...
                     [app.MTLIButton, app.SynxButton]);
+            end
+            % The tab shows the current settings, which are edited in the
+            % other tabs, so it is redrawn each time it is opened
+            if app.TabGroup.SelectedTab == app.PlottingTab
+                app.refreshPlottingTab();
+            end
+        end
+
+        % Fills the Plotting tab from the current settings and checks what
+        % plotMtpResultsFromSettingsFile needs: a results directory holding
+        % an MTP run for this settings file and, if given, for the
+        % comparison settings file.
+        function refreshPlottingTab(app)
+            if ~isvalid(app) || ~isvalid(app.PlottingTab)
+                return
+            end
+            if app.currentSettingsFile == ""
+                app.PlotSettingsFileEditField.Value = ...
+                    '(not saved yet; Plot will ask where to save it)';
+            else
+                app.PlotSettingsFileEditField.Value = ...
+                    getRelativePath(app.currentSettingsFile);
+            end
+            app.PlotResultsDirectoryEditField.Value = ...
+                getRelativePath(app.results_directory);
+            problems = app.showPlotStatus(app.PlotResultsDirectoryEditField, ...
+                app.PlotResultsDirectoryStatus, ...
+                app.resultsDirectoryProblem(app.results_directory, ...
+                "the MTP Inputs tab"));
+
+            app.CompareSettingsFileEditField.Value = ...
+                getRelativePath(app.compare_settings_file);
+            app.CompareResultsDirectoryEditField.Value = '';
+            fileMessage = "";
+            directoryMessage = "";
+            if app.compare_settings_file ~= ""
+                [directory, fileMessage] = app.compareResultsDirectory();
+                if fileMessage == ""
+                    app.CompareResultsDirectoryEditField.Value = ...
+                        getRelativePath(directory);
+                    directoryMessage = app.resultsDirectoryProblem( ...
+                        directory, "the comparison settings file");
+                end
+            end
+            problems = app.showPlotStatus(app.CompareSettingsFileEditField, ...
+                app.CompareSettingsFileStatus, fileMessage) || problems;
+            problems = app.showPlotStatus(app.CompareResultsDirectoryEditField, ...
+                app.CompareResultsDirectoryStatus, directoryMessage) || problems;
+
+            % Plot saves the settings first, so they must be valid too
+            app.PlotButton.Enable = ~problems && app.RunButton.Enable;
+            app.PlotButton.Tooltip = '';
+            if ~problems && ~app.RunButton.Enable
+                app.PlotButton.Tooltip = ['Fix the settings in the other ' ...
+                    'tabs first; Plot saves them before plotting.'];
+            end
+        end
+
+        % Why a results directory cannot be plotted, or "" if it can. The
+        % plots read the Analysis folder an MTP run writes.
+        function message = resultsDirectoryProblem(~, directory, source)
+            message = "";
+            if directory == ""
+                message = "No results directory is set in " + source + ".";
+            elseif ~isfolder(directory)
+                message = "The results directory does not exist. Run " + ...
+                    "MTP to create it before plotting.";
+            elseif ~isfolder(fullfile(directory, "Analysis"))
+                message = "The results directory has no Analysis folder, " + ...
+                    "so it does not hold MTP results yet. Run MTP first.";
+            end
+        end
+
+        % The results directory the comparison settings file names, as
+        % plotMtpResultsFromSettingsFile will find it: a relative path is
+        % taken from the folder Plot runs in, which is this settings
+        % file's folder, not the comparison file's own folder. Returns why
+        % the file cannot be used instead, if it cannot.
+        function [directory, message] = compareResultsDirectory(app)
+            file = app.compare_settings_file;
+            directory = "";
+            if ~isfile(file)
+                message = "The comparison settings file does not exist.";
+                return
+            end
+            if isempty(app.compareFileCache)
+                app.compareFileCache = containers.Map('KeyType', 'char', ...
+                    'ValueType', 'any');
+            end
+            listing = dir(file);
+            key = char(file + "|" + string(listing(1).datenum));
+            if ~isKey(app.compareFileCache, key)
+                entry = struct('text', "", 'message', "");
+                try
+                    tree = xml2struct(char(file));
+                    if ~isfield(tree, 'NMSMPipelineDocument') || ...
+                            ~isfield(tree.NMSMPipelineDocument, ...
+                            'MuscleTendonPersonalizationTool')
+                        entry.message = "This is not an MTP settings file.";
+                    else
+                        field = getFieldByName(tree, 'results_directory');
+                        if isstruct(field) && isfield(field, 'Text')
+                            entry.text = strtrim(string(field.Text));
+                        end
+                        if entry.text == ""
+                            entry.message = "The comparison settings " + ...
+                                "file has no results directory.";
+                        end
+                    end
+                catch exception
+                    entry.message = "The comparison settings file could " + ...
+                        "not be read. (" + string(exception.message) + ")";
+                end
+                app.compareFileCache(key) = entry;
+            end
+            entry = app.compareFileCache(key);
+            message = entry.message;
+            if message ~= ""
+                return
+            end
+            base = pwd;
+            if app.currentSettingsFile ~= ""
+                base = fileparts(app.currentSettingsFile);
+            end
+            directory = entry.text;
+            if ~isAbsolutePath(directory)
+                directory = string(GetFullPath(char(fullfile(base, directory))));
+            end
+        end
+
+        % Shows a Plotting tab check, returning whether it is an error. The
+        % read-only fields keep their grey background when they are fine.
+        function isError = showPlotStatus(~, field, icon, message)
+            isError = message ~= "";
+            if isError
+                setGuiFieldStatus(field, icon, "error", message);
+            else
+                setGuiFieldStatus([], icon, "none");
+                if ~isempty(field)
+                    field.BackgroundColor = ternaryColor(field.Editable, ...
+                        [1 1 1], [0.94 0.94 0.94]);
+                end
             end
         end
 
@@ -684,6 +858,7 @@ classdef MTPBase < matlab.apps.AppBase
             end
             app.updateMTPTasksListBox();
             app.updateRunButton();
+            app.refreshPlottingTab();
         end
 
         function loadOptimizationParams(app, settingsTree)
@@ -749,7 +924,26 @@ classdef MTPBase < matlab.apps.AppBase
             app.emgLabels = [];
 
             app.advancedSettingValues = app.defaultAdvancedSettingValues;
+            app.compare_settings_file = "";
             app.updateRunButton();
+            app.refreshPlottingTab();
+        end
+
+        % Saves the current settings to the settings file, asking for a
+        % file name if there is none yet. Run and Plot both read the
+        % settings from the file. Returns false if the user cancels.
+        function saved = saveCurrentSettings(app)
+            saved = false;
+            if strcmp(app.currentSettingsFile, "")
+                [file, path] = uiputfile('*.xml', "Save XML Settings File");
+                % User hit "Cancel"
+                if isequal(file, 0)
+                    return
+                end
+                app.currentSettingsFile = fullfile(path, file);
+            end
+            app.saveSettingsFile(app.currentSettingsFile);
+            saved = true;
         end
     end
 
@@ -1024,15 +1218,9 @@ classdef MTPBase < matlab.apps.AppBase
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
-            if strcmp(app.currentSettingsFile, "")
-                [file, path] = uiputfile('*.xml', "Save XML Settings File");
-                % User hit "Cancel"
-                if isequal(file, 0)
-                    return
-                end
-                app.currentSettingsFile = fullfile(path, file);
+            if ~app.saveCurrentSettings()
+                return
             end
-            app.saveSettingsFile(app.currentSettingsFile);
             close all
             settingsFile = app.currentSettingsFile;
             stages = struct( ...
@@ -1075,6 +1263,54 @@ classdef MTPBase < matlab.apps.AppBase
         % Button pushed function: AdvancedButton
         function AdvancedButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.AdvancedTab;
+        end
+
+        % Button pushed function: PlottingButton
+        function PlottingButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.PlottingTab;
+        end
+
+        % Value changed function: CompareSettingsFileEditField
+        function CompareSettingsFileEditFieldValueChanged(app, event)
+            app.compare_settings_file = ...
+                getPathFieldValue(app.CompareSettingsFileEditField);
+        end
+
+        % Button pushed function: CompareSettingsFileSearchButton
+        function CompareSettingsFileSearchButtonPushed(app, event)
+            [file, path] = uigetfile('*.xml', ...
+                'Select an MTP Settings File to Compare');
+            % User hit "Cancel"
+            if isequal(file, 0)
+                return
+            end
+            app.compare_settings_file = string(fullfile(path, file));
+        end
+
+        % Button pushed function: PlotButton
+        function PlotButtonPushed(app, event)
+            if ~app.saveCurrentSettings()
+                return
+            end
+            settingsFile = app.currentSettingsFile;
+            compareFile = app.compare_settings_file;
+            progress = uiprogressdlg(app.UIFigure, 'Title', ...
+                'Muscle-Tendon Personalization', 'Message', ...
+                'Plotting Results...', 'Indeterminate', 'on');
+            try
+                if compareFile == ""
+                    plotMtpResultsFromSettingsFile(settingsFile);
+                else
+                    plotMtpResultsFromSettingsFile(settingsFile, compareFile);
+                end
+            catch exception
+                delete(progress);
+                uialert(app.UIFigure, exception.message, 'MTP Plotting Failed');
+                app.refreshPlottingTab();
+                return
+            end
+            delete(progress);
+            app.refreshPlottingTab();
         end
 
         % Value changed function: InputModelFileEditField
@@ -2102,6 +2338,132 @@ classdef MTPBase < matlab.apps.AppBase
             app.AdvancedSettingsStatus.Position = [359 496 28 30];
             app.AdvancedSettingsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
+            % Create PlottingTab
+            app.PlottingTab = uitab(app.TabGroup);
+            app.PlottingTab.BackgroundColor = [0.851 0.851 0.851];
+
+            % The settings the plots use are shown here but edited in the
+            % other tabs
+            readOnlyTip = ['Shown from the current settings. Edit these ' ...
+                'in the MTP Inputs tab; they can''t be changed here.'];
+
+            % Create PlottingNoteLabel
+            app.PlottingNoteLabel = uilabel(app.PlottingTab);
+            app.PlottingNoteLabel.FontAngle = 'italic';
+            app.PlottingNoteLabel.FontColor = [0.4 0.4 0.4];
+            app.PlottingNoteLabel.Position = [218 540 500 22];
+            app.PlottingNoteLabel.Text = ['These settings are edited in the ' ...
+                'MTP Inputs tab. Plot saves them first.'];
+            app.PlottingNoteLabel.Tooltip = readOnlyTip;
+
+            % Create PlotSettingsFileEditFieldLabel
+            app.PlotSettingsFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotSettingsFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotSettingsFileEditFieldLabel.FontSize = 18;
+            app.PlotSettingsFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotSettingsFileEditFieldLabel.Position = [31 500 177 30];
+            app.PlotSettingsFileEditFieldLabel.Text = 'Settings File';
+
+            % Create PlotSettingsFileEditField
+            app.PlotSettingsFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotSettingsFileEditField.Editable = 'off';
+            app.PlotSettingsFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotSettingsFileEditField.Tooltip = readOnlyTip;
+            app.PlotSettingsFileEditField.Position = [218 500 450 30];
+
+            % Create PlotResultsDirectoryEditFieldLabel
+            app.PlotResultsDirectoryEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotResultsDirectoryEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotResultsDirectoryEditFieldLabel.FontSize = 18;
+            app.PlotResultsDirectoryEditFieldLabel.FontWeight = 'bold';
+            app.PlotResultsDirectoryEditFieldLabel.Position = [31 455 177 30];
+            app.PlotResultsDirectoryEditFieldLabel.Text = 'Results Directory';
+
+            % Create PlotResultsDirectoryEditField
+            app.PlotResultsDirectoryEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotResultsDirectoryEditField.Editable = 'off';
+            app.PlotResultsDirectoryEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotResultsDirectoryEditField.Tooltip = readOnlyTip;
+            app.PlotResultsDirectoryEditField.Position = [218 455 450 30];
+
+            % Create PlotResultsDirectoryStatus
+            app.PlotResultsDirectoryStatus = uiimage(app.PlottingTab);
+            app.PlotResultsDirectoryStatus.Visible = 'off';
+            app.PlotResultsDirectoryStatus.Position = [678 455 28 30];
+            app.PlotResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create CompareSettingsFileEditFieldLabel
+            app.CompareSettingsFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.CompareSettingsFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.CompareSettingsFileEditFieldLabel.FontSize = 18;
+            app.CompareSettingsFileEditFieldLabel.FontWeight = 'bold';
+            app.CompareSettingsFileEditFieldLabel.Position = [31 366 177 48];
+            app.CompareSettingsFileEditFieldLabel.Text = {'Comparison'; 'Settings File'};
+
+            % Create CompareSettingsFileEditField
+            app.CompareSettingsFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.CompareSettingsFileEditField.ValueChangedFcn = createCallbackFcn(app, @CompareSettingsFileEditFieldValueChanged, true);
+            app.CompareSettingsFileEditField.Tooltip = ['Optional. Another MTP ' ...
+                'settings file, such as the other leg''s, whose run is ' ...
+                'plotted too and compared with this one.'];
+            app.CompareSettingsFileEditField.Position = [218 375 450 30];
+
+            % Create CompareSettingsFileSearchButton
+            app.CompareSettingsFileSearchButton = uibutton(app.PlottingTab, 'push');
+            app.CompareSettingsFileSearchButton.ButtonPushedFcn = createCallbackFcn(app, @CompareSettingsFileSearchButtonPushed, true);
+            app.CompareSettingsFileSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
+            app.CompareSettingsFileSearchButton.VerticalAlignment = 'bottom';
+            app.CompareSettingsFileSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.CompareSettingsFileSearchButton.Position = [678 375 31 30];
+            app.CompareSettingsFileSearchButton.Text = '';
+
+            % Create CompareSettingsFileStatus
+            app.CompareSettingsFileStatus = uiimage(app.PlottingTab);
+            app.CompareSettingsFileStatus.Visible = 'off';
+            app.CompareSettingsFileStatus.Position = [718 375 28 30];
+            app.CompareSettingsFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create CompareNoteLabel
+            app.CompareNoteLabel = uilabel(app.PlottingTab);
+            app.CompareNoteLabel.FontAngle = 'italic';
+            app.CompareNoteLabel.FontColor = [0.4 0.4 0.4];
+            app.CompareNoteLabel.Position = [218 345 500 22];
+            app.CompareNoteLabel.Text = ['Optional. Plots both runs and ' ...
+                'compares their Hill-type muscle parameters.'];
+
+            % Create CompareResultsDirectoryEditFieldLabel
+            app.CompareResultsDirectoryEditFieldLabel = uilabel(app.PlottingTab);
+            app.CompareResultsDirectoryEditFieldLabel.HorizontalAlignment = 'right';
+            app.CompareResultsDirectoryEditFieldLabel.FontSize = 18;
+            app.CompareResultsDirectoryEditFieldLabel.FontWeight = 'bold';
+            app.CompareResultsDirectoryEditFieldLabel.Position = [31 291 177 48];
+            app.CompareResultsDirectoryEditFieldLabel.Text = {'Comparison'; 'Results Directory'};
+
+            % Create CompareResultsDirectoryEditField
+            app.CompareResultsDirectoryEditField = uieditfield(app.PlottingTab, 'text');
+            app.CompareResultsDirectoryEditField.Editable = 'off';
+            app.CompareResultsDirectoryEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.CompareResultsDirectoryEditField.Tooltip = ['Read from the ' ...
+                'comparison settings file. A relative path is taken from ' ...
+                'this settings file''s folder, which is where Plot runs.'];
+            app.CompareResultsDirectoryEditField.Position = [218 300 450 30];
+
+            % Create CompareResultsDirectoryStatus
+            app.CompareResultsDirectoryStatus = uiimage(app.PlottingTab);
+            app.CompareResultsDirectoryStatus.Visible = 'off';
+            app.CompareResultsDirectoryStatus.Position = [678 300 28 30];
+            app.CompareResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotButton, centered under the fields
+            app.PlotButton = uibutton(app.PlottingTab, 'push');
+            app.PlotButton.ButtonPushedFcn = createCallbackFcn(app, @PlotButtonPushed, true);
+            app.PlotButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlotButton.FontSize = 18;
+            app.PlotButton.FontColor = [1 1 1];
+            app.PlotButton.Enable = 'off';
+            app.PlotButton.Position = [398 240 90 30];
+            app.PlotButton.Text = 'Plot';
+
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);
             app.Mask1.ScaleMethod = 'fill';
@@ -2139,6 +2501,15 @@ classdef MTPBase < matlab.apps.AppBase
             app.AdvancedButton.FontColor = [1 1 1];
             app.AdvancedButton.Position = [719 643 100 30];
             app.AdvancedButton.Text = 'Advanced';
+
+            % Create PlottingButton
+            app.PlottingButton = uibutton(app.UIFigure, 'push');
+            app.PlottingButton.ButtonPushedFcn = createCallbackFcn(app, @PlottingButtonPushed, true);
+            app.PlottingButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlottingButton.FontSize = 18;
+            app.PlottingButton.FontColor = [1 1 1];
+            app.PlottingButton.Position = [822 643 100 30];
+            app.PlottingButton.Text = 'Plotting';
 
             % Create InputsButton
             app.InputsButton = uibutton(app.UIFigure, 'push');
@@ -2267,4 +2638,12 @@ classdef MTPBase < matlab.apps.AppBase
             delete(app.UIFigure)
         end
     end
+end
+
+function color = ternaryColor(condition, whenTrue, whenFalse)
+if condition
+    color = whenTrue;
+else
+    color = whenFalse;
+end
 end
