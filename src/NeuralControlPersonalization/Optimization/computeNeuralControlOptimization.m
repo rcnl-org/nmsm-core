@@ -38,7 +38,9 @@ function finalValues = computeNeuralControlOptimization(initialValuesLong, ...
     inputs, params, app)
 [initWeights, ~, ~] = findSynergyWeightsAndCommands(initialValuesLong, inputs);
 initialValues = initialValuesLong;
-if inputs.enforce_bilateral_symmetry
+if ~inputs.optimize_synergy_vectors
+    initialValues(1:length(inputs.fixedSynergyVectorFlat)) = [];
+elseif inputs.enforce_bilateral_symmetry
     initialValues(1:inputs.numWeightsPerGroup(1)) = [];
 end
 numDesignVariables = length(initialValues);
@@ -103,7 +105,9 @@ else
     error('Unknown normalization method: %s', ...
         inputs.synergy_vector_normalization_method);
 end
-if inputs.enforce_bilateral_symmetry
+if ~inputs.optimize_synergy_vectors
+    finalValues = [inputs.fixedSynergyVectorFlat; finalValues];
+elseif inputs.enforce_bilateral_symmetry
     weightsVariables = finalValues(1:inputs.numWeightsPerGroup(1));
     finalValues = [weightsVariables; finalValues];
 end
@@ -114,7 +118,12 @@ end
 function [synergyWeightEquations, synergyWeightSums, lowerBounds, upperBounds] = ...
     makeConstraints(inputs, numDesignVariables, initWeights)
 
-if strcmpi(inputs.synergy_vector_normalization_method, 'sum')
+if ~inputs.optimize_synergy_vectors
+    % weights are fixed, so they are not design variables and there is
+    % nothing to normalize
+    synergyWeightEquations = [];
+    synergyWeightSums      = [];
+elseif strcmpi(inputs.synergy_vector_normalization_method, 'sum')
     if inputs.enforce_bilateral_symmetry
         activeGroups = inputs.synergyGroups(1);
         activeWeights = initWeights(1:inputs.synergyGroups{1}.numSynergies, ...
