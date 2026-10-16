@@ -2764,7 +2764,7 @@ classdef GCPBase < matlab.apps.AppBase
             % Create GcpImage
             app.GcpImage = uiimage(app.UIFigure);
             app.GcpImage.Position = [1 193 178 420];
-            app.GcpImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'gcpFigure.png');
+            app.GcpImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'GCP Skeleton.png');
 
             % Create AdvancedButton
             app.AdvancedButton = uibutton(app.UIFigure, 'push');

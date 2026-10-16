@@ -16,3 +16,5 @@ end
 
 disp(newline + "NMSM Pipeline Project Successfully Opened")
 clear opensimVersion
+
+NMSMPipelineGUI

@@ -112,6 +112,34 @@ classdef NCPBase < matlab.apps.AppBase
         EnableMTLICheckBox              matlab.ui.control.CheckBox
         AdvancedTab                     matlab.ui.container.Tab
         AdvancedSettingsTable           matlab.ui.control.Table
+        PlottingButton                  matlab.ui.control.Button
+        PlottingTab                     matlab.ui.container.Tab
+        PlottingNoteLabel               matlab.ui.control.Label
+        PlotSettingsFileEditField       matlab.ui.control.EditField
+        PlotSettingsFileEditFieldLabel  matlab.ui.control.Label
+        PlotInputModelFileEditField     matlab.ui.control.EditField
+        PlotInputModelFileEditFieldLabel  matlab.ui.control.Label
+        PlotInputModelFileStatus        matlab.ui.control.Image
+        PlotOsimxFileEditField          matlab.ui.control.EditField
+        PlotOsimxFileEditFieldLabel     matlab.ui.control.Label
+        PlotDataDirectoryEditField      matlab.ui.control.EditField
+        PlotDataDirectoryEditFieldLabel  matlab.ui.control.Label
+        PlotDataDirectoryStatus         matlab.ui.control.Image
+        PlotMtpResultsDirectoryEditField  matlab.ui.control.EditField
+        PlotMtpResultsDirectoryEditFieldLabel  matlab.ui.control.Label
+        PlotMtpResultsDirectoryStatus   matlab.ui.control.Image
+        PlotResultsDirectoryEditField   matlab.ui.control.EditField
+        PlotResultsDirectoryEditFieldLabel  matlab.ui.control.Label
+        PlotResultsDirectoryStatus      matlab.ui.control.Image
+        PlotTrialsEditField             matlab.ui.control.EditField
+        PlotTrialsEditFieldLabel        matlab.ui.control.Label
+        PlotTrialsStatus                matlab.ui.control.Image
+        AlternateResultsDirectoryEditField  matlab.ui.control.EditField
+        AlternateResultsDirectoryEditFieldLabel  matlab.ui.control.Label
+        AlternateResultsDirectorySearchButton  matlab.ui.control.Button
+        AlternateResultsDirectoryStatus  matlab.ui.control.Image
+        AlternateNoteLabel              matlab.ui.control.Label
+        PlotButton                      matlab.ui.control.Button
         NeuralControlModelPersonalizationToolLabel  matlab.ui.control.Label
     end
 
@@ -156,6 +184,10 @@ classdef NCPBase < matlab.apps.AppBase
 
         objectSelectionType string = "";  % Used to filter in setSelectedObjects
         currentSettingsFile string = "";
+
+        % A results directory plotted instead of the settings file's, set
+        % in the Plotting tab
+        alternate_results_directory string = "";
 
         % Error checking and flow control
         inputModelValid          logical = false
@@ -238,6 +270,7 @@ classdef NCPBase < matlab.apps.AppBase
         MinFiberLengthListener
         advancedSettingsListener
         selectedTabListener
+        alternateResultsDirectoryListener
 
         ncpCostTermListener
         RCNLSynergyListener
@@ -312,6 +345,10 @@ classdef NCPBase < matlab.apps.AppBase
             app.selectedTabListener = addlistener(app.TabGroup, ...
                 'SelectedTab', 'PostSet', ...
                 @(src, event)formatTabButtons(app));
+
+            app.alternateResultsDirectoryListener = addlistener(app, ...
+                'alternate_results_directory', 'PostSet', ...
+                @(src, event)refreshPlottingTab(app));
 
             app.enableMtliListener = addlistener(app.MuscleTendonLengthInitialization, ...
                 'is_enabled', 'PostSet', ...
@@ -444,10 +481,195 @@ classdef NCPBase < matlab.apps.AppBase
             end
             updateTabButtonStyles(app.TabGroup.SelectedTab, ...
                 [app.InputsTab, app.MuscleGroupsTab, app.CostTermsTab, ...
-                app.AuxiliaryTab, app.AdvancedTab], ...
+                app.AuxiliaryTab, app.AdvancedTab, app.PlottingTab], ...
                 [app.InputsButton, app.MuscleGroupsButton, ...
                 app.CostTermsButton, app.AuxiliaryToolsButton, ...
-                app.AdvancedButton]);
+                app.AdvancedButton, app.PlottingButton]);
+            % The tab shows the current settings, which are edited in the
+            % other tabs, so it is redrawn each time it is opened
+            if app.TabGroup.SelectedTab == app.PlottingTab
+                app.refreshPlottingTab();
+            end
+        end
+
+        % Fills the Plotting tab from the current settings and checks that
+        % every file plotNcpResultsFromSettingsFile reads is there, for
+        % each trial it will plot
+        function refreshPlottingTab(app)
+            if ~isvalid(app) || ~isvalid(app.PlottingTab)
+                return
+            end
+            if app.currentSettingsFile == ""
+                app.PlotSettingsFileEditField.Value = ...
+                    '(not saved yet; Plot will ask where to save it)';
+            else
+                app.PlotSettingsFileEditField.Value = ...
+                    getRelativePath(app.currentSettingsFile);
+            end
+            app.PlotInputModelFileEditField.Value = ...
+                getRelativePath(app.input_model_file);
+            app.PlotOsimxFileEditField.Value = ...
+                getRelativePath(app.input_osimx_file);
+            app.PlotDataDirectoryEditField.Value = ...
+                getRelativePath(app.data_directory);
+            app.PlotMtpResultsDirectoryEditField.Value = ...
+                getRelativePath(app.mtp_results_directory);
+            app.PlotResultsDirectoryEditField.Value = ...
+                getRelativePath(app.results_directory);
+            app.AlternateResultsDirectoryEditField.Value = ...
+                getRelativePath(app.alternate_results_directory);
+
+            message = "";
+            if app.input_model_file == ""
+                message = "No input model file is set in the NCP Inputs tab.";
+            elseif ~isfile(app.input_model_file)
+                message = "The input model file does not exist.";
+            end
+            problems = app.showPlotStatus(app.PlotInputModelFileEditField, ...
+                app.PlotInputModelFileStatus, message);
+
+            % The trials plotted, as the plot function finds them
+            trials = strings(0, 1);
+            if app.data_directory ~= "" && isfolder(app.data_directory)
+                tree = struct('trial_prefixes', struct('Text', ...
+                    char(strjoin(string(app.trial_prefixes), " "))));
+                trials = unique(string(findPrefixes(tree, ...
+                    char(app.data_directory))), 'stable');
+            end
+            app.PlotTrialsEditField.Value = char(strjoin(trials, ", "));
+            message = "";
+            if isempty(trials)
+                message = "No trials were found in the input data " + ...
+                    "directory's IDData folder.";
+            end
+            problems = app.showPlotStatus(app.PlotTrialsEditField, ...
+                app.PlotTrialsStatus, message) || problems;
+
+            if app.data_directory == ""
+                message = "No input data directory is set in the NCP Inputs tab.";
+            elseif ~isfolder(app.data_directory)
+                message = "The input data directory does not exist.";
+            else
+                message = app.missingFiles(app.data_directory, ...
+                    "IDData" + filesep + trials + ".sto");
+            end
+            problems = app.showPlotStatus(app.PlotDataDirectoryEditField, ...
+                app.PlotDataDirectoryStatus, message) || problems;
+
+            % Optional: compared with the NCP activations when given
+            message = "";
+            if app.mtp_results_directory ~= ""
+                if ~isfolder(app.mtp_results_directory)
+                    message = "The MTP results directory does not exist.";
+                else
+                    message = app.missingFiles(app.mtp_results_directory, ...
+                        "muscleActivations" + filesep + trials + ...
+                        "_muscleActivations.sto");
+                end
+            end
+            problems = app.showPlotStatus(app.PlotMtpResultsDirectoryEditField, ...
+                app.PlotMtpResultsDirectoryStatus, message) || problems;
+
+            % The NCP results come from the alternate directory if one is
+            % given, so its problems show there instead
+            [~, osimxName] = fileparts(app.input_osimx_file);
+            if app.input_osimx_file == ""
+                [~, osimxName] = fileparts(app.input_model_file);
+            end
+            resultFiles = ["synergyWeights.sto"; trials + "_synergyCommands.sto"; ...
+                "modelMoments" + filesep + trials + "_modeledMomentsNcp.sto"; ...
+                string(osimxName) + "_ncp.osimx"];
+            alternate = app.alternate_results_directory ~= "";
+            if alternate
+                directory = app.alternate_results_directory;
+            else
+                directory = app.results_directory;
+            end
+            if directory == ""
+                message = "No results directory is set in the NCP Inputs tab.";
+            elseif ~isfolder(directory)
+                message = "The results directory does not exist. Run NCP " + ...
+                    "to create it before plotting.";
+            else
+                message = app.missingFiles(directory, resultFiles);
+                if message ~= ""
+                    message = message + newline + "Run NCP to create them.";
+                end
+            end
+            if alternate
+                problems = app.showPlotStatus([], ...
+                    app.PlotResultsDirectoryStatus, "") || problems;
+                problems = app.showPlotStatus( ...
+                    app.AlternateResultsDirectoryEditField, ...
+                    app.AlternateResultsDirectoryStatus, message) || problems;
+                app.PlotResultsDirectoryEditField.FontColor = [0.5 0.5 0.5];
+            else
+                problems = app.showPlotStatus(app.PlotResultsDirectoryEditField, ...
+                    app.PlotResultsDirectoryStatus, message) || problems;
+                problems = app.showPlotStatus( ...
+                    app.AlternateResultsDirectoryEditField, ...
+                    app.AlternateResultsDirectoryStatus, "") || problems;
+                app.PlotResultsDirectoryEditField.FontColor = [0 0 0];
+            end
+
+            % Plot saves the settings first, so they must be valid too
+            app.PlotButton.Enable = ~problems && app.RunButton.Enable;
+            app.PlotButton.Tooltip = '';
+            if ~problems && ~app.RunButton.Enable
+                app.PlotButton.Tooltip = ['Fix the settings in the other ' ...
+                    'tabs first; Plot saves them before plotting.'];
+            end
+        end
+
+        % Which of a directory's files are missing, as a message, or "" if
+        % none are. Lists the first few.
+        function message = missingFiles(~, directory, files)
+            message = "";
+            if isempty(files)
+                return
+            end
+            missing = files(~arrayfun(@(file) isfile(fullfile(directory, file)), files));
+            if isempty(missing)
+                return
+            end
+            shown = missing(1 : min(5, numel(missing)));
+            message = "Missing " + numel(missing) + " file(s) the plots " + ...
+                "read:" + newline + strjoin(shown, newline);
+            if numel(missing) > numel(shown)
+                message = message + newline + "...";
+            end
+        end
+
+        % Shows a Plotting tab check, returning whether it is an error. The
+        % read-only fields keep their grey background when they are fine.
+        function isError = showPlotStatus(~, field, icon, message)
+            isError = message ~= "";
+            if isError
+                setGuiFieldStatus(field, icon, "error", message);
+            else
+                setGuiFieldStatus([], icon, "none");
+                if ~isempty(field)
+                    field.BackgroundColor = ternaryColor(field.Editable, ...
+                        [1 1 1], [0.94 0.94 0.94]);
+                end
+            end
+        end
+
+        % Saves the current settings to the settings file, asking for a
+        % file name if there is none yet. Run and Plot both read the
+        % settings from the file. Returns false if the user cancels.
+        function saved = saveCurrentSettings(app)
+            saved = false;
+            if strcmp(app.currentSettingsFile, "")
+                [file, path] = uiputfile('*.xml', "Save XML Settings File");
+                % User hit "Cancel"
+                if isequal(file, 0)
+                    return
+                end
+                app.currentSettingsFile = fullfile(path, file);
+            end
+            app.saveSettingsFile(app.currentSettingsFile);
+            saved = true;
         end
 
         function makeDefaultCostTermSet(app)
@@ -1062,15 +1284,9 @@ classdef NCPBase < matlab.apps.AppBase
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
-            if strcmp(app.currentSettingsFile, "")
-                [file, path] = uiputfile('*.xml', "Save XML Settings File");
-                % User hit "Cancel"
-                if isequal(file, 0)
-                    return
-                end
-                app.currentSettingsFile = fullfile(path, file);
+            if ~app.saveCurrentSettings()
+                return
             end
-            app.saveSettingsFile(app.currentSettingsFile);
             % Clears figures left over from a previous run so the result
             % plots are the only ones on screen.
             close all
@@ -1115,6 +1331,53 @@ classdef NCPBase < matlab.apps.AppBase
         % Button pushed function: AdvancedButton
         function AdvancedButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.AdvancedTab;
+        end
+
+        % Button pushed function: PlottingButton
+        function PlottingButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.PlottingTab;
+        end
+
+        % Value changed function: AlternateResultsDirectoryEditField
+        function AlternateResultsDirectoryEditFieldValueChanged(app, event)
+            app.alternate_results_directory = ...
+                getPathFieldValue(app.AlternateResultsDirectoryEditField);
+        end
+
+        % Button pushed function: AlternateResultsDirectorySearchButton
+        function AlternateResultsDirectorySearchButtonPushed(app, event)
+            folder = uigetdir(pwd, 'Select an NCP Results Directory to Plot');
+            % User hit "Cancel"
+            if isequal(folder, 0)
+                return
+            end
+            app.alternate_results_directory = string(folder);
+        end
+
+        % Button pushed function: PlotButton
+        function PlotButtonPushed(app, event)
+            if ~app.saveCurrentSettings()
+                return
+            end
+            settingsFile = app.currentSettingsFile;
+            alternate = app.alternate_results_directory;
+            progress = uiprogressdlg(app.UIFigure, 'Title', ...
+                'Neural Control Personalization', 'Message', ...
+                'Plotting Results...', 'Indeterminate', 'on');
+            try
+                if alternate == ""
+                    plotNcpResultsFromSettingsFile(settingsFile);
+                else
+                    plotNcpResultsFromSettingsFile(settingsFile, alternate);
+                end
+            catch exception
+                delete(progress);
+                uialert(app.UIFigure, exception.message, 'NCP Plotting Failed');
+                app.refreshPlottingTab();
+                return
+            end
+            delete(progress);
+            app.refreshPlottingTab();
         end
 
         % Value changed function: InputModelFileEditField
@@ -1430,6 +1693,7 @@ classdef NCPBase < matlab.apps.AppBase
 
             app.validateSynergyGroups();
             app.updateRunButton();
+            app.refreshPlottingTab();
         end
 
         function saveSettingsFile(app, settingsFileName)
@@ -1566,7 +1830,9 @@ classdef NCPBase < matlab.apps.AppBase
             app.currentSettingsFile = "";
 
             app.advancedSettingValues = app.defaultAdvancedSettingValues;
+            app.alternate_results_directory = "";
             app.validateAllFields();
+            app.refreshPlottingTab();
         end
     end
 
@@ -2141,6 +2407,210 @@ classdef NCPBase < matlab.apps.AppBase
             app.AdvancedSettingsStatus.Position = [371 510 28 30];
             app.AdvancedSettingsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
+            % Create PlottingTab
+            app.PlottingTab = uitab(app.TabGroup);
+            app.PlottingTab.BackgroundColor = [0.851 0.851 0.851];
+
+            % The settings the plots use are shown here but edited in the
+            % other tabs
+            readOnlyTip = ['Shown from the current settings. Edit these ' ...
+                'in the NCP Inputs tab; they can''t be changed here.'];
+
+            % Create PlottingNoteLabel
+            app.PlottingNoteLabel = uilabel(app.PlottingTab);
+            app.PlottingNoteLabel.FontAngle = 'italic';
+            app.PlottingNoteLabel.FontColor = [0.4 0.4 0.4];
+            app.PlottingNoteLabel.Position = [218 540 500 22];
+            app.PlottingNoteLabel.Text = ['These settings are edited in the ' ...
+                'NCP Inputs tab. Plot saves them first.'];
+            app.PlottingNoteLabel.Tooltip = readOnlyTip;
+
+            % Create PlotSettingsFileEditFieldLabel
+            app.PlotSettingsFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotSettingsFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotSettingsFileEditFieldLabel.FontSize = 18;
+            app.PlotSettingsFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotSettingsFileEditFieldLabel.Position = [10 505 198 30];
+            app.PlotSettingsFileEditFieldLabel.Text = 'Settings File';
+
+            % Create PlotSettingsFileEditField
+            app.PlotSettingsFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotSettingsFileEditField.Editable = 'off';
+            app.PlotSettingsFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotSettingsFileEditField.Tooltip = readOnlyTip;
+            app.PlotSettingsFileEditField.Position = [218 505 450 30];
+
+            % Create PlotInputModelFileEditFieldLabel
+            app.PlotInputModelFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotInputModelFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotInputModelFileEditFieldLabel.FontSize = 18;
+            app.PlotInputModelFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotInputModelFileEditFieldLabel.Position = [10 465 198 30];
+            app.PlotInputModelFileEditFieldLabel.Text = 'Input Model File';
+
+            % Create PlotInputModelFileEditField
+            app.PlotInputModelFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotInputModelFileEditField.Editable = 'off';
+            app.PlotInputModelFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotInputModelFileEditField.Tooltip = readOnlyTip;
+            app.PlotInputModelFileEditField.Position = [218 465 450 30];
+
+            % Create PlotInputModelFileStatus
+            app.PlotInputModelFileStatus = uiimage(app.PlottingTab);
+            app.PlotInputModelFileStatus.Visible = 'off';
+            app.PlotInputModelFileStatus.Position = [678 465 28 30];
+            app.PlotInputModelFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotOsimxFileEditFieldLabel
+            app.PlotOsimxFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotOsimxFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotOsimxFileEditFieldLabel.FontSize = 18;
+            app.PlotOsimxFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotOsimxFileEditFieldLabel.Position = [10 425 198 30];
+            app.PlotOsimxFileEditFieldLabel.Text = 'Input Osimx File';
+
+            % Create PlotOsimxFileEditField
+            app.PlotOsimxFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotOsimxFileEditField.Editable = 'off';
+            app.PlotOsimxFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotOsimxFileEditField.Tooltip = readOnlyTip;
+            app.PlotOsimxFileEditField.Position = [218 425 450 30];
+
+            % Create PlotDataDirectoryEditFieldLabel
+            app.PlotDataDirectoryEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotDataDirectoryEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotDataDirectoryEditFieldLabel.FontSize = 18;
+            app.PlotDataDirectoryEditFieldLabel.FontWeight = 'bold';
+            app.PlotDataDirectoryEditFieldLabel.Position = [10 385 198 30];
+            app.PlotDataDirectoryEditFieldLabel.Text = 'Input Data Directory';
+
+            % Create PlotDataDirectoryEditField
+            app.PlotDataDirectoryEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotDataDirectoryEditField.Editable = 'off';
+            app.PlotDataDirectoryEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotDataDirectoryEditField.Tooltip = readOnlyTip;
+            app.PlotDataDirectoryEditField.Position = [218 385 450 30];
+
+            % Create PlotDataDirectoryStatus
+            app.PlotDataDirectoryStatus = uiimage(app.PlottingTab);
+            app.PlotDataDirectoryStatus.Visible = 'off';
+            app.PlotDataDirectoryStatus.Position = [678 385 28 30];
+            app.PlotDataDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotMtpResultsDirectoryEditFieldLabel
+            app.PlotMtpResultsDirectoryEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotMtpResultsDirectoryEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotMtpResultsDirectoryEditFieldLabel.FontSize = 18;
+            app.PlotMtpResultsDirectoryEditFieldLabel.FontWeight = 'bold';
+            app.PlotMtpResultsDirectoryEditFieldLabel.Position = [10 345 198 30];
+            app.PlotMtpResultsDirectoryEditFieldLabel.Text = 'MTP Results Directory';
+
+            % Create PlotMtpResultsDirectoryEditField
+            app.PlotMtpResultsDirectoryEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotMtpResultsDirectoryEditField.Editable = 'off';
+            app.PlotMtpResultsDirectoryEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotMtpResultsDirectoryEditField.Tooltip = readOnlyTip;
+            app.PlotMtpResultsDirectoryEditField.Position = [218 345 450 30];
+
+            % Create PlotMtpResultsDirectoryStatus
+            app.PlotMtpResultsDirectoryStatus = uiimage(app.PlottingTab);
+            app.PlotMtpResultsDirectoryStatus.Visible = 'off';
+            app.PlotMtpResultsDirectoryStatus.Position = [678 345 28 30];
+            app.PlotMtpResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotResultsDirectoryEditFieldLabel
+            app.PlotResultsDirectoryEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotResultsDirectoryEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotResultsDirectoryEditFieldLabel.FontSize = 18;
+            app.PlotResultsDirectoryEditFieldLabel.FontWeight = 'bold';
+            app.PlotResultsDirectoryEditFieldLabel.Position = [10 305 198 30];
+            app.PlotResultsDirectoryEditFieldLabel.Text = 'Results Directory';
+
+            % Create PlotResultsDirectoryEditField
+            app.PlotResultsDirectoryEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotResultsDirectoryEditField.Editable = 'off';
+            app.PlotResultsDirectoryEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotResultsDirectoryEditField.Tooltip = readOnlyTip;
+            app.PlotResultsDirectoryEditField.Position = [218 305 450 30];
+
+            % Create PlotResultsDirectoryStatus
+            app.PlotResultsDirectoryStatus = uiimage(app.PlottingTab);
+            app.PlotResultsDirectoryStatus.Visible = 'off';
+            app.PlotResultsDirectoryStatus.Position = [678 305 28 30];
+            app.PlotResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotTrialsEditFieldLabel
+            app.PlotTrialsEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotTrialsEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotTrialsEditFieldLabel.FontSize = 18;
+            app.PlotTrialsEditFieldLabel.FontWeight = 'bold';
+            app.PlotTrialsEditFieldLabel.Position = [10 265 198 30];
+            app.PlotTrialsEditFieldLabel.Text = 'Trials';
+
+            % Create PlotTrialsEditField
+            app.PlotTrialsEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotTrialsEditField.Editable = 'off';
+            app.PlotTrialsEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotTrialsEditField.Position = [218 265 450 30];
+
+            % Create PlotTrialsStatus
+            app.PlotTrialsStatus = uiimage(app.PlottingTab);
+            app.PlotTrialsStatus.Visible = 'off';
+            app.PlotTrialsStatus.Position = [678 265 28 30];
+            app.PlotTrialsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+            app.PlotTrialsEditField.Tooltip = [readOnlyTip ' The trials ' ...
+                'come from the trial prefixes, or every file in the input ' ...
+                'data directory''s IDData folder when none are set.'];
+
+            % Create AlternateResultsDirectoryEditFieldLabel
+            app.AlternateResultsDirectoryEditFieldLabel = uilabel(app.PlottingTab);
+            app.AlternateResultsDirectoryEditFieldLabel.HorizontalAlignment = 'right';
+            app.AlternateResultsDirectoryEditFieldLabel.FontSize = 18;
+            app.AlternateResultsDirectoryEditFieldLabel.FontWeight = 'bold';
+            app.AlternateResultsDirectoryEditFieldLabel.Position = [10 196 198 48];
+            app.AlternateResultsDirectoryEditFieldLabel.Text = {'Alternate'; 'Results Directory'};
+
+            % Create AlternateResultsDirectoryEditField
+            app.AlternateResultsDirectoryEditField = uieditfield(app.PlottingTab, 'text');
+            app.AlternateResultsDirectoryEditField.ValueChangedFcn = createCallbackFcn(app, @AlternateResultsDirectoryEditFieldValueChanged, true);
+            app.AlternateResultsDirectoryEditField.Tooltip = ['Optional. An NCP ' ...
+                'results directory to plot instead of the one in the ' ...
+                'settings. The other settings are still used.'];
+            app.AlternateResultsDirectoryEditField.Position = [218 205 450 30];
+
+            % Create AlternateResultsDirectorySearchButton
+            app.AlternateResultsDirectorySearchButton = uibutton(app.PlottingTab, 'push');
+            app.AlternateResultsDirectorySearchButton.ButtonPushedFcn = createCallbackFcn(app, @AlternateResultsDirectorySearchButtonPushed, true);
+            app.AlternateResultsDirectorySearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
+            app.AlternateResultsDirectorySearchButton.VerticalAlignment = 'bottom';
+            app.AlternateResultsDirectorySearchButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.AlternateResultsDirectorySearchButton.Position = [678 205 31 30];
+            app.AlternateResultsDirectorySearchButton.Text = '';
+
+            % Create AlternateResultsDirectoryStatus
+            app.AlternateResultsDirectoryStatus = uiimage(app.PlottingTab);
+            app.AlternateResultsDirectoryStatus.Visible = 'off';
+            app.AlternateResultsDirectoryStatus.Position = [718 205 28 30];
+            app.AlternateResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create AlternateNoteLabel
+            app.AlternateNoteLabel = uilabel(app.PlottingTab);
+            app.AlternateNoteLabel.FontAngle = 'italic';
+            app.AlternateNoteLabel.FontColor = [0.4 0.4 0.4];
+            app.AlternateNoteLabel.Position = [218 175 500 22];
+            app.AlternateNoteLabel.Text = ['Optional. Plotted instead of the ' ...
+                'results directory above.'];
+
+            % Create PlotButton, centered under the fields
+            app.PlotButton = uibutton(app.PlottingTab, 'push');
+            app.PlotButton.ButtonPushedFcn = createCallbackFcn(app, @PlotButtonPushed, true);
+            app.PlotButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlotButton.FontSize = 18;
+            app.PlotButton.FontColor = [1 1 1];
+            app.PlotButton.Enable = 'off';
+            app.PlotButton.Position = [398 120 90 30];
+            app.PlotButton.Text = 'Plot';
+
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);
             app.Mask1.ScaleMethod = 'fill';
@@ -2150,7 +2620,7 @@ classdef NCPBase < matlab.apps.AppBase
             % Create MTPImage
             app.MTPImage = uiimage(app.UIFigure);
             app.MTPImage.Position = [1 193 178 420];
-            app.MTPImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'ncpFigure.png');
+            app.MTPImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'NCP Skeleton.png');
 
             % Create AdvancedButton
             app.AdvancedButton = uibutton(app.UIFigure, 'push');
@@ -2160,6 +2630,15 @@ classdef NCPBase < matlab.apps.AppBase
             app.AdvancedButton.FontColor = [1 1 1];
             app.AdvancedButton.Position = [722 643 100 30];
             app.AdvancedButton.Text = 'Advanced';
+
+            % Create PlottingButton
+            app.PlottingButton = uibutton(app.UIFigure, 'push');
+            app.PlottingButton.ButtonPushedFcn = createCallbackFcn(app, @PlottingButtonPushed, true);
+            app.PlottingButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlottingButton.FontSize = 18;
+            app.PlottingButton.FontColor = [1 1 1];
+            app.PlottingButton.Position = [825 643 100 30];
+            app.PlottingButton.Text = 'Plotting';
 
             % Create AuxiliaryToolsButton
             app.AuxiliaryToolsButton = uibutton(app.UIFigure, 'push');
@@ -2286,4 +2765,12 @@ classdef NCPBase < matlab.apps.AppBase
             delete(app.UIFigure)
         end
     end
+end
+
+function color = ternaryColor(condition, whenTrue, whenFalse)
+if condition
+    color = whenTrue;
+else
+    color = whenFalse;
+end
 end
