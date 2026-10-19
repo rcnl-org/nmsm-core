@@ -5,7 +5,9 @@
 % the current version, including the cost terms of the Muscle Tendon
 % Length Initialization section (see mtliBackwardsCompatibility). Files
 % for later versions are left unchanged. Renaming is safe to repeat
-% because no current name is a legacy name.
+% because no current name is a legacy name. For any version, a per task
+% muscle_specific_electromechanical_delays is moved to the base of the
+% tool, where it is now read.
 %
 % (struct) -> (struct)
 % returns the xml2struct settings tree with current cost term names
@@ -38,6 +40,13 @@ if ~isstruct(settingsTree) || ~isfield(settingsTree, "NMSMPipelineDocument")
     return
 end
 document = settingsTree.NMSMPipelineDocument;
+if isfield(document, "MuscleTendonPersonalizationTool") && ...
+        isstruct(document.MuscleTendonPersonalizationTool)
+    document.MuscleTendonPersonalizationTool = ...
+        moveMuscleSpecificDelaysToTool( ...
+        document.MuscleTendonPersonalizationTool);
+    settingsTree.NMSMPipelineDocument = document;
+end
 if ~isLegacySettingsFileVersion(document) || ...
         ~isfield(document, "MuscleTendonPersonalizationTool") || ...
         ~isstruct(document.MuscleTendonPersonalizationTool)
@@ -64,6 +73,56 @@ if isfield(tool, "MTPSynergyExtrapolation")
 end
 document.MuscleTendonPersonalizationTool = tool;
 settingsTree.NMSMPipelineDocument = document;
+end
+
+% muscle_specific_electromechanical_delays used to be required in every
+% task, and MTP used muscle specific delays if any enabled task asked for
+% them. It is now read once from the base of the tool. The per task
+% element only appears in that older layout, so it is moved whatever the
+% file version, and a value already at the base of the tool is kept.
+function tool = moveMuscleSpecificDelaysToTool(tool)
+field = "muscle_specific_electromechanical_delays";
+if ~isfield(tool, "MTPTaskList") || ~isstruct(tool.MTPTaskList) || ...
+        ~isfield(tool.MTPTaskList, "MTPTask")
+    return
+end
+tasks = tool.MTPTaskList.MTPTask;
+isSingleTask = isstruct(tasks);
+if isSingleTask
+    tasks = {tasks};
+end
+if ~iscell(tasks)
+    return
+end
+enabledTaskSetsIt = false;
+isMuscleSpecific = false;
+for i = 1 : numel(tasks)
+    task = tasks{i};
+    if ~isstruct(task) || ~isfield(task, field)
+        continue
+    end
+    if strcmp(getText(task, "is_enabled"), "true")
+        enabledTaskSetsIt = true;
+        isMuscleSpecific = isMuscleSpecific || ...
+            strcmp(strtrim(getText(task, field)), "true");
+    end
+    tasks{i} = rmfield(task, field);
+end
+if isSingleTask
+    tasks = tasks{1};
+end
+tool.MTPTaskList.MTPTask = tasks;
+if enabledTaskSetsIt && ~isfield(tool, field)
+    tool.(field).Text = char(string(isMuscleSpecific));
+end
+end
+
+function text = getText(parent, field)
+text = "";
+if isfield(parent, field) && isstruct(parent.(field)) && ...
+        isfield(parent.(field), "Text")
+    text = string(parent.(field).Text);
+end
 end
 
 % Deviation terms now target their error center when one is given and the
