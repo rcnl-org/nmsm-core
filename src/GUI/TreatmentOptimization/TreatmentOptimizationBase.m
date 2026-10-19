@@ -3127,7 +3127,6 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
-            enableButtonHoverPointerGui(app.UIFigure);
             % Reconstruct fresh instances so this app doesn't share
             % handle objects with the default property-value cache
             app.TorqueController = RCNLTorqueControllerClass();

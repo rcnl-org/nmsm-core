@@ -1744,7 +1744,6 @@ classdef GCPBase < matlab.apps.AppBase
 
         % Code that executes after component creation
         function startupFcn(app)
-            enableButtonHoverPointerGui(app.UIFigure);
             app.makeAllListeners();
             % Assigned after the listeners exist so the table and panel
             % are drawn by the same path a later edit uses.
