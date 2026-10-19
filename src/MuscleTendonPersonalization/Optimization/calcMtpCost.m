@@ -45,10 +45,10 @@ for i = 1 : length(params.costTerms)
                     inputs, costTerm);
             case "activation_time_constant_deviation"
                 cost = calcActivationTimeConstantDeviationCost(values, ...
-                    costTerm);
+                    inputs, costTerm);
             case "activation_nonlinearity_deviation"
                 cost = calcActivationNonlinearityDeviationCost(values, ...
-                    costTerm);
+                    inputs, costTerm);
             case "optimal_fiber_length_deviation"
                 cost = calcOptimalFiberLengthDeviationCost(values, ...
                     inputs, costTerm);
@@ -56,7 +56,8 @@ for i = 1 : length(params.costTerms)
                 cost = calcTendonSlackLengthDeviationCost(values, ...
                     inputs, costTerm);
             case "emg_scale_factor_deviation"
-                cost = calcEmgScaleFactorDeviationCost(values, costTerm);
+                cost = calcEmgScaleFactorDeviationCost(values, inputs, ...
+                    costTerm);
             case "electromechanical_delay_deviation"
                 cost = calcElectromechanicalDelayDeviationCost(values, ...
                     inputs, costTerm);

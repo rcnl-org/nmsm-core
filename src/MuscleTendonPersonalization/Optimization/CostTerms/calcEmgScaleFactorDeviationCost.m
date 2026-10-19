@@ -25,9 +25,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcEmgScaleFactorDeviationCost(values, costTerm)
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0.3);
+function cost = calcEmgScaleFactorDeviationCost(values, ...
+    experimentalData, costTerm)
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.2);
-cost = calcDeviationCostTerm(values.emgScaleFactors, ...
-    errorCenter, maximumAllowableError);
+target = getErrorCenterOrInitialGuess(costTerm, ...
+    experimentalData.primaryValues{4});
+cost = calcDeviationCostTerm(values.emgScaleFactors - target, 0, ...
+    maximumAllowableError);
 end

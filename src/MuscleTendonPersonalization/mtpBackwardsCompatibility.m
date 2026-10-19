@@ -49,9 +49,11 @@ if isfield(tool, "MTPTaskList") && isstruct(tool.MTPTaskList) && ...
     tasks = tool.MTPTaskList.MTPTask;
     if iscell(tasks)
         for i = 1 : numel(tasks)
+            tasks{i} = updateLegacyErrorCenters(tasks{i});
             tasks{i} = renameCostTermSet(tasks{i}, taskCostTermRenames());
         end
     else
+        tasks = updateLegacyErrorCenters(tasks);
         tasks = renameCostTermSet(tasks, taskCostTermRenames());
     end
     tool.MTPTaskList.MTPTask = tasks;
@@ -62,6 +64,60 @@ if isfield(tool, "MTPSynergyExtrapolation")
 end
 document.MuscleTendonPersonalizationTool = tool;
 settingsTree.NMSMPipelineDocument = document;
+end
+
+% Deviation terms now target their error center when one is given and the
+% initial guess when it is not. Legacy terms that measured the change from
+% the initial value treated their error center as an offset, so it is
+% removed. Legacy terms that measured the value itself fell back to an
+% error center of 0, so that is written out when the file has none.
+function task = updateLegacyErrorCenters(task)
+if ~isstruct(task) || ~isfield(task, "RCNLCostTermSet") || ...
+        ~isstruct(task.RCNLCostTermSet) || ...
+        ~isfield(task.RCNLCostTermSet, "RCNLCostTerm")
+    return
+end
+terms = task.RCNLCostTermSet.RCNLCostTerm;
+isSingleTerm = isstruct(terms);
+if isSingleTerm
+    terms = {terms};
+end
+if ~iscell(terms)
+    return
+end
+for i = 1 : numel(terms)
+    term = terms{i};
+    if ~isstruct(term) || ~isfield(term, "type") || ...
+            ~isstruct(term.type) || ~isfield(term.type, "Text")
+        continue
+    end
+    type = string(term.type.Text);
+    if ismember(type, ["optimal_muscle_fiber_length", ...
+            "tendon_slack_length", "electromechanical_delay_deviation"]) ...
+            && isfield(term, "error_center")
+        center = NaN;
+        if isstruct(term.error_center) && isfield(term.error_center, "Text")
+            center = str2double(term.error_center.Text);
+        end
+        if ~isnan(center) && center ~= 0
+            warning("The legacy " + type + " cost term's error_center " + ...
+                "of " + center + " was an offset from the initial " + ...
+                "value, which the current version cannot express. It " + ...
+                "is removed, so the term penalizes deviation from the " + ...
+                "initial guess.");
+        end
+        term = rmfield(term, "error_center");
+    elseif ismember(type, ["activation_time_constant", ...
+            "activation_nonlinearity_constant", "emg_scale_factor", ...
+            "electromechanical_delay"]) && ~isfield(term, "error_center")
+        term.error_center.Text = '0';
+    end
+    terms{i} = term;
+end
+if isSingleTerm
+    terms = terms{1};
+end
+task.RCNLCostTermSet.RCNLCostTerm = terms;
 end
 
 function renames = taskCostTermRenames()
