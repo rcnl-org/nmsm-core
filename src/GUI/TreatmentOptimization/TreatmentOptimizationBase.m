@@ -101,6 +101,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         SurrogateModelCoordinatesListEditButton  matlab.ui.control.Button
         UseRCNLSynergyControllerCheckBox  matlab.ui.control.CheckBox
         UserDefinedTab                  matlab.ui.container.Tab
+        UserDefinedComingSoonLabel      matlab.ui.control.Label
         CostTermsTab                    matlab.ui.container.Tab
         MiscellaneousCostTermParametersStatus  matlab.ui.control.Image
         MiscellaneousCostTermParametersLabel  matlab.ui.control.Label
@@ -4690,6 +4691,15 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.UserDefinedTab = uitab(app.ControllersTabGroup);
             app.UserDefinedTab.Title = 'Tab4';
             app.UserDefinedTab.BackgroundColor = [0.851 0.851 0.851];
+
+            % Create UserDefinedComingSoonLabel
+            app.UserDefinedComingSoonLabel = uilabel(app.UserDefinedTab);
+            app.UserDefinedComingSoonLabel.HorizontalAlignment = 'center';
+            app.UserDefinedComingSoonLabel.FontSize = 25;
+            app.UserDefinedComingSoonLabel.FontAngle = 'italic';
+            app.UserDefinedComingSoonLabel.FontColor = [0.4 0.4 0.4];
+            app.UserDefinedComingSoonLabel.Position = [0 370 939 40];
+            app.UserDefinedComingSoonLabel.Text = 'User-defined controls are coming soon.';
 
             % Create Mask1_2
             app.Mask1_2 = uiimage(app.ControllersTab);
