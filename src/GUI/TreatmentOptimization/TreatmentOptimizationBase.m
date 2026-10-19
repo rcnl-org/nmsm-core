@@ -151,6 +151,35 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         AdvancedTab                     matlab.ui.container.Tab
         AdvancedParamsStatus  matlab.ui.control.Image
         AdvancedParamsTable             matlab.ui.control.Table
+        PlottingButton                  matlab.ui.control.Button
+        PlottingTab                     matlab.ui.container.Tab
+        PlottingNoteLabel               matlab.ui.control.Label
+        PlotSettingsFileEditField       matlab.ui.control.EditField
+        PlotSettingsFileEditFieldLabel  matlab.ui.control.Label
+        PlotInputModelFileEditField     matlab.ui.control.EditField
+        PlotInputModelFileEditFieldLabel  matlab.ui.control.Label
+        PlotInputModelFileStatus        matlab.ui.control.Image
+        PlotOsimxFileEditField          matlab.ui.control.EditField
+        PlotOsimxFileEditFieldLabel     matlab.ui.control.Label
+        PlotTrackedQuantitiesEditField  matlab.ui.control.EditField
+        PlotTrackedQuantitiesEditFieldLabel  matlab.ui.control.Label
+        PlotTrackedQuantitiesStatus     matlab.ui.control.Image
+        PlotInitialGuessEditField       matlab.ui.control.EditField
+        PlotInitialGuessEditFieldLabel  matlab.ui.control.Label
+        PlotResultsDirectoryEditField   matlab.ui.control.EditField
+        PlotResultsDirectoryEditFieldLabel  matlab.ui.control.Label
+        PlotResultsDirectoryStatus      matlab.ui.control.Image
+        PlotTrialEditField              matlab.ui.control.EditField
+        PlotTrialEditFieldLabel         matlab.ui.control.Label
+        PlotTrialStatus                 matlab.ui.control.Image
+        PlotControllersEditField        matlab.ui.control.EditField
+        PlotControllersEditFieldLabel   matlab.ui.control.Label
+        ExtraResultsDirectoriesTextArea  matlab.ui.control.TextArea
+        ExtraResultsDirectoriesTextAreaLabel  matlab.ui.control.Label
+        ExtraResultsDirectoriesSearchButton  matlab.ui.control.Button
+        ExtraResultsDirectoriesStatus   matlab.ui.control.Image
+        ExtraResultsNoteLabel           matlab.ui.control.Label
+        PlotButton                      matlab.ui.control.Button
         TreatmentOptimizationLabel      matlab.ui.control.Label
         ContextMenu                     matlab.ui.container.ContextMenu
         RenameMenu                      matlab.ui.container.Menu
@@ -224,6 +253,10 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         objectSelectionType string = "";  % Used to filter in setSelectedObjects
         currentSettingsFile string = "";
         settingsDirectory string = "";  % Base for paths read from a file
+
+        % Results directories plotted with and compared against the
+        % settings file's, one per line as typed in the Plotting tab
+        extra_results_directories string = strings(0, 1);
 
         inputModelValid logical = false;
         trackedQuantitiesValid logical = false;
@@ -418,6 +451,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         advancedSettingsListener
         selectedTabListener
         controllersTabListener
+        extraResultsDirectoriesListener
 
         TorqueEnabledListener
         TorqueCoordinateListListener
@@ -482,6 +516,10 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.controllersTabListener = addlistener(app.ControllersTabGroup, ...
                 'SelectedTab', 'PostSet', ...
                 @(src, event)formatControllersTabButtons(app));
+
+            app.extraResultsDirectoriesListener = addlistener(app, ...
+                'extra_results_directories', 'PostSet', ...
+                @(src, event)refreshPlottingTab(app));
 
             app.TorqueEnabledListener = addlistener(app.TorqueController, ...
                 'is_enabled', 'PostSet', ...
@@ -668,10 +706,192 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             updateTabButtonStyles(app.TabGroup.SelectedTab, ...
                 [app.InputsTab, app.ControllersTab, app.CostTermsTab, ...
                 app.ConstraintTermsTab, app.SolverSettingsTab, ...
-                app.AdvancedTab], ...
+                app.AdvancedTab, app.PlottingTab], ...
                 [app.InputsButton, app.ControllersButton, ...
                 app.CostTermsButton, app.ConstraintTermsButton, ...
-                app.SolverSettingsButton, app.AdvancedButton]);
+                app.SolverSettingsButton, app.AdvancedButton, ...
+                app.PlottingButton]);
+            % The tab shows the current settings, which are edited in the
+            % other tabs, so it is redrawn each time it is opened
+            if app.TabGroup.SelectedTab == app.PlottingTab
+                app.refreshPlottingTab();
+            end
+        end
+
+        % Fills the Plotting tab from the current settings and checks the
+        % files plotTreatmentOptimizationResultsFromSettingsFile reads for
+        % the trial in the tracked quantities and in every results
+        % directory it plots
+        function refreshPlottingTab(app)
+            if ~isvalid(app) || ~isvalid(app.PlottingTab)
+                return
+            end
+            if app.currentSettingsFile == ""
+                app.PlotSettingsFileEditField.Value = ...
+                    '(not saved yet; Plot will ask where to save it)';
+            else
+                app.PlotSettingsFileEditField.Value = ...
+                    getRelativePath(app.currentSettingsFile);
+            end
+            app.PlotInputModelFileEditField.Value = ...
+                getRelativePath(app.input_model_file);
+            app.PlotOsimxFileEditField.Value = ...
+                getRelativePath(app.input_osimx_file);
+            app.PlotTrackedQuantitiesEditField.Value = ...
+                getRelativePath(app.tracked_quantities_directory);
+            app.PlotInitialGuessEditField.Value = ...
+                getRelativePath(app.initial_guess_directory);
+            app.PlotResultsDirectoryEditField.Value = ...
+                getRelativePath(app.results_directory);
+            app.PlotTrialEditField.Value = app.trial_prefix;
+            controllers = ["Torque", "Synergy", "Muscle"];
+            enabled = [strcmp(app.TorqueController.is_enabled, 'true'), ...
+                strcmp(app.SynergyController.is_enabled, 'true'), ...
+                strcmp(app.MuscleController.is_enabled, 'true')];
+            app.PlotControllersEditField.Value = ...
+                char(strjoin(controllers(enabled), ", "));
+            if isempty(app.extra_results_directories)
+                app.ExtraResultsDirectoriesTextArea.Value = {''};
+            else
+                app.ExtraResultsDirectoriesTextArea.Value = arrayfun( ...
+                    @(directory) char(getRelativePath(directory)), ...
+                    app.extra_results_directories, 'UniformOutput', false);
+            end
+
+            message = "";
+            if app.input_model_file == ""
+                message = "No input model file is set in the Inputs tab.";
+            elseif ~isfile(app.input_model_file)
+                message = "The input model file does not exist.";
+            end
+            problems = app.showPlotStatus(app.PlotInputModelFileEditField, ...
+                app.PlotInputModelFileStatus, message);
+
+            trial = app.trial_prefix;
+            message = "";
+            if trial == ""
+                message = "No trial is set in the Inputs tab.";
+            end
+            problems = app.showPlotStatus(app.PlotTrialEditField, ...
+                app.PlotTrialStatus, message) || problems;
+
+            % Each plot reads the trial's joint angles and loads from the
+            % tracked quantities and from every results directory
+            trialFiles = strings(0, 1);
+            if trial ~= ""
+                trialFiles = ["IKData" + filesep + trial + ".sto"; ...
+                    "IDData" + filesep + trial + ".sto"];
+            end
+            if app.tracked_quantities_directory == ""
+                message = "No tracked quantities directory is set in the Inputs tab.";
+            elseif ~isfolder(app.tracked_quantities_directory)
+                message = "The tracked quantities directory does not exist.";
+            else
+                message = app.missingFiles(app.tracked_quantities_directory, ...
+                    trialFiles);
+            end
+            problems = app.showPlotStatus(app.PlotTrackedQuantitiesEditField, ...
+                app.PlotTrackedQuantitiesStatus, message) || problems;
+
+            resultFiles = trialFiles;
+            if trial ~= ""
+                resultFiles(end + 1) = "Analysis" + filesep + trial + ...
+                    "_modeledVelocities.sto";
+            end
+            message = app.resultsDirectoryProblem(app.results_directory, ...
+                resultFiles);
+            if app.results_directory == ""
+                message = "No results directory is set in the Inputs tab.";
+            end
+            problems = app.showPlotStatus(app.PlotResultsDirectoryEditField, ...
+                app.PlotResultsDirectoryStatus, message) || problems;
+
+            directoryProblems = strings(0, 1);
+            for directory = app.extra_results_directories'
+                problem = app.resultsDirectoryProblem(directory, resultFiles);
+                if problem ~= ""
+                    directoryProblems(end + 1) = directory + ": " + ...
+                        problem; %#ok<AGROW>
+                end
+            end
+            problems = app.showPlotStatus(app.ExtraResultsDirectoriesTextArea, ...
+                app.ExtraResultsDirectoriesStatus, strjoin(directoryProblems, ...
+                [newline newline])) || problems;
+
+            % Plot saves the settings first, so they must be valid too
+            app.PlotButton.Enable = ~problems && app.RunButton.Enable;
+            app.PlotButton.Tooltip = '';
+            if ~problems && ~app.RunButton.Enable
+                app.PlotButton.Tooltip = ['Fix the settings in the other ' ...
+                    'tabs first; Plot saves them before plotting.'];
+            end
+        end
+
+        % Why a results directory cannot be plotted, or "" if it can
+        function message = resultsDirectoryProblem(app, directory, files)
+            if ~isfolder(directory)
+                message = "The results directory does not exist. Run " + ...
+                    "Treatment Optimization first.";
+            else
+                message = app.missingFiles(directory, files);
+                if message ~= ""
+                    message = message + newline + ...
+                        "Run Treatment Optimization first.";
+                end
+            end
+        end
+
+        % Which of a directory's files are missing, as a message, or "" if
+        % none are. Lists the first few.
+        function message = missingFiles(~, directory, files)
+            message = "";
+            if isempty(files)
+                return
+            end
+            missing = files(~arrayfun(@(file) isfile(fullfile(directory, file)), files));
+            if isempty(missing)
+                return
+            end
+            shown = missing(1 : min(5, numel(missing)));
+            message = "Missing " + numel(missing) + " file(s) the plots " + ...
+                "read:" + newline + strjoin(shown, newline);
+            if numel(missing) > numel(shown)
+                message = message + newline + "...";
+            end
+        end
+
+        % Shows a Plotting tab check, returning whether it is an error. The
+        % read-only fields keep their grey background when they are fine.
+        function isError = showPlotStatus(~, field, icon, message)
+            isError = message ~= "";
+            if isError
+                setGuiFieldStatus(field, icon, "error", message);
+            else
+                setGuiFieldStatus([], icon, "none");
+                if ~isempty(field)
+                    field.BackgroundColor = ternaryColor(field.Editable, ...
+                        [1 1 1], [0.94 0.94 0.94]);
+                end
+            end
+        end
+
+        % Saves the current settings to the settings file, asking for a
+        % file name if there is none yet. Run and Plot both read the
+        % settings from the file. Returns false if the user cancels.
+        function saved = saveCurrentSettings(app)
+            saved = false;
+            % The tools read a settings file, so an unsaved session has to
+            % be written somewhere before it can run
+            if strcmp(app.currentSettingsFile, "")
+                [file, path] = uiputfile('*.xml', "Save XML Settings File");
+                % User hit "Cancel"
+                if isequal(file, 0)
+                    return
+                end
+                app.currentSettingsFile = fullfile(path, file);
+            end
+            app.saveSettingsFile(app.currentSettingsFile);
+            saved = true;
         end
 
         function formatControllersTabButtons(app)
@@ -2815,6 +3035,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.applyCostTermSettings(settingsTree);
             app.applyConstraintTermSettings(settingsTree);
             app.validateAllFields();
+            app.refreshPlottingTab();
         end
 
         function setSelectedObjects(app, objects)
@@ -2950,17 +3171,9 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
-            % The tools read a settings file, so an unsaved session has to
-            % be written somewhere before it can run
-            if strcmp(app.currentSettingsFile, "")
-                [file, path] = uiputfile('*.xml', "Save XML Settings File");
-                % User hit "Cancel"
-                if isequal(file, 0)
-                    return
-                end
-                app.currentSettingsFile = fullfile(path, file);
+            if ~app.saveCurrentSettings()
+                return
             end
-            app.saveSettingsFile(app.currentSettingsFile);
             close all
             settingsFile = app.currentSettingsFile;
             toolName = string(app.ToolSelectionDropDown.Value);
@@ -3028,6 +3241,67 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
         % Button pushed function: AdvancedButton
         function AdvancedButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.AdvancedTab;
+        end
+
+        % Button pushed function: PlottingButton
+        function PlottingButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.PlottingTab;
+        end
+
+        % Value changed function: ExtraResultsDirectoriesTextArea
+        function ExtraResultsDirectoriesTextAreaValueChanged(app, event)
+            lines = strtrim(string(app.ExtraResultsDirectoriesTextArea.Value));
+            lines = lines(lines ~= "");
+            directories = strings(0, 1);
+            for i = 1 : numel(lines)
+                directories(end + 1, 1) = string(GetFullPath(char(lines(i)))); %#ok<AGROW>
+            end
+            app.extra_results_directories = unique(directories, 'stable');
+        end
+
+        % Button pushed function: ExtraResultsDirectoriesSearchButton
+        %
+        % The folder dialog picks one folder at a time, so each press adds
+        % one
+        function ExtraResultsDirectoriesSearchButtonPushed(app, event)
+            folder = uigetdir(pwd, 'Add a Results Directory to Plot');
+            % User hit "Cancel"
+            if isequal(folder, 0)
+                return
+            end
+            app.extra_results_directories = unique([ ...
+                app.extra_results_directories; string(folder)], 'stable');
+        end
+
+        % Button pushed function: PlotButton
+        function PlotButtonPushed(app, event)
+            if ~app.saveCurrentSettings()
+                return
+            end
+            settingsFile = app.currentSettingsFile;
+            % The extra directories are plotted alongside this run's, which
+            % comes first as the one the others are compared against
+            extras = app.extra_results_directories;
+            extras = extras(extras ~= app.results_directory);
+            toolName = string(app.ToolSelectionDropDown.Value);
+            progress = uiprogressdlg(app.UIFigure, 'Title', toolName, ...
+                'Message', 'Plotting Results...', 'Indeterminate', 'on');
+            try
+                if isempty(extras)
+                    plotTreatmentOptimizationResultsFromSettingsFile(settingsFile);
+                else
+                    plotTreatmentOptimizationResultsFromSettingsFile( ...
+                        settingsFile, [app.results_directory; extras]);
+                end
+            catch exception
+                delete(progress);
+                uialert(app.UIFigure, exception.message, ...
+                    toolName + " Plotting Failed");
+                app.refreshPlottingTab();
+                return
+            end
+            delete(progress);
+            app.refreshPlottingTab();
         end
 
         % Button pushed function: TorqueControlsButton
@@ -3813,7 +4087,9 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             setGuiFieldStatus(app.SolverSettingsFileEditField, ...
                 app.SolverSettingsFileStatus, "none");
 
+            app.extra_results_directories = strings(0, 1);
             app.validateAllFields();
+            app.refreshPlottingTab();
         end
     end
 
@@ -4842,6 +5118,219 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.AdvancedParamsStatus.Position = [380 661 28 30];
             app.AdvancedParamsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
+            % Create PlottingTab
+            app.PlottingTab = uitab(app.TabGroup);
+            app.PlottingTab.BackgroundColor = [0.851 0.851 0.851];
+
+            % The settings the plots use are shown here but edited in the
+            % other tabs
+            readOnlyTip = ['Shown from the current settings. Edit these ' ...
+                'in the Inputs and Controllers tabs; they can''t be ' ...
+                'changed here.'];
+
+            % Create PlottingNoteLabel
+            app.PlottingNoteLabel = uilabel(app.PlottingTab);
+            app.PlottingNoteLabel.FontAngle = 'italic';
+            app.PlottingNoteLabel.FontColor = [0.4 0.4 0.4];
+            app.PlottingNoteLabel.Position = [219 755 521 22];
+            app.PlottingNoteLabel.Text = ['These settings are edited in the ' ...
+                'Inputs and Controllers tabs. Plot saves them first.'];
+            app.PlottingNoteLabel.Tooltip = readOnlyTip;
+
+            % Create PlotSettingsFileEditFieldLabel
+            app.PlotSettingsFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotSettingsFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotSettingsFileEditFieldLabel.FontSize = 18;
+            app.PlotSettingsFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotSettingsFileEditFieldLabel.Position = [9 710 199 30];
+            app.PlotSettingsFileEditFieldLabel.Text = 'Settings File';
+
+            % Create PlotSettingsFileEditField
+            app.PlotSettingsFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotSettingsFileEditField.Editable = 'off';
+            app.PlotSettingsFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotSettingsFileEditField.Tooltip = readOnlyTip;
+            app.PlotSettingsFileEditField.Position = [219 710 521 30];
+
+            % Create PlotInputModelFileEditFieldLabel
+            app.PlotInputModelFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotInputModelFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotInputModelFileEditFieldLabel.FontSize = 18;
+            app.PlotInputModelFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotInputModelFileEditFieldLabel.Position = [9 660 199 30];
+            app.PlotInputModelFileEditFieldLabel.Text = 'Input Model File';
+
+            % Create PlotInputModelFileEditField
+            app.PlotInputModelFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotInputModelFileEditField.Editable = 'off';
+            app.PlotInputModelFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotInputModelFileEditField.Tooltip = readOnlyTip;
+            app.PlotInputModelFileEditField.Position = [219 660 521 30];
+
+            % Create PlotInputModelFileStatus
+            app.PlotInputModelFileStatus = uiimage(app.PlottingTab);
+            app.PlotInputModelFileStatus.Visible = 'off';
+            app.PlotInputModelFileStatus.Position = [750 660 28 30];
+            app.PlotInputModelFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotOsimxFileEditFieldLabel
+            app.PlotOsimxFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotOsimxFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotOsimxFileEditFieldLabel.FontSize = 18;
+            app.PlotOsimxFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotOsimxFileEditFieldLabel.Position = [9 610 199 30];
+            app.PlotOsimxFileEditFieldLabel.Text = 'Input Osimx File';
+
+            % Create PlotOsimxFileEditField
+            app.PlotOsimxFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotOsimxFileEditField.Editable = 'off';
+            app.PlotOsimxFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotOsimxFileEditField.Tooltip = readOnlyTip;
+            app.PlotOsimxFileEditField.Position = [219 610 521 30];
+
+            % Create PlotTrackedQuantitiesEditFieldLabel
+            app.PlotTrackedQuantitiesEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotTrackedQuantitiesEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotTrackedQuantitiesEditFieldLabel.FontSize = 18;
+            app.PlotTrackedQuantitiesEditFieldLabel.FontWeight = 'bold';
+            app.PlotTrackedQuantitiesEditFieldLabel.Position = [9 551 199 48];
+            app.PlotTrackedQuantitiesEditFieldLabel.Text = {'Tracked Quantities'; 'Directory'};
+
+            % Create PlotTrackedQuantitiesEditField
+            app.PlotTrackedQuantitiesEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotTrackedQuantitiesEditField.Editable = 'off';
+            app.PlotTrackedQuantitiesEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotTrackedQuantitiesEditField.Tooltip = readOnlyTip;
+            app.PlotTrackedQuantitiesEditField.Position = [219 560 521 30];
+
+            % Create PlotTrackedQuantitiesStatus
+            app.PlotTrackedQuantitiesStatus = uiimage(app.PlottingTab);
+            app.PlotTrackedQuantitiesStatus.Visible = 'off';
+            app.PlotTrackedQuantitiesStatus.Position = [750 560 28 30];
+            app.PlotTrackedQuantitiesStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotInitialGuessEditFieldLabel
+            app.PlotInitialGuessEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotInitialGuessEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotInitialGuessEditFieldLabel.FontSize = 18;
+            app.PlotInitialGuessEditFieldLabel.FontWeight = 'bold';
+            app.PlotInitialGuessEditFieldLabel.Position = [9 501 199 48];
+            app.PlotInitialGuessEditFieldLabel.Text = {'Initial Guess'; 'Directory'};
+
+            % Create PlotInitialGuessEditField
+            app.PlotInitialGuessEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotInitialGuessEditField.Editable = 'off';
+            app.PlotInitialGuessEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotInitialGuessEditField.Tooltip = readOnlyTip;
+            app.PlotInitialGuessEditField.Position = [219 510 521 30];
+
+            % Create PlotResultsDirectoryEditFieldLabel
+            app.PlotResultsDirectoryEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotResultsDirectoryEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotResultsDirectoryEditFieldLabel.FontSize = 18;
+            app.PlotResultsDirectoryEditFieldLabel.FontWeight = 'bold';
+            app.PlotResultsDirectoryEditFieldLabel.Position = [9 460 199 30];
+            app.PlotResultsDirectoryEditFieldLabel.Text = 'Results Directory';
+
+            % Create PlotResultsDirectoryEditField
+            app.PlotResultsDirectoryEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotResultsDirectoryEditField.Editable = 'off';
+            app.PlotResultsDirectoryEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotResultsDirectoryEditField.Tooltip = readOnlyTip;
+            app.PlotResultsDirectoryEditField.Position = [219 460 521 30];
+
+            % Create PlotResultsDirectoryStatus
+            app.PlotResultsDirectoryStatus = uiimage(app.PlottingTab);
+            app.PlotResultsDirectoryStatus.Visible = 'off';
+            app.PlotResultsDirectoryStatus.Position = [750 460 28 30];
+            app.PlotResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotTrialEditFieldLabel
+            app.PlotTrialEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotTrialEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotTrialEditFieldLabel.FontSize = 18;
+            app.PlotTrialEditFieldLabel.FontWeight = 'bold';
+            app.PlotTrialEditFieldLabel.Position = [9 410 199 30];
+            app.PlotTrialEditFieldLabel.Text = 'Trial';
+
+            % Create PlotTrialEditField
+            app.PlotTrialEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotTrialEditField.Editable = 'off';
+            app.PlotTrialEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotTrialEditField.Tooltip = readOnlyTip;
+            app.PlotTrialEditField.Position = [219 410 521 30];
+
+            % Create PlotTrialStatus
+            app.PlotTrialStatus = uiimage(app.PlottingTab);
+            app.PlotTrialStatus.Visible = 'off';
+            app.PlotTrialStatus.Position = [750 410 28 30];
+            app.PlotTrialStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotControllersEditFieldLabel
+            app.PlotControllersEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotControllersEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotControllersEditFieldLabel.FontSize = 18;
+            app.PlotControllersEditFieldLabel.FontWeight = 'bold';
+            app.PlotControllersEditFieldLabel.Position = [9 360 199 30];
+            app.PlotControllersEditFieldLabel.Text = 'Controllers';
+
+            % Create PlotControllersEditField
+            app.PlotControllersEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotControllersEditField.Editable = 'off';
+            app.PlotControllersEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotControllersEditField.Tooltip = readOnlyTip;
+            app.PlotControllersEditField.Position = [219 360 521 30];
+
+            % Create ExtraResultsDirectoriesTextAreaLabel
+            app.ExtraResultsDirectoriesTextAreaLabel = uilabel(app.PlottingTab);
+            app.ExtraResultsDirectoriesTextAreaLabel.HorizontalAlignment = 'right';
+            app.ExtraResultsDirectoriesTextAreaLabel.FontSize = 18;
+            app.ExtraResultsDirectoriesTextAreaLabel.FontWeight = 'bold';
+            app.ExtraResultsDirectoriesTextAreaLabel.Position = [9 251 199 48];
+            app.ExtraResultsDirectoriesTextAreaLabel.Text = {'Additional'; 'Results Directories'};
+
+            % Create ExtraResultsDirectoriesTextArea
+            app.ExtraResultsDirectoriesTextArea = uitextarea(app.PlottingTab);
+            app.ExtraResultsDirectoriesTextArea.ValueChangedFcn = createCallbackFcn(app, @ExtraResultsDirectoriesTextAreaValueChanged, true);
+            app.ExtraResultsDirectoriesTextArea.Tooltip = ['Results ' ...
+                'directories to plot alongside this run''s, one per line, ' ...
+                'such as earlier runs to compare against.'];
+            app.ExtraResultsDirectoriesTextArea.Position = [219 220 521 110];
+
+            % Create ExtraResultsDirectoriesSearchButton
+            app.ExtraResultsDirectoriesSearchButton = uibutton(app.PlottingTab, 'push');
+            app.ExtraResultsDirectoriesSearchButton.ButtonPushedFcn = createCallbackFcn(app, @ExtraResultsDirectoriesSearchButtonPushed, true);
+            app.ExtraResultsDirectoriesSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
+            app.ExtraResultsDirectoriesSearchButton.VerticalAlignment = 'bottom';
+            app.ExtraResultsDirectoriesSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.ExtraResultsDirectoriesSearchButton.Tooltip = 'Add a results directory (one per click)';
+            app.ExtraResultsDirectoriesSearchButton.Position = [750 260 31 30];
+            app.ExtraResultsDirectoriesSearchButton.Text = '';
+
+            % Create ExtraResultsDirectoriesStatus
+            app.ExtraResultsDirectoriesStatus = uiimage(app.PlottingTab);
+            app.ExtraResultsDirectoriesStatus.Visible = 'off';
+            app.ExtraResultsDirectoriesStatus.Position = [791 260 28 30];
+            app.ExtraResultsDirectoriesStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create ExtraResultsNoteLabel
+            app.ExtraResultsNoteLabel = uilabel(app.PlottingTab);
+            app.ExtraResultsNoteLabel.FontAngle = 'italic';
+            app.ExtraResultsNoteLabel.FontColor = [0.4 0.4 0.4];
+            app.ExtraResultsNoteLabel.Position = [219 195 521 22];
+            app.ExtraResultsNoteLabel.Text = ['Optional. Plotted with, and ' ...
+                'compared against, the results directory above.'];
+
+            % Create PlotButton, centered under the fields
+            app.PlotButton = uibutton(app.PlottingTab, 'push');
+            app.PlotButton.ButtonPushedFcn = createCallbackFcn(app, @PlotButtonPushed, true);
+            app.PlotButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlotButton.FontSize = 18;
+            app.PlotButton.FontColor = [1 1 1];
+            app.PlotButton.Enable = 'off';
+            app.PlotButton.Position = [435 140 90 30];
+            app.PlotButton.Text = 'Plot';
+
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);
             app.Mask1.ScaleMethod = 'fill';
@@ -4861,6 +5350,15 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             app.AdvancedButton.FontColor = [1 1 1];
             app.AdvancedButton.Position = [855 892 110 30];
             app.AdvancedButton.Text = 'Advanced';
+
+            % Create PlottingButton
+            app.PlottingButton = uibutton(app.UIFigure, 'push');
+            app.PlottingButton.ButtonPushedFcn = createCallbackFcn(app, @PlottingButtonPushed, true);
+            app.PlottingButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlottingButton.FontSize = 18;
+            app.PlottingButton.FontColor = [1 1 1];
+            app.PlottingButton.Position = [968 892 110 30];
+            app.PlottingButton.Text = 'Plotting';
 
             % Create ConstraintTermsButton
             app.ConstraintTermsButton = uibutton(app.UIFigure, 'push');
@@ -5072,4 +5570,12 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             delete(app.UIFigure)
         end
     end
+end
+
+function color = ternaryColor(condition, whenTrue, whenFalse)
+if condition
+    color = whenTrue;
+else
+    color = whenFalse;
+end
 end
