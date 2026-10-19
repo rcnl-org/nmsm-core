@@ -863,9 +863,7 @@ classdef MTPBase < matlab.apps.AppBase
             % MTP task list
             settingsTree.MTPTaskList = struct("MTPTask", cell(1));
             for i = 1 : length(app.MTPTask)
-                settingsTree.MTPTaskList.MTPTask{i} = ...
-                    app.MTPTask{i}.toStruct(boolToString( ...
-                    app.muscleSpecificElectromechanicalDelays()));
+                settingsTree.MTPTaskList.MTPTask{i} = app.MTPTask{i}.toStruct();
             end
 
             % Optimization parameters
@@ -875,16 +873,17 @@ classdef MTPBase < matlab.apps.AppBase
 
         function settingsTree = setOptimizationParams(app, settingsTree)
             for i = 1 : length(app.advancedSettingNames)
-                % Written into each task instead; see makeMTPSettingsStruct
-                if app.advancedSettingNames(i) == ...
-                        "muscle_specific_electromechanical_delays"
-                    continue
-                end
                 value = strtrim(app.advancedSettingValues(i));
                 % An empty element parses as NaN rather than the
                 % default, so a blank row is left out instead
                 if strlength(value) == 0
                     continue
+                end
+                % parseMtpInitialGuess reads
+                % muscle_specific_electromechanical_delays with a
+                % case-sensitive strcmp, so booleans are written lowercase
+                if app.advancedSettingKinds(i) == "boolean"
+                    value = lower(value);
                 end
                 settingsTree.(app.advancedSettingNames(i)) = value;
             end
@@ -931,7 +930,6 @@ classdef MTPBase < matlab.apps.AppBase
                     app.createDefaultTask();
                     app.MTPTask{i}.loadFromStruct(tasks{i});
                 end
-                app.loadMuscleSpecificElectromechanicalDelays(tasks);
                 app.updateMTPCostTermsTable();
             end
             app.updateMTPTasksListBox();
@@ -941,12 +939,9 @@ classdef MTPBase < matlab.apps.AppBase
 
         function loadOptimizationParams(app, settingsTree)
             values = app.advancedSettingValues;
+            % mtpBackwardsCompatibility has already moved an older file's
+            % per task muscle_specific_electromechanical_delays here
             for i = 1 : length(app.advancedSettingNames)
-                % Read from the tasks instead; see loadSettingsFile
-                if app.advancedSettingNames(i) == ...
-                        "muscle_specific_electromechanical_delays"
-                    continue
-                end
                 if isfield(settingsTree, app.advancedSettingNames(i))
                     % formatXmlDataForGui turns numeric text into a
                     % double and leaves other text as strings
@@ -959,25 +954,6 @@ classdef MTPBase < matlab.apps.AppBase
                 end
             end
             app.advancedSettingValues = values;
-        end
-
-        % The core reads the setting from each task but applies it to all
-        % of them if any task has it on, so the GUI holds a single value.
-        function loadMuscleSpecificElectromechanicalDelays(app, tasks)
-            values = strings(1, 0);
-            for i = 1 : numel(tasks)
-                if isfield(tasks{i}, 'muscle_specific_electromechanical_delays')
-                    values(end + 1) = string( ...
-                        tasks{i}.muscle_specific_electromechanical_delays); %#ok<AGROW>
-                end
-            end
-            if isempty(values)
-                return
-            end
-            index = find(app.advancedSettingNames == ...
-                "muscle_specific_electromechanical_delays", 1);
-            app.advancedSettingValues(index) = ...
-                boolToString(any(strcmpi(values, "true")));
         end
 
         function isEnabled = muscleSpecificElectromechanicalDelays(app)

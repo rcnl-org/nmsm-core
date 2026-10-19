@@ -44,6 +44,9 @@ classdef MTPTaskClass < handle
     end
 
     properties (Constant)
+        % muscle_specific_electromechanical_delays is not here: MTP reads
+        % it once for the whole run, so MTPBase holds it as an advanced
+        % setting
         parameterNames = ...
             ["optimize_electromechanical_delays"
             "optimize_activation_time_constants"
@@ -77,18 +80,11 @@ classdef MTPTaskClass < handle
             obj.RCNLCostTerm = makeDefaultCostTerms(obj.costTermStruct);
         end
 
-        % The core reads muscle_specific_electromechanical_delays from each
-        % task, but the GUI holds one value for all of them, so the caller
-        % supplies it.
-        function s = toStruct(obj, muscleSpecificElectromechanicalDelays)
+        function s = toStruct(obj)
             s = struct();
             s.Attributes.name = obj.name;
             s.index = obj.index;
             s.is_enabled = obj.is_enabled;
-            if nargin > 1
-                s.muscle_specific_electromechanical_delays = ...
-                    muscleSpecificElectromechanicalDelays;
-            end
             for i = 1:length(obj.parameterNames)
                 s.(obj.parameterNames(i)) = obj.(obj.parameterNames(i));
             end

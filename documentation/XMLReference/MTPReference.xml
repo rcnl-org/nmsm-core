@@ -27,6 +27,8 @@
 		<emg_scale_factor_initial_guess>0.5</emg_scale_factor_initial_guess>
 		<optimal_fiber_length_scale_factor_initial_guess>1</optimal_fiber_length_scale_factor_initial_guess>
 		<tendon_slack_length_scale_factor_initial_guess>1</tendon_slack_length_scale_factor_initial_guess>
+		<!--Use muscle specific electromechanical delays.-->
+		<muscle_specific_electromechanical_delays>true</muscle_specific_electromechanical_delays>
 		<!--Properties that describe MuscleTendonLengthInitialization settings.-->
 		<MuscleTendonLengthInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization.-->
@@ -174,8 +176,6 @@
 				<is_enabled>true</is_enabled>
 				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
 				<index>1</index>
-				<!--Use muscle specific electromechanical delays.-->
-				<muscle_specific_electromechanical_delays>true</muscle_specific_electromechanical_delays>
 				<!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task.-->
 				<optimize_electromechanical_delays>true</optimize_electromechanical_delays>
 				<!--Boolean (true, false) indicating if activation time constants should be optimized for this task.-->
