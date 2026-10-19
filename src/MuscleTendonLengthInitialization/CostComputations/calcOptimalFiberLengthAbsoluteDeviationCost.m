@@ -27,9 +27,11 @@
 
 function cost = calcOptimalFiberLengthAbsoluteDeviationCost( ...
     experimentalData, costTerm)
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.05);
+% The error center is a scale factor on the initial length, as it is when
+% lengths are optimized as scale factors
+target = getErrorCenterOrInitialGuess(costTerm, 1) .* ...
+    experimentalData.initialOptimalFiberLength;
 cost = calcDeviationCostArray(experimentalData.optimalFiberLength - ...
-    experimentalData.initialOptimalFiberLength, errorCenter, ...
-    maximumAllowableError);
+    target, 0, maximumAllowableError);
 end

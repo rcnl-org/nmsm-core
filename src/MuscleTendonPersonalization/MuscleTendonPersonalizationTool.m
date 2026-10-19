@@ -41,6 +41,7 @@ if nargin < 2
 end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
+settingsTree = mtpBackwardsCompatibility(settingsTree);
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);

@@ -40,7 +40,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>passive_joint_moment</type>
+					<type>passive_joint_moment_tracking</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>2</max_allowable_error>
 				</RCNLCostTerm>
@@ -48,7 +48,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>optimal_muscle_fiber_length</type>
+					<type>optimal_fiber_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.3</max_allowable_error>
 					<!--Optional for specific terms.-->
@@ -58,7 +58,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>tendon_slack_length</type>
+					<type>tendon_slack_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>1</max_allowable_error>
 					<!--Optional for specific terms.-->
@@ -68,7 +68,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>minimum_normalized_muscle_fiber_length</type>
+					<type>minimum_normalized_fiber_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.3</max_allowable_error>
 				</RCNLCostTerm>
@@ -76,7 +76,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>maximum_normalized_muscle_fiber_length</type>
+					<type>maximum_normalized_fiber_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.03</max_allowable_error>
 				</RCNLCostTerm>
@@ -84,7 +84,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>maximum_muscle_stress</type>
+					<type>maximum_muscle_stress_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 					<!--Optional for specific terms.-->
@@ -94,7 +94,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>false</is_enabled>
 					<!--Type of cost term.-->
-					<type>passive_muscle_force</type>
+					<type>passive_force_minimization</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>10</max_allowable_error>
 				</RCNLCostTerm>
@@ -102,7 +102,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>grouped_normalized_muscle_fiber_length</type>
+					<type>grouped_normalized_fiber_length_similarity</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 				</RCNLCostTerm>
@@ -110,7 +110,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>grouped_maximum_normalized_muscle_fiber_length</type>
+					<type>grouped_maximum_normalized_fiber_length_similarity</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 				</RCNLCostTerm>
