@@ -48,6 +48,7 @@ if isfield(inputs, "synergyExtrapolation")
 else
     inputs.emgParameterGroups = inputs.collectedEmgChannelGroups;
 end
+verifyMtpCostTermGroups(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
