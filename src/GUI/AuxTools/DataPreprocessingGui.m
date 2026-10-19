@@ -389,14 +389,11 @@ classdef DataPreprocessingGui < matlab.apps.AppBase
                 end
             end
 
-            % The model is only needed for joint angles and muscle analysis
+            % A model is always required. splitIntoTrials loads it for
+            % every split, and by preprocessing a model should exist.
             c.model = app.check("none");
-            needsModel = app.joint_angles_file ~= "" || directory ~= "";
             if app.input_model_file == ""
-                if needsModel
-                    c.model = app.check("required", "A model file is " + ...
-                        "required to process joint angles or muscle analysis data.");
-                end
+                c.model = app.check("required", "A model file is required.");
             elseif ~isfile(app.input_model_file)
                 c.model = app.check("error", "The given model file does not exist.");
             else
@@ -711,10 +708,8 @@ classdef DataPreprocessingGui < matlab.apps.AppBase
 
         function splitData(app)
             inputSettings = struct('cutoffFrequency', app.cutoffFrequency, ...
-                'rowsPerTrial', str2double(app.number_of_time_points));
-            if app.input_model_file ~= ""
-                inputSettings.model = app.input_model_file;
-            end
+                'rowsPerTrial', str2double(app.number_of_time_points), ...
+                'model', app.input_model_file);
             if app.joint_angles_file ~= ""
                 inputSettings.ikFileName = app.joint_angles_file;
             end
