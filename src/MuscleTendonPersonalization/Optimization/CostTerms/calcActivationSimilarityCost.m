@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (struct, struct, struct) -> (Array of number)
-% returns the deviation cost for electromechanical delay from initial
+% (Array of number, struct, struct) -> (Array of number)
+% returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Max Ahlquist, Spencer Williams, Robert Salati                %
+% Author(s): Robert Salati                                                %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,11 +25,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcElectromechanicalDelayRegularizationCost(values, ...
-    experimentalData, costTerm)
+function cost = calcActivationSimilarityCost(modeledValues, inputs, costTerm)
 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
-cost = calcDeviationCostTerm( ...
-    values.electromechanicalDelays, errorCenter, ...
-    maximumAllowableError);
+lowestIndex = min(cell2mat(inputs.activationGroups)) - 1;
+index = 1;
+for i = 1:length(inputs.activationGroups)
+    muscleGroup = inputs.activationGroups{i} - lowestIndex;
+    groupActivations = modeledValues.muscleActivations(:, muscleGroup, :);
+    activationMagnitudeDeviation(:, index : index + size(muscleGroup, 2) - 1) = ...
+        calcMeanDifference2D(mean(mean(groupActivations, 1), 3));
+    activationShapeDeviation(:, index : index + size(muscleGroup, 2) - 1, :) = ...
+        calcMeanShapeDeviations(groupActivations);
+    index = index + size(muscleGroup, 2);
+end
+activationMagnitudeDeviationCost = calcDeviationCostTerm( ...
+    activationMagnitudeDeviation, errorCenter, maximumAllowableError);
+activationShapeDeviationCost = calcDeviationCostTerm( ...
+    activationShapeDeviation, errorCenter, maximumAllowableError);
+cost = activationMagnitudeDeviationCost + activationShapeDeviationCost;
 end

@@ -25,10 +25,13 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcActivationTimeConstantDeviationCost(values, costTerm)
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0.015);
+function cost = calcActivationTimeConstantDeviationCost(values, ...
+    experimentalData, costTerm)
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.02);
+% The error center is in seconds, so the initial guess is converted too
+target = getErrorCenterOrInitialGuess(costTerm, ...
+    experimentalData.primaryValues{2} / 100);
 cost = calcDeviationCostTerm( ...
-    values.activationTimeConstants/100, errorCenter, ...
+    values.activationTimeConstants / 100 - target, 0, ...
     maximumAllowableError);
 end
