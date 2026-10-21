@@ -4,10 +4,14 @@
   {
      "inputs":
      [
-        {"name":"settingsFileName", 
-         "kind":"required", 
-         "type":["file=*.xml"], 
-         "purpose":"(String) GCP settings file"}
+        {"name":"settingsFileName",
+         "kind":"required",
+         "type":["file=*.xml"],
+         "purpose":"(String) GCP settings file"},
+        {"name":"resultsDirectory",
+         "kind":"optional",
+         "type":["folder"],
+         "purpose":"(String) GCP results directory to plot instead of the settings file's"}
      ]
   },
   "plotGcpStiffnessCoefficients":

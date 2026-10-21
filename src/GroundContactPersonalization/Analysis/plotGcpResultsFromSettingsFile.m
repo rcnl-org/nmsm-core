@@ -1,10 +1,11 @@
-% This function is part of the NMSM Pipeline, see file for full license.
+ % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function takes a GCP settings file and creates plots for GRF and
 % kinematic matching for each contact surface, and creates a grid plot of
-% stiffness coefficients.
+% stiffness coefficients. An optional results directory plots the results
+% there instead of in the settings file's results directory.
 %
-% (string) -> (None)
+% (string, string) -> (None)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,15 +28,17 @@
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
-function plotGcpResultsFromSettingsFile(settingsFileName)
+function plotGcpResultsFromSettingsFile(settingsFileName, resultsDirectory)
 import org.opensim.modeling.Storage
-try 
+try
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
 end
 settingsTree = xml2struct(settingsFileName);
-resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+if nargin < 2
+    resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+end
 modelFileName = getFieldByName(settingsTree, 'input_model_file').Text;
 modelName = split(modelFileName, ["/", "\"]);
 modelName = erase(modelName(end), ".osim");
