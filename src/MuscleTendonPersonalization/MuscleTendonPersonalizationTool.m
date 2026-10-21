@@ -76,10 +76,6 @@ updateRunStageGui(app, 'SavingResultsLabel', 'off');
 printMtpJointMomentMatchingError(resultsDirectory);
 fprintf("Muscle-Tendon Personalization Runtime: %f Hours\n", toc/3600);
 diary off
-try
-    [~, settingsFile] = fileparts(settingsFileName);
-    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFile));
-    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
-catch
-end
+movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+copySettingsFileToResultsDirectory(settingsFileName, resultsDirectory);
 end
