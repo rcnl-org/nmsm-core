@@ -89,10 +89,7 @@ for foot = 1 : length(inputs.surfaces)
 end
 fprintf("Ground Contact Personalization Runtime: %f Hours\n", toc/3600);
 diary off
-try
-    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
-catch
-end
+movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+copySettingsFileToResultsDirectory(settingsFileName, resultsDirectory);
 end
 
