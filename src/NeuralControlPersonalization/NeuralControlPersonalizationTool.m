@@ -46,18 +46,24 @@ try
 catch
     error("NMSM Pipeline Project is not opened.")
 end
+
 if nargin < 2
     app = [];
 end
+
+% Reset printMuscleActivationMinimizationMuscles' persistent
+% clear printMuscleActivationMinimizationMuscles
+
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
+% results directory uniquification
+% resultsDirectory = getUniqueResultsDirectory(resultsDirectory);
 if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
-[~, fname, fext] = fileparts(settingsFileName);
-copyfile(settingsFileName, fullfile(resultsDirectory, [fname fext]));
+copyfile(settingsFileName, resultsDirectory);
 updateRunStageGui(app, 'ParsingLabel', 'off');
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)

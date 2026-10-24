@@ -98,13 +98,17 @@ inputs.numTrials = size(inputs.momentArms, 1);
 % Resample every input (IK, ID, MAData and the initial-guess commands) 
 % onto a common uniform grid before running NCP
 
-degree = 3;
-percent = linspace(0, 100, inputs.numPoints).';
-interval = percent(2) - percent(1);
-[Bmatrix, ~, ~] = BSplineMatrices(degree, inputs.numNodes, ...
-    inputs.numPoints, interval);
-inputs.Bmatrix = Bmatrix;
-inputs.invBmatrix = pinv(Bmatrix);
+if inputs.numNodes == inputs.numPoints
+    fprintf("[NCP] numNodes == numPoints: using IDENTITY basis (point-wise commands).\n");
+    inputs.Bmatrix = eye(inputs.numPoints);
+else
+    degree = 3;
+    percent = linspace(0, 100, inputs.numPoints).';
+    interval = percent(2) - percent(1);
+    [inputs.Bmatrix, ~, ~] = BSplineMatrices(degree, inputs.numNodes, ...
+        inputs.numPoints, interval);
+end
+inputs.invBmatrix = pinv(inputs.Bmatrix);
 
 [inputs.normalizedFiberLengths, inputs.normalizedFiberVelocities] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities( ...
