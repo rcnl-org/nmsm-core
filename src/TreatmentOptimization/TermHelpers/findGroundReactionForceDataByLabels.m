@@ -43,7 +43,7 @@ else
                 inputs.contactSurfaces{j}.forceColumns), ...
                 targetLabels(i)), 1);
             if ~isempty(index)
-                groundReactionIndices = index;
+                groundReactionIndices(i) = index;
                 contactSurfaceIndices(i) = j;
             end
         end
