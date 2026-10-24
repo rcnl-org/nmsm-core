@@ -56,6 +56,7 @@ end
 
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "NeuralControlPersonalizationTool");
+settingsTree = mtliBackwardsCompatibility(settingsTree);
 [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree);
 % results directory uniquification

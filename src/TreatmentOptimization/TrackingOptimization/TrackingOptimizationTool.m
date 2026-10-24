@@ -58,9 +58,6 @@ saveTrackingOptimizationResults(outputs, inputs);
 updateRunStageGui(app, 'RunningLabel', 'off');
 fprintf("Tracking Optimization Runtime: %f Hours\n", toc/3600);
 diary off
-try
-    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
-catch
-end
+movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
+copySettingsFileToResultsDirectory(settingsFileName, inputs.resultsDirectory);
 end

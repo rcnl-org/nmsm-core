@@ -42,6 +42,13 @@ if isfield(inputs, "synergyExtrapolation")
         inputs.muscleNames), ...
         inputs);
 end
+if isfield(inputs, "synergyExtrapolation")
+    inputs.emgParameterGroups = [inputs.collectedEmgChannelGroups, ...
+        inputs.synergyExtrapolation.missingEmgChannelGroups];
+else
+    inputs.emgParameterGroups = inputs.collectedEmgChannelGroups;
+end
+verifyMtpCostTermGroups(inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -54,8 +61,6 @@ dataDirectory = getFieldByNameOrError(tree, 'data_directory').Text;
 inputs = parseEmgData(tree, inputs, dataDirectory);
 inputs = parseMtpInitialGuess(tree, inputs);
 inputs.tasks = getTasks(tree);
-inputs.muscleSpecificElectromechanicalDelays = any(cellfun( ...
-    @(t) t.muscleSpecificElectromechanicalDelays, inputs.tasks));
 if strcmpi(getTextFromField(getFieldByNameOrAlternate(...
         getFieldByNameOrError(tree, 'MTPSynergyExtrapolation'), ...
         'is_enabled', 'false')), 'true')
@@ -76,6 +81,8 @@ emgDataFileNames = unique(findFileListFromPrefixList( ...
     fullfile(dataDirectory, "EMGData"), inputs.prefixes));
 [~, inputs.trialNames, ~] = fileparts(emgDataFileNames);
 collectedEmgGroupNames = parseSpaceSeparatedList(tree, 'collected_emg_channel_muscle_groups');
+inputs.collectedEmgChannelGroupNames = collectedEmgGroupNames;
+inputs.collectedEmgChannelGroups = groupNamesToGroups(collectedEmgGroupNames, inputs.model);
 [inputs.fullEmgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
 [~, ~, collectedEmgGroupNamesMembers] = intersect(collectedEmgGroupNames, inputs.emgDataColumnNames, 'stable');
 inputs.emgData = inputs.fullEmgData(:, collectedEmgGroupNamesMembers, :);
@@ -112,8 +119,6 @@ end
 
 % (integer, struct, string, struct) -> (struct)
 function output = getTask(tree)
-output.muscleSpecificElectromechanicalDelays = ...
-    parseElementBoolean(tree, "muscle_specific_electromechanical_delays");
 output.isIncluded = ones(1, 7);
 output.isIncluded(1) = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, ...
@@ -226,6 +231,9 @@ inputs.synergyExtrapolation = synergyExtrapolation;
 end
 
 function inputs = parseMtpInitialGuess(tree, inputs)
+inputs.muscleSpecificElectromechanicalDelays = ...
+    strcmp("true", parseElementTextByNameOrAlternate(tree, ...
+    "muscle_specific_electromechanical_delays", "true"));
 inputs.electromechanicalDelayInitialGuess = str2double( ...
     parseElementTextByNameOrAlternate(tree, ...
     "electromechanical_delay_initial_guess", '0.5'));

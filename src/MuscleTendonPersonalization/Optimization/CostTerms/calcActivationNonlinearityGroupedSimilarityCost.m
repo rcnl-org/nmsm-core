@@ -1,6 +1,6 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% (Array of number, struct) -> (Array of number)
+% (Array of number, struct, struct) -> (Array of number)
 % returns the cost for all rounds of the Muscle Tendon optimization
 
 % ----------------------------------------------------------------------- %
@@ -11,7 +11,7 @@
 % National Institutes of Health (R01 EB030520).                           %
 %                                                                         %
 % Copyright (c) 2021 Rice University and the Authors                      %
-% Author(s): Marleny Vega                                                 %
+% Author(s): Marleny Vega, Claire V. Hammond, Robert Salati               %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,17 +25,12 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMuscleExcitationPenaltyCost(modeledValues, ...
-    experimentalData, costTerm)
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0.5);
-maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.25);
-muscleExcitationsConstraint = modeledValues.muscleExcitationsNoTDelay(: , ...
-    setdiff(1 : size(modeledValues.muscleExcitationsNoTDelay, 2), ...
-    [experimentalData.synergyExtrapolation.missingEmgChannelGroups{:}]), ...
-    experimentalData.numPaddingFrames + 1 : ...
-    size(modeledValues.muscleExcitationsNoTDelay, 3) - ...
-    experimentalData.numPaddingFrames);
-cost = 30 / maximumAllowableError * (muscleExcitationsConstraint - errorCenter) .^ 8;
-cost(isnan(cost))=0;
-cost = sum((sqrt(0.1) .* cost).^ 2, 'all');
+function cost = calcActivationNonlinearityGroupedSimilarityCost( ...
+    values, inputs, costTerm)
+errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
+activationNonlinearityDeviations = calcDifferencesInEmgGroups( ...
+    values.activationNonlinearityConstants, inputs.activationGroups);
+cost = calcDeviationCostTerm( ...
+    activationNonlinearityDeviations, errorCenter, maximumAllowableError);
 end
