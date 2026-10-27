@@ -16,16 +16,14 @@ markersReference = makeJmpMarkerRef(model, markerFileName, ...
 ikSolver = InverseKinematicsSolver(model, ...
     markersReference, SimTKArrayCoordinateReference());
 ikSolver.setAccuracy(1e-6);
-state = initModelSystem(model);
 if nargin > 4
-    state.setTime(timeRange(1));
+    frameTimes = getMarkerFrameTimes(markersReference, timeRange(1), ...
+        timeRange(2));
 else
-    state.setTime(markersReference.getValidTimeRange().get(0))
+    frameTimes = getMarkerFrameTimes(markersReference);
 end
-frequency = markersReference.getSamplingFrequency();
-markerTable = markersReference.getMarkerTable();
-times = markerTable.getIndependentColumn();
-frameCounter = 0;
+state = initModelSystem(model);
+state.setTime(frameTimes(1));
 ikSolver.assemble(state);
 storage = Storage();
 names = ArrayStr();
@@ -39,20 +37,14 @@ for i=1:length(markerNames)
 end
 storage.setColumnLabels(names);
 
-for i=1:markersReference.getNumFrames() - 1 %start time is set so start with recording error
+for i = 1:numel(frameTimes)
+    state.setTime(frameTimes(i));
     ikSolver.track(state);
     error = [];
     for j=0:ikSolver.getNumMarkersInUse()-1
         error(length(error)+1) = ikSolver.computeCurrentMarkerError(j);
     end
     addToRowToStorage(state, storage, error)
-    frameCounter = frameCounter + 1;
-    if nargin > 4 && (state.getTime() + 1/frequency > timeRange(2))
-        break
-    end
-    time = times.get(markerTable.getNearestRowIndexForTime( ...
-        state.getTime() + 1/frequency - 0.00001));
-    state.setTime(double(time));
 end
 storage.print(outputSto);
 end
