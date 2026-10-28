@@ -93,6 +93,7 @@ contactSurfaces = getFieldByNameOrError(tree, 'GCPContactSurfaceSet') ...
 if length(contactSurfaces) == 1
     contactSurfaces = {contactSurfaces};
 end
+output = {};
 counter = 1;
 for i=1:length(contactSurfaces)
     surface = contactSurfaces{i};
@@ -108,6 +109,8 @@ for i=1:length(contactSurfaces)
         counter = counter + 1;
     end
 end
+assert(~isempty(output), "No <GCPContactSurface> is enabled. Set " + ...
+    "<is_enabled> to true for at least one contact surface.")
 end
 
 % (Model, string, struct) -> (struct)
