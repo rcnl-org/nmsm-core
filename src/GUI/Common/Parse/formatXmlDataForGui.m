@@ -45,7 +45,7 @@ function tree = formatXmlDataForGui(tree)
         else
             for i = 1 : numel(structFields)
                 if strcmp(structFields{i}, "Attributes")
-                    return
+                    continue
                 end
                 tree.(structFields{i}) = formatXmlDataForGui(tree.(structFields{i}));
             end

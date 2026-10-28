@@ -79,6 +79,25 @@ classdef JMPBase < matlab.apps.AppBase
         MuscleGroupsLabel_3            matlab.ui.control.Label
         AdvancedTab                    matlab.ui.container.Tab
         AdvancedSettingsTable          matlab.ui.control.Table
+        PlottingButton                 matlab.ui.control.Button
+        PlottingTab                    matlab.ui.container.Tab
+        PlottingNoteLabel              matlab.ui.control.Label
+        PlotSettingsFileEditField      matlab.ui.control.EditField
+        PlotSettingsFileEditFieldLabel  matlab.ui.control.Label
+        PlotInputModelFileEditField    matlab.ui.control.EditField
+        PlotInputModelFileEditFieldLabel  matlab.ui.control.Label
+        PlotInputModelFileStatus       matlab.ui.control.Image
+        PlotOutputModelFileEditField   matlab.ui.control.EditField
+        PlotOutputModelFileEditFieldLabel  matlab.ui.control.Label
+        PlotOutputModelFileStatus      matlab.ui.control.Image
+        PlotTasksTable                 matlab.ui.control.Table
+        PlotTasksTableLabel            matlab.ui.control.Label
+        PlotTasksStatus                matlab.ui.control.Image
+        ExtraMarkerFilesTextArea       matlab.ui.control.TextArea
+        ExtraMarkerFilesTextAreaLabel  matlab.ui.control.Label
+        ExtraMarkerFilesSearchButton   matlab.ui.control.Button
+        ExtraMarkerFilesStatus         matlab.ui.control.Image
+        PlotButton                     matlab.ui.control.Button
         TasksContextMenu               matlab.ui.container.ContextMenu
         RenameMenu                     matlab.ui.container.Menu
         CopyTaskMenu                   matlab.ui.container.Menu
@@ -108,6 +127,10 @@ classdef JMPBase < matlab.apps.AppBase
         currentSettingsFile string = "";
         inputModelValid logical = false
         outputModelValid logical = false
+
+        % Marker files plotted in addition to the tasks' own, one per
+        % line as typed in the Plotting tab
+        extra_marker_files string = strings(0, 1)
     end
 
     properties (Constant, Access = private)
@@ -130,6 +153,12 @@ classdef JMPBase < matlab.apps.AppBase
             1e-6]
     end
 
+    properties (Access = private)
+        % Why each extra marker file cannot be plotted ("" if it can), by
+        % path and modification time
+        markerFileCache
+    end
+
     properties (Access = private)  % private UI components not in appModel
         OutputModelFileStatus          matlab.ui.control.Image
         JointBodyStatus                matlab.ui.control.Image
@@ -142,6 +171,7 @@ classdef JMPBase < matlab.apps.AppBase
         taskIndexListener
         advancedSettingsListener
         selectedTabListener
+        extraMarkerFilesListener
     end
 
     methods (Access = private) % listener methods
@@ -165,6 +195,10 @@ classdef JMPBase < matlab.apps.AppBase
             app.selectedTabListener = addlistener(app.TabGroup, ...
                 'SelectedTab', 'PostSet', ...
                 @(src, event)formatTabButtons(app));
+
+            app.extraMarkerFilesListener = addlistener(app, ...
+                'extra_marker_files', 'PostSet', ...
+                @(src, event)refreshPlottingTab(app));
 
             app.makeTaskListeners()
         end
@@ -268,9 +302,166 @@ classdef JMPBase < matlab.apps.AppBase
                 return
             end
             updateTabButtonStyles(app.TabGroup.SelectedTab, ...
-                [app.InputsTab, app.TasksTab, app.AdvancedTab], ...
+                [app.InputsTab, app.TasksTab, app.AdvancedTab, ...
+                app.PlottingTab], ...
                 [app.JMPInputsButton, app.JMPTasksButton, ...
-                app.AdvancedButton]);
+                app.AdvancedButton, app.PlottingButton]);
+            % The tab shows the current settings, which are edited in the
+            % other tabs, so it is redrawn each time it is opened
+            if app.TabGroup.SelectedTab == app.PlottingTab
+                app.refreshPlottingTab();
+            end
+        end
+
+        % Fills the Plotting tab from the current settings and checks what
+        % plotJmpResultsFromSettingsFile needs: both models on disk, at
+        % least one enabled task, and any extra marker files.
+        function refreshPlottingTab(app)
+            if ~isvalid(app) || ~isvalid(app.PlottingTab)
+                return
+            end
+            if app.currentSettingsFile == ""
+                app.PlotSettingsFileEditField.Value = ...
+                    '(not saved yet; Plot will ask where to save it)';
+            else
+                app.PlotSettingsFileEditField.Value = ...
+                    getRelativePath(app.currentSettingsFile);
+            end
+            app.PlotInputModelFileEditField.Value = ...
+                getRelativePath(app.input_model_file);
+            app.PlotOutputModelFileEditField.Value = ...
+                getRelativePath(app.output_model_file);
+            problems = false;
+
+            message = "";
+            if app.input_model_file == ""
+                message = "No input model file is set in the JMP Inputs tab.";
+            elseif ~isfile(app.input_model_file)
+                message = "The input model file does not exist.";
+            end
+            problems = app.showPlotStatus(app.PlotInputModelFileEditField, ...
+                app.PlotInputModelFileStatus, message) || problems;
+
+            message = "";
+            if app.output_model_file == ""
+                message = "No output model file is set in the JMP Inputs tab.";
+            elseif ~isfile(app.output_model_file)
+                message = "The output model file does not exist yet. " + ...
+                    "Run JMP to create it before plotting.";
+            end
+            problems = app.showPlotStatus(app.PlotOutputModelFileEditField, ...
+                app.PlotOutputModelFileStatus, message) || problems;
+
+            % Only enabled tasks are plotted, as the settings parser skips
+            % the rest
+            rows = cell(0, 4);
+            for i = 1 : numel(app.JMPTask)
+                task = app.JMPTask{i};
+                if ~strcmp(task.is_enabled, 'true')
+                    continue
+                end
+                rows(end + 1, :) = {char(task.name), ...
+                    char(getRelativePath(task.marker_file_name)), ...
+                    sprintf('%.4g to %.4g', task.time_range(1), ...
+                    task.time_range(2)), numel(task.marker_names)}; %#ok<AGROW>
+            end
+            app.PlotTasksTable.Data = rows;
+            message = "";
+            if isempty(rows)
+                message = "There are no enabled tasks to plot.";
+            end
+            problems = app.showPlotStatus([], app.PlotTasksStatus, message) || ...
+                problems;
+
+            if isempty(app.extra_marker_files)
+                app.ExtraMarkerFilesTextArea.Value = {''};
+            else
+                app.ExtraMarkerFilesTextArea.Value = arrayfun(@(file) ...
+                    char(getRelativePath(file)), app.extra_marker_files, ...
+                    'UniformOutput', false);
+            end
+            fileProblems = strings(0, 1);
+            for file = app.extra_marker_files'
+                if ~isfile(file) || ~endsWith(file, ".trc", 'IgnoreCase', true)
+                    fileProblems(end + 1) = file + " is not an existing " + ...
+                        ".trc file."; %#ok<AGROW>
+                else
+                    problem = app.markerFileProblem(file);
+                    if problem ~= ""
+                        fileProblems(end + 1) = file + " " + problem; %#ok<AGROW>
+                    end
+                end
+            end
+            message = strjoin(fileProblems, newline);
+            problems = app.showPlotStatus(app.ExtraMarkerFilesTextArea, ...
+                app.ExtraMarkerFilesStatus, message) || problems;
+
+            % Plot saves the settings first, so they must be valid too
+            app.PlotButton.Enable = ~problems && app.RunButton.Enable;
+            app.PlotButton.Tooltip = '';
+            if ~problems && ~app.RunButton.Enable
+                app.PlotButton.Tooltip = ['Fix the settings in the other ' ...
+                    'tabs first; Plot saves them before plotting.'];
+            end
+        end
+
+        % Why a marker file cannot be plotted, or "" if it can. The error
+        % calculation steps through a file using its header's frame rate
+        % and count, so a header that no longer matches the data (as in a
+        % file cropped without updating it) fails partway through
+        % plotting. Remembered by path and modification time so each file
+        % is only read once.
+        function problem = markerFileProblem(app, file)
+            if isempty(app.markerFileCache)
+                app.markerFileCache = containers.Map('KeyType', 'char', ...
+                    'ValueType', 'any');
+            end
+            listing = dir(file);
+            key = char(file + "|" + string(listing(1).datenum));
+            if ~isKey(app.markerFileCache, key)
+                problem = "";
+                try
+                    table = org.opensim.modeling.TimeSeriesTableVec3(char(file));
+                    rows = double(table.getNumRows());
+                    headerFrames = str2double(string( ...
+                        table.getTableMetaDataAsString('NumFrames')));
+                    headerRate = str2double(string( ...
+                        table.getTableMetaDataAsString('DataRate')));
+                    % get returns Java Doubles, which cannot be subtracted
+                    times = table.getIndependentColumn();
+                    duration = double(times.get(rows - 1)) - ...
+                        double(times.get(0));
+                    rate = (rows - 1) / duration;
+                    if headerFrames ~= rows || ...
+                            abs(headerRate - rate) > 0.01 * rate
+                        problem = sprintf(['has a header that does not ' ...
+                            'match its data: it says %g frames at %g Hz, ' ...
+                            'but holds %d frames at %.4g Hz. Update ' ...
+                            'NumFrames and DataRate.'], headerFrames, ...
+                            headerRate, rows, rate);
+                    end
+                catch
+                    problem = "could not be read by OpenSim. Check " + ...
+                        "that its header matches its columns.";
+                end
+                app.markerFileCache(key) = string(problem);
+            end
+            problem = app.markerFileCache(key);
+        end
+
+        % Shows a Plotting tab check, returning whether it is an error. The
+        % read-only fields keep their grey background when they are fine.
+        function isError = showPlotStatus(~, field, icon, message)
+            isError = message ~= "";
+            if isError
+                setGuiFieldStatus(field, icon, "error", message);
+            else
+                setGuiFieldStatus([], icon, "none");
+                if ~isempty(field)
+                    field.BackgroundColor = ternaryColor(field.Editable, ...
+                        [1 1 1], [0.94 0.94 0.94]);
+                end
+            end
         end
     end
 
@@ -705,6 +896,7 @@ classdef JMPBase < matlab.apps.AppBase
             app.updateJMPTasksListBox();
             app.validateTimeRange();
             app.updateRunButton();
+            app.refreshPlottingTab();
         end
 
         function applySettingsStruct(app, settingsTree)
@@ -740,8 +932,27 @@ classdef JMPBase < matlab.apps.AppBase
             app.currentSettingsFile = "";
 
             app.advancedSettingValues = app.defaultAdvancedSettingValues;
+            app.extra_marker_files = strings(0, 1);
             app.validateAllFields();
             app.updateRunButton();
+            app.refreshPlottingTab();
+        end
+
+        % Saves the current settings to the settings file, asking for a
+        % file name if there is none yet. Run and Plot both read the
+        % settings from the file. Returns false if the user cancels.
+        function saved = saveCurrentSettings(app)
+            saved = false;
+            if strcmp(app.currentSettingsFile, "")
+                [file, path] = uiputfile('*.xml', "Save XML Settings File");
+                % User hit "Cancel"
+                if isequal(file, 0)
+                    return
+                end
+                app.currentSettingsFile = fullfile(path, file);
+            end
+            app.saveSettingsFile(app.currentSettingsFile);
+            saved = true;
         end
     end
 
@@ -841,6 +1052,61 @@ classdef JMPBase < matlab.apps.AppBase
             app.TabGroup.SelectedTab = app.AdvancedTab;
         end
 
+        % Button pushed function: PlottingButton
+        function PlottingButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.PlottingTab;
+        end
+
+        % Value changed function: ExtraMarkerFilesTextArea
+        function ExtraMarkerFilesTextAreaValueChanged(app, event)
+            lines = strtrim(string(app.ExtraMarkerFilesTextArea.Value));
+            lines = lines(lines ~= "");
+            files = strings(0, 1);
+            for i = 1 : numel(lines)
+                files(end + 1, 1) = string(GetFullPath(char(lines(i)))); %#ok<AGROW>
+            end
+            app.extra_marker_files = unique(files, 'stable');
+        end
+
+        % Button pushed function: ExtraMarkerFilesSearchButton
+        function ExtraMarkerFilesSearchButtonPushed(app, event)
+            [files, path] = uigetfile('*.trc', 'Select Marker Files to Plot', ...
+                'MultiSelect', 'on');
+            % User hit "Cancel"
+            if isequal(files, 0)
+                return
+            end
+            chosen = fullfile(path, string(files));
+            app.extra_marker_files = unique([app.extra_marker_files; ...
+                chosen(:)], 'stable');
+        end
+
+        % Button pushed function: PlotButton
+        function PlotButtonPushed(app, event)
+            if ~app.saveCurrentSettings()
+                return
+            end
+            settingsFile = app.currentSettingsFile;
+            extraFiles = app.extra_marker_files;
+            progress = uiprogressdlg(app.UIFigure, 'Title', ...
+                'Joint Model Personalization', 'Message', ...
+                'Plotting Results...', 'Indeterminate', 'on');
+            try
+                if isempty(extraFiles)
+                    plotJmpResultsFromSettingsFile(settingsFile);
+                else
+                    plotJmpResultsFromSettingsFile(settingsFile, extraFiles);
+                end
+            catch exception
+                delete(progress);
+                uialert(app.UIFigure, exception.message, 'JMP Plotting Failed');
+                app.refreshPlottingTab();
+                return
+            end
+            delete(progress);
+            app.refreshPlottingTab();
+        end
+
         % Button pushed function: JMPTasksButton
         function JMPTasksButtonPushed(app, event)
             app.TabGroup.SelectedTab = app.TasksTab;
@@ -858,16 +1124,19 @@ classdef JMPBase < matlab.apps.AppBase
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
-            if strcmp(app.currentSettingsFile, "")
-                [file, path] = uiputfile('*.xml', "Save XML Settings File");
-                % User hit "Cancel"
-                if isequal(file, 0)
-                    return
-                end
-                app.currentSettingsFile = fullfile(path, file);
+            if ~app.saveCurrentSettings()
+                return
             end
-            app.saveSettingsFile(app.currentSettingsFile);
-            JMPRun(app, app.currentSettingsFile);
+            settingsFile = app.currentSettingsFile;
+            stages = struct( ...
+                'ParsingLabel', "Parsing Settings File...", ...
+                'RunningJMPLabel', "Running JMP...", ...
+                'SavingResultsLabel', "Saving Results...", ...
+                'PlottingResultsLabel', "Plotting Results...");
+            RunProgressGui.run(app.UIFigure, ...
+                "Joint Model Personalization", "JMP", stages, ...
+                @(progress) JointModelPersonalizationTool(settingsFile, progress), ...
+                @() plotJmpResultsFromSettingsFile(settingsFile), true);
         end
 
         % Button pushed function: HelpButton
@@ -1406,6 +1675,147 @@ classdef JMPBase < matlab.apps.AppBase
             app.AdvancedSettingsStatus.Position = [369 412 35 35];
             app.AdvancedSettingsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
+            % Create PlottingTab
+            app.PlottingTab = uitab(app.TabGroup);
+            app.PlottingTab.BackgroundColor = [0.851 0.851 0.851];
+
+            % The settings the plots use are shown here but edited in the
+            % other tabs
+            readOnlyTip = ['Shown from the current settings. Edit these ' ...
+                'in the JMP Inputs and JMP Tasks tabs; they can''t be ' ...
+                'changed here.'];
+
+            % Create PlottingNoteLabel
+            app.PlottingNoteLabel = uilabel(app.PlottingTab);
+            app.PlottingNoteLabel.FontAngle = 'italic';
+            app.PlottingNoteLabel.FontColor = [0.4 0.4 0.4];
+            app.PlottingNoteLabel.Position = [178 415 560 22];
+            app.PlottingNoteLabel.Text = ['These settings are edited in the ' ...
+                'JMP Inputs and JMP Tasks tabs. Plot saves them first.'];
+            app.PlottingNoteLabel.Tooltip = readOnlyTip;
+
+            % Create PlotSettingsFileEditFieldLabel
+            app.PlotSettingsFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotSettingsFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotSettingsFileEditFieldLabel.FontSize = 18;
+            app.PlotSettingsFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotSettingsFileEditFieldLabel.Position = [8 375 160 30];
+            app.PlotSettingsFileEditFieldLabel.Text = 'Settings File';
+
+            % Create PlotSettingsFileEditField
+            app.PlotSettingsFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotSettingsFileEditField.Editable = 'off';
+            app.PlotSettingsFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotSettingsFileEditField.Tooltip = readOnlyTip;
+            app.PlotSettingsFileEditField.Position = [178 375 472 30];
+
+            % Create PlotInputModelFileEditFieldLabel
+            app.PlotInputModelFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotInputModelFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotInputModelFileEditFieldLabel.FontSize = 18;
+            app.PlotInputModelFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotInputModelFileEditFieldLabel.Position = [8 330 160 30];
+            app.PlotInputModelFileEditFieldLabel.Text = 'Input Model File';
+
+            % Create PlotInputModelFileEditField
+            app.PlotInputModelFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotInputModelFileEditField.Editable = 'off';
+            app.PlotInputModelFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotInputModelFileEditField.Tooltip = readOnlyTip;
+            app.PlotInputModelFileEditField.Position = [178 330 472 30];
+
+            % Create PlotInputModelFileStatus
+            app.PlotInputModelFileStatus = uiimage(app.PlottingTab);
+            app.PlotInputModelFileStatus.Visible = 'off';
+            app.PlotInputModelFileStatus.Position = [660 330 28 30];
+            app.PlotInputModelFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotOutputModelFileEditFieldLabel
+            app.PlotOutputModelFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotOutputModelFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotOutputModelFileEditFieldLabel.FontSize = 18;
+            app.PlotOutputModelFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotOutputModelFileEditFieldLabel.Position = [8 285 160 30];
+            app.PlotOutputModelFileEditFieldLabel.Text = 'Output Model File';
+
+            % Create PlotOutputModelFileEditField
+            app.PlotOutputModelFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotOutputModelFileEditField.Editable = 'off';
+            app.PlotOutputModelFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotOutputModelFileEditField.Tooltip = readOnlyTip;
+            app.PlotOutputModelFileEditField.Position = [178 285 472 30];
+
+            % Create PlotOutputModelFileStatus
+            app.PlotOutputModelFileStatus = uiimage(app.PlottingTab);
+            app.PlotOutputModelFileStatus.Visible = 'off';
+            app.PlotOutputModelFileStatus.Position = [660 285 28 30];
+            app.PlotOutputModelFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotTasksTableLabel
+            app.PlotTasksTableLabel = uilabel(app.PlottingTab);
+            app.PlotTasksTableLabel.HorizontalAlignment = 'right';
+            app.PlotTasksTableLabel.FontSize = 18;
+            app.PlotTasksTableLabel.FontWeight = 'bold';
+            app.PlotTasksTableLabel.Position = [8 240 160 30];
+            app.PlotTasksTableLabel.Text = 'Tasks Plotted';
+
+            % Create PlotTasksTable
+            app.PlotTasksTable = uitable(app.PlottingTab);
+            app.PlotTasksTable.ColumnName = {'Task'; 'Marker File'; 'Time Range (s)'; 'Markers'};
+            app.PlotTasksTable.ColumnWidth = {'1x', '2x', '1x', 70};
+            app.PlotTasksTable.RowName = {};
+            app.PlotTasksTable.ColumnEditable = [false false false false];
+            app.PlotTasksTable.Tooltip = readOnlyTip;
+            app.PlotTasksTable.Position = [178 150 472 120];
+
+            % Create PlotTasksStatus
+            app.PlotTasksStatus = uiimage(app.PlottingTab);
+            app.PlotTasksStatus.Visible = 'off';
+            app.PlotTasksStatus.Position = [660 240 28 30];
+            app.PlotTasksStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create ExtraMarkerFilesTextAreaLabel
+            app.ExtraMarkerFilesTextAreaLabel = uilabel(app.PlottingTab);
+            app.ExtraMarkerFilesTextAreaLabel.HorizontalAlignment = 'right';
+            app.ExtraMarkerFilesTextAreaLabel.FontSize = 18;
+            app.ExtraMarkerFilesTextAreaLabel.FontWeight = 'bold';
+            app.ExtraMarkerFilesTextAreaLabel.Position = [8 82 160 48];
+            app.ExtraMarkerFilesTextAreaLabel.Text = {'Additional'; 'Marker Files'};
+
+            % Create ExtraMarkerFilesTextArea
+            app.ExtraMarkerFilesTextArea = uitextarea(app.PlottingTab);
+            app.ExtraMarkerFilesTextArea.ValueChangedFcn = createCallbackFcn(app, @ExtraMarkerFilesTextAreaValueChanged, true);
+            app.ExtraMarkerFilesTextArea.Tooltip = ['Marker files to plot in ' ...
+                'addition to the tasks'' own, one per line. Each is ' ...
+                'compared over its whole length using the tasks'' markers.'];
+            app.ExtraMarkerFilesTextArea.Position = [178 50 472 85];
+
+            % Create ExtraMarkerFilesSearchButton
+            app.ExtraMarkerFilesSearchButton = uibutton(app.PlottingTab, 'push');
+            app.ExtraMarkerFilesSearchButton.ButtonPushedFcn = createCallbackFcn(app, @ExtraMarkerFilesSearchButtonPushed, true);
+            app.ExtraMarkerFilesSearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
+            app.ExtraMarkerFilesSearchButton.VerticalAlignment = 'bottom';
+            app.ExtraMarkerFilesSearchButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.ExtraMarkerFilesSearchButton.Tooltip = 'Add marker files (select several at once)';
+            app.ExtraMarkerFilesSearchButton.Position = [660 78 31 30];
+            app.ExtraMarkerFilesSearchButton.Text = '';
+
+            % Create ExtraMarkerFilesStatus
+            app.ExtraMarkerFilesStatus = uiimage(app.PlottingTab);
+            app.ExtraMarkerFilesStatus.Visible = 'off';
+            app.ExtraMarkerFilesStatus.Position = [700 78 28 30];
+            app.ExtraMarkerFilesStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotButton
+            app.PlotButton = uibutton(app.PlottingTab, 'push');
+            app.PlotButton.ButtonPushedFcn = createCallbackFcn(app, @PlotButtonPushed, true);
+            app.PlotButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlotButton.FontSize = 18;
+            app.PlotButton.FontColor = [1 1 1];
+            app.PlotButton.Enable = 'off';
+            app.PlotButton.Position = [369 10 90 30];
+            app.PlotButton.Text = 'Plot';
+
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);
             app.Mask1.ScaleMethod = 'fill';
@@ -1429,6 +1839,15 @@ classdef JMPBase < matlab.apps.AppBase
             app.AdvancedButton.FontColor = [1 1 1];
             app.AdvancedButton.Position = [446 532 108 30];
             app.AdvancedButton.Text = 'Advanced';
+
+            % Create PlottingButton
+            app.PlottingButton = uibutton(app.UIFigure, 'push');
+            app.PlottingButton.ButtonPushedFcn = createCallbackFcn(app, @PlottingButtonPushed, true);
+            app.PlottingButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlottingButton.FontSize = 18;
+            app.PlottingButton.FontColor = [1 1 1];
+            app.PlottingButton.Position = [562 532 105 30];
+            app.PlottingButton.Text = 'Plotting';
 
             % Create JMPInputsButton
             app.JMPInputsButton = uibutton(app.UIFigure, 'push');
@@ -1492,7 +1911,7 @@ classdef JMPBase < matlab.apps.AppBase
             % Create JMPImage
             app.JMPImage = uiimage(app.UIFigure);
             app.JMPImage.Position = [21 33 178 420];
-            app.JMPImage.ImageSource = 'jmpFigure.png';
+            app.JMPImage.ImageSource = 'JMP Skeleton.png';
 
             % Create ResetButton
             app.ResetButton = uibutton(app.UIFigure, 'push');
@@ -1593,4 +2012,12 @@ classdef JMPBase < matlab.apps.AppBase
             delete(app.UIFigure)
         end
     end
+end
+
+function color = ternaryColor(condition, whenTrue, whenFalse)
+if condition
+    color = whenTrue;
+else
+    color = whenFalse;
+end
 end
