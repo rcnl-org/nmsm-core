@@ -9,6 +9,7 @@ function inputs = getInputs(tree)
 inputs = parseModel(tree, struct());
 inputs.osimxFileName = parseElementTextByName(tree, "input_osimx_file");
 inputs.coordinateNames = parseSpaceSeparatedList(tree, "coordinate_list");
+verifyCoordinatesInModel(inputs.model, inputs.coordinateNames);
 inputs.muscleNames = getMusclesFromCoordinates(inputs.model, ...
     inputs.coordinateNames);
 verifyMuscleNamesForFields(inputs.muscleNames);
@@ -26,6 +27,14 @@ inputs.normalizedFiberLengthGroups = ...
         inputs.model ...
     );
 inputs = parseDataDirectory(tree, inputs);
+end
+
+function verifyCoordinatesInModel(model, coordinateNames)
+for i = 1:length(coordinateNames)
+    assert(model.getCoordinateSet().contains(char(coordinateNames(i))), ...
+        "Coordinate " + coordinateNames(i) + " in <coordinate_list> " + ...
+        "is not in the model.")
+end
 end
 
 function inputs = parseDataDirectory(tree, inputs)

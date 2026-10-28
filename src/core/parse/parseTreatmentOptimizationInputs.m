@@ -86,7 +86,7 @@ end
 
 function inputs = parseBasicInputs(tree)
 inputs.toolName = findToolName(tree);
-inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
+inputs.resultsDirectory = getTextFromField(getFieldByNameOrError(tree, ...
     'results_directory'));
 if(isempty(inputs.resultsDirectory)); inputs.resultsDirectory = pwd; end
 inputs.controllerType = parseControllerType(tree);

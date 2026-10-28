@@ -32,7 +32,8 @@ function [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
-resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+resultsDirectory = getFieldByNameOrError(settingsTree, ...
+    'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
@@ -152,7 +153,7 @@ for i=1:size(grfColumnNames', 1)
         end
     end
 end
-if any([isnan(grf) isnan(moments) isnan(ec)])
+if any(isnan([grf moments ec]), "all")
     throw(MException('', ['Unable to parse GRF file, check that ' ...
         'all necessary column labels are present']))
 end

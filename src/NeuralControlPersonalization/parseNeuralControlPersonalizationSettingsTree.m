@@ -32,7 +32,8 @@ function [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree, inputs.model);
-resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+resultsDirectory = getFieldByNameOrError(settingsTree, ...
+    'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end

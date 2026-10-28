@@ -42,7 +42,8 @@ if isfield(inputs, "synergyExtrapolation")
         inputs.muscleNames), ...
         inputs);
 end
-resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+resultsDirectory = getFieldByNameOrError(settingsTree, ...
+    'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
@@ -74,6 +75,11 @@ emgDataFileNames = unique(findFileListFromPrefixList( ...
 [~, inputs.trialNames, ~] = fileparts(emgDataFileNames);
 collectedEmgGroupNames = parseSpaceSeparatedList(tree, 'collected_emg_channel_muscle_groups');
 [inputs.fullEmgData, inputs.emgDataColumnNames] = parseMtpStandard(emgDataFileNames);
+missingEmgGroupNames = setdiff(collectedEmgGroupNames, ...
+    inputs.emgDataColumnNames, 'stable');
+assert(isempty(missingEmgGroupNames), "<collected_emg_channel_" + ...
+    "muscle_groups> lists groups that are not columns of the EMG " + ...
+    "data: " + strjoin(missingEmgGroupNames, ", "))
 [~, ~, collectedEmgGroupNamesMembers] = intersect(collectedEmgGroupNames, inputs.emgDataColumnNames, 'stable');
 inputs.emgData = inputs.fullEmgData(:, collectedEmgGroupNamesMembers, :);
 inputs.emgDataColumnNames = inputs.emgDataColumnNames(collectedEmgGroupNamesMembers);
@@ -92,6 +98,7 @@ end
 % (struct, string, struct) -> (struct)
 function output = getTasks(tree)
 tasks = getFieldByNameOrError(tree, 'MTPTaskList');
+output = {};
 counter = 1;
 mtpTasks = orderByIndex(tasks.MTPTask);
 for i=1:length(mtpTasks)
@@ -105,6 +112,8 @@ for i=1:length(mtpTasks)
         counter = counter + 1;
     end
 end
+assert(~isempty(output), "No <MTPTask> is enabled. Set <is_enabled> " + ...
+    "to true for at least one task.")
 end
 
 % (integer, struct, string, struct) -> (struct)
