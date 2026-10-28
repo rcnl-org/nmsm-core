@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.5.5 2026-xx-xx
+
+### Added
+
+### Fixed
+- Fixed a bug causing NCP to crash when its settings file name is given as a character array.
+
+### Changed
+
 ## v.1.5.4 2026-09-12
 
 ### Added

@@ -46,7 +46,7 @@ if ~exist(resultsDirectory, "dir")
     mkdir(resultsDirectory);
 end
 [~, fname, fext] = fileparts(settingsFileName);
-copyfile(settingsFileName, fullfile(resultsDirectory, fname + fext));
+copyfile(settingsFileName, fullfile(resultsDirectory, strcat(fname, fext)));
 outputLogFile = fullfile(resultsDirectory, "commandWindowOutput.txt");
 diary(outputLogFile)
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
