@@ -11,8 +11,11 @@
 %   - Horizontal ground reaction force
 %   - Ground reaction moments
 %
-% (struct, struct, Array of double, Array of double, struct, struct, 
-% double, struct) -> (struct)
+% Saving and plotting pass calculateAllValues = true to calculate every
+% value regardless of the task's cost terms.
+%
+% (struct, struct, Array of double, Array of double, struct, struct,
+% double, struct, logical) -> (struct)
 % Calculate modeled values for the GCP cost function.
 
 % ----------------------------------------------------------------------- %
@@ -39,7 +42,7 @@
 
 function modeledValues = calcGCPModeledValues(inputs, values, ...
     modeledJointPositions, modeledJointVelocities, params, task, foot, ...
-    models)
+    models, calculateAllValues)
 model = models.("model_" + foot);
 if ~isequal(mexext, 'mexw64')
     state = model.initSystem();
@@ -87,6 +90,9 @@ if isempty(intersect(includedCostTypes, ["ground_reaction_moment", ...
             "horizontal_grf_slope"]))
         isCalculated(3) = false;
     end
+end
+if nargin > 8 && calculateAllValues
+    isCalculated = ones(4, 1);
 end
 if ~isempty(intersect(includedCostTypes, "neighbor_spring_constant"))
     modeledValues.gaussianWeights = zeros(size( ...
@@ -168,21 +174,12 @@ for i=1:size(modeledJointPositions, 2)
             inputs.surfaces{foot}.beltSpeed, inputs.latchingVelocity, ...
             markerKinematics, springForces);
     end
-    % Ground reaction moments
-    if isCalculated(4)
+    % Spring horizontal positions, used by the ground reaction moments and
+    % the neighbor spring constant cost
+    if isCalculated(4) || ~isempty(intersect(includedCostTypes, ...
+            "neighbor_spring_constant"))
         markerKinematics.xPosition = zeros(size(values.springConstants));
         markerKinematics.zPosition = zeros(size(values.springConstants));
-
-        if isequal(mexext, 'mexw64')
-            inputs.surfaces{foot}.midfootSuperiorPosition(:, i) = ...
-                modeledValues.markerPositions.midfootSuperior(:, i);
-        else
-            inputs.surfaces{foot}.midfootSuperiorPosition(:, i) = ...
-                model.getMarkerSet().get(...
-                inputs.surfaces{foot}.markerNames.midfootSuperior ...
-                ).getLocationInGround(state).getAsMat()';
-        end
-
         for j = 1:length(values.springConstants)
             if isequal(mexext, 'mexw64')
                 markerKinematics.xPosition(j) = springPositions(i, 1, j);
@@ -191,6 +188,18 @@ for i=1:size(modeledJointPositions, 2)
                 markerKinematics.xPosition(j) = modelMarkerPositions(j).get(0);
                 markerKinematics.zPosition(j) = modelMarkerPositions(j).get(2);
             end
+        end
+    end
+    % Ground reaction moments
+    if isCalculated(4)
+        if isequal(mexext, 'mexw64')
+            inputs.surfaces{foot}.midfootSuperiorPosition(:, i) = ...
+                modeledValues.markerPositions.midfootSuperior(:, i);
+        else
+            inputs.surfaces{foot}.midfootSuperiorPosition(:, i) = ...
+                model.getMarkerSet().get(...
+                inputs.surfaces{foot}.markerNames.midfootSuperior ...
+                ).getLocationInGround(state).getAsMat()';
         end
         [modeledValues.xGrfMoment(i), modeledValues.yGrfMoment(i), ...
             modeledValues.zGrfMoment(i)] = ...
