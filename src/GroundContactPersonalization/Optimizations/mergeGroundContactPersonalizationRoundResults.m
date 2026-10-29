@@ -49,6 +49,7 @@ if (params.tasks{task}.designVariables(4))
 end
 if (params.tasks{task}.designVariables(5))
     inputs.restingSpringLength = results(index);
+    index = index + 1;
 end
 if (params.tasks{task}.designVariables(6))
     % Other design variables are shared between feet, but kinematic
