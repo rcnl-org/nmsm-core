@@ -9,6 +9,7 @@
 - Added clear error messages for settings files where every JMP or MTP task or every GCP contact surface is disabled, where MTP, NCP, GCP or Treatment Optimization has no results_directory (now required by every tool except JMP), where a coordinate_list or states_coordinate_list entry is not in the model or IK data, where an MTP EMG channel group is not in the EMG data, and where MTLI is given an unknown cost term.
 - Fixed a bug allowing a GCP ground reaction column missing from the GRF file to be parsed as NaN forces.
 - Fixed a bug causing NCP to crash when its settings file name is given as a character array.
+- Fixed a bug causing synergy-driven Treatment Optimization to read muscle parameters (pennation angle, and any optimal fiber length, tendon slack length or max isometric force not in the osimx) from the wrong muscle when the modeled muscles are not the model's first muscles in order.
 
 ### Changed
 
