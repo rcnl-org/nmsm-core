@@ -10,6 +10,7 @@
 - Fixed a bug allowing a GCP ground reaction column missing from the GRF file to be parsed as NaN forces.
 - Fixed a bug causing NCP to crash when its settings file name is given as a character array.
 - Fixed a bug causing GCP to assign the wrong values to every design variable after the resting spring length when a task optimizes the resting spring length.
+- Fixed a bug causing GCP tasks that do not optimize the electrical center shift or force plate rotation to ignore the values found by earlier tasks.
 
 ### Changed
 
