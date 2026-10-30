@@ -45,6 +45,7 @@ else
             else
                 indices{i} = [startMuscleIndex, startMuscleIndex + ...
                     length(synergyGroup.muscleNames) - 1];
+                break
             end
         end
     end

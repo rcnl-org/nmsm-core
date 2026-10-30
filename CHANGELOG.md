@@ -13,6 +13,7 @@
 - Fixed a bug causing the Design Optimization angular_momentum_minimization cost term to crash whenever enabled.
 - Fixed a bug preventing the built-in Design Optimization model functions (applyBeltSpeedParameter, applyMaxIsometricForceParameter, applyOptimalFiberLengthParameter, applyTendonSlackLengthParameter) from being used.
 - Fixed a bug causing absolute metabolic cost goals to never compute the metabolic cost.
+- Fixed a bug causing synergy_vector_symmetry to compare the wrong weights when synergy groups have different numbers of muscles.
 
 ### Changed
 
