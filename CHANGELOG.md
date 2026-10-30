@@ -12,6 +12,7 @@
 - Fixed a bug causing synergy-driven Treatment Optimization to read muscle parameters (pennation angle, and any optimal fiber length, tendon slack length or max isometric force not in the osimx) from the wrong muscle when the modeled muscles are not the model's first muscles in order.
 - Fixed a bug causing the Design Optimization angular_momentum_minimization cost term to crash whenever enabled.
 - Fixed a bug preventing the built-in Design Optimization model functions (applyBeltSpeedParameter, applyMaxIsometricForceParameter, applyOptimalFiberLengthParameter, applyTendonSlackLengthParameter) from being used.
+- Fixed a bug causing absolute metabolic cost goals to never compute the metabolic cost.
 
 ### Changed
 
