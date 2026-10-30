@@ -157,7 +157,7 @@
 			<muscle> names the muscle in the osim model that a muscle parameter changes.
 			<is_left_foot> is a Boolean choosing whether a belt_speed parameter sets the belt speed under the left or the right foot's contact surfaces.
 			<is_enabled> is not read: every parameter term is a design variable.
-			Two terms of the same type currently overwrite each other's values, so give at most one term of each type.-->
+			Terms of the same type are passed on together in values.parameters.<type>, in the order they are listed, so a type can have several terms, such as max_isometric_force for several muscles.-->
 			<RCNLParameterTerm>
 				<!--Description: belt_speed is the treadmill belt speed under one foot, in meters per second. applyBeltSpeedParameter sets it on the contact surfaces from <input_osimx_file> on the side chosen by <is_left_foot>.-->
 				<type>belt_speed</type>
