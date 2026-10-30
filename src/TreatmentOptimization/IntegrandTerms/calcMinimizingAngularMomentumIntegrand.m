@@ -3,7 +3,7 @@
 % This function minimizes the whole body angular momentum for the specified
 % axis.
 %
-% (2D matrix, struct, Array of string) -> (Array of number)
+% (struct, Array of number, struct, struct) -> (Array of number)
 % 
 
 % ----------------------------------------------------------------------- %
@@ -29,7 +29,7 @@
 % ----------------------------------------------------------------------- %
 
 function [cost, costTerm] = calcMinimizingAngularMomentumIntegrand( ...
-    modeledValues, time, costTerm)
+    modeledValues, time, inputs, costTerm)
 defaultTimeNormalization = true;
 [time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
     defaultTimeNormalization);
