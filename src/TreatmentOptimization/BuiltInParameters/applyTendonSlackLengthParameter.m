@@ -3,7 +3,7 @@
 % This function adjusts the tendon slack length for the given muscle in
 % both the OpenSim model and the auxiliary data. 
 %
-% (struct, struct) -> (struct)
+% (struct, struct) -> (struct, struct)
 %
 
 % ----------------------------------------------------------------------- %
@@ -28,7 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = applyTendonSlackLengthParameter(inputs, values)
+function [inputs, values] = applyTendonSlackLengthParameter( ...
+    inputs, values)
 
 parameterSet = inputs.auxdata.userDefinedVariables;
 inputs.auxdata.model = Model(inputs.auxdata.model);
@@ -36,9 +37,11 @@ counter = 1;
 for i = 1:length(parameterSet)
     if strcmp(parameterSet{i}.type, 'tendon_slack_length')
         adjustModelTendonSlackLength(inputs.auxdata.model, ...
-            parameterSet{i}.muscle, values.tendon_slack_length(counter));
+            parameterSet{i}.muscle, ...
+            values.parameters.tendon_slack_length(counter));
         inputs = adjustTendonSlackLength(inputs, ...
-            parameterSet{i}.muscle, values.tendon_slack_length(counter));
+            parameterSet{i}.muscle, ...
+            values.parameters.tendon_slack_length(counter));
         counter = counter + 1;
     end
 end

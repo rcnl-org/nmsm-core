@@ -11,6 +11,7 @@
 - Fixed a bug causing NCP to crash when its settings file name is given as a character array.
 - Fixed a bug causing synergy-driven Treatment Optimization to read muscle parameters (pennation angle, and any optimal fiber length, tendon slack length or max isometric force not in the osimx) from the wrong muscle when the modeled muscles are not the model's first muscles in order.
 - Fixed a bug causing the Design Optimization angular_momentum_minimization cost term to crash whenever enabled.
+- Fixed a bug preventing the built-in Design Optimization model functions (applyBeltSpeedParameter, applyMaxIsometricForceParameter, applyOptimalFiberLengthParameter, applyTendonSlackLengthParameter) from being used.
 
 ### Changed
 

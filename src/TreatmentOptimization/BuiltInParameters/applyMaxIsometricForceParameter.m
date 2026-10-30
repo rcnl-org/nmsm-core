@@ -3,7 +3,7 @@
 % This function adjusts the max isometric force for the given muscle in
 % both the OpenSim model and the auxiliary data. 
 %
-% (struct, struct) -> (struct)
+% (struct, struct) -> (struct, struct)
 %
 
 % ----------------------------------------------------------------------- %
@@ -28,7 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = applyMaxIsometricForceParameter(inputs, values)
+function [inputs, values] = applyMaxIsometricForceParameter( ...
+    inputs, values)
 
 parameterSet = inputs.auxdata.userDefinedVariables;
 inputs.auxdata.model = Model(inputs.auxdata.model);
@@ -36,9 +37,11 @@ counter = 1;
 for i = 1:length(parameterSet)
     if strcmp(parameterSet{i}.type, 'max_isometric_force')
         adjustModelMaxIsometricForce(inputs.auxdata.model, ...
-            parameterSet{i}.muscle, values.max_isometric_force(counter));
+            parameterSet{i}.muscle, ...
+            values.parameters.max_isometric_force(counter));
         inputs = adjustMaxIsometricForce(inputs, ...
-            parameterSet{i}.muscle, values.max_isometric_force(counter));
+            parameterSet{i}.muscle, ...
+            values.parameters.max_isometric_force(counter));
         counter = counter + 1;
     end
 end
