@@ -10,6 +10,7 @@
 - Fixed a bug allowing a GCP ground reaction column missing from the GRF file to be parsed as NaN forces.
 - Fixed a bug causing NCP to crash when its settings file name is given as a character array.
 - Fixed a bug causing MTP and MTLI muscle group terms to compare the wrong muscles when a group list left out the first modeled muscle or the modeled muscles were not a continuous block of the model. A muscle in one of these groups that is not being modeled is now an error.
+- Fixed a bug causing the MTP minimum and maximum normalized fiber length cost terms to penalize a muscle's whole fiber length past the limit instead of only the amount past it.
 
 ### Changed
 
