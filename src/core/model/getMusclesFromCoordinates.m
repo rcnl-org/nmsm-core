@@ -43,6 +43,20 @@ for i=0:model.getForceSet().getMuscles().getSize() - 1
 end
 end
 
+% NEED TO FIX: a muscle is matched to the joint whose child body holds one
+% of its path points, not to the joints it spans
+%   - extra: the joint above the origin body is matched, e.g. soleus_r and
+%     tibant_r (tibia, calcn) are selected for knee_angle_r
+%   - missing: joints spanned with no path point on the child body are
+%     skipped, e.g. gasmed_r (femur, calcn) is not selected for
+%     knee_angle_r or ankle_angle_r
+%   - ankle_angle_r alone selects no muscles, the ankle's child body is
+%     the talus and no muscle attaches there
+% Lists with hip, knee and ankle together still select the right muscles,
+% because every leg muscle touches the pelvis, femur or tibia; partial
+% lists do not. Used by MTP, MTLI, NCP and the TO synergy controller.
+% Possible fix: match the joints on the kinematic tree path between
+% consecutive path-point bodies
 function output = isMuscleInCoordinates(model, coordinates, muscle)
 if muscle.get_appliesForce()
     path = muscle.getGeometryPath().getPathPointSet();

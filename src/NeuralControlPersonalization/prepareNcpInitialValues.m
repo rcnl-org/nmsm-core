@@ -89,6 +89,19 @@ else
     values = prepareNcpInitialValuesConstant(inputs, numGroups, ...
         numMusclesPerGroup, numSynergiesPerGroup, synergyGroupStart);
 end
+% KNOWN ISSUE: commands loaded without weights are paired with the weights
+% generated above, not the weights they were saved with
+%   - scale: saved commands go with weights normalized to a maximum of 1,
+%     the generated weights to synergy_vector_normalization_value, so the
+%     starting activations are too large
+%   - order: NNMF orders synergies arbitrarily, so loaded command k may not
+%     match generated synergy k unless the commands came from an NCP run
+%     with the same settings and data
+% The optimizer still updates both, so this only gives a poor warm start
+% (more iterations, possibly different synergies).
+% Possible fix: hold the loaded commands fixed and fit the weights by
+% bounded least squares on the NCP cost (linear in weights once commands
+% are fixed), then normalize weights and commands together
 if inputs.initialGuessHasCommands
     fprintf(['Overriding generated commands with saved commands from ' ...
         'initial_guess_directory ...\n\n']);
