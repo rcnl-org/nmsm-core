@@ -31,7 +31,7 @@
 function [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-params = getParams(settingsTree, inputs.model);
+params = getParams(settingsTree, inputs);
 resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
@@ -206,16 +206,21 @@ for i = 1:length(muscles)
 end
 end
 
-function params = getParams(tree, model)
+function params = getParams(tree, inputs)
 params = struct();
+params.costTerms = parseRcnlCostTermSet( ...
+    getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
 params.activationGroupNames = parseSpaceSeparatedList(tree, ...
     'activation_muscle_groups');
-params.activationGroups = groupNamesToGroups( ...
-    params.activationGroupNames, model);
+params.activationGroups = groupNamesToNcpGroups( ...
+    params.activationGroupNames, inputs.model, ...
+    inputs.muscleTendonColumnNames, ...
+    isCostTermEnabled(params.costTerms, 'grouped_activations'));
+% Only used by grouped_fiber_lengths, which no longer adds cost
 params.normalizedFiberLengthGroupNames = parseSpaceSeparatedList(tree, ...
     'normalized_fiber_length_muscle_groups');
 params.normalizedFiberLengthGroups = groupNamesToGroups( ...
-    params.normalizedFiberLengthGroupNames, model);
+    params.normalizedFiberLengthGroupNames, inputs.model);
 params.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
 params.diffMinChange = str2double(getTextFromField(...
@@ -237,6 +242,34 @@ params.finiteDifferenceType = string(getTextFromField( ...
     getFieldByNameOrAlternate(tree, 'finiteDifferenceType', 'central')));
 params.useCasadi = getBooleanLogicFromField(getFieldByNameOrAlternate( ...
     tree, 'use_casadi', false));
+end
+
+function enabled = isCostTermEnabled(costTerms, type)
+enabled = any(cellfun(@(term) term.isEnabled && ...
+    strcmpi(term.type, type), costTerms));
+end
+
+% Maps each muscle group to column indexes in muscleTendonColumnNames, the
+% muscle order of NCP activations and weights. Group members that are not
+% NCP muscles are skipped
+function groups = groupNamesToNcpGroups(groupNames, model, muscleNames, ...
+    remindSkipped)
+model = Model(model);
+groups = cell(1, length(groupNames));
+for i = 1:length(groupNames)
+    members = model.getForceSet().getGroup(groupNames(i)).getMembers();
+    memberNames = strings(1, members.getSize());
+    for j = 0:members.getSize() - 1
+        memberNames(j + 1) = string(members.get(j));
+    end
+    [isNcpMuscle, groups{i}] = ismember(memberNames, muscleNames);
+    groups{i} = groups{i}(isNcpMuscle);
+    if remindSkipped && ~all(isNcpMuscle)
+        fprintf(['[NCP] Reminder: muscle group "%s" has muscle(s) that ' ...
+            'are not NCP muscles and are ignored: %s\n'], ...
+            groupNames(i), strjoin(memberNames(~isNcpMuscle), ", "));
+    end
+end
 end
 
 function [optimalFiberLengthScaleFactors, ...
