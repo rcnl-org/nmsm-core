@@ -732,14 +732,16 @@
 			<RCNLConstraintTerm name="synergy_vector_sum">
 				<is_enabled>true</is_enabled>
 				<type>synergy_vector_sum</type>
-				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
+				<!--The name of the synergy group is synergy_group, and the numbers denote individual synergies in the group-->
+				<synergy_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_list>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
 			<RCNLConstraintTerm name="synergy_vector_magnitude">
 				<is_enabled>true</is_enabled>
 				<type>synergy_vector_magnitude</type>
-				<synergy_group_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_group_list>
+				<!--The name of the synergy group is synergy_group, and the numbers denote individual synergies in the group-->
+				<synergy_list>synergy_group_1 synergy_group_2 synergy_group_3</synergy_list>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
