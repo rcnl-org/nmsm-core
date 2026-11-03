@@ -95,11 +95,12 @@ osimxFileName = getFieldByName(tree, "input_osimx_file");
 %     throw(MException('', 'An input .osimx file is required if using data from MTP.'))
 % end
 inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text, inputs.model);
-% Remove activations of muscles from coordinates not included
-includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
-    inputs.muscleTendonColumnNames);
-inputs.mtpActivationsColumnNames = ...
-    inputs.mtpActivationsColumnNames(includedSubset);
+% Remove activations of muscles from coordinates not included and order the
+% rest as muscleTendonColumnNames, so activation_tracking compares the same
+% muscles column by column
+[inputs.mtpActivationsColumnNames, ~, includedSubset] = intersect( ...
+    inputs.muscleTendonColumnNames, inputs.mtpActivationsColumnNames, ...
+    'stable');
 inputs.mtpActivations = inputs.mtpActivations(:, includedSubset, :);
 end
 

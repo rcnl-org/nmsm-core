@@ -95,7 +95,10 @@ weightsInit = inputs.fixedSynergyWeights;
 if isfield(inputs, 'mtpActivations')
     fprintf(['Fixed synergy weights: fitting commands via NNLS ' ...
         'against mtpActivations ...\n\n'])
-    mtpActivationsStack = stackMtpActivations(inputs);
+    fprintf(['[prepareNcpInitialValues] Commands are fit directly to ' ...
+        'mtpActivations via NNLS; normalization value is not applied ' ...
+        'to commands here.\n']);
+    [mtpActivationsStack, hasMtp] = stackMtpActivations(inputs);
 
     commandsInitStack = zeros(inputs.numTrials * inputs.numPoints, ...
         inputs.numSynergies);
@@ -105,10 +108,20 @@ if isfield(inputs, 'mtpActivations')
         synergyIdx_start = synergyGroupStart(group);
         synergyIdx_end = synergyIdx_start + numSynergiesPerGroup(group) - 1;
 
+        % Fit only muscles with MTP data, the zero-filled missing muscles
+        % would pull the commands down
+        groupHasMtp = hasMtp(muscleIdx_start:muscleIdx_end);
+        if ~any(groupHasMtp)
+            throw(MException('', '%s', sprintf(['Synergy group %d has ' ...
+                'no muscles with MTP activations, so its initial ' ...
+                'commands cannot be fit to them.'], group)))
+        end
         groupWeights = weightsInit(synergyIdx_start:synergyIdx_end, ...
             muscleIdx_start:muscleIdx_end);
+        groupWeights = groupWeights(:, groupHasMtp);
         groupActivations = mtpActivationsStack(:, ...
             muscleIdx_start:muscleIdx_end);
+        groupActivations = groupActivations(:, groupHasMtp);
 
         numFrames = size(groupActivations, 1);
         groupCommands = zeros(numFrames, numSynergiesPerGroup(group));
@@ -149,7 +162,9 @@ options = statset('Display','off','TolX',1e-10,'TolFun',1e-10, ...
     'UseParallel',true, 'UseSubstreams',true, 'Streams',syn);
 numReplicates = 1000;
 
-mtpActivationsStack = stackMtpActivations(inputs);
+[mtpActivationsStack, hasMtp] = stackMtpActivations(inputs);
+verifyMtpCoversSynergies(hasMtp, numGroups, numMusclesPerGroup, ...
+    numSynergiesPerGroup, muscleGroupStart);
 
 weightsInit = zeros(inputs.numSynergies, inputs.numMuscles);
 commandsInitStack = zeros(inputs.numTrials * inputs.numPoints, ...
@@ -276,15 +291,57 @@ fprintf('\n');
 end
 
 % -------------------------------------------------------------------------
-% Reshapes inputs.mtpActivations (numTrials x numMuscles x numPoints) into
-% a stacked (numTrials*numPoints) x numMuscles matrix
-function mtpActivationsStack = stackMtpActivations(inputs)
-mtpPerm = permute(inputs.mtpActivations, [1 3 2]);
+% Reshapes inputs.mtpActivations (numTrials x numMtpMuscles x numPoints) into
+% a stacked (numTrials*numPoints) x numMuscles matrix in
+% muscleTendonColumnNames order. Muscles without MTP data stay zero, which
+% nnmf fits with zero weights without affecting the other muscles; hasMtp
+% marks the muscles that have MTP data
+function [mtpActivationsStack, hasMtp] = stackMtpActivations(inputs)
+[hasMtp, mtpColumn] = ismember(inputs.muscleTendonColumnNames, ...
+    inputs.mtpActivationsColumnNames);
+mtpActivations = zeros(inputs.numTrials, inputs.numMuscles, ...
+    inputs.numPoints);
+mtpActivations(:, hasMtp, :) = ...
+    inputs.mtpActivations(:, mtpColumn(hasMtp), :);
+mtpPerm = permute(mtpActivations, [1 3 2]);
 mtpActivationsStack = reshape(mtpPerm, inputs.numTrials * ...
     inputs.numPoints, inputs.numMuscles);
 end
 
 % -------------------------------------------------------------------------
+% nnmf returns all-zero synergy rows, which normalization turns into NaN,
+% when a group has fewer muscles with MTP data than synergies
+function verifyMtpCoversSynergies(hasMtp, numGroups, numMusclesPerGroup, ...
+    numSynergiesPerGroup, muscleGroupStart)
+for group = 1:numGroups
+    groupHasMtp = hasMtp(muscleGroupStart(group) : ...
+        muscleGroupStart(group) + numMusclesPerGroup(group) - 1);
+    if sum(groupHasMtp) < numSynergiesPerGroup(group)
+        throw(MException('', '%s', sprintf(['Synergy group %d has %d ' ...
+            'muscle(s) with MTP activations but %d synergies. NNMF ' ...
+            'initialization needs at least as many muscles with MTP ' ...
+            'activations as synergies; add the missing muscles to the ' ...
+            'MTP activations or reduce num_synergies.'], group, ...
+            sum(groupHasMtp), numSynergiesPerGroup(group))))
+    end
+end
+end
+
+% -------------------------------------------------------------------------
+% Fits nodes to the given point-level commands
+%
+% KNOWN LIMITATION: the reason "more nodes" can make a warm start worse
+% Solve the unconstrained least-squares fit with pinv and then clamp the
+% result to be non-negative, which is not the same as solving the bounded 
+% problem. With a larger numNodes pinv becomes more ill-conditioned, the 
+% node values oscillate more, more of them hit the clamp
+%
+% Two ways to fix:
+%   - solve the bounded problem instead, e.g. lsqlin(Bmatrix, c, [], [],
+%     [], [], lb, []) per column. 
+%   - pre-project the guess into this basis before NCP: 
+%     nodes = bounded fit, then save Bmatrix * nodes as the initial-guess 
+%     commands.
 function commandsInitNodes = commandsPointsToNodes(commandsInitStack, inputs)
 commandsInit = reshape(commandsInitStack, inputs.numTrials, ...
     inputs.numPoints, inputs.numSynergies);
