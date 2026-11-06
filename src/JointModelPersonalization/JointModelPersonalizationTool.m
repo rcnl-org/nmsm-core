@@ -39,21 +39,17 @@ end
 if nargin < 2
     app = [];
 end
-if ~isempty(app)
-    app.parsing = true;
-end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "JointModelPersonalizationTool");
 [outputFile, inputs, params] = ...
     parseJointModelPersonalizationSettingsTree(settingsTree);
-app.ParsingLabel.Enable = 'off';
+updateRunStageGui(app, 'ParsingLabel', 'off');
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
-app.RunningJMPLabel.Enable = 'on';
+updateRunStageGui(app, 'RunningJMPLabel', 'on');
 newModel = JointModelPersonalization(inputs, params, app);
-app.RunningJMPLabel.Enable = 'off';
-app.SavingResultsLabel.Enable = 'on';
-drawnow
+updateRunStageGui(app, 'RunningJMPLabel', 'off');
+updateRunStageGui(app, 'SavingResultsLabel', 'on');
 newModel.print(outputFile);
 fprintf("Joint Model Personalization Runtime: %f Hours\n", toc/3600);
 diary off
@@ -63,6 +59,6 @@ try
     movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
 catch
 end
-app.SavingResultsLabel.Enable = 'off';
+updateRunStageGui(app, 'SavingResultsLabel', 'off');
 end
 

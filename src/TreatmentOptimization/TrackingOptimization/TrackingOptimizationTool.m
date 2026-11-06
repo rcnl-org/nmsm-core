@@ -36,8 +36,6 @@ try
 catch
     error("NMSM Pipeline Project is not opened.")
 end
-% app is the optional TreatmentOptimizationRun dialog, absent when the
-% tool is called from a script
 if nargin < 2
     app = [];
 end

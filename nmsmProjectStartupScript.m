@@ -16,3 +16,9 @@ end
 
 disp(newline + "NMSM Pipeline Project Successfully Opened")
 clear opensimVersion
+
+% Only open the GUI in the MATLAB desktop, so scripts and headless runs
+% (matlab -batch, -nodesktop) are not interrupted by a window
+if usejava('desktop')
+    NMSMPipelineGUI
+end

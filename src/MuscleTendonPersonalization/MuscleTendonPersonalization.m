@@ -53,6 +53,7 @@ lowerBounds = makeLowerBounds(inputs, params);
 upperBounds = makeUpperBounds(inputs, params);
 optimizerOptions = makeOptimizerOptions(params);
 for i=1:length(inputs.tasks)
+    updateRunTaskGui(app, i, length(inputs.tasks));
     inputs.electromechanicalDelays = inputs.primaryValues{1};
     [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
         inputs.primaryValues, inputs.tasks{i}, lowerBounds, upperBounds);

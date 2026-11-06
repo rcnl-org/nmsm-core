@@ -108,6 +108,28 @@ classdef GCPBase < matlab.apps.AppBase
         AdvancedTab                    matlab.ui.container.Tab
         AdvancedSettingsStatus         matlab.ui.control.Image
         AdvancedSettingsTable          matlab.ui.control.Table
+        PlottingButton                 matlab.ui.control.Button
+        PlottingTab                    matlab.ui.container.Tab
+        PlottingNoteLabel              matlab.ui.control.Label
+        PlotSettingsFileEditField      matlab.ui.control.EditField
+        PlotSettingsFileEditFieldLabel  matlab.ui.control.Label
+        PlotInputModelFileEditField    matlab.ui.control.EditField
+        PlotInputModelFileEditFieldLabel  matlab.ui.control.Label
+        PlotInputModelFileStatus       matlab.ui.control.Image
+        PlotOsimxFileEditField         matlab.ui.control.EditField
+        PlotOsimxFileEditFieldLabel    matlab.ui.control.Label
+        PlotResultsDirectoryEditField  matlab.ui.control.EditField
+        PlotResultsDirectoryEditFieldLabel  matlab.ui.control.Label
+        PlotResultsDirectoryStatus     matlab.ui.control.Image
+        PlotContactSurfacesEditField   matlab.ui.control.EditField
+        PlotContactSurfacesEditFieldLabel  matlab.ui.control.Label
+        PlotContactSurfacesStatus      matlab.ui.control.Image
+        AlternateResultsDirectoryEditField  matlab.ui.control.EditField
+        AlternateResultsDirectoryEditFieldLabel  matlab.ui.control.Label
+        AlternateResultsDirectorySearchButton  matlab.ui.control.Button
+        AlternateResultsDirectoryStatus  matlab.ui.control.Image
+        AlternateNoteLabel             matlab.ui.control.Label
+        PlotButton                     matlab.ui.control.Button
         GroundContactModelPersonalizationToolLabel  matlab.ui.control.Label
         ContactSurfaceContextMenu      matlab.ui.container.ContextMenu
         RenameContactSurfaceMenu       matlab.ui.container.Menu
@@ -153,6 +175,10 @@ classdef GCPBase < matlab.apps.AppBase
         advancedSettingValues string = [];
 
         currentSettingsFile string = "";
+
+        % A results directory plotted instead of the settings file's, set
+        % in the Plotting tab
+        alternate_results_directory string = "";
 
         % Error checking and flow control
         inputModelValid logical = false
@@ -291,6 +317,7 @@ classdef GCPBase < matlab.apps.AppBase
         taskIndexListener
         advancedSettingsListener
         selectedTabListener
+        alternateResultsDirectoryListener
     end
 
     methods (Access = private) % listener methods
@@ -343,6 +370,9 @@ classdef GCPBase < matlab.apps.AppBase
             app.selectedTabListener = addlistener(app.TabGroup, ...
                 'SelectedTab', 'PostSet', ...
                 @(src, event)formatTabButtons(app));
+            app.alternateResultsDirectoryListener = addlistener(app, ...
+                'alternate_results_directory', 'PostSet', ...
+                @(src, event)refreshPlottingTab(app));
         end
 
         function updateInputModelFile(app)
@@ -458,9 +488,180 @@ classdef GCPBase < matlab.apps.AppBase
             end
             updateTabButtonStyles(app.TabGroup.SelectedTab, ...
                 [app.InputsTab, app.ContactSurfacesTab, ...
-                app.GCPTasksTab, app.AdvancedTab], ...
+                app.GCPTasksTab, app.AdvancedTab, app.PlottingTab], ...
                 [app.InputsButton, app.ContactSurfacesButton, ...
-                app.GCPTasksButton, app.AdvancedButton]);
+                app.GCPTasksButton, app.AdvancedButton, app.PlottingButton]);
+            % The tab shows the current settings, which are edited in the
+            % other tabs, so it is redrawn each time it is opened
+            if app.TabGroup.SelectedTab == app.PlottingTab
+                app.refreshPlottingTab();
+            end
+        end
+
+        % Fills the Plotting tab from the current settings and checks that
+        % every file plotGcpResultsFromSettingsFile reads is there
+        function refreshPlottingTab(app)
+            if ~isvalid(app) || ~isvalid(app.PlottingTab)
+                return
+            end
+            if app.currentSettingsFile == ""
+                app.PlotSettingsFileEditField.Value = ...
+                    '(not saved yet; Plot will ask where to save it)';
+            else
+                app.PlotSettingsFileEditField.Value = ...
+                    getRelativePath(app.currentSettingsFile);
+            end
+            app.PlotInputModelFileEditField.Value = ...
+                getRelativePath(app.input_model_file);
+            app.PlotOsimxFileEditField.Value = ...
+                getRelativePath(app.input_osimx_file);
+            app.PlotResultsDirectoryEditField.Value = ...
+                getRelativePath(app.results_directory);
+            app.AlternateResultsDirectoryEditField.Value = ...
+                getRelativePath(app.alternate_results_directory);
+
+            message = "";
+            if app.input_model_file == ""
+                message = "No input model file is set in the GCP Inputs tab.";
+            elseif ~isfile(app.input_model_file)
+                message = "The input model file does not exist.";
+            end
+            problems = app.showPlotStatus(app.PlotInputModelFileEditField, ...
+                app.PlotInputModelFileStatus, message);
+
+            % The plot function numbers the surfaces by their place in the
+            % list and skips disabled ones when there is more than one
+            count = length(app.GCPContactSurface);
+            plotted = [];
+            names = strings(0, 1);
+            for i = 1 : count
+                if count == 1 || strcmp(app.GCPContactSurface{i}.is_enabled, 'true')
+                    plotted(end + 1) = i; %#ok<AGROW>
+                    names(end + 1) = i + ": " + ...
+                        string(app.GCPContactSurface{i}.name); %#ok<AGROW>
+                end
+            end
+            app.PlotContactSurfacesEditField.Value = char(strjoin(names, ", "));
+            message = "";
+            if isempty(plotted)
+                message = "There are no enabled contact surfaces to plot.";
+            end
+            problems = app.showPlotStatus(app.PlotContactSurfacesEditField, ...
+                app.PlotContactSurfacesStatus, message) || problems;
+
+            % The result files are named after the model, and the osimx
+            % after the input osimx if there is one
+            [~, modelName] = fileparts(app.input_model_file);
+            if app.input_osimx_file == ""
+                osimxName = string(modelName) + "_gcp.osimx";
+            else
+                [~, osimxName] = fileparts(app.input_osimx_file);
+                osimxName = string(osimxName) + "_gcp.osimx";
+            end
+            resultFiles = osimxName;
+            for i = plotted
+                prefix = string(modelName) + "_Foot_" + i + "_";
+                resultFiles = [resultFiles; prefix + ...
+                    ["replacedExperimentalGroundReactions.sto"; ...
+                    "optimizedGroundReactions.sto"; ...
+                    "experimentalFootKinematics.sto"; ...
+                    "optimizedFootKinematics.sto"]]; %#ok<AGROW>
+            end
+
+            % The results come from the alternate directory if one is
+            % given, so its problems show there instead
+            alternate = app.alternate_results_directory ~= "";
+            if alternate
+                directory = app.alternate_results_directory;
+            else
+                directory = app.results_directory;
+            end
+            if directory == ""
+                message = "No results directory is set in the GCP Inputs tab.";
+            elseif ~isfolder(directory)
+                message = "The results directory does not exist. Run GCP " + ...
+                    "to create it before plotting.";
+            else
+                message = app.missingFiles(directory, resultFiles);
+                if message ~= ""
+                    message = message + newline + "Run GCP to create them.";
+                end
+            end
+            if alternate
+                problems = app.showPlotStatus([], ...
+                    app.PlotResultsDirectoryStatus, "") || problems;
+                problems = app.showPlotStatus( ...
+                    app.AlternateResultsDirectoryEditField, ...
+                    app.AlternateResultsDirectoryStatus, message) || problems;
+                app.PlotResultsDirectoryEditField.FontColor = [0.5 0.5 0.5];
+            else
+                problems = app.showPlotStatus(app.PlotResultsDirectoryEditField, ...
+                    app.PlotResultsDirectoryStatus, message) || problems;
+                problems = app.showPlotStatus( ...
+                    app.AlternateResultsDirectoryEditField, ...
+                    app.AlternateResultsDirectoryStatus, "") || problems;
+                app.PlotResultsDirectoryEditField.FontColor = [0 0 0];
+            end
+
+            % Plot saves the settings first, so they must be valid too
+            app.PlotButton.Enable = ~problems && app.RunButton.Enable;
+            app.PlotButton.Tooltip = '';
+            if ~problems && ~app.RunButton.Enable
+                app.PlotButton.Tooltip = ['Fix the settings in the other ' ...
+                    'tabs first; Plot saves them before plotting.'];
+            end
+        end
+
+        % Which of a directory's files are missing, as a message, or "" if
+        % none are. Lists the first few.
+        function message = missingFiles(~, directory, files)
+            message = "";
+            if isempty(files)
+                return
+            end
+            missing = files(~arrayfun(@(file) isfile(fullfile(directory, file)), files));
+            if isempty(missing)
+                return
+            end
+            shown = missing(1 : min(5, numel(missing)));
+            message = "Missing " + numel(missing) + " file(s) the plots " + ...
+                "read:" + newline + strjoin(shown, newline);
+            if numel(missing) > numel(shown)
+                message = message + newline + "...";
+            end
+        end
+
+        % Shows a Plotting tab check, returning whether it is an error. The
+        % read-only fields keep their grey background when they are fine.
+        function isError = showPlotStatus(~, field, icon, message)
+            isError = message ~= "";
+            if isError
+                setGuiFieldStatus(field, icon, "error", message);
+            else
+                setGuiFieldStatus([], icon, "none");
+                if ~isempty(field)
+                    field.BackgroundColor = ternaryColor(field.Editable, ...
+                        [1 1 1], [0.94 0.94 0.94]);
+                end
+            end
+        end
+
+        % Saves the current settings to the settings file, asking for a
+        % file name if there is none yet. Run and Plot both read the
+        % settings from the file. Returns false if the user cancels.
+        function saved = saveCurrentSettings(app)
+            saved = false;
+            if strcmp(app.currentSettingsFile, "")
+                [file, path] = uiputfile('*.xml', ...
+                    "Save XML Settings File");
+                % User hit "Cancel"
+                if isequal(file, 0)
+                    return
+                end
+                app.currentSettingsFile = fullfile(path, file);
+            end
+            app.saveSettingsFile(app.currentSettingsFile);
+            saved = true;
         end
     end
 
@@ -1278,9 +1479,11 @@ classdef GCPBase < matlab.apps.AppBase
             app.advancedSettingValues = app.defaultAdvancedSettingValues;
 
             app.currentSettingsFile = "";
+            app.alternate_results_directory = "";
 
             app.validateAllFields();
             app.updateRunButton();
+            app.refreshPlottingTab();
         end
     end
 
@@ -1498,6 +1701,7 @@ classdef GCPBase < matlab.apps.AppBase
             app.currentSettingsFile = string(settingsFileName);
             app.validateAllFields();
             app.updateRunButton();
+            app.refreshPlottingTab();
         end
 
         % parseModelFileGui and parseGcpGrfFileGui push their parsed lists
@@ -1972,6 +2176,53 @@ classdef GCPBase < matlab.apps.AppBase
             app.TabGroup.SelectedTab = app.AdvancedTab;
         end
 
+        % Button pushed function: PlottingButton
+        function PlottingButtonPushed(app, event)
+            app.TabGroup.SelectedTab = app.PlottingTab;
+        end
+
+        % Value changed function: AlternateResultsDirectoryEditField
+        function AlternateResultsDirectoryEditFieldValueChanged(app, event)
+            app.alternate_results_directory = ...
+                getPathFieldValue(app.AlternateResultsDirectoryEditField);
+        end
+
+        % Button pushed function: AlternateResultsDirectorySearchButton
+        function AlternateResultsDirectorySearchButtonPushed(app, event)
+            folder = uigetdir(pwd, 'Select a GCP Results Directory to Plot');
+            % User hit "Cancel"
+            if isequal(folder, 0)
+                return
+            end
+            app.alternate_results_directory = string(folder);
+        end
+
+        % Button pushed function: PlotButton
+        function PlotButtonPushed(app, event)
+            if ~app.saveCurrentSettings()
+                return
+            end
+            settingsFile = app.currentSettingsFile;
+            alternate = app.alternate_results_directory;
+            progress = uiprogressdlg(app.UIFigure, 'Title', ...
+                'Ground Contact Personalization', 'Message', ...
+                'Plotting Results...', 'Indeterminate', 'on');
+            try
+                if alternate == ""
+                    plotGcpResultsFromSettingsFile(settingsFile);
+                else
+                    plotGcpResultsFromSettingsFile(settingsFile, alternate);
+                end
+            catch exception
+                delete(progress);
+                uialert(app.UIFigure, exception.message, 'GCP Plotting Failed');
+                app.refreshPlottingTab();
+                return
+            end
+            delete(progress);
+            app.refreshPlottingTab();
+        end
+
         % Image clicked function: RcnlLogo
         function RcnlLogoImageClicked(app, event)
             web("https://nmsm.rice.edu/")
@@ -2004,20 +2255,23 @@ classdef GCPBase < matlab.apps.AppBase
 
         % Button pushed function: RunButton
         function RunButtonPushed(app, event)
-            if strcmp(app.currentSettingsFile, "")
-                [file, path] = uiputfile('*.xml', ...
-                    "Save XML Settings File");
-                % User hit "Cancel"
-                if isequal(file, 0)
-                    return
-                end
-                app.currentSettingsFile = fullfile(path, file);
+            if ~app.saveCurrentSettings()
+                return
             end
-            app.saveSettingsFile(app.currentSettingsFile);
             % Clears figures left over from a previous run so the result
             % plots are the only ones on screen.
             close all
-            GCPRun(app, app.currentSettingsFile);
+            settingsFile = app.currentSettingsFile;
+            stages = struct( ...
+                'ParsingLabel', "Parsing Settings File...", ...
+                'InitializingLabel', "Initializing Spring Length...", ...
+                'RunningLabel', "Running GCP...", ...
+                'SavingLabel', "Saving Results...", ...
+                'PlottingResultsLabel', "Plotting Results...");
+            RunProgressGui.run(app.UIFigure, ...
+                "Ground Contact Personalization", "GCP", stages, ...
+                @(progress) GroundContactPersonalizationTool(settingsFile, progress), ...
+                @() plotGcpResultsFromSettingsFile(settingsFile), true);
         end
 
         % Button pushed function: ResetButton
@@ -2744,6 +2998,169 @@ classdef GCPBase < matlab.apps.AppBase
             app.AdvancedSettingsStatus.Position = [446 507 28 30];
             app.AdvancedSettingsStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
 
+            % Create PlottingTab
+            app.PlottingTab = uitab(app.TabGroup);
+            app.PlottingTab.BackgroundColor = [0.851 0.851 0.851];
+
+            % The settings the plots use are shown here but edited in the
+            % other tabs
+            readOnlyTip = ['Shown from the current settings. Edit these ' ...
+                'in the GCP Inputs and Contact Surfaces tabs; they can''t ' ...
+                'be changed here.'];
+
+            % Create PlottingNoteLabel
+            app.PlottingNoteLabel = uilabel(app.PlottingTab);
+            app.PlottingNoteLabel.FontAngle = 'italic';
+            app.PlottingNoteLabel.FontColor = [0.4 0.4 0.4];
+            app.PlottingNoteLabel.Position = [218 540 587 22];
+            app.PlottingNoteLabel.Text = ['These settings are edited in the ' ...
+                'GCP Inputs and Contact Surfaces tabs. Plot saves them first.'];
+            app.PlottingNoteLabel.Tooltip = readOnlyTip;
+
+            % Create PlotSettingsFileEditFieldLabel
+            app.PlotSettingsFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotSettingsFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotSettingsFileEditFieldLabel.FontSize = 18;
+            app.PlotSettingsFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotSettingsFileEditFieldLabel.Position = [9 505 199 30];
+            app.PlotSettingsFileEditFieldLabel.Text = 'Settings File';
+
+            % Create PlotSettingsFileEditField
+            app.PlotSettingsFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotSettingsFileEditField.Editable = 'off';
+            app.PlotSettingsFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotSettingsFileEditField.Tooltip = readOnlyTip;
+            app.PlotSettingsFileEditField.Position = [218 505 587 30];
+
+            % Create PlotInputModelFileEditFieldLabel
+            app.PlotInputModelFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotInputModelFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotInputModelFileEditFieldLabel.FontSize = 18;
+            app.PlotInputModelFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotInputModelFileEditFieldLabel.Position = [9 465 199 30];
+            app.PlotInputModelFileEditFieldLabel.Text = 'Input Model File';
+
+            % Create PlotInputModelFileEditField
+            app.PlotInputModelFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotInputModelFileEditField.Editable = 'off';
+            app.PlotInputModelFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotInputModelFileEditField.Tooltip = readOnlyTip;
+            app.PlotInputModelFileEditField.Position = [218 465 587 30];
+
+            % Create PlotInputModelFileStatus
+            app.PlotInputModelFileStatus = uiimage(app.PlottingTab);
+            app.PlotInputModelFileStatus.Visible = 'off';
+            app.PlotInputModelFileStatus.Position = [822 465 28 30];
+            app.PlotInputModelFileStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotOsimxFileEditFieldLabel
+            app.PlotOsimxFileEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotOsimxFileEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotOsimxFileEditFieldLabel.FontSize = 18;
+            app.PlotOsimxFileEditFieldLabel.FontWeight = 'bold';
+            app.PlotOsimxFileEditFieldLabel.Position = [9 425 199 30];
+            app.PlotOsimxFileEditFieldLabel.Text = 'Input Osimx File';
+
+            % Create PlotOsimxFileEditField
+            app.PlotOsimxFileEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotOsimxFileEditField.Editable = 'off';
+            app.PlotOsimxFileEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotOsimxFileEditField.Tooltip = readOnlyTip;
+            app.PlotOsimxFileEditField.Position = [218 425 587 30];
+
+            % Create PlotResultsDirectoryEditFieldLabel
+            app.PlotResultsDirectoryEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotResultsDirectoryEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotResultsDirectoryEditFieldLabel.FontSize = 18;
+            app.PlotResultsDirectoryEditFieldLabel.FontWeight = 'bold';
+            app.PlotResultsDirectoryEditFieldLabel.Position = [9 385 199 30];
+            app.PlotResultsDirectoryEditFieldLabel.Text = 'Results Directory';
+
+            % Create PlotResultsDirectoryEditField
+            app.PlotResultsDirectoryEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotResultsDirectoryEditField.Editable = 'off';
+            app.PlotResultsDirectoryEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotResultsDirectoryEditField.Tooltip = readOnlyTip;
+            app.PlotResultsDirectoryEditField.Position = [218 385 587 30];
+
+            % Create PlotResultsDirectoryStatus
+            app.PlotResultsDirectoryStatus = uiimage(app.PlottingTab);
+            app.PlotResultsDirectoryStatus.Visible = 'off';
+            app.PlotResultsDirectoryStatus.Position = [822 385 28 30];
+            app.PlotResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create PlotContactSurfacesEditFieldLabel
+            app.PlotContactSurfacesEditFieldLabel = uilabel(app.PlottingTab);
+            app.PlotContactSurfacesEditFieldLabel.HorizontalAlignment = 'right';
+            app.PlotContactSurfacesEditFieldLabel.FontSize = 18;
+            app.PlotContactSurfacesEditFieldLabel.FontWeight = 'bold';
+            app.PlotContactSurfacesEditFieldLabel.Position = [9 345 199 30];
+            app.PlotContactSurfacesEditFieldLabel.Text = 'Contact Surfaces';
+
+            % Create PlotContactSurfacesEditField
+            app.PlotContactSurfacesEditField = uieditfield(app.PlottingTab, 'text');
+            app.PlotContactSurfacesEditField.Editable = 'off';
+            app.PlotContactSurfacesEditField.BackgroundColor = [0.94 0.94 0.94];
+            app.PlotContactSurfacesEditField.Tooltip = [readOnlyTip ' Each ' ...
+                'enabled surface is plotted, numbered by its place in the ' ...
+                'Contact Surfaces list, which names its result files.'];
+            app.PlotContactSurfacesEditField.Position = [218 345 587 30];
+
+            % Create PlotContactSurfacesStatus
+            app.PlotContactSurfacesStatus = uiimage(app.PlottingTab);
+            app.PlotContactSurfacesStatus.Visible = 'off';
+            app.PlotContactSurfacesStatus.Position = [822 345 28 30];
+            app.PlotContactSurfacesStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create AlternateResultsDirectoryEditFieldLabel
+            app.AlternateResultsDirectoryEditFieldLabel = uilabel(app.PlottingTab);
+            app.AlternateResultsDirectoryEditFieldLabel.HorizontalAlignment = 'right';
+            app.AlternateResultsDirectoryEditFieldLabel.FontSize = 18;
+            app.AlternateResultsDirectoryEditFieldLabel.FontWeight = 'bold';
+            app.AlternateResultsDirectoryEditFieldLabel.Position = [9 256 199 48];
+            app.AlternateResultsDirectoryEditFieldLabel.Text = {'Alternate'; 'Results Directory'};
+
+            % Create AlternateResultsDirectoryEditField
+            app.AlternateResultsDirectoryEditField = uieditfield(app.PlottingTab, 'text');
+            app.AlternateResultsDirectoryEditField.ValueChangedFcn = createCallbackFcn(app, @AlternateResultsDirectoryEditFieldValueChanged, true);
+            app.AlternateResultsDirectoryEditField.Tooltip = ['Optional. A GCP ' ...
+                'results directory to plot instead of the one in the ' ...
+                'settings. The other settings are still used.'];
+            app.AlternateResultsDirectoryEditField.Position = [218 265 587 30];
+
+            % Create AlternateResultsDirectorySearchButton
+            app.AlternateResultsDirectorySearchButton = uibutton(app.PlottingTab, 'push');
+            app.AlternateResultsDirectorySearchButton.ButtonPushedFcn = createCallbackFcn(app, @AlternateResultsDirectorySearchButtonPushed, true);
+            app.AlternateResultsDirectorySearchButton.Icon = fullfile(pathToMLAPP, '..', 'Images', 'folderIcon.svg');
+            app.AlternateResultsDirectorySearchButton.VerticalAlignment = 'bottom';
+            app.AlternateResultsDirectorySearchButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.AlternateResultsDirectorySearchButton.Position = [822 265 31 30];
+            app.AlternateResultsDirectorySearchButton.Text = '';
+
+            % Create AlternateResultsDirectoryStatus
+            app.AlternateResultsDirectoryStatus = uiimage(app.PlottingTab);
+            app.AlternateResultsDirectoryStatus.Visible = 'off';
+            app.AlternateResultsDirectoryStatus.Position = [862 265 28 30];
+            app.AlternateResultsDirectoryStatus.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'error.png');
+
+            % Create AlternateNoteLabel
+            app.AlternateNoteLabel = uilabel(app.PlottingTab);
+            app.AlternateNoteLabel.FontAngle = 'italic';
+            app.AlternateNoteLabel.FontColor = [0.4 0.4 0.4];
+            app.AlternateNoteLabel.Position = [218 235 587 22];
+            app.AlternateNoteLabel.Text = ['Optional. Plotted instead of the ' ...
+                'results directory above.'];
+
+            % Create PlotButton, centered under the fields
+            app.PlotButton = uibutton(app.PlottingTab, 'push');
+            app.PlotButton.ButtonPushedFcn = createCallbackFcn(app, @PlotButtonPushed, true);
+            app.PlotButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlotButton.FontSize = 18;
+            app.PlotButton.FontColor = [1 1 1];
+            app.PlotButton.Enable = 'off';
+            app.PlotButton.Position = [467 180 90 30];
+            app.PlotButton.Text = 'Plot';
+
             % Create Mask1
             app.Mask1 = uiimage(app.UIFigure);
             app.Mask1.ScaleMethod = 'fill';
@@ -2753,7 +3170,7 @@ classdef GCPBase < matlab.apps.AppBase
             % Create GcpImage
             app.GcpImage = uiimage(app.UIFigure);
             app.GcpImage.Position = [1 193 178 420];
-            app.GcpImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'gcpFigure.png');
+            app.GcpImage.ImageSource = fullfile(pathToMLAPP, '..', 'Images', 'GCP Skeleton.png');
 
             % Create AdvancedButton
             app.AdvancedButton = uibutton(app.UIFigure, 'push');
@@ -2763,6 +3180,15 @@ classdef GCPBase < matlab.apps.AppBase
             app.AdvancedButton.FontColor = [1 1 1];
             app.AdvancedButton.Position = [599 643 100 30];
             app.AdvancedButton.Text = 'Advanced';
+
+            % Create PlottingButton
+            app.PlottingButton = uibutton(app.UIFigure, 'push');
+            app.PlottingButton.ButtonPushedFcn = createCallbackFcn(app, @PlottingButtonPushed, true);
+            app.PlottingButton.BackgroundColor = [0.1294 0.1804 0.4];
+            app.PlottingButton.FontSize = 18;
+            app.PlottingButton.FontColor = [1 1 1];
+            app.PlottingButton.Position = [702 643 100 30];
+            app.PlottingButton.Text = 'Plotting';
 
             % Create GCPTasksButton
             app.GCPTasksButton = uibutton(app.UIFigure, 'push');
@@ -2908,4 +3334,12 @@ classdef GCPBase < matlab.apps.AppBase
             delete(app.UIFigure)
         end
     end
+end
+
+function color = ternaryColor(condition, whenTrue, whenFalse)
+if condition
+    color = whenTrue;
+else
+    color = whenFalse;
+end
 end
