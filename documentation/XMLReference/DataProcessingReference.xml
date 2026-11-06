@@ -1,0 +1,156 @@
+<NMSMPipelineDocument Version="1.6.0">
+	<DataProcessingTool>
+		<!--*Required* .c3d file
+		Description: Motion capture file containing labeled markers, force plate data, and EMG as analog channels. Markers, ground reactions, and EMG are extracted from it and converted to meters.
+		Default: N/A-->
+		<c3d_file>SSV05.c3d</c3d_file>
+		<!--*Optional* String
+		Description: Name used as the prefix of every output file.
+		Default: name of <c3d_file> without its extension.-->
+		<trial_name>SSV05</trial_name>
+		<!--*Optional* Directory name
+		Description: Directory that results are written to. Data extracted from the c3d file are written to its raw subdirectory.
+		Default: DataProcessingResults-->
+		<results_directory>DataProcessingResults</results_directory>
+		<!--*Optional* Boolean
+		Description: Whether the result of each processing step is written to the intermediate subdirectory of <results_directory> for troubleshooting.
+		Default: true-->
+		<save_intermediate_files>true</save_intermediate_files>
+		<!--*Optional* List of 3 integers
+		Description: Lab axes that become the OpenSim x (walking direction), y (up), and z (to the subject's right) axes, given as 1 = lab x, 2 = lab y, 3 = lab z, negated if the lab axis points the opposite way. For example, 2 3 1 makes lab y the walking direction, lab z up, and lab x to the right. Applied to markers and ground reactions. Must describe a rotation, so axes that mirror the data are rejected.
+		Default: 1 2 3 (no change)-->
+		<lab_to_opensim_axes>2 3 1</lab_to_opensim_axes>
+		<!--*Optional* Element
+		Description: Settings for finding the average gait cycle time, which sets filter cutoffs given as <cutoff_gait_cycle_multiple>.
+		Default: all child defaults-->
+		<GaitCycle>
+			<!--*Optional* Double
+			Description: Average gait cycle time in seconds. When it is given, heel strikes are not detected.
+			Default: empty, gait cycle time is found from heel strikes in the ground reaction data.-->
+			<gait_cycle_time>1.15</gait_cycle_time>
+			<!--*Optional* String (treadmill, overground)
+			Description: Force plate arrangement used to find heel strikes. treadmill: each foot stays on its own plate, so the gait cycle time is the time between heel strikes on one plate. overground: each foot is on at most one plate at a time, so the gait cycle time is the time from one heel strike to the second plate strike after it.
+			Default: treadmill-->
+			<force_plate_layout>treadmill</force_plate_layout>
+			<!--*Optional* Double
+			Description: Vertical force in N above which a force plate is considered loaded when finding heel strikes.
+			Default: 20-->
+			<heel_strike_force_threshold>20</heel_strike_force_threshold>
+		</GaitCycle>
+		<!--*Optional* Element
+		Description: Extraction and processing of marker data, written to a .trc file in meters.
+		Default: all child defaults-->
+		<MarkerProcessing>
+			<!--*Optional* Boolean
+			Description: Whether markers are extracted and processed.
+			Default: true-->
+			<is_enabled>true</is_enabled>
+			<!--*Optional* Element
+			Description: Interpolation of missing marker samples. A marker that is missing for the whole trial is reported and left as is.
+			Default: all child defaults-->
+			<GapFill>
+				<!--*Optional* String (linear, pchip, spline, makima, nearest, previous, next)
+				Description: Interpolation method used to fill gaps.
+				Default: pchip-->
+				<interpolation_method>pchip</interpolation_method>
+				<!--*Optional* Integer
+				Description: Longest gap in frames that is filled. Longer gaps are reported and left as missing data.
+				Default: 10-->
+				<max_gap_frames>10</max_gap_frames>
+			</GapFill>
+			<!--*Optional* Element
+			Description: Zero phase-lag Butterworth low pass filter. Give either <cutoff_frequency> or <cutoff_gait_cycle_multiple>, not both.
+			Default: all child defaults-->
+			<LowPassFilter>
+				<!--*Optional* Integer
+				Description: Filter order.
+				Default: 4-->
+				<filter_order>4</filter_order>
+				<!--*Optional* Double
+				Description: Cutoff frequency as a multiple of the gait cycle frequency (cutoff = multiple / gait cycle time). Ignored if <cutoff_frequency> is given.
+				Default: 7 if <cutoff_frequency> is not given.-->
+				<cutoff_gait_cycle_multiple>7</cutoff_gait_cycle_multiple>
+			</LowPassFilter>
+		</MarkerProcessing>
+		<!--*Optional* Element
+		Description: Extraction and processing of ground reaction data, written to a .sto file with nine columns per force plate (force in N, electrical center in m, moment in N*m).
+		Default: all child defaults-->
+		<GroundReactionProcessing>
+			<!--*Optional* Boolean
+			Description: Whether ground reactions are processed and written. When gait cycle time must be found from heel strikes, ground reactions are still extracted for that even if this is false.
+			Default: true-->
+			<is_enabled>true</is_enabled>
+			<!--*Optional* Element
+			Description: Interpolation of missing ground reaction samples. Same children as <GapFill> in <MarkerProcessing>.
+			Default: all child defaults-->
+			<GapFill>
+				<interpolation_method>pchip</interpolation_method>
+				<max_gap_frames>10</max_gap_frames>
+			</GapFill>
+			<!--*Optional* Boolean
+			Description: Whether a DC offset is removed from each column, found by averaging the samples where the force plate is unloaded.
+			Default: false-->
+			<remove_offset>true</remove_offset>
+			<!--*Optional* Double
+			Description: Vertical force in N below which forces and moments are set to zero so there is no force reading out of contact.
+			Default: empty, no thresholding.-->
+			<force_threshold>20</force_threshold>
+			<!--*Optional* Element
+			Description: Zero phase-lag Butterworth low pass filter. Give either <cutoff_frequency> or <cutoff_gait_cycle_multiple>, not both.
+			Default: all child defaults-->
+			<LowPassFilter>
+				<!--*Optional* Integer
+				Description: Filter order.
+				Default: 1-->
+				<filter_order>1</filter_order>
+				<!--*Optional* Double
+				Description: Cutoff frequency in Hz. Overrides the default <cutoff_gait_cycle_multiple>.
+				Default: empty, the cutoff is set from <cutoff_gait_cycle_multiple>.-->
+				<cutoff_frequency>12.5</cutoff_frequency>
+			</LowPassFilter>
+		</GroundReactionProcessing>
+		<!--*Optional* Element
+		Description: Extraction and processing of EMG data, written to a .sto file.
+		Default: all child defaults-->
+		<EmgProcessing>
+			<!--*Optional* Boolean
+			Description: Whether EMG is extracted and processed.
+			Default: true-->
+			<is_enabled>true</is_enabled>
+			<!--*Optional* List of strings
+			Description: Names of the analog channels that hold EMG. Names are the c3d analog labels, or the analog descriptions when the labels are repeated (e.g. Cortex files with labels shortened to four characters).
+			Default: empty, every analog channel not assigned to a force plate is used.-->
+			<emg_channel_names>EMG1_R_ADDUCTOR EMG2_R_GLUTEUS_MAXIMUS</emg_channel_names>
+			<!--*Optional* Element
+			Description: Zero phase-lag Butterworth high pass filter applied before the EMG is demeaned and rectified. Give either <cutoff_frequency> or <cutoff_gait_cycle_multiple>, not both.
+			Default: all child defaults-->
+			<HighPassFilter>
+				<!--*Optional* Integer
+				Description: Filter order.
+				Default: 4-->
+				<filter_order>4</filter_order>
+				<!--*Optional* Double
+				Description: Cutoff frequency in Hz.
+				Default: 40-->
+				<cutoff_frequency>40</cutoff_frequency>
+			</HighPassFilter>
+			<!--*Optional* Element
+			Description: Zero phase-lag Butterworth low pass filter applied to the rectified EMG. Give either <cutoff_frequency> or <cutoff_gait_cycle_multiple>, not both.
+			Default: all child defaults-->
+			<LowPassFilter>
+				<!--*Optional* Integer
+				Description: Filter order.
+				Default: 4-->
+				<filter_order>4</filter_order>
+				<!--*Optional* Double
+				Description: Cutoff frequency as a multiple of the gait cycle frequency (cutoff = multiple / gait cycle time).
+				Default: 3.5 if <cutoff_frequency> is not given.-->
+				<cutoff_gait_cycle_multiple>3.5</cutoff_gait_cycle_multiple>
+			</LowPassFilter>
+			<!--*Optional* Boolean
+			Description: Whether each processed EMG channel is divided by its maximum so it ranges from 0 to 1.
+			Default: true-->
+			<normalize>true</normalize>
+		</EmgProcessing>
+	</DataProcessingTool>
+</NMSMPipelineDocument>
