@@ -1871,9 +1871,12 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 costTerm.miscParams = struct();
                 return
             end
+            if ~strcmp(string(costTerm.componentElement), ...
+                    string(metadata.componentElement))
+                costTerm.componentList = string([]);
+            end
             costTerm.componentElement = metadata.componentElement;
             costTerm.uses_error_center = metadata.usesErrorCenter;
-            costTerm.componentList = string([]);
             existing = costTerm.miscParams;
             % A user defined term's extra parameters are the user's, so
             % they survive a round trip through another type. A built in
@@ -2188,11 +2191,15 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             previousParams = app.constraintTermTypeParams(constraintTerm);
             constraintTerm.type = type;
             metadata = app.constraintTermMetadataForType(type);
-            constraintTerm.componentList = string([]);
             if isempty(metadata)
+                constraintTerm.componentList = string([]);
                 constraintTerm.componentElement = "";
                 constraintTerm.miscParams = struct();
                 return
+            end
+            if ~strcmp(string(constraintTerm.componentElement), ...
+                    string(metadata.componentElement))
+                constraintTerm.componentList = string([]);
             end
             constraintTerm.componentElement = metadata.componentElement;
             existing = constraintTerm.miscParams;
