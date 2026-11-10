@@ -1,7 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Runs Data Processing: extracts marker, ground reaction, and EMG data from
-% a .c3d file, converts lengths to meters, and reports missing data.
+% a .c3d file, converts lengths to meters, reports missing data, and finds
+% the gait cycle time from heel strikes if it is not given.
 %
 % (struct, struct, App) -> (struct)
 % Extracts and checks data from a .c3d file
@@ -50,4 +51,28 @@ if isfield(results.raw, "emg")
         results.raw.emg.labels, results.raw.emg.data, 0);
 end
 updateRunStageGui(app, 'ExtractingDataLabel', 'off');
+[results.gaitCycleTime, results.gaitEvents] = getGaitCycleTime( ...
+    results.raw, params);
+end
+
+% A given gait cycle time is used as is. Otherwise it is found from heel
+% strikes, which is an error only if a filter cutoff depends on it.
+function [gaitCycleTime, gaitEvents] = getGaitCycleTime(raw, params)
+gaitCycleTime = params.gaitCycle.gaitCycleTime;
+gaitEvents = struct([]);
+if ~isempty(gaitCycleTime) || ~isfield(raw, "groundReactions")
+    return
+end
+try
+    gaitEvents = findGaitEvents(raw.groundReactions, ...
+        params.labToOpenSimAxes, params.gaitCycle);
+    gaitCycleTime = gaitEvents.gaitCycleTime;
+catch exception
+    if params.requiresGaitCycleTime
+        rethrow(exception)
+    end
+    warning("DataProcessing:noGaitCycleTime", ...
+        "Gait cycle time could not be found and is not needed: %s", ...
+        exception.message);
+end
 end

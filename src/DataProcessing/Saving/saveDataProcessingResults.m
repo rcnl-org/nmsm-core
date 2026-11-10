@@ -3,7 +3,8 @@
 % Saves the data extracted from the .c3d file to <results>/raw:
 % <trial>_markers_raw.trc (m), <trial>_grf_raw.sto (N, m, N*m), and
 % <trial>_emg_raw.sto (V). Only the data types that were extracted are
-% written.
+% written. Heel strikes found from the ground reactions are written to
+% <results>/<trial>_gait_events.sto.
 %
 % (struct, struct, string) -> (None)
 % Writes Data Processing results to files
@@ -49,6 +50,28 @@ if isfield(raw, "emg")
     writeDataToSto(raw.emg, fullfile(rawDirectory, ...
         inputs.trialName + "_emg_raw.sto"));
 end
+if ~isempty(results.gaitEvents)
+    writeGaitEvents(results.gaitEvents, fullfile(resultsDirectory, ...
+        inputs.trialName + "_gait_events.sto"));
+end
+end
+
+% One row per heel strike, sorted by time, with the force plate it was on.
+% The gait cycle time is stored in the file header.
+function writeGaitEvents(gaitEvents, fileName)
+import org.opensim.modeling.STOFileAdapter
+times = [];
+plates = [];
+for plate = 1:numel(gaitEvents.heelStrikeTimes)
+    times = [times; gaitEvents.heelStrikeTimes{plate}(:)]; %#ok<AGROW>
+    plates = [plates; plate * ones(numel( ...
+        gaitEvents.heelStrikeTimes{plate}), 1)]; %#ok<AGROW>
+end
+[times, order] = sort(times);
+table = makeTimeSeriesTable("force_plate", times, plates(order));
+table.addTableMetaDataString("gait_cycle_time", ...
+    sprintf("%.6f", gaitEvents.gaitCycleTime));
+STOFileAdapter.write(table, fileName);
 end
 
 function writeDataToSto(data, fileName)
