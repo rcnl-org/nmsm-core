@@ -9,17 +9,17 @@
 		Default: name of <c3d_file> without its extension.-->
 		<trial_name>SSV05</trial_name>
 		<!--*Optional* Directory name
-		Description: Directory that results are written to. Data extracted from the c3d file are written to its raw subdirectory.
+		Description: Directory that results are written to. Processed data are written as <trial_name>_markers.trc, <trial_name>_grf.sto, and <trial_name>_emg.sto in OpenSim axes, heel strikes and the gait cycle time as <trial_name>_gait_events.sto, and data extracted from the c3d file (lab axes, meters) to its raw subdirectory.
 		Default: DataProcessingResults-->
 		<results_directory>DataProcessingResults</results_directory>
 		<!--*Optional* Boolean
-		Description: Whether the result of each processing step is written to the intermediate subdirectory of <results_directory> for troubleshooting.
+		Description: Whether the result of each processing step is written to the intermediate subdirectory of <results_directory> for troubleshooting, in lab axes: markers gapfilled and filtered; grf gapfilled, offset_removed, thresholded, and filtered; emg highpass, rectified, and lowpass.
 		Default: true-->
 		<save_intermediate_files>true</save_intermediate_files>
 		<!--*Optional* List of 3 integers
-		Description: Lab axes that become the OpenSim x (walking direction), y (up), and z (to the subject's right) axes, given as 1 = lab x, 2 = lab y, 3 = lab z, negated if the lab axis points the opposite way. For example, 2 3 1 makes lab y the walking direction, lab z up, and lab x to the right. Applied to markers and ground reactions. Must describe a rotation, so axes that mirror the data are rejected.
+		Description: Lab axes that become the OpenSim x (walking direction), y (up), and z (to the subject's right) axes, given as 1 = lab x, 2 = lab y, 3 = lab z, negated if the lab axis points the opposite way. For example, in a lab where subjects walk along lab x, lab z is up, and lab y points to the subject's left, 1 3 -2 keeps lab x as the walking direction, makes lab z up, and makes the negative of lab y the right. Applied to markers and ground reactions. Must describe a rotation, so axes that mirror the data are rejected.
 		Default: 1 2 3 (no change)-->
-		<lab_to_opensim_axes>2 3 1</lab_to_opensim_axes>
+		<lab_to_opensim_axes>1 3 -2</lab_to_opensim_axes>
 		<!--*Optional* Element
 		Description: Settings for finding the average gait cycle time, which sets filter cutoffs given as <cutoff_gait_cycle_multiple>.
 		Default: all child defaults-->
@@ -31,7 +31,7 @@
 			<!--*Optional* String (treadmill, overground)
 			Description: Force plate arrangement used to find heel strikes. treadmill: each foot stays on its own plate, so the gait cycle time is the time between heel strikes on one plate. overground: each foot is on at most one plate at a time, so the gait cycle time is the time from one heel strike to the second plate strike after it.
 			Default: treadmill-->
-			<force_plate_layout>treadmill</force_plate_layout>
+			<force_plate_layout>overground</force_plate_layout>
 			<!--*Optional* Double
 			Description: Vertical force in N above which a force plate is considered loaded when finding heel strikes.
 			Default: 20-->
@@ -88,7 +88,7 @@
 				<max_gap_frames>10</max_gap_frames>
 			</GapFill>
 			<!--*Optional* Boolean
-			Description: Whether a DC offset is removed from each column, found by averaging the samples where the force plate is unloaded.
+			Description: Whether a DC offset is removed from each force and moment column, found by averaging the samples where the force plate is unloaded (vertical force below <force_threshold>, or below <heel_strike_force_threshold> if <force_threshold> is not given). Steps run in the order gap fill, offset removal, thresholding, low pass filter.
 			Default: false-->
 			<remove_offset>true</remove_offset>
 			<!--*Optional* Double
@@ -135,7 +135,7 @@
 				<cutoff_frequency>40</cutoff_frequency>
 			</HighPassFilter>
 			<!--*Optional* Element
-			Description: Zero phase-lag Butterworth low pass filter applied to the rectified EMG. Give either <cutoff_frequency> or <cutoff_gait_cycle_multiple>, not both.
+			Description: Zero phase-lag Butterworth low pass filter applied to the demeaned and rectified EMG to form its envelope. Negative values left by the filter are set to zero. Give either <cutoff_frequency> or <cutoff_gait_cycle_multiple>, not both.
 			Default: all child defaults-->
 			<LowPassFilter>
 				<!--*Optional* Integer

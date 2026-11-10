@@ -1,8 +1,9 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Runs Data Processing: extracts marker, ground reaction, and EMG data from
-% a .c3d file, converts lengths to meters, reports missing data, and finds
-% the gait cycle time from heel strikes if it is not given.
+% a .c3d file, converts lengths to meters, reports missing data, finds
+% the gait cycle time from heel strikes if it is not given, and processes
+% each enabled data type independently.
 %
 % (struct, struct, App) -> (struct)
 % Extracts and checks data from a .c3d file
@@ -53,6 +54,26 @@ end
 updateRunStageGui(app, 'ExtractingDataLabel', 'off');
 [results.gaitCycleTime, results.gaitEvents] = getGaitCycleTime( ...
     results.raw, params);
+updateRunStageGui(app, 'ProcessingDataLabel', 'on');
+results.processed = struct();
+results.steps = struct();
+if params.markers.isEnabled
+    [results.processed.markers, results.steps.markers] = ...
+        processMarkerData(results.raw.markers, params.markers, ...
+        results.gaitCycleTime, params.labToOpenSimAxes);
+end
+if params.groundReactions.isEnabled
+    [results.processed.groundReactions, results.steps.groundReactions] ...
+        = processGroundReactionData(results.raw.groundReactions, ...
+        params.groundReactions, ...
+        params.gaitCycle.heelStrikeForceThreshold, ...
+        results.gaitCycleTime, params.labToOpenSimAxes);
+end
+if params.emg.isEnabled
+    [results.processed.emg, results.steps.emg] = processRawEmgData( ...
+        results.raw.emg, params.emg, results.gaitCycleTime);
+end
+updateRunStageGui(app, 'ProcessingDataLabel', 'off');
 end
 
 % A given gait cycle time is used as is. Otherwise it is found from heel

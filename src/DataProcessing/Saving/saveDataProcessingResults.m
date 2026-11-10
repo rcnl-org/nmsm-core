@@ -1,12 +1,17 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Saves the data extracted from the .c3d file to <results>/raw:
-% <trial>_markers_raw.trc (m), <trial>_grf_raw.sto (N, m, N*m), and
-% <trial>_emg_raw.sto (V). Only the data types that were extracted are
-% written. Heel strikes found from the ground reactions are written to
-% <results>/<trial>_gait_events.sto.
+% Saves Data Processing results to the results directory:
+%   <trial>_markers.trc, <trial>_grf.sto, <trial>_emg.sto
+%       processed data in OpenSim axes (EMG normalized if requested)
+%   <trial>_gait_events.sto
+%       heel strikes and gait cycle time, if they were found
+%   raw/<trial>_markers_raw.trc, _grf_raw.sto, _emg_raw.sto
+%       data as extracted from the .c3d file, in lab axes and meters
+%   intermediate/<trial>_<data>_<step>.trc/.sto
+%       data after each processing step, in lab axes, if
+%       <save_intermediate_files> is true
 %
-% (struct, struct, string) -> (None)
+% (struct, struct, struct, string) -> (None)
 % Writes Data Processing results to files
 
 % ----------------------------------------------------------------------- %
@@ -31,28 +36,57 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function saveDataProcessingResults(results, inputs, resultsDirectory)
-rawDirectory = fullfile(resultsDirectory, "raw");
-if ~exist(rawDirectory, "dir")
-    mkdir(rawDirectory);
-end
-raw = results.raw;
-if isfield(raw, "markers")
-    writeToTrc(raw.markers.labels, raw.markers.time, raw.markers.data, ...
-        raw.markers.dataRate, "m", fullfile(rawDirectory, ...
-        inputs.trialName + "_markers_raw.trc"));
-end
-if isfield(raw, "groundReactions")
-    writeDataToSto(raw.groundReactions, fullfile(rawDirectory, ...
-        inputs.trialName + "_grf_raw.sto"));
-end
-if isfield(raw, "emg")
-    writeDataToSto(raw.emg, fullfile(rawDirectory, ...
-        inputs.trialName + "_emg_raw.sto"));
+function saveDataProcessingResults(results, inputs, params, ...
+    resultsDirectory)
+trialPrefix = fullfile(resultsDirectory, inputs.trialName);
+rawPrefix = fullfile(makeDirectory(resultsDirectory, "raw"), ...
+    inputs.trialName);
+dataTypes = ["markers", "groundReactions", "emg"];
+fileNames = ["markers", "grf", "emg"];
+for i = 1:numel(dataTypes)
+    isMarkers = dataTypes(i) == "markers";
+    if isfield(results.raw, dataTypes(i))
+        writeData(results.raw.(dataTypes(i)), ...
+            rawPrefix + "_" + fileNames(i) + "_raw", isMarkers);
+    end
+    if ~isfield(results.processed, dataTypes(i))
+        continue
+    end
+    writeData(results.processed.(dataTypes(i)), ...
+        trialPrefix + "_" + fileNames(i), isMarkers);
+    if params.saveIntermediateFiles
+        intermediatePrefix = fullfile(makeDirectory(resultsDirectory, ...
+            "intermediate"), inputs.trialName + "_" + fileNames(i));
+        steps = results.steps.(dataTypes(i));
+        stepNames = string(fieldnames(steps))';
+        for step = stepNames
+            data = results.raw.(dataTypes(i));
+            data.data = steps.(step);
+            writeData(data, intermediatePrefix + "_" + step, isMarkers);
+        end
+    end
 end
 if ~isempty(results.gaitEvents)
-    writeGaitEvents(results.gaitEvents, fullfile(resultsDirectory, ...
-        inputs.trialName + "_gait_events.sto"));
+    writeGaitEvents(results.gaitEvents, trialPrefix + "_gait_events.sto");
+end
+end
+
+function directory = makeDirectory(resultsDirectory, name)
+directory = fullfile(resultsDirectory, name);
+if ~exist(directory, "dir")
+    mkdir(directory);
+end
+end
+
+% Markers are written as .trc, everything else as .sto
+function writeData(data, filePrefix, isMarkers)
+import org.opensim.modeling.STOFileAdapter
+if isMarkers
+    writeToTrc(data.labels, data.time, data.data, data.dataRate, "m", ...
+        filePrefix + ".trc");
+else
+    STOFileAdapter.write(makeTimeSeriesTable(data.labels, data.time, ...
+        data.data), filePrefix + ".sto");
 end
 end
 
@@ -72,10 +106,4 @@ table = makeTimeSeriesTable("force_plate", times, plates(order));
 table.addTableMetaDataString("gait_cycle_time", ...
     sprintf("%.6f", gaitEvents.gaitCycleTime));
 STOFileAdapter.write(table, fileName);
-end
-
-function writeDataToSto(data, fileName)
-import org.opensim.modeling.STOFileAdapter
-STOFileAdapter.write(makeTimeSeriesTable(data.labels, data.time, ...
-    data.data), fileName);
 end

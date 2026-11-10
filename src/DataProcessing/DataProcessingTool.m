@@ -1,8 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Data Processing is the first step of the NMSM Pipeline. It reads a .c3d
-% file and writes its marker, ground reaction, and EMG data to .trc and
-% .sto files.
+% file, processes its marker, ground reaction, and EMG data, and writes
+% them to .trc and .sto files ready for the rest of the pipeline.
 %
 % (string, App) -> (None)
 % Runs Data Processing from a settings file
@@ -53,7 +53,7 @@ diary(outputLogFile)
 try
     results = DataProcessing(inputs, params, app);
     updateRunStageGui(app, 'SavingResultsLabel', 'on');
-    saveDataProcessingResults(results, inputs, resultsDirectory);
+    saveDataProcessingResults(results, inputs, params, resultsDirectory);
     updateRunStageGui(app, 'SavingResultsLabel', 'off');
 catch exception
     diary off
