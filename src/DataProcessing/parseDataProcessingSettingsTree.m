@@ -162,7 +162,8 @@ end
 
 % Each entry gives the lab axis (1 = x, 2 = y, 3 = z) that becomes the
 % OpenSim x, y, or z axis, negated if the lab axis points the other way.
-% The result must be a rotation, so the data are not mirrored.
+% Mirroring the data is allowed, but a warning is given because the
+% result is then a left-handed coordinate system.
 function axes = parseAxes(tree)
 text = parseText(tree, "lab_to_opensim_axes", "1 2 3");
 axes = str2double(split(text))';
@@ -172,14 +173,16 @@ if numel(axes) ~= 3 || any(isnan(axes)) || ...
         "<lab_to_opensim_axes> must be three signed lab axis numbers " + ...
         "using each of 1, 2, and 3 once (e.g. -3 2 1). Got '%s'.", text))
 end
-rotation = zeros(3);
+transform = zeros(3);
 for i = 1:3
-    rotation(abs(axes(i)), i) = sign(axes(i));
+    transform(abs(axes(i)), i) = sign(axes(i));
 end
-if det(rotation) < 0
-    throw(MException("parseDataProcessingSettingsTree:mirroredAxes", ...
-        "<lab_to_opensim_axes> '%s' mirrors the data (left-handed " + ...
-        "axes). Negate one axis to make it a rotation.", text))
+if det(transform) < 0
+    warning("parseDataProcessingSettingsTree:mirroredAxes", ...
+        "<lab_to_opensim_axes> '%s' mirrors the data, so the output " + ...
+        "is in a left-handed coordinate system. OpenSim expects " + ...
+        "right-handed axes; negate one axis if this is not intended.", ...
+        text);
 end
 end
 

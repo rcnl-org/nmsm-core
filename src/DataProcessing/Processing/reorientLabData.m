@@ -1,10 +1,11 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% Rotates lab-frame vector data into OpenSim axes (x forward, y up, z to
-% the subject's right). Data has three columns (x, y, z) per vector, such
-% as a marker or a force plate's force, point, or moment. Entry i of
-% labToOpenSimAxes is the lab axis (1, 2, or 3) that becomes OpenSim axis
-% i, negated if the lab axis points the opposite way.
+% Reorders and negates lab-frame vector data into OpenSim axes (x forward,
+% y up, z to the subject's right). Data has three columns (x, y, z) per
+% vector, such as a marker or a force plate's force, point, or moment.
+% Entry i of labToOpenSimAxes is the lab axis (1, 2, or 3) that becomes
+% OpenSim axis i, negated if the lab axis points the opposite way. The
+% axes may describe a rotation or a mirror.
 %
 % (2D Array of double, Array of double) -> (2D Array of double)
 % Returns the data expressed in OpenSim axes

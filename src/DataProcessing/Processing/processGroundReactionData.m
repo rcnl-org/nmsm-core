@@ -11,7 +11,7 @@
 %      is below <force_threshold>.
 %   4. Low pass filter the forces and moments. The electrical center is
 %      fixed, so it is not filtered.
-%   5. Rotate the data into OpenSim axes.
+%   5. Reorient the data into OpenSim axes.
 % Returns the processed data and the data after each step for
 % intermediate files.
 %

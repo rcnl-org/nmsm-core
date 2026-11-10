@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % Processes extracted marker data: fills short gaps by interpolation, low
-% pass filters, and rotates the data into OpenSim axes. Returns the
+% pass filters, and reorients the data into OpenSim axes. Returns the
 % processed markers and the data after each step for intermediate files.
 %
 % (struct, struct, double, Array of double) -> (struct, struct)

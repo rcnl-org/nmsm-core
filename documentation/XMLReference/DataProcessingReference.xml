@@ -17,7 +17,7 @@
 		Default: true-->
 		<save_intermediate_files>true</save_intermediate_files>
 		<!--*Optional* List of 3 integers
-		Description: Lab axes that become the OpenSim x (walking direction), y (up), and z (to the subject's right) axes, given as 1 = lab x, 2 = lab y, 3 = lab z, negated if the lab axis points the opposite way. For example, in a lab where subjects walk along lab x, lab z is up, and lab y points to the subject's left, 1 3 -2 keeps lab x as the walking direction, makes lab z up, and makes the negative of lab y the right. Applied to markers and ground reactions. Must describe a rotation, so axes that mirror the data are rejected.
+		Description: Lab axes that become the OpenSim x (walking direction), y (up), and z (to the subject's right) axes, given as 1 = lab x, 2 = lab y, 3 = lab z, negated if the lab axis points the opposite way. For example, in a lab where subjects walk along lab x, lab z is up, and lab y points to the subject's left, 1 3 -2 keeps lab x as the walking direction, makes lab z up, and makes the negative of lab y the right. Applied to markers and ground reactions. Axes that mirror the data are allowed, but give a warning because the result is a left-handed coordinate system.
 		Default: 1 2 3 (no change)-->
 		<lab_to_opensim_axes>1 3 -2</lab_to_opensim_axes>
 		<!--*Optional* Element
