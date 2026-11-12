@@ -3,7 +3,7 @@
 % This function adjusts the optimal fiber length for the given muscle in
 % both the OpenSim model and the auxiliary data. 
 %
-% (struct, struct) -> (struct)
+% (struct, struct) -> (struct, struct)
 %
 
 % ----------------------------------------------------------------------- %
@@ -28,7 +28,8 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = applyOptimalFiberLengthParameter(inputs, values)
+function [inputs, values] = applyOptimalFiberLengthParameter( ...
+    inputs, values)
 
 parameterSet = inputs.auxdata.userDefinedVariables;
 inputs.auxdata.model = Model(inputs.auxdata.model);
@@ -36,9 +37,11 @@ counter = 1;
 for i = 1:length(parameterSet)
     if strcmp(parameterSet{i}.type, 'optimal_fiber_length')
         adjustModelOptimalFiberLength(inputs.auxdata.model, ...
-            parameterSet{i}.muscle, values.optimal_fiber_length(counter));
+            parameterSet{i}.muscle, ...
+            values.parameters.optimal_fiber_length(counter));
         inputs = adjustOptimalFiberLength(inputs, ...
-            parameterSet{i}.muscle, values.optimal_fiber_length(counter));
+            parameterSet{i}.muscle, ...
+            values.parameters.optimal_fiber_length(counter));
         counter = counter + 1;
     end
 end
