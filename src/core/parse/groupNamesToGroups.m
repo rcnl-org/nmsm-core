@@ -1,9 +1,12 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function takes a list of muscle group names and returns a cell
-% array of the muscle indices in each group.
+% array of the muscle indices in each group. Without muscleNames, the
+% indices are positions among the model's force-applying muscles. With
+% muscleNames, they are positions in muscleNames, the muscles being
+% modeled, and every muscle in the groups must be in that list.
 %
-% (array of string, Model) -> (cell array of num arrays)
+% (array of string, Model, array of string) -> (cell array of num arrays)
 % parses synergy groups from XML tree
 
 % ----------------------------------------------------------------------- %
@@ -28,12 +31,23 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function groups = groupNamesToGroups(groupNames, model)
+function groups = groupNamesToGroups(groupNames, model, muscleNames)
 groups = {};
 model = Model(model);
 for i=1:length(groupNames)
     group = [];
     for j=0:model.getForceSet().getGroup(groupNames(i)).getMembers().getSize()-1
+        if nargin > 2
+            memberName = string(model.getForceSet().getGroup( ...
+                groupNames(i)).getMembers().get(j));
+            position = find(muscleNames == memberName);
+            assert(~isempty(position), "Muscle " + memberName + ...
+                " in group " + groupNames(i) + " is not being " + ...
+                "modeled. It must cross a coordinate in " + ...
+                "<coordinate_list> and be enabled in the model.")
+            group(end+1) = position;
+            continue
+        end
         count = 1;
         for k=0:model.getForceSet().getMuscles().getSize()-1
             if strcmp(model.getForceSet().getMuscles().get(k).getName() ...
