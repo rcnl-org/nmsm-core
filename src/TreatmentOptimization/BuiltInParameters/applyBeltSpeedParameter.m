@@ -2,7 +2,7 @@
 %
 % This function adjusts the belt speed for the specified foot. 
 %
-% (struct, struct) -> (struct)
+% (struct, struct) -> (struct, struct)
 %
 
 % ----------------------------------------------------------------------- %
@@ -27,7 +27,7 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = applyBeltSpeedParameter(inputs, values)
+function [inputs, values] = applyBeltSpeedParameter(inputs, values)
 parameterSet = inputs.auxdata.userDefinedVariables;
 counter = 1;
 for i = 1:length(parameterSet)
@@ -36,7 +36,7 @@ for i = 1:length(parameterSet)
             if parameterSet{i}.is_left_foot == ...
                     inputs.auxdata.contactSurfaces{j}.isLeftFoot
                 inputs.auxdata.contactSurfaces{j}.beltSpeed = ...
-                    values.belt_speed(counter);
+                    values.parameters.belt_speed(counter);
             end
         end
         counter = counter + 1;
