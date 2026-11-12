@@ -11,6 +11,16 @@
 - Fixed a bug causing NCP to crash when its settings file name is given as a character array.
 - Fixed a bug causing MTP and MTLI muscle group terms to compare the wrong muscles when a group list left out the first modeled muscle or the modeled muscles were not a continuous block of the model. A muscle in one of these groups that is not being modeled is now an error.
 - Fixed a bug causing the MTP minimum and maximum normalized fiber length cost terms to penalize a muscle's whole fiber length past the limit instead of only the amount past it.
+- Fixed a bug causing GCP to assign the wrong values to every design variable after the resting spring length when a task optimizes the resting spring length.
+- Fixed a bug causing the GCP force plate rotation design variable to have no effect.
+- Fixed a bug causing GCP tasks that do not optimize the electrical center shift or force plate rotation to ignore the values found by earlier tasks.
+- Fixed a bug causing GCP to crash when the neighbor_spring_constant cost term is used without a ground reaction moment cost term, or when the last task has no ground reaction moment cost term.
+- Fixed a bug causing synergy-driven Treatment Optimization to read muscle parameters (pennation angle, and any optimal fiber length, tendon slack length or max isometric force not in the osimx) from the wrong muscle when the modeled muscles are not the model's first muscles in order.
+- Fixed a bug causing the Design Optimization angular_momentum_minimization cost term to crash whenever enabled.
+- Fixed a bug preventing the built-in Design Optimization model functions (applyBeltSpeedParameter, applyMaxIsometricForceParameter, applyOptimalFiberLengthParameter, applyTendonSlackLengthParameter) from being used.
+- Fixed a bug causing Design Optimization user-defined parameters of the same type to overwrite each other.
+- Fixed a bug causing absolute metabolic cost goals to never compute the metabolic cost.
+- Fixed a bug causing synergy_vector_symmetry to compare the wrong weights when synergy groups have different numbers of muscles.
 
 ### Changed
 

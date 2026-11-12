@@ -29,19 +29,19 @@
 % ----------------------------------------------------------------------- %
 
 function [cost, costTerm] = calcJointEnergyGenerationGoalIntegrand( ...
-    costTerm, jointVelocity, time, jointMoment, params, loadName)
+    costTerm, jointVelocity, time, jointMoment, inputs, loadName)
 defaultTimeNormalization = true;
 [time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
     defaultTimeNormalization);
 
 loadName = erase(loadName, '_moment');
 loadName = erase(loadName, '_force');
-indx = find(strcmp(convertCharsToStrings(params.coordinateNames), ...
+indx = find(strcmp(convertCharsToStrings(inputs.coordinateNames), ...
     loadName));
-momentLabelsNoSuffix = erase(params.inverseDynamicsMomentLabels, '_moment');
+momentLabelsNoSuffix = erase(inputs.inverseDynamicsMomentLabels, '_moment');
 momentLabelsNoSuffix = erase(momentLabelsNoSuffix, '_force');
 includedJointMomentCols = ismember(momentLabelsNoSuffix, ...
-    convertCharsToStrings(params.coordinateNames));
+    convertCharsToStrings(inputs.coordinateNames));
 if isequal(mexext, 'mexw64')
     jointMoment = jointMoment(:, includedJointMomentCols);
 end
