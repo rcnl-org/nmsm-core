@@ -38,7 +38,7 @@ for i = 0 : model.getJointSet().getSize()-1
         if(any(strcmp(bodies, childName)))
             for j=0:model.getJointSet().get(i).numCoordinates()-1
                 coordinates{end+1} = model.getJointSet().get(i) ...
-                    .get_coordinates(j);
+                    .get_coordinates(j).getName().toCharArray()';
             end
         end
     catch

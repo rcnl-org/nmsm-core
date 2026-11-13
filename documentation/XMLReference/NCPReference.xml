@@ -8,6 +8,8 @@
 		<input_osimx_file>model.osimx</input_osimx_file>
 		<!--Directory for data files.-->
 		<data_directory>NCPInputsDir</data_directory>
+		<!--Directory containing a previous NCP or TO run's results. *Optional* when optimize_synergy_vectors is true.-->
+		<initial_guess_directory></initial_guess_directory>
 		<!--Coordinates Muscle-Tendon Personalization tracked their joint moments. Leave empty for none. Muscles spanning these coordinates will be extracted automatically.-->
 		<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
 		<!--*Optional* The vMaxFactor to use. Default is 10.-->
@@ -38,7 +40,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>passive_joint_moment</type>
+					<type>passive_joint_moment_tracking</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>2</max_allowable_error>
 				</RCNLCostTerm>
@@ -46,7 +48,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>optimal_muscle_fiber_length</type>
+					<type>optimal_fiber_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.3</max_allowable_error>
 					<!--Optional for specific terms.-->
@@ -56,7 +58,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>tendon_slack_length</type>
+					<type>tendon_slack_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>1</max_allowable_error>
 					<!--Optional for specific terms.-->
@@ -66,7 +68,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>minimum_normalized_muscle_fiber_length</type>
+					<type>minimum_normalized_fiber_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.3</max_allowable_error>
 				</RCNLCostTerm>
@@ -74,7 +76,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>maximum_normalized_muscle_fiber_length</type>
+					<type>maximum_normalized_fiber_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.03</max_allowable_error>
 				</RCNLCostTerm>
@@ -82,7 +84,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>maximum_muscle_stress</type>
+					<type>maximum_muscle_stress_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 					<!--Optional for specific terms.-->
@@ -92,7 +94,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>false</is_enabled>
 					<!--Type of cost term.-->
-					<type>passive_muscle_force</type>
+					<type>passive_force_minimization</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>10</max_allowable_error>
 				</RCNLCostTerm>
@@ -100,7 +102,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>grouped_normalized_muscle_fiber_length</type>
+					<type>grouped_normalized_fiber_length_similarity</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 				</RCNLCostTerm>
@@ -108,7 +110,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>grouped_maximum_normalized_muscle_fiber_length</type>
+					<type>grouped_maximum_normalized_fiber_length_similarity</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 				</RCNLCostTerm>
@@ -118,6 +120,14 @@
 		<mtp_results_directory>MTPResults</mtp_results_directory>
 		<!--Indicate whether to enforce bilateral symmetry or not.-->
 		<enforce_bilateral_symmetry>false</enforce_bilateral_symmetry>
+		<!--Indicate whether to optimize synergy weight vectors or only optimizes synergy commands. Default is true.-->
+		<optimize_synergy_vectors>true</optimize_synergy_vectors>
+		<!--*Optional* The number of node points used to represent synergy commands. Default is 26.-->
+		<number_of_nodes>26</number_of_nodes>
+		<!--*Optional* Method used to normalize synergy weight vectors ('sum' or 'magnitude'). Default is 'magnitude'.-->
+		<synergy_vector_normalization_method>magnitude</synergy_vector_normalization_method>
+		<!--*Optional* Target sum/magnitude value used by synergy_vector_normalization_method. Set to NaN for no normalization target. Default is 10.-->
+		<synergy_vector_normalization_value>10</synergy_vector_normalization_value>
 		<!--Cost term set for the Neural Control Optimization.-->
 		<RCNLCostTermSet>
 			<RCNLCostTerm>
@@ -139,8 +149,24 @@
 			<RCNLCostTerm>
 				<!--Indicate whether the term is enabled or not. Default is false.-->
 				<is_enabled>false</is_enabled>
-				<!--Type of cost term.-->
+				<!--Type of cost term. Deprecated alias for muscle_activation_minimization, kept for backward compatibility.-->
 				<type>activation_minimization</type>
+				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+				<max_allowable_error>0.05</max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm>
+				<!--Indicate whether the term is enabled or not. Default is false.-->
+				<is_enabled>false</is_enabled>
+				<!--Type of cost term.-->
+				<type>muscle_activation_minimization</type>
+				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+				<max_allowable_error>0.05</max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm>
+				<!--Indicate whether the term is enabled or not. Default is false.-->
+				<is_enabled>false</is_enabled>
+				<!--Type of cost term.-->
+				<type>synergy_activation_minimization</type>
 				<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 				<max_allowable_error>0.05</max_allowable_error>
 			</RCNLCostTerm>
@@ -172,5 +198,7 @@
 		<max_iterations>1000</max_iterations>
 		<!--*Optional* The number of allowed cost function calls for the fmincon optimization,  setting this lower can help cancel an optimization that won't converge.-->
 		<max_function_evaluations>100000000</max_function_evaluations>
+		<!--*Optional* Flag (true, false) indicating whether to use CasADi for gradient/Hessian computation. Default is false.-->
+		<use_casadi>false</use_casadi>
 	</NeuralControlPersonalizationTool>
 </NMSMPipelineDocument>

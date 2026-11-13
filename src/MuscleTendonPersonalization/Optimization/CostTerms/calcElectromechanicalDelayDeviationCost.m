@@ -1,7 +1,8 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % (struct, struct, struct) -> (Array of number)
-% returns the deviation cost for electromechanical delay from initial
+% returns the deviation cost for electromechanical delay from the error
+% center, or from the initial guess when no error center is given
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -27,10 +28,9 @@
 
 function cost = calcElectromechanicalDelayDeviationCost(values, ...
     experimentalData, costTerm)
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
+target = getErrorCenterOrInitialGuess(costTerm, ...
+    experimentalData.electromechanicalDelays);
 cost = calcDeviationCostTerm( ...
-    values.electromechanicalDelays - ...
-    experimentalData.electromechanicalDelays, errorCenter, ...
-    maximumAllowableError);
+    values.electromechanicalDelays - target, 0, maximumAllowableError);
 end

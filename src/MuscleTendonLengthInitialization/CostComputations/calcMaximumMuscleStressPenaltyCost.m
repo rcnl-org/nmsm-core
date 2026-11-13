@@ -26,9 +26,10 @@
 % ----------------------------------------------------------------------- %
 
 function cost = calcMaximumMuscleStressPenaltyCost(values, costTerm)
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 1.2);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.1);
+% The initial guess for the scale factor is 1
+target = getErrorCenterOrInitialGuess(costTerm, 1);
 cost = calcDeviationCostArray( ...
-    values.maximumMuscleStressScaleFactor, errorCenter, ...
+    values.maximumMuscleStressScaleFactor - target, 0, ...
     maximumAllowableError);
 end

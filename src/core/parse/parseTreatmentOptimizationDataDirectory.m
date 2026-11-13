@@ -412,8 +412,8 @@ else
 end
 end
 
-function [forces, moments, ec] = parseGroundReactionDataWithoutTime( ...
-    inputs, dataDirectory, surfaceIndex)
+function [forces, moments, ec] = ...
+    parseGroundReactionDataWithoutTime(inputs, dataDirectory, surfaceIndex)
 import org.opensim.modeling.Storage
 [grfData, grfColumnNames, grfTime] = parseTrialDataTryDirectories( ...
     fullfile(inputs.initialGuessDirectory, "GRFData"), ...
@@ -438,6 +438,7 @@ for i=1:size(grfColumnNames', 1)
         end
     end
 end
+
 if any([isnan(forces) isnan(moments) isnan(ec)])
     throw(MException('', ['Unable to parse GRF file, check that ' ...
         'all necessary column labels are present']))

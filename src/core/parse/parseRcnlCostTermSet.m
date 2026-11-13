@@ -52,6 +52,11 @@ for term = 1:length(tree)
     end
     costTerms{term}.errorCenter = str2double(getTextFromField( ...
         getFieldByNameOrAlternate(currentTerm, 'error_center', '0')));
+    % Deviation terms fall back to the initial guess when no error center
+    % is given, so an omitted or empty <error_center> is recorded
+    costTerms{term}.hasErrorCenter = ...
+        isstruct(getFieldByName(currentTerm, 'error_center')) && ...
+        ~isnan(costTerms{term}.errorCenter);
     % Find other cost term elements
     termElements = fieldnames(currentTerm);
     for element = 1:length(termElements)

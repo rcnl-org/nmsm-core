@@ -1,5 +1,16 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
+% NAME COLLISION - there are TWO functions called 
+% prepareGroundContactSurfaces and they do different things:
+%   1. the 3-argument local function inside parseGroundContactSurfaces.m
+%      (osimModel, contactSurfaces, grfFileName). Runs at parse time and
+%      additionally attaches the experimental GRF columns
+%      (experimentalGroundReactionForces/Moments, electricalCenter).
+%   2. THIS file, 2 arguments (osimModel, contactSurfaces). Runs at
+%      make time and only derives spring points, spring constants and
+%      body indices.
+% Calling this one from a script resolves to THIS file, so the GRF
+% columns are never attached. makeTreatmentOptimizationInputs.m calls both
 %
 % (struct) -> (struct)
 % Prepares the ground contact surface parameters and springs

@@ -33,14 +33,14 @@ for i = 1:length(costTerms)
     costTerm = costTerms{i};
     if costTerm.isEnabled
         switch costTerm.type
-            case "passive_joint_moment"
+            case "passive_joint_moment_tracking"
                 if isfield(experimentalData, "passiveData")
                     cost = calcPassiveMomentTrackingCost(modeledValues, ...
                         experimentalData, costTerm);
                 else
-                    throw(MException("", "Cannot use passive_joint_moment cost function type without passive data"))
+                    throw(MException("", "Cannot use passive_joint_moment_tracking cost function type without passive data"))
                 end
-            case "optimal_muscle_fiber_length"
+            case "optimal_fiber_length_deviation"
                 if experimentalData.useAbsoluteLengths
                     cost = calcOptimalFiberLengthAbsoluteDeviationCost( ...
                         experimentalData, costTerm);
@@ -48,7 +48,7 @@ for i = 1:length(costTerms)
                     cost = calcOptimalFiberLengthScaleFactorDeviationCost(values, ...
                         costTerm);
                 end
-            case "tendon_slack_length"
+            case "tendon_slack_length_deviation"
                 if experimentalData.useAbsoluteLengths
                     cost = calcTendonSlackLengthAbsoluteDeviationCost( ...
                         experimentalData, costTerm);
@@ -56,24 +56,24 @@ for i = 1:length(costTerms)
                     cost = calcTendonSlackLengthScaleFactorDeviationCost(values, ...
                         costTerm);
                 end
-            case "minimum_normalized_muscle_fiber_length"
+            case "minimum_normalized_fiber_length_deviation"
                 cost = calcMinimumNormalizedFiberLengthDeviationCost(modeledValues, ...
                     experimentalData, costTerm);
-            case "maximum_normalized_muscle_fiber_length"
+            case "maximum_normalized_fiber_length_deviation"
                 cost = calcMaximumNormalizedFiberLengthDeviationCost(modeledValues, ...
                     values, experimentalData, costTerm);
-            case "maximum_muscle_stress"
+            case "maximum_muscle_stress_deviation"
                 cost = calcMaximumMuscleStressPenaltyCost(values, costTerm);
-            case "passive_muscle_force"
+            case "passive_force_minimization"
                 cost = calcPassiveForcePenaltyCost(modeledValues, costTerm);
-            case "grouped_normalized_muscle_fiber_length"
+            case "grouped_normalized_fiber_length_similarity"
                 cost = calcNormalizedFiberLengthMeanSimilarityCost(modeledValues, ...
                     experimentalData, costTerm);
-            case "grouped_maximum_normalized_muscle_fiber_length"
+            case "grouped_maximum_normalized_fiber_length_similarity"
                 cost = calcMaximumNormalizedFiberLengthSimilarityCost(values, ...
                     experimentalData, costTerm);
             otherwise
-                throw(MException("", "Cost term " + type + " is not valid for Muscle Tendon Length Initialization"))
+                throw(MException("", "Cost term " + costTerm.type + " is not valid for Muscle Tendon Length Initialization"))
         end
         totalCost = cat(1, totalCost, cost);
     end

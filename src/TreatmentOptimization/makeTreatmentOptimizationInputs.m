@@ -27,7 +27,10 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function inputs = makeTreatmentOptimizationInputs(inputs, params)
+function inputs = makeTreatmentOptimizationInputs(inputs, params, app)
+if nargin < 3
+    app = [];
+end
 %calc collocation point times
 inputs = computeCollocationPointTimes(inputs);
 inputs = splineExperimentalToCollocationPoints(inputs);
@@ -51,7 +54,10 @@ inputs = makePathConstraintBounds(inputs);
 inputs = makeTerminalConstraintBounds(inputs);
 inputs = makeOptimalControlBounds(inputs);
 
+% Only muscle and synergy controls use the surrogate model, so a torque
+% only run never lights this stage
 if any(inputs.controllerTypes(2:3))
+    updateRunStageGui(app, 'SurrogateModelLabel', 'on');
     [path, name, ~] = fileparts(inputs.surrogateModelFileName);
     fileName = fullfile(path, strcat(name, ".mat"));
     if isfile(fileName)
@@ -68,5 +74,6 @@ if any(inputs.controllerTypes(2:3))
         save(fileName, "surrogateMuscles", "surrogateMusclesNumArgs");
         disp("Saved surrogate geometry to " + fileName);
     end
+    updateRunStageGui(app, 'SurrogateModelLabel', 'off');
 end
 end

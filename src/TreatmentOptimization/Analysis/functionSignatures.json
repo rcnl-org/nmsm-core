@@ -268,5 +268,52 @@
          "type":["integer", "numel=2"], 
          "purpose":"(List of int) List with [FigureWidth, FigureHeight]"}
      ]
+  },
+    "plotNmsmGeneric":
+  {
+     "inputs":
+     [
+        {"name":"dataFiles", 
+         "kind":"required", 
+         "type":["file=*.sto", "file=*.mot"], 
+         "purpose":"(String) Data files to plot."}
+     ]
+  },
+  "plotAndCompareNmsmGeneric":
+  {
+     "inputs":
+     [
+        {"name":"dataFiles",
+         "kind":"required",
+         "type":[["file=*.sto"], ["file=*.mot"]],
+         "purpose":"(List of Strings) Data files to plot and compare. The first file is the RMSE reference"},
+        {"name":"columnsToUse",
+         "kind":"namevalue",
+         "purpose":"(List of Strings) Column names to plot in the given .sto or .mot files."},
+        {"name":"columnNames",
+         "kind":"namevalue",
+         "purpose":"(List of Strings) Specify the names to use in subplot titles (ie plot 'Right Hip' instead of 'hip_flexion_r'.) Must be the same dimension as columnsToUse"},
+        {"name":"legend",
+         "kind":"namevalue",
+         "purpose":"(List of Strings) Specify legend values to use instead of the default."},
+        {"name":"showRmse",
+         "kind":"namevalue",
+         "type":["logical"],
+         "purpose":"(Logical) Flag specifying whether to display RMSE values against the first file for each subplot. Default is false"},
+        {"name":"normalizeTime",
+         "kind":"namevalue",
+         "type":["logical"],
+         "purpose":"(Logical) Flag specifying whether to plot against percent movement instead of time. Default is true"},
+        {"name":"yLabel",
+         "kind":"namevalue",
+         "purpose":"(String) Y axis label. Default is 'Quantity'"},
+        {"name":"figureName",
+         "kind":"namevalue",
+         "purpose":"(String) Name of the figure window(s)"},
+        {"name":"figureGridSize",
+         "kind":"namevalue",
+         "type":["integer", "numel=2"],
+         "purpose":"(List of int) List with [FigureWidth, FigureHeight]"}
+     ]
   }
 }

@@ -4,6 +4,8 @@
 % moments and the muscle produced moments for the specified coordinate.
 % Applicable only if the model is synergy driven.
 %
+% NOT CALLED ANYWHERE.
+%
 % (struct, struct, Array of string) -> (Array of number)
 %
 

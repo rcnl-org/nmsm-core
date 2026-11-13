@@ -4,6 +4,9 @@
 % derivatives. This function should be used to make the points evenly
 % spaced via splining
 %
+% NOT CALLED ANYWHERE
+% Every file TO saved comes out on the raw collocation grid, NOT uniform
+%
 % (struct, struct) -> (None)
 % Splines results to make them evenly spaced
 

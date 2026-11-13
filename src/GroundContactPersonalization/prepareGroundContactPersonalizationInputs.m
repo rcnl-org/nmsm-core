@@ -51,7 +51,6 @@ inputs.dynamicFrictionCoefficient = ...
 inputs.viscousFrictionCoefficient = ...
     inputs.initialViscousFrictionCoefficient;
 inputs.restingSpringLength = inputs.initialRestingSpringLength;
-
 inputs.osimVersion = getOpenSimVersion();
 end
 

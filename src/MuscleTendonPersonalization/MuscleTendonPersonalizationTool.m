@@ -29,28 +29,38 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function MuscleTendonPersonalizationTool(settingsFileName)
+function MuscleTendonPersonalizationTool(settingsFileName, app)
 tic
 try 
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
 end
+if nargin < 2
+    app = [];
+end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "MuscleTendonPersonalizationTool");
+settingsTree = mtpBackwardsCompatibility(settingsTree);
 [inputs, params, resultsDirectory] = ...
     parseMuscleTendonPersonalizationSettingsTree(settingsTree);
 precalInputs = parseMuscleTendonLengthInitializationSettingsTree(settingsTree);
+updateRunStageGui(app, 'ParsingLabel', 'off');
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 if isstruct(precalInputs)
-    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs);
+    updateRunStageGui(app, 'RunningMTLILabel', 'on');
+    optimizedInitialGuess = MuscleTendonLengthInitialization(precalInputs, app);
     inputs = updateMtpInitialGuess(inputs, precalInputs, ...
         optimizedInitialGuess);
+    updateRunStageGui(app, 'RunningMTLILabel', 'off');
 else
     precalInputs = struct('optimizeIsometricMaxForce', false);
 end
-results = MuscleTendonPersonalization(inputs, params);
+updateRunStageGui(app, 'RunningMTPLabel', 'on');
+results = MuscleTendonPersonalization(inputs, params, app);
+updateRunStageGui(app, 'RunningMTPLabel', 'off');
+updateRunStageGui(app, 'SavingResultsLabel', 'on');
 if params.performMuscleTendonLengthInitialization
     [finalValues, resultsStruct, modeledValues] = ...
         getMtpResultsToSave(inputs, params, results, precalInputs);
@@ -62,12 +72,10 @@ else
     saveMuscleTendonPersonalizationResults(inputs, finalValues, modeledValues, ...
         resultsStruct, resultsDirectory);
 end
+updateRunStageGui(app, 'SavingResultsLabel', 'off');
 printMtpJointMomentMatchingError(resultsDirectory);
 fprintf("Muscle-Tendon Personalization Runtime: %f Hours\n", toc/3600);
 diary off
-try
-    copyfile(settingsFileName, fullfile(resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
-catch
-end
+movefile(outputLogFile, fullfile(resultsDirectory, outputLogFile));
+copySettingsFileToResultsDirectory(settingsFileName, resultsDirectory);
 end

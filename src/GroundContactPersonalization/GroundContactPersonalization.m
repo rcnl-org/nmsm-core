@@ -27,11 +27,21 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function results = GroundContactPersonalization(inputs, params)
+function results = GroundContactPersonalization(inputs, params, app)
+% The optional third argument is the GUI's run window. It is kept out of
+% params on purpose: the cost function's closure captures params and is
+% serialized to the parallel workers, and an app handle in there warns
+% once per round that an App Designer object cannot be saved. Every call
+% that uses it checks first, so a scripted run is unaffected.
+if nargin < 3
+    app = [];
+end
 inputs = prepareGroundContactPersonalizationInputs(inputs);
 % Optionally initializes the resting spring length.
 if params.restingSpringLengthInitialization
+    updateRunStageGui(app, 'InitializingLabel', 'on');
     inputs = initializeRestingSpringLength(inputs);
+    updateRunStageGui(app, 'InitializingLabel', 'off');
 end
 for surface = 1:length(inputs.surfaces)
     [inputs.surfaces{surface}.experimentalGroundReactionMoments, ...
@@ -43,13 +53,26 @@ for surface = 1:length(inputs.surfaces)
         inputs.surfaces{surface}.experimentalGroundReactionMoments, 2, ...
         inputs.surfaces{surface}.splineNodes);
 end
-% Run each task as outlined in XML settings file. 
+% Run each task as outlined in XML settings file.
 for task = 1:length(params.tasks)
+    updateRunTaskGui(app, task, length(params.tasks));
     inputs = optimizeGroundContactPersonalizationTask(inputs, params, ...
-        task);
+        task, app);
+    % Cancelling stops the whole sequence rather than just the round
+    % that was running. The rounds already finished are kept, so the
+    % results still reflect the work that was done.
+    if runCancelled(app)
+        break
+    end
 end
 
 results = inputs;
+end
+
+% (App) -> (logical)
+function cancelled = runCancelled(app)
+cancelled = ~isempty(app) && ismethod(app, "isRunCancelled") && ...
+    app.isRunCancelled();
 end
 
 % (struct, struct) -> (2D Array of double)

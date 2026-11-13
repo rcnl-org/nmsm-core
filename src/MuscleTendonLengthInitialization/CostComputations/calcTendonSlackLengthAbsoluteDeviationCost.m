@@ -27,9 +27,11 @@
 
 function cost = calcTendonSlackLengthAbsoluteDeviationCost( ...
     experimentalData, costTerm)
-errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
 maximumAllowableError = valueOrAlternate(costTerm, "maxAllowableError", 0.05);
+% The error center is a scale factor on the initial length, as it is when
+% lengths are optimized as scale factors
+target = getErrorCenterOrInitialGuess(costTerm, 1) .* ...
+    experimentalData.initialTendonSlackLength;
 cost = calcDeviationCostArray(experimentalData.tendonSlackLength - ...
-    experimentalData.initialTendonSlackLength, errorCenter, ...
-    maximumAllowableError);
+    target, 0, maximumAllowableError);
 end

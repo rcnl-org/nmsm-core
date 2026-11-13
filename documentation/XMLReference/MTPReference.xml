@@ -20,6 +20,15 @@
 		<missing_emg_channel_muscle_groups>missing_emg_group_1 missing_emg_group_2 missing_emg_group_3</missing_emg_channel_muscle_groups>
 		<!--A space-separated list of collected EMG channel names.-->
 		<collected_emg_channel_muscle_groups>emg_channel_1 emg_channel_2 emg_channel_3</collected_emg_channel_muscle_groups>
+		<!--*Optional* Specify the initial guess for MTP design variables-->
+		<initial_electromechanical_delay>0.5</initial_electromechanical_delay>
+		<initial_activation_time_constant>1.5</initial_activation_time_constant>
+		<initial_activation_nonlinearity>0.05</initial_activation_nonlinearity>
+		<initial_emg_scale_factor>0.5</initial_emg_scale_factor>
+		<initial_optimal_fiber_length_scale_factor>1</initial_optimal_fiber_length_scale_factor>
+		<initial_tendon_slack_length_scale_factor>1</initial_tendon_slack_length_scale_factor>
+		<!--Use muscle specific electromechanical delays.-->
+		<muscle_specific_electromechanical_delays>true</muscle_specific_electromechanical_delays>
 		<!--Properties that describe MuscleTendonLengthInitialization settings.-->
 		<MuscleTendonLengthInitialization>
 			<!--Boolean (true, false) indicating if muscle tendon length initialization should be performed before muscle tendon personalization.-->
@@ -43,7 +52,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>passive_joint_moment</type>
+					<type>passive_joint_moment_tracking</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>2</max_allowable_error>
 				</RCNLCostTerm>
@@ -51,27 +60,27 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>optimal_muscle_fiber_length</type>
+					<type>optimal_fiber_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.3</max_allowable_error>
-					<!--Optional for specific terms.-->
+					<!--*Optional* The scale factor on the initial length to penalize deviation from. If omitted, the term penalizes deviation from the initial guess.-->
 					<error_center>1</error_center>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>tendon_slack_length</type>
+					<type>tendon_slack_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>1</max_allowable_error>
-					<!--Optional for specific terms.-->
+					<!--*Optional* The scale factor on the initial length to penalize deviation from. If omitted, the term penalizes deviation from the initial guess.-->
 					<error_center>1</error_center>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>minimum_normalized_muscle_fiber_length</type>
+					<type>minimum_normalized_fiber_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.3</max_allowable_error>
 				</RCNLCostTerm>
@@ -79,7 +88,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>maximum_normalized_muscle_fiber_length</type>
+					<type>maximum_normalized_fiber_length_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.03</max_allowable_error>
 				</RCNLCostTerm>
@@ -87,17 +96,17 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>maximum_muscle_stress</type>
+					<type>maximum_muscle_stress_deviation</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
-					<!--Optional for specific terms.-->
+					<!--*Optional* The value to penalize deviation from. If omitted, the term penalizes deviation from the initial guess.-->
 					<error_center>1.2</error_center>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>false</is_enabled>
 					<!--Type of cost term.-->
-					<type>passive_muscle_force</type>
+					<type>passive_force_minimization</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>10</max_allowable_error>
 				</RCNLCostTerm>
@@ -105,7 +114,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>grouped_normalized_muscle_fiber_length</type>
+					<type>grouped_normalized_fiber_length_similarity</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 				</RCNLCostTerm>
@@ -113,7 +122,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>grouped_maximum_normalized_muscle_fiber_length</type>
+					<type>grouped_maximum_normalized_fiber_length_similarity</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.1</max_allowable_error>
 				</RCNLCostTerm>
@@ -137,7 +146,7 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>measured_inverse_dynamics_joint_moment</type>
+					<type>inverse_dynamics_load_tracking_SynX</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>2</max_allowable_error>
 				</RCNLCostTerm>
@@ -145,15 +154,16 @@
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>extrapolated_muscle_activation</type>
+					<type>extrapolated_muscle_activation_minimization</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.5</max_allowable_error>
+					<error_center>0</error_center>
 				</RCNLCostTerm>
 				<RCNLCostTerm>
 					<!--Indicate whether the term is enabled or not. Default is false.-->
 					<is_enabled>true</is_enabled>
 					<!--Type of cost term.-->
-					<type>residual_muscle_activation</type>
+					<type>residual_muscle_activation_minimization</type>
 					<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 					<max_allowable_error>0.01</max_allowable_error>
 				</RCNLCostTerm>
@@ -166,8 +176,6 @@
 				<is_enabled>true</is_enabled>
 				<!--Index indicates the order of the tasks. The task with the smallest index is completed first.-->
 				<index>1</index>
-				<!--Use muscle specific electromechanical delays.-->
-				<muscle_specific_electromechanical_delays>true</muscle_specific_electromechanical_delays>
 				<!--Boolean (true, false) indicating if electromechanical delays should be optimized for this task.-->
 				<optimize_electromechanical_delays>true</optimize_electromechanical_delays>
 				<!--Boolean (true, false) indicating if activation time constants should be optimized for this task.-->
@@ -186,7 +194,7 @@
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>inverse_dynamics_joint_moment</type>
+						<type>inverse_dynamics_load_tracking</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>2.5</max_allowable_error>
 					</RCNLCostTerm>
@@ -194,51 +202,65 @@
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>activation_time_constant</type>
+						<type>activation_time_constant_deviation</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.02</max_allowable_error>
-						<!--Optional for specific terms.-->
+						<!--*Optional* The value to penalize deviation from. If omitted, the term penalizes deviation from the initial guess.-->
 						<error_center>0.015</error_center>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>activation_nonlinearity_constant</type>
+						<type>activation_nonlinearity_deviation</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.1</max_allowable_error>
+						<!--*Optional* The value to penalize deviation from. If omitted, the term penalizes deviation from the initial guess.-->
+						<error_center>0</error_center>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>optimal_muscle_fiber_length</type>
+						<type>optimal_fiber_length_deviation</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.1</max_allowable_error>
+						<!--*Optional* error_center: the scale factor on the initial length to penalize deviation from. If omitted, the term penalizes deviation from the initial guess.-->
 					</RCNLCostTerm>
 					<RCNLCostTerm>
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>tendon_slack_length</type>
+						<type>tendon_slack_length_deviation</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.1</max_allowable_error>
+						<!--*Optional* error_center: the scale factor on the initial length to penalize deviation from. If omitted, the term penalizes deviation from the initial guess.-->
 					</RCNLCostTerm>
 					<RCNLCostTerm>
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>emg_scale_factor</type>
+						<type>emg_scale_factor_deviation</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.2</max_allowable_error>
-						<!--Optional for specific terms.-->
+						<!--*Optional* The value to penalize deviation from. If omitted, the term penalizes deviation from the initial guess.-->
 						<error_center>0.3</error_center>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>normalized_muscle_fiber_length</type>
+						<type>electromechanical_delay_deviation</type>
+						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+						<max_allowable_error>0.1</max_allowable_error>
+						<!--*Optional* The value to penalize deviation from. If omitted, the term penalizes deviation from the initial guess.-->
+						<error_center>0</error_center>
+					</RCNLCostTerm>
+					<RCNLCostTerm>
+						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<is_enabled>true</is_enabled>
+						<!--Type of cost term.-->
+						<type>normalized_fiber_length_deviation</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.01</max_allowable_error>
 					</RCNLCostTerm>
@@ -246,15 +268,7 @@
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>passive_muscle_force</type>
-						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
-						<max_allowable_error>50</max_allowable_error>
-					</RCNLCostTerm>
-					<RCNLCostTerm>
-						<!--Indicate whether the term is enabled or not. Default is false.-->
-						<is_enabled>true</is_enabled>
-						<!--Type of cost term.-->
-						<type>grouped_normalized_muscle_fiber_length</type>
+						<type>minimum_normalized_fiber_length_deviation</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.05</max_allowable_error>
 					</RCNLCostTerm>
@@ -262,7 +276,41 @@
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>grouped_emg_scale_factor</type>
+						<type>maximum_normalized_fiber_length_deviation</type>
+						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+						<max_allowable_error>0.05</max_allowable_error>
+					</RCNLCostTerm>
+					<RCNLCostTerm>
+						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<is_enabled>true</is_enabled>
+						<!--Type of cost term.-->
+						<type>passive_force_minimization</type>
+						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+						<max_allowable_error>50</max_allowable_error>
+					</RCNLCostTerm>
+					<RCNLCostTerm>
+						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<is_enabled>true</is_enabled>
+						<!--Type of cost term.-->
+						<type>muscle_excitation_minimization</type>
+						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+						<max_allowable_error>0.25</max_allowable_error>
+						<!--Optional for specific terms.-->
+						<error_center>0.5</error_center>
+					</RCNLCostTerm>
+					<RCNLCostTerm>
+						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<is_enabled>true</is_enabled>
+						<!--Type of cost term.-->
+						<type>grouped_normalized_fiber_length_similarity</type>
+						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+						<max_allowable_error>0.05</max_allowable_error>
+					</RCNLCostTerm>
+					<RCNLCostTerm>
+						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<is_enabled>true</is_enabled>
+						<!--Type of cost term.-->
+						<type>grouped_emg_scale_factor_similarity</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.1</max_allowable_error>
 					</RCNLCostTerm>
@@ -270,7 +318,7 @@
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>grouped_electromechanical_delay</type>
+						<type>grouped_electromechanical_delay_similarity</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
 						<max_allowable_error>0.2</max_allowable_error>
 					</RCNLCostTerm>
@@ -278,11 +326,25 @@
 						<!--Indicate whether the term is enabled or not. Default is false.-->
 						<is_enabled>true</is_enabled>
 						<!--Type of cost term.-->
-						<type>muscle_excitation_penalty</type>
+						<type>grouped_activation_time_constant_similarity</type>
 						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
-						<max_allowable_error>0.25</max_allowable_error>
-						<!--Optional for specific terms.-->
-						<error_center>0.5</error_center>
+						<max_allowable_error>0.02</max_allowable_error>
+					</RCNLCostTerm>
+					<RCNLCostTerm>
+						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<is_enabled>true</is_enabled>
+						<!--Type of cost term.-->
+						<type>grouped_activation_nonlinearity_similarity</type>
+						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+						<max_allowable_error>0.1</max_allowable_error>
+					</RCNLCostTerm>
+					<RCNLCostTerm>
+						<!--Indicate whether the term is enabled or not. Default is false.-->
+						<is_enabled>true</is_enabled>
+						<!--Type of cost term.-->
+						<type>grouped_activation_similarity</type>
+						<!--The accuracy to compare against, depends on model/data units (0.01 == 1cm for data in units meters).-->
+						<max_allowable_error>0.1</max_allowable_error>
 					</RCNLCostTerm>
 				</RCNLCostTermSet>
 			</MTPTask>

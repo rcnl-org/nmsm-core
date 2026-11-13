@@ -6,7 +6,10 @@
 % to a per-synergy normalization constraint (and, optionally, a hard
 % bilateral-symmetry constraint between two synergy groups).
 %
-% (struct, struct) -> (Array of number, struct)
+% The optional app is the GUI's run window, passed through to the optimizer
+% so its Cancel button can stop fmincon. A scripted run omits it.
+%
+% (struct, struct, App) -> (Array of number, struct)
 % Runs the Neural Control Personalization algorithm
 
 % ----------------------------------------------------------------------- %
@@ -32,14 +35,23 @@
 % ----------------------------------------------------------------------- %
 
 function [finalValues, inputs] = NeuralControlPersonalization(inputs, ...
-    params)
+    params, app)
+if nargin < 3
+    app = [];
+end
 verifyInputs(inputs); % (struct) -> (None)
 %verifyParams(params); % (struct) -> (None)
 params = finalizeParams(params);
 inputs = finalizeInputs(inputs);
+if ~inputs.optimize_synergy_vectors
+    packed = repackDesignVariables(inputs.fixedSynergyWeights, ...
+        zeros(inputs.numTrials, inputs.numNodes, inputs.numSynergies), ...
+        inputs);
+    inputs.fixedSynergyVectorFlat = packed(1:sum(inputs.numWeightsPerGroup));
+end
 initialValues = prepareNcpInitialValues(inputs, params);
 finalValues = computeNeuralControlOptimization(initialValues, inputs, ...
-    params);
+    params, app);
 end
 
 % (struct) -> (None)
@@ -80,13 +92,23 @@ inputs.numTrials = size(inputs.momentArms, 1);
 
 % BJ's Runboh Bspline + precompute matrix, replace MATLAB spline because:
 % Compatible with Auto Diff; won't create negative values; faster
-degree = 3;
-percent = linspace(0, 100, inputs.numPoints).';
-interval = percent(2) - percent(1);
-[Bmatrix, ~, ~] = BSplineMatrices(degree, inputs.numNodes, ...
-    inputs.numPoints, interval);
-inputs.Bmatrix = Bmatrix;
-inputs.invBmatrix = pinv(Bmatrix);
+%
+% UNIFORM TIME SPACING IS ASSUMED HERE. Data taken from a TO result is 
+% on the collocation grid, which is NOT uniform 
+% Resample every input (IK, ID, MAData and the initial-guess commands) 
+% onto a common uniform grid before running NCP
+
+if inputs.numNodes == inputs.numPoints
+    fprintf("[NCP] numNodes == numPoints: using IDENTITY basis (point-wise commands).\n");
+    inputs.Bmatrix = eye(inputs.numPoints);
+else
+    degree = 3;
+    percent = linspace(0, 100, inputs.numPoints).';
+    interval = percent(2) - percent(1);
+    [inputs.Bmatrix, ~, ~] = BSplineMatrices(degree, inputs.numNodes, ...
+        inputs.numPoints, interval);
+end
+inputs.invBmatrix = pinv(inputs.Bmatrix);
 
 [inputs.normalizedFiberLengths, inputs.normalizedFiberVelocities] = ...
     calcNormalizedMuscleFiberLengthsAndVelocities( ...

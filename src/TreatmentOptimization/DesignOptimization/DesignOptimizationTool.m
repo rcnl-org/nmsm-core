@@ -29,16 +29,20 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function DesignOptimizationTool(settingsFileName)
+function DesignOptimizationTool(settingsFileName, app)
 tic
-try 
+try
     verifyProjectOpened()
 catch
     error("NMSM Pipeline Project is not opened.")
 end
+if nargin < 2
+    app = [];
+end
 settingsTree = xml2struct(settingsFileName);
 verifyVersion(settingsTree, "DesignOptimizationTool");
 [inputs, params] = parseDesignOptimizationSettingsTree(settingsTree);
+updateRunStageGui(app, 'ParsingLabel', 'off');
 outputLogFile = fullfile("commandWindowOutput.txt");
 diary(outputLogFile)
 inputs = normalizeSynergyData(inputs);
@@ -46,14 +50,13 @@ inputs = setupMuscleSynergies(inputs);
 inputs = setupMuscleActivations(inputs);
 inputs = setupUserDefinedControls(inputs);
 inputs = setupTorqueControls(inputs);
-inputs = makeTreatmentOptimizationInputs(inputs, params);
+inputs = makeTreatmentOptimizationInputs(inputs, params, app);
+updateRunStageGui(app, 'RunningLabel', 'on');
 [inputs, outputs] = solveOptimalControlProblem(inputs, params);
 saveDesignOptimizationResults(outputs, inputs);
+updateRunStageGui(app, 'RunningLabel', 'off');
 fprintf("Design Optimization Runtime: %f Hours\n", toc/3600);
 diary off
-try
-    copyfile(settingsFileName, fullfile(inputs.resultsDirectory, settingsFileName));
-    movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
-catch
-end
+movefile(outputLogFile, fullfile(inputs.resultsDirectory, outputLogFile));
+copySettingsFileToResultsDirectory(settingsFileName, inputs.resultsDirectory);
 end

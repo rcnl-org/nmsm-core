@@ -7,7 +7,10 @@
 % (they are constant numeric data, not design-variable-dependent, so
 % ordinary 3-D reshapes on them are safe).
 %
-% (Array of number, struct, struct) -> (number)
+% Also returns the stacked scaled residual, for which
+% cost == residual' * residual.
+%
+% (Array of number, struct, struct) -> (number, Array of number)
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -31,10 +34,11 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcCasadiNcpCost(values, inputs, params)
-[activations2d, ~] = calcCasadiActivationsFromSynergyDesignVariables( ...
+function [cost, residual] = calcCasadiNcpCost(values, inputs, params)
+[activations2d, ~, commands2d] = calcCasadiActivationsFromSynergyDesignVariables( ...
     values, inputs);
 cost = 0;
+residualParts = {};
 if isfield(inputs, 'mtpActivationsColumnNames')
     [activationsWithMtpData, activationsWithoutMtpData] = ...
         makeCasadiMtpActivatonSubset(activations2d, ...
@@ -56,12 +60,18 @@ for term = 1:length(params.costTerms)
                     rawCost = activationsWithMtpData - ...
                         flattenTrialFirstDim(inputs.mtpActivations);
                 else
-                    rawCost = 0;
+                    error(['activation_tracking cost term is enabled but ' ...
+                        'no mtpActivations are available (mtp_results_directory ' ...
+                        'was not configured); this term would silently ' ...
+                        'contribute zero cost otherwise.'])
                 end
-            case "activation_minimization"
+            case {"activation_minimization", "muscle_activation_minimization"}
                 errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
                 rawCost = reshape(activationsWithoutMtpData, ...
                     numel(activationsWithoutMtpData), 1) - errorCenter;
+            case "synergy_activation_minimization"
+                errorCenter = valueOrAlternate(costTerm, "errorCenter", 0);
+                rawCost = reshape(commands2d, numel(commands2d), 1) - errorCenter;
             case "grouped_activations"
                 rawCost = calcCasadiGroupedActivationCost( ...
                     activations2d, params);
@@ -76,8 +86,12 @@ for term = 1:length(params.costTerms)
         rawCostScaled = (rawCost / costTerm.maxAllowableError) / ...
             sqrt(numel(rawCost));
         cost = cost + rawCostScaled.' * rawCostScaled;
+        residualParts{end + 1} = rawCostScaled; %#ok<AGROW>
     end
 end
+% cost == residual' * residual, which prepareNcpCasadiDerivatives.m uses to
+% assemble the Hessian from first-order derivatives of the residual
+residual = vertcat(residualParts{:});
 end
 
 % Flattens a [numTrials x numColumns x numPoints] numeric array into

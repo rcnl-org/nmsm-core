@@ -28,15 +28,15 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function optimizedValues = MuscleTendonLengthInitialization(inputs)
+function optimizedValues = MuscleTendonLengthInitialization(inputs, app)
 primaryValues = prepareInitialValues(inputs);
 lowerBounds = makeLowerBounds(inputs);
 upperBounds = makeUpperBounds(inputs);
-optimizerOptions = makeOptimizerOptions(struct());
+optimizerOptions = makeOptimizerOptions(struct(), app);
 [taskValues, taskLowerBounds, taskUpperBounds] = makeTaskValues( ...
     primaryValues, inputs, lowerBounds, upperBounds);
 optimizedValues = computeMuscleTendonLengthInitializationOptimization(taskValues, ...
-    taskLowerBounds, taskUpperBounds, inputs, optimizerOptions);
+    taskLowerBounds, taskUpperBounds, inputs, optimizerOptions, app);
 end
 
 % extract initial version of optimized values from inputs/params
@@ -81,12 +81,24 @@ end
 
 % (struct) -> (struct)
 % setup optimizer options struct to pass to fmincon
-function output = makeOptimizerOptions(params)
+function output = makeOptimizerOptions(params, app)
 output = optimset('UseParallel', true);
+% output = optimoptions('lsqnonlin', 'UseParallel',true, ...
+%     'MaxIterations', valueOrAlternate(params, 'maxIterations', 100), ...
+%     'MaxFunctionEvaluations', valueOrAlternate(params, ...
+%         'maxFunctionEvaluations', 100000000), ...
+%     'Display','iter', ...
+%     'OutputFcn', @(x, optimValues, state, varargin)  ...
+%     app.CancelOptimizationGui(x, optimValues, state));
 output.MaxIter = valueOrAlternate(params, 'maxIterations', 100);
 output.MaxFunEvals = valueOrAlternate(params, ...
     'maxFunctionEvaluations', 100000000);
 output.Display = 'iter';
+
+if ismethod(app, "CancelOptimizationGui")
+    output.OutputFcn = @(x, optimValues, state, varargin)  ...
+        app.CancelOptimizationGui(x, optimValues, state);
+end
 end
 
 % (struct, struct) -> (Array of number)

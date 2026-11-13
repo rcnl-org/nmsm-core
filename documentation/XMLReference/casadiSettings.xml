@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<NMSMPipelineDocument Version="1.5.0">
+	<OptimalControlSolverSettings>
+		<CasadiSettings>
+			<num_meshes>25</num_meshes>
+			<num_collocation_points_per_mesh>4</num_collocation_points_per_mesh>
+		</CasadiSettings>
+	</OptimalControlSolverSettings>
+</NMSMPipelineDocument>
