@@ -1,7 +1,7 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % WARNING following options will be ignored in CasADi path: 
-%   <use_jerk_controls>
+%   <use_joint_jerk_controls>
 %   <use_first_order_control_dynamics_filter>
 %
 % (struct, struct) -> (Array of double)

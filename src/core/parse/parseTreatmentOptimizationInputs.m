@@ -42,6 +42,7 @@ inputs.costTerms = parseRcnlCostTermSetHelper( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet'));
 inputs.costTerms = splitListTerms(inputs.costTerms);
 inputs.costTerms = splitAxesTerms(inputs.costTerms);
+verifyJerkCostTermsUseJerk(inputs.costTerms, inputs.useJerk);
 if isequal(mexext, 'mexw64') 
     inputs.calculateAngularMomentum = any(all([ ...
         strcmp(cellfun(@(term) term.type, inputs.costTerms, ...
@@ -87,6 +88,25 @@ inputs.terminal = splitAxesTerms(inputs.terminal);
 inputs.terminal = convertValueToError(inputs.terminal);
 end
 
+% Joint jerk cost terms require joint jerks, which are only available when
+% joint jerk controls are used. Throw an error if a jerk cost term is enabled
+% without <use_joint_jerk_controls>true</use_joint_jerk_controls>.
+function verifyJerkCostTermsUseJerk(costTerms, useJerk)
+if useJerk
+    return
+end
+jerkCostTermTypes = ["generalized_jerk_tracking", ...
+    "generalized_jerk_minimization"];
+for i = 1 : length(costTerms)
+    if costTerms{i}.isEnabled && ...
+            ismember(string(costTerms{i}.type), jerkCostTermTypes)
+        throw(MException('', "The " + string(costTerms{i}.type) + ...
+            " cost term requires " + ...
+            "<use_joint_jerk_controls>true</use_joint_jerk_controls>."))
+    end
+end
+end
+
 function inputs = parseBasicInputs(tree)
 inputs.toolName = findToolName(tree);
 inputs.resultsDirectory = getTextFromField(getFieldByName(tree, ...
@@ -108,7 +128,7 @@ inputs.controlDynamicsFilterConstant = getDoubleFromField( ...
     getFieldByNameOrAlternate(tree, ...
     'first_order_control_dynamics_filter_time_constant', 1));
 inputs.useJerk = getBooleanLogicFromField( ...
-    getFieldByNameOrAlternate(tree, 'use_jerk_controls', false));
+    getFieldByNameOrAlternate(tree, 'use_joint_jerk_controls', false));
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)

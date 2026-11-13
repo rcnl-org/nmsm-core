@@ -38,8 +38,8 @@
 		<final_time_range></final_time_range>
 		<!--*Optional* Default is false.-->
 		<use_control_derivatives>false</use_control_derivatives>
-		<!--*Optional* Default is false.-->
-		<use_jerk>false</use_jerk>
+		<!--*Optional* Default is false. Must be true to use the generalized_jerk_tracking or generalized_jerk_minimization cost terms.-->
+		<use_joint_jerk_controls>false</use_joint_jerk_controls>
 		<check_field_spelling>true</check_field_spelling>
 		<RCNLTorqueController>
 			<!--Space separated list containing the coordinates controlled by the torque controller.-->
@@ -118,6 +118,18 @@
 			<RCNLCostTerm name="generalized_acceleration_minimization">
 				<is_enabled>true</is_enabled>
 				<type>generalized_acceleration_minimization</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="generalized_jerk_tracking">
+				<is_enabled>true</is_enabled>
+				<type>generalized_jerk_tracking</type>
+				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
+				<max_allowable_error></max_allowable_error>
+			</RCNLCostTerm>
+			<RCNLCostTerm name="generalized_jerk_minimization">
+				<is_enabled>true</is_enabled>
+				<type>generalized_jerk_minimization</type>
 				<coordinate_list>coordinate_1 coordinate_2 coordinate_3</coordinate_list>
 				<max_allowable_error></max_allowable_error>
 			</RCNLCostTerm>

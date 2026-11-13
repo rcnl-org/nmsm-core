@@ -27,25 +27,17 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function cost = calcMinimizingJointJerkIntegrand(jointAccelerations, time, ...
-    inputs, costTerm)
-normalizeByFinalTime = valueOrAlternate(costTerm, ...
-    "normalize_by_final_time", true);
-indx = find(strcmp(convertCharsToStrings(inputs.statesCoordinateNames), ...
-    costTerm.coordinate));
-if isempty(indx)
-    throw(MException('CostTermError:CoordinateNotInState', ...
-        strcat("Coordinate ", costTerm.coordinate, " is not in the ", ...
-        "<states_coordinate_list>")))
-end
-% cost = calcMinimizingCostArrayTerm(jointJerks(:, indx));
-cost = diff(jointAccelerations(:, indx));
-cost(end+1) = 0;
-if normalizeByFinalTime
-    if all(size(time) == size(inputs.collocationTimeOriginal))
-        cost = cost / time(end);
-    else
-        cost = cost / inputs.collocationTimeOriginal(end);
-    end
-end
+function [cost, costTerm] = calcMinimizingJointJerkIntegrand( ...
+    jerks, time, inputs, costTerm)
+defaultTimeNormalization = true;
+[time, costTerm] = normalizeTimeColumn(costTerm, inputs, time, ...
+    defaultTimeNormalization);
+
+coordinateName = getTermFieldOrError(costTerm, 'coordinate');
+[jerk, costTerm] = findDataByLabels(costTerm, jerks, ...
+    inputs.coordinateNames, coordinateName);
+
+cost = jerk;
+
+cost = normalizeCostByFinalTime(costTerm, inputs, time, cost);
 end
