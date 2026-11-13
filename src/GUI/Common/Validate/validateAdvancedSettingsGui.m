@@ -1,10 +1,13 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
-% This function validates a tool's advanced (optimization) settings,
-% which must all be positive numbers. Invalid rows are highlighted in
-% the settings table and an error icon and tooltip describe the problem.
+% This function validates a tool's advanced (optimization) settings
+% against the kind of value each row takes (see
+% checkAdvancedSettingKindGui). Without settingKinds every row must be a
+% positive number. Invalid rows are highlighted in the settings table and
+% an error icon and tooltip describe the problem.
 %
-% (Table, Array of string, Array of double, UIComponent) -> (logical)
+% (Table, Array of string, Array of double, UIComponent, Array of string)
+% -> (logical)
 % Validates advanced settings values and shows the result in the GUI
 
 % ----------------------------------------------------------------------- %
@@ -29,22 +32,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 function isValid = validateAdvancedSettingsGui(settingsTable, ...
-    settingNames, settingValues, errorIcon)
+    settingNames, settingValues, errorIcon, settingKinds)
+if nargin < 5
+    settingKinds = repmat("positive", size(settingNames));
+end
 removeStyle(settingsTable);
 clearGuiError([], errorIcon);
 settingsTable.Tooltip = '';
-invalidRows = find(isnan(settingValues) | settingValues <= 0);
-isValid = isempty(invalidRows);
+messages = strings(0, 1);
+for i = 1:length(settingNames)
+    [rowValid, reason] = checkAdvancedSettingKindGui( ...
+        settingValues(i), settingKinds(i));
+    if rowValid
+        continue
+    end
+    addStyle(settingsTable, ...
+        uistyle('BackgroundColor', [1.00 0.67 0.67]), 'row', i);
+    messages(end + 1) = settingNames(i) + ": " + reason; %#ok<AGROW>
+end
+isValid = isempty(messages);
 if isValid
     return
-end
-messages = strings(length(invalidRows), 1);
-for i = 1:length(invalidRows)
-    addStyle(settingsTable, ...
-        uistyle('BackgroundColor', [1.00 0.67 0.67]), ...
-        'row', invalidRows(i));
-    messages(i) = settingNames(invalidRows(i)) + ...
-        ": must be a positive number";
 end
 errorMessage = strjoin(messages, newline);
 settingsTable.Tooltip = errorMessage;

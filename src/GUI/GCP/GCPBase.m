@@ -277,26 +277,27 @@ classdef GCPBase < matlab.apps.AppBase
             "400"
             "300000"]
 
-        % validateAdvancedSettingsGui cannot be reused here: it rejects
-        % everything <= 0, which is wrong for the two friction
-        % coefficients (initial_dynamic_friction_coefficient defaults to
-        % 0), and JMP, MTP, NCP, and TO all depend on that rule.
+        % The rule each row is checked against; see
+        % checkAdvancedSettingKindGui. Every initial_* value may start at
+        % zero (initial_dynamic_friction_coefficient defaults to 0), and
+        % zero iterations or function evaluations stops the optimization
+        % immediately, which helps with troubleshooting.
         advancedSettingKinds = ...
             ["positive"
             "boolean"
             "boolean"
-            "positive"
-            "positive"
-            "positive"
             "nonnegative"
             "nonnegative"
+            "nonnegative"
+            "nonnegative"
+            "nonnegative"
             "positive"
             "positive"
             "positive"
             "positive"
             "positive"
-            "positiveInteger"
-            "positiveInteger"]
+            "nonnegativeInteger"
+            "nonnegativeInteger"]
     end
 
     properties (Access = private)  % listener handles
@@ -1360,33 +1361,9 @@ classdef GCPBase < matlab.apps.AppBase
         end
 
         function [isValid, reason] = advancedSettingProblem(app, index)
-            isValid = true;
-            reason = "";
-            value = app.advancedSettingValues(index);
-            number = str2double(value);
-            switch app.advancedSettingKinds(index)
-                case "boolean"
-                    if ~any(strcmpi(value, ["true" "false"]))
-                        isValid = false;
-                        reason = "must be true or false";
-                    end
-                case "nonnegative"
-                    if isnan(number) || number < 0
-                        isValid = false;
-                        reason = "must be a non-negative number";
-                    end
-                case "positiveInteger"
-                    if isnan(number) || number <= 0 || ...
-                            mod(number, 1) ~= 0
-                        isValid = false;
-                        reason = "must be a positive integer";
-                    end
-                otherwise
-                    if isnan(number) || number <= 0
-                        isValid = false;
-                        reason = "must be a positive number";
-                    end
-            end
+            [isValid, reason] = checkAdvancedSettingKindGui( ...
+                app.advancedSettingValues(index), ...
+                app.advancedSettingKinds(index));
         end
 
         function validateAdvancedSettings(app)

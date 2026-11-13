@@ -2534,14 +2534,9 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                     isValid = numel(numbers) == 2 && ...
                         all(isfinite(numbers)) && numbers(2) > numbers(1);
                     reason = "must be two increasing numbers, or blank";
-                case "positive"
-                    number = str2double(value);
-                    isValid = ~isnan(number) && number > 0;
-                    reason = "must be a positive number";
-                case "nonnegative"
-                    number = str2double(value);
-                    isValid = ~isnan(number) && number >= 0;
-                    reason = "must be zero or a positive number";
+                otherwise
+                    [isValid, reason] = checkAdvancedSettingKindGui( ...
+                        value, app.advancedSettingKinds(index));
             end
         end
 
@@ -2636,9 +2631,14 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                     reason = "must be a positive number";
                 case {"setup_mesh_phase_intervals", ...
                         "setup_mesh_phase_colpoints_per_Interval", ...
-                        "setup_nlp_max_iterations", "integral_bound"}
+                        "integral_bound"}
                     isValid = number > 0 && mod(number, 1) == 0;
                     reason = "must be a positive integer";
+                case "setup_nlp_max_iterations"
+                    % Zero makes IPOPT return the initial guess at once,
+                    % which helps with troubleshooting
+                    [isValid, reason] = checkAdvancedSettingKindGui( ...
+                        value, "nonnegativeInteger");
                 case "setup_nlp_tolerance"
                     isValid = number > 0;
                     reason = "must be a positive number";

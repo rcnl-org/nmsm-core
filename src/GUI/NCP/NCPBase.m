@@ -239,10 +239,13 @@ classdef NCPBase < matlab.apps.AppBase
             "false"]
 
         % The rule each row is checked against; see advancedSettingProblem
+        % and checkAdvancedSettingKindGui. Zero iterations or function
+        % evaluations stops the optimization immediately, which helps with
+        % troubleshooting.
         advancedSettingKinds = ...
             ["positive"
-            "positive"
-            "positive"
+            "nonnegativeInteger"
+            "nonnegativeInteger"
             "positive"
             "positive"
             "positive"
@@ -1045,18 +1048,9 @@ classdef NCPBase < matlab.apps.AppBase
         % parser reads each value. The reason states only the rule;
         % validateAdvancedSettings adds the setting name and default.
         function [isValid, reason] = advancedSettingProblem(app, index)
-            isValid = true;
-            reason = "";
             value = strtrim(app.advancedSettingValues(index));
             number = str2double(value);
             switch app.advancedSettingKinds(index)
-                case "positive"
-                    isValid = ~isnan(number) && number > 0;
-                    reason = "must be a positive number";
-                case "boolean"
-                    % Written lowercase on save, so any casing is accepted
-                    isValid = any(strcmpi(value, ["true", "false"]));
-                    reason = "must be true or false";
                 case "nodes"
                     % Synergy commands are fitted with a cubic B-spline,
                     % and BSplineMatrices throws for fewer than four nodes
@@ -1072,6 +1066,9 @@ classdef NCPBase < matlab.apps.AppBase
                         (~isnan(number) && number > 0);
                     reason = "must be a positive number, or NaN for no " + ...
                         "normalization target";
+                otherwise
+                    [isValid, reason] = checkAdvancedSettingKindGui( ...
+                        value, app.advancedSettingKinds(index));
             end
         end
 

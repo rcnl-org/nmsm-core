@@ -248,20 +248,25 @@ classdef MTPBase < matlab.apps.AppBase
             "1"
             "1"]
 
-        % The rule each row is checked against; see advancedSettingProblem
+        % The rule each row is checked against; see
+        % checkAdvancedSettingKindGui. Zero iterations or function
+        % evaluations stops the optimization immediately, which helps with
+        % troubleshooting. The initial guesses that may be zero allow it
+        % even where the default bounds do not, so a user who changes the
+        % bounds in the code can start from zero.
         advancedSettingKinds = ...
             ["positive"
-            "positive"
-            "positive"
+            "nonnegativeInteger"
+            "nonnegativeInteger"
             "positive"
             "positive"
             "positive"
             "positive"
             "boolean"
-            "positive"
-            "positive"
-            "positive"
-            "positive"
+            "nonnegative"
+            "nonnegative"
+            "nonnegative"
+            "nonnegative"
             "positive"
             "positive"]
     end
@@ -1358,17 +1363,9 @@ classdef MTPBase < matlab.apps.AppBase
         % States the rule a row breaks, if any. The reason states only the
         % rule; validateAdvancedSettings adds the setting name and default.
         function [isValid, reason] = advancedSettingProblem(app, index)
-            value = strtrim(app.advancedSettingValues(index));
-            switch app.advancedSettingKinds(index)
-                case "boolean"
-                    % Written lowercase on save, so any casing is accepted
-                    isValid = any(strcmpi(value, ["true", "false"]));
-                    reason = "must be true or false";
-                otherwise
-                    number = str2double(value);
-                    isValid = ~isnan(number) && number > 0;
-                    reason = "must be a positive number";
-            end
+            [isValid, reason] = checkAdvancedSettingKindGui( ...
+                app.advancedSettingValues(index), ...
+                app.advancedSettingKinds(index));
         end
 
         function updateRunButton(app)

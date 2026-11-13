@@ -151,6 +151,18 @@ classdef JMPBase < matlab.apps.AppBase
             1e-5
             1e-3
             1e-6]
+
+        % The rule each row is checked against; see
+        % checkAdvancedSettingKindGui. Zero function evaluations stops the
+        % calibration immediately, which helps with troubleshooting.
+        advancedSettingKinds = ...
+            ["positive"
+            "nonnegativeInteger"
+            "positive"
+            "positive"
+            "positive"
+            "positive"
+            "positive"]
     end
 
     properties (Access = private)
@@ -807,7 +819,8 @@ classdef JMPBase < matlab.apps.AppBase
         function updateRunButton(app)
             advancedSettingsValid = validateAdvancedSettingsGui( ...
                 app.AdvancedSettingsTable, app.advancedSettingNames, ...
-                app.advancedSettingValues, app.AdvancedSettingsStatus);
+                app.advancedSettingValues, app.AdvancedSettingsStatus, ...
+                app.advancedSettingKinds);
             tasksValid = app.validateAllTasksSilent();
             app.RunButton.Enable = app.inputModelValid && ...
                 app.outputModelValid && advancedSettingsValid && tasksValid;
