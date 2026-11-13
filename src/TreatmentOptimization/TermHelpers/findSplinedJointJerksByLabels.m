@@ -2,7 +2,7 @@
 %
 % (struct, Array of double, Array of string) -> (Array of number)
 %
-% Finds splined joint accelerations given labels, saving indices.
+% Finds splined joint jerks given labels, saving indices.
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
