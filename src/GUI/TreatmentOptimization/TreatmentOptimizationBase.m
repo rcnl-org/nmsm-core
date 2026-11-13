@@ -297,7 +297,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             "experimental_bspline_cutoff_frequency"
             "first_order_control_dynamics_filter_time_constant"
             "use_first_order_control_dynamics_filter"
-            "use_jerk_controls"
+            "use_joint_jerk_controls"
             "normalize_cost_by_term_type"
             "final_time_range"]
 
