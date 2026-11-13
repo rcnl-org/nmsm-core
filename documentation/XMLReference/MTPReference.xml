@@ -21,12 +21,12 @@
 		<!--A space-separated list of collected EMG channel names.-->
 		<collected_emg_channel_muscle_groups>emg_channel_1 emg_channel_2 emg_channel_3</collected_emg_channel_muscle_groups>
 		<!--*Optional* Specify the initial guess for MTP design variables-->
-		<electromechanical_delay_initial_guess>0.5</electromechanical_delay_initial_guess>
-		<activation_time_constant_initial_guess>1.5</activation_time_constant_initial_guess>
-		<activation_nonlinearity_initial_guess>0.05</activation_nonlinearity_initial_guess>
-		<emg_scale_factor_initial_guess>0.5</emg_scale_factor_initial_guess>
-		<optimal_fiber_length_scale_factor_initial_guess>1</optimal_fiber_length_scale_factor_initial_guess>
-		<tendon_slack_length_scale_factor_initial_guess>1</tendon_slack_length_scale_factor_initial_guess>
+		<initial_electromechanical_delay>0.5</initial_electromechanical_delay>
+		<initial_activation_time_constant>1.5</initial_activation_time_constant>
+		<initial_activation_nonlinearity>0.05</initial_activation_nonlinearity>
+		<initial_emg_scale_factor>0.5</initial_emg_scale_factor>
+		<initial_optimal_fiber_length_scale_factor>1</initial_optimal_fiber_length_scale_factor>
+		<initial_tendon_slack_length_scale_factor>1</initial_tendon_slack_length_scale_factor>
 		<!--Use muscle specific electromechanical delays.-->
 		<muscle_specific_electromechanical_delays>true</muscle_specific_electromechanical_delays>
 		<!--Properties that describe MuscleTendonLengthInitialization settings.-->

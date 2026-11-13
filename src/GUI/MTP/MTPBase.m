@@ -225,12 +225,12 @@ classdef MTPBase < matlab.apps.AppBase
             "optimality_tolerance"
             "diff_min_change"
             "muscle_specific_electromechanical_delays"
-            "electromechanical_delay_initial_guess"
-            "activation_time_constant_initial_guess"
-            "activation_nonlinearity_initial_guess"
-            "emg_scale_factor_initial_guess"
-            "optimal_fiber_length_scale_factor_initial_guess"
-            "tendon_slack_length_scale_factor_initial_guess"]
+            "initial_electromechanical_delay"
+            "initial_activation_time_constant"
+            "initial_activation_nonlinearity"
+            "initial_emg_scale_factor"
+            "initial_optimal_fiber_length_scale_factor"
+            "initial_tendon_slack_length_scale_factor"]
 
         defaultAdvancedSettingValues = ...
             ["10"
