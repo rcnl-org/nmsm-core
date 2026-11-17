@@ -73,8 +73,6 @@ model = Model(modelFileName);
 if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);
 end
-% Resample tracked data to experimental for calculating RMSE
-tracked = resampleTrackedData(tracked, results);
 yLimits = makeJointAnglesYLimits(tracked, results, model, useRadians);
 
 % Allow only plot certain column names from the input files
@@ -89,6 +87,8 @@ if isfield(options, "columnsToUse")
     end
     yLimits = yLimits(trackedIndices);
 end
+% Resample tracked data to experimental for calculating RMSE
+tracked = resampleTrackedData(tracked, results);
 % Allow renaming columns in the subplot titles
 if isfield(options, "columnNames")
     tracked.originalLabels = tracked.labels;

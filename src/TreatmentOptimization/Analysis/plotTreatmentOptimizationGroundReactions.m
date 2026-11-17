@@ -64,7 +64,6 @@ model = org.opensim.modeling.Model();
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
 % Tracked and results files can have columns in different order sometimes.
 [tracked, results] = sortGroundReactionData(tracked, results);
-tracked = resampleTrackedData(tracked, results);
 yLimits = makeGroundReactionsYLimits(tracked, results);
 
 % Allow only plot certain column names from the input files
@@ -79,6 +78,7 @@ if isfield(options, "columnsToUse")
     end
     yLimits = yLimits(trackedIndices);
 end
+tracked = resampleTrackedData(tracked, results);
 
 % Allow renaming columns in the subplot titles
 if isfield(options, "columnNames")

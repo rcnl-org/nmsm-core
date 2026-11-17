@@ -70,7 +70,6 @@ catch
 end
 model = org.opensim.modeling.Model();
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
-tracked = resampleTrackedData(tracked, results);
 
 if isfield(options, "columnsToUse")
     [~, ~, trackedIndices] = intersect(options.columnsToUse, tracked.labels, "stable");
@@ -82,6 +81,7 @@ if isfield(options, "columnsToUse")
         results.labels{j} = results.labels{j}(resultsIndices);
     end
 end
+tracked = resampleTrackedData(tracked, results);
 
 % Allow renaming columns in the subplot titles
 if isfield(options, "columnNames")

@@ -64,8 +64,6 @@ model = org.opensim.modeling.Model();
 [tracked, results] = parsePlottingData(trackedDataFile, ...
     resultsDataFiles, model);
 
-tracked = resampleTrackedData(tracked, results);
-
 yLimits = makeJointLoadsYLimits(tracked, results);
 
 if isfield(options, "columnsToUse")
@@ -80,6 +78,7 @@ if isfield(options, "columnsToUse")
     end
     yLimits = yLimits(trackedIndices);
 end
+tracked = resampleTrackedData(tracked, results);
 if isfield(options, "columnNames")
     tracked.labels = options.columnNames;
     for j = 1 : numel(resultsDataFiles)

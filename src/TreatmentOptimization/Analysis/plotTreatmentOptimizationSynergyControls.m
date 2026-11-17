@@ -78,9 +78,6 @@ for i = 1 : numel(resultsActivations.data)
 end
 end
 
-trackedActivations = resampleTrackedData(trackedActivations, ...
-    resultsActivations);
-
 plotSynergyActivations(trackedActivations, resultsActivations, ...
     params, options);
 plotSynergyVectors(trackedWeights, trackedActivations.labels, ...
@@ -103,6 +100,7 @@ if isfield(options, "columnsToUse")
         results.labels{j} = results.labels{j}(resultsIndices);
     end
 end
+tracked = resampleTrackedData(tracked, results);
 % Allow renaming columns in the subplot titles
 if isfield(options, "columnNames")
     tracked.labels = options.columnNames;

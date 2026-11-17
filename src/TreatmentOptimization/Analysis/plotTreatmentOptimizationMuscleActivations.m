@@ -62,7 +62,6 @@ end
 
 model = org.opensim.modeling.Model();
 [tracked, results] = parsePlottingData(trackedDataFile, resultsDataFiles, model);
-tracked = resampleTrackedData(tracked, results);
 
 % Allow only plot certain column names from the input files
 if isfield(options, "columnsToUse")
@@ -75,6 +74,7 @@ if isfield(options, "columnsToUse")
         results.labels{j} = results.labels{j}(resultsIndices);
     end
 end
+tracked = resampleTrackedData(tracked, results);
 
 % Allow renaming columns in the subplot titles
 if isfield(options, "columnNames")

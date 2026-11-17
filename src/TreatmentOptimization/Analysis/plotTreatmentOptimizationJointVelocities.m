@@ -87,8 +87,6 @@ if ~useRadians
     [tracked, results] = convertRadiansToDegrees(model, tracked, results);
 end
 
-tracked = resampleTrackedData(tracked, results);
-
 yLimits = makeJointVelocitiesYLimits(tracked, results, model, useRadians);
 
 % Allow only plot certain column names from the input files
@@ -104,6 +102,7 @@ if isfield(options, "columnsToUse")
     end
     yLimits = yLimits(trackedIndices);
 end
+tracked = resampleTrackedData(tracked, results);
 
 % Allow renaming columns
 if isfield(options, "columnNames")
