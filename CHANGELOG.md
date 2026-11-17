@@ -21,8 +21,19 @@
 - Fixed a bug causing Design Optimization user-defined parameters of the same type to overwrite each other.
 - Fixed a bug causing absolute metabolic cost goals to never compute the metabolic cost.
 - Fixed a bug causing synergy_vector_symmetry to compare the wrong weights when synergy groups have different numbers of muscles.
+- Fixed a bug causing data preprocessing to move muscle analysis files into the wrong trial folder when a trial is split into more than 9 trials.
+- Fixed a bug causing MTLI to not match passive joint moment data to model coordinates when the inverse dynamics columns end in _moment or _force.
+- Fixed a bug causing Treatment Optimization to write the tracked positions, velocities and accelerations in the Analysis folder with the modeled time instead of the experimental time.
+- Fixed a bug causing Treatment Optimization external force and moment terms with more than one force or moment to crash or use the wrong ground reaction columns.
+- Fixed a bug allowing a synergy name such as RightLeg_7 to select a synergy from the next synergy group when its group has fewer synergies. This is now an error.
+- Fixed a bug causing NCP with MTP data to compare the wrong muscles in activation_tracking when the MTP results list muscles in a different order, and to fail when the MTP results are missing some NCP muscles.
+- Fixed a bug causing NCP to copy MTLI optimal fiber lengths, tendon slack lengths and max isometric forces to the wrong muscles when the NCP muscles (in synergy group order) are not in the same order as the MTLI muscles (in model order).
+- Fixed a bug causing the NCP grouped_activations and grouped_fiber_lengths cost terms to compare the wrong muscles, or to be silently skipped, when the NCP muscles are not the model's first muscles in order, such as when running NCP on the left leg only. A muscle in one of these groups that NCP is not modeling is now an error.
+- Added an error when enforce_bilateral_symmetry is used with synergy groups that do not list mirrored muscles in the same order.
+- Added an error when <surrogate_model_polynomial_degree> is not a whole number of at least 2.
 
 ### Changed
+- Surrogate model creation no longer uses eval, which MATLAB will remove in a future release, and creates each muscle's surrogate model faster.
 
 ## v.1.5.4 2026-09-12
 
