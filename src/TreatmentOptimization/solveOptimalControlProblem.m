@@ -28,6 +28,9 @@ function [inputs, output] = solveOptimalControlProblem(inputs, params)
 if strcmp(inputs.solverType, 'gpops')
     [setup, inputs] = convertToGpopsInputs(inputs, params);
     setup.auxdata = inputs;
+    % Advanced: an ipopt.opt in the current folder reaches IPOPT through
+    % gpopsIpoptWrapper, see useGpopsIpoptWrapper for how to write one
+    ipoptWrapper = useGpopsIpoptWrapper(); %#ok<NASGU>
     solution = gpops2(setup);
     inputs = setup.auxdata;
     output = convertFromGpopsOutputs(solution, ...
