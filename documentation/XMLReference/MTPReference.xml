@@ -322,6 +322,12 @@
 						<max_allowable_error>0.2</max_allowable_error>
 					</RCNLCostTerm>
 					<RCNLCostTerm>
+						<!--Description: grouped_activation_similarity penalizes magnitude and shape differences between the modeled muscle activations within each <activation_muscle_groups> entry. Keeps muscles that share an activation group activating together.-->
+						<is_enabled>true</is_enabled>
+						<type>grouped_activation_similarity</type>
+						<max_allowable_error>0.1</max_allowable_error>
+					</RCNLCostTerm>
+					<RCNLCostTerm>
 						<!--Description: muscle_excitation_penalty is a steep eighth power barrier around <error_center> on the measured muscles' excitations. Prevent excitations from going too high. Ignored if MTPSynergyExtrapolation is disabled.-->
 						<is_enabled>true</is_enabled>
 						<type>muscle_excitation_penalty</type>
