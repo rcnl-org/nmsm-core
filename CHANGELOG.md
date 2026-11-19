@@ -3,9 +3,11 @@
 ## v1.5.5 2026-xx-xx
 
 ### Added
+- Added an MTP cost term called "grouped_activation_similarity" that penalizes magnitude and shape differences between modeled muscle activations within each <activation_muscle_groups> entry.
 
 ### Fixed
 - Fixed a bug causing JMP to ignore the final frame in a time range.
+- Fixed a bug causing the MTP grouped_normalized_muscle_fiber_length cost term to crash when the first <normalized_fiber_length_muscle_groups> entry has one muscle and a later entry has more than one.
 - Added clear error messages for settings files where every JMP or MTP task or every GCP contact surface is disabled, where MTP, NCP, GCP or Treatment Optimization has no results_directory (now required by every tool except JMP), where a coordinate_list or states_coordinate_list entry is not in the model or IK data, where an MTP EMG channel group is not in the EMG data, and where MTLI is given an unknown cost term.
 - Fixed a bug allowing a GCP ground reaction column missing from the GRF file to be parsed as NaN forces.
 - Fixed a bug causing NCP to crash when its settings file name is given as a character array.
