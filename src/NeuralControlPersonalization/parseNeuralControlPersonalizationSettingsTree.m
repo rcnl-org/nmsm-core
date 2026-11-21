@@ -31,8 +31,9 @@
 function [inputs, params, resultsDirectory] = ...
     parseNeuralControlPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
-params = getParams(settingsTree, inputs.model);
-resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+params = getParams(settingsTree, inputs);
+resultsDirectory = getFieldByNameOrError(settingsTree, ...
+    'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
@@ -94,11 +95,12 @@ osimxFileName = getFieldByName(tree, "input_osimx_file");
 %     throw(MException('', 'An input .osimx file is required if using data from MTP.'))
 % end
 inputs.mtpMuscleData = parseOsimxFile(osimxFileName.Text, inputs.model);
-% Remove activations of muscles from coordinates not included
-includedSubset = ismember(inputs.mtpActivationsColumnNames, ...
-    inputs.muscleTendonColumnNames);
-inputs.mtpActivationsColumnNames = ...
-    inputs.mtpActivationsColumnNames(includedSubset);
+% Remove activations of muscles from coordinates not included and order the
+% rest as muscleTendonColumnNames, so activation_tracking compares the same
+% muscles column by column
+[inputs.mtpActivationsColumnNames, ~, includedSubset] = intersect( ...
+    inputs.muscleTendonColumnNames, inputs.mtpActivationsColumnNames, ...
+    'stable');
 inputs.mtpActivations = inputs.mtpActivations(:, includedSubset, :);
 end
 
@@ -158,16 +160,20 @@ for i = 1:length(muscles)
 end
 end
 
-function params = getParams(tree, model)
+function params = getParams(tree, inputs)
 params = struct();
+% Group indices are columns of muscleTendonColumnNames, the muscle order of
+% NCP activations and weights
 params.activationGroupNames = parseSpaceSeparatedList(tree, ...
     'activation_muscle_groups');
 params.activationGroups = groupNamesToGroups( ...
-    params.activationGroupNames, model);
+    params.activationGroupNames, inputs.model, ...
+    inputs.muscleTendonColumnNames);
 params.normalizedFiberLengthGroupNames = parseSpaceSeparatedList(tree, ...
     'normalized_fiber_length_muscle_groups');
 params.normalizedFiberLengthGroups = groupNamesToGroups( ...
-    params.normalizedFiberLengthGroupNames, model);
+    params.normalizedFiberLengthGroupNames, inputs.model, ...
+    inputs.muscleTendonColumnNames);
 params.costTerms = parseRcnlCostTermSet( ...
     getFieldByNameOrError(tree, 'RCNLCostTermSet').RCNLCostTerm);
 params.diffMinChange = str2double(getTextFromField(...

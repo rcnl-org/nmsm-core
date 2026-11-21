@@ -33,22 +33,15 @@ function error = computeInverseKinematicsSquaredError(model, ikSolver, ...
 import org.opensim.modeling.*
 persistent errorSize;
 try
-    [state, numFrames, frequency, finishTime] = prepareFrameIterations(...
-        model, ikSolver, markersReference, params);
-    markerTable = markersReference.getMarkerTable();
-    times = markerTable.getIndependentColumn();
+    [state, frameTimes] = prepareFrameIterations(model, ikSolver, ...
+        markersReference, params);
     error = [];
-    frameCounter = 0;
-    for i=1:numFrames %start time is set so start with recording error
+    for i = 1:numel(frameTimes)
+        state.setTime(frameTimes(i));
         ikSolver.track(state);
         error = [error calculateFrameSquaredError(ikSolver)];
-        frameCounter = frameCounter + 1;
-        if(state.getTime() + 1/frequency > finishTime);break;end
-        time = times.get(markerTable.getNearestRowIndexForTime( ...
-            state.getTime() + 1/frequency - 0.00001));
-        state.setTime(double(time));
     end
-    error = error / sqrt(frameCounter);
+    error = error / sqrt(numel(frameTimes));
     errorSize = size(error);
 catch
     error = 1e2 * ones(errorSize);
@@ -56,18 +49,16 @@ end
 end
 
 % (Model, InverseKinematicsSolver, MarkersReference, struct) =>
-% (State, number, number, number)
-% Parses params for the IKSolver
-function [state, numFrames, frequency, finishTime] = ...
-    prepareFrameIterations(model, ikSolver, markersReference, params)
+% (State, Array of number)
+% Finds the frames in the time range and assembles the first one
+function [state, frameTimes] = prepareFrameIterations(model, ikSolver, ...
+    markersReference, params)
+frameTimes = getMarkerFrameTimes(markersReference, ...
+    valueOrAlternate(params, 'startTime', ...
+    markersReference.getValidTimeRange().get(0)), ...
+    valueOrAlternate(params, 'finishTime', ...
+    markersReference.getValidTimeRange().get(1)));
 state = initModelSystem(model);
-state.setTime(valueOrAlternate(params, 'startTime', ...
-    markersReference.getValidTimeRange().get(0)));
+state.setTime(frameTimes(1));
 ikSolver.assemble(state);
-numFrames = valueOrAlternate(params, 'numFrames', ...
-    markersReference.getNumFrames());
-frequency = valueOrAlternate(params, 'frequency', ...
-    markersReference.getSamplingFrequency());
-finishTime = valueOrAlternate(params, 'finishTime', ...
-    markersReference.getValidTimeRange().get(1));
 end

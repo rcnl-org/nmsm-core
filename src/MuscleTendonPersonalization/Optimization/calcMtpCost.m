@@ -98,6 +98,14 @@ for i = 1 : length(params.costTerms)
                     cost = calcNormalizedFiberLengthGroupedSimilarityCost( ...
                         modeledValues, inputs, costTerm);
                 end
+            case "grouped_activation_similarity"
+                if isfield(inputs, "synergyExtrapolation")
+                    cost = calcActivationSimilarityCost( ...
+                        synxModeledValues, inputs, costTerm);
+                else
+                    cost = calcActivationSimilarityCost( ...
+                        modeledValues, inputs, costTerm);
+                end
             case "grouped_emg_scale_factor"
                 cost = calcEmgScaleFactorGroupedSimilarityCost(values, ...
                     inputs, costTerm);

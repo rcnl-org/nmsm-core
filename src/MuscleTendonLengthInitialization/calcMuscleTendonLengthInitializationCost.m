@@ -73,7 +73,7 @@ for i = 1:length(costTerms)
                 cost = calcMaximumNormalizedFiberLengthSimilarityCost(values, ...
                     experimentalData, costTerm);
             otherwise
-                throw(MException("", "Cost term " + type + " is not valid for Muscle Tendon Length Initialization"))
+                throw(MException("", "Cost term " + costTerm.type + " is not valid for Muscle Tendon Length Initialization"))
         end
         totalCost = cat(1, totalCost, cost);
     end

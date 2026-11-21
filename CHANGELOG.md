@@ -1,5 +1,42 @@
 # Changelog
 
+## v1.5.5 2026-xx-xx
+
+### Added
+- Added an MTP cost term called "grouped_activation_similarity" that penalizes magnitude and shape differences between modeled muscle activations within each <activation_muscle_groups> entry.
+
+### Fixed
+- Fixed a bug causing JMP to ignore the final frame in a time range.
+- Fixed a bug causing the MTP grouped_normalized_muscle_fiber_length cost term to crash when the first <normalized_fiber_length_muscle_groups> entry has one muscle and a later entry has more than one.
+- Added clear error messages for settings files where every JMP or MTP task or every GCP contact surface is disabled, where MTP, NCP, GCP or Treatment Optimization has no results_directory (now required by every tool except JMP), where a coordinate_list or states_coordinate_list entry is not in the model or IK data, where an MTP EMG channel group is not in the EMG data, and where MTLI is given an unknown cost term.
+- Fixed a bug allowing a GCP ground reaction column missing from the GRF file to be parsed as NaN forces.
+- Fixed a bug causing NCP to crash when its settings file name is given as a character array.
+- Fixed a bug causing MTP and MTLI muscle group terms to compare the wrong muscles when a group list left out the first modeled muscle or the modeled muscles were not a continuous block of the model. A muscle in one of these groups that is not being modeled is now an error.
+- Fixed a bug causing the MTP minimum and maximum normalized fiber length cost terms to penalize a muscle's whole fiber length past the limit instead of only the amount past it.
+- Fixed a bug causing GCP to assign the wrong values to every design variable after the resting spring length when a task optimizes the resting spring length.
+- Fixed a bug causing the GCP force plate rotation design variable to have no effect.
+- Fixed a bug causing GCP tasks that do not optimize the electrical center shift or force plate rotation to ignore the values found by earlier tasks.
+- Fixed a bug causing GCP to crash when the neighbor_spring_constant cost term is used without a ground reaction moment cost term, or when the last task has no ground reaction moment cost term.
+- Fixed a bug causing synergy-driven Treatment Optimization to read muscle parameters (pennation angle, and any optimal fiber length, tendon slack length or max isometric force not in the osimx) from the wrong muscle when the modeled muscles are not the model's first muscles in order.
+- Fixed a bug causing the Design Optimization angular_momentum_minimization cost term to crash whenever enabled.
+- Fixed a bug preventing the built-in Design Optimization model functions (applyBeltSpeedParameter, applyMaxIsometricForceParameter, applyOptimalFiberLengthParameter, applyTendonSlackLengthParameter) from being used.
+- Fixed a bug causing Design Optimization user-defined parameters of the same type to overwrite each other.
+- Fixed a bug causing absolute metabolic cost goals to never compute the metabolic cost.
+- Fixed a bug causing synergy_vector_symmetry to compare the wrong weights when synergy groups have different numbers of muscles.
+- Fixed a bug causing data preprocessing to put muscle analysis files in the wrong trial folders when there are more than 9 trials.
+- Fixed a bug causing MTP and NCP to read _FiberLength.sto instead of _Length.sto.
+- Fixed a bug causing MTLI to fail when passive inverse dynamics columns end in _force.
+- Fixed a bug causing Treatment Optimization to save tracked positions, velocities and accelerations with the wrong time.
+- Fixed a bug causing NCP activation_tracking to compare the wrong muscles when the MTP results list muscles in a different order.
+- Fixed a bug causing NCP to copy MTLI muscle parameters to the wrong muscles when the synergy groups do not list muscles in model order.
+- Fixed a bug causing NCP to crash, or grouped_activations and grouped_fiber_lengths to use the wrong muscles, in some cases such as running NCP on the left leg only.
+- Added an error when a synergy name such as RightLeg_7 refers to a synergy that its group does not have.
+- Added an error when enforce_bilateral_symmetry is used with synergy groups that list mirrored muscles in different orders.
+- Added an error for an invalid <surrogate_model_polynomial_degree>.
+
+### Changed
+- Surrogate model creation is faster and no longer uses eval.
+
 ## v.1.5.4 2026-09-12
 
 ### Added

@@ -39,21 +39,18 @@
 function matrix = getDataMatrix(polynomialExpressionMuscleTendonLength, ...
     polyninomialExpressionMomentArms, jointAngles, theta)
 
-% Populate symbolic theta(s) with actual data
-for i = 1 : size(jointAngles, 2)
-    eval(['theta' num2str(i) ' = jointAngles(:,' num2str(i) ');']);
-end
+% Convert symbolic expressions to a numeric function of the joint angles
+expressionsFunction = matlabFunction( ...
+    [polynomialExpressionMuscleTendonLength; ...
+    polyninomialExpressionMomentArms], 'Vars', {theta}, 'Optimize', false);
 % Evaluate symbolic expressions for muscle tendon lengths and moment arms
-for j = 1 : size(polyninomialExpressionMomentArms, 2)
-    muscleTendonLengthMatrix(:, j) = ...
-        eval(polynomialExpressionMuscleTendonLength(1, j)) .* ...
-        ones(size(jointAngles, 1), 1);
-    for k = 1 : size(jointAngles, 2)
-        momentArmsMatrix(:, k, j) = ...
-            eval(polyninomialExpressionMomentArms(k, j)) .* ...
-            ones(size(jointAngles, 1), 1);
-    end                 
+expressions = zeros(size(polyninomialExpressionMomentArms, 1) + 1, ...
+    size(polyninomialExpressionMomentArms, 2), size(jointAngles, 1));
+for i = 1 : size(jointAngles, 1)
+    expressions(:, :, i) = expressionsFunction(jointAngles(i, :));
 end
+muscleTendonLengthMatrix = permute(expressions(1, :, :), [3 2 1]);
+momentArmsMatrix = permute(expressions(2 : end, :, :), [3 1 2]);
 % Create A matrix
 matrix = [muscleTendonLengthMatrix; reshape(momentArmsMatrix, ...
     [], size(polyninomialExpressionMomentArms, 2))];

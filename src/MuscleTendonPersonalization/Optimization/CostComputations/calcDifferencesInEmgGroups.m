@@ -31,11 +31,10 @@
 function deviationsEMGScale = calcDifferencesInEmgGroups( ...
     emgScale, activationGroups)
 
-lowestIndex = min(cell2mat(activationGroups)) - 1;
 Ind = 1;
 for i = 1:length(activationGroups)
     deviationsEMGScale(:, Ind:Ind + size(activationGroups{i}, 2) - 1) = ...
-        calcMeanDifference2D(emgScale(activationGroups{i} - lowestIndex));
+        calcMeanDifference2D(emgScale(activationGroups{i}));
     Ind = Ind + size(activationGroups{i}, 2);
 end
 end

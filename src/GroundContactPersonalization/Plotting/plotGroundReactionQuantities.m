@@ -42,7 +42,7 @@ end
     inputs.surfaces{foot}.jointKinematicsBSplines, inputs.surfaces{foot}.bSplineCoefficients);
 modeledValues = calcGCPModeledValues(inputs, inputs, ...
     modeledJointPositions, modeledJointVelocities, plotParams, task, ...
-    foot, models);
+    foot, models, true);
 modeledValues.jointPositions = modeledJointPositions;
 modeledValues.jointVelocities = modeledJointVelocities;
 

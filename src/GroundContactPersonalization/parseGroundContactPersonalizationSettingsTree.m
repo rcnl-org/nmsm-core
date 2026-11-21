@@ -32,7 +32,8 @@ function [inputs, params, resultsDirectory] = ...
     parseGroundContactPersonalizationSettingsTree(settingsTree)
 inputs = getInputs(settingsTree);
 params = getParams(settingsTree);
-resultsDirectory = getFieldByName(settingsTree, 'results_directory').Text;
+resultsDirectory = getFieldByNameOrError(settingsTree, ...
+    'results_directory').Text;
 if(isempty(resultsDirectory))
     resultsDirectory = pwd;
 end
@@ -93,6 +94,7 @@ contactSurfaces = getFieldByNameOrError(tree, 'GCPContactSurfaceSet') ...
 if length(contactSurfaces) == 1
     contactSurfaces = {contactSurfaces};
 end
+output = {};
 counter = 1;
 for i=1:length(contactSurfaces)
     surface = contactSurfaces{i};
@@ -108,6 +110,8 @@ for i=1:length(contactSurfaces)
         counter = counter + 1;
     end
 end
+assert(~isempty(output), "No <GCPContactSurface> is enabled. Set " + ...
+    "<is_enabled> to true for at least one contact surface.")
 end
 
 % (Model, string, struct) -> (struct)
@@ -149,7 +153,7 @@ for i=1:size(grfColumnNames', 1)
         end
     end
 end
-if any([isnan(grf) isnan(moments) isnan(ec)])
+if any(isnan([grf moments ec]), "all")
     throw(MException('', ['Unable to parse GRF file, check that ' ...
         'all necessary column labels are present']))
 end

@@ -76,6 +76,7 @@ end
 
 function inputs = getTasks(model, tree)
 tasks = getFieldByNameOrError(tree, 'JMPTaskList');
+inputs = {};
 counter = 1;
 jmpTasks = orderByIndex(tasks.JMPTask);
 for i=1:length(jmpTasks)
@@ -89,6 +90,8 @@ for i=1:length(jmpTasks)
         counter = counter + 1;
     end
 end
+assert(~isempty(inputs), "No <JMPTask> is enabled. Set <is_enabled> " + ...
+    "to true for at least one task.")
 end
 
 function output = getTask(model, tree)
