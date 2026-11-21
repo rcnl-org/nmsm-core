@@ -53,6 +53,12 @@ for i=1:length(contactSurfaces)
     contactSurfaces{i}.childBody = osimModel.getBodySet.getIndex(contactSurfaces{i}.childBodyName);
     contactSurfaces{i}.parentBody = osimModel.getBodySet. ...
         getIndex(contactSurfaces{i}.parentBodyName);
+    if isfield(contactSurfaces{i}, 'shadowHindfootBodyName')
+        contactSurfaces{i}.shadowParentBody = osimModel.getBodySet. ...
+            getIndex(char(contactSurfaces{i}.shadowHindfootBodyName));
+        contactSurfaces{i}.shadowChildBody = osimModel.getBodySet. ...
+            getIndex(char(contactSurfaces{i}.shadowToesBodyName));
+    end
 end
 end
 

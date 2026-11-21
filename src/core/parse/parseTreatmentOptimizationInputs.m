@@ -86,6 +86,7 @@ inputs.path = convertValueToError(inputs.path);
 inputs.terminal = splitListTerms(inputs.terminal);
 inputs.terminal = splitAxesTerms(inputs.terminal);
 inputs.terminal = convertValueToError(inputs.terminal);
+verifyShadowFeetSettings(inputs);
 end
 
 % Joint jerk cost terms require joint jerks, which are only available when
@@ -129,6 +130,31 @@ inputs.controlDynamicsFilterConstant = getDoubleFromField( ...
     'first_order_control_dynamics_filter_time_constant', 1));
 inputs.useJerk = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, 'use_joint_jerk_controls', false));
+inputs.useShadowFeet = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(tree, 'use_shadow_feet', false));
+end
+
+% Shadow feet need contact surfaces, and the shadow_foot_pose path
+% constraint is what keeps the shadow feet in the pose of the model's
+% feet, so each requires the other.
+function verifyShadowFeetSettings(inputs)
+isShadowFootPoseEnabled = any(cellfun(@(term) ...
+    strcmp(term.type, "shadow_foot_pose") && term.isEnabled, ...
+    inputs.path));
+if inputs.useShadowFeet
+    if ~isfield(inputs, 'contactSurfaces') || ...
+            isempty(inputs.contactSurfaces)
+        throw(MException('', "<use_shadow_feet> requires contact " + ...
+            "surfaces in the <input_osimx_file>."))
+    end
+    if ~isShadowFootPoseEnabled
+        throw(MException('', "<use_shadow_feet> requires an enabled " + ...
+            "shadow_foot_pose path constraint term."))
+    end
+elseif isShadowFootPoseEnabled
+    throw(MException('', "The shadow_foot_pose constraint term " + ...
+        "requires <use_shadow_feet>true</use_shadow_feet>."))
+end
 end
 
 function osimx = parseOsimxFileWithCondition(tree, inputs)

@@ -40,6 +40,8 @@
 		<use_control_derivatives>false</use_control_derivatives>
 		<!--*Optional* Default is false. Must be true to use the generalized_jerk_tracking or generalized_jerk_minimization cost terms.-->
 		<use_joint_jerk_controls>false</use_joint_jerk_controls>
+		<!--*Optional* Default is false. Prototype. Adds a shadow foot for each contact surface: a copy of the hindfoot and toes attached to ground with a 6 DOF joint. Ground reactions are calculated from the springs on the shadow feet and applied to the model's feet. Requires contact surfaces in the osimx file and an enabled shadow_foot_pose path constraint term. Shadow foot coordinates are added to the states automatically.-->
+		<use_shadow_feet>false</use_shadow_feet>
 		<check_field_spelling>true</check_field_spelling>
 		<RCNLTorqueController>
 			<!--Space separated list containing the coordinates controlled by the torque controller.-->
@@ -466,6 +468,13 @@
 				<is_enabled>true</is_enabled>
 				<type>center_of_pressure_value</type>
 				<hindfoot_body_list>body_1 body_2 body_3</hindfoot_body_list>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<!--Required when use_shadow_feet is true, and only allowed then. Keeps each shadow foot in the pose of the model's foot: the toe angle, the three ground joint rotations (radians), and the three ground joint translations (meters) of each shadow foot must match the model's foot within max_error and min_error.-->
+			<RCNLConstraintTerm name="shadow_foot_pose">
+				<is_enabled>true</is_enabled>
+				<type>shadow_foot_pose</type>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>

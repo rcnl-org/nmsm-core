@@ -105,13 +105,8 @@ for i = 1:length(time)
     % Convert rotation angles to Y-X-Z (or (-Y)-(-X)-Z for left foot) sequence
     rotationMatrix = calcXyzRotationMatrix(footPosition(2, i), ...
         footPosition(3, i), footPosition(4, i));
-    if isLeftFoot
-        [footPosition(2, i), footPosition(3, i), footPosition(4, i)] = ...
-            calcLeftFootAngles(rotationMatrix);
-    else
-        [footPosition(2, i), footPosition(3, i), footPosition(4, i)] = ...
-            calcRightFootAngles(rotationMatrix);
-    end
+    footPosition(2 : 4, i) = calcHindfootJointAngles(rotationMatrix, ...
+        isLeftFoot)';
 end
 end
 
@@ -127,16 +122,4 @@ R(2,3) = -sin(q1)*cos(q2);
 R(3,1) = sin(q1)*sin(q3)-sin(q2)*cos(q1)*cos(q3);
 R(3,2) = sin(q1)*cos(q3)+sin(q2)*sin(q3)*cos(q1);
 R(3,3) = cos(q1)*cos(q2);
-end
-
-function [q1,q2,q3] = calcRightFootAngles(R)
-q1 = atan2(R(1,3),R(3,3));
-q2 = atan2(-R(2,3),sqrt(R(1,3)^2+R(3,3)^2));
-q3 = atan2(R(2,1),R(2,2));
-end
-
-function [q1,q2,q3] = calcLeftFootAngles(R)
-q1 = atan2(-R(1,3),R(3,3));
-q2 = atan2(R(2,3),sqrt(R(1,3)^2+R(3,3)^2));
-q3 = atan2(R(2,1),R(2,2));
 end

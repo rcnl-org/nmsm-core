@@ -31,6 +31,8 @@ function inputs = makeTreatmentOptimizationInputs(inputs, params, app)
 if nargin < 3
     app = [];
 end
+% Add shadow feet to the model and their coordinates to the data
+inputs = setupShadowFeet(inputs);
 %calc collocation point times
 inputs = computeCollocationPointTimes(inputs);
 inputs = splineExperimentalToCollocationPoints(inputs);
