@@ -299,6 +299,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             "use_first_order_control_dynamics_filter"
             "use_joint_jerk_controls"
             "normalize_cost_by_term_type"
+            "use_shadow_feet"
             "final_time_range"]
 
         % Text so that true/false reach getBooleanLogicFromField as the
@@ -314,6 +315,7 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             "0"
             "6"
             "1"
+            "false"
             "false"
             "false"
             "false"
@@ -336,12 +338,14 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             "boolean"
             "boolean"
             "boolean"
+            "boolean"
             "range"]
 
         % "" means every tool reads the setting. Only parseDesignSettings,
         % in parseDesignOptimizationSettingsTree, reads final_time_range.
         advancedSettingTools = ...
             [""
+            ""
             ""
             ""
             ""
@@ -684,6 +688,16 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             Values = app.advancedSettingValues(rows);
             app.AdvancedParamsTable.Data = table(Options, Values);
             app.validateAdvancedSettings();
+            % use_shadow_feet and the shadow_foot_pose constraint term
+            % each require the other
+            app.validateConstraintTerms();
+            app.updateTabControls();
+        end
+
+        function used = useShadowFeet(app)
+            index = find(strcmp(app.advancedSettingNames, ...
+                "use_shadow_feet"), 1);
+            used = strcmp(app.advancedSettingValues(index), "true");
         end
 
         function solverSettingsFileListenerFunction(app)
@@ -1534,6 +1548,14 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 reason = "the min error is greater than the max error";
                 return
             end
+            % verifyShadowFeetSettings throws on this pairing
+            if strcmp(constraintTerm.type, "shadow_foot_pose") && ...
+                    ~app.useShadowFeet()
+                severity = "error";
+                reason = "requires use_shadow_feet to be true on the " + ...
+                    "Advanced tab";
+                return
+            end
             if strcmp(constraintTerm.type, "user_defined")
                 [severity, reason] = app.userDefinedTermProblem( ...
                     constraintTerm.miscParams, "constraint_term_type", ...
@@ -2368,8 +2390,20 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
             end
             app.highlightTermRows(app.ConstraintTermsListTable, ...
                 incomplete, broken);
+            % The shadow_foot_pose term is what keeps shadow feet with the
+            % model's feet, so verifyShadowFeetSettings requires one
+            missingShadowFootPose = app.useShadowFeet() && ...
+                ~any(cellfun(@(term) strcmp(term.type, ...
+                "shadow_foot_pose") && strcmp(term.is_enabled, 'true'), ...
+                app.constraintTerms));
+            if missingShadowFootPose
+                problems(end + 1) = "  - use_shadow_feet is true on " + ...
+                    "the Advanced tab, which requires an enabled " + ...
+                    "shadow_foot_pose constraint term";
+            end
             % Unlike cost terms, an empty constraint set is legal
-            app.constraintTermsValid = isempty(incomplete) && isempty(broken);
+            app.constraintTermsValid = isempty(incomplete) && ...
+                isempty(broken) && ~missingShadowFootPose;
             if ~isempty(broken)
                 setGuiFieldStatus([], app.ConstraintTermsListStatus, ...
                     "error", ["Highlighted constraint terms cannot be " + ...
@@ -2378,6 +2412,10 @@ classdef TreatmentOptimizationBase < matlab.apps.AppBase
                 setGuiFieldStatus([], app.ConstraintTermsListStatus, ...
                     "required", ["Highlighted constraint terms are " + ...
                     "incomplete:", problems]);
+            elseif missingShadowFootPose
+                setGuiFieldStatus([], app.ConstraintTermsListStatus, ...
+                    "required", ["Constraint terms are incomplete:", ...
+                    problems]);
             else
                 setGuiFieldStatus([], app.ConstraintTermsListStatus, ...
                     "none");
