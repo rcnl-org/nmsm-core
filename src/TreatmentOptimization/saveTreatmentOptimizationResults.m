@@ -33,6 +33,12 @@ function saveTreatmentOptimizationResults(solution, inputs, values)
 if ~exist(inputs.resultsDirectory, 'dir')
     mkdir(inputs.resultsDirectory)
 end
+% Shadow foot coordinates are not in the input model or IK data, so they
+% go to their own file and are left out of every other results file
+if valueOrAlternate(inputs, 'useShadowFeet', false)
+    saveShadowFeetValidation(solution, inputs, values);
+    [inputs, values] = removeShadowFootCoordinates(inputs, values);
+end
 
 saveInverseKinematicsResults(inputs, values, inputs.resultsDirectory);
 saveInverseDynamicsResults(solution, inputs, values, inputs.resultsDirectory);
@@ -293,4 +299,67 @@ function saveMiscellaneousAnalysisFiles(solution, inputs, values)
     writeToSto(inputs.coordinateNames, inputs.experimentalTime, trackedAccelerations, ...
         fullfile(inputs.resultsDirectory, "Analysis", ...
         strcat(inputs.trialName, "_trackedAccelerations.sto")))
+end
+
+% Writes <trial>_shadowFeetValidation.sto with, for each contact surface,
+% every shadow foot coordinate next to the same pose of the model's foot
+% (the value the shadow_foot_pose constraint compares it to). The model
+% foot columns drop "_shadow" from the name, e.g. calcn_r_rotation1 and
+% mtp_angle_r. Model foot rotations are put on the same branch as the
+% shadow foot rotations so the two can be plotted together.
+function saveShadowFeetValidation(solution, inputs, values)
+if isfield(solution, 'shadowFootTargets')
+    targets = solution.shadowFootTargets;
+else
+    modeledValues = calcSynergyBasedModeledValues(values, inputs);
+    modeledValues = calcTorqueBasedModeledValues(values, inputs, ...
+        modeledValues);
+    targets = modeledValues.shadowFootTargets;
+end
+labels = string([]);
+data = [];
+for i = 1 : length(inputs.contactSurfaces)
+    surface = inputs.contactSurfaces{i};
+    shadow = values.positions(:, surface.shadowCoordinateIndices);
+    model = targets{i};
+    difference = shadow(:, 2 : 4) - model(:, 2 : 4);
+    model(:, 2 : 4) = shadow(:, 2 : 4) - ...
+        atan2(sin(difference), cos(difference));
+    shadowNames = reshape(string(surface.shadowCoordinateNames), 1, []);
+    for j = 1 : 7
+        labels(end + 1 : end + 2) = [shadowNames(j), ...
+            erase(shadowNames(j), "_shadow")];
+        data = [data, shadow(:, j), model(:, j)]; %#ok<AGROW>
+    end
+end
+[time, data] = splineToEvenlySpaced(values.time, data, ...
+    length(inputs.experimentalTime));
+writeToSto(labels, time, data, fullfile(inputs.resultsDirectory, ...
+    strcat(inputs.trialName, "_shadowFeetValidation.sto")));
+end
+
+% Removes the shadow foot coordinates from the coordinate and state data
+% the other results files are written from
+function [inputs, values] = removeShadowFootCoordinates(inputs, values)
+shadowNames = string([]);
+for i = 1 : length(inputs.contactSurfaces)
+    shadowNames = [shadowNames, reshape(string( ...
+        inputs.contactSurfaces{i}.shadowCoordinateNames), 1, [])]; %#ok<AGROW>
+end
+keep = ~ismember(string(inputs.coordinateNames), shadowNames);
+inputs.coordinateNames = inputs.coordinateNames(keep);
+inputs.experimentalJointAngles = inputs.experimentalJointAngles(:, keep);
+for field = ["positions", "velocities", "accelerations", "jerks"]
+    if isfield(values, field)
+        values.(field) = values.(field)(:, keep);
+    end
+end
+keepStates = ~ismember(string(inputs.statesCoordinateNames), shadowNames);
+inputs.statesCoordinateNames = inputs.statesCoordinateNames(keepStates);
+for field = ["statePositions", "stateVelocities", ...
+        "controlAccelerations", "controlJerks"]
+    if isfield(values, field)
+        values.(field) = values.(field)(:, keepStates);
+    end
+end
 end
