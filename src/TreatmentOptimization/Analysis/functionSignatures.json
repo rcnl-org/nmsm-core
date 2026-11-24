@@ -315,5 +315,30 @@
          "type":["integer", "numel=2"],
          "purpose":"(List of int) List with [FigureWidth, FigureHeight]"}
      ]
+  },
+  "plotTreatmentOptimizationShadowFeet":
+  {
+     "inputs":
+     [
+        {"name":"resultsDataFiles",
+         "kind":"required",
+         "type":[["file=*.sto"], ["file=*.mot"]],
+         "purpose":"(List of Strings) _shadowFeetValidation.sto files from Treatment Optimization runs with use_shadow_feet"},
+        {"name":"useRadians",
+         "kind":"namevalue",
+         "type":["logical"],
+         "purpose":"(Logical) Flag specifying whether to plot angles in radians or degrees. Default is false"},
+        {"name":"legend",
+         "kind":"namevalue",
+         "purpose":"(List of Strings) Specify legend values to use instead of the default, one per results file."},
+        {"name":"showRmse",
+         "kind":"namevalue",
+         "type":["logical"],
+         "purpose":"(Logical) Flag specifying whether to display the shadow foot vs model foot RMSE for each subplot. Default is true"},
+        {"name":"figureGridSize",
+         "kind":"namevalue",
+         "type":["integer", "numel=2"],
+         "purpose":"(List of int) List with [FigureWidth, FigureHeight]"}
+     ]
   }
 }

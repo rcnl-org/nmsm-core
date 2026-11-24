@@ -64,6 +64,11 @@ plotJointVelocities(resultsDirectory, trialPrefix, modelFileName);
 plotJointAccelerations(resultsDirectory, trialPrefix, modelFileName);
 plotJointLoads(resultsDirectory, trackedQuantitiesDirectory, trialPrefix);
 plotGroundReactions(resultsDirectory, trialPrefix);
+useShadowFeet = getBooleanLogicFromField( ...
+    getFieldByNameOrAlternate(settingsTree, 'use_shadow_feet', false));
+if useShadowFeet
+    plotShadowFeet(resultsDirectory, trialPrefix);
+end
 if isTorque
     plotTorqueControls(resultsDirectory, trackedQuantitiesDirectory, ...
         trialPrefix);
@@ -168,6 +173,18 @@ for i = 1 : numel(resultsDirectory)
             showRmse=1);
         break
     end
+end
+end
+
+% Shadow feet results have a validation file with the pose of each shadow
+% foot and of the model's foot. Results directories from runs without
+% shadow feet do not have one and are skipped.
+function plotShadowFeet(resultsDirectory, trialPrefix)
+files = fullfile(resultsDirectory, strcat(trialPrefix, ...
+    "_shadowFeetValidation.sto"));
+files = files(arrayfun(@(file) isfile(file), files));
+if ~isempty(files)
+    plotTreatmentOptimizationShadowFeet(files, showRmse=1);
 end
 end
 
