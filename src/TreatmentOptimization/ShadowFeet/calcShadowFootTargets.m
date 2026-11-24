@@ -1,14 +1,15 @@
 % This function is part of the NMSM Pipeline, see file for full license.
 %
 % This function calculates, for each contact surface, the shadow foot
-% coordinate values that match the pose of the model's foot. The hindfoot
-% pose comes from point kinematics of the hindfoot origin and of unit
-% points along its x, y, and z axes. The toe angle comes from the model's
-% toe coordinate. The columns of each target match
+% coordinate values and speeds that match the pose and motion of the
+% model's foot. The hindfoot pose and its rate of change come from point
+% kinematics (positions and velocities) of the hindfoot origin and of unit
+% points along its x, y, and z axes. The toe angle and speed come from the
+% model's toe coordinate. The columns of each target match
 % contactSurfaces{i}.shadowCoordinateNames.
 %
-% (struct, struct, cell array) -> (cell array)
-% Calculates the shadow foot pose targets for the shadow_foot_pose term
+% (struct, struct, cell array, cell array) -> (cell array, cell array)
+% Calculates the shadow foot targets for the shadow foot constraint terms
 
 % ----------------------------------------------------------------------- %
 % The NMSM Pipeline is a toolkit for model personalization and treatment  %
@@ -32,17 +33,27 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-function targets = calcShadowFootTargets(values, inputs, hindfootFrames)
+function [targets, velocityTargets] = calcShadowFootTargets(values, ...
+    inputs, hindfootFrames, hindfootFrameVelocities)
 targets = cell(1, length(inputs.contactSurfaces));
+velocityTargets = cell(1, length(inputs.contactSurfaces));
 for i = 1 : length(inputs.contactSurfaces)
+    surface = inputs.contactSurfaces{i};
     % [frames, xyz, point] with points origin, +x, +y, +z
     points = reshape(hindfootFrames{i}, size(hindfootFrames{i}, 1), 3, 4);
+    pointVelocities = reshape(hindfootFrameVelocities{i}, ...
+        size(hindfootFrameVelocities{i}, 1), 3, 4);
     origin = points(:, :, 1);
+    originVelocity = pointVelocities(:, :, 1);
     % R(row, column, frame): column c is body axis c expressed in ground
     R = permute(points(:, :, 2 : 4) - origin, [2 3 1]);
-    angles = calcHindfootJointAngles(R, ...
-        inputs.contactSurfaces{i}.isLeftFoot);
-    targets{i} = [values.positions(:, ...
-        inputs.contactSurfaces{i}.toesCoordinateIndex), angles, origin];
+    RDot = permute(pointVelocities(:, :, 2 : 4) - originVelocity, ...
+        [2 3 1]);
+    angles = calcHindfootJointAngles(R, surface.isLeftFoot);
+    angleRates = calcHindfootJointAngleRates(R, RDot, surface.isLeftFoot);
+    targets{i} = [values.positions(:, surface.toesCoordinateIndex), ...
+        angles, origin];
+    velocityTargets{i} = [values.velocities(:, ...
+        surface.toesCoordinateIndex), angleRates, originVelocity];
 end
 end

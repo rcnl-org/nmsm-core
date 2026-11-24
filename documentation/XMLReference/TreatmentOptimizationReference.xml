@@ -40,7 +40,7 @@
 		<use_control_derivatives>false</use_control_derivatives>
 		<!--*Optional* Default is false. Must be true to use the generalized_jerk_tracking or generalized_jerk_minimization cost terms.-->
 		<use_joint_jerk_controls>false</use_joint_jerk_controls>
-		<!--*Optional* Default is false. Prototype. Adds a shadow foot for each contact surface: a copy of the hindfoot and toes attached to ground with a 6 DOF joint. Ground reactions are calculated from the springs on the shadow feet and applied to the model's feet. Requires contact surfaces in the osimx file and an enabled shadow_foot_pose path constraint term. Shadow foot coordinates are added to the states automatically. They are left out of the other results files and written to <trial_name>_shadowFeetValidation.sto, next to the same pose of the model's feet.-->
+		<!--*Optional* Default is false. Prototype. Adds a shadow foot for each contact surface: a copy of the hindfoot and toes attached to ground with a 6 DOF joint. Ground reactions are calculated from the springs on the shadow feet and applied to the model's feet. Requires contact surfaces in the osimx file and enabled shadow_foot_position and shadow_foot_orientation path constraint terms; shadow_foot_velocity and shadow_foot_angular_velocity are optional. Shadow foot coordinates are added to the states automatically. They are left out of the other results files and written to <trial_name>_shadowFeetValidation.sto, next to the same pose of the model's feet.-->
 		<use_shadow_feet>false</use_shadow_feet>
 		<check_field_spelling>true</check_field_spelling>
 		<RCNLTorqueController>
@@ -471,10 +471,31 @@
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>
-			<!--Required when use_shadow_feet is true, and only allowed then. Keeps each shadow foot in the pose of the model's foot: the toe angle, the three ground joint rotations (radians), and the three ground joint translations (meters) of each shadow foot must match the model's foot within max_error and min_error.-->
-			<RCNLConstraintTerm name="shadow_foot_pose">
+			<!--Required when use_shadow_feet is true, and only allowed then. The three ground joint translations (meters) of each shadow foot must match the position of the model's hindfoot within max_error and min_error.-->
+			<RCNLConstraintTerm name="shadow_foot_position">
 				<is_enabled>true</is_enabled>
-				<type>shadow_foot_pose</type>
+				<type>shadow_foot_position</type>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<!--Required when use_shadow_feet is true, and only allowed then. The three ground joint rotations and the toe angle (radians) of each shadow foot must match the orientation of the model's hindfoot and its toe angle within max_error and min_error.-->
+			<RCNLConstraintTerm name="shadow_foot_orientation">
+				<is_enabled>true</is_enabled>
+				<type>shadow_foot_orientation</type>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<!--Optional, only allowed when use_shadow_feet is true. The speeds of the three ground joint translations (meters per second) of each shadow foot must match the velocity of the model's hindfoot within max_error and min_error.-->
+			<RCNLConstraintTerm name="shadow_foot_velocity">
+				<is_enabled>true</is_enabled>
+				<type>shadow_foot_velocity</type>
+				<max_error></max_error>
+				<min_error></min_error>
+			</RCNLConstraintTerm>
+			<!--Optional, only allowed when use_shadow_feet is true. The speeds of the three ground joint rotations and of the toe angle (radians per second) of each shadow foot must match the rates of the model's hindfoot rotations and toe angle within max_error and min_error.-->
+			<RCNLConstraintTerm name="shadow_foot_angular_velocity">
+				<is_enabled>true</is_enabled>
+				<type>shadow_foot_angular_velocity</type>
 				<max_error></max_error>
 				<min_error></min_error>
 			</RCNLConstraintTerm>

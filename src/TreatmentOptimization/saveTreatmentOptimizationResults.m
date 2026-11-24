@@ -303,7 +303,8 @@ end
 
 % Writes <trial>_shadowFeetValidation.sto with, for each contact surface,
 % every shadow foot coordinate next to the same pose of the model's foot
-% (the value the shadow_foot_pose constraint compares it to). The model
+% (the value the shadow_foot_position and shadow_foot_orientation
+% constraints compare it to). The model
 % foot columns drop "_shadow" from the name, e.g. calcn_r_rotation1 and
 % mtp_angle_r. Model foot rotations are put on the same branch as the
 % shadow foot rotations so the two can be plotted together.

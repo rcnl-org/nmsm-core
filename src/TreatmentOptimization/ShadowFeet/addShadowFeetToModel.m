@@ -7,7 +7,7 @@
 % rotation sequence, and the shadow toes are attached to the shadow
 % hindfoot with a copy of the model's toe joint. The shadow feet move
 % independently of the rest of the model, and are kept in the same pose as
-% the model's feet with the shadow_foot_pose path constraint.
+% the model's feet with the shadow foot path constraints.
 %
 % The new model is printed next to the original model with the suffix
 % "_shadowFeet". New bodies, joints, and coordinates are appended to the

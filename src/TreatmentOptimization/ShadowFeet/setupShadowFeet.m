@@ -6,8 +6,10 @@
 %   2) calculates shadow foot coordinates from the experimental and
 %      initial guess kinematics and appends them as new coordinates,
 %   3) adds the shadow foot coordinates to the states coordinates,
-%   4) splits the shadow_foot_pose constraint term into one term per
-%      shadow foot coordinate.
+%   4) splits the shadow foot constraint terms (shadow_foot_position,
+%      shadow_foot_orientation, shadow_foot_velocity, and
+%      shadow_foot_angular_velocity) into one term per shadow foot
+%      coordinate.
 % Nothing is written except the model file with the shadow feet.
 %
 % (struct) -> (struct)
@@ -109,7 +111,7 @@ inputs.inverseDynamicsOutputColumns = findNonShadowQColumns( ...
     inputs.model, shadowNames);
 
 inputs = removeInitialStateValues(inputs);
-inputs.path = splitShadowFootPoseTerms(inputs.path, ...
+inputs.path = splitShadowFootTerms(inputs.path, ...
     inputs.contactSurfaces);
 end
 
@@ -148,21 +150,30 @@ for i = 1 : length(fields)
 end
 end
 
-% Each shadow_foot_pose term becomes one term per shadow foot coordinate
-% so that every constraint term has a single column, as the solvers
-% expect.
-function newTerms = splitShadowFootPoseTerms(terms, contactSurfaces)
+% Each shadow foot term becomes one term per shadow foot coordinate it
+% covers, so that every constraint term has a single column, as the
+% solvers expect. Components index contactSurfaces{i}.shadowCoordinateNames
+% (toe angle, three rotations, three translations): position covers the
+% translations, orientation the rotations and the toe angle, and the
+% velocity terms the speeds of the same coordinates.
+function newTerms = splitShadowFootTerms(terms, contactSurfaces)
+types = ["shadow_foot_position", "shadow_foot_orientation", ...
+    "shadow_foot_velocity", "shadow_foot_angular_velocity"];
+components = {5 : 7, 1 : 4, 5 : 7, 1 : 4};
+isVelocity = [false, false, true, true];
 newTerms = {};
 for i = 1 : length(terms)
-    if ~strcmp(terms{i}.type, "shadow_foot_pose")
+    typeIndex = find(strcmp(types, terms{i}.type), 1);
+    if isempty(typeIndex)
         newTerms{end + 1} = terms{i};
         continue
     end
     for surface = 1 : length(contactSurfaces)
-        for component = 1 : 7
+        for component = components{typeIndex}
             newTerm = terms{i};
             newTerm.shadowSurfaceIndex = surface;
             newTerm.shadowComponentIndex = component;
+            newTerm.shadowIsVelocity = isVelocity(typeIndex);
             newTerm.coordinate = convertStringsToChars( ...
                 contactSurfaces{surface}.shadowCoordinateNames(component));
             newTerms{end + 1} = newTerm;

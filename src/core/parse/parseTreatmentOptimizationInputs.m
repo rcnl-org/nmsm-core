@@ -134,26 +134,37 @@ inputs.useShadowFeet = getBooleanLogicFromField( ...
     getFieldByNameOrAlternate(tree, 'use_shadow_feet', false));
 end
 
-% Shadow feet need contact surfaces, and the shadow_foot_pose path
-% constraint is what keeps the shadow feet in the pose of the model's
-% feet, so each requires the other.
+% Shadow feet need contact surfaces. The shadow_foot_position and
+% shadow_foot_orientation path constraints are what keep the shadow feet
+% in the pose of the model's feet, so shadow feet require both. The
+% velocity terms are optional. Every shadow foot term requires shadow
+% feet.
 function verifyShadowFeetSettings(inputs)
-isShadowFootPoseEnabled = any(cellfun(@(term) ...
-    strcmp(term.type, "shadow_foot_pose") && term.isEnabled, ...
-    inputs.path));
+shadowFootTypes = ["shadow_foot_position", "shadow_foot_orientation", ...
+    "shadow_foot_velocity", "shadow_foot_angular_velocity"];
+requiredTypes = shadowFootTypes(1 : 2);
+enabledTypes = string(cellfun(@(term) term.type, inputs.path( ...
+    cellfun(@(term) logical(term.isEnabled), inputs.path)), ...
+    'UniformOutput', false));
 if inputs.useShadowFeet
     if ~isfield(inputs, 'contactSurfaces') || ...
             isempty(inputs.contactSurfaces)
         throw(MException('', "<use_shadow_feet> requires contact " + ...
             "surfaces in the <input_osimx_file>."))
     end
-    if ~isShadowFootPoseEnabled
-        throw(MException('', "<use_shadow_feet> requires an enabled " + ...
-            "shadow_foot_pose path constraint term."))
+    missing = requiredTypes(~ismember(requiredTypes, enabledTypes));
+    if ~isempty(missing)
+        throw(MException('', "<use_shadow_feet> requires enabled " + ...
+            "shadow_foot_position and shadow_foot_orientation path " + ...
+            "constraint terms. Missing: " + strjoin(missing, ", ")))
     end
-elseif isShadowFootPoseEnabled
-    throw(MException('', "The shadow_foot_pose constraint term " + ...
-        "requires <use_shadow_feet>true</use_shadow_feet>."))
+else
+    used = shadowFootTypes(ismember(shadowFootTypes, enabledTypes));
+    if ~isempty(used)
+        throw(MException('', "The " + strjoin(used, ", ") + ...
+            " constraint terms require " + ...
+            "<use_shadow_feet>true</use_shadow_feet>."))
+    end
 end
 end
 
